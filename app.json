@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "name": "Aplicacion-Caprocam",
+    "slug": "aplicacion-caprocam",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  }
+}

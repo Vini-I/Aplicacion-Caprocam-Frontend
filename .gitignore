@@ -1,5 +1,5 @@
-# Created by https://www.toptal.com/developers/gitignore/api/react,macos,windows,node,visualstudiocode
-# Edit at https://www.toptal.com/developers/gitignore?templates=react,macos,windows,node,visualstudiocode
+# Created by combining Toptal gitignore templates for:
+# reactnative, react, windows, macos, node, visualstudiocode
 
 ### macOS ###
 # General
@@ -9,7 +9,6 @@
 
 # Icon must end with two \r
 Icon
-
 
 # Thumbnails
 ._*
@@ -43,6 +42,7 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 .pnpm-debug.log*
+pnpm-debug.log*
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
@@ -115,6 +115,7 @@ web_modules/
 .env.test.local
 .env.production.local
 .env.local
+.env*.local
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
@@ -127,12 +128,10 @@ out
 # Nuxt.js build / generate output
 .nuxt
 dist
+dist-ssr
 
 # Gatsby files
 .cache/
-# Comment in the public line in if your project uses Gatsby and not Next.js
-# https://nextjs.org/blog/next-9-1#public-directory-support
-# public
 
 # vuepress build output
 .vuepress/dist
@@ -169,8 +168,6 @@ dist
 # Serverless Webpack directories
 .webpack/
 
-# Optional stylelint cache
-
 # SvelteKit build / generate output
 .svelte-kit
 
@@ -178,11 +175,7 @@ dist
 .DS_*
 **/*.backup.*
 **/*.back.*
-
-node_modules
-
 *.sublime*
-
 psd
 thumb
 sketch
@@ -194,17 +187,93 @@ sketch
 !.vscode/launch.json
 !.vscode/extensions.json
 !.vscode/*.code-snippets
-
-# Local History for Visual Studio Code
 .history/
-
-# Built Visual Studio Code Extensions
-*.vsix
-
-### VisualStudioCode Patch ###
-# Ignore all local history of files
 .history
 .ionide
+*.vsix
+
+### IntelliJ / JetBrains ###
+.idea
+*.iml
+misc.xml
+deploymentTargetDropDown.xml
+render.experimental.xml
+
+### ReactNative ###
+.expo
+.expo/
+__generated__
+web-build/
+expo-env.d.ts
+example/
+
+### ReactNative.Buck Stack ###
+buck-out/
+.buckconfig.local
+.buckd/
+.buckversion
+.fakebuckversion
+
+### ReactNative.Gradle Stack ###
+.gradle
+.gradle/
+**/build/
+!src/**/build/
+build/
+
+# Ignore Gradle GUI config
+gradle-app.setting
+
+# Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
+!gradle-wrapper.jar
+
+# Avoid ignore Gradle wrapper properties
+!gradle-wrapper.properties
+
+# Cache of project
+.gradletasknamecache
+
+# Eclipse Gradle plugin generated files
+.project
+.classpath
+
+### ReactNative.Android Stack ###
+local.properties
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+output.json
+google-services.json
+*.hprof
+/android
+
+### ReactNative.iOS / Xcode Stack ###
+/ios
+xcuserdata/
+*.xcscmblueprint
+*.xccheckout
+
+### Native / Mobile Signing & Keys ###
+.kotlin/
+*.orig.*
+*.jks
+*.keystore
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.pem
+
+### Metro Bundler ###
+.metro-health-check*
+
+### Linux ###
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
 
 ### Windows ###
 # Windows thumbnail cache files
@@ -232,4 +301,10 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
-# End of https://www.toptal.com/developers/gitignore/api/react,macos,windows,node,visualstudiocode
+# Editor leftovers
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.vscode
