@@ -21,6 +21,12 @@
     "web": "expo start --web"
   },
   "private": true,
+
+  "devDependencies": {
+    "@react-native-community/cli": "^20.1.3",
+    "@react-native/metro-config": "^0.85.3"
+  },
+  
   "allowScripts": {
     "msgpackr-extract@3.0.4": true
   }
