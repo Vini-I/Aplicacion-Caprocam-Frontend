@@ -14,17 +14,15 @@
  *
  * FLUJO:
  * 1. Al montar: useWorkers obtiene la lista de trabajadores
- * 2. Usuario selecciona un turno (shift state)
+ * 2. Usuario selecciona un turno (selectedShift state)
  * 3. Usuario selecciona un trabajador (selectedWorker state)
  * 4. Usuario presiona botón - (por ahora solo console.log, después irá a home)
  *
  * ============================================================
  */
 
-import { StyleSheet, View, Text, FlatList, ScrollView, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import { useState } from 'react';
-import { format, addDays } from 'date-fns';
-
 
 // Importar componentes compartidos
 import Button from '../../../shared/components/Button';
@@ -33,7 +31,6 @@ import Title from '../../../shared/components/Title';
 import CustomText from '../../../shared/components/Text';
 import Avatar from '../../../shared/components/Avatar';
 import Images from '../../../shared/components/Images';
-
 
 // Importar hook personalizado
 import { useWorkers } from '../hooks/useWorkers';
@@ -121,29 +118,9 @@ export default function LoginScreen() {
         // TODO: Navegar a home cuando se implemente navegación
     };
 
-    /**
-     * handleSelectShift(shiftId)
-     *
-     * Manejar cuando el usuario selecciona un turno
-     *
-     * @param {string} shiftId - El ID del turno seleccionado
-     */
-    const handleSelectShift = (shiftId) => {
-        setSelectedShift(shiftId);
-    };
-
-    /**
-     * handleSelectWorker(workerId)
-     *
-     * Manejar cuando el usuario selecciona un trabajador
-     *
-     * @param {string} workerId - El ID del trabajador
-     */
-    const handleSelectWorker = (workerId) => {
-        setSelectedWorker(workerId);
-    };
-
     // ============ RENDER ============
+
+    const isReady = selectedShift && selectedWorker;
 
     return (
         <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -151,8 +128,8 @@ export default function LoginScreen() {
             <View style={styles.header}>
                 <View style={styles.headerContent}>
                     {/* Logo/Icono aquí (por ahora solo un placeholder) */}
-                    <Card backgroundColor = '#0079CB'>
-                        <Images Icon = {require('../../../assets/shrimp-solid.png')} style={{ width: 50, height: 50 }}  />
+                    <Card backgroundColor='#0079CB'>
+                        <Images Icon={require('../../../assets/shrimp-solid.png')} style={{ width: 50, height: 50 }} />
                     </Card>
 
                     <Title level={1} color="#FFFFFF" align="center">
@@ -195,9 +172,8 @@ export default function LoginScreen() {
                             key={shift.id}
                             shift={shift}
                             isSelected={selectedShift === shift.id}
-                            onPress={() => handleSelectShift(shift.id)}
+                            onPress={() => setSelectedShift(shift.id)}
                         />
-                        
                     ))}
                 </View>
             </View>
@@ -252,7 +228,7 @@ export default function LoginScreen() {
                                 key={worker.id}
                                 worker={worker}
                                 isSelected={selectedWorker === worker.id}
-                                onPress={() => handleSelectWorker(worker.id)}
+                                onPress={() => setSelectedWorker(worker.id)}
                             />
                         ))}
                     </View>
@@ -265,7 +241,8 @@ export default function LoginScreen() {
                     <Button
                         title="Comenzar turno →"
                         onPress={handleStartShift}
-                        type={!selectedShift || !selectedWorker ? 'secondary' : 'primary'}
+                        disabled={!isReady}
+                        type={isReady ? 'primary' : 'secondary'}
                     />
                 </View>
             </View>
@@ -287,8 +264,6 @@ export default function LoginScreen() {
             </View>
         </ScrollView>
     );
-
-
 }
 
 /**
@@ -301,7 +276,7 @@ export default function LoginScreen() {
  * - isSelected: boolean - ¿está seleccionado?
  * - onPress: función a ejecutar
  *
- * NOTA: Usado wrappedButton porque Button component no puede ser customizado
+ * NOTA: Usado wrappedButton porque Button component no puede ser customizado,
  * entonces usamos TouchableOpacity para aplicar estilos personalizados
  */
 function ShiftButton({ shift, isSelected, onPress }) {
@@ -317,8 +292,7 @@ function ShiftButton({ shift, isSelected, onPress }) {
             ]}
             onPress={onPress}
         >
-            <Avatar source = {shift.icon} />
-            
+            <Avatar source={shift.icon} />
             <Text style={styles.shiftButtonText}>
                 {shift.label}
             </Text>
@@ -352,7 +326,7 @@ function WorkerCard({ worker, isSelected, onPress }) {
             <View style={styles.workerCardContent}>
                 {/* AVATAR CON INICIALES */}
                 <View>
-                     <Avatar name={worker.initials} size={48} bgColor="#E6F2FF" fgColor="#0066CC"/>
+                    <Avatar name={worker.initials} size={48} bgColor="#E6F2FF" fgColor="#0066CC" />
                 </View>
 
                 {/* NOMBRE Y ROL */}
@@ -402,14 +376,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
 
-    logoPlaceholder: {
-        width: 60,
-        height: 60,
-        borderRadius: 30,
-        backgroundColor: '#0052A3',
-        marginBottom: 15,
-    },
-
     date: {
         marginTop: 8,
     },
@@ -418,19 +384,6 @@ const styles = StyleSheet.create({
     section: {
         paddingHorizontal: 20,
         paddingVertical: 20,
-    },
-
-    sectionTitle: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#333333',
-        marginBottom: 5,
-    },
-
-    sectionSubtitle: {
-        fontSize: 14,
-        color: '#666666',
-        marginBottom: 15,
     },
 
     // TURNOS
@@ -465,10 +418,6 @@ const styles = StyleSheet.create({
         color: '#666666',
     },
 
-    spacer: {
-        height: 10,
-    },
-
     // TRABAJADORES
     workerCardWrapper: {
         marginBottom: 12,
@@ -491,26 +440,6 @@ const styles = StyleSheet.create({
         padding: 15,
     },
 
-    avatar: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
-        backgroundColor: '#E6F2FF',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginRight: 15,
-    },
-
-    avatarSelected: {
-        backgroundColor: '#0066CC',
-    },
-
-    avatarText: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#FFFFFF',
-    },
-
     workerInfo: {
         flex: 1,
     },
@@ -520,7 +449,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#333333',
         marginBottom: 4,
-        paddingLeft: 10, 
+        paddingLeft: 10,
     },
 
     workerRole: {
@@ -542,21 +471,6 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
         fontSize: 18,
         fontWeight: 'bold',
-    },
-
-    // LOADING / ERROR
-    loadingText: {
-        fontSize: 16,
-        color: '#666666',
-        textAlign: 'center',
-        marginVertical: 20,
-    },
-
-    errorText: {
-        fontSize: 16,
-        color: '#DC3545',
-        textAlign: 'center',
-        marginVertical: 20,
     },
 
     // BOTON PRINCIPAL
