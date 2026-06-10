@@ -97,12 +97,7 @@ const MOCK_WORKERS = [
  * // ]
  */
 export const getWorkers = async () => {
-  // Simulamos una pequeña demora de red (como si fuera una API real)
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(MOCK_WORKERS);
-    }, 500); // 500ms de demora simulated
-  });
+  return Promise.resolve(MOCK_WORKERS);
 };
 
 /**
@@ -118,10 +113,6 @@ export const getWorkers = async () => {
  * console.log(worker.name); // "Carlos Mendoza"
  */
 export const getWorkerById = async (id) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const worker = MOCK_WORKERS.find((w) => w.id === id);
-      resolve(worker || null);
-    }, 300);
-  });
+  const worker = MOCK_WORKERS.find((w) => w.id === id);
+  return Promise.resolve(worker || null);
 };
