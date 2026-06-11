@@ -24,6 +24,7 @@
 
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
+import { COLORS } from "../../theme/colors";
 
 export default function Card({ title = "", children, style, titleStyle }) {
   const cardStyles = [styles.card];
@@ -43,12 +44,12 @@ export default function Card({ title = "", children, style, titleStyle }) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#ffffff",
+    backgroundColor: COLORS.white,
     borderRadius: 12,
     padding: 16,
     borderWidth: 1,
-    borderColor: "#E5E7EB",
-    shadowColor: "#000000",
+    borderColor: COLORS.secondary,
+    shadowColor: COLORS.black,
     shadowOffset: {
       width: 0,
       height: 2,
@@ -61,7 +62,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#212529",
+    color: COLORS.textSecondary,
     marginBottom: 10,
   },
 });

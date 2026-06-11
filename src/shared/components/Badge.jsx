@@ -23,6 +23,8 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 
+import { COLORS } from "../../theme/colors"; 
+
 export default function Badge({
   label = "",
   variant = "info",
@@ -56,23 +58,23 @@ export default function Badge({
 
 const styles = StyleSheet.create({
   badge: {
-    backgroundColor: "#e7f1ff",
+    backgroundColor: COLORS.secondary,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
     alignSelf: "flex-start",
   },
   success: {
-    backgroundColor: "#d1e7dd",
+    backgroundColor: COLORS.successLight,
   },
   warning: {
-    backgroundColor: "#fff3cd",
+    backgroundColor: COLORS.warningLight,
   },
   danger: {
-    backgroundColor: "#f8d7da",
+    backgroundColor: COLORS.errorLight,
   },
   text: {
-    color: "#1F2937",
+    color: COLORS.textSecondary,
     fontWeight: "600",
     fontSize: 12,
   },

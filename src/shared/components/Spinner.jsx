@@ -22,9 +22,11 @@
 import React from "react";
 import { View, Text, ActivityIndicator, StyleSheet } from "react-native";
 
+import { COLORS } from "../../theme/colors"; 
+
 export default function Spinner({
   size = "large",
-  color = "#009EF5",
+  color = COLORS.primary,
   text = "",
   style,
 }) {
@@ -46,6 +48,6 @@ const styles = StyleSheet.create({
   text: {
     marginTop: 8,
     fontSize: 14,
-    color: "#475569",
+    color: COLORS.textTertiary,
   },
 });
