@@ -168,7 +168,7 @@ export default function fisicoQuimica({ onBack }) {
       </ScrollView>
 
       {/* ── Footer / Guardar ── */}
-      // DESPUÉS
+      {/* DESPUÉS  DE INTEGRAR NAVEGACIÓN REAL, REEMPLAZA ESTE BOTÓN POR UNO EN EL HEADER */}
       <View style={styles.footer}>
         <Button
           title="Guardar módulo"
