@@ -29,6 +29,7 @@
 
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
+import { COLORS } from "../../theme/colors";
 
 export default function Navbar({
   title = "",
@@ -64,9 +65,9 @@ const styles = StyleSheet.create({
     width: "100%",
     paddingVertical: 14,
     paddingHorizontal: 16,
-    backgroundColor: "#ffffff",
+    backgroundColor: COLORS.white,
     borderBottomWidth: 1,
-    borderBottomColor: "#E5E7EB",
+    borderBottomColor: COLORS.secondary,
   },
   row: {
     flexDirection: "row",
@@ -85,7 +86,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#212529",
+    color: COLORS.textSecondary,
     textAlign: "center",
   },
   childrenContainer: {
