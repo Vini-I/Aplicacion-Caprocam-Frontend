@@ -1,14 +1,79 @@
 /**
- * WheelPicker.jsx — v3
+ * ============================================================
+ * COMPONENTE WHEELPICKER
+ * ============================================================
  *
- * Mejoras vs v2:
- *  - highlightIndex local (useState): el ítem resaltado cambia en tiempo
- *    real mientras el usuario scrollea, sin esperar a que onChange se dispare.
- *  - Funciona en web/PC: usa un <div> nativo con onWheel + drag del mouse
- *    cuando la plataforma es 'web' (Expo Web / React Native Web).
- *  - Snap confiable en móvil: snapToInterval + handleScrollEndDrag +
- *    handleMomentumEnd cubren todos los casos de parada.
- *  - scrollEventThrottle={8} para mayor fluidez visual.
+ * Este componente se utiliza para mostrar un selector de valores
+ * numéricos tipo ruleta dentro de la aplicacion.
+ *
+ * Permite:
+ * - Desplazarse entre una lista de valores con scroll
+ * - Resaltar en tiempo real el valor seleccionado
+ * - Ajustarse automaticamente al valor mas cercano al soltar (snap)
+ * - Funcionar correctamente en web y dispositivos moviles
+ *
+ * ---
+ * PARAMETROS
+ * ---
+ *
+ * values
+ * Lista de valores numericos disponibles para seleccionar.
+ *
+ * Ejemplo:
+ * <WheelPicker values={[1, 2, 3, 4, 5]} />
+ *
+ * ---
+ *
+ * value
+ * Valor actualmente seleccionado.
+ *
+ * Ejemplo:
+ * <WheelPicker value={3} />
+ *
+ * ---
+ *
+ * onChange
+ * Funcion que se ejecuta cada vez que el usuario selecciona un valor distinto.
+ *
+ * Ejemplo:
+ * <WheelPicker onChange={setValor} />
+ *
+ * ---
+ *
+ * unit
+ * Texto que se muestra junto al valor seleccionado.
+ *
+ * Ejemplo:
+ * <WheelPicker unit="cm" />
+ *
+ * ---
+ *
+ * color
+ * Color del valor resaltado y elementos activos.
+ *
+ * Ejemplo:
+ * <WheelPicker color="#009EF5" />
+ *
+ * ---
+ *
+ * textHint
+ * Color de los valores no seleccionados.
+ *
+ * Ejemplo:
+ * <WheelPicker textHint="#94A3B8" />
+ *
+ * ============================================================
+ * EJEMPLOS RAPIDOS
+ * ============================================================
+ *
+ * <WheelPicker
+ *     values={[1, 2, 3, 4, 5]}
+ *     value={valor}
+ *     onChange={setValor}
+ *     unit="cm"
+ *     color="#009EF5"
+ *     textHint="#94A3B8"
+ * />
  */
 
 import React, {

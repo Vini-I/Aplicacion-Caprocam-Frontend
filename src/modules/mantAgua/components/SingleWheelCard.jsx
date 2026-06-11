@@ -1,46 +1,110 @@
 /**
- * SingleWheelCard.jsx
- * ─────────────────────────────────────────────────────────────
- * Card con un único valor tappable que abre un bottom sheet
- * con WheelPicker. Misma lógica que DualWheelCard pero para
- * parámetros con un solo campo (ej. Turbidez Secchi).
+ * ============================================================
+ * COMPONENTE SINGLEWHEELCARD
+ * ============================================================
  *
- * Props
- * ─────
- *  title       string     — "Turbidez Secchi"
- *  icon        string     — nombre de Ionicons
- *  label       string     — "Lectura disco Secchi"
- *  unit        string     — "cm"
- *  min         number
- *  max         number
- *  step        number     — default 1
- *  idealMin    number
- *  idealMax    number
- *  value       number
- *  onChange    fn(number)
- *  colors      object     — { primary, textHint, border?, text? }
- *  styles      object     — { card, cardHeader, cardHeaderLeft,
- *                             cardTitle }
+ * Este componente se utiliza para mostrar un unico parametro
+ * fisicoquimico dentro de una card.
  *
- * Uso
- * ───
- *  const [secchi, setSecchi] = useState(35);
+ * Permite:
+ * - Mostrar y editar un valor dentro de una card
+ * - Abrir un bottom sheet con WheelPicker al tocar el valor
+ * - Guardar automaticamente al confirmar o tocar fuera del sheet
+ * - Descartar el cambio unicamente al presionar Cancelar
+ * - Indicar visualmente si el valor esta dentro del rango ideal
  *
- *  <SingleWheelCard
- *    title="Turbidez Secchi"
- *    icon="eye-outline"
- *    label="Lectura disco Secchi"
- *    unit="cm"
- *    min={1}
- *    max={100}
- *    idealMin={25}
- *    idealMax={45}
- *    value={secchi}
- *    onChange={setSecchi}
- *    colors={C}
- *    styles={styles}
- *  />
- * ─────────────────────────────────────────────────────────────
+ * ---
+ * PARAMETROS
+ * ---
+ *
+ * title
+ * Texto que se mostrara como titulo de la card.
+ *
+ * Ejemplo:
+ * <SingleWheelCard title="Turbidez Secchi" />
+ *
+ * ---
+ *
+ * icon
+ * Nombre del icono de Ionicons que aparece en el header.
+ *
+ * Ejemplo:
+ * <SingleWheelCard icon="eye-outline" />
+ *
+ * ---
+ *
+ * label
+ * Etiqueta descriptiva del campo de valor.
+ *
+ * Ejemplo:
+ * <SingleWheelCard label="Lectura disco Secchi" />
+ *
+ * ---
+ *
+ * unit
+ * Unidad de medida del parametro.
+ *
+ * Ejemplo:
+ * <SingleWheelCard unit="cm" />
+ *
+ * ---
+ *
+ * min / max
+ * Valores minimo y maximo absolutos del parametro.
+ *
+ * Ejemplo:
+ * <SingleWheelCard min={1} max={100} />
+ *
+ * ---
+ *
+ * idealMin / idealMax
+ * Limites del rango ideal.
+ * Se usan para colorear el valor en verde o naranja.
+ *
+ * Ejemplo:
+ * <SingleWheelCard idealMin={25} idealMax={45} />
+ *
+ * ---
+ *
+ * value
+ * Valor actual del parametro.
+ *
+ * Ejemplo:
+ * <SingleWheelCard value={secchi} />
+ *
+ * ---
+ *
+ * onChange
+ * Funcion que se ejecuta al confirmar un nuevo valor.
+ *
+ * Ejemplo:
+ * <SingleWheelCard onChange={setSecchi} />
+ *
+ * ---
+ *
+ * colors
+ * Objeto con los colores del proyecto { primary, textHint }.
+ *
+ * ---
+ *
+ * styles
+ * Objeto con los estilos de la pantalla padre { card, cardHeader, cardHeaderLeft, cardTitle }.
+ *
+ * ============================================================
+ * EJEMPLOS RAPIDOS
+ * ============================================================
+ *
+ * <SingleWheelCard
+ *     title="Turbidez Secchi"
+ *     icon="eye-outline"
+ *     label="Lectura disco Secchi"
+ *     unit="cm"
+ *     min={1}       max={100}
+ *     idealMin={25} idealMax={45}
+ *     value={secchi}
+ *     onChange={setSecchi}
+ *     colors={C}    styles={styles}
+ * />
  */
 
 import React, { useState, useRef } from 'react';

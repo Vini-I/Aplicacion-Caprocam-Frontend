@@ -1,68 +1,176 @@
 /**
- * RangeCard.jsx
- * ─────────────────────────────────────────────────────────────
- * Componente reutilizable para captura de parámetros fisicoquímicos.
- * Sin dependencias externas — solo React Native nativo.
+ * ============================================================
+ * COMPONENTE RANGECARD
+ * ============================================================
  *
- * Props
- * ─────
- *  title          string          — "Temperatura"
- *  unit           string          — "°C" | "pH" | "ppt" | "mg/L"
- *  icon           string          — nombre de Ionicons (e.g. "thermometer")
- *  idealMin       number          — límite inferior del rango ideal
- *  idealMax       number          — límite superior del rango ideal
- *  sliderMin      number          — mínimo absoluto del control
- *  sliderMax      number          — máximo absoluto del control
- *  step           number          — incremento del botón +/- (default 0.1)
- *  decimals       number          — decimales a mostrar y validar (default 1)
- *  maxReadings    number          — máximo de mediciones permitidas (default 4)
- *  showProgress   bool            — muestra progress bar global (default true)
- *  showRangeColor bool            — colorea verde/naranja según rango (default true)
- *  badgeLabel     string          — texto del badge (default "Ideal: min–max unit")
- *  colors         object          — { primary, textHint }  ← tu objeto C
- *  styles         object          — { card, cardHeader, cardHeaderLeft,
- *                                     cardTitle, cardUnit, badge }
- *  onChange       fn([readings])  — callback al padre con array de mediciones
- *                                   Cada reading: { id, value, rawInput, editing }
+ * Este componente se utiliza para capturar multiples mediciones
+ * de un mismo parametro fisicoquimico dentro de una card.
  *
- * Ejemplos de uso
- * ───────────────
- *  // Temperatura — con progress bar y colores de rango
- *  <RangeCard
- *    title="Temperatura"  unit="°C"   icon="thermometer"
- *    idealMin={28}        idealMax={30}
- *    sliderMin={15}       sliderMax={45}
- *    step={0.5}           decimals={1}
- *    maxReadings={4}
- *    colors={C}           styles={styles}
- *    onChange={(r) => setTempReadings(r)}
- *  />
+ * Permite:
+ * - Agregar y eliminar mediciones individualmente
+ * - Ajustar cada valor con botones + y - o escritura directa
+ * - Mostrar una barra de progreso global con el promedio
+ * - Mostrar una mini barra individual por cada medicion
+ * - Validar si cada valor esta dentro del rango ideal
+ * - Configurar etiquetas numericas o de dia/noche por medicion
  *
- *  // pH — con progress bar y colores de rango
- *  <RangeCard
- *    title="pH"           unit="pH"   icon="flask-outline"
- *    idealMin={7.5}       idealMax={8.5}
- *    sliderMin={4}        sliderMax={10}
- *    step={0.1}           decimals={1}
- *    maxReadings={4}
- *    colors={C}           styles={styles}
- *    onChange={(r) => setPhReadings(r)}
- *  />
+ * ---
+ * PARAMETROS
+ * ---
  *
- *  // Oxígeno disuelto — sin progress bar ni colores de rango
- *  <RangeCard
- *    title="Oxígeno Disuelto"  unit="mg/L"  icon="water"
- *    idealMin={5}              idealMax={20}
- *    sliderMin={0}             sliderMax={20}
- *    step={0.1}                decimals={1}
- *    maxReadings={5}
- *    showProgress={false}
- *    showRangeColor={false}
- *    badgeLabel="Mín: 5 mg/L"
- *    colors={C}                styles={styles}
- *    onChange={(r) => setOxReadings(r)}
- *  />
- * ─────────────────────────────────────────────────────────────
+ * title
+ * Texto que se mostrara como titulo de la card.
+ *
+ * Ejemplo:
+ * <RangeCard title="Temperatura" />
+ *
+ * ---
+ *
+ * unit
+ * Unidad de medida del parametro.
+ *
+ * Ejemplo:
+ * <RangeCard unit="°C" />
+ *
+ * ---
+ *
+ * icon
+ * Nombre del icono de Ionicons que aparece en el header.
+ *
+ * Ejemplo:
+ * <RangeCard icon="thermometer" />
+ *
+ * ---
+ *
+ * idealMin / idealMax
+ * Limites del rango ideal.
+ * Se usan para colorear el valor en verde o naranja.
+ *
+ * Ejemplo:
+ * <RangeCard idealMin={28} idealMax={30} />
+ *
+ * ---
+ *
+ * sliderMin / sliderMax
+ * Valores minimo y maximo absolutos del control.
+ *
+ * Ejemplo:
+ * <RangeCard sliderMin={15} sliderMax={45} />
+ *
+ * ---
+ *
+ * step
+ * Incremento aplicado al presionar + o -.
+ * Valor por defecto: 0.1
+ *
+ * Ejemplo:
+ * <RangeCard step={0.5} />
+ *
+ * ---
+ *
+ * decimals
+ * Cantidad de decimales que se muestran y validan.
+ * Valor por defecto: 1
+ *
+ * Ejemplo:
+ * <RangeCard decimals={1} />
+ *
+ * ---
+ *
+ * maxReadings
+ * Cantidad maxima de mediciones permitidas.
+ * Valor por defecto: 4
+ *
+ * Ejemplo:
+ * <RangeCard maxReadings={2} />
+ *
+ * ---
+ *
+ * showProgress
+ * Muestra u oculta la barra de progreso global.
+ * Valor por defecto: true
+ *
+ * Ejemplo:
+ * <RangeCard showProgress={false} />
+ *
+ * ---
+ *
+ * showRangeColor
+ * Colorea el valor en verde cuando esta dentro del rango ideal.
+ * Valor por defecto: true
+ *
+ * Ejemplo:
+ * <RangeCard showRangeColor={false} />
+ *
+ * ---
+ *
+ * labelStyle
+ * Define el estilo de etiqueta por medicion.
+ *
+ * Valores posibles:
+ * "numeric"   — muestra ①②③…
+ * "daynight"  — muestra iconos de sol y luna
+ *
+ * Valor por defecto: "numeric"
+ *
+ * Ejemplo:
+ * <RangeCard labelStyle="daynight" />
+ *
+ * ---
+ *
+ * badgeLabel
+ * Texto personalizado del badge en el header.
+ * Si no se envia, se construye automaticamente con el rango ideal.
+ *
+ * Ejemplo:
+ * <RangeCard badgeLabel="Mín: 5 mg/L" />
+ *
+ * ---
+ *
+ * colors
+ * Objeto con los colores del proyecto { primary, textHint }.
+ *
+ * ---
+ *
+ * styles
+ * Objeto con los estilos de la pantalla padre { card, cardHeader,
+ * cardHeaderLeft, cardTitle, cardUnit, badge }.
+ *
+ * ---
+ *
+ * onChange
+ * Funcion que se ejecuta cada vez que cambia alguna medicion.
+ * Recibe un array con todas las mediciones actuales.
+ * Cada medicion tiene la forma: { id, value, rawInput, editing }
+ *
+ * Ejemplo:
+ * <RangeCard onChange={(r) => setTempReadings(r)} />
+ *
+ * ============================================================
+ * EJEMPLOS RAPIDOS
+ * ============================================================
+ *
+ * <RangeCard
+ *     title="Temperatura"  unit="°C"    icon="thermometer"
+ *     idealMin={28}        idealMax={30}
+ *     sliderMin={15}       sliderMax={45}
+ *     step={0.5}           decimals={1}
+ *     maxReadings={2}      labelStyle="daynight"
+ *     colors={C}           styles={styles}
+ *     onChange={(r) => setTempReadings(r)}
+ * />
+ *
+ * <RangeCard
+ *     title="Oxígeno Disuelto"  unit="mg/L"  icon="water"
+ *     idealMin={5}              idealMax={20}
+ *     sliderMin={0}             sliderMax={20}
+ *     step={0.1}                decimals={1}
+ *     maxReadings={5}           labelStyle="numeric"
+ *     showProgress={false}      showRangeColor={false}
+ *     badgeLabel="Mín: 5 mg/L"
+ *     colors={C}                styles={styles}
+ *     onChange={(r) => setoxReadings(r)}
+ * />
  */
 
 import React, { useState, useCallback } from 'react';

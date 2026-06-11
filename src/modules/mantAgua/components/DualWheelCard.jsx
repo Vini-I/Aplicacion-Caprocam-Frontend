@@ -1,10 +1,112 @@
 /**
- * DualWheelCard.jsx — fixed
- * Fixes:
- *  1. Tocar fuera del sheet (backdrop) GUARDA el valor actual (igual que "Listo").
- *  2. confirmSheet y closeWithSave comparten la misma lógica de persistencia.
- *  3. closeSheet (sin guardar) solo se usa en "Cancelar".
- *  4. El sheet ya no descarta el valor al hacer tap fuera.
+ * ============================================================
+ * COMPONENTE DUALWHEELCARD
+ * ============================================================
+ *
+ * Este componente se utiliza para mostrar dos parametros
+ * fisicoquimicos lado a lado dentro de una card.
+ *
+ * Permite:
+ * - Mostrar y editar dos valores en la misma card
+ * - Abrir un bottom sheet con WheelPicker al tocar cada valor
+ * - Guardar automaticamente al confirmar o tocar fuera del sheet
+ * - Descartar el cambio unicamente al presionar Cancelar
+ * - Indicar visualmente si cada valor esta dentro del rango ideal
+ *
+ * ---
+ * PARAMETROS
+ * ---
+ *
+ * title
+ * Texto que se mostrara como titulo de la card.
+ *
+ * Ejemplo:
+ * <DualWheelCard title="Salinidad y Alcalinidad" />
+ *
+ * ---
+ *
+ * icon
+ * Nombre del icono de Ionicons que aparece en el header.
+ *
+ * Ejemplo:
+ * <DualWheelCard icon="analytics-outline" />
+ *
+ * ---
+ *
+ * leftLabel / rightLabel
+ * Etiquetas descriptivas del parametro izquierdo y derecho.
+ *
+ * Ejemplo:
+ * <DualWheelCard leftLabel="Salinidad" rightLabel="Alcalinidad" />
+ *
+ * ---
+ *
+ * leftUnit / rightUnit
+ * Unidades de medida del parametro izquierdo y derecho.
+ *
+ * Ejemplo:
+ * <DualWheelCard leftUnit="ppt" rightUnit="mg/L" />
+ *
+ * ---
+ *
+ * leftMin / leftMax / rightMin / rightMax
+ * Valores minimo y maximo absolutos de cada parametro.
+ *
+ * Ejemplo:
+ * <DualWheelCard leftMin={5} leftMax={40} rightMin={80} rightMax={250} />
+ *
+ * ---
+ *
+ * leftIdealMin / leftIdealMax / rightIdealMin / rightIdealMax
+ * Limites del rango ideal de cada parametro.
+ * Se usan para colorear el valor en verde o naranja.
+ *
+ * Ejemplo:
+ * <DualWheelCard leftIdealMin={10} leftIdealMax={25} rightIdealMin={80} rightIdealMax={150} />
+ *
+ * ---
+ *
+ * leftValue / rightValue
+ * Valores actuales de cada parametro.
+ *
+ * Ejemplo:
+ * <DualWheelCard leftValue={salinidad} rightValue={alcalinidad} />
+ *
+ * ---
+ *
+ * onLeftChange / onRightChange
+ * Funciones que se ejecutan al confirmar un nuevo valor en cada lado.
+ *
+ * Ejemplo:
+ * <DualWheelCard onLeftChange={setSalinidad} onRightChange={setAlcalinidad} />
+ *
+ * ---
+ *
+ * colors
+ * Objeto con los colores del proyecto { primary, textHint }.
+ *
+ * ---
+ *
+ * styles
+ * Objeto con los estilos de la pantalla padre { card, cardHeader, cardHeaderLeft, cardTitle }.
+ *
+ * ============================================================
+ * EJEMPLOS RAPIDOS
+ * ============================================================
+ *
+ * <DualWheelCard
+ *     title="Salinidad y Alcalinidad"
+ *     icon="analytics-outline"
+ *     leftLabel="Salinidad"      leftUnit="ppt"
+ *     leftMin={5}                leftMax={40}
+ *     leftIdealMin={10}          leftIdealMax={25}
+ *     leftValue={salinidad}      onLeftChange={setSalinidad}
+ *     rightLabel="Alcalinidad"   rightUnit="mg/L"
+ *     rightMin={80}              rightMax={250}
+ *     rightIdealMin={80}         rightIdealMax={150}
+ *     rightValue={alcalinidad}   onRightChange={setAlcalinidad}
+ *     colors={C}                 styles={styles}
+ * />
  */
 
 import React, { useState, useRef } from 'react';
