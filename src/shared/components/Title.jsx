@@ -26,6 +26,8 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 
+import { COLORS } from "../../theme/colors";
+
 function getScale(level) {
   const scale = {
     1: { fontSize: 32, fontWeight: "700", lineHeight: 40 },
@@ -62,10 +64,10 @@ function getUnderlineAlign(align) {
 export default function Title({
   children,
   level = 1,
-  color = "#212529",
+  color = COLORS.textPrimary,
   align = "left",
   underline = false,
-  underlineColor = "#0d6efd",
+  underlineColor = COLORS.primary,
   underlineWidth = 40,
   muted = false,
   numberOfLines,
@@ -75,7 +77,7 @@ export default function Title({
   let textColor = color;
 
   if (muted === true) {
-    textColor = "#6c757d";
+    textColor = COLORS.textTertiary;
   }
 
   return (

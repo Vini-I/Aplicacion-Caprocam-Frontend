@@ -30,6 +30,8 @@
 
 import React from "react";
 import { View, Text, Image, StyleSheet } from "react-native";
+import { COLORS } from "../../theme/colors";
+import { ICONS } from "../../theme/icons";
 
 function getInitials(name) {
   if (!name) {
@@ -54,8 +56,8 @@ export default function Avatar({
   source,
   name = "",
   size = 48,
-  backgroundColor = "#0d6efd",
-  textColor = "#ffffff",
+  backgroundColor = COLORS.primary,
+  textColor = COLORS.white,
   style,
   imageStyle,
   textStyle,
@@ -123,7 +125,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   image: {
-    backgroundColor: "#E5E7EB",
+    backgroundColor: COLORS.surface,
   },
   initials: {
     fontWeight: "700",
