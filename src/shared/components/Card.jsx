@@ -3,114 +3,65 @@
  * COMPONENTE CARD
  * ============================================================
  *
- * Este componente se utiliza para mostrar una tarjeta
- * reutilizable dentro de la aplicacion.
+ * Tarjeta reutilizable para agrupar informacion.
  *
- * Permite:
- * - Mostrar un titulo opcional en la tarjeta
- * - Contener cualquier tipo de contenido dentro de ella
- * - Reutilizar la misma estructura visual en diferentes pantallas
+ * Funcionalidad:
+ * - Puede mostrar titulo opcional.
+ * - Recibe children para colocar cualquier contenido dentro.
+ * - Permite estilos personalizados.
  *
- * ---
- * PARAMETROS
- * ---
- *
- * title
- * Texto que se mostrara como titulo de la tarjeta.
- *
- * Es opcional, si no se envia no se mostrara ningun titulo.
+ * Props principales:
+ * - title: titulo opcional de la tarjeta.
+ * - children: contenido interno de la tarjeta.
+ * - style: estilos extra para la tarjeta.
+ * - titleStyle: estilos extra para el titulo.
  *
  * Ejemplo:
- * <Card title="Perfil">
- *     <Text>Informacion del usuario</Text>
- * </Card>
- *
- * ---
- *
- * children
- * Contenido que se mostrara dentro de la tarjeta.
- *
- * Puede contener cualquier componente de React Native como:
- * - Text
- * - Image
- * - Button
- * - View
- *
- * Ejemplo:
- * <Card>
- *     <Text>Contenido de la tarjeta</Text>
- * </Card>
- *
- * ============================================================
- * EJEMPLOS RAPIDOS
- * ============================================================
- *
- * <Card title="Usuario">
- *     <Text>Juan Perez</Text>
- * </Card>
- *
- * <Card>
- *     <Text>Sin titulo</Text>
+ * <Card title="Informacion del estanque">
+ *     <Text>Contenido</Text>
  * </Card>
  */
 
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 
-/**
- * Componente reutilizable para crear tarjetas dentro de la aplicacion
- */
-export default function Card({ title = "", children }) {
-    return (
-        <View style={styles.card}>
-            {/* Si existe un titulo, se muestra dentro de la tarjeta */}
-            {title && (
-                <Text style={styles.title}>
-                    {title}
-                </Text>
-            )}
+export default function Card({ title = "", children, style, titleStyle }) {
+  const cardStyles = [styles.card];
 
-            {/* Contenedor donde se muestra el contenido interno */}
-            <View style={styles.content}>
-                {children}
-            </View>
-        </View>
-    );
+  if (style) {
+    cardStyles.push(style);
+  }
+
+  return (
+    <View style={cardStyles}>
+      {title !== "" && <Text style={[styles.title, titleStyle]}>{title}</Text>}
+
+      {children}
+    </View>
+  );
 }
 
-/**
- * Estilos locales del componente Card
- *
- * Nota:
- * Estos estilos quedan locales de forma temporal.
- * Cuando exista el theme global, los colores y fuentes pueden importarse desde ahi.
- */
 const styles = StyleSheet.create({
-    card: {
-        backgroundColor: "#ffffff",
-        borderRadius: 12,
-        padding: 16,
-        marginBottom: 16,
-        borderWidth: 1,
-        borderColor: "#dee2e6",
-        shadowColor: "#000000",
-        shadowOffset: {
-            width: 0,
-            height: 2
-        },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3
+  card: {
+    backgroundColor: "#ffffff",
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    shadowColor: "#000000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
     },
-
-    title: {
-        fontSize: 18,
-        fontWeight: "700",
-        color: "#212529",
-        marginBottom: 10
-    },
-
-    content: {
-        gap: 10
-    }
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
+    marginBottom: 12,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#212529",
+    marginBottom: 10,
+  },
 });

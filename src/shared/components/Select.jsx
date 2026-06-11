@@ -1,68 +1,190 @@
-import React, { useState, useRef } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Modal, ScrollView } from "react-native";
-
 /**
- * Componente Select reutilizable
- * 
- * options     - Lista de opciones { label, value }
- * value       - Valor seleccionado actualmente
- * onChange    - Callback al seleccionar una opción
- * placeholder - Texto cuando no hay selección
- * label       - Etiqueta superior del select
- * 
+ * ============================================================
+ * COMPONENTE SELECT
+ * ============================================================
+ *
+ * Selector reutilizable para React Native.
+ *
+ * Funcionalidad:
+ * - Permite seleccionar una opcion de una lista.
+ * - Usa Pressable para evitar dependencias externas.
+ * - Muestra opciones desplegables dentro del mismo componente.
+ * - Puede usarse para estados, categorias, tipos o filtros.
+ *
+ * Props principales:
+ * - label: texto opcional encima del selector.
+ * - value: valor seleccionado.
+ * - options: arreglo de opciones.
+ * - onChange: funcion que recibe el valor seleccionado.
+ * - placeholder: texto cuando no hay seleccion.
+ * - disabled: bloquea el selector.
+ * - containerStyle: estilos extra para el contenedor.
+ * - selectStyle: estilos extra para el campo.
+ * - optionStyle: estilos extra para cada opcion.
+ *
+ * Formato de options:
+ * [
+ *     { label: "Activo", value: "activo" },
+ *     { label: "Inactivo", value: "inactivo" }
+ * ]
+ *
  * Ejemplo:
  * <Select
- *   label="Estanque"
- *   options={[{ label: "Estanque Norte", value: 1 }]}
- *   value={form.estanque}
- *   onChange={handleChange("estanque")}
+ *     label="Estado"
+ *     value={estado}
+ *     onChange={setEstado}
+ *     options={[
+ *         { label: "Activo", value: "activo" },
+ *         { label: "Inactivo", value: "inactivo" }
+ *     ]}
  * />
  */
 
-const Select = ({ options, value, onChange, placeholder = "Seleccionar.", label }) => {
-  const [open, setOpen] = useState(false);
-  const [pos, setPos] = useState({ x: 0, y: 0, w: 0 });
-  const ref = useRef(null);
-  const selected = options.find((o) => o.value === value);
+import React, { useState } from "react";
+import { View, Text, Pressable, StyleSheet } from "react-native";
 
-  const handleOpen = () => {
-    ref.current?.measureInWindow((x, y, w, h) => {
-      setPos({ x, y: y + h, w });
-      setOpen(true);
-    });
-  };
+function getSelectedLabel(options, value, placeholder) {
+  let selectedLabel = placeholder;
+
+  for (let index = 0; index < options.length; index++) {
+    if (options[index].value === value) {
+      selectedLabel = options[index].label;
+    }
+  }
+
+  return selectedLabel;
+}
+
+export default function Select({
+  label = "",
+  value = "",
+  options = [],
+  onChange,
+  placeholder = "Seleccione una opcion",
+  disabled = false,
+  containerStyle,
+  selectStyle,
+  labelStyle,
+  optionStyle,
+  optionTextStyle,
+  selectedTextStyle,
+}) {
+  const [open, setOpen] = useState(false);
+
+  function handleToggle() {
+    if (disabled === false) {
+      setOpen(!open);
+    }
+  }
+
+  function handleSelect(optionValue) {
+    if (onChange) {
+      onChange(optionValue);
+    }
+
+    setOpen(false);
+  }
+
+  const selectStyles = [styles.select];
+
+  if (disabled === true) {
+    selectStyles.push(styles.disabledSelect);
+  }
+
+  if (selectStyle) {
+    selectStyles.push(selectStyle);
+  }
 
   return (
-    <View ref={ref}>
-      {label && <Text style={s.label}>{label}</Text>}
-      <TouchableOpacity style={s.trigger} onPress={handleOpen}>
-        <Text>{selected ? selected.label : placeholder}</Text>
-        <Text>{open ? "▲" : "▼"}</Text>
-      </TouchableOpacity>
-      <Modal visible={open} transparent onRequestClose={() => setOpen(false)}>
-        <TouchableOpacity style={s.overlay} onPress={() => setOpen(false)}>
-          <View style={[s.dropdown, { top: pos.y, left: pos.x, width: pos.w }]}>
-            <ScrollView bounces={false} showsVerticalScrollIndicator={false}>
-              {options.map((item) => (
-                <TouchableOpacity key={String(item.value)} style={s.option} onPress={() => { onChange(item.value); setOpen(false); }}>
-                  <Text style={item.value === value ? s.selected : undefined}>{item.label}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-        </TouchableOpacity>
-      </Modal>
+    <View style={[styles.container, containerStyle]}>
+      {label !== "" && <Text style={[styles.label, labelStyle]}>{label}</Text>}
+
+      <Pressable
+        style={selectStyles}
+        onPress={handleToggle}
+        disabled={disabled}
+        accessibilityRole="button"
+      >
+        <Text style={[styles.selectedText, selectedTextStyle]}>
+          {getSelectedLabel(options, value, placeholder)}
+        </Text>
+
+        <Text style={styles.arrow}>▾</Text>
+      </Pressable>
+
+      {open === true && (
+        <View style={styles.optionsContainer}>
+          {options.map(function (option) {
+            return (
+              <Pressable
+                key={option.value}
+                style={[styles.option, optionStyle]}
+                onPress={function () {
+                  handleSelect(option.value);
+                }}
+              >
+                <Text style={[styles.optionText, optionTextStyle]}>
+                  {option.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      )}
     </View>
   );
-};
+}
 
-const s = StyleSheet.create({
-  label:    { fontSize: 14, marginBottom: 6 },
-  trigger:  { flexDirection: "row", justifyContent: "space-between", padding: 12, borderWidth: 1, borderColor: "#D1D5DB", borderRadius: 8 },
-  overlay:  { flex: 1 },
-  dropdown: { position: "absolute", backgroundColor: "#fff", borderWidth: 1, borderColor: "#D1D5DB", borderRadius: 8, maxHeight: 200 },
-  option:   { padding: 14, borderBottomWidth: 1, borderBottomColor: "#F3F4F6" },
-  selected: { color: "#1E3A5F", fontWeight: "600" },
+const styles = StyleSheet.create({
+  container: {
+    marginBottom: 12,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#212529",
+    marginBottom: 6,
+  },
+  select: {
+    minHeight: 45,
+    borderWidth: 1,
+    borderColor: "#ced4da",
+    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    backgroundColor: "#ffffff",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  disabledSelect: {
+    backgroundColor: "#e9ecef",
+    opacity: 0.7,
+  },
+  selectedText: {
+    fontSize: 16,
+    color: "#212529",
+  },
+  arrow: {
+    fontSize: 18,
+    color: "#6c757d",
+  },
+  optionsContainer: {
+    marginTop: 4,
+    borderWidth: 1,
+    borderColor: "#ced4da",
+    borderRadius: 8,
+    backgroundColor: "#ffffff",
+    overflow: "hidden",
+  },
+  option: {
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E5E7EB",
+  },
+  optionText: {
+    fontSize: 15,
+    color: "#212529",
+  },
 });
-
-export default Select;

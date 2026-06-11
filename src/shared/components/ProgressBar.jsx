@@ -1,53 +1,69 @@
-import { View, Text, StyleSheet } from "react-native";
 /**
- * Componente reutilizable para mostrar una barra de progreso.
+ * ============================================================
+ * COMPONENTE PROGRESSBAR
+ * ============================================================
  *
- * Props:
- * - label: Texto descriptivo mostrado a la izquierda.
- * - value: Porcentaje de avance entre 0 y 100.
- * - color: Color de la sección completada de la barra.
- * - backgroundColor: Color de la parte vacía en la barra.
- * - showPercentage: Determina si se muestra el porcentaje de avance.
+ * Barra de progreso reutilizable para React Native.
  *
- * Estilos principales:
- * - progressBackground: Contenedor visual de la barra completa.
- * - progressFill: Parte coloreada que representa el avance actual.
- * - percentageText: Texto que muestra el porcentaje calculado.
+ * Funcionalidad:
+ * - Muestra avance de 0 a 100.
+ * - Permite mostrar u ocultar porcentaje.
+ * - Permite personalizar colores.
+ *
+ * Props principales:
+ * - progress: numero de progreso entre 0 y 100.
+ * - showLabel: muestra el porcentaje.
+ * - color: color de la barra.
+ * - backgroundColor: color del fondo.
+ * - style: estilos extra.
+ *
+ * Ejemplo:
+ * <ProgressBar progress={70} />
  */
 
+import React from "react";
+import { View, Text, StyleSheet } from "react-native";
+
+function normalizeProgress(progress) {
+  let value = progress;
+
+  if (value < 0) {
+    value = 0;
+  }
+
+  if (value > 100) {
+    value = 100;
+  }
+
+  return value;
+}
+
 export default function ProgressBar({
-  label = "Avance",
-  value = 0,
+  progress = 0,
+  showLabel = true,
   color = "#009EF5",
-  backgroundColor = "#DCEAF5",
-  showPercentage = true,
+  backgroundColor = "#E5E7EB",
+  style,
 }) {
-  //Limita el valor para que siempre esté entre 0 y 100.
-  const progressValue = Math.min(Math.max(value, 0), 100);
+  const normalizedProgress = normalizeProgress(progress);
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.label}>{label}</Text>
-
-        {showPercentage && (
-          <Text style={[styles.percentageText, { color }]}>
-            {progressValue}%
-          </Text>
-        )}
-      </View>
-
-      <View style={[styles.progressBackground, { backgroundColor }]}>
+    <View style={[styles.container, style]}>
+      <View style={[styles.track, { backgroundColor: backgroundColor }]}>
         <View
           style={[
-            styles.progressFill,
+            styles.fill,
             {
-              width: `${progressValue}%`,
+              width: `${normalizedProgress}%`,
               backgroundColor: color,
             },
           ]}
         />
       </View>
+
+      {showLabel === true && (
+        <Text style={styles.label}>{normalizedProgress}%</Text>
+      )}
     </View>
   );
 }
@@ -56,27 +72,20 @@ const styles = StyleSheet.create({
   container: {
     width: "100%",
   },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 8,
-  },
-  label: {
-    fontSize: 13,
-    fontWeight: "500",
-    color: "#475569",
-  },
-  percentageText: {
-    fontSize: 13,
-    fontWeight: "700",
-  },
-  progressBackground: {
-    height: 12,
-    borderRadius: 20,
+  track: {
+    width: "100%",
+    height: 10,
+    borderRadius: 10,
     overflow: "hidden",
   },
-  progressFill: {
+  fill: {
     height: "100%",
-    borderRadius: 20,
+    borderRadius: 10,
+  },
+  label: {
+    marginTop: 6,
+    fontSize: 13,
+    color: "#475569",
+    textAlign: "right",
   },
 });

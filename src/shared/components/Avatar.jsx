@@ -1,171 +1,131 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  Image,
-  TouchableOpacity,
-  ActivityIndicator,
-  StyleSheet,
-} from "react-native";
-import { useFonts, Roboto_500Medium } from "@expo-google-fonts/roboto";
-
-// ─── Design System ─────────────────────────────────────────────────
-const DS = {
-  colorPrimary: "#009EF5",
-  colorBg:      "#F8FAFC",
-  colorBorder:  "#E2E8F0",
-};
-
 /**
- * Avatar — Componente reutilizable
+ * ============================================================
+ * COMPONENTE AVATAR
+ * ============================================================
  *
- * Prioridad de contenido: source (imagen) → icon → iniciales de name
- * Si la imagen falla al cargar, cae automáticamente al siguiente nivel.
+ * Avatar reutilizable para React Native.
  *
- * @param {string}    source       URI de imagen (http, https, require)
- * @param {string}    name         Nombre completo → genera iniciales y color de fallback
- * @param {ReactNode} icon         Componente ícono sólido (prioridad sobre iniciales)
- * @param {number}    size         Tamaño en px (default: 48)
- * @param {string}    bgColor      Color de fondo (default: #F8FAFC)
- * @param {string}    fgColor      Color texto/ícono (default: #009EF5)
- * @param {string}    borderColor  Color del borde (default: "transparent")
- * @param {number}    borderWidth  Grosor del borde (default: 0)
- * @param {boolean}   rounded      true = círculo | false = cuadrado redondeado (default: true)
- * @param {function}  onPress      Callback al presionar (opcional)
- * @param {object}    style        Estilos extra al contenedor (opcional)
+ * Funcionalidad:
+ * - Muestra una imagen de perfil si se recibe source.
+ * - Si no hay imagen, muestra iniciales.
+ * - Permite personalizar tamano, color de fondo y color del texto.
+ * - Puede usarse para usuarios, colaboradores, perfiles o responsables.
  *
- * Ejemplos:
- *   <Avatar source="https://..." name="Carlos Mendoza" size={48} />
- *   <Avatar icon={<Ionicons name="person" size={22} color="#009EF5" />} size={48} />
- *   <Avatar name="Carlos Mendoza" size={48} />
+ * Props principales:
+ * - source: imagen local o URL remota.
+ * - name: nombre usado para generar iniciales.
+ * - size: tamano del avatar.
+ * - backgroundColor: color de fondo cuando no hay imagen.
+ * - textColor: color de las iniciales.
+ * - style: estilos extra para el contenedor.
+ * - imageStyle: estilos extra para la imagen.
+ * - textStyle: estilos extra para el texto.
+ *
+ * Ejemplo:
+ * <Avatar name="Juan Perez" />
+ *
+ * Ejemplo con imagen:
+ * <Avatar source="https://imagen.com/perfil.png" name="Juan Perez" />
  */
 
-function getInitials(name = "") {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return "?";
-  if (parts.length === 1) return parts[0][0].toUpperCase();
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+import React from "react";
+import { View, Text, Image, StyleSheet } from "react-native";
+
+function getInitials(name) {
+  if (!name) {
+    return "";
+  }
+
+  const words = name.trim().split(" ");
+  let initials = "";
+
+  if (words.length >= 1 && words[0] !== "") {
+    initials = initials + words[0].charAt(0).toUpperCase();
+  }
+
+  if (words.length >= 2 && words[1] !== "") {
+    initials = initials + words[1].charAt(0).toUpperCase();
+  }
+
+  return initials;
 }
 
 export default function Avatar({
   source,
   name = "",
-  icon = null,
   size = 48,
-  bgColor = DS.colorBg,
-  fgColor = DS.colorPrimary,
-  borderColor = "transparent",
-  borderWidth = 0,
-  rounded = true,
-  onPress,
+  backgroundColor = "#0d6efd",
+  textColor = "#ffffff",
   style,
+  imageStyle,
+  textStyle,
 }) {
-  const [fontsLoaded] = useFonts({ Roboto_500Medium });
-  const [imgError, setImgError]   = useState(false);
-  const [imgLoading, setImgLoading] = useState(true);
+  let imageSource = source;
 
-  const borderRadius = rounded ? size / 2 : size * 0.2;
-  const fontSize     = size * 0.36;
-  const showImage    = !!source && !imgError;
+  if (typeof source === "string") {
+    imageSource = { uri: source };
+  }
 
-  const containerStyle = [
-    styles.base,
+  const avatarStyles = [
+    styles.avatar,
     {
       width: size,
       height: size,
-      borderRadius,
-      backgroundColor: bgColor,
-      borderColor,
-      borderWidth,
+      borderRadius: size / 2,
+      backgroundColor: backgroundColor,
     },
-    style,
   ];
 
-  // ── Contenido: imagen → ícono → iniciales ──────────────────────
-  let content;
-
-  if (showImage) {
-    content = (
-      <>
-        {imgLoading && (
-          <ActivityIndicator
-            style={StyleSheet.absoluteFill}
-            size="small"
-            color={fgColor}
-          />
-        )}
-        <Image
-          source={typeof source === "string" ? { uri: source } : source}
-          style={[
-            styles.image,
-            { borderRadius, opacity: imgLoading ? 0 : 1 },
-          ]}
-          resizeMode="cover"
-          onLoad={() => setImgLoading(false)}
-          onError={() => { setImgError(true); setImgLoading(false); }}
-        />
-      </>
-    );
-  } else if (icon) {
-    content = icon;
-  } else {
-    content = (
-      <Text
-        style={[
-          styles.initials,
-          {
-            fontSize,
-            color: fgColor,
-            fontFamily: fontsLoaded ? "Roboto_500Medium" : undefined,
-            fontWeight: fontsLoaded ? undefined : "600",
-          },
-        ]}
-        numberOfLines={1}
-        allowFontScaling={false}
-      >
-        {getInitials(name)}
-      </Text>
-    );
+  if (style) {
+    avatarStyles.push(style);
   }
 
-  // ── Wrapper: presionable o estático ───────────────────────────
-  if (onPress) {
-    return (
-      <TouchableOpacity
-        onPress={onPress}
-        activeOpacity={0.7}
-        style={containerStyle}
-        accessibilityRole="button"
-        accessibilityLabel={name ? `Avatar de ${name}` : "Avatar"}
-      >
-        {content}
-      </TouchableOpacity>
-    );
+  const imageStyles = [
+    styles.image,
+    {
+      width: size,
+      height: size,
+      borderRadius: size / 2,
+    },
+  ];
+
+  if (imageStyle) {
+    imageStyles.push(imageStyle);
+  }
+
+  const initialsStyles = [
+    styles.initials,
+    {
+      color: textColor,
+      fontSize: size * 0.38,
+    },
+  ];
+
+  if (textStyle) {
+    initialsStyles.push(textStyle);
+  }
+
+  if (source) {
+    return <Image source={imageSource} style={imageStyles} />;
   }
 
   return (
-    <View
-      style={containerStyle}
-      accessibilityLabel={name ? `Avatar de ${name}` : "Avatar"}
-    >
-      {content}
+    <View style={avatarStyles}>
+      <Text style={initialsStyles}>{getInitials(name)}</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  base: {
-    overflow: "hidden",
-    alignItems: "center",
+  avatar: {
     justifyContent: "center",
+    alignItems: "center",
+    overflow: "hidden",
   },
   image: {
-    width: "100%",
-    height: "100%",
+    backgroundColor: "#E5E7EB",
   },
   initials: {
-    includeFontPadding: false,
-    textAlignVertical: "center",
-    letterSpacing: 0.5,
+    fontWeight: "700",
   },
 });

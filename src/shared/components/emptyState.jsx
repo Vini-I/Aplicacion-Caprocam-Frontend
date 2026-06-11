@@ -1,96 +1,107 @@
-// src/shared/components/emptyState.jsx    => direccion de el componente
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+/**
+ * ============================================================
+ * COMPONENTE EMPTYSTATE
+ * ============================================================
+ *
+ * Estado vacio reutilizable para React Native.
+ *
+ * Funcionalidad:
+ * - Muestra un mensaje cuando no hay datos.
+ * - Puede mostrar titulo, descripcion, imagen y accion.
+ * - Recibe children para colocar contenido personalizado.
+ * - Sirve para listas vacias, errores suaves o pantallas sin registros.
+ *
+ * Props principales:
+ * - title: titulo principal.
+ * - description: texto descriptivo.
+ * - image: imagen local o URL remota.
+ * - action: elemento opcional, normalmente un Button.
+ * - children: contenido personalizado adicional.
+ * - style: estilos extra para el contenedor.
+ * - titleStyle: estilos extra para el titulo.
+ * - descriptionStyle: estilos extra para la descripcion.
+ *
+ * Ejemplo:
+ * <EmptyState
+ *     title="No hay estanques"
+ *     description="Agrega un nuevo estanque para empezar"
+ *     action={<Button>Agregar</Button>}
+ * />
+ */
+
+import React from "react";
+import { View, Text, Image, StyleSheet } from "react-native";
 
 export default function EmptyState({
-    // Estos son parametros  con valores por defecto
-  icon = "mail",          
-  iconSize = 36,
-  iconColor = "#009EF5",
-  title = "No hay datos",
-  description = "No hay información disponible.",
-  buttonText,
-  buttonVariant = "primary",
-  onButtonClick,
+  title = "Sin informacion",
+  description = "",
+  image,
+  action,
+  children,
+  style,
+  titleStyle,
+  descriptionStyle,
+  imageStyle,
 }) {
+  let imageSource = image;
+
+  if (typeof image === "string") {
+    imageSource = { uri: image };
+  }
+
   return (
-    // Todo es una carta 
-    <View style={styles.card}>   
-      <View style={styles.iconWrap}>
-        <Ionicons name={icon} size={iconSize} color={iconColor} />
-      </View>
-      <Text style={styles.title}>{title}</Text>
-      <Text style={styles.description}>{description}</Text>
-      {buttonText && (
-        <TouchableOpacity
-          style={buttonVariant === "outline" ? styles.btnOutline : styles.btnPrimary}
-          onPress={onButtonClick}
-        >
-          <Text style={buttonVariant === "outline" ? styles.btnOutlineText : styles.btnPrimaryText}>
-            {buttonText}
-          </Text>
-        </TouchableOpacity>
+    <View style={[styles.container, style]}>
+      {image && (
+        <Image
+          source={imageSource}
+          style={[styles.image, imageStyle]}
+          resizeMode="contain"
+        />
       )}
+
+      <Text style={[styles.title, titleStyle]}>{title}</Text>
+
+      {description !== "" && (
+        <Text style={[styles.description, descriptionStyle]}>
+          {description}
+        </Text>
+      )}
+
+      {children}
+
+      {action && <View style={styles.actionContainer}>{action}</View>}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    backgroundColor: "#F8FAFC",
-    borderWidth: 1,
-    borderColor: "#e2e8f0",
-    borderRadius: 16,
-    padding: 40,
-    alignItems: "center",
-    margin: 16,
-  },
-  iconWrap: {
-    width: 72,
-    height: 72,
-    borderRadius: 18,
-    backgroundColor: "#EEF2FF",
+  container: {
+    width: "100%",
+    paddingVertical: 32,
+    paddingHorizontal: 20,
     alignItems: "center",
     justifyContent: "center",
+  },
+  image: {
+    width: 140,
+    height: 140,
     marginBottom: 16,
   },
   title: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "700",
-    color: "#1a2b3c",
-    marginBottom: 8,
+    color: "#212529",
     textAlign: "center",
+    marginBottom: 8,
   },
   description: {
     fontSize: 14,
-    color: "#64748b",
+    color: "#6c757d",
     textAlign: "center",
-    maxWidth: 260,
-    marginBottom: 20,
     lineHeight: 20,
   },
-  btnPrimary: {
-    backgroundColor: "#009EF5",
-    paddingVertical: 10,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-  },
-  btnPrimaryText: {
-    color: "#fff",
-    fontWeight: "600",
-    fontSize: 14,
-  },
-  btnOutline: {
-    borderWidth: 1.5,
-    borderColor: "#009EF5",
-    paddingVertical: 10,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-  },
-  btnOutlineText: {
-    color: "#009EF5",
-    fontWeight: "600",
-    fontSize: 14,
+  actionContainer: {
+    marginTop: 16,
+    width: "100%",
   },
 });

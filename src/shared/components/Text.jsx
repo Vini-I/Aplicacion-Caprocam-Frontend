@@ -1,49 +1,61 @@
-import React from 'react';
-import { Text, StyleSheet } from 'react-native';
+/**
+ * ============================================================
+ * COMPONENTE CUSTOMTEXT
+ * ============================================================
+ *
+ * Texto reutilizable para React Native.
+ *
+ * Funcionalidad:
+ * - Centraliza estilos de texto.
+ * - Permite cambiar tamano, color, peso y alineacion.
+ * - Permite limitar cantidad de lineas.
+ *
+ * Props principales:
+ * - children: texto o contenido.
+ * - size: tamano del texto.
+ * - color: color del texto.
+ * - weight: grosor del texto.
+ * - align: alineacion.
+ * - numberOfLines: cantidad maxima de lineas.
+ * - style: estilos extra.
+ *
+ * Ejemplo:
+ * <CustomText color="#6c757d">Descripcion</CustomText>
+ */
 
-const CustomText = ({
-    children,
-    tamano = 'md',
-    color = '#000000',
-    fuente,
-    alineacion = 'left',
-    estilo,
-    ...props
-}) => {
+import React from "react";
+import { Text, StyleSheet } from "react-native";
 
-    const fontSizes = {
-        xs: 12,
-        sm: 14,
-        md: 16,
-        lg: 18,
-        xl: 20,
-        xxl: 24
-    };
-
-    return (
-        <Text
-            style={[
-                styles.base,
-                {
-                    fontSize: fontSizes[tamano] || fontSizes.md,
-                    color,
-                    fontFamily: fuente,
-                    textAlign: alineacion,
-                },
-                estilo,
-            ]}
-            {...props}
-        >
-            {children}
-        </Text>
-    );
-};
+export default function CustomText({
+  children,
+  size = 14,
+  color = "#212529",
+  weight = "400",
+  align = "left",
+  numberOfLines,
+  style,
+}) {
+  return (
+    <Text
+      style={[
+        styles.text,
+        {
+          fontSize: size,
+          color: color,
+          fontWeight: weight,
+          textAlign: align,
+        },
+        style,
+      ]}
+      numberOfLines={numberOfLines}
+    >
+      {children}
+    </Text>
+  );
+}
 
 const styles = StyleSheet.create({
-    base: {
-        includeFontPadding: false,
-        textAlignVertical: 'center',
-    },
+  text: {
+    includeFontPadding: false,
+  },
 });
-
-export default CustomText;
