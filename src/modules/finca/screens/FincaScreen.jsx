@@ -1,10 +1,10 @@
 import { useRouter } from "expo-router";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
-import Card from "../components/Card.jsx";
-import Texts from "../components/Text.jsx";
+import Card from "../../../shared/components/Card.jsx";
+import Texts from "../../../shared/components/Text.jsx";
 import { fincas } from "./FincaData.js";
-import { styles } from "./FincaStyles.js";
-import Titles from "../components/Title.jsx";
+import { styles } from "../../finca/styles/FincaStyles.js";
+import Titles from "../../../shared/components/Title.jsx";
 
 export default function FincasScreen() {
   const router = useRouter();
@@ -16,7 +16,7 @@ export default function FincasScreen() {
           <TouchableOpacity
             key={finca.id}
             style={{ marginBottom: 12 }}
-            onPress={() => router.push(`/FincaDetalleScreen?id=${finca.id}`)}
+            onPress={() => router.push(`/finca/detalle?id=${finca.id}`)}
           >
             <Card>
               <View style={styles.cardContent}>
@@ -63,7 +63,7 @@ export default function FincasScreen() {
         ))}
         <TouchableOpacity
           style={styles.addButton}
-          onPress={() => router.push("./FincaNuevaScreen")}
+          onPress={() => router.push("/finca/nueva")}
         >
           <Text style={{ fontSize: 24, marginRight: 8 }}>➕</Text>
           <Texts tamano="md" color="#0088FF" fuente="Roboto_500Medium">

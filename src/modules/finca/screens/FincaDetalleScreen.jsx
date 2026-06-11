@@ -1,10 +1,10 @@
 import { ScrollView, View, TouchableOpacity } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
-import Card from "../components/Card";
-import Text from "../components/Text";
+import Card from "../../../shared/components/Card";
+import Text from "../../../shared/components/Text";
 import { fincas } from "./FincaData";
-import { styles } from "./FincaDetalleStyles";
+import { styles } from "../../finca/styles/FincaDetalleStyles";
 
 export default function FincaDetalleScreen() {
   const { id } = useLocalSearchParams();
