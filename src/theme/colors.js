@@ -12,41 +12,30 @@
  */
 
 export const COLORS = {
-  // Primarios
-  primary: '#0066CC',
-  secondary: '#0084D1',
-  accent: '#FF8C00',
 
-  // Neutrales
+  // Paleta de colores
+  primary: '#009EF5', 
+  secondary: '#EEF2FF', 
+  surface: '#F8FAFC',
+  successLight: '#BCFDF5',
+  warningLight: '#FFEDD4',
+
+
+  //Colores base
+
   white: '#FFFFFF',
-  background: '#FFFFFF',
-  surface: '#F5F5F5',
-  border: '#E0E0E0',
-  divider: '#CCCCCC',
+  black: '#000000',
 
-  // Texto
-  text: {
-    dark: '#333333',
-    medium: '#666666',
-    light: '#AAAAAA',
-    muted: '#6c757d',
-  },
+  //Textos
 
-  // Estados
-  error: '#DC3545',
-  success: '#198754',
-  warning: '#FFC107',
-  info: '#0DCAF0',
+  textPrimary: '#000000',
+  textSecondary: '#1F2937',
+  textTertiary: '#6B7280',
+  textQuaternary: '#9CA3AF',
 
-  // Específicos
-  shiftMorning: '#FFD700',
-  shiftAfternoon: '#FF8C00',
-  shiftNight: '#9B7DD9',
-
-  avatar: {
-    background: '#E6F2FF',
-    foreground: '#0066CC',
-  },
-
-  header: '#0066CC',
+  //Estados
+  success: '#22C55E',
+  warning: '#F59E0B',
+  error: '#EF4444',
+  errorLight: '#FEE2E2',
 };
