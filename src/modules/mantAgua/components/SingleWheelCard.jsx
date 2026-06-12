@@ -3,116 +3,61 @@
  * COMPONENTE SINGLEWHEELCARD
  * ============================================================
  *
- * Este componente se utiliza para mostrar un unico parametro
- * fisicoquimico dentro de una card.
+ * Este componente se utiliza para mostrar una tarjeta que abre
+ * un selector tipo ruleta y permite elegir un unico valor.
  *
  * Permite:
- * - Mostrar y editar un valor dentro de una card
- * - Abrir un bottom sheet con WheelPicker al tocar el valor
- * - Guardar automaticamente al confirmar o tocar fuera del sheet
- * - Descartar el cambio unicamente al presionar Cancelar
- * - Indicar visualmente si el valor esta dentro del rango ideal
+ * - Mostrar el valor actual de forma resumida
+ * - Abrir un modal inferior con la ruleta
+ * - Confirmar o cancelar el cambio antes de guardarlo
+ * - Resaltar si el valor esta dentro del rango ideal
  *
  * ---
  * PARAMETROS
  * ---
  *
  * title
- * Texto que se mostrara como titulo de la card.
- *
- * Ejemplo:
- * <SingleWheelCard title="Turbidez Secchi" />
- *
- * ---
- *
- * icon
- * Nombre del icono de Ionicons que aparece en el header.
- *
- * Ejemplo:
- * <SingleWheelCard icon="eye-outline" />
- *
- * ---
+ * Titulo visible en la tarjeta.
  *
  * label
- * Etiqueta descriptiva del campo de valor.
- *
- * Ejemplo:
- * <SingleWheelCard label="Lectura disco Secchi" />
- *
- * ---
+ * Texto descriptivo del valor.
  *
  * unit
- * Unidad de medida del parametro.
- *
- * Ejemplo:
- * <SingleWheelCard unit="cm" />
- *
- * ---
+ * Unidad de medida mostrada junto al valor.
  *
  * min / max
- * Valores minimo y maximo absolutos del parametro.
- *
- * Ejemplo:
- * <SingleWheelCard min={1} max={100} />
- *
- * ---
+ * Rango de valores disponibles en la ruleta.
  *
  * idealMin / idealMax
- * Limites del rango ideal.
- * Se usan para colorear el valor en verde o naranja.
- *
- * Ejemplo:
- * <SingleWheelCard idealMin={25} idealMax={45} />
- *
- * ---
+ * Rango ideal usado para la validacion visual.
  *
  * value
- * Valor actual del parametro.
- *
- * Ejemplo:
- * <SingleWheelCard value={secchi} />
- *
- * ---
+ * Valor actual seleccionado.
  *
  * onChange
- * Funcion que se ejecuta al confirmar un nuevo valor.
- *
- * Ejemplo:
- * <SingleWheelCard onChange={setSecchi} />
- *
- * ---
- *
- * colors
- * Objeto con los colores del proyecto { primary, textHint }.
- *
- * ---
- *
- * styles
- * Objeto con los estilos de la pantalla padre { card, cardHeader, cardHeaderLeft, cardTitle }.
+ * Funcion que recibe el valor confirmado por el usuario.
  *
  * ============================================================
  * EJEMPLOS RAPIDOS
  * ============================================================
  *
  * <SingleWheelCard
- *     title="Turbidez Secchi"
- *     icon="eye-outline"
- *     label="Lectura disco Secchi"
- *     unit="cm"
- *     min={1}       max={100}
- *     idealMin={25} idealMax={45}
- *     value={secchi}
- *     onChange={setSecchi}
- *     colors={C}    styles={styles}
+ *   title="Salinidad"
+ *   label="Salinidad"
+ *   unit="ppt"
+ *   min={5}
+ *   max={40}
+ *   idealMin={10}
+ *   idealMax={25}
+ *   value={salinidad}
+ *   onChange={setSalinidad}
  * />
  */
 
 import React, { useState, useRef } from 'react';
 import {
   View,
-  Text,
   Modal,
-  Pressable,
   TouchableOpacity,
   TouchableWithoutFeedback,
   Animated,
@@ -120,6 +65,9 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import WheelPicker from './WheelPicker';
+import Button from '../../../shared/components/Button';
+import Text from '../../../shared/components/Text';
+import Title from '../../../shared/components/Title';
 
 function range(min, max, step = 1) {
   const result = [];
@@ -148,13 +96,12 @@ export default function SingleWheelCard({
   const [tempValue, setTempValue] = useState(null);
   const slideAnim = useRef(new Animated.Value(300)).current;
 
-  const values = range(min, max, step);
-  const isOk   = value >= idealMin && value <= idealMax;
+  const values  = range(min, max, step);
+  const isOk    = value >= idealMin && value <= idealMax;
   const sheetOk = tempValue != null
     ? tempValue >= idealMin && tempValue <= idealMax
     : false;
 
-  // ── Abrir ─────────────────────────────────────────────────
   const openSheet = () => {
     setTempValue(value);
     setSheetOpen(true);
@@ -166,7 +113,6 @@ export default function SingleWheelCard({
     }).start();
   };
 
-  // ── Animación base de cierre ──────────────────────────────
   const animateClose = (onDone) => {
     Animated.timing(slideAnim, {
       toValue:         300,
@@ -179,7 +125,6 @@ export default function SingleWheelCard({
     });
   };
 
-  // ── Guardar + cerrar (Listo y tap fuera) ──────────────────
   const saveAndClose = () => {
     const valueToSave = tempValue;
     animateClose(() => {
@@ -187,38 +132,47 @@ export default function SingleWheelCard({
     });
   };
 
-  // ── Cancelar ──────────────────────────────────────────────
   const cancelSheet = () => animateClose();
 
   return (
     <>
       <View style={S.card}>
-        {/* Header */}
+        {/* ── Header ── */}
         <View style={S.cardHeader}>
           <View style={S.cardHeaderLeft}>
             <Ionicons name={icon} size={18} color={C.primary} />
-            <Text style={S.cardTitle}>{title}</Text>
+            {/* SUSTITUIDO: Text estilo cardTitle → Title */}
+            <Title level={5} color={C.text}>
+              {title}
+            </Title>
           </View>
-          {/* Rango ideal en el header, igual que el diseño original */}
-          <Text style={[inner.headerIdeal, { color: C.primary }]}>
+          {/* SUSTITUIDO: Text estilo headerIdeal → Text compartido */}
+          <Text tamano="xs" color={C.primary} estilo={{ fontWeight: '500' }}>
             Ideal: {idealMin}–{idealMax} {unit}
           </Text>
         </View>
 
-        {/* Valor tappable */}
+        {/* ── Valor tappable ── */}
         <TouchableOpacity
           onPress={openSheet}
           activeOpacity={0.7}
           style={inner.valueBox}
         >
-          <Text style={[inner.valueLabel, { color: C.textHint }]}>
+          {/* SUSTITUIDO: Text estilo valueLabel → Text compartido */}
+          <Text tamano="xs" color={C.textHint} estilo={{ fontWeight: '600', marginBottom: 6 }}>
             {label}
           </Text>
           <View style={[inner.valueDisplay, { borderColor: C.border ?? '#E2E8F0' }]}>
-            <Text style={[inner.valueNumber, { color: isOk ? '#22c55e' : C.text ?? '#1E293B' }]}>
+            {/* SUSTITUIDO: Text estilo valueNumber → Text compartido */}
+            <Text
+              tamano="md"
+              color={isOk ? '#22c55e' : C.text ?? '#1E293B'}
+              estilo={{ fontWeight: '700', flex: 1 }}
+            >
               {value}
             </Text>
-            <Text style={[inner.valueUnit, { color: C.textHint }]}>
+            {/* SUSTITUIDO: Text estilo valueUnit → Text compartido */}
+            <Text tamano="sm" color={C.textHint}>
               {unit}
             </Text>
             {isOk
@@ -226,13 +180,14 @@ export default function SingleWheelCard({
               : <Ionicons name="remove-circle"    size={14} color="#f97316" style={{ marginLeft: 4 }} />
             }
           </View>
-          <Text style={[inner.idealText, { color: C.textHint }]}>
+          {/* SUSTITUIDO: Text estilo idealText → Text compartido */}
+          <Text tamano="xs" color={C.textHint} estilo={{ opacity: 0.7 }}>
             Ideal: {idealMin}–{idealMax} {unit}
           </Text>
         </TouchableOpacity>
       </View>
 
-      {/* Bottom Sheet Modal */}
+      {/* ── Bottom Sheet Modal ── */}
       <Modal
         visible={sheetOpen}
         transparent
@@ -250,32 +205,41 @@ export default function SingleWheelCard({
 
           {/* Header del sheet */}
           <View style={inner.sheetHeader}>
-            <Pressable onPress={cancelSheet} hitSlop={8}>
-              <Text style={[inner.sheetCancel, { color: C.textHint }]}>
-                Cancelar
-              </Text>
-            </Pressable>
+            {/* SUSTITUIDO: Pressable "Cancelar" → Button secondary */}
+            <Button
+              title="Cancelar"
+              type="secondary"
+              onPress={cancelSheet}
+            />
 
             <View style={{ alignItems: 'center' }}>
-              <Text style={[inner.sheetTitle, { color: C.text ?? '#1E293B' }]}>
+              {/* SUSTITUIDO: Text sheetTitle → Title */}
+              <Title level={5} color={C.text ?? '#1E293B'} align="center">
                 {title}
-              </Text>
-              <Text style={[inner.sheetIdeal, { color: C.textHint }]}>
+              </Title>
+              {/* SUSTITUIDO: Text sheetIdeal → Text compartido */}
+              <Text tamano="xs" color={C.textHint} alineacion="center">
                 Ideal: {idealMin}–{idealMax} {unit}
               </Text>
             </View>
 
-            <Pressable onPress={saveAndClose} hitSlop={8}>
-              <Text style={[inner.sheetConfirm, { color: C.primary }]}>
-                Listo
-              </Text>
-            </Pressable>
+            {/* SUSTITUIDO: Pressable "Listo" → Button primary */}
+            <Button
+              title="Listo"
+              type="primary"
+              onPress={saveAndClose}
+            />
           </View>
 
           {/* Indicador de rango */}
           <View style={inner.sheetRangeRow}>
             <View style={[inner.rangeDot, { backgroundColor: sheetOk ? '#22c55e' : '#f97316' }]} />
-            <Text style={[inner.rangeText, { color: sheetOk ? '#22c55e' : '#f97316' }]}>
+            {/* SUSTITUIDO: Text rangeText → Text compartido */}
+            <Text
+              tamano="xs"
+              color={sheetOk ? '#22c55e' : '#f97316'}
+              estilo={{ fontWeight: '600' }}
+            >
               {sheetOk ? 'En rango ideal' : 'Fuera del rango ideal'}
             </Text>
           </View>
@@ -300,19 +264,10 @@ export default function SingleWheelCard({
 }
 
 const inner = StyleSheet.create({
-  headerIdeal: {
-    fontSize:   12,
-    fontWeight: '500',
-  },
   valueBox: {
     paddingVertical:   4,
     paddingHorizontal: 4,
     marginTop:         4,
-  },
-  valueLabel: {
-    fontSize:     12,
-    fontWeight:   '600',
-    marginBottom: 6,
   },
   valueDisplay: {
     flexDirection:     'row',
@@ -322,18 +277,6 @@ const inner = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical:   10,
     marginBottom:      4,
-  },
-  valueNumber: {
-    fontSize:   16,
-    fontWeight: '700',
-    flex:       1,
-  },
-  valueUnit: {
-    fontSize: 13,
-  },
-  idealText: {
-    fontSize: 11,
-    opacity:  0.7,
   },
   backdrop: {
     flex:            1,
@@ -369,22 +312,6 @@ const inner = StyleSheet.create({
     alignItems:     'center',
     marginBottom:   12,
   },
-  sheetTitle: {
-    fontSize:   15,
-    fontWeight: '700',
-  },
-  sheetIdeal: {
-    fontSize:  11,
-    marginTop: 2,
-  },
-  sheetCancel: {
-    fontSize:   14,
-    fontWeight: '500',
-  },
-  sheetConfirm: {
-    fontSize:   14,
-    fontWeight: '700',
-  },
   sheetRangeRow: {
     flexDirection:  'row',
     alignItems:     'center',
@@ -396,9 +323,5 @@ const inner = StyleSheet.create({
     width:        7,
     height:       7,
     borderRadius: 4,
-  },
-  rangeText: {
-    fontSize:   12,
-    fontWeight: '600',
   },
 });

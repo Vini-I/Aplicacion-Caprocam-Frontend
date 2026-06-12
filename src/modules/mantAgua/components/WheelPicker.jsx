@@ -3,76 +3,48 @@
  * COMPONENTE WHEELPICKER
  * ============================================================
  *
- * Este componente se utiliza para mostrar un selector de valores
- * numéricos tipo ruleta dentro de la aplicacion.
+ * Este componente se utiliza para mostrar un selector numerico
+ * tipo ruleta con scroll y ajuste automatico al valor mas cercano.
  *
  * Permite:
- * - Desplazarse entre una lista de valores con scroll
- * - Resaltar en tiempo real el valor seleccionado
- * - Ajustarse automaticamente al valor mas cercano al soltar (snap)
- * - Funcionar correctamente en web y dispositivos moviles
+ * - Seleccionar un valor desde una lista ordenada
+ * - Resaltar el valor activo en tiempo real
+ * - Hacer snap al soltar el scroll o el gesto
+ * - Funcionar en web y en dispositivos moviles
  *
  * ---
  * PARAMETROS
  * ---
  *
  * values
- * Lista de valores numericos disponibles para seleccionar.
- *
- * Ejemplo:
- * <WheelPicker values={[1, 2, 3, 4, 5]} />
- *
- * ---
+ * Lista de valores disponibles para seleccionar.
  *
  * value
  * Valor actualmente seleccionado.
  *
- * Ejemplo:
- * <WheelPicker value={3} />
- *
- * ---
- *
  * onChange
- * Funcion que se ejecuta cada vez que el usuario selecciona un valor distinto.
- *
- * Ejemplo:
- * <WheelPicker onChange={setValor} />
- *
- * ---
+ * Funcion que recibe el valor confirmado por el usuario.
  *
  * unit
- * Texto que se muestra junto al valor seleccionado.
- *
- * Ejemplo:
- * <WheelPicker unit="cm" />
- *
- * ---
+ * Unidad o sufijo que acompana cada valor.
  *
  * color
- * Color del valor resaltado y elementos activos.
- *
- * Ejemplo:
- * <WheelPicker color="#009EF5" />
- *
- * ---
+ * Color del valor resaltado y de la linea indicadora.
  *
  * textHint
  * Color de los valores no seleccionados.
- *
- * Ejemplo:
- * <WheelPicker textHint="#94A3B8" />
  *
  * ============================================================
  * EJEMPLOS RAPIDOS
  * ============================================================
  *
  * <WheelPicker
- *     values={[1, 2, 3, 4, 5]}
- *     value={valor}
- *     onChange={setValor}
- *     unit="cm"
- *     color="#009EF5"
- *     textHint="#94A3B8"
+ *   values={[1, 2, 3, 4, 5]}
+ *   value={3}
+ *   onChange={setValor}
+ *   unit="cm"
+ *   color="#009EF5"
+ *   textHint="#94A3B8"
  * />
  */
 
@@ -84,11 +56,11 @@ import React, {
 } from 'react';
 import {
   View,
-  Text,
   ScrollView,
   StyleSheet,
   Platform,
 } from 'react-native';
+import Text from '../../../shared/components/Text';
 
 const IS_WEB = typeof Platform !== 'undefined'
   ? Platform.OS === 'web'
@@ -305,13 +277,13 @@ export default function WheelPicker({
           return (
             <View key={i} style={[s.item, { height: itemHeight }]}>
               <Text
-                style={[
+                tamano={isSelected ? 'lg' : 'sm'}
+                color={isSelected ? color : textHint}
+                estilo={[
                   s.itemText,
                   {
-                    color:      isSelected ? color : textHint,
                     fontWeight: isSelected ? '700' : '400',
-                    fontSize:   isSelected ? 18 : 15,
-                    opacity:    isSelected ? 1 : 0.5,
+                    opacity: isSelected ? 1 : 0.5,
                   },
                 ]}
               >

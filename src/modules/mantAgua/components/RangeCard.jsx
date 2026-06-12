@@ -3,23 +3,23 @@
  * COMPONENTE RANGECARD
  * ============================================================
  *
- * Este componente se utiliza para capturar multiples mediciones
- * de un mismo parametro fisicoquimico dentro de una card.
+ * Este componente se utiliza para mostrar una tarjeta de
+ * mediciones numericas con controles de incremento, decremento
+ * y entrada manual del valor.
  *
  * Permite:
- * - Agregar y eliminar mediciones individualmente
- * - Ajustar cada valor con botones + y - o escritura directa
- * - Mostrar una barra de progreso global con el promedio
- * - Mostrar una mini barra individual por cada medicion
- * - Validar si cada valor esta dentro del rango ideal
- * - Configurar etiquetas numericas o de dia/noche por medicion
+ * - Mostrar una etiqueta y una unidad de medida
+ * - Registrar una o varias mediciones
+ * - Marcar si el valor esta dentro del rango ideal
+ * - Mostrar una barra de progreso global y una barra por lectura
+ * - Trabajar con un rango ideal completo o con un minimo unico
  *
  * ---
  * PARAMETROS
  * ---
  *
  * title
- * Texto que se mostrara como titulo de la card.
+ * Texto del encabezado de la tarjeta.
  *
  * Ejemplo:
  * <RangeCard title="Temperatura" />
@@ -27,167 +27,86 @@
  * ---
  *
  * unit
- * Unidad de medida del parametro.
+ * Unidad de medida que acompana el valor.
  *
  * Ejemplo:
- * <RangeCard unit="°C" />
- *
- * ---
- *
- * icon
- * Nombre del icono de Ionicons que aparece en el header.
- *
- * Ejemplo:
- * <RangeCard icon="thermometer" />
+ * <RangeCard unit="mg/L" />
  *
  * ---
  *
  * idealMin / idealMax
- * Limites del rango ideal.
- * Se usan para colorear el valor en verde o naranja.
+ * Define el rango ideal. Si idealMax no se envia, el
+ * componente funciona como minimo recomendado.
  *
  * Ejemplo:
- * <RangeCard idealMin={28} idealMax={30} />
+ * <RangeCard idealMin={5} idealMax={20} />
+ *
+ * <RangeCard idealMin={5} />
  *
  * ---
  *
  * sliderMin / sliderMax
- * Valores minimo y maximo absolutos del control.
- *
- * Ejemplo:
- * <RangeCard sliderMin={15} sliderMax={45} />
+ * Limites permitidos para la medicion.
  *
  * ---
  *
  * step
- * Incremento aplicado al presionar + o -.
- * Valor por defecto: 0.1
- *
- * Ejemplo:
- * <RangeCard step={0.5} />
- *
- * ---
- *
- * decimals
- * Cantidad de decimales que se muestran y validan.
- * Valor por defecto: 1
- *
- * Ejemplo:
- * <RangeCard decimals={1} />
+ * Incremento o decremento aplicado por los botones.
  *
  * ---
  *
  * maxReadings
  * Cantidad maxima de mediciones permitidas.
- * Valor por defecto: 4
- *
- * Ejemplo:
- * <RangeCard maxReadings={2} />
- *
- * ---
- *
- * showProgress
- * Muestra u oculta la barra de progreso global.
- * Valor por defecto: true
- *
- * Ejemplo:
- * <RangeCard showProgress={false} />
- *
- * ---
- *
- * showRangeColor
- * Colorea el valor en verde cuando esta dentro del rango ideal.
- * Valor por defecto: true
- *
- * Ejemplo:
- * <RangeCard showRangeColor={false} />
  *
  * ---
  *
  * labelStyle
- * Define el estilo de etiqueta por medicion.
- *
- * Valores posibles:
- * "numeric"   — muestra ①②③…
- * "daynight"  — muestra iconos de sol y luna
- *
- * Valor por defecto: "numeric"
- *
- * Ejemplo:
- * <RangeCard labelStyle="daynight" />
- *
- * ---
- *
- * badgeLabel
- * Texto personalizado del badge en el header.
- * Si no se envia, se construye automaticamente con el rango ideal.
- *
- * Ejemplo:
- * <RangeCard badgeLabel="Mín: 5 mg/L" />
- *
- * ---
- *
- * colors
- * Objeto con los colores del proyecto { primary, textHint }.
- *
- * ---
- *
- * styles
- * Objeto con los estilos de la pantalla padre { card, cardHeader,
- * cardHeaderLeft, cardTitle, cardUnit, badge }.
+ * Define el tipo de etiqueta para cada medicion.
+ * Valores posibles: "numeric" | "daynight"
  *
  * ---
  *
  * onChange
- * Funcion que se ejecuta cada vez que cambia alguna medicion.
- * Recibe un array con todas las mediciones actuales.
- * Cada medicion tiene la forma: { id, value, rawInput, editing }
+ * Funcion que recibe el arreglo actualizado de mediciones.
  *
  * Ejemplo:
- * <RangeCard onChange={(r) => setTempReadings(r)} />
+ * <RangeCard onChange={(values) => setValores(values)} />
  *
  * ============================================================
  * EJEMPLOS RAPIDOS
  * ============================================================
  *
  * <RangeCard
- *     title="Temperatura"  unit="°C"    icon="thermometer"
- *     idealMin={28}        idealMax={30}
- *     sliderMin={15}       sliderMax={45}
- *     step={0.5}           decimals={1}
- *     maxReadings={2}      labelStyle="daynight"
- *     colors={C}           styles={styles}
- *     onChange={(r) => setTempReadings(r)}
+ *   title="pH"
+ *   unit="pH"
+ *   idealMin={7.5}
+ *   idealMax={8.5}
+ *   sliderMin={4}
+ *   sliderMax={10}
  * />
  *
  * <RangeCard
- *     title="Oxígeno Disuelto"  unit="mg/L"  icon="water"
- *     idealMin={5}              idealMax={20}
- *     sliderMin={0}             sliderMax={20}
- *     step={0.1}                decimals={1}
- *     maxReadings={5}           labelStyle="numeric"
- *     showProgress={false}      showRangeColor={false}
- *     badgeLabel="Mín: 5 mg/L"
- *     colors={C}                styles={styles}
- *     onChange={(r) => setoxReadings(r)}
+ *   title="Oxigeno Disuelto"
+ *   unit="mg/L"
+ *   idealMin={5}
+ *   sliderMin={0}
+ *   sliderMax={20}
  * />
  */
 
 import React, { useState, useCallback } from 'react';
 import {
   View,
-  Text,
   TextInput,
   Pressable,
-  TouchableOpacity,
   StyleSheet,
-  Image
 } from 'react-native';
 import ProgressBar from '../../../shared/components/ProgressBar';
 import Button from '../../../shared/components/Button';
+import Text from '../../../shared/components/Text';
+import Title from '../../../shared/components/Title';
+import Images from '../../../shared/components/Images';
 import { Ionicons } from '@expo/vector-icons';
-
-
 
 // ── Etiquetas para hasta 5 mediciones ────────────────────────
 const LABELS_DAYNIGHT = [
@@ -201,6 +120,7 @@ const LABELS_NUMERIC = [
   { type: 'text', value: '④' },
   { type: 'text', value: '⑤' },
 ];
+
 // ── Helpers ──────────────────────────────────────────────────
 const clamp = (val, min, max) => Math.min(Math.max(val, min), max);
 const fmt = (val, decimals) => val.toFixed(decimals);
@@ -223,7 +143,7 @@ export default function RangeCard({
   maxReadings = 4,
   showProgress = true,
   showRangeColor = true,
-  labelStyle = 'numeric', // 'numeric' | 'daynight'
+  labelStyle = 'numeric',
   badgeLabel,
   colors: C,
   styles: S,
@@ -233,7 +153,6 @@ export default function RangeCard({
     makeReading(1, idealMin, decimals),
   ]);
 
-  // ── Actualiza un campo de un reading por id ───────────────
   const updateReading = useCallback(
     (id, patch) => {
       setReadings((prev) => {
@@ -247,7 +166,6 @@ export default function RangeCard({
     [onChange]
   );
 
-  // ── Agrega una nueva medición ─────────────────────────────
   const addReading = () => {
     if (readings.length >= maxReadings) return;
     setReadings((prev) => {
@@ -257,7 +175,6 @@ export default function RangeCard({
     });
   };
 
-  // ── Elimina una medición ──────────────────────────────────
   const removeReading = (id) => {
     if (readings.length <= 1) return;
     setReadings((prev) => {
@@ -267,13 +184,14 @@ export default function RangeCard({
     });
   };
 
-  // ── Normaliza un valor al rango [0, 1] ────────────────────
   const normalize = (v) => (v - sliderMin) / (sliderMax - sliderMin);
+  const hasUpperIdeal = Number.isFinite(idealMax);
 
-  // ── Progreso global (promedio de todos los readings) ──────
   const avg = readings.reduce((s, r) => s + r.value, 0) / readings.length;
-  const allOk = readings.every(
-    (r) => r.value >= idealMin && r.value <= idealMax
+  const allOk = readings.every((r) =>
+    hasUpperIdeal
+      ? r.value >= idealMin && r.value <= idealMax
+      : r.value >= idealMin
   );
   const globalProgress = Math.min(Math.max(normalize(avg), 0), 1);
   const barColor = allOk
@@ -282,18 +200,15 @@ export default function RangeCard({
       ? '#f97316'
       : '#e2e8f0';
 
-  // Posición % de los marcadores del rango ideal
   const markerLeft = `${normalize(idealMin) * 100}%`;
-  const markerRight = `${normalize(idealMax) * 100}%`;
+  const markerRight = hasUpperIdeal ? `${normalize(idealMax) * 100}%` : null;
 
   const LABELS = labelStyle === 'daynight' ? LABELS_DAYNIGHT : LABELS_NUMERIC;
 
-
-
-  // Badge: usa badgeLabel si se pasa, si no construye el default
   const resolvedBadge =
-    badgeLabel ?? `Ideal: ${idealMin}–${idealMax} ${unit}`;
-
+    badgeLabel ?? (hasUpperIdeal
+      ? `Ideal: ${idealMin}–${idealMax} ${unit}`
+      : `Min ${idealMin} ${unit}`);
 
   return (
     <View style={S.card}>
@@ -301,10 +216,19 @@ export default function RangeCard({
       <View style={S.cardHeader}>
         <View style={S.cardHeaderLeft}>
           <Ionicons name={icon} size={18} color={C.primary} />
-          <Text style={S.cardTitle}>{title}</Text>
-          <Text style={S.cardUnit}> ({unit})</Text>
+          {/* SUSTITUIDO: Text estilo cardTitle → Title */}
+          <Title level={5} color={C.text}>
+            {title}
+          </Title>
+          {/* SUSTITUIDO: Text estilo cardUnit → Text compartido */}
+          <Text tamano="sm" color={C.textSub}>
+            ({unit})
+          </Text>
         </View>
-        <Text style={S.badge}>{resolvedBadge}</Text>
+        {/* SUSTITUIDO: Text estilo badge → Text compartido */}
+        <Text tamano="xs" color={C.primary}>
+          {resolvedBadge}
+        </Text>
       </View>
 
       {/* ── Progress bar global (opcional) ─────────────────── */}
@@ -318,9 +242,10 @@ export default function RangeCard({
             showPercentage={false}
           />
           <View style={{ position: 'relative', height: 12 }}>
-            {[markerLeft, markerRight].map((pos, i) => (
-              <View key={i} style={[inner.idealMarker, { left: pos }]} />
-            ))}
+            <View style={[inner.idealMarker, { left: markerLeft }]} />
+            {markerRight && (
+              <View style={[inner.idealMarker, { left: markerRight }]} />
+            )}
           </View>
         </View>
       )}
@@ -328,11 +253,11 @@ export default function RangeCard({
       {/* ── Mediciones ─────────────────────────────────────── */}
       {readings.map((r, idx) => {
         const inRange = r.value >= idealMin && r.value <= idealMax;
-        const showGreen = showRangeColor && inRange;
+        const inMinRange = r.value >= idealMin;
+        const showGreen = showRangeColor && (hasUpperIdeal ? inRange : inMinRange);
         const readingProgress = Math.min(Math.max(normalize(r.value), 0), 1);
         const miniBarColor = showGreen ? '#22c55e' : C.primary;
 
-        // Decrementar con paso
         const decrement = () => {
           const next = parseFloat(
             clamp(r.value - step, sliderMin, sliderMax).toFixed(decimals)
@@ -340,7 +265,6 @@ export default function RangeCard({
           updateReading(r.id, { value: next, rawInput: fmt(next, decimals) });
         };
 
-        // Incrementar con paso
         const increment = () => {
           const next = parseFloat(
             clamp(r.value + step, sliderMin, sliderMax).toFixed(decimals)
@@ -348,7 +272,6 @@ export default function RangeCard({
           updateReading(r.id, { value: next, rawInput: fmt(next, decimals) });
         };
 
-        // Cambio de texto: solo números y punto, máx 2 dígitos enteros
         const handleChangeText = (text) => {
           const cleaned = text.replace(/[^0-9.]/g, '');
           const parts = cleaned.split('.');
@@ -366,7 +289,6 @@ export default function RangeCard({
           }
         };
 
-        // Al perder el foco: fija y limpia el valor
         const handleBlur = () => {
           const parsed = parseFloat(r.rawInput);
           const safe = isNaN(parsed)
@@ -387,16 +309,19 @@ export default function RangeCard({
             {(() => {
               const lbl = LABELS[idx] ?? { type: 'text', value: `${idx + 1}` };
               return lbl.type === 'icon' ? (
-                <Image
-                  source={lbl.source}
-                  style={{ width: 18, height: 18, tintColor: C.primary }}
+                <Images
+                  Icon={lbl.source}
+                  Width={18}
+                  Height={18}
                 />
               ) : (
-                <Text style={[inner.label, { color: C.textHint }]}>
+                /* SUSTITUIDO: Text estilo inner.label → Text compartido */
+                <Text tamano="sm" color={C.textHint} estilo={{ width: 22, textAlign: 'center' }}>
                   {lbl.value}
                 </Text>
               );
             })()}
+
             {/* Botón − */}
             <Pressable
               onPress={decrement}
@@ -406,10 +331,13 @@ export default function RangeCard({
               ]}
               hitSlop={8}
             >
-              <Text style={[inner.stepBtnText, { color: C.primary }]}>−</Text>
+              {/* Presiones rápidas de +/− se mantienen como Pressable por hitSlop y feedback táctil */}
+              <Text tamano="lg" color={C.primary} estilo={{ lineHeight: 26 }}>
+                −
+              </Text>
             </Pressable>
 
-            {/* Valor + mini barra ────────────────────────────── */}
+            {/* Valor + mini barra */}
             <View style={{ flex: 1 }}>
               <View style={inner.valueRow}>
                 <TextInput
@@ -433,7 +361,8 @@ export default function RangeCard({
                     },
                   ]}
                 />
-                <Text style={[inner.unitLabel, { color: C.textHint }]}>
+                {/* SUSTITUIDO: Text estilo unitLabel → Text compartido */}
+                <Text tamano="sm" color={C.textHint} estilo={{ marginLeft: 3, fontWeight: '600' }}>
                   {unit}
                 </Text>
                 {showGreen && !r.editing && (
@@ -446,7 +375,6 @@ export default function RangeCard({
                 )}
               </View>
 
-              {/* Mini track individual */}
               <ProgressBar
                 label=""
                 value={Math.round(readingProgress * 100)}
@@ -465,10 +393,12 @@ export default function RangeCard({
               ]}
               hitSlop={8}
             >
-              <Text style={[inner.stepBtnText, { color: C.primary }]}>+</Text>
+              <Text tamano="lg" color={C.primary} estilo={{ lineHeight: 26 }}>
+                +
+              </Text>
             </Pressable>
 
-            {/* Eliminar medición (solo si hay más de 1) */}
+            {/* Eliminar medición */}
             {readings.length > 1 ? (
               <Pressable
                 onPress={() => removeReading(r.id)}
@@ -500,7 +430,7 @@ export default function RangeCard({
   );
 }
 
-// ── Estilos internos del componente ──────────────────────────
+// ── Estilos internos ──────────────────────────────────────────
 const inner = StyleSheet.create({
   idealMarker: {
     position: 'absolute',
@@ -516,23 +446,12 @@ const inner = StyleSheet.create({
     marginBottom: 10,
     gap: 8,
   },
-  label: {
-    fontSize: 13,
-    fontWeight: '600',
-    width: 22,
-    textAlign: 'center',
-  },
   stepBtn: {
     width: 36,
     height: 36,
     borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  stepBtnText: {
-    fontSize: 22,
-    lineHeight: 26,
-    fontWeight: '400',
   },
   valueRow: {
     flexDirection: 'row',
@@ -546,10 +465,5 @@ const inner = StyleSheet.create({
     minWidth: 20,
     padding: 0,
     margin: 0,
-  },
-  unitLabel: {
-    fontSize: 13,
-    marginLeft: 3,
-    fontWeight: '600',
   },
 });

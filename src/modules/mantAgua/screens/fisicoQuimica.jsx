@@ -1,19 +1,48 @@
-import React, { useState } from "react";
+/**
+ * ============================================================
+ * PANTALLA FISICOQUIMICA
+ * ============================================================
+ *
+ * Esta pantalla agrupa las mediciones fisico-quimicas del
+ * modulo de agua y permite registrarlas con los componentes
+ * reutilizables del proyecto.
+ *
+ * Permite:
+ * - Consultar y editar temperatura
+ * - Consultar y editar oxigeno disuelto
+ * - Consultar y editar pH
+ * - Seleccionar salinidad desde una ruleta
+ * - Mostrar confirmacion visual al guardar
+ *
+ * ---
+ * USO
+ * ---
+ *
+ * Se renderiza dentro del flujo de navegacion del modulo y
+ * recibe la prop onBack para volver a la vista anterior.
+ *
+ * ============================================================
+ * EJEMPLO DE USO
+ * ============================================================
+ *
+ * <FisicoQuimica onBack={volver} />
+ */
+
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
-  Text,
   ScrollView,
-  TextInput,
   TouchableOpacity,
-  Pressable,
   StyleSheet,
   StatusBar,
   Platform,
 } from "react-native";
 import Button from '../../../shared/components/Button';
 import Alert from '../../../shared/components/Alert';
+import Text from '../../../shared/components/Text';
+import Title from '../../../shared/components/Title';
+import Footer from '../../../shared/components/Footer';
 import RangeCard from '../components/RangeCard';
-import DualWheelCard from '../components/DualWheelCard';
 import SingleWheelCard from '../components/SingleWheelCard';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -34,17 +63,32 @@ const C = {
 export default function FisicoQuimica({ onBack }) {
   // ── Estado ──────────────────────────────────────────────────────────────────
   const [salinidad, setSalinidad] = useState("14");
-  const [alcalinidad, setAlcalinidad] = useState("128");
-  const [tempReadings, setTempReadings] = useState([]);
-  const [phReadings, setPhReadings] = useState([]);
-  const [oxReadings, setoxReadings] = useState([]);
-  const [secchi, setSecchi] = useState(35);
+  const [, setTempReadings] = useState([]);
+  const [, setPhReadings] = useState([]);
+  const [, setOxReadings] = useState([]);
   const [showAlert, setShowAlert] = useState(false);
+  const alertTimerRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (alertTimerRef.current) {
+        clearTimeout(alertTimerRef.current);
+      }
+    };
+  }, []);
 
 
   const handleGuardar = () => {
     setShowAlert(true);
-    setTimeout(() => setShowAlert(false), 3000);
+
+    if (alertTimerRef.current) {
+      clearTimeout(alertTimerRef.current);
+    }
+
+    alertTimerRef.current = setTimeout(() => {
+      setShowAlert(false);
+      alertTimerRef.current = null;
+    }, 3000);
   };
 
   return (
@@ -58,11 +102,15 @@ export default function FisicoQuimica({ onBack }) {
           activeOpacity={0.7}
         >
           <Ionicons name="chevron-back" size={20} color={C.white} />
-          <Text style={styles.backText}>Módulos</Text>
+          <Text tamano="sm" color={C.white} estilo={styles.backText}>
+            Módulos
+          </Text>
         </TouchableOpacity>
         <View style={styles.headerTitle}>
           <Ionicons name="flask" size={20} color={C.white} />
-          <Text style={styles.headerTitleText}>Físico-Química</Text>
+          <Title level={4} color={C.white} style={styles.headerTitleText}>
+            Físico-Química
+          </Title>
         </View>
       </View>
 
@@ -88,13 +136,13 @@ export default function FisicoQuimica({ onBack }) {
         <RangeCard
           title="Oxígeno Disuelto"
           unit="mg/L" icon="water"
-          idealMin={5} idealMax={20}
+          idealMin={5}
           sliderMin={0} sliderMax={20}
           step={0.1} decimals={1}
           showProgress={false} showRangeColor={false}
           maxReadings={5} labelStyle="numeric"
           colors={C} styles={styles}
-          onChange={(r) => setoxReadings(r)}
+          onChange={(r) => setOxReadings(r)}
         />
 
         {/* ── pH ──────────────────────────────────────────────────────────── */}
@@ -108,43 +156,18 @@ export default function FisicoQuimica({ onBack }) {
           onChange={(r) => setPhReadings(r)}
         />
 
-        {/* ── SALINIDAD Y ALCALINIDAD ──────────────────────────────────────── */}
-
-        <DualWheelCard
-          title="Salinidad y Alcalinidad"
-          icon="analytics-outline"
-
-          leftLabel="Salinidad"
-          leftUnit="ppt"
-          leftMin={5} leftMax={40}
-          leftIdealMin={10} leftIdealMax={25}
-          leftValue={salinidad}
-          onLeftChange={setSalinidad}
-
-          rightLabel="Alcalinidad"
-          rightUnit="mg/L"
-          rightMin={80} rightMax={250}
-          rightStep={5}
-          rightIdealMin={80} rightIdealMax={150}
-          rightValue={alcalinidad}
-          onRightChange={setAlcalinidad}
-
-          colors={C}
-          styles={styles}
-        />
-
-        {/* ── TURBIDEZ SECCHI ──────────────────────────────────────────────── */}
+        {/* ── SALINIDAD ──────────────────────────────────────── */}
         <SingleWheelCard
-          title="Turbidez Secchi"
-          icon="eye-outline"
-          label="Lectura disco Secchi"
-          unit="cm"
-          min={1}
-          max={100}
-          idealMin={25}
-          idealMax={45}
-          value={secchi}
-          onChange={setSecchi}
+          title="Salinidad"
+          icon="analytics-outline"
+          label="Salinidad"
+          unit="ppt"
+          min={5}
+          max={40}
+          idealMin={10}
+          idealMax={25}
+          value={salinidad}
+          onChange={setSalinidad}
           colors={C}
           styles={styles}
         />
@@ -168,14 +191,18 @@ export default function FisicoQuimica({ onBack }) {
       </ScrollView>
 
       {/* ── Footer / Guardar ── */}
-      {/* DESPUÉS  DE INTEGRAR NAVEGACIÓN REAL, REEMPLAZA ESTE BOTÓN POR UNO EN EL HEADER */}
-      <View style={styles.footer}>
-        <Button
-          title="Guardar módulo"
-          type="primary"
-          onPress={handleGuardar}
-        />
-      </View>
+      <Footer
+        backgroundColor={C.card}
+        accentColor={C.primary}
+        showTopBorder
+        center={
+          <Button
+            title="Guardar módulo"
+            type="primary"
+            onPress={handleGuardar}
+          />
+        }
+      />
     </View>
   );
 }
