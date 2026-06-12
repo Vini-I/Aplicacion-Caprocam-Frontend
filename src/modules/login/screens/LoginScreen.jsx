@@ -55,7 +55,7 @@ import styles from '../styles/loginStyles';
  *
  * LoginScreen - Pantalla de login con selección de turno y trabajador
  */
-export default function LoginScreen() {
+export default function LoginScreen( {onLoginSuccess = () => {}} ) {
   // ============ ESTADO ============
 
   // Obtener trabajadores usando el hook (con loading/error)
@@ -92,10 +92,7 @@ export default function LoginScreen() {
    * FUTURO: Navegar a home, guardar sesión, etc.
    */
   const handleStartShift = () => {
-    console.log('Iniciando turno:', {
-      shift: selectedShift,
-      worker: selectedWorker,
-    });
+    onLoginSuccess();
     // TODO: Navegar a home cuando se implemente navegación
   };
 

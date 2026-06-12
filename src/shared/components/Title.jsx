@@ -2,171 +2,111 @@
  * ============================================================
  * COMPONENTE TITLE
  * ============================================================
- * * Este componente se utiliza para mostrar títulos y subtítulos dentro de la aplicación.
- * * Permite cambiar:
- * - Tamaño del título
- * - Color
- * - Alineación
- * - Línea decorativa debajo del texto
- * - Cantidad máxima de líneas
- * * ---
- * PARÁMETROS
- * ---
- * * children
- * Texto o contenido que se mostrará.
- * * Ejemplo:
- * <Title>Bienvenido</Title>
- * * ---
- * * level
- * Define el tamaño del título.
- * * Valores posibles:
- * 1 = Muy grande
- * 2 = Grande
- * 3 = Mediano
- * 4 = Normal
- * 5 = Pequeño
- * 6 = Muy pequeño
- * * Valor por defecto: 1
- * * Ejemplo:
- * <Title level={3}>Usuarios</Title>
- * * ---
- * * color
- * Color del texto.
- * * Ejemplo:
- * <Title color="#198754">
- * Activo
- * </Title>
- * * ---
- * * align
- * Alineación del texto.
- * * Valores posibles:
- * "left"
- * "center"
- * "right"
- * * Valor por defecto: "left"
- * * Ejemplo:
- * <Title align="center">
- * Menú Principal
- * </Title>
- * * ---
- * * underline
- * Muestra una línea debajo del título.
- * * Valor por defecto: false
- * * Ejemplo:
- * <Title underline>
- * Inventario
- * </Title>
- * * ---
- * * underlineColor
- * Color de la línea decorativa.
- * * ---
- * * underlineWidth
- * Ancho de la línea decorativa.
- * * ---
- * * muted
- * Muestra el texto en color gris.
- * * Valor por defecto: false
- * * Ejemplo:
- * <Title muted>
- * Información adicional
- * </Title>
- * * ---
- * * truncate
- * Si el texto es muy largo, lo corta y agrega "...".
- * * Valor por defecto: false
- * * ---
- * * numberOfLines
- * Cantidad máxima de líneas permitidas antes de cortar el texto.
- * * Ejemplo:
- * <Title numberOfLines={2}>
- * Texto muy largo...
- * </Title>
- * * ---
- * * style
- * Permite agregar estilos personalizados al texto.
- * * ---
- * * containerStyle
- * Permite agregar estilos personalizados al contenedor.
- * * ============================================================
- * EJEMPLOS RÁPIDOS
- * ============================================================
- * * <Title level={1}>
- * Bienvenido
- * </Title>
- * * <Title level={3} underline align="center">
- * Gestión de Usuarios
- * </Title>
- * * <Title level={5} muted>
- * Información adicional
- * </Title>
+ *
+ * Titulo reutilizable para React Native.
+ *
+ * Funcionalidad:
+ * - Permite niveles de titulo del 1 al 6.
+ * - Permite color, alineacion, texto apagado y subrayado.
+ * - Permite truncar el texto con numberOfLines.
+ *
+ * Props principales:
+ * - children: texto o contenido del titulo.
+ * - level: nivel visual del titulo del 1 al 6.
+ * - color: color personalizado.
+ * - align: alineacion left, center o right.
+ * - underline: muestra linea decorativa.
+ * - muted: usa color gris.
+ * - numberOfLines: cantidad maxima de lineas.
+ *
+ * Ejemplo:
+ * <Title level={2} underline>Estanques</Title>
  */
 
+import React from "react";
+import { View, Text, StyleSheet } from "react-native";
 
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { COLORS } from "../../theme/colors";
 
-// ─── Type scale (mirrors Bootstrap's heading sizes) ───────────
-const SCALE = {
-  1: { fontSize: 32, fontWeight: '700', lineHeight: 40 },
-  2: { fontSize: 28, fontWeight: '700', lineHeight: 36 },
-  3: { fontSize: 24, fontWeight: '600', lineHeight: 32 },
-  4: { fontSize: 20, fontWeight: '600', lineHeight: 28 },
-  5: { fontSize: 16, fontWeight: '600', lineHeight: 24 },
-  6: { fontSize: 14, fontWeight: '600', lineHeight: 20 },
-};
+import { TYPOGRAPHY } from "../../theme/typography";
 
-const MUTED_COLOR    = '#6c757d';
-const DEFAULT_COLOR  = '#212529';
-const ACCENT_COLOR   = '#0d6efd';
+function getScale(level) {
+  const scale = {
+    1: { fontSize: 32, fontWeight: "700", lineHeight: 40 },
+    2: { fontSize: 28, fontWeight: "700", lineHeight: 36 },
+    3: { fontSize: 24, fontWeight: "600", lineHeight: 32 },
+    4: { fontSize: 20, fontWeight: "600", lineHeight: 28 },
+    5: { fontSize: 16, fontWeight: "600", lineHeight: 24 },
+    6: { fontSize: 14, fontWeight: "600", lineHeight: 20 },
+  };
 
-// ─── Component ────────────────────────────────────────────────
+  let selectedScale = scale[1];
+
+  if (scale[level]) {
+    selectedScale = scale[level];
+  }
+
+  return selectedScale;
+}
+
+function getUnderlineAlign(align) {
+  let underlineAlign = "flex-start";
+
+  if (align === "center") {
+    underlineAlign = "center";
+  }
+
+  if (align === "right") {
+    underlineAlign = "flex-end";
+  }
+
+  return underlineAlign;
+}
+
 export default function Title({
   children,
-  level          = 1,
-  color,
-  align          = 'left',
-  underline      = false,
-  underlineColor = ACCENT_COLOR,
+  level = 1,
+  color = COLORS.textPrimary,
+  align = "left",
+  underline = false,
+  underlineColor = COLORS.primary,
   underlineWidth = 40,
-  muted          = false,
-  truncate       = false,
+  muted = false,
   numberOfLines,
   style,
   containerStyle,
+  fuente = TYPOGRAPHY.fontFamily.regular
 }) {
-  const scale     = SCALE[level] ?? SCALE[1];
-  const textColor = muted ? MUTED_COLOR : (color ?? DEFAULT_COLOR);
+  let textColor = color;
 
-  const resolvedLines = truncate
-    ? 1
-    : (numberOfLines ?? undefined);
-
-  // Align the underline bar to match text alignment
-  const underlineAlign =
-    align === 'center' ? 'center'
-    : align === 'right' ? 'flex-end'
-    : 'flex-start';
+  if (muted === true) {
+    textColor = COLORS.textTertiary;
+  }
 
   return (
     <View style={[styles.container, containerStyle]}>
       <Text
-        style={[
-          scale,
-          { color: textColor, textAlign: align },
-          style,
-        ]}
-        numberOfLines={resolvedLines}
-        ellipsizeMode={resolvedLines ? 'tail' : undefined}
+        style={[getScale(level), { color: textColor, textAlign: align }, style]}
+        numberOfLines={numberOfLines}
+        fontFamily={fuente}
       >
         {children}
       </Text>
 
-      {underline && (
-        <View style={[styles.underlineWrapper, { justifyContent: underlineAlign }]}>
+      {underline === true && (
+        <View
+          style={[
+            styles.underlineWrapper,
+            { justifyContent: getUnderlineAlign(align) },
+          ]}
+        >
           <View
             style={[
               styles.underlineLine,
-              { width: underlineWidth, backgroundColor: underlineColor },
+              {
+                width: underlineWidth,
+                backgroundColor: underlineColor,
+              },
             ]}
           />
         </View>
@@ -175,17 +115,14 @@ export default function Title({
   );
 }
 
-// ─── Styles ───────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  container: {
-    // No default margin — let the consumer control spacing
-  },
+  container: {},
   underlineWrapper: {
-    flexDirection: 'row',
-    marginTop:     6,
+    flexDirection: "row",
+    marginTop: 6,
   },
   underlineLine: {
-    height:       3,
+    height: 3,
     borderRadius: 2,
   },
 });

@@ -1,0 +1,38 @@
+export const fincas = [
+  {
+    id: 1,
+    nombre: "Finca La Esperanza",
+    ubicacion: "Provincia de Guayas, Cantón Daule",
+    responsable: "Carlos Pérez",
+    telefono: "+593 98 123 4567",
+    estanques: 4,
+    Area: 12.5,
+  },
+  {
+    id: 2,
+    nombre: "Finca El Paraíso",
+    ubicacion: "Provincia de El Oro, Cantón Machala",
+    responsable: "María López",
+    telefono: "+593 99 765 4321",
+    estanques: 6,
+    Area: 18.2,
+  },
+  {
+    id: 3,
+    nombre: "Finca Santa Rita",
+    ubicacion: "Provincia de Los Ríos, Cantón Babahoyo",
+    responsable: "Luis Zambrano",
+    telefono: "+593 97 234 5678",
+    estanques: 3,
+    Area: 8.4,
+  },
+  {
+    id: 4,
+    nombre: "Finca El Lago",
+    ubicacion: "Provincia de Manabí, Cantón Manta",
+    responsable: "Ana Villacís",
+    telefono: "+593 98 765 1234",
+    estanques: 5,
+    Area: 15.0,
+  },
+];
