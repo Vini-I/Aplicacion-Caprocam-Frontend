@@ -20,16 +20,18 @@
  * - style: estilos extra.
  *
  * Ejemplo:
- * <CustomText color="#6c757d">Descripcion</CustomText>
+ * <CustomText>Descripcion</CustomText>
  */
 
 import React from "react";
 import { Text, StyleSheet } from "react-native";
 
+import { COLORS } from "../../theme/colors";
+
 export default function CustomText({
   children,
   size = 14,
-  color = "#212529",
+  color = COLORS.textPrimary,
   weight = "400",
   align = "left",
   numberOfLines,

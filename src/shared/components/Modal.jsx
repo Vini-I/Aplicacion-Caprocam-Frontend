@@ -39,6 +39,7 @@ import {
   Pressable,
   StyleSheet,
 } from "react-native";
+import { COLORS } from "../../theme/colors";
 
 export default function Modal({
   visible = false,
@@ -86,14 +87,14 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0,0,0,0.5)",
+    backgroundColor: COLORS.black,
     padding: 20,
   },
   container: {
     width: "100%",
     padding: 20,
     borderRadius: 12,
-    backgroundColor: "#ffffff",
+    backgroundColor: COLORS.white,
   },
   button: {
     marginTop: 16,
@@ -101,10 +102,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     borderRadius: 8,
     alignItems: "center",
-    backgroundColor: "#009EF5",
+    backgroundColor: COLORS.primary,
   },
   buttonText: {
-    color: "#ffffff",
+    color: COLORS.white,
     fontSize: 15,
     fontWeight: "600",
   },

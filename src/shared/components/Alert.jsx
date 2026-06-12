@@ -23,6 +23,7 @@
 
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
+import { COLORS } from "../../theme/colors";
 
 export default function Alert({
   message = "",
@@ -69,23 +70,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     borderRadius: 8,
     borderWidth: 1,
-    backgroundColor: "#e7f1ff",
-    borderColor: "#9ec5fe",
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.secondary,
   },
   success: {
-    backgroundColor: "#d1e7dd",
-    borderColor: "#a3cfbb",
+    backgroundColor: COLORS.success,
+    borderColor: COLORS.secondary,
   },
   warning: {
-    backgroundColor: "#fff3cd",
-    borderColor: "#ffda6a",
+    backgroundColor: COLORS.warningLight,
+    borderColor: COLORS.warning,
   },
   danger: {
-    backgroundColor: "#f8d7da",
-    borderColor: "#f1aeb5",
+    backgroundColor: COLORS.errorLight,
+    borderColor: COLORS.error,
   },
   text: {
-    color: "#212529",
+    color: COLORS.textPrimary,
     fontSize: 14,
     fontWeight: "500",
   },
