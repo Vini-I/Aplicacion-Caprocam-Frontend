@@ -35,6 +35,8 @@ import React, { useState } from "react";
 import { View, Text, Pressable, StyleSheet, Platform } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 
+import { COLORS } from "../../theme/colors";
+
 function formatDate(date) {
   const day = String(date.getDate()).padStart(2, "0");
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -170,24 +172,24 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#212529",
+    color: COLORS.textSecondary,
     marginBottom: 6,
   },
   input: {
     borderWidth: 1,
-    borderColor: "#ced4da",
+    borderColor: COLORS.textTertiary,
     borderRadius: 8,
     paddingVertical: 12,
     paddingHorizontal: 12,
-    backgroundColor: "#ffffff",
+    backgroundColor: COLORS.white,
     justifyContent: "center",
   },
   inputText: {
     fontSize: 16,
-    color: "#212529",
+    color: COLORS.textSecondary,
   },
   disabledInput: {
-    backgroundColor: "#e9ecef",
+    backgroundColor: COLORS.secondary,
     opacity: 0.7,
   },
 });
