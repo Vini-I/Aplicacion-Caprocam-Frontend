@@ -1,71 +1,82 @@
 /**
  * ============================================================
- * PANTALLA: ENFERMEDADES SCREEN
+ * SCREEN: ENFERMEDADES
  * ============================================================
  *
- * Esta pantalla permite registrar un evento sanitario o una
- * enfermedad detectada en un estanque de cultivo de camaron.
- *
- * Funcionalidad general:
- * - Muestra un encabezado con boton de cancelar.
- * - Permite seleccionar el estanque relacionado con el caso.
- * - Permite registrar fecha del reporte mediante calendario local.
- * - Permite registrar proxima revision mediante calendario local.
- * - Ambas fechas toman por defecto la fecha actual.
- * - El calendario muestra un icono y se abre al presionar el campo.
- * - Permite seleccionar fechas anteriores y futuras.
- * - Permite seleccionar tipo de evento sanitario.
- * - Permite seleccionar enfermedad o agente detectado.
- * - Permite seleccionar severidad.
- * - Permite registrar mortalidad y sintomas observados.
- * - Permite indicar si existe diagnostico de laboratorio.
- * - Permite registrar uso de probioticos.
- * - Permite registrar uso de antibioticos.
- * - El periodo de retiro se maneja como contador numerico.
- * - La palabra dias aparece fuera del numero.
- * - Valida campos obligatorios antes de registrar.
- * - Muestra nivel de riesgo con barra de progreso.
- * - Muestra recomendacion sanitaria en modal.
- *
- * Responsive:
- * - En celular, los campos se muestran en una columna.
- * - En tablet, los campos se muestran en dos columnas.
- * - En PC, el contenido ocupa todo el ancho y usa tres columnas.
- *
- * Temas utilizados:
- * - COLORS: colores centralizados de la aplicacion.
- * - TYPOGRAPHY: familia tipografica Roboto.
- * - ICONS: iconos centralizados de la aplicacion.
+ * Pantalla para registrar eventos sanitarios en estanques.
+ * Incluye calendario local, periodo de retiro numerico,
+ * riesgo por severidad y diseno responsive.
  */
 
 import React, { useState } from "react";
-import { ScrollView, View, StyleSheet, TouchableOpacity, Text, useWindowDimensions, Modal as NativeModal, } from "react-native";
+import {
+  ScrollView,
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  Text,
+  useWindowDimensions,
+  Modal as NativeModal,
+} from "react-native";
 
-import Card from "../components/Card";
-import Input from "../components/Input";
-import Select from "../components/Select";
-import Button from "../components/Button";
-import Title from "../components/Title";
-import CustomText from "../components/Text";
-import Alert from "../components/Alert";
-import Badge from "../components/Badge";
-import ProgressBar from "../components/ProgressBar";
-import CustomModal from "../components/Modal";
-import Icon from "../components/Icons";
+import Card from "../../../shared/components/Card";
+import Input from "../../../shared/components/Input";
+import Select from "../../../shared/components/Select";
+import Button from "../../../shared/components/Button";
+import Title from "../../../shared/components/Title";
+import CustomText from "../../../shared/components/Text";
+import Alert from "../../../shared/components/Alert";
+import Badge from "../../../shared/components/Badge";
+import ProgressBar from "../../../shared/components/ProgressBar";
+import Modal from "../../../shared/components/Modal";
+import Icon from "../../../shared/components/Icons";
 
-import { COLORS } from "../theme/colors";
-import { TYPOGRAPHY } from "../theme/typography";
-import { ICONS } from "../theme/icons";
+import { COLORS } from "../../../theme/colors";
+import { TYPOGRAPHY } from "../../../theme/typography";
+import { ICONS } from "../../../theme/icons";
 
-function obtenerFechaActual() {
-  const fecha = new Date();
+const ESTANQUES = [
+  { label: "EST-01 - Finca La Reina", value: "est-01" },
+  { label: "EST-02 - Finca La Reina", value: "est-02" },
+  { label: "EST-03 - Finca La Reina", value: "est-03" },
+];
 
-  const dia = String(fecha.getDate()).padStart(2, "0");
-  const mes = String(fecha.getMonth() + 1).padStart(2, "0");
-  const anio = fecha.getFullYear();
+const EVENTOS = [
+  { label: "Monitoreo preventivo", value: "monitoreo_preventivo" },
+  { label: "Sospecha de enfermedad", value: "sospecha_enfermedad" },
+  { label: "Enfermedad confirmada", value: "enfermedad_confirmada" },
+  { label: "Mortalidad elevada", value: "mortalidad_elevada" },
+];
 
-  return `${dia}/${mes}/${anio}`;
-}
+const ENFERMEDADES = [
+  { label: "WSSV - Mancha Blanca", value: "wssv" },
+  { label: "AHPND - Necrosis Hepatopancreatica Aguda", value: "ahpnd" },
+  { label: "NHP - Necrosis Hepatopancreatica", value: "nhp" },
+  { label: "IHHNV", value: "ihhnv" },
+  { label: "Vibriosis", value: "vibriosis" },
+  { label: "Gregarinas", value: "gregarinas" },
+  { label: "Epicomensales", value: "epicomensales" },
+  { label: "Otro", value: "otro" },
+];
+
+const SEVERIDADES = [
+  { label: "Baja", value: "baja" },
+  { label: "Media", value: "media" },
+  { label: "Alta", value: "alta" },
+  { label: "Critica", value: "critica" },
+];
+
+const SI_NO = [
+  { label: "Si", value: "si" },
+  { label: "No", value: "no" },
+];
+
+const ESTADOS_CASO = [
+  { label: "En observacion", value: "observacion" },
+  { label: "En tratamiento", value: "tratamiento" },
+  { label: "Controlado", value: "controlado" },
+  { label: "Cerrado", value: "cerrado" },
+];
 
 function formatearFecha(fecha) {
   const dia = String(fecha.getDate()).padStart(2, "0");
@@ -73,6 +84,10 @@ function formatearFecha(fecha) {
   const anio = fecha.getFullYear();
 
   return `${dia}/${mes}/${anio}`;
+}
+
+function obtenerFechaActual() {
+  return formatearFecha(new Date());
 }
 
 function convertirTextoAFecha(texto) {
@@ -120,16 +135,15 @@ function obtenerNombreMes(fecha) {
   return meses[fecha.getMonth()];
 }
 
-function obtenerDiasDelMes(fecha) {
+function obtenerDiasMes(fecha) {
   const anio = fecha.getFullYear();
   const mes = fecha.getMonth();
   const totalDias = new Date(anio, mes + 1, 0).getDate();
-  const primerDiaSemana = new Date(anio, mes, 1).getDay();
-
+  const primerDia = new Date(anio, mes, 1).getDay();
   let dias = [];
   let indice = 0;
 
-  while (indice < primerDiaSemana) {
+  while (indice < primerDia) {
     dias.push(null);
     indice = indice + 1;
   }
@@ -145,31 +159,25 @@ function obtenerDiasDelMes(fecha) {
 }
 
 function esMismaFecha(fechaUno, fechaDos) {
-  let misma = false;
+  let mismaFecha = false;
 
   if (
     fechaUno.getDate() === fechaDos.getDate() &&
     fechaUno.getMonth() === fechaDos.getMonth() &&
     fechaUno.getFullYear() === fechaDos.getFullYear()
   ) {
-    misma = true;
+    mismaFecha = true;
   }
 
-  return misma;
+  return mismaFecha;
 }
 
-function CalendarInput({ label, value, onChangeText, placeholder }) {
+function CalendarInput({ label, value, onChangeText }) {
   const [visible, setVisible] = useState(false);
   const [mesVisible, setMesVisible] = useState(convertirTextoAFecha(value));
 
   const fechaSeleccionada = convertirTextoAFecha(value);
-  const dias = obtenerDiasDelMes(mesVisible);
-
-  let textoValor = placeholder;
-
-  if (value !== "") {
-    textoValor = value;
-  }
+  const dias = obtenerDiasMes(mesVisible);
 
   function abrirCalendario() {
     setMesVisible(convertirTextoAFecha(value));
@@ -180,20 +188,10 @@ function CalendarInput({ label, value, onChangeText, placeholder }) {
     setVisible(false);
   }
 
-  function irMesAnterior() {
+  function cambiarMes(cantidad) {
     const nuevaFecha = new Date(
       mesVisible.getFullYear(),
-      mesVisible.getMonth() - 1,
-      1,
-    );
-
-    setMesVisible(nuevaFecha);
-  }
-
-  function irMesSiguiente() {
-    const nuevaFecha = new Date(
-      mesVisible.getFullYear(),
-      mesVisible.getMonth() + 1,
+      mesVisible.getMonth() + cantidad,
       1,
     );
 
@@ -212,12 +210,11 @@ function CalendarInput({ label, value, onChangeText, placeholder }) {
   }
 
   return (
-    <View style={styles.calendarInputContainer}>
-      <Text style={styles.calendarLabel}>{label}</Text>
+    <View style={styles.calendarContainer}>
+      <Text style={styles.label}>{label}</Text>
 
       <TouchableOpacity style={styles.calendarField} onPress={abrirCalendario}>
-        <Text style={styles.calendarValue}>{textoValor}</Text>
-
+        <Text style={styles.calendarValue}>{value}</Text>
         <Icon icon={ICONS.calendar} size={18} color={COLORS.primary} />
       </TouchableOpacity>
 
@@ -232,7 +229,9 @@ function CalendarInput({ label, value, onChangeText, placeholder }) {
             <View style={styles.calendarHeader}>
               <TouchableOpacity
                 style={styles.calendarArrow}
-                onPress={irMesAnterior}
+                onPress={function () {
+                  cambiarMes(-1);
+                }}
               >
                 <Text style={styles.calendarArrowText}>‹</Text>
               </TouchableOpacity>
@@ -243,7 +242,9 @@ function CalendarInput({ label, value, onChangeText, placeholder }) {
 
               <TouchableOpacity
                 style={styles.calendarArrow}
-                onPress={irMesSiguiente}
+                onPress={function () {
+                  cambiarMes(1);
+                }}
               >
                 <Text style={styles.calendarArrowText}>›</Text>
               </TouchableOpacity>
@@ -270,7 +271,6 @@ function CalendarInput({ label, value, onChangeText, placeholder }) {
                   mesVisible.getMonth(),
                   dia,
                 );
-
                 let dayStyle = [styles.dayButton];
                 let dayTextStyle = [styles.dayText];
 
@@ -293,12 +293,9 @@ function CalendarInput({ label, value, onChangeText, placeholder }) {
               })}
             </View>
 
-            <TouchableOpacity
-              style={styles.calendarCloseButton}
-              onPress={cerrarCalendario}
-            >
-              <Text style={styles.calendarCloseText}>Cerrar</Text>
-            </TouchableOpacity>
+            <Button onPress={cerrarCalendario}>
+              <Text style={styles.buttonText}>Cerrar</Text>
+            </Button>
           </View>
         </View>
       </NativeModal>
@@ -308,7 +305,6 @@ function CalendarInput({ label, value, onChangeText, placeholder }) {
 
 export default function EnfermedadesScreen({ navigation }) {
   const { width } = useWindowDimensions();
-
   let esTablet = false;
   let esDesktop = false;
 
@@ -328,229 +324,68 @@ export default function EnfermedadesScreen({ navigation }) {
   const [severidad, setSeveridad] = useState("");
   const [mortalidad, setMortalidad] = useState("");
   const [sintomas, setSintomas] = useState("");
-  const [diagnosticoLaboratorio, setDiagnosticoLaboratorio] = useState("");
+  const [diagnostico, setDiagnostico] = useState("");
   const [usaProbiotico, setUsaProbiotico] = useState("");
   const [productoProbiotico, setProductoProbiotico] = useState("");
-  const [dosisProbiotico, setDosisProbiotico] = useState("");
-  const [frecuenciaProbiotico, setFrecuenciaProbiotico] = useState("");
   const [usaAntibiotico, setUsaAntibiotico] = useState("");
   const [productoAntibiotico, setProductoAntibiotico] = useState("");
   const [periodoRetiro, setPeriodoRetiro] = useState("0");
-  const [observaciones, setObservaciones] = useState("");
   const [estadoCaso, setEstadoCaso] = useState("");
   const [proximaRevision, setProximaRevision] = useState(obtenerFechaActual());
+  const [observaciones, setObservaciones] = useState("");
   const [mensaje, setMensaje] = useState("");
   const [tipoMensaje, setTipoMensaje] = useState("info");
   const [modalVisible, setModalVisible] = useState(false);
 
   let headerStyle = [styles.header];
-
-  if (esDesktop === true) {
-    headerStyle.push(styles.headerDesktop);
-  }
-
-  let headerContentStyle = [styles.headerContent];
-
-  if (esDesktop === true) {
-    headerContentStyle.push(styles.headerContentFull);
-  }
-
   let contentStyle = [styles.content];
-
-  if (esTablet === true) {
-    contentStyle.push(styles.contentTablet);
-  }
-
-  if (esDesktop === true) {
-    contentStyle.push(styles.contentDesktop);
-  }
-
   let gridStyle = [styles.grid];
-
-  if (esTablet === true) {
-    gridStyle.push(styles.gridTablet);
-  }
-
-  if (esDesktop === true) {
-    gridStyle.push(styles.gridDesktop);
-  }
-
-  let gridItemStyle = [styles.gridItem];
-
-  if (esTablet === true) {
-    gridItemStyle.push(styles.gridItemTablet);
-  }
-
-  if (esDesktop === true) {
-    gridItemStyle.push(styles.gridItemDesktop);
-  }
-
-  let fullGridItemStyle = [styles.gridItem];
-
-  if (esTablet === true) {
-    fullGridItemStyle.push(styles.gridItemFull);
-  }
-
-  if (esDesktop === true) {
-    fullGridItemStyle.push(styles.gridItemFull);
-  }
-
+  let itemStyle = [styles.gridItem];
+  let itemFullStyle = [styles.gridItem];
   let actionsStyle = [styles.actions];
 
   if (esTablet === true) {
+    contentStyle.push(styles.contentTablet);
+    gridStyle.push(styles.gridTablet);
+    itemStyle.push(styles.gridItemTablet);
+    itemFullStyle.push(styles.gridItemFull);
     actionsStyle.push(styles.actionsTablet);
   }
 
-  let actionButtonStyle = [styles.actionButton];
-
-  if (esTablet === true) {
-    actionButtonStyle.push(styles.actionButtonTablet);
+  if (esDesktop === true) {
+    headerStyle.push(styles.headerDesktop);
+    contentStyle.push(styles.contentDesktop);
+    gridStyle.push(styles.gridDesktop);
+    itemStyle.push(styles.gridItemDesktop);
+    itemFullStyle.push(styles.gridItemFull);
   }
 
-  const estanques = [
-    {
-      label: "EST-01 - Finca La Reina",
-      value: "est-01",
-    },
-    {
-      label: "EST-02 - Finca La Reina",
-      value: "est-02",
-    },
-    {
-      label: "EST-03 - Finca La Reina",
-      value: "est-03",
-    },
-  ];
-
-  const tiposEvento = [
-    {
-      label: "Monitoreo preventivo",
-      value: "monitoreo_preventivo",
-    },
-    {
-      label: "Sospecha de enfermedad",
-      value: "sospecha_enfermedad",
-    },
-    {
-      label: "Enfermedad confirmada",
-      value: "enfermedad_confirmada",
-    },
-    {
-      label: "Mortalidad elevada",
-      value: "mortalidad_elevada",
-    },
-  ];
-
-  const enfermedades = [
-    {
-      label: "WSSV - Sindrome de la Mancha Blanca",
-      value: "wssv",
-    },
-    {
-      label: "AHPND - Necrosis Hepatopancreatica Aguda",
-      value: "ahpnd",
-    },
-    {
-      label: "NHP - Necrosis Hepatopancreatica",
-      value: "nhp",
-    },
-    {
-      label: "IHHNV - Necrosis Infecciosa Hipodermica y Hematopoyetica",
-      value: "ihhnv",
-    },
-    {
-      label: "Vibriosis",
-      value: "vibriosis",
-    },
-    {
-      label: "Gregarinas",
-      value: "gregarinas",
-    },
-    {
-      label: "Epicomensales",
-      value: "epicomensales",
-    },
-    {
-      label: "Otro",
-      value: "otro",
-    },
-  ];
-
-  const nivelesSeveridad = [
-    {
-      label: "Baja",
-      value: "baja",
-    },
-    {
-      label: "Media",
-      value: "media",
-    },
-    {
-      label: "Alta",
-      value: "alta",
-    },
-    {
-      label: "Critica",
-      value: "critica",
-    },
-  ];
-
-  const opcionesSiNo = [
-    {
-      label: "Si",
-      value: "si",
-    },
-    {
-      label: "No",
-      value: "no",
-    },
-  ];
-
-  const estadosCaso = [
-    {
-      label: "En observacion",
-      value: "observacion",
-    },
-    {
-      label: "En tratamiento",
-      value: "tratamiento",
-    },
-    {
-      label: "Controlado",
-      value: "controlado",
-    },
-    {
-      label: "Cerrado",
-      value: "cerrado",
-    },
-  ];
-
-  function cancelar() {
+  function volver() {
     if (navigation) {
       navigation.goBack();
     }
   }
 
-  function obtenerProgresoRiesgo() {
-    let progreso = 0;
+  function obtenerRiesgo() {
+    let riesgo = 0;
 
     if (severidad === "baja") {
-      progreso = 25;
+      riesgo = 25;
     }
 
     if (severidad === "media") {
-      progreso = 50;
+      riesgo = 50;
     }
 
     if (severidad === "alta") {
-      progreso = 75;
+      riesgo = 75;
     }
 
     if (severidad === "critica") {
-      progreso = 100;
+      riesgo = 100;
     }
 
-    return progreso;
+    return riesgo;
   }
 
   function obtenerColorRiesgo() {
@@ -575,26 +410,26 @@ export default function EnfermedadesScreen({ navigation }) {
     return color;
   }
 
-  function obtenerEtiquetaRiesgo() {
-    let etiqueta = "Sin clasificar";
+  function obtenerTextoRiesgo() {
+    let texto = "Sin clasificar";
 
     if (severidad === "baja") {
-      etiqueta = "Riesgo bajo";
+      texto = "Riesgo bajo";
     }
 
     if (severidad === "media") {
-      etiqueta = "Riesgo medio";
+      texto = "Riesgo medio";
     }
 
     if (severidad === "alta") {
-      etiqueta = "Riesgo alto";
+      texto = "Riesgo alto";
     }
 
     if (severidad === "critica") {
-      etiqueta = "Riesgo critico";
+      texto = "Riesgo critico";
     }
 
-    return etiqueta;
+    return texto;
   }
 
   function obtenerVarianteRiesgo() {
@@ -621,56 +456,32 @@ export default function EnfermedadesScreen({ navigation }) {
 
   function obtenerRecomendacion() {
     let recomendacion =
-      "Complete la informacion del caso sanitario para generar una recomendacion.";
+      "Complete la informacion del caso para generar una recomendacion.";
 
     if (severidad === "baja") {
       recomendacion =
-        "Mantener observacion diaria, revisar parametros fisicoquimicos y reforzar el manejo preventivo del estanque.";
+        "Mantener observacion diaria y revisar parametros fisicoquimicos.";
     }
 
     if (severidad === "media") {
       recomendacion =
-        "Aumentar el monitoreo, revisar alimentacion, oxigeno, temperatura, salinidad y registrar cambios en mortalidad.";
+        "Aumentar monitoreo, revisar alimentacion y registrar cambios.";
     }
 
     if (severidad === "alta") {
       recomendacion =
-        "Solicitar apoyo tecnico, tomar muestra para diagnostico y evitar aplicar antibioticos sin confirmacion del problema.";
+        "Solicitar apoyo tecnico y tomar muestra para diagnostico.";
     }
 
     if (severidad === "critica") {
       recomendacion =
-        "Atender el caso como emergencia sanitaria, solicitar diagnostico, documentar acciones y dar seguimiento continuo al estanque.";
+        "Atender como emergencia sanitaria y dar seguimiento continuo.";
     }
 
     return recomendacion;
   }
 
-  function mostrarRecomendacion() {
-    setModalVisible(true);
-  }
-
-  function cerrarModal() {
-    setModalVisible(false);
-  }
-
-  function disminuirPeriodoRetiro() {
-    const valorActual = Number(periodoRetiro);
-
-    if (valorActual > 0) {
-      const nuevoValor = valorActual - 1;
-      setPeriodoRetiro(String(nuevoValor));
-    }
-  }
-
-  function aumentarPeriodoRetiro() {
-    const valorActual = Number(periodoRetiro);
-    const nuevoValor = valorActual + 1;
-
-    setPeriodoRetiro(String(nuevoValor));
-  }
-
-  function cambiarPeriodoRetiro(texto) {
+  function cambiarPeriodo(texto) {
     const soloNumeros = texto.replace(/[^0-9]/g, "");
 
     if (soloNumeros === "") {
@@ -681,119 +492,106 @@ export default function EnfermedadesScreen({ navigation }) {
     setPeriodoRetiro(soloNumeros);
   }
 
-  function validarFormulario() {
-    let formularioValido = true;
+  function disminuirPeriodo() {
+    const valor = Number(periodoRetiro);
+
+    if (valor > 0) {
+      setPeriodoRetiro(String(valor - 1));
+    }
+  }
+
+  function aumentarPeriodo() {
+    const valor = Number(periodoRetiro);
+    setPeriodoRetiro(String(valor + 1));
+  }
+
+  function validar() {
+    let valido = true;
 
     if (estanque === "") {
-      setMensaje("Debe seleccionar el estanque relacionado con el caso.");
+      setMensaje("Debe seleccionar el estanque.");
       setTipoMensaje("warning");
-      formularioValido = false;
+      valido = false;
     }
 
-    if (formularioValido === true && fechaReporte === "") {
-      setMensaje("Debe seleccionar la fecha del reporte.");
+    if (valido === true && tipoEvento === "") {
+      setMensaje("Debe seleccionar el tipo de evento.");
       setTipoMensaje("warning");
-      formularioValido = false;
+      valido = false;
     }
 
-    if (formularioValido === true && tipoEvento === "") {
-      setMensaje("Debe seleccionar el tipo de evento sanitario.");
+    if (valido === true && enfermedad === "") {
+      setMensaje("Debe seleccionar la enfermedad.");
       setTipoMensaje("warning");
-      formularioValido = false;
+      valido = false;
     }
 
-    if (formularioValido === true && enfermedad === "") {
-      setMensaje("Debe seleccionar la enfermedad o agente detectado.");
+    if (valido === true && severidad === "") {
+      setMensaje("Debe seleccionar la severidad.");
       setTipoMensaje("warning");
-      formularioValido = false;
+      valido = false;
     }
 
-    if (formularioValido === true && severidad === "") {
-      setMensaje("Debe seleccionar la severidad del caso.");
-      setTipoMensaje("warning");
-      formularioValido = false;
-    }
-
-    if (formularioValido === true && sintomas === "") {
+    if (valido === true && sintomas === "") {
       setMensaje("Debe describir los sintomas observados.");
       setTipoMensaje("warning");
-      formularioValido = false;
+      valido = false;
     }
 
-    if (formularioValido === true && diagnosticoLaboratorio === "") {
+    if (valido === true && diagnostico === "") {
       setMensaje("Debe indicar si existe diagnostico de laboratorio.");
       setTipoMensaje("warning");
-      formularioValido = false;
+      valido = false;
     }
 
-    if (
-      formularioValido === true &&
-      usaAntibiotico === "si" &&
-      diagnosticoLaboratorio !== "si"
-    ) {
-      setMensaje(
-        "Antes de registrar antibioticos, indique un diagnostico de laboratorio.",
-      );
+    if (valido === true && usaAntibiotico === "si" && diagnostico !== "si") {
+      setMensaje("No registre antibioticos sin diagnostico de laboratorio.");
       setTipoMensaje("danger");
-      formularioValido = false;
+      valido = false;
     }
 
     if (
-      formularioValido === true &&
-      usaAntibiotico === "si" &&
-      productoAntibiotico === ""
-    ) {
-      setMensaje("Debe indicar el producto antibiotico utilizado.");
-      setTipoMensaje("warning");
-      formularioValido = false;
-    }
-
-    if (
-      formularioValido === true &&
+      valido === true &&
       usaAntibiotico === "si" &&
       Number(periodoRetiro) <= 0
     ) {
-      setMensaje("Debe indicar un periodo de retiro mayor a 0 dias.");
+      setMensaje("El periodo de retiro debe ser mayor a 0 dias.");
       setTipoMensaje("warning");
-      formularioValido = false;
+      valido = false;
     }
 
-    return formularioValido;
+    return valido;
   }
 
-  function registrarCasoSanitario() {
-    const formularioValido = validarFormulario();
+  function registrar() {
+    const valido = validar();
 
-    if (formularioValido === false) {
+    if (valido === false) {
       return;
     }
 
-    const nuevoCasoSanitario = {
+    const casoSanitario = {
       estanque: estanque,
       fechaReporte: fechaReporte,
       responsable: responsable,
       tipoEvento: tipoEvento,
       enfermedad: enfermedad,
       severidad: severidad,
-      nivelRiesgo: obtenerProgresoRiesgo(),
+      riesgo: obtenerRiesgo(),
       mortalidad: mortalidad,
       sintomas: sintomas,
-      diagnosticoLaboratorio: diagnosticoLaboratorio,
+      diagnosticoLaboratorio: diagnostico,
       usaProbiotico: usaProbiotico,
       productoProbiotico: productoProbiotico,
-      dosisProbiotico: dosisProbiotico,
-      frecuenciaProbiotico: frecuenciaProbiotico,
       usaAntibiotico: usaAntibiotico,
       productoAntibiotico: productoAntibiotico,
       periodoRetiroDias: Number(periodoRetiro),
-      observaciones: observaciones,
       estadoCaso: estadoCaso,
       proximaRevision: proximaRevision,
-      recomendacion: obtenerRecomendacion(),
+      observaciones: observaciones,
     };
 
-    console.log("Caso sanitario registrado:", nuevoCasoSanitario);
-
+    console.log("Caso sanitario registrado:", casoSanitario);
     setMensaje("Caso sanitario registrado correctamente.");
     setTipoMensaje("success");
     setModalVisible(true);
@@ -802,156 +600,111 @@ export default function EnfermedadesScreen({ navigation }) {
   return (
     <ScrollView style={styles.screen}>
       <View style={headerStyle}>
-        <View style={headerContentStyle}>
-          <TouchableOpacity onPress={cancelar} style={styles.cancelarButton}>
-            <Icon icon={ICONS.exit} size={18} color={COLORS.white} />
-            <Text style={styles.cancelar}>Cancelar</Text>
-          </TouchableOpacity>
+        <TouchableOpacity onPress={volver} style={styles.cancelButton}>
+          <Icon icon={ICONS.exit} size={18} color={COLORS.white} />
+          <Text style={styles.cancelText}>Cancelar</Text>
+        </TouchableOpacity>
 
-          <View style={styles.headerTitleRow}>
-            <View style={styles.headerIcon}>
-              <Icon
-                icon={ICONS.chemicalContainer}
-                size={26}
-                color={COLORS.primary}
-              />
-            </View>
-
-            <View style={styles.headerTextContainer}>
-              <Title level={3} color={COLORS.white} style={styles.headerTitle}>
-                Enfermedades
-              </Title>
-
-              <CustomText
-                size={14}
-                color={COLORS.white}
-                weight="500"
-                style={styles.headerSubtitle}
-              >
-                Registro sanitario del estanque
-              </CustomText>
-            </View>
+        <View style={styles.headerRow}>
+          <View style={styles.headerIcon}>
+            <Icon
+              icon={ICONS.chemicalContainer}
+              size={26}
+              color={COLORS.primary}
+            />
           </View>
 
-          <View style={styles.headerBadges}>
-            <Badge
-              label="Sanidad"
-              variant="info"
-              style={styles.headerBadge}
-              textStyle={styles.headerBadgeText}
-            />
+          <View>
+            <Title level={3} color={COLORS.white} style={styles.headerTitle}>
+              Enfermedades
+            </Title>
 
-            <Badge
-              label="Camaron"
-              variant="success"
-              style={styles.headerBadge}
-              textStyle={styles.headerBadgeText}
-            />
+            <CustomText
+              size={14}
+              color={COLORS.white}
+              weight="500"
+              style={styles.headerSubtitle}
+            >
+              Registro sanitario del estanque
+            </CustomText>
           </View>
         </View>
       </View>
 
       <View style={contentStyle}>
         {mensaje !== "" && (
-          <View style={styles.alertWrapper}>
-            <Alert
-              variant={tipoMensaje}
-              message={mensaje}
-              textStyle={styles.alertText}
-            />
-          </View>
+          <Alert
+            variant={tipoMensaje}
+            message={mensaje}
+            style={styles.alert}
+            textStyle={styles.alertText}
+          />
         )}
 
         <Card title="RESUMEN DEL RIESGO" titleStyle={styles.cardTitle}>
-          <View style={styles.riskHeader}>
-            <View style={styles.riskIcon}>
-              <Icon
-                icon={ICONS.notification}
-                size={24}
-                color={obtenerColorRiesgo()}
-              />
-            </View>
+          <View style={styles.riskRow}>
+            <Icon
+              icon={ICONS.notification}
+              size={24}
+              color={obtenerColorRiesgo()}
+            />
 
-            <View style={styles.riskInfo}>
-              <CustomText
-                size={13}
-                color={COLORS.textTertiary}
-                weight="600"
-                style={styles.robotoMedium}
-              >
+            <View style={styles.riskTextBox}>
+              <CustomText size={13} color={COLORS.textTertiary} weight="600">
                 Nivel sanitario actual
               </CustomText>
 
               <Badge
-                label={obtenerEtiquetaRiesgo()}
+                label={obtenerTextoRiesgo()}
                 variant={obtenerVarianteRiesgo()}
-                style={styles.riskBadge}
-                textStyle={styles.badgeText}
+                style={styles.badge}
               />
             </View>
           </View>
 
           <ProgressBar
-            progress={obtenerProgresoRiesgo()}
+            progress={obtenerRiesgo()}
             color={obtenerColorRiesgo()}
             backgroundColor={COLORS.secondary}
-            style={styles.progress}
           />
-
-          <CustomText
-            size={13}
-            color={COLORS.textTertiary}
-            weight="400"
-            style={styles.riskHelp}
-          >
-            El riesgo se calcula segun la severidad seleccionada para el caso
-            sanitario.
-          </CustomText>
         </Card>
 
         <Card title="IDENTIFICACION" titleStyle={styles.cardTitle}>
           <View style={gridStyle}>
-            <View style={gridItemStyle}>
+            <View style={itemStyle}>
               <Select
                 label="Estanque relacionado *"
-                options={estanques}
+                options={ESTANQUES}
                 value={estanque}
                 onChange={setEstanque}
                 placeholder="Seleccione el estanque"
                 labelStyle={styles.label}
-                selectedTextStyle={styles.inputText}
               />
             </View>
-
-            <View style={gridItemStyle}>
+            <View style={itemStyle}>
               <CalendarInput
                 label="Fecha del reporte *"
                 value={fechaReporte}
                 onChangeText={setFechaReporte}
-                placeholder="dd/mm/aaaa"
               />
             </View>
-
-            <View style={gridItemStyle}>
+            <View style={itemStyle}>
               <Input
                 label="Responsable"
                 value={responsable}
                 onChangeText={setResponsable}
-                placeholder="Nombre de quien realiza el reporte"
+                placeholder="Nombre del responsable"
                 labelStyle={styles.label}
-                style={styles.input}
               />
             </View>
-
-            <View style={gridItemStyle}>
+            <View style={itemStyle}>
               <Select
-                label="Tipo de evento sanitario *"
-                options={tiposEvento}
+                label="Tipo de evento *"
+                options={EVENTOS}
                 value={tipoEvento}
                 onChange={setTipoEvento}
-                placeholder="Seleccione el tipo de evento"
+                placeholder="Seleccione el evento"
                 labelStyle={styles.label}
-                selectedTextStyle={styles.inputText}
               />
             </View>
           </View>
@@ -959,59 +712,51 @@ export default function EnfermedadesScreen({ navigation }) {
 
         <Card title="ENFERMEDAD DETECTADA" titleStyle={styles.cardTitle}>
           <View style={gridStyle}>
-            <View style={gridItemStyle}>
+            <View style={itemStyle}>
               <Select
-                label="Enfermedad o agente detectado *"
-                options={enfermedades}
+                label="Enfermedad *"
+                options={ENFERMEDADES}
                 value={enfermedad}
                 onChange={setEnfermedad}
                 placeholder="Seleccione la enfermedad"
                 labelStyle={styles.label}
-                selectedTextStyle={styles.inputText}
               />
             </View>
-
-            <View style={gridItemStyle}>
+            <View style={itemStyle}>
               <Select
                 label="Severidad *"
-                options={nivelesSeveridad}
+                options={SEVERIDADES}
                 value={severidad}
                 onChange={setSeveridad}
                 placeholder="Seleccione la severidad"
                 labelStyle={styles.label}
-                selectedTextStyle={styles.inputText}
               />
             </View>
-
-            <View style={gridItemStyle}>
+            <View style={itemStyle}>
               <Input
                 label="Mortalidad observada"
                 value={mortalidad}
                 onChangeText={setMortalidad}
-                placeholder="Ej: 20 camarones, baja, alta o sin mortalidad"
+                placeholder="Ej: 20 camarones"
                 labelStyle={styles.label}
-                style={styles.input}
               />
             </View>
-
-            <View style={gridItemStyle}>
+            <View style={itemStyle}>
               <Select
                 label="Diagnostico de laboratorio *"
-                options={opcionesSiNo}
-                value={diagnosticoLaboratorio}
-                onChange={setDiagnosticoLaboratorio}
+                options={SI_NO}
+                value={diagnostico}
+                onChange={setDiagnostico}
                 placeholder="Seleccione una opcion"
                 labelStyle={styles.label}
-                selectedTextStyle={styles.inputText}
               />
             </View>
-
-            <View style={fullGridItemStyle}>
+            <View style={itemFullStyle}>
               <Input
                 label="Sintomas observados *"
                 value={sintomas}
                 onChangeText={setSintomas}
-                placeholder="Describa coloracion, comportamiento, alimentacion, bordes del estanque o mortalidad"
+                placeholder="Describa sintomas observados"
                 multiline={true}
                 labelStyle={styles.label}
                 style={styles.textArea}
@@ -1020,139 +765,67 @@ export default function EnfermedadesScreen({ navigation }) {
           </View>
         </Card>
 
-        <Card
-          title="MANEJO PREVENTIVO CON PROBIOTICOS"
-          titleStyle={styles.cardTitle}
-        >
-          <View style={styles.infoBox}>
-            <Icon icon={ICONS.info} size={20} color={COLORS.primary} />
-
-            <CustomText
-              size={13}
-              color={COLORS.textSecondary}
-              weight="500"
-              style={styles.infoText}
-            >
-              Los probioticos se registran como apoyo preventivo para mejorar el
-              ambiente del estanque y el manejo sanitario.
-            </CustomText>
-          </View>
-
+        <Card title="MANEJO SANITARIO" titleStyle={styles.cardTitle}>
           <View style={gridStyle}>
-            <View style={gridItemStyle}>
+            <View style={itemStyle}>
               <Select
                 label="Uso de probioticos"
-                options={opcionesSiNo}
+                options={SI_NO}
                 value={usaProbiotico}
                 onChange={setUsaProbiotico}
                 placeholder="Seleccione una opcion"
                 labelStyle={styles.label}
-                selectedTextStyle={styles.inputText}
               />
             </View>
-
-            <View style={gridItemStyle}>
+            <View style={itemStyle}>
               <Input
                 label="Producto probiotico"
                 value={productoProbiotico}
                 onChangeText={setProductoProbiotico}
-                placeholder="Ej: BIOMIN o Bacillus subtilis"
+                placeholder="Ej: BIOMIN"
                 labelStyle={styles.label}
-                style={styles.input}
               />
             </View>
-
-            <View style={gridItemStyle}>
-              <Input
-                label="Dosis"
-                value={dosisProbiotico}
-                onChangeText={setDosisProbiotico}
-                placeholder="Ej: 0.3 kg/ha"
-                labelStyle={styles.label}
-                style={styles.input}
-              />
-            </View>
-
-            <View style={gridItemStyle}>
-              <Input
-                label="Frecuencia"
-                value={frecuenciaProbiotico}
-                onChangeText={setFrecuenciaProbiotico}
-                placeholder="Ej: semanal"
-                labelStyle={styles.label}
-                style={styles.input}
-              />
-            </View>
-          </View>
-        </Card>
-
-        <Card title="USO DE ANTIBIOTICOS" titleStyle={styles.cardTitle}>
-          <View style={styles.warningBox}>
-            <Icon icon={ICONS.notification} size={20} color={COLORS.warning} />
-
-            <CustomText
-              size={13}
-              color={COLORS.textSecondary}
-              weight="500"
-              style={styles.infoText}
-            >
-              Registre antibioticos solo cuando exista diagnostico y control del
-              periodo de retiro.
-            </CustomText>
-          </View>
-
-          <View style={gridStyle}>
-            <View style={gridItemStyle}>
+            <View style={itemStyle}>
               <Select
                 label="Uso de antibioticos"
-                options={opcionesSiNo}
+                options={SI_NO}
                 value={usaAntibiotico}
                 onChange={setUsaAntibiotico}
                 placeholder="Seleccione una opcion"
                 labelStyle={styles.label}
-                selectedTextStyle={styles.inputText}
               />
             </View>
-
-            <View style={gridItemStyle}>
+            <View style={itemStyle}>
               <Input
                 label="Producto antibiotico"
                 value={productoAntibiotico}
                 onChangeText={setProductoAntibiotico}
-                placeholder="Ej: TM700 u oxitetraciclina"
+                placeholder="Ej: oxitetraciclina"
                 labelStyle={styles.label}
-                style={styles.input}
               />
             </View>
-
-            <View style={gridItemStyle}>
+            <View style={itemStyle}>
               <View style={styles.periodoContainer}>
-                <Text style={styles.periodoLabel}>
-                  Periodo de retiro (dias)
-                </Text>
-
-                <View style={styles.periodoControl}>
+                <Text style={styles.label}>Periodo de retiro</Text>
+                <View style={styles.periodoRow}>
                   <TouchableOpacity
                     style={styles.periodoButton}
-                    onPress={disminuirPeriodoRetiro}
+                    onPress={disminuirPeriodo}
                   >
                     <Text style={styles.periodoButtonText}>-</Text>
                   </TouchableOpacity>
-
                   <Input
                     value={periodoRetiro}
-                    onChangeText={cambiarPeriodoRetiro}
+                    onChangeText={cambiarPeriodo}
                     keyboardType="numeric"
-                    placeholder="0"
                     containerStyle={styles.periodoInputContainer}
                     style={styles.periodoInput}
                   />
-
                   <Text style={styles.periodoSuffix}>(dias)</Text>
-
                   <TouchableOpacity
                     style={styles.periodoButton}
-                    onPress={aumentarPeriodoRetiro}
+                    onPress={aumentarPeriodo}
                   >
                     <Text style={styles.periodoButtonText}>+</Text>
                   </TouchableOpacity>
@@ -1164,33 +837,29 @@ export default function EnfermedadesScreen({ navigation }) {
 
         <Card title="SEGUIMIENTO" titleStyle={styles.cardTitle}>
           <View style={gridStyle}>
-            <View style={gridItemStyle}>
+            <View style={itemStyle}>
               <Select
                 label="Estado del caso"
-                options={estadosCaso}
+                options={ESTADOS_CASO}
                 value={estadoCaso}
                 onChange={setEstadoCaso}
                 placeholder="Seleccione el estado"
                 labelStyle={styles.label}
-                selectedTextStyle={styles.inputText}
               />
             </View>
-
-            <View style={gridItemStyle}>
+            <View style={itemStyle}>
               <CalendarInput
                 label="Proxima revision"
                 value={proximaRevision}
                 onChangeText={setProximaRevision}
-                placeholder="dd/mm/aaaa"
               />
             </View>
-
-            <View style={fullGridItemStyle}>
+            <View style={itemFullStyle}>
               <Input
                 label="Observaciones"
                 value={observaciones}
                 onChangeText={setObservaciones}
-                placeholder="Agregue recomendaciones, acciones realizadas o cambios observados"
+                placeholder="Agregue observaciones"
                 multiline={true}
                 labelStyle={styles.label}
                 style={styles.textArea}
@@ -1202,8 +871,10 @@ export default function EnfermedadesScreen({ navigation }) {
         <View style={actionsStyle}>
           <Button
             variant="outline"
-            onPress={mostrarRecomendacion}
-            style={actionButtonStyle}
+            onPress={function () {
+              setModalVisible(true);
+            }}
+            style={styles.actionButton}
           >
             <View style={styles.buttonContentOutline}>
               <Icon icon={ICONS.info} size={18} color={COLORS.primary} />
@@ -1211,7 +882,7 @@ export default function EnfermedadesScreen({ navigation }) {
             </View>
           </Button>
 
-          <Button onPress={registrarCasoSanitario} style={actionButtonStyle}>
+          <Button onPress={registrar} style={styles.actionButton}>
             <View style={styles.buttonContent}>
               <Icon icon={ICONS.save} size={18} color={COLORS.white} />
               <Text style={styles.buttonText}>Registrar caso</Text>
@@ -1220,20 +891,17 @@ export default function EnfermedadesScreen({ navigation }) {
         </View>
       </View>
 
-      <CustomModal
+      <Modal
         visible={modalVisible}
-        onClose={cerrarModal}
+        onClose={function () {
+          setModalVisible(false);
+        }}
         closeText="Cerrar"
         overlayStyle={styles.modalOverlay}
         containerStyle={styles.modalContainer}
-        buttonStyle={styles.modalButton}
-        buttonTextStyle={styles.modalButtonText}
       >
         <View style={styles.modalHeader}>
-          <View style={styles.modalIcon}>
-            <Icon icon={ICONS.certificate} size={26} color={COLORS.primary} />
-          </View>
-
+          <Icon icon={ICONS.certificate} size={26} color={COLORS.primary} />
           <Title
             level={4}
             color={COLORS.textSecondary}
@@ -1242,7 +910,6 @@ export default function EnfermedadesScreen({ navigation }) {
             Recomendacion sanitaria
           </Title>
         </View>
-
         <CustomText
           size={15}
           color={COLORS.textSecondary}
@@ -1251,15 +918,7 @@ export default function EnfermedadesScreen({ navigation }) {
         >
           {obtenerRecomendacion()}
         </CustomText>
-
-        <View style={styles.modalBadgeContainer}>
-          <Badge
-            label={obtenerEtiquetaRiesgo()}
-            variant={obtenerVarianteRiesgo()}
-            textStyle={styles.badgeText}
-          />
-        </View>
-      </CustomModal>
+      </Modal>
     </ScrollView>
   );
 }
@@ -1267,53 +926,36 @@ export default function EnfermedadesScreen({ navigation }) {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: COLORS.surface,
     width: "100%",
+    backgroundColor: COLORS.surface,
   },
-
   header: {
+    width: "100%",
     backgroundColor: COLORS.primary,
     paddingTop: 24,
     paddingHorizontal: 24,
     paddingBottom: 28,
     borderBottomLeftRadius: 22,
     borderBottomRightRadius: 22,
-    width: "100%",
   },
-
   headerDesktop: {
     paddingHorizontal: 48,
   },
-
-  headerContent: {
-    width: "100%",
-  },
-
-  headerContentFull: {
-    width: "100%",
-    maxWidth: "100%",
-    alignSelf: "stretch",
-  },
-
-  cancelarButton: {
+  cancelButton: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 18,
   },
-
-  cancelar: {
+  cancelText: {
     color: COLORS.white,
     fontSize: 16,
-    fontWeight: "600",
-    marginLeft: 8,
     fontFamily: TYPOGRAPHY.fontFamily.medium,
+    marginLeft: 8,
   },
-
-  headerTitleRow: {
+  headerRow: {
     flexDirection: "row",
     alignItems: "center",
   },
-
   headerIcon: {
     width: 48,
     height: 48,
@@ -1323,222 +965,104 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginRight: 14,
   },
-
-  headerTextContainer: {
-    flex: 1,
-  },
-
   headerTitle: {
     fontFamily: TYPOGRAPHY.fontFamily.bold,
-    marginBottom: 2,
   },
-
   headerSubtitle: {
     fontFamily: TYPOGRAPHY.fontFamily.medium,
+    marginTop: 2,
   },
-
-  headerBadges: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    marginTop: 18,
-    gap: 8,
-  },
-
-  headerBadge: {
-    backgroundColor: COLORS.white,
-  },
-
-  headerBadgeText: {
-    color: COLORS.primary,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-  },
-
   content: {
     width: "100%",
     padding: 18,
   },
-
   contentTablet: {
     paddingHorizontal: 32,
   },
-
   contentDesktop: {
-    width: "100%",
-    maxWidth: "100%",
     paddingHorizontal: 48,
-    alignSelf: "stretch",
   },
-
-  alertWrapper: {
-    marginBottom: 16,
+  alert: {
+    marginBottom: 14,
   },
-
   alertText: {
     fontFamily: TYPOGRAPHY.fontFamily.medium,
   },
-
   cardTitle: {
     fontFamily: TYPOGRAPHY.fontFamily.bold,
     color: COLORS.textSecondary,
   },
-
   label: {
     color: COLORS.textSecondary,
+    fontSize: 14,
     fontFamily: TYPOGRAPHY.fontFamily.medium,
+    fontWeight: "600",
+    marginBottom: 6,
   },
-
-  input: {
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
-    color: COLORS.textSecondary,
-  },
-
-  inputText: {
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
-    color: COLORS.textSecondary,
-  },
-
-  textArea: {
-    minHeight: 110,
-    textAlignVertical: "top",
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
-    color: COLORS.textSecondary,
-  },
-
-  robotoMedium: {
-    fontFamily: TYPOGRAPHY.fontFamily.medium,
-  },
-
   grid: {
-    flexDirection: "column",
     width: "100%",
+    flexDirection: "column",
   },
-
   gridTablet: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 12,
   },
-
   gridDesktop: {
-    flexDirection: "row",
-    flexWrap: "wrap",
     gap: 18,
   },
-
   gridItem: {
     width: "100%",
   },
-
   gridItemTablet: {
     flexGrow: 1,
     flexShrink: 1,
     flexBasis: "48%",
   },
-
   gridItemDesktop: {
-    flexGrow: 1,
-    flexShrink: 1,
     flexBasis: "31%",
   },
-
   gridItemFull: {
     flexBasis: "100%",
   },
-
-  riskHeader: {
+  riskRow: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 12,
   },
-
-  riskIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    backgroundColor: COLORS.secondary,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 12,
-  },
-
-  riskInfo: {
+  riskTextBox: {
+    marginLeft: 12,
     flex: 1,
   },
-
-  riskBadge: {
+  badge: {
     marginTop: 6,
   },
-
-  badgeText: {
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-  },
-
-  progress: {
-    marginTop: 6,
-  },
-
-  riskHelp: {
-    marginTop: 10,
-    lineHeight: 18,
+  textArea: {
+    minHeight: 105,
+    textAlignVertical: "top",
+    color: COLORS.textSecondary,
     fontFamily: TYPOGRAPHY.fontFamily.regular,
   },
-
-  infoBox: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    backgroundColor: COLORS.secondary,
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 14,
-  },
-
-  warningBox: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    backgroundColor: COLORS.warningLight,
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 14,
-  },
-
-  infoText: {
-    flex: 1,
-    marginLeft: 10,
-    lineHeight: 19,
-    fontFamily: TYPOGRAPHY.fontFamily.medium,
-  },
-
-  calendarInputContainer: {
+  calendarContainer: {
     width: "100%",
     marginBottom: 12,
   },
-
-  calendarLabel: {
-    color: COLORS.textSecondary,
-    fontFamily: TYPOGRAPHY.fontFamily.medium,
-    fontSize: 14,
-    fontWeight: "600",
-    marginBottom: 6,
-  },
-
   calendarField: {
-    minHeight: 48,
+    minHeight: 45,
     borderWidth: 1,
-    borderColor: COLORS.textQuaternary,
-    borderRadius: 12,
+    borderColor: COLORS.secondary,
+    borderRadius: 8,
     backgroundColor: COLORS.white,
-    paddingHorizontal: 14,
+    paddingHorizontal: 12,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
   },
-
   calendarValue: {
     color: COLORS.textSecondary,
-    fontSize: 15,
+    fontSize: 16,
     fontFamily: TYPOGRAPHY.fontFamily.regular,
   },
-
   calendarOverlay: {
     flex: 1,
     backgroundColor: "rgba(0, 0, 0, 0.45)",
@@ -1546,22 +1070,19 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     padding: 20,
   },
-
   calendarModal: {
     width: "100%",
     maxWidth: 380,
     backgroundColor: COLORS.white,
-    borderRadius: 18,
+    borderRadius: 16,
     padding: 18,
   },
-
   calendarHeader: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     marginBottom: 14,
   },
-
   calendarArrow: {
     width: 38,
     height: 38,
@@ -1570,26 +1091,21 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-
   calendarArrowText: {
     color: COLORS.primary,
     fontSize: 28,
     fontFamily: TYPOGRAPHY.fontFamily.bold,
     lineHeight: 30,
   },
-
   calendarTitle: {
     color: COLORS.textSecondary,
     fontSize: 17,
-    fontWeight: "700",
     fontFamily: TYPOGRAPHY.fontFamily.bold,
   },
-
   weekRow: {
     flexDirection: "row",
     marginBottom: 8,
   },
-
   weekText: {
     flex: 1,
     textAlign: "center",
@@ -1597,17 +1113,14 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontFamily: TYPOGRAPHY.fontFamily.bold,
   },
-
   daysGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
   },
-
   dayBox: {
     width: "14.285%",
     height: 42,
   },
-
   dayButton: {
     width: "14.285%",
     height: 42,
@@ -1615,182 +1128,106 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderRadius: 10,
   },
-
   daySelected: {
     backgroundColor: COLORS.primary,
   },
-
   dayText: {
     color: COLORS.textSecondary,
     fontSize: 15,
     fontFamily: TYPOGRAPHY.fontFamily.medium,
   },
-
   dayTextSelected: {
     color: COLORS.white,
     fontFamily: TYPOGRAPHY.fontFamily.bold,
   },
-
-  calendarCloseButton: {
-    backgroundColor: COLORS.primary,
-    borderRadius: 12,
-    paddingVertical: 12,
-    alignItems: "center",
-    marginTop: 16,
-  },
-
-  calendarCloseText: {
-    color: COLORS.white,
-    fontSize: 15,
-    fontWeight: "700",
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-  },
-
   periodoContainer: {
     width: "100%",
     marginBottom: 12,
   },
-
-  periodoLabel: {
-    color: COLORS.textSecondary,
-    fontFamily: TYPOGRAPHY.fontFamily.medium,
-    fontSize: 14,
-    fontWeight: "600",
-    marginBottom: 6,
-  },
-
-  periodoControl: {
+  periodoRow: {
     flexDirection: "row",
     alignItems: "center",
-    width: "100%",
   },
-
   periodoButton: {
     width: 42,
     height: 42,
-    borderRadius: 10,
+    borderRadius: 8,
     backgroundColor: COLORS.primary,
     alignItems: "center",
     justifyContent: "center",
   },
-
   periodoButtonText: {
     color: COLORS.white,
     fontSize: 22,
-    fontWeight: "700",
     fontFamily: TYPOGRAPHY.fontFamily.bold,
   },
-
   periodoInputContainer: {
     flex: 1,
-    marginBottom: 0,
     marginHorizontal: 8,
+    marginBottom: 0,
   },
-
   periodoInput: {
     textAlign: "center",
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
     color: COLORS.textSecondary,
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
   },
-
   periodoSuffix: {
     color: COLORS.textTertiary,
     fontSize: 14,
     fontFamily: TYPOGRAPHY.fontFamily.medium,
     marginRight: 8,
   },
-
   actions: {
     marginBottom: 34,
     gap: 12,
   },
-
   actionsTablet: {
     flexDirection: "row",
   },
-
   actionButton: {
+    flex: 1,
     minHeight: 48,
   },
-
-  actionButtonTablet: {
-    flex: 1,
-  },
-
   buttonContent: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
   },
-
   buttonContentOutline: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
   },
-
   buttonText: {
     color: COLORS.white,
     fontSize: 16,
-    fontWeight: "700",
-    marginLeft: 8,
     fontFamily: TYPOGRAPHY.fontFamily.bold,
+    marginLeft: 8,
   },
-
   buttonOutlineText: {
     color: COLORS.primary,
     fontSize: 16,
-    fontWeight: "700",
-    marginLeft: 8,
     fontFamily: TYPOGRAPHY.fontFamily.bold,
+    marginLeft: 8,
   },
-
   modalOverlay: {
     backgroundColor: "rgba(0, 0, 0, 0.45)",
   },
-
   modalContainer: {
-    width: "92%",
     maxWidth: 520,
     borderRadius: 18,
-    padding: 22,
   },
-
   modalHeader: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 14,
+    gap: 10,
   },
-
-  modalIcon: {
-    width: 46,
-    height: 46,
-    borderRadius: 14,
-    backgroundColor: COLORS.secondary,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 12,
-  },
-
   modalTitle: {
     fontFamily: TYPOGRAPHY.fontFamily.bold,
   },
-
   modalText: {
     lineHeight: 22,
     fontFamily: TYPOGRAPHY.fontFamily.medium,
-  },
-
-  modalBadgeContainer: {
-    marginTop: 16,
-  },
-
-  modalButton: {
-    backgroundColor: COLORS.primary,
-    borderRadius: 10,
-  },
-
-  modalButtonText: {
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
   },
 });
