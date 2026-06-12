@@ -31,7 +31,7 @@ const C = {
   white: "#FFFFFF",
 };
 
-export default function fisicoQuimica({ onBack }) {
+export default function FisicoQuimica({ onBack }) {
   // ── Estado ──────────────────────────────────────────────────────────────────
   const [salinidad, setSalinidad] = useState("14");
   const [alcalinidad, setAlcalinidad] = useState("128");
