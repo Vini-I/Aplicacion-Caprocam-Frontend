@@ -28,6 +28,8 @@ import { View, Text, StyleSheet } from "react-native";
 
 import { COLORS } from "../../theme/colors";
 
+import { TYPOGRAPHY } from "../../theme/typography";
+
 function getScale(level) {
   const scale = {
     1: { fontSize: 32, fontWeight: "700", lineHeight: 40 },
@@ -73,6 +75,7 @@ export default function Title({
   numberOfLines,
   style,
   containerStyle,
+  fuente = TYPOGRAPHY.fontFamily.regular
 }) {
   let textColor = color;
 
@@ -85,6 +88,7 @@ export default function Title({
       <Text
         style={[getScale(level), { color: textColor, textAlign: align }, style]}
         numberOfLines={numberOfLines}
+        fontFamily={fuente}
       >
         {children}
       </Text>

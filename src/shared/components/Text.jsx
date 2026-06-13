@@ -28,6 +28,8 @@ import { Text, StyleSheet } from "react-native";
 
 import { COLORS } from "../../theme/colors";
 
+import { TYPOGRAPHY } from "../../theme/typography";
+
 export default function CustomText({
   children,
   size = 14,
@@ -36,6 +38,7 @@ export default function CustomText({
   align = "left",
   numberOfLines,
   style,
+  fuente = TYPOGRAPHY.fontFamily.regular
 }) {
   return (
     <Text
@@ -46,9 +49,11 @@ export default function CustomText({
           color: color,
           fontWeight: weight,
           textAlign: align,
+          
         },
         style,
       ]}
+      fontFamily={fuente}
       numberOfLines={numberOfLines}
     >
       {children}

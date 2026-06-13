@@ -1,12 +1,11 @@
 import { useState } from "react";
 import { Dimensions, ScrollView, View } from "react-native";
 
-import Button from "../components/Button";
-import Card from "../components/Card";
-import Input from "../components/Input";
-import Text from "../components/Text";
-
-import { styles } from "./stylesFincaNueva";
+import Button from "../../../shared/components/Button";
+import Card from "../../../shared/components/Card";
+import Input from "../../../shared/components/Input";
+import Text from "../../../shared/components/Text";
+import { styles } from "../../finca/styles/StylesFincaNueva";
 
 const { width } = Dimensions.get("window");
 const isLargeScreen = width > 700;
