@@ -1,9 +1,18 @@
 import { StyleSheet } from "react-native";
 
+import { COLORS } from "../../../theme/colors"
+
 export const styles = StyleSheet.create({
   container: {
+    flexGrow: 1,
     padding: 16,
-    backgroundColor: "#fff",
+    backgroundColor: COLORS.white,
+  },
+
+  contentWrapper: {
+    width: "100%",
+    maxWidth: 900,
+    alignSelf: "center",
   },
 
   detalleCard: {
@@ -21,33 +30,52 @@ export const styles = StyleSheet.create({
   etiqueta: {
     width: 120,
     fontWeight: "bold",
-    color: "#000",
+    color: COLORS.black,
   },
 
   valor: {
     flex: 2,
     textAlign: "right",
-    color: "#555",
+    color: COLORS.textTertiary,
   },
 
   addButton: {
+    maxWidth: "100%",
+    alignSelf: "center",
+    width: "100%",
     borderWidth: 2,
-    borderColor: "#0088FF",
+    color: COLORS.black,
+    borderColor: COLORS.primary,
+    backgroundColor: COLORS.white,
     borderStyle: "dashed",
     borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 16,
+    flexDirection: "row",
+    gap: 8,
+    marginTop: 10,
   },
 
   addButtonText: {
-    color: "#0088FF",
+    color: COLORS.textPrimary,
     fontWeight: "700",
+    marginLeft: 8,
+  },
+
+  addButtonContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  iconAdd: {
+    marginRight: 5
+  },
+
+  iconDetail: {
+    marginRight: 5
   },
 
   titleText: {
     marginBottom: 8,
-    color: "#708090",
+    color: COLORS.textTertiary,
   }
 });
