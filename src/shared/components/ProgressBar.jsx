@@ -23,6 +23,7 @@
 
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
+import { COLORS } from "../../theme/colors";
 
 function normalizeProgress(progress) {
   let value = progress;
@@ -41,8 +42,8 @@ function normalizeProgress(progress) {
 export default function ProgressBar({
   progress = 0,
   showLabel = true,
-  color = "#009EF5",
-  backgroundColor = "#E5E7EB",
+  color = COLORS.primary,
+  backgroundColor = COLORS.secondary,
   style,
 }) {
   const normalizedProgress = normalizeProgress(progress);
@@ -85,7 +86,7 @@ const styles = StyleSheet.create({
   label: {
     marginTop: 6,
     fontSize: 13,
-    color: "#475569",
+    color: COLORS.textTertiary,
     textAlign: "right",
   },
 });

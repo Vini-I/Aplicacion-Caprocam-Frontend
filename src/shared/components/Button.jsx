@@ -25,6 +25,7 @@
 
 import React from "react";
 import { Pressable, Text, StyleSheet } from "react-native";
+import { COLORS } from "../../theme/colors";
 
 export default function Button({
   children,
@@ -86,7 +87,7 @@ export default function Button({
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: "#0d6efd",
+    backgroundColor: COLORS.primary,
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 8,
@@ -95,25 +96,25 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   secondary: {
-    backgroundColor: "#6c757d",
+    backgroundColor: COLORS.textTertiary,
   },
   danger: {
-    backgroundColor: "#dc3545",
+    backgroundColor: COLORS.error,
   },
   outline: {
-    backgroundColor: "#ffffff",
+    backgroundColor: COLORS.white,
     borderWidth: 1,
-    borderColor: "#0d6efd",
+    borderColor: COLORS.primary,
   },
   disabled: {
     opacity: 0.5,
   },
   text: {
-    color: "#ffffff",
+    color: COLORS.white,
     fontSize: 16,
     fontWeight: "600",
   },
   outlineText: {
-    color: "#0d6efd",
+    color: COLORS.primary,
   },
 });
