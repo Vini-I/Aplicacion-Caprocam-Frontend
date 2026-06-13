@@ -97,7 +97,7 @@ export default function FincaDetalleScreen({ id }) {
         >
           <Icon icon={ICONS.add} size={15} />
           <Text size={15}>
-            REGISTRAR NUEVA FINCA
+            REGISTRAR NUEVO ESTANQUE
           </Text>
         </Button>
       </View>
