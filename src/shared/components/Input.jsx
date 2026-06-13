@@ -38,6 +38,8 @@ import React from "react";
 import { TextInput, StyleSheet, View, Text } from "react-native";
 import DateInput from "./DateInput.jsx";
 
+import {COLORS} from "../../theme/colors"
+
 export default function Input({
   label = "",
   value = "",
@@ -94,7 +96,7 @@ export default function Input({
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
-        placeholderTextColor="#adb5bd"
+        placeholderTextColor={COLORS.textQuaternary}
         multiline={multiline}
         editable={editable}
         keyboardType={keyboardType}
@@ -111,25 +113,25 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#212529",
+    color: COLORS.textSecondary,
     marginBottom: 6,
   },
   input: {
     borderWidth: 1,
-    borderColor: "#ced4da",
+    borderColor: COLORS.secondary,
     borderRadius: 8,
     paddingVertical: 10,
     paddingHorizontal: 12,
     fontSize: 16,
-    color: "#212529",
-    backgroundColor: "#ffffff",
+    color: COLORS.textSecondary,
+    backgroundColor: COLORS.white,
   },
   multiline: {
     minHeight: 90,
     textAlignVertical: "top",
   },
   disabledInput: {
-    backgroundColor: "#e9ecef",
-    color: "#6c757d",
+    backgroundColor: COLORS.surface,
+    color: COLORS.textQuaternary,
   },
 });

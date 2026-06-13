@@ -19,6 +19,10 @@
  * title
  * Titulo visible en la tarjeta.
  *
+ * icon
+ * Componente <Icon /> ya instanciado como JSX element.
+ * Ejemplo: icon={<Icon icon={ICONS.frequency} color={COLORS.primary} size={18} />}
+ *
  * label
  * Texto descriptivo del valor.
  *
@@ -43,6 +47,7 @@
  *
  * <SingleWheelCard
  *   title="Salinidad"
+ *   icon={<Icon icon={ICONS.frequency} color={COLORS.primary} size={18} />}
  *   label="Salinidad"
  *   unit="ppt"
  *   min={5}
@@ -57,17 +62,18 @@
 import React, { useState, useRef } from 'react';
 import {
   View,
-  Modal,
   TouchableOpacity,
-  TouchableWithoutFeedback,
   Animated,
   StyleSheet,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import WheelPicker from './WheelPicker';
-import Button from '../../../shared/components/Button';
-import Text from '../../../shared/components/Text';
-import Title from '../../../shared/components/Title';
+import Button      from '../../../shared/components/Button';
+import Text        from '../../../shared/components/Text';
+import Title       from '../../../shared/components/Title';
+import Icon        from '../../../shared/components/Icons';
+import Modal       from '../../../shared/components/Modal';
+import { COLORS }  from '../../../theme/colors';
+import { ICONS }   from '../../../theme/icons';
 
 function range(min, max, step = 1) {
   const result = [];
@@ -79,18 +85,16 @@ function range(min, max, step = 1) {
 
 export default function SingleWheelCard({
   title,
-  icon,
+  icon,           // JSX element: <Icon icon={ICONS.x} color={...} size={18} />
   label,
-  unit        = '',
+  unit      = '',
   min,
   max,
-  step        = 1,
+  step      = 1,
   idealMin,
   idealMax,
   value,
   onChange,
-  colors: C,
-  styles: S,
 }) {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [tempValue, setTempValue] = useState(null);
@@ -105,20 +109,11 @@ export default function SingleWheelCard({
   const openSheet = () => {
     setTempValue(value);
     setSheetOpen(true);
-    Animated.spring(slideAnim, {
-      toValue:         0,
-      useNativeDriver: true,
-      tension:         65,
-      friction:        11,
-    }).start();
+    Animated.spring(slideAnim, { toValue: 0, useNativeDriver: true, tension: 65, friction: 11 }).start();
   };
 
   const animateClose = (onDone) => {
-    Animated.timing(slideAnim, {
-      toValue:         300,
-      duration:        220,
-      useNativeDriver: true,
-    }).start(() => {
+    Animated.timing(slideAnim, { toValue: 300, duration: 220, useNativeDriver: true }).start(() => {
       setSheetOpen(false);
       setTempValue(null);
       onDone?.();
@@ -127,61 +122,47 @@ export default function SingleWheelCard({
 
   const saveAndClose = () => {
     const valueToSave = tempValue;
-    animateClose(() => {
-      if (valueToSave !== null) onChange?.(valueToSave);
-    });
+    animateClose(() => { if (valueToSave !== null) onChange?.(valueToSave); });
   };
 
   const cancelSheet = () => animateClose();
 
   return (
     <>
-      <View style={S.card}>
+      <View style={s.card}>
+
         {/* ── Header ── */}
-        <View style={S.cardHeader}>
-          <View style={S.cardHeaderLeft}>
-            <Ionicons name={icon} size={18} color={C.primary} />
-            {/* SUSTITUIDO: Text estilo cardTitle → Title */}
-            <Title level={5} color={C.text}>
+        <View style={s.cardHeader}>
+          <View style={s.cardHeaderLeft}>
+            {/* icon es un JSX element ya construido — se renderiza directo */}
+            {icon}
+            <Title level={5} color={COLORS.textPrimary}>
               {title}
             </Title>
           </View>
-          {/* SUSTITUIDO: Text estilo headerIdeal → Text compartido */}
-          <Text tamano="xs" color={C.primary} estilo={{ fontWeight: '500' }}>
+          <Text size={12} color={COLORS.primary} style={{ fontWeight: '500' }}>
             Ideal: {idealMin}–{idealMax} {unit}
           </Text>
         </View>
 
         {/* ── Valor tappable ── */}
-        <TouchableOpacity
-          onPress={openSheet}
-          activeOpacity={0.7}
-          style={inner.valueBox}
-        >
-          {/* SUSTITUIDO: Text estilo valueLabel → Text compartido */}
-          <Text tamano="xs" color={C.textHint} estilo={{ fontWeight: '600', marginBottom: 6 }}>
+        <TouchableOpacity onPress={openSheet} activeOpacity={0.7} style={inner.valueBox}>
+          <Text size={12} color={COLORS.textQuaternary} style={{ fontWeight: '600', marginBottom: 6 }}>
             {label}
           </Text>
-          <View style={[inner.valueDisplay, { borderColor: C.border ?? '#E2E8F0' }]}>
-            {/* SUSTITUIDO: Text estilo valueNumber → Text compartido */}
-            <Text
-              tamano="md"
-              color={isOk ? '#22c55e' : C.text ?? '#1E293B'}
-              estilo={{ fontWeight: '700', flex: 1 }}
-            >
+          <View style={[inner.valueDisplay, { borderColor: COLORS.textQuaternary }]}>
+            <Text size={16} color={isOk ? COLORS.success : COLORS.textPrimary} style={{ fontWeight: '700', flex: 1 }}>
               {value}
             </Text>
-            {/* SUSTITUIDO: Text estilo valueUnit → Text compartido */}
-            <Text tamano="sm" color={C.textHint}>
+            <Text size={13} color={COLORS.textQuaternary}>
               {unit}
             </Text>
             {isOk
-              ? <Ionicons name="checkmark-circle" size={14} color="#22c55e" style={{ marginLeft: 4 }} />
-              : <Ionicons name="remove-circle"    size={14} color="#f97316" style={{ marginLeft: 4 }} />
+              ? <Icon icon={ICONS.check}  size={14} color={COLORS.success} style={{ marginLeft: 4 }} />
+              : <Icon icon={ICONS.delete} size={14} color={COLORS.warning} style={{ marginLeft: 4 }} />
             }
           </View>
-          {/* SUSTITUIDO: Text estilo idealText → Text compartido */}
-          <Text tamano="xs" color={C.textHint} estilo={{ opacity: 0.7 }}>
+          <Text size={12} color={COLORS.textQuaternary} style={{ opacity: 0.7 }}>
             Ideal: {idealMin}–{idealMax} {unit}
           </Text>
         </TouchableOpacity>
@@ -190,56 +171,34 @@ export default function SingleWheelCard({
       {/* ── Bottom Sheet Modal ── */}
       <Modal
         visible={sheetOpen}
-        transparent
-        animationType="none"
-        onRequestClose={saveAndClose}
+        onClose={saveAndClose}
+        showCloseButton={false}
+        overlayStyle={inner.overlay}
+        containerStyle={inner.modalContainer}
       >
-        <TouchableWithoutFeedback onPress={saveAndClose}>
-          <View style={inner.backdrop} />
-        </TouchableWithoutFeedback>
-
-        <Animated.View
-          style={[inner.sheet, { transform: [{ translateY: slideAnim }] }]}
-        >
+        <Animated.View style={[inner.sheet, { transform: [{ translateY: slideAnim }] }]}>
           <View style={inner.handle} />
 
           {/* Header del sheet */}
           <View style={inner.sheetHeader}>
-            {/* SUSTITUIDO: Pressable "Cancelar" → Button secondary */}
-            <Button
-              title="Cancelar"
-              type="secondary"
-              onPress={cancelSheet}
-            />
+            <Button variant="danger" onPress={cancelSheet}>Cancelar</Button>
 
             <View style={{ alignItems: 'center' }}>
-              {/* SUSTITUIDO: Text sheetTitle → Title */}
-              <Title level={5} color={C.text ?? '#1E293B'} align="center">
+              <Title level={5} color={COLORS.textPrimary} align="center">
                 {title}
               </Title>
-              {/* SUSTITUIDO: Text sheetIdeal → Text compartido */}
-              <Text tamano="xs" color={C.textHint} alineacion="center">
+              <Text size={12} color={COLORS.textQuaternary} align="center">
                 Ideal: {idealMin}–{idealMax} {unit}
               </Text>
             </View>
 
-            {/* SUSTITUIDO: Pressable "Listo" → Button primary */}
-            <Button
-              title="Listo"
-              type="primary"
-              onPress={saveAndClose}
-            />
+            <Button variant="primary" onPress={saveAndClose}>Listo</Button>
           </View>
 
           {/* Indicador de rango */}
           <View style={inner.sheetRangeRow}>
-            <View style={[inner.rangeDot, { backgroundColor: sheetOk ? '#22c55e' : '#f97316' }]} />
-            {/* SUSTITUIDO: Text rangeText → Text compartido */}
-            <Text
-              tamano="xs"
-              color={sheetOk ? '#22c55e' : '#f97316'}
-              estilo={{ fontWeight: '600' }}
-            >
+            <View style={[inner.rangeDot, { backgroundColor: sheetOk ? COLORS.success : COLORS.warning }]} />
+            <Text size={12} color={sheetOk ? COLORS.success : COLORS.warning} style={{ fontWeight: '600' }}>
               {sheetOk ? 'En rango ideal' : 'Fuera del rango ideal'}
             </Text>
           </View>
@@ -251,8 +210,7 @@ export default function SingleWheelCard({
               value={tempValue}
               onChange={setTempValue}
               unit={unit}
-              color={sheetOk ? '#22c55e' : C.primary}
-              textHint={C.textHint}
+              color={sheetOk ? COLORS.success : COLORS.primary}
             />
           )}
 
@@ -263,7 +221,43 @@ export default function SingleWheelCard({
   );
 }
 
+// ── Estilos ───────────────────────────────────────────────────
+const s = StyleSheet.create({
+  card: {
+    backgroundColor: COLORS.white,
+    borderRadius:    14,
+    padding:         16,
+    shadowColor:     COLORS.black,
+    shadowOpacity:   0.05,
+    shadowRadius:    8,
+    shadowOffset:    { width: 0, height: 2 },
+    elevation:       2,
+  },
+  cardHeader: {
+    flexDirection:  'row',
+    justifyContent: 'space-between',
+    alignItems:     'center',
+    marginBottom:   14,
+  },
+  cardHeaderLeft: {
+    flexDirection: 'row',
+    alignItems:    'center',
+    gap:           6,
+  },
+});
+
 const inner = StyleSheet.create({
+  overlay: {
+    justifyContent: 'flex-end',
+    alignItems: 'stretch',
+    padding: 0,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+  },
+  modalContainer: {
+    width: '100%',
+    padding: 0,
+    backgroundColor: 'transparent',
+  },
   valueBox: {
     paddingVertical:   4,
     paddingHorizontal: 4,
@@ -283,16 +277,13 @@ const inner = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.4)',
   },
   sheet: {
-    position:              'absolute',
-    bottom:                0,
-    left:                  0,
-    right:                 0,
-    backgroundColor:       '#FFFFFF',
+    width:                '100%',
+    backgroundColor:      COLORS.white,
     borderTopLeftRadius:   20,
     borderTopRightRadius:  20,
     paddingHorizontal:     20,
     paddingTop:            12,
-    shadowColor:           '#000',
+    shadowColor:           COLORS.black,
     shadowOffset:          { width: 0, height: -3 },
     shadowOpacity:         0.1,
     shadowRadius:          12,

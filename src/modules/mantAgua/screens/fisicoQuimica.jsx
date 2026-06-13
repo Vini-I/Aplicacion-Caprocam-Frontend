@@ -42,26 +42,13 @@ import Alert from '../../../shared/components/Alert';
 import Text from '../../../shared/components/Text';
 import Title from '../../../shared/components/Title';
 import Footer from '../../../shared/components/Footer';
+import Icon from '../../../shared/components/Icons';
 import RangeCard from '../components/RangeCard';
 import SingleWheelCard from '../components/SingleWheelCard';
-import { Ionicons } from '@expo/vector-icons';
-
-// ─── Paleta de colores del proyecto ──────────────────────────────────────────
-const C = {
-  primary: "#009EF5",
-  headerBg: "#009EF5",
-  bg: "#F1F5F9",
-  card: "#FFFFFF",
-  border: "#E2E8F0",
-  inputBg: "#F8FAFC",
-  text: "#1E293B",
-  textSub: "#64748B",
-  textHint: "#94A3B8",
-  white: "#FFFFFF",
-};
+import { COLORS } from '../../../theme/colors';
+import { ICONS } from '../../../theme/icons';
 
 export default function FisicoQuimica({ onBack }) {
-  // ── Estado ──────────────────────────────────────────────────────────────────
   const [salinidad, setSalinidad] = useState("14");
   const [, setTempReadings] = useState([]);
   const [, setPhReadings] = useState([]);
@@ -71,20 +58,13 @@ export default function FisicoQuimica({ onBack }) {
 
   useEffect(() => {
     return () => {
-      if (alertTimerRef.current) {
-        clearTimeout(alertTimerRef.current);
-      }
+      if (alertTimerRef.current) clearTimeout(alertTimerRef.current);
     };
   }, []);
 
-
   const handleGuardar = () => {
     setShowAlert(true);
-
-    if (alertTimerRef.current) {
-      clearTimeout(alertTimerRef.current);
-    }
-
+    if (alertTimerRef.current) clearTimeout(alertTimerRef.current);
     alertTimerRef.current = setTimeout(() => {
       setShowAlert(false);
       alertTimerRef.current = null;
@@ -93,22 +73,20 @@ export default function FisicoQuimica({ onBack }) {
 
   return (
     <View style={styles.screen}>
-      <StatusBar barStyle="light-content" backgroundColor={C.headerBg} />
+      <StatusBar barStyle="light-content" backgroundColor={COLORS.primary} />
+
       {/* ── Header ── */}
       <View style={styles.header}>
-        <TouchableOpacity
-          onPress={onBack}
-          style={styles.backBtn}
-          activeOpacity={0.7}
-        >
-          <Ionicons name="chevron-back" size={20} color={C.white} />
-          <Text tamano="sm" color={C.white} estilo={styles.backText}>
+        <TouchableOpacity onPress={onBack} style={styles.backBtn} activeOpacity={0.7}>
+          <Icon icon={ICONS.exit} size={20} color={COLORS.white} />
+          <Text size={14} color={COLORS.white}>
             Módulos
           </Text>
         </TouchableOpacity>
+
         <View style={styles.headerTitle}>
-          <Ionicons name="flask" size={20} color={C.white} />
-          <Title level={4} color={C.white} style={styles.headerTitleText}>
+          <Icon icon={ICONS.chemicalContainer} size={20} color={COLORS.white} />
+          <Title level={4} color={COLORS.white} style={styles.headerTitleText}>
             Físico-Química
           </Title>
         </View>
@@ -119,157 +97,102 @@ export default function FisicoQuimica({ onBack }) {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* ── TEMPERATURA ─────────────────────────────────────────────── */}
 
+        {/* ── TEMPERATURA ── */}
         <RangeCard
-          title="Temperatura" unit="°C" icon="thermometer"
+          title="Temperatura"
+          unit="°C"
+          icon={<Icon icon={ICONS.temperature} color={COLORS.primary} size={18} />}
           idealMin={28} idealMax={30}
           sliderMin={15} sliderMax={45}
           step={0.5} decimals={1}
           maxReadings={2} labelStyle="daynight"
-          colors={C} styles={styles}
+          colors={COLORS}
+          styles={styles}
           onChange={(r) => setTempReadings(r)}
         />
 
-
-        {/* ── OXÍGENO DISUELTO ─────────────────────────────────────────────── */}
+        {/* ── OXÍGENO DISUELTO ── */}
         <RangeCard
           title="Oxígeno Disuelto"
-          unit="mg/L" icon="water"
+          unit="mg/L"
+          icon={<Icon icon={ICONS.water} color={COLORS.primary} size={18} />}
           idealMin={5}
           sliderMin={0} sliderMax={20}
           step={0.1} decimals={1}
           showProgress={false} showRangeColor={false}
           maxReadings={5} labelStyle="numeric"
-          colors={C} styles={styles}
+          colors={COLORS}
+          styles={styles}
           onChange={(r) => setOxReadings(r)}
         />
 
-        {/* ── pH ──────────────────────────────────────────────────────────── */}
+        {/* ── pH ── */}
         <RangeCard
-          title="pH" unit="pH" icon="flask-outline"
+          title="pH"
+          unit="pH"
+          icon={<Icon icon={ICONS.chemicalContainer} color={COLORS.primary} size={18} />}
           idealMin={7.5} idealMax={8.5}
           sliderMin={4} sliderMax={10}
           step={0.1} decimals={1}
           maxReadings={2} labelStyle="daynight"
-          colors={C} styles={styles}
+          colors={COLORS}
+          styles={styles}
           onChange={(r) => setPhReadings(r)}
         />
 
-        {/* ── SALINIDAD ──────────────────────────────────────── */}
+        {/* ── SALINIDAD ── */}
         <SingleWheelCard
           title="Salinidad"
-          icon="analytics-outline"
+          icon={<Icon icon={ICONS.frequency} color={COLORS.primary} size={18} />}
           label="Salinidad"
           unit="ppt"
-          min={5}
-          max={40}
-          idealMin={10}
-          idealMax={25}
+          min={5} max={40}
+          idealMin={10} idealMax={25}
           value={salinidad}
-          onChange={setSalinidad}
-          colors={C}
+          colors={COLORS}
           styles={styles}
+          onChange={setSalinidad}
         />
 
         {showAlert && (
           <Alert
-            alertWidth="100%"
-            alertHeight={48}
-            alertColor="#dcfce7"
-            borderColor="#22c55e"
-            borderWidth={1}
-            borderRadius={10}
-            alertMessage="Físico-Química registrado correctamente."
-            textColor="#15803d"
-            textSize={13}
-            textFontWeight="600"
+            variant="success"
+            message="¡Módulo guardado exitosamente!"
+            style={{ width: "60%", alignSelf: "center" }}
+            textStyle={{ textAlign: "center", fontWeight: "bold" }}
           />
         )}
-
-        <View style={{ height: 24 }} />
+        <View style={{ height: 24 }}/>
       </ScrollView>
 
       {/* ── Footer / Guardar ── */}
       <Footer
-        backgroundColor={C.card}
-        accentColor={C.primary}
-        showTopBorder
-        center={
-          <Button
-            title="Guardar módulo"
-            type="primary"
-            onPress={handleGuardar}
-          />
+        children={
+          <Button variant="primary" onPress={handleGuardar}>
+            Guardar módulo
+          </Button>
         }
+        fixedBottom={true}
       />
     </View>
   );
 }
 
-// ─── Estilos ─────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: C.bg },
+  screen: { flex: 1, backgroundColor: COLORS.surface },
 
-  // Header
   header: {
-    backgroundColor: C.headerBg,
+    backgroundColor: COLORS.primary,
     paddingTop: Platform.OS === "android" ? StatusBar.currentHeight + 8 : 56,
     paddingBottom: 20,
     paddingHorizontal: 20,
     gap: 12,
   },
   backBtn: { flexDirection: "row", alignItems: "center", gap: 4 },
-  backText: { fontSize: 14, color: C.white },
   headerTitle: { flexDirection: "row", alignItems: "center", gap: 10 },
-  headerTitleText: { fontSize: 22, fontWeight: "700", color: C.white },
+  headerTitleText: { fontSize: 22, fontWeight: "700" },
 
-  // Scroll
   scroll: { flex: 1 },
   scrollContent: { padding: 16, gap: 12 },
-
-  // Card
-  card: {
-    backgroundColor: C.card,
-    borderRadius: 14,
-    padding: 16,
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
-  },
-  cardHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 14 },
-  cardHeaderLeft: { flexDirection: "row", alignItems: "center", gap: 6 },
-  cardTitle: { fontSize: 15, fontWeight: "700", color: C.text },
-  cardUnit: { fontSize: 13, color: C.textSub },
-  badge: { fontSize: 12, color: C.primary },
-
-  // Layout
-  row2: { flexDirection: "row", gap: 12 },
-
-  // Inputs
-  inputLabel: { fontSize: 13, color: C.textSub, marginBottom: 6 },
-  inputRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: C.inputBg,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: C.border,
-    paddingHorizontal: 12,
-    height: 48,
-  },
-  input: { flex: 1, fontSize: 16, color: C.text },
-  unit: { fontSize: 13, color: C.textHint, marginLeft: 4 },
-  hint: { fontSize: 11, color: C.textHint, marginTop: 4 },
-
-  // Footer
-  footer: {
-    padding: 16,
-    paddingBottom: Platform.OS === "ios" ? 32 : 16,
-    backgroundColor: C.card,
-    borderTopWidth: 1,
-    borderTopColor: C.border,
-  },
 });

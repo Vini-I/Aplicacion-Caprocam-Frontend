@@ -31,6 +31,7 @@
 
 import React from "react";
 import { View, Text, Image, StyleSheet } from "react-native";
+import { COLORS } from "../../theme/colors";
 
 export default function EmptyState({
   title = "Sin informacion",
@@ -90,13 +91,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: "700",
-    color: "#212529",
+    color: COLORS.textPrimary,
     textAlign: "center",
     marginBottom: 8,
   },
   description: {
     fontSize: 14,
-    color: "#6c757d",
+    color: COLORS.textSecondary,
     textAlign: "center",
     lineHeight: 20,
   },
