@@ -1,23 +1,27 @@
 import { ScrollView, View, TouchableOpacity } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useSearchParams, useRouter } from "expo-router";
+import { fincas } from "./FincaData";
+import { styles } from "../styles/FincaDetalleStyles";
+import { ICONS } from "../../../theme/icons";
+import { COLORS } from "../../../theme/colors";
 
 import Card from "../../../shared/components/Card";
 import Text from "../../../shared/components/Text";
-import { fincas } from "./FincaData";
-import { styles } from "../../finca/styles/FincaDetalleStyles";
+import Icon from "../../../shared/components/Icons";
+import Button from "../../../shared/components/Button";
 
-export default function FincaDetalleScreen() {
-  const { id } = useLocalSearchParams();
+
+export default function FincaDetalleScreen({ id }) {
   const router = useRouter();
 
-  const finca = fincas.find(f => f.id === parseInt(id));
+  const finca = fincas.find((f) => String(f.id) === String(id));
 
   if (!finca) {
     return (
       <ScrollView contentContainerStyle={styles.container}>
         <Text>Finca no encontrada</Text>
         <TouchableOpacity onPress={() => router.back()}>
-          <Text style={{ color: "#0088FF", marginTop: 20 }}>← Volver</Text>
+          <Text style={{ color: COLORS.textPrimary, marginTop: 20 }}>← Volver</Text>
         </TouchableOpacity>
       </ScrollView>
     );
@@ -25,53 +29,78 @@ export default function FincaDetalleScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Card>
-        <View style={styles.detalleCard}>
-          <View>
-            <Text tamano="sm" color="#888" style={styles.titleText}>
-              DATOS DE LA FINCA
-            </Text>
-          </View>
+      <View style={styles.contentWrapper}>
+        <Card>
+          <View style={styles.detalleCard}>
+            <View>
+              <Text tamano="sm" color="#888" style={styles.titleText}>
+                DATOS DE LA FINCA
+              </Text>
+            </View>
 
-          <View style={styles.filaDetalle}>
-            <Text estilo={styles.etiqueta}>Finca:</Text>
-            <Text estilo={styles.valor}>{finca.nombre}</Text>
-          </View>
+            <View style={styles.filaDetalle}>
+              <Text style={styles.etiqueta}>Nombre:</Text>
+              <Text style={styles.valor}>{finca.nombre}</Text>
+            </View>
 
-          <View style={styles.filaDetalle}>
-            <Text estilo={styles.etiqueta}>ID:</Text>
-            <Text estilo={styles.valor}>{finca.id}</Text>
-          </View>
+            <View style={styles.filaDetalle}>
+              <Text style={styles.etiqueta}>ID:</Text>
+              <Text style={styles.valor}>{finca.codigoInterno}</Text>
+            </View>
 
-          <View style={styles.filaDetalle}>
-            <Text estilo={styles.etiqueta}>Ubicación:</Text>
-            <Text estilo={styles.valor}>{finca.ubicacion}</Text>
-          </View>
+            <View style={styles.filaDetalle}>
+              <Text style={styles.etiqueta}>Provincia:</Text>
+              <Text style={styles.valor}>{finca.provincia}</Text>
+            </View>
 
-          <View style={styles.filaDetalle}>
-            <Text estilo={styles.etiqueta}>Responsable:</Text>
-            <Text estilo={styles.valor}>{finca.responsable}</Text>
-          </View>
+            <View style={styles.filaDetalle}>
+              <Text style={styles.etiqueta}>Canton:</Text>
+              <Text style={styles.valor}>{finca.canton}</Text>
+            </View>
 
-          <View style={styles.filaDetalle}>
-            <Text estilo={styles.etiqueta}>Teléfono:</Text>
-            <Text estilo={styles.valor}>{finca.telefono}</Text>
-          </View>
+            <View style={styles.filaDetalle}>
+              <Text style={styles.etiqueta}>Distrito:</Text>
+              <Text style={styles.valor}>{finca.distrito}</Text>
+            </View>
 
-          <View style={styles.filaDetalle}>
-            <Text estilo={styles.etiqueta}>Área:</Text>
-            <Text estilo={styles.valor}>{finca.Area}</Text>
+            <View style={styles.filaDetalle}>
+              <Text style={styles.etiqueta}>Responsable:</Text>
+              <Text style={styles.valor}>{finca.responsable}</Text>
+            </View>
+
+            {finca.telefonos?.map((telefono, index) => (
+              <View key={index} style={styles.filaDetalle}>
+                <Text style={styles.etiqueta}>Teléfono {index + 1}: </Text>
+                <Text style={styles.valor}>{telefono}</Text>
+              </View>
+            ))}
+
+            <View style={styles.filaDetalle}>
+              <Text style={styles.etiqueta}>Área:</Text>
+              <Text style={styles.valor}>{finca.areaTotal}</Text>
+            </View>
+
+            <View style={styles.filaDetalle}>
+              <Text style={styles.etiqueta}>Largo:</Text>
+              <Text style={styles.valor}>{finca.largo}</Text>
+            </View>
+
+            <View style={styles.filaDetalle}>
+              <Text style={styles.etiqueta}>Ancho:</Text>
+              <Text style={styles.valor}>{finca.ancho}</Text>
+            </View>
           </View>
-        </View>
-      </Card>
-      <TouchableOpacity
-        style={styles.addButton}
-        //onPress={() => router.push("./FincaDetalleScreen")} COLOCAR RUTA ESTANQUE
-      >
-        <Text tamano="lg" estilo={styles.addButtonText}>
-          ➕ Registrar nuevo estanque
-        </Text>
-      </TouchableOpacity>
+        </Card>
+        <Button
+          style={styles.addButton}
+          onPress={() => router.push("/finca/nueva")}
+        >
+          <Icon icon={ICONS.add} size={15} />
+          <Text size={15}>
+            REGISTRAR NUEVO ESTANQUE
+          </Text>
+        </Button>
+      </View>
     </ScrollView>
   );
 }
