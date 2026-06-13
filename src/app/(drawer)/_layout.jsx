@@ -1,0 +1,37 @@
+import { Drawer } from "expo-router/drawer";
+import React from "react";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+
+export default function DrawerLayout() {
+  return (
+    <Drawer screenOptions={{ headerShown: true }}>
+      <Drawer.Screen 
+        name="(tabs)" 
+        options={{ 
+          drawerLabel: "Panel Principal",
+          title: "Caprocam",
+          drawerIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="view-dashboard" color={color} size={size} />
+          )
+        }} 
+      />
+      <Drawer.Screen 
+        name="configuracion" 
+        options={{ 
+          drawerLabel: "Configuración",
+          title: "Ajustes de la Aplicación",
+          drawerIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="cog" color={color} size={size} />
+          )
+        }} 
+      />
+
+      
+
+
+      <Drawer.Screen name="inicio" options={{ drawerItemStyle: { display: "none" } }} />
+      <Drawer.Screen name="registros" options={{ drawerItemStyle: { display: "none" } }} />
+      <Drawer.Screen name="reportes" options={{ drawerItemStyle: { display: "none" } }} />
+    </Drawer>
+  );
+}
