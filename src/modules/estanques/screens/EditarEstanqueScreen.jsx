@@ -9,20 +9,14 @@
  * - Carga datos iniciales del estanque.
  * - Permite modificar codigo, tipo y estado.
  * - Incluye estados Activo, Preparacion, Mantenimiento, Engorde y Cosechado.
- * - Usa calendarios para fecha de siembra, engorde y mantenimiento.
+ * - Usa DateInput separado para fecha de siembra, engorde y mantenimiento.
+ * - Usa Input separado para texto y numeros.
  * - Usa contador numerico para densidad y numero de aireadores.
+ * - Usa rutas correctas desde modules/estanques/screens.
  */
 
 import React, { useState } from "react";
-import {
-  ScrollView,
-  View,
-  StyleSheet,
-  TouchableOpacity,
-  Pressable,
-  Text,
-  useWindowDimensions,
-} from "react-native";
+import {ScrollView,View,StyleSheet,TouchableOpacity,Pressable,Text,useWindowDimensions,} from "react-native";
 
 import Card from "../../../shared/components/Card";
 import Input from "../../../shared/components/Input";
@@ -163,21 +157,39 @@ export default function EditarEstanqueScreen({ navigation }) {
 
   const [codigo, setCodigo] = useState(ESTANQUE_INICIAL.codigo);
   const [estado, setEstado] = useState(ESTANQUE_INICIAL.estado);
-  const [tipoEstanque, setTipoEstanque] = useState(ESTANQUE_INICIAL.tipoEstanque);
+  const [tipoEstanque, setTipoEstanque] = useState(
+    ESTANQUE_INICIAL.tipoEstanque,
+  );
   const [largo, setLargo] = useState(ESTANQUE_INICIAL.largo);
   const [ancho, setAncho] = useState(ESTANQUE_INICIAL.ancho);
   const [profundidad, setProfundidad] = useState(ESTANQUE_INICIAL.profundidad);
   const [fuenteAgua, setFuenteAgua] = useState(ESTANQUE_INICIAL.fuenteAgua);
   const [especie, setEspecie] = useState(ESTANQUE_INICIAL.especie);
-  const [fechaSiembra, setFechaSiembra] = useState(ESTANQUE_INICIAL.fechaSiembra);
-  const [fechaInicioEngorde, setFechaInicioEngorde] = useState(ESTANQUE_INICIAL.fechaInicioEngorde);
-  const [fechaMantenimiento, setFechaMantenimiento] = useState(ESTANQUE_INICIAL.fechaMantenimiento);
-  const [densidadSiembra, setDensidadSiembra] = useState(ESTANQUE_INICIAL.densidadSiembra);
+  const [fechaSiembra, setFechaSiembra] = useState(
+    ESTANQUE_INICIAL.fechaSiembra,
+  );
+  const [fechaInicioEngorde, setFechaInicioEngorde] = useState(
+    ESTANQUE_INICIAL.fechaInicioEngorde,
+  );
+  const [fechaMantenimiento, setFechaMantenimiento] = useState(
+    ESTANQUE_INICIAL.fechaMantenimiento,
+  );
+  const [densidadSiembra, setDensidadSiembra] = useState(
+    ESTANQUE_INICIAL.densidadSiembra,
+  );
   const [precria, setPrecria] = useState(ESTANQUE_INICIAL.precria);
-  const [metodoAlimentacion, setMetodoAlimentacion] = useState(ESTANQUE_INICIAL.metodoAlimentacion);
-  const [proveedorAlimento, setProveedorAlimento] = useState(ESTANQUE_INICIAL.proveedorAlimento);
-  const [numeroAireadores, setNumeroAireadores] = useState(ESTANQUE_INICIAL.numeroAireadores);
-  const [tieneAlimentadorAutomatico, setTieneAlimentadorAutomatico] = useState(ESTANQUE_INICIAL.tieneAlimentadorAutomatico);
+  const [metodoAlimentacion, setMetodoAlimentacion] = useState(
+    ESTANQUE_INICIAL.metodoAlimentacion,
+  );
+  const [proveedorAlimento, setProveedorAlimento] = useState(
+    ESTANQUE_INICIAL.proveedorAlimento,
+  );
+  const [numeroAireadores, setNumeroAireadores] = useState(
+    ESTANQUE_INICIAL.numeroAireadores,
+  );
+  const [tieneAlimentadorAutomatico, setTieneAlimentadorAutomatico] = useState(
+    ESTANQUE_INICIAL.tieneAlimentadorAutomatico,
+  );
   const [mensaje, setMensaje] = useState("");
   const [tipoMensaje, setTipoMensaje] = useState("info");
 
@@ -404,11 +416,21 @@ export default function EditarEstanqueScreen({ navigation }) {
               Editar Estanque
             </Title>
 
-            <CustomText size={14} color={COLORS.white} weight="500" style={styles.headerSubtitle}>
+            <CustomText
+              size={14}
+              color={COLORS.white}
+              weight="500"
+              style={styles.headerSubtitle}
+            >
               Finca: {ESTANQUE_INICIAL.finca}
             </CustomText>
 
-            <CustomText size={13} color={COLORS.white} weight="400" style={styles.headerCode}>
+            <CustomText
+              size={13}
+              color={COLORS.white}
+              weight="400"
+              style={styles.headerCode}
+            >
               Codigo actual: {ESTANQUE_INICIAL.codigo}
             </CustomText>
           </View>
@@ -418,31 +440,84 @@ export default function EditarEstanqueScreen({ navigation }) {
       <View style={contentStyle}>
         {mensaje !== "" && (
           <View style={styles.alertWrapper}>
-            <Alert variant={tipoMensaje} message={mensaje} textStyle={styles.alertText} />
+            <Alert
+              variant={tipoMensaje}
+              message={mensaje}
+              textStyle={styles.alertText}
+            />
           </View>
         )}
 
         <Card title="IDENTIFICACION" titleStyle={styles.cardTitle}>
           <View style={gridStyle}>
             <View style={itemStyle}>
-              <Input label="Codigo del estanque *" value={codigo} onChangeText={setCodigo} placeholder="Ej: EST-01, E-01, TANQUE-A" labelStyle={styles.label} style={styles.input} />
+              <Input
+                label="Codigo del estanque *"
+                value={codigo}
+                onChangeText={setCodigo}
+                placeholder="Ej: EST-01, E-01, TANQUE-A"
+                labelStyle={styles.label}
+                style={styles.input}
+              />
             </View>
 
             <View style={itemStyle}>
-              <Select label="Tipo de estanque *" options={TIPOS_ESTANQUE} value={tipoEstanque} onChange={setTipoEstanque} placeholder="Seleccione el tipo de estanque" labelStyle={styles.label} selectedTextStyle={styles.inputText} />
+              <Select
+                label="Tipo de estanque *"
+                options={TIPOS_ESTANQUE}
+                value={tipoEstanque}
+                onChange={setTipoEstanque}
+                placeholder="Seleccione el tipo de estanque"
+                labelStyle={styles.label}
+                selectedTextStyle={styles.inputText}
+              />
             </View>
 
             <View style={itemFullStyle}>
-              <CustomText size={14} color={COLORS.textPrimary} weight="600" style={styles.estadoLabel}>
+              <CustomText
+                size={14}
+                color={COLORS.textPrimary}
+                weight="600"
+                style={styles.estadoLabel}
+              >
                 Estado
               </CustomText>
 
               <View style={styles.optionsRow}>
-                <EstadoOption title="Activo" value="activo" selectedValue={estado} onPress={seleccionarEstado} />
-                <EstadoOption title="Preparacion" value="preparacion" selectedValue={estado} onPress={seleccionarEstado} />
-                <EstadoOption title="Mantenimiento" value="mantenimiento" selectedValue={estado} onPress={seleccionarEstado} />
-                <EstadoOption title="Engorde" value="engorde" selectedValue={estado} onPress={seleccionarEstado} />
-                <EstadoOption title="Cosechado" value="cosechado" selectedValue={estado} onPress={seleccionarEstado} />
+                <EstadoOption
+                  title="Activo"
+                  value="activo"
+                  selectedValue={estado}
+                  onPress={seleccionarEstado}
+                />
+
+                <EstadoOption
+                  title="Preparacion"
+                  value="preparacion"
+                  selectedValue={estado}
+                  onPress={seleccionarEstado}
+                />
+
+                <EstadoOption
+                  title="Mantenimiento"
+                  value="mantenimiento"
+                  selectedValue={estado}
+                  onPress={seleccionarEstado}
+                />
+
+                <EstadoOption
+                  title="Engorde"
+                  value="engorde"
+                  selectedValue={estado}
+                  onPress={seleccionarEstado}
+                />
+
+                <EstadoOption
+                  title="Cosechado"
+                  value="cosechado"
+                  selectedValue={estado}
+                  onPress={seleccionarEstado}
+                />
               </View>
             </View>
           </View>
@@ -451,24 +526,58 @@ export default function EditarEstanqueScreen({ navigation }) {
         <Card title="DIMENSIONES" titleStyle={styles.cardTitle}>
           <View style={styles.sectionHelp}>
             <Icon icon={ICONS.ruler} size={18} color={COLORS.primary} />
-            <Text style={styles.sectionHelpText}>Modifique las medidas fisicas del estanque.</Text>
+            <Text style={styles.sectionHelpText}>
+              Modifique las medidas fisicas del estanque.
+            </Text>
           </View>
 
           <View style={gridStyle}>
             <View style={itemStyle}>
-              <Input label="Largo (m) *" value={largo} onChangeText={setLargo} placeholder="Ej: 100" keyboardType="numeric" labelStyle={styles.label} style={styles.input} />
+              <Input
+                label="Largo (m) *"
+                value={largo}
+                onChangeText={setLargo}
+                placeholder="Ej: 100"
+                keyboardType="numeric"
+                labelStyle={styles.label}
+                style={styles.input}
+              />
             </View>
 
             <View style={itemStyle}>
-              <Input label="Ancho (m) *" value={ancho} onChangeText={setAncho} placeholder="Ej: 80" keyboardType="numeric" labelStyle={styles.label} style={styles.input} />
+              <Input
+                label="Ancho (m) *"
+                value={ancho}
+                onChangeText={setAncho}
+                placeholder="Ej: 80"
+                keyboardType="numeric"
+                labelStyle={styles.label}
+                style={styles.input}
+              />
             </View>
 
             <View style={itemStyle}>
-              <Input label="Profundidad (m) *" value={profundidad} onChangeText={setProfundidad} placeholder="Ej: 0.80" keyboardType="numeric" labelStyle={styles.label} style={styles.input} />
+              <Input
+                label="Profundidad (m) *"
+                value={profundidad}
+                onChangeText={setProfundidad}
+                placeholder="Ej: 0.80"
+                keyboardType="numeric"
+                labelStyle={styles.label}
+                style={styles.input}
+              />
             </View>
 
             <View style={itemStyle}>
-              <Select label="Fuente de agua *" options={FUENTES_AGUA} value={fuenteAgua} onChange={setFuenteAgua} placeholder="Seleccione la fuente de agua" labelStyle={styles.label} selectedTextStyle={styles.inputText} />
+              <Select
+                label="Fuente de agua *"
+                options={FUENTES_AGUA}
+                value={fuenteAgua}
+                onChange={setFuenteAgua}
+                placeholder="Seleccione la fuente de agua"
+                labelStyle={styles.label}
+                selectedTextStyle={styles.inputText}
+              />
             </View>
           </View>
         </Card>
@@ -476,20 +585,46 @@ export default function EditarEstanqueScreen({ navigation }) {
         <Card title="FECHAS DEL ESTANQUE" titleStyle={styles.cardTitle}>
           <View style={styles.sectionHelp}>
             <Icon icon={ICONS.calendar} size={18} color={COLORS.primary} />
-            <Text style={styles.sectionHelpText}>Seleccione las fechas usando el calendario.</Text>
+            <Text style={styles.sectionHelpText}>
+              Seleccione las fechas usando el calendario.
+            </Text>
           </View>
 
           <View style={gridStyle}>
             <View style={itemStyle}>
-              <DateInput label="Fecha de siembra *" value={fechaSiembra} onChangeText={setFechaSiembra} labelStyle={styles.label} />
+              <DateInput
+                label="Fecha de siembra *"
+                value={fechaSiembra}
+                onChangeText={setFechaSiembra}
+                placeholder="dd/mm/aaaa"
+                allowFutureDates={false}
+                labelStyle={styles.label}
+                textStyle={styles.inputText}
+              />
             </View>
 
             <View style={itemStyle}>
-              <DateInput label="Fecha inicio de engorde *" value={fechaInicioEngorde} onChangeText={setFechaInicioEngorde} labelStyle={styles.label} />
+              <DateInput
+                label="Fecha inicio de engorde *"
+                value={fechaInicioEngorde}
+                onChangeText={setFechaInicioEngorde}
+                placeholder="dd/mm/aaaa"
+                allowFutureDates={true}
+                labelStyle={styles.label}
+                textStyle={styles.inputText}
+              />
             </View>
 
             <View style={itemStyle}>
-              <DateInput label="Fecha de mantenimiento *" value={fechaMantenimiento} onChangeText={setFechaMantenimiento} labelStyle={styles.label} />
+              <DateInput
+                label="Fecha de mantenimiento *"
+                value={fechaMantenimiento}
+                onChangeText={setFechaMantenimiento}
+                placeholder="dd/mm/aaaa"
+                allowFutureDates={true}
+                labelStyle={styles.label}
+                textStyle={styles.inputText}
+              />
             </View>
           </View>
         </Card>
@@ -497,20 +632,44 @@ export default function EditarEstanqueScreen({ navigation }) {
         <Card title="SIEMBRA" titleStyle={styles.cardTitle}>
           <View style={styles.sectionHelp}>
             <Icon icon={ICONS.shrimp} size={18} color={COLORS.primary} />
-            <Text style={styles.sectionHelpText}>Revise especie, densidad y precria.</Text>
+            <Text style={styles.sectionHelpText}>
+              Revise especie, densidad y precria.
+            </Text>
           </View>
 
           <View style={gridStyle}>
             <View style={itemStyle}>
-              <Select label="Especie *" options={ESPECIES} value={especie} onChange={setEspecie} placeholder="Seleccione la especie" labelStyle={styles.label} selectedTextStyle={styles.inputText} />
+              <Select
+                label="Especie *"
+                options={ESPECIES}
+                value={especie}
+                onChange={setEspecie}
+                placeholder="Seleccione la especie"
+                labelStyle={styles.label}
+                selectedTextStyle={styles.inputText}
+              />
             </View>
 
             <View style={itemStyle}>
-              <CounterInput label="Densidad de siembra (ind/m²) *" value={densidadSiembra} onChangeText={cambiarDensidad} onDecrease={disminuirDensidad} onIncrease={aumentarDensidad} />
+              <CounterInput
+                label="Densidad de siembra (ind/m²) *"
+                value={densidadSiembra}
+                onChangeText={cambiarDensidad}
+                onDecrease={disminuirDensidad}
+                onIncrease={aumentarDensidad}
+              />
             </View>
 
             <View style={itemStyle}>
-              <Select label="Precria *" options={OPCIONES_PRECRIA} value={precria} onChange={setPrecria} placeholder="Seleccione si usa precria" labelStyle={styles.label} selectedTextStyle={styles.inputText} />
+              <Select
+                label="Precria *"
+                options={OPCIONES_PRECRIA}
+                value={precria}
+                onChange={setPrecria}
+                placeholder="Seleccione si usa precria"
+                labelStyle={styles.label}
+                selectedTextStyle={styles.inputText}
+              />
             </View>
           </View>
         </Card>
@@ -518,30 +677,67 @@ export default function EditarEstanqueScreen({ navigation }) {
         <Card title="ALIMENTACION Y EQUIPOS" titleStyle={styles.cardTitle}>
           <View style={styles.sectionHelp}>
             <Icon icon={ICONS.food} size={18} color={COLORS.primary} />
-            <Text style={styles.sectionHelpText}>Modifique alimentacion, proveedor y equipos disponibles.</Text>
+            <Text style={styles.sectionHelpText}>
+              Modifique alimentacion, proveedor y equipos disponibles.
+            </Text>
           </View>
 
           <View style={gridStyle}>
             <View style={itemStyle}>
-              <Select label="Metodo de alimentacion *" options={METODOS_ALIMENTACION} value={metodoAlimentacion} onChange={setMetodoAlimentacion} placeholder="Seleccione el metodo" labelStyle={styles.label} selectedTextStyle={styles.inputText} />
+              <Select
+                label="Metodo de alimentacion *"
+                options={METODOS_ALIMENTACION}
+                value={metodoAlimentacion}
+                onChange={setMetodoAlimentacion}
+                placeholder="Seleccione el metodo"
+                labelStyle={styles.label}
+                selectedTextStyle={styles.inputText}
+              />
             </View>
 
             <View style={itemStyle}>
-              <Input label="Proveedor de alimento" value={proveedorAlimento} onChangeText={setProveedorAlimento} placeholder="Ej: Biomar" labelStyle={styles.label} style={styles.input} />
+              <Input
+                label="Proveedor de alimento"
+                value={proveedorAlimento}
+                onChangeText={setProveedorAlimento}
+                placeholder="Ej: Biomar"
+                labelStyle={styles.label}
+                style={styles.input}
+              />
             </View>
 
             <View style={itemStyle}>
-              <CounterInput label="N° aireadores" value={numeroAireadores} onChangeText={cambiarAireadores} onDecrease={disminuirAireadores} onIncrease={aumentarAireadores} />
+              <CounterInput
+                label="N° aireadores"
+                value={numeroAireadores}
+                onChangeText={cambiarAireadores}
+                onDecrease={disminuirAireadores}
+                onIncrease={aumentarAireadores}
+              />
             </View>
 
             <View style={itemStyle}>
-              <Select label="Tiene alimentador automatico *" options={OPCIONES_ALIMENTADOR} value={tieneAlimentadorAutomatico} onChange={setTieneAlimentadorAutomatico} placeholder="Seleccione una opcion" labelStyle={styles.label} selectedTextStyle={styles.inputText} />
+              <Select
+                label="Tiene alimentador automatico *"
+                options={OPCIONES_ALIMENTADOR}
+                value={tieneAlimentadorAutomatico}
+                onChange={setTieneAlimentadorAutomatico}
+                placeholder="Seleccione una opcion"
+                labelStyle={styles.label}
+                selectedTextStyle={styles.inputText}
+              />
             </View>
           </View>
         </Card>
 
         <View style={actionsStyle}>
-          <Button variant="outline" onPress={limpiarMensaje} style={styles.actionButton}>Limpiar mensaje</Button>
+          <Button
+            variant="outline"
+            onPress={limpiarMensaje}
+            style={styles.actionButton}
+          >
+            Limpiar mensaje
+          </Button>
 
           <Button onPress={guardarCambios} style={styles.actionButton}>
             <View style={styles.saveButtonContent}>
@@ -585,7 +781,13 @@ function CounterInput({ label, value, onChangeText, onDecrease, onIncrease }) {
           <Text style={styles.counterButtonText}>-</Text>
         </Pressable>
 
-        <Input value={String(value)} onChangeText={onChangeText} keyboardType="numeric" containerStyle={styles.counterInputContainer} style={styles.counterInput} />
+        <Input
+          value={String(value)}
+          onChangeText={onChangeText}
+          keyboardType="numeric"
+          containerStyle={styles.counterInputContainer}
+          style={styles.counterInput}
+        />
 
         <Pressable style={styles.counterButton} onPress={onIncrease}>
           <Text style={styles.counterButtonText}>+</Text>

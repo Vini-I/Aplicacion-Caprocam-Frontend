@@ -4,23 +4,23 @@
  * ============================================================
  *
  * Pantalla para registrar eventos sanitarios en estanques.
- * Incluye calendario local, periodo de retiro numerico,
- * riesgo por severidad y diseno responsive.
+ *
+ * Funcionalidad:
+ * - Registra casos sanitarios.
+ * - Usa DateInput separado para fechas.
+ * - Usa Input separado para texto y numeros.
+ * - Usa periodo de retiro numerico con botones.
+ * - Calcula riesgo por severidad.
+ * - Muestra recomendacion sanitaria.
+ * - Usa rutas correctas desde modules/enfermedades/screens.
  */
 
 import React, { useState } from "react";
-import {
-  ScrollView,
-  View,
-  StyleSheet,
-  TouchableOpacity,
-  Text,
-  useWindowDimensions,
-  Modal as NativeModal,
-} from "react-native";
+import {ScrollView,View,StyleSheet,TouchableOpacity,Text,useWindowDimensions,} from "react-native";
 
 import Card from "../../../shared/components/Card";
 import Input from "../../../shared/components/Input";
+import DateInput from "../../../shared/components/DateInput";
 import Select from "../../../shared/components/Select";
 import Button from "../../../shared/components/Button";
 import Title from "../../../shared/components/Title";
@@ -36,49 +36,125 @@ import { TYPOGRAPHY } from "../../../theme/typography";
 import { ICONS } from "../../../theme/icons";
 
 const ESTANQUES = [
-  { label: "EST-01 - Finca La Reina", value: "est-01" },
-  { label: "EST-02 - Finca La Reina", value: "est-02" },
-  { label: "EST-03 - Finca La Reina", value: "est-03" },
+  {
+    label: "EST-01 - Finca La Reina",
+    value: "est-01",
+  },
+  {
+    label: "EST-02 - Finca La Reina",
+    value: "est-02",
+  },
+  {
+    label: "EST-03 - Finca La Reina",
+    value: "est-03",
+  },
 ];
 
 const EVENTOS = [
-  { label: "Monitoreo preventivo", value: "monitoreo_preventivo" },
-  { label: "Sospecha de enfermedad", value: "sospecha_enfermedad" },
-  { label: "Enfermedad confirmada", value: "enfermedad_confirmada" },
-  { label: "Mortalidad elevada", value: "mortalidad_elevada" },
+  {
+    label: "Monitoreo preventivo",
+    value: "monitoreo_preventivo",
+  },
+  {
+    label: "Sospecha de enfermedad",
+    value: "sospecha_enfermedad",
+  },
+  {
+    label: "Enfermedad confirmada",
+    value: "enfermedad_confirmada",
+  },
+  {
+    label: "Mortalidad elevada",
+    value: "mortalidad_elevada",
+  },
 ];
 
 const ENFERMEDADES = [
-  { label: "WSSV - Mancha Blanca", value: "wssv" },
-  { label: "AHPND - Necrosis Hepatopancreatica Aguda", value: "ahpnd" },
-  { label: "NHP - Necrosis Hepatopancreatica", value: "nhp" },
-  { label: "IHHNV", value: "ihhnv" },
-  { label: "Vibriosis", value: "vibriosis" },
-  { label: "Gregarinas", value: "gregarinas" },
-  { label: "Epicomensales", value: "epicomensales" },
-  { label: "Otro", value: "otro" },
+  {
+    label: "WSSV - Mancha Blanca",
+    value: "wssv",
+  },
+  {
+    label: "AHPND - Necrosis Hepatopancreatica Aguda",
+    value: "ahpnd",
+  },
+  {
+    label: "NHP - Necrosis Hepatopancreatica",
+    value: "nhp",
+  },
+  {
+    label: "IHHNV",
+    value: "ihhnv",
+  },
+  {
+    label: "Vibriosis",
+    value: "vibriosis",
+  },
+  {
+    label: "Gregarinas",
+    value: "gregarinas",
+  },
+  {
+    label: "Epicomensales",
+    value: "epicomensales",
+  },
+  {
+    label: "Otro",
+    value: "otro",
+  },
 ];
 
 const SEVERIDADES = [
-  { label: "Baja", value: "baja" },
-  { label: "Media", value: "media" },
-  { label: "Alta", value: "alta" },
-  { label: "Critica", value: "critica" },
+  {
+    label: "Baja",
+    value: "baja",
+  },
+  {
+    label: "Media",
+    value: "media",
+  },
+  {
+    label: "Alta",
+    value: "alta",
+  },
+  {
+    label: "Critica",
+    value: "critica",
+  },
 ];
 
 const SI_NO = [
-  { label: "Si", value: "si" },
-  { label: "No", value: "no" },
+  {
+    label: "Si",
+    value: "si",
+  },
+  {
+    label: "No",
+    value: "no",
+  },
 ];
 
 const ESTADOS_CASO = [
-  { label: "En observacion", value: "observacion" },
-  { label: "En tratamiento", value: "tratamiento" },
-  { label: "Controlado", value: "controlado" },
-  { label: "Cerrado", value: "cerrado" },
+  {
+    label: "En observacion",
+    value: "observacion",
+  },
+  {
+    label: "En tratamiento",
+    value: "tratamiento",
+  },
+  {
+    label: "Controlado",
+    value: "controlado",
+  },
+  {
+    label: "Cerrado",
+    value: "cerrado",
+  },
 ];
 
-function formatearFecha(fecha) {
+function obtenerFechaActual() {
+  const fecha = new Date();
   const dia = String(fecha.getDate()).padStart(2, "0");
   const mes = String(fecha.getMonth() + 1).padStart(2, "0");
   const anio = fecha.getFullYear();
@@ -86,225 +162,9 @@ function formatearFecha(fecha) {
   return `${dia}/${mes}/${anio}`;
 }
 
-function obtenerFechaActual() {
-  return formatearFecha(new Date());
-}
-
-function convertirTextoAFecha(texto) {
-  const partes = texto.split("/");
-
-  if (partes.length !== 3) {
-    return new Date();
-  }
-
-  const dia = Number(partes[0]);
-  const mes = Number(partes[1]) - 1;
-  const anio = Number(partes[2]);
-
-  if (Number.isNaN(dia) === true) {
-    return new Date();
-  }
-
-  if (Number.isNaN(mes) === true) {
-    return new Date();
-  }
-
-  if (Number.isNaN(anio) === true) {
-    return new Date();
-  }
-
-  return new Date(anio, mes, dia);
-}
-
-function obtenerNombreMes(fecha) {
-  const meses = [
-    "Enero",
-    "Febrero",
-    "Marzo",
-    "Abril",
-    "Mayo",
-    "Junio",
-    "Julio",
-    "Agosto",
-    "Septiembre",
-    "Octubre",
-    "Noviembre",
-    "Diciembre",
-  ];
-
-  return meses[fecha.getMonth()];
-}
-
-function obtenerDiasMes(fecha) {
-  const anio = fecha.getFullYear();
-  const mes = fecha.getMonth();
-  const totalDias = new Date(anio, mes + 1, 0).getDate();
-  const primerDia = new Date(anio, mes, 1).getDay();
-  let dias = [];
-  let indice = 0;
-
-  while (indice < primerDia) {
-    dias.push(null);
-    indice = indice + 1;
-  }
-
-  let dia = 1;
-
-  while (dia <= totalDias) {
-    dias.push(dia);
-    dia = dia + 1;
-  }
-
-  return dias;
-}
-
-function esMismaFecha(fechaUno, fechaDos) {
-  let mismaFecha = false;
-
-  if (
-    fechaUno.getDate() === fechaDos.getDate() &&
-    fechaUno.getMonth() === fechaDos.getMonth() &&
-    fechaUno.getFullYear() === fechaDos.getFullYear()
-  ) {
-    mismaFecha = true;
-  }
-
-  return mismaFecha;
-}
-
-function CalendarInput({ label, value, onChangeText }) {
-  const [visible, setVisible] = useState(false);
-  const [mesVisible, setMesVisible] = useState(convertirTextoAFecha(value));
-
-  const fechaSeleccionada = convertirTextoAFecha(value);
-  const dias = obtenerDiasMes(mesVisible);
-
-  function abrirCalendario() {
-    setMesVisible(convertirTextoAFecha(value));
-    setVisible(true);
-  }
-
-  function cerrarCalendario() {
-    setVisible(false);
-  }
-
-  function cambiarMes(cantidad) {
-    const nuevaFecha = new Date(
-      mesVisible.getFullYear(),
-      mesVisible.getMonth() + cantidad,
-      1,
-    );
-
-    setMesVisible(nuevaFecha);
-  }
-
-  function seleccionarDia(dia) {
-    const nuevaFecha = new Date(
-      mesVisible.getFullYear(),
-      mesVisible.getMonth(),
-      dia,
-    );
-
-    onChangeText(formatearFecha(nuevaFecha));
-    setVisible(false);
-  }
-
-  return (
-    <View style={styles.calendarContainer}>
-      <Text style={styles.label}>{label}</Text>
-
-      <TouchableOpacity style={styles.calendarField} onPress={abrirCalendario}>
-        <Text style={styles.calendarValue}>{value}</Text>
-        <Icon icon={ICONS.calendar} size={18} color={COLORS.primary} />
-      </TouchableOpacity>
-
-      <NativeModal
-        visible={visible}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={cerrarCalendario}
-      >
-        <View style={styles.calendarOverlay}>
-          <View style={styles.calendarModal}>
-            <View style={styles.calendarHeader}>
-              <TouchableOpacity
-                style={styles.calendarArrow}
-                onPress={function () {
-                  cambiarMes(-1);
-                }}
-              >
-                <Text style={styles.calendarArrowText}>‹</Text>
-              </TouchableOpacity>
-
-              <Text style={styles.calendarTitle}>
-                {obtenerNombreMes(mesVisible)} {mesVisible.getFullYear()}
-              </Text>
-
-              <TouchableOpacity
-                style={styles.calendarArrow}
-                onPress={function () {
-                  cambiarMes(1);
-                }}
-              >
-                <Text style={styles.calendarArrowText}>›</Text>
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.weekRow}>
-              <Text style={styles.weekText}>D</Text>
-              <Text style={styles.weekText}>L</Text>
-              <Text style={styles.weekText}>M</Text>
-              <Text style={styles.weekText}>M</Text>
-              <Text style={styles.weekText}>J</Text>
-              <Text style={styles.weekText}>V</Text>
-              <Text style={styles.weekText}>S</Text>
-            </View>
-
-            <View style={styles.daysGrid}>
-              {dias.map(function (dia, index) {
-                if (dia === null) {
-                  return <View key={`empty-${index}`} style={styles.dayBox} />;
-                }
-
-                const fechaDia = new Date(
-                  mesVisible.getFullYear(),
-                  mesVisible.getMonth(),
-                  dia,
-                );
-                let dayStyle = [styles.dayButton];
-                let dayTextStyle = [styles.dayText];
-
-                if (esMismaFecha(fechaDia, fechaSeleccionada) === true) {
-                  dayStyle.push(styles.daySelected);
-                  dayTextStyle.push(styles.dayTextSelected);
-                }
-
-                return (
-                  <TouchableOpacity
-                    key={`day-${dia}`}
-                    style={dayStyle}
-                    onPress={function () {
-                      seleccionarDia(dia);
-                    }}
-                  >
-                    <Text style={dayTextStyle}>{dia}</Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-
-            <Button onPress={cerrarCalendario}>
-              <Text style={styles.buttonText}>Cerrar</Text>
-            </Button>
-          </View>
-        </View>
-      </NativeModal>
-    </View>
-  );
-}
-
 export default function EnfermedadesScreen({ navigation }) {
   const { width } = useWindowDimensions();
+
   let esTablet = false;
   let esDesktop = false;
 
@@ -592,6 +452,7 @@ export default function EnfermedadesScreen({ navigation }) {
     };
 
     console.log("Caso sanitario registrado:", casoSanitario);
+
     setMensaje("Caso sanitario registrado correctamente.");
     setTipoMensaje("success");
     setModalVisible(true);
@@ -681,13 +542,19 @@ export default function EnfermedadesScreen({ navigation }) {
                 labelStyle={styles.label}
               />
             </View>
+
             <View style={itemStyle}>
-              <CalendarInput
+              <DateInput
                 label="Fecha del reporte *"
                 value={fechaReporte}
                 onChangeText={setFechaReporte}
+                placeholder="dd/mm/aaaa"
+                allowFutureDates={false}
+                labelStyle={styles.label}
+                textStyle={styles.inputText}
               />
             </View>
+
             <View style={itemStyle}>
               <Input
                 label="Responsable"
@@ -697,6 +564,7 @@ export default function EnfermedadesScreen({ navigation }) {
                 labelStyle={styles.label}
               />
             </View>
+
             <View style={itemStyle}>
               <Select
                 label="Tipo de evento *"
@@ -722,6 +590,7 @@ export default function EnfermedadesScreen({ navigation }) {
                 labelStyle={styles.label}
               />
             </View>
+
             <View style={itemStyle}>
               <Select
                 label="Severidad *"
@@ -732,6 +601,7 @@ export default function EnfermedadesScreen({ navigation }) {
                 labelStyle={styles.label}
               />
             </View>
+
             <View style={itemStyle}>
               <Input
                 label="Mortalidad observada"
@@ -741,6 +611,7 @@ export default function EnfermedadesScreen({ navigation }) {
                 labelStyle={styles.label}
               />
             </View>
+
             <View style={itemStyle}>
               <Select
                 label="Diagnostico de laboratorio *"
@@ -751,6 +622,7 @@ export default function EnfermedadesScreen({ navigation }) {
                 labelStyle={styles.label}
               />
             </View>
+
             <View style={itemFullStyle}>
               <Input
                 label="Sintomas observados *"
@@ -777,6 +649,7 @@ export default function EnfermedadesScreen({ navigation }) {
                 labelStyle={styles.label}
               />
             </View>
+
             <View style={itemStyle}>
               <Input
                 label="Producto probiotico"
@@ -786,6 +659,7 @@ export default function EnfermedadesScreen({ navigation }) {
                 labelStyle={styles.label}
               />
             </View>
+
             <View style={itemStyle}>
               <Select
                 label="Uso de antibioticos"
@@ -796,6 +670,7 @@ export default function EnfermedadesScreen({ navigation }) {
                 labelStyle={styles.label}
               />
             </View>
+
             <View style={itemStyle}>
               <Input
                 label="Producto antibiotico"
@@ -805,9 +680,11 @@ export default function EnfermedadesScreen({ navigation }) {
                 labelStyle={styles.label}
               />
             </View>
+
             <View style={itemStyle}>
               <View style={styles.periodoContainer}>
                 <Text style={styles.label}>Periodo de retiro</Text>
+
                 <View style={styles.periodoRow}>
                   <TouchableOpacity
                     style={styles.periodoButton}
@@ -815,6 +692,7 @@ export default function EnfermedadesScreen({ navigation }) {
                   >
                     <Text style={styles.periodoButtonText}>-</Text>
                   </TouchableOpacity>
+
                   <Input
                     value={periodoRetiro}
                     onChangeText={cambiarPeriodo}
@@ -822,7 +700,9 @@ export default function EnfermedadesScreen({ navigation }) {
                     containerStyle={styles.periodoInputContainer}
                     style={styles.periodoInput}
                   />
+
                   <Text style={styles.periodoSuffix}>(dias)</Text>
+
                   <TouchableOpacity
                     style={styles.periodoButton}
                     onPress={aumentarPeriodo}
@@ -847,13 +727,19 @@ export default function EnfermedadesScreen({ navigation }) {
                 labelStyle={styles.label}
               />
             </View>
+
             <View style={itemStyle}>
-              <CalendarInput
+              <DateInput
                 label="Proxima revision"
                 value={proximaRevision}
                 onChangeText={setProximaRevision}
+                placeholder="dd/mm/aaaa"
+                allowFutureDates={true}
+                labelStyle={styles.label}
+                textStyle={styles.inputText}
               />
             </View>
+
             <View style={itemFullStyle}>
               <Input
                 label="Observaciones"
@@ -902,6 +788,7 @@ export default function EnfermedadesScreen({ navigation }) {
       >
         <View style={styles.modalHeader}>
           <Icon icon={ICONS.certificate} size={26} color={COLORS.primary} />
+
           <Title
             level={4}
             color={COLORS.textSecondary}
@@ -910,6 +797,7 @@ export default function EnfermedadesScreen({ navigation }) {
             Recomendacion sanitaria
           </Title>
         </View>
+
         <CustomText
           size={15}
           color={COLORS.textSecondary}
@@ -929,6 +817,7 @@ const styles = StyleSheet.create({
     width: "100%",
     backgroundColor: COLORS.surface,
   },
+
   header: {
     width: "100%",
     backgroundColor: COLORS.primary,
@@ -938,24 +827,29 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 22,
     borderBottomRightRadius: 22,
   },
+
   headerDesktop: {
     paddingHorizontal: 48,
   },
+
   cancelButton: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 18,
   },
+
   cancelText: {
     color: COLORS.white,
     fontSize: 16,
     fontFamily: TYPOGRAPHY.fontFamily.medium,
     marginLeft: 8,
   },
+
   headerRow: {
     flexDirection: "row",
     alignItems: "center",
   },
+
   headerIcon: {
     width: 48,
     height: 48,
@@ -965,33 +859,42 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginRight: 14,
   },
+
   headerTitle: {
     fontFamily: TYPOGRAPHY.fontFamily.bold,
   },
+
   headerSubtitle: {
     fontFamily: TYPOGRAPHY.fontFamily.medium,
     marginTop: 2,
   },
+
   content: {
     width: "100%",
     padding: 18,
   },
+
   contentTablet: {
     paddingHorizontal: 32,
   },
+
   contentDesktop: {
     paddingHorizontal: 48,
   },
+
   alert: {
     marginBottom: 14,
   },
+
   alertText: {
     fontFamily: TYPOGRAPHY.fontFamily.medium,
   },
+
   cardTitle: {
     fontFamily: TYPOGRAPHY.fontFamily.bold,
     color: COLORS.textSecondary,
   },
+
   label: {
     color: COLORS.textSecondary,
     fontSize: 14,
@@ -999,155 +902,77 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     marginBottom: 6,
   },
+
+  inputText: {
+    color: COLORS.textSecondary,
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
+  },
+
   grid: {
     width: "100%",
     flexDirection: "column",
   },
+
   gridTablet: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 12,
   },
+
   gridDesktop: {
     gap: 18,
   },
+
   gridItem: {
     width: "100%",
   },
+
   gridItemTablet: {
     flexGrow: 1,
     flexShrink: 1,
     flexBasis: "48%",
   },
+
   gridItemDesktop: {
     flexBasis: "31%",
   },
+
   gridItemFull: {
     flexBasis: "100%",
   },
+
   riskRow: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 12,
   },
+
   riskTextBox: {
     marginLeft: 12,
     flex: 1,
   },
+
   badge: {
     marginTop: 6,
   },
+
   textArea: {
     minHeight: 105,
     textAlignVertical: "top",
     color: COLORS.textSecondary,
     fontFamily: TYPOGRAPHY.fontFamily.regular,
   },
-  calendarContainer: {
-    width: "100%",
-    marginBottom: 12,
-  },
-  calendarField: {
-    minHeight: 45,
-    borderWidth: 1,
-    borderColor: COLORS.secondary,
-    borderRadius: 8,
-    backgroundColor: COLORS.white,
-    paddingHorizontal: 12,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  calendarValue: {
-    color: COLORS.textSecondary,
-    fontSize: 16,
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
-  },
-  calendarOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.45)",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 20,
-  },
-  calendarModal: {
-    width: "100%",
-    maxWidth: 380,
-    backgroundColor: COLORS.white,
-    borderRadius: 16,
-    padding: 18,
-  },
-  calendarHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 14,
-  },
-  calendarArrow: {
-    width: 38,
-    height: 38,
-    borderRadius: 10,
-    backgroundColor: COLORS.secondary,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  calendarArrowText: {
-    color: COLORS.primary,
-    fontSize: 28,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    lineHeight: 30,
-  },
-  calendarTitle: {
-    color: COLORS.textSecondary,
-    fontSize: 17,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-  },
-  weekRow: {
-    flexDirection: "row",
-    marginBottom: 8,
-  },
-  weekText: {
-    flex: 1,
-    textAlign: "center",
-    color: COLORS.textTertiary,
-    fontSize: 13,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-  },
-  daysGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-  },
-  dayBox: {
-    width: "14.285%",
-    height: 42,
-  },
-  dayButton: {
-    width: "14.285%",
-    height: 42,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 10,
-  },
-  daySelected: {
-    backgroundColor: COLORS.primary,
-  },
-  dayText: {
-    color: COLORS.textSecondary,
-    fontSize: 15,
-    fontFamily: TYPOGRAPHY.fontFamily.medium,
-  },
-  dayTextSelected: {
-    color: COLORS.white,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-  },
+
   periodoContainer: {
     width: "100%",
     marginBottom: 12,
   },
+
   periodoRow: {
     flexDirection: "row",
     alignItems: "center",
   },
+
   periodoButton: {
     width: 42,
     height: 42,
@@ -1156,76 +981,92 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+
   periodoButtonText: {
     color: COLORS.white,
     fontSize: 22,
     fontFamily: TYPOGRAPHY.fontFamily.bold,
   },
+
   periodoInputContainer: {
     flex: 1,
     marginHorizontal: 8,
     marginBottom: 0,
   },
+
   periodoInput: {
     textAlign: "center",
     color: COLORS.textSecondary,
     fontFamily: TYPOGRAPHY.fontFamily.bold,
   },
+
   periodoSuffix: {
     color: COLORS.textTertiary,
     fontSize: 14,
     fontFamily: TYPOGRAPHY.fontFamily.medium,
     marginRight: 8,
   },
+
   actions: {
     marginBottom: 34,
     gap: 12,
   },
+
   actionsTablet: {
     flexDirection: "row",
   },
+
   actionButton: {
     flex: 1,
     minHeight: 48,
   },
+
   buttonContent: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
   },
+
   buttonContentOutline: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
   },
+
   buttonText: {
     color: COLORS.white,
     fontSize: 16,
     fontFamily: TYPOGRAPHY.fontFamily.bold,
     marginLeft: 8,
   },
+
   buttonOutlineText: {
     color: COLORS.primary,
     fontSize: 16,
     fontFamily: TYPOGRAPHY.fontFamily.bold,
     marginLeft: 8,
   },
+
   modalOverlay: {
     backgroundColor: "rgba(0, 0, 0, 0.45)",
   },
+
   modalContainer: {
     maxWidth: 520,
     borderRadius: 18,
   },
+
   modalHeader: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 14,
     gap: 10,
   },
+
   modalTitle: {
     fontFamily: TYPOGRAPHY.fontFamily.bold,
   },
+
   modalText: {
     lineHeight: 22,
     fontFamily: TYPOGRAPHY.fontFamily.medium,
