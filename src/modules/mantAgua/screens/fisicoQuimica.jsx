@@ -29,6 +29,7 @@
  */
 
 import React, { useEffect, useRef, useState } from "react";
+import { useRouter } from "expo-router";
 import {
   View,
   ScrollView,
@@ -55,6 +56,8 @@ export default function FisicoQuimica({ onBack }) {
   const [, setOxReadings] = useState([]);
   const [showAlert, setShowAlert] = useState(false);
   const alertTimerRef = useRef(null);
+  const router = useRouter();
+
 
   useEffect(() => {
     return () => {
@@ -68,7 +71,9 @@ export default function FisicoQuimica({ onBack }) {
     alertTimerRef.current = setTimeout(() => {
       setShowAlert(false);
       alertTimerRef.current = null;
-    }, 3000);
+      router.replace("/(drawer)/(tabs)/registros");  // ← reemplaza onBack()
+
+    }, 500);
   };
 
   return (
@@ -163,7 +168,7 @@ export default function FisicoQuimica({ onBack }) {
             textStyle={{ textAlign: "center", fontWeight: "bold" }}
           />
         )}
-        <View style={{ height: 24 }}/>
+        <View style={{ height: 24 }} />
       </ScrollView>
 
       {/* ── Footer / Guardar ── */}

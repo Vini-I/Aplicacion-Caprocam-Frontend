@@ -25,13 +25,12 @@ export default function DrawerLayout() {
           )
         }} 
       />
-
-      <Drawer.Screen
+       <Drawer.Screen
         name="inventarios"
         options={{
           drawerLabel: "Inventario",
           title: "Inventario",
-          headerShown: false,         
+          headerShown: false,
           drawerIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="package-variant-closed" color={color} size={size} />
           ),
@@ -42,6 +41,12 @@ export default function DrawerLayout() {
       <Drawer.Screen name="inicio" options={{ drawerItemStyle: { display: "none" } }} />
       <Drawer.Screen name="registros" options={{ drawerItemStyle: { display: "none" } }} />
       <Drawer.Screen name="reportes" options={{ drawerItemStyle: { display: "none" } }} />
+      <Drawer.Screen name="inventarios/_layaout" options={{ drawerItemStyle: { display: "none" } }} />
+      <Drawer.Screen name="inventarios/inventarioScreen" options={{ drawerItemStyle: { display: "none" } }} />
+      <Drawer.Screen name="inventarios/ProductForm" options={{ drawerItemStyle: { display: "none" } }} />
+      <Drawer.Screen name="inventarios/productForm" options={{ drawerItemStyle: { display: "none" } }} />
+
+
     </Drawer>
   );
 }
