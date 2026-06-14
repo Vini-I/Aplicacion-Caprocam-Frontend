@@ -1,6 +1,6 @@
 import { Stack } from "expo-router";
 import React from "react";
-import {useFonts, Roboto_400Regular, Roboto_500Medium, Roboto_700Bold} from "@expo-google-fonts/roboto";
+import { useFonts, Roboto_400Regular, Roboto_500Medium, Roboto_700Bold } from "@expo-google-fonts/roboto";
 
 export default function RootLayout() {
 
@@ -13,13 +13,20 @@ export default function RootLayout() {
   if (!fontsLoaded) {
     return null;
   }
-  
+
   return (
     <Stack screenOptions={{ headerShown: false }}>
-     
+
+      <Stack.Screen name="loginWeb" />
+      
       <Stack.Screen name="login" />
 
-      <Stack.Screen name="index" />
+      <Stack.Screen name="colaboradores" />
+
+
+
+      {/* <Stack.Screen name="index" /> */}
+
 
 
     </Stack>
