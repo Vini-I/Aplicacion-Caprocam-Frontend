@@ -6,6 +6,8 @@
 import { useState } from "react";
 import { View, FlatList, StyleSheet, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
+
 
 import Navbar from "../../../shared/components/Navbar";
 import Card from "../../../shared/components/Card";
@@ -19,11 +21,14 @@ import Icon from "../../../shared/components/Icons";
 import SearchBar from "../components/SearchBar";
 import FilterButton from "../components/FilterButton";
 
+
 import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
 import { ICONS } from "../../../theme/icons";
 
 import { getProductosInventario } from "../services/inventarioService";
+
+const router = useRouter();
 
 const colorCategoria = {
   Alimentación: { fondo: COLORS.warningLight, texto: COLORS.warning },
@@ -203,7 +208,9 @@ export default function InventarioScreen() {
         style={styles.navbar}
         titleStyle={styles.navbarTitulo}
         rightContent={
-          <Button style={styles.botonAgregar}>
+          <Button 
+          style={styles.botonAgregar}
+          onPress={() => router.push("/(drawer)/inventarios/productForm")}>
             <Icon icon={ICONS.add} size={20} color={COLORS.white} />
           </Button>
         }

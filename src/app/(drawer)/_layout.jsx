@@ -26,7 +26,17 @@ export default function DrawerLayout() {
         }} 
       />
 
-      
+      <Drawer.Screen
+        name="inventarios"
+        options={{
+          drawerLabel: "Inventario",
+          title: "Inventario",
+          headerShown: false,         
+          drawerIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="package-variant-closed" color={color} size={size} />
+          ),
+        }}
+      />
 
 
       <Drawer.Screen name="inicio" options={{ drawerItemStyle: { display: "none" } }} />
