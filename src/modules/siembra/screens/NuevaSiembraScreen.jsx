@@ -24,10 +24,11 @@ import Modal from "../../../shared/components/Modal";
 import SiembraForm from "../components/SiembraForm";
 import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
+import { useRouter } from "expo-router";
 
 export default function NuevaSiembraScreen() {
   const [modalVisible, setModalVisible] = useState(false);
-
+  const router = useRouter();
   const [formData, setFormData] = useState({
     fechaSiembra: "",
     horaIngreso: "",
@@ -71,7 +72,7 @@ export default function NuevaSiembraScreen() {
   }
 
   function handleCerrar() {
-    console.log("Cerrar pantalla");
+    router.back();
   }
 
   return (
