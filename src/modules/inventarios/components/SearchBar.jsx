@@ -41,22 +41,11 @@ export default function SearchBar({
   editable = true,
   containerStyle,
 }) {
-  const [internalValue, setInternalValue] = useState(value);
-
-  useEffect(() => {
-    setInternalValue(value);
-  }, [value]);
-
-  //Aca se aplicaria la logica de busqueda conectada al backend, por ahora solo actualiza el estado del texto
-  const handleChangeText = (text) => {
-    setInternalValue(text);
-    onChangeText?.(text);
-  };
 
   return (
     <View style={[styles.container, containerStyle]}>
-      <Input value={internalValue}
-        onChangeText={handleChangeText}
+      <Input value={value}
+        onChangeText={onChangeText}
         placeholder = "Buscar producto, categoría, proveedor..."
         editable = {editable}
         containerStyle={styles.inputContainer}
@@ -87,5 +76,6 @@ const styles = StyleSheet.create({
     borderWidth: 0,
     paddingHorizontal: 0,
     backgroundColor: "transparent",
+    outlineStyle: "none",
   },
 });

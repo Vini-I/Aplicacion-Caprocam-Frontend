@@ -1,38 +1,71 @@
 export const fincas = [
   {
-    id: 1,
+    // Identificación
+    codigoInterno: "FIN-001",
     nombre: "Finca La Esperanza",
-    ubicacion: "Provincia de Guayas, Cantón Daule",
+
+    // Ubicación
+    provincia: "Cartago",
+    canton: "Paraíso",
+    distrito: "Orosi",
+
+    // Contacto
     responsable: "Carlos Pérez",
-    telefono: "+593 98 123 4567",
-    estanques: 4,
-    Area: 12.5,
+    telefonos: [
+      "8888-8888",
+      "8777-7777",
+    ],
+
+    // Características
+    estanques: 2,
+    areaTotal: 12.5,
+    largo: 150,
+    ancho: 80,
   },
   {
-    id: 2,
-    nombre: "Finca El Paraíso",
-    ubicacion: "Provincia de El Oro, Cantón Machala",
-    responsable: "María López",
-    telefono: "+593 99 765 4321",
-    estanques: 6,
-    Area: 18.2,
-  },
-  {
-    id: 3,
-    nombre: "Finca Santa Rita",
-    ubicacion: "Provincia de Los Ríos, Cantón Babahoyo",
-    responsable: "Luis Zambrano",
-    telefono: "+593 97 234 5678",
-    estanques: 3,
-    Area: 8.4,
-  },
-  {
-    id: 4,
-    nombre: "Finca El Lago",
-    ubicacion: "Provincia de Manabí, Cantón Manta",
-    responsable: "Ana Villacís",
-    telefono: "+593 98 765 1234",
+    // Identificación
+    codigoInterno: "FIN-002",
+    nombre: "Finca La Reina",
+
+    // Ubicación
+    provincia: "Guanacaste",
+    canton: "Bagaces",
+    distrito: "Rio Naranjo",
+
+    // Contacto
+    responsable: "Alejandra Pérez",
+    telefonos: [
+      "8888-8921",
+      "8777-3212",
+    ],
+
+    // Características
     estanques: 5,
-    Area: 15.0,
+    areaTotal: 17.5,
+    largo: 200,
+    ancho: 90,
+  },
+  {
+    // Identificación
+    codigoInterno: "FIN-003",
+    nombre: "Finca La Villa",
+
+    // Ubicación
+    provincia: "Alajuela",
+    canton: "Desamparados",
+    distrito: "Silvia Eugenia",
+
+    // Contacto
+    responsable: "Alfonso Pérez",
+    telefonos: [
+      "2141-8888",
+      "3241-7777",
+    ],
+
+    // Características
+    estanques: 10,
+    areaTotal: 50,
+    largo: 200,
+    ancho: 500,
   },
 ];

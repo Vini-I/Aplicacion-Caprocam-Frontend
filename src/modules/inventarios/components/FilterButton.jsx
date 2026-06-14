@@ -84,6 +84,11 @@ export default function FilterButton({
     expiryDate: "",
   },
   onApply,
+  // Backwards-compatible: `style` applies to the inner Button.
+  style,
+  // New explicit props:
+  buttonStyle,
+  containerStyle,
 }) {
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -143,11 +148,17 @@ export default function FilterButton({
   return (
     <>
       {/* ── Boton principal ── */}
-      <Button
-        variant="outline"
-        onPress={openModal}
-        style={[styles.filterBtn, activeCount > 0 && styles.filterBtnActive]}
-      >
+      <View style={containerStyle}>
+        <Button
+          variant="outline"
+          onPress={openModal}
+          style={[
+            styles.filterBtn,
+            activeCount > 0 && styles.filterBtnActive,
+            // prefer explicit `buttonStyle`, fall back to `style` for compat
+            buttonStyle || style,
+          ]}
+        >
         <Icon
           icon={ICONS.filter}
           size={16}
@@ -168,7 +179,8 @@ export default function FilterButton({
             textStyle={styles.badgeText}
           />
         )}
-      </Button>
+        </Button>
+      </View>
 
       {/* ── Modal ── */}
       <Modal
@@ -364,11 +376,15 @@ const styles = StyleSheet.create({
     height: 18,
     paddingHorizontal: 6,
     paddingVertical: 3,
+    marginTop: 4,
+    justifyContent: "center",
+    alignItems: "center",
   },
   badgeText: {
     color: COLORS.white,
     fontSize: 10,
     fontWeight: "600",
+    textAlign: "center",
   },
   overlay: {
     backgroundColor: "rgba(0,0,0,0.45)",
