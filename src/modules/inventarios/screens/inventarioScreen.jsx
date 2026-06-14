@@ -6,6 +6,7 @@
 import { useState } from "react";
 import { View, FlatList, StyleSheet, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
 
 import Navbar from "../../../shared/components/Navbar";
 import Card from "../../../shared/components/Card";
@@ -21,7 +22,7 @@ import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
 import { ICONS } from "../../../theme/icons";
 
-import { productosInventario } from "../services/inventarioData";
+import { productosInventario } from "../services/inventarioService";
 
 const colorCategoria = {
   Alimentación: { fondo: COLORS.warningLight, texto: COLORS.warning },
@@ -128,6 +129,7 @@ export default function InventarioScreen() {
       p.proveedor.toLowerCase().includes(texto)
     );
   });
+  const router = useRouter();
 
   const cantidadStockBajo = productosInventario.filter(
     (p) => p.cantidad < p.stockMinimo,
@@ -222,6 +224,24 @@ export default function InventarioScreen() {
         }
         contentContainerStyle={styles.lista}
       />
+      <View style={styles.tabsInternas}>
+        <TouchableOpacity style={[styles.tab, styles.tabActiva]}>
+          <Icon icon={ICONS.document} size={20} color={COLORS.primary} />
+          <CustomText size={12} color={COLORS.primary} weight="600">
+            Inventario
+          </CustomText>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.tab}
+          onPress={() => router.push("/registros/proveedores")}
+        >
+          <Icon icon={ICONS.user} size={20} color={COLORS.textTertiary} />
+          <CustomText size={12} color={COLORS.textTertiary}>
+            Proveedores
+          </CustomText>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 }
@@ -353,4 +373,20 @@ const styles = StyleSheet.create({
   tarjetaPieStockBajo: {
     borderTopColor: COLORS.errorLight,
   },
+  tabsInternas: {
+  flexDirection: "row",
+  borderTopWidth: 1,
+  borderTopColor: COLORS.secondary,
+  backgroundColor: COLORS.white,
+},
+tab: {
+  flex: 1,
+  alignItems: "center",
+  paddingVertical: 10,
+  gap: 4,
+},
+tabActiva: {
+  borderTopWidth: 2,
+  borderTopColor: COLORS.primary,
+},
 });
