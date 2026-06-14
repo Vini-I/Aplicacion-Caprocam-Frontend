@@ -48,14 +48,14 @@
 import React, { useState } from "react";
 import { ScrollView, View, StyleSheet, Pressable, Text } from "react-native";
 
-import Card from "../components/Card";
-import Input from "../components/Input";
-import Select from "../components/Select";
-import Button from "../components/Button";
-import Title from "../components/Title";
-import Alert from "../components/Alert";
-import DateInput from "../components/DateInput";
-import Icon from "../components/Icons";
+import Card from "../../../shared/components/Card";
+import Input from "../../../shared/components/Input";
+import Select from "../../../shared/components/Select";
+import Button from "../../../shared/components/Button";
+import Title from "../../../shared/components/Title";
+import Alert from "../../../shared/components/Alert";
+import DateInput from "../../../shared/components/DateInput";
+import Icon from "../../../shared/components/Icons";
 
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
