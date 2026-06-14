@@ -7,8 +7,11 @@
  * Esto permite mantener consistencia visual y facilita cambios globales.
  *
  * USO:
- * import { ICONS } from '../theme/icons';
- * backgroundColor: COLORS.primary,
+ * import { ICONS } from "../../../theme/icons";
+ * import Icon from "../../../shared/components/Icons";
+ * 
+ * <Icon icon={ICONS.add} size={15} /> 
+ * 
  */
 
 
@@ -68,6 +71,14 @@ export const ICONS = {
     report: {
     provider: "Entypo",
     name: "bar-graph",
+    },
+    id: {
+    provider: "FontAwesome",
+    name: "id-card",
+    },
+    earth: {
+    provider: "FontAwesome6",
+    name: "earth-americas",
     },
 
     // Reportes y estadísticas
