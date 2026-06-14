@@ -41,7 +41,7 @@
  */
 
 import React, { useEffect, useState } from "react";
-import { View, ScrollView, StyleSheet, Text } from "react-native";
+import { View, ScrollView, StyleSheet } from "react-native";
 
 import Navbar from "../../../shared/components/Navbar";
 import Card from "../../../shared/components/Card";
@@ -49,9 +49,10 @@ import Input from "../../../shared/components/Input";
 import Select from "../../../shared/components/Select";
 import Button from "../../../shared/components/Button";
 import NumberInput from "../../../shared/components/NumberInput";
-import ProductDateInput from "../components/ProductDateInput";
-import { TYPOGRAPHY } from '../theme/typography';
+import DateInput from "../../../shared/components/DateInput";
+import { TYPOGRAPHY } from '../../../theme/typography';
 import { COLORS } from "../../../theme/colors";
+import CustomText from "../../../shared/components/Text";
 
 /**
  * Estado inicial del formulario.
@@ -61,6 +62,7 @@ import { COLORS } from "../../../theme/colors";
  * - Se limpia el formulario después de guardar.
  * - No se recibe ningún producto para editar.
  */
+
 const initialForm = {
   name: "",
   category: "",
@@ -296,7 +298,7 @@ export default function ProductForm({
             labelStyle={styles.label}
           />
 
-          <ProductDateInput
+          <DateInput
             label="Fecha de ingreso"
             value={form.entryDate}
             onChangeText={(val) => handleField("entryDate", val)}
@@ -304,7 +306,7 @@ export default function ProductForm({
             labelStyle={styles.label}
           />
 
-          <ProductDateInput
+          <DateInput
             label="Fecha de caducidad"
             value={form.expirationDate}
             onChangeText={(val) => handleField("expirationDate", val)}
@@ -381,9 +383,9 @@ export default function ProductForm({
           </Button>
 
           {validationMessage !== "" && (
-            <Text style={styles.validationText}>
+            <CustomText style={styles.validationText}>
               {validationMessage}
-            </Text>
+            </CustomText>
           )}
         </Card>
       </ScrollView>
@@ -419,7 +421,7 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     padding: 18,
     backgroundColor: COLORS.white,
-    borderColor: COLORS.divider,
+    borderColor: COLORS.header,
   },
 
   cardTitle: {
@@ -443,7 +445,7 @@ const styles = StyleSheet.create({
   input: {
     minHeight: 48,
     borderRadius: 12,
-    borderColor: COLORS.divider,
+    borderColor: COLORS.header,
     backgroundColor: COLORS.white,
     paddingHorizontal: 14,
     fontSize: 15,
@@ -452,14 +454,14 @@ const styles = StyleSheet.create({
 
   numberInput: {
     borderRadius: 12,
-    borderColor: COLORS.divider,
+    borderColor: COLORS.header,
     backgroundColor: COLORS.white,
   },
 
   select: {
     minHeight: 48,
     borderRadius: 12,
-    borderColor: COLORS.divider,
+    borderColor: COLORS.header,
     backgroundColor: COLORS.white,
     paddingHorizontal: 14,
   },

@@ -16,12 +16,14 @@ import CustomText from "../../../shared/components/Text";
 import Title from "../../../shared/components/Title";
 import EmptyState from "../../../shared/components/EmptyState";
 import Icon from "../../../shared/components/Icons";
+import SearchBar from "../components/SearchBar";
+import FilterButton from "../components/FilterButton";
 
 import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
 import { ICONS } from "../../../theme/icons";
 
-import { productosInventario } from "../services/inventarioData";
+import { getProductosInventario } from "../services/inventarioService";
 
 const colorCategoria = {
   Alimentación: { fondo: COLORS.warningLight, texto: COLORS.warning },
@@ -120,13 +122,35 @@ function TarjetaProducto({ producto }) {
 
 export default function InventarioScreen() {
   const [busqueda, setBusqueda] = useState("");
+  const [filtros, setFiltros] = useState({
+    categories: [],
+    suppliers: [],
+    units: [],
+    lowStock: false,
+    expiryDate: "",
+  });
+
+  const productosInventario = getProductosInventario();
+  const CATEGORIAS = [...new Set(productosInventario.map((p) => p.categoria))];
+  const PROVEEDORES = [...new Set(productosInventario.map((p) => p.proveedor))];
+  const UNIDADES = [...new Set(productosInventario.map((p) => p.unidad))];
 
   const productosFiltrados = productosInventario.filter((p) => {
     const texto = busqueda.toLowerCase();
-    return (
+    const coincideTexto =
       p.nombre.toLowerCase().includes(texto) ||
-      p.proveedor.toLowerCase().includes(texto)
-    );
+      p.proveedor.toLowerCase().includes(texto) ||
+      p.categoria.toLowerCase().includes(texto);
+    const coincideCategoria =
+      filtros.categories.length === 0 || filtros.categories.includes(p.categoria);
+    const coincideProveedor =
+      filtros.suppliers.length === 0 || filtros.suppliers.includes(p.proveedor);
+    const coincideUnidad =
+      filtros.units.length === 0 || filtros.units.includes(p.unidad);
+    const coincideStock =
+      !filtros.lowStock || p.cantidad < p.stockMinimo;
+
+    return coincideTexto && coincideCategoria && coincideProveedor && coincideUnidad && coincideStock;
   });
 
   const cantidadStockBajo = productosInventario.filter(
@@ -152,32 +176,7 @@ export default function InventarioScreen() {
           </View>
         )}
 
-        <View style={styles.barraBusqueda}>
-          <View style={styles.inputWrapper}>
-            <Icon
-              icon={ICONS.filter}
-              size={14}
-              color={COLORS.textQuaternary}
-              style={styles.iconoBusqueda}
-            />
-            <Input
-              placeholder="Buscar producto o proveedor..."
-              value={busqueda}
-              onChangeText={setBusqueda}
-              style={styles.inputBusqueda}
-              containerStyle={styles.inputContainer}
-            />
-          </View>
-          <Button variant="outline" style={styles.botonFiltrar}>
-            <View style={styles.botonFiltrarContenido}>
-              <Icon icon={ICONS.filter} size={14} color={COLORS.primary} />
-              <CustomText size={13} weight="600" color={COLORS.primary}>
-                {" "}
-                Filtrar
-              </CustomText>
-            </View>
-          </Button>
-        </View>
+
 
         <CustomText
           size={13}
@@ -209,6 +208,22 @@ export default function InventarioScreen() {
           </Button>
         }
       />
+      <View style={styles.barraBusqueda}>
+        <SearchBar
+          value={busqueda}
+          onChangeText={setBusqueda}
+          containerStyle={styles.searchBarContainer}
+        />
+        <FilterButton
+          categories={CATEGORIAS}
+          suppliers={PROVEEDORES}
+          units={UNIDADES}
+          activeFilters={filtros}
+          onApply={setFiltros}
+          buttonStyle={styles.filterButton}
+        />
+      </View>
+
       <FlatList
         data={productosFiltrados}
         keyExtractor={(item) => item.id.toString()}
@@ -269,32 +284,15 @@ const styles = StyleSheet.create({
     marginTop: 12,
     gap: 8,
   },
-  inputWrapper: {
+  searchBarContainer: {
     flex: 1,
-    position: "relative",
+    
   },
-  iconoBusqueda: {
-    position: "absolute",
-    left: 12,
-    top: 12,
-    zIndex: 1,
-  },
-  inputContainer: {
-    marginBottom: 0,
-  },
-  inputBusqueda: {
-    paddingLeft: 36,
-  },
-  botonFiltrar: {
+  filterButton: {
+    alignSelf: "center",
     marginTop: 0,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
+    height: 43,
   },
-  botonFiltrarContenido: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-
   contadorResultados: {
     marginHorizontal: 16,
     marginTop: 10,
@@ -353,4 +351,5 @@ const styles = StyleSheet.create({
   tarjetaPieStockBajo: {
     borderTopColor: COLORS.errorLight,
   },
+
 });
