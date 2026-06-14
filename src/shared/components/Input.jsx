@@ -8,71 +8,32 @@
  * Funcionalidad:
  * - Permite campos de texto normales.
  * - Permite campos multilinea.
- * - Permite usar inputType="date" para abrir calendario.
- * - Cuando inputType es "date", implementa DateInput.
+ * - Permite bloquear o habilitar la edicion.
+ * - Permite configurar el teclado.
  *
- * Props principales:
- * - label: texto opcional mostrado arriba del campo.
- * - value: valor actual del input.
- * - onChangeText: funcion que recibe el nuevo valor.
- * - placeholder: texto de ayuda.
- * - inputType: tipo de input. Usa "text" o "date".
- * - multiline: permite escribir varias lineas.
- * - editable: permite bloquear o habilitar la edicion.
- * - allowFutureDates: permite fechas futuras cuando inputType es "date".
- * - style: estilos extra para el campo.
- * - containerStyle: estilos extra para el contenedor.
- *
- * Ejemplos:
- * <Input label="Nombre" value={nombre} onChangeText={setNombre} />
- *
- * <Input
- *     label="Fecha"
- *     inputType="date"
- *     value={fecha}
- *     onChangeText={setFecha}
- * />
+ * Importante:
+ * - Este componente ya no maneja fechas.
+ * - Para fechas se debe usar DateInput.jsx por separado.
  */
 
 import React from "react";
 import { TextInput, StyleSheet, View, Text } from "react-native";
-import DateInput from "./DateInput.jsx";
 
-import {COLORS} from "../../theme/colors"
+import { COLORS } from "../../theme/colors";
 
 export default function Input({
   label = "",
   value = "",
   onChangeText,
   placeholder = "",
-  inputType = "text",
   multiline = false,
   editable = true,
   keyboardType = "default",
-  allowFutureDates = false,
   style,
   containerStyle,
   labelStyle,
-  textStyle,
   ...props
 }) {
-  if (inputType === "date") {
-    return (
-      <DateInput
-        label={label}
-        value={value}
-        onChangeText={onChangeText}
-        placeholder={placeholder}
-        disabled={!editable}
-        allowFutureDates={allowFutureDates}
-        inputStyle={style}
-        containerStyle={containerStyle}
-        labelStyle={labelStyle}
-        textStyle={textStyle}
-      />
-    );
-  }
-
   const inputStyles = [styles.input];
 
   if (multiline === true) {
@@ -110,12 +71,14 @@ const styles = StyleSheet.create({
   container: {
     marginBottom: 12,
   },
+
   label: {
     fontSize: 14,
     fontWeight: "600",
     color: COLORS.textSecondary,
     marginBottom: 6,
   },
+
   input: {
     borderWidth: 1,
     borderColor: COLORS.secondary,
@@ -126,10 +89,12 @@ const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     backgroundColor: COLORS.white,
   },
+
   multiline: {
     minHeight: 90,
     textAlignVertical: "top",
   },
+
   disabledInput: {
     backgroundColor: COLORS.surface,
     color: COLORS.textQuaternary,
