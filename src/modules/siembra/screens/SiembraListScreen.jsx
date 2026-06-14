@@ -21,16 +21,18 @@ import SiembraCard from "../components/SiembraCard";
 import { obtenerSiembras } from "../services/SiembraService";
 import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
+import { useRouter } from "expo-router";
 
 export default function SiembraListScreen() {
   const siembras = obtenerSiembras();
+  const router = useRouter();
 
   const handleNuevaSiembra = () => {
-    console.log("Ir a nueva siembra");
+   router.push("/siembra/nueva");
   };
 
   const handleDetalleSiembra = (siembraId) => {
-    console.log("Ir al detalle de la siembra:", siembraId);
+    router.push("/siembra/detalle");
   };
 
   const renderSiembraCard = (siembra) => (

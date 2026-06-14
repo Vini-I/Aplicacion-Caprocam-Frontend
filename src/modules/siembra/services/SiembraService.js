@@ -77,3 +77,27 @@ export function obtenerSiembras() {
 export function obtenerSiembraPorId(siembraId) {
   return siembras.find((siembra) => siembra.siembraId === siembraId);
 }
+export function obtenerEstanques() {
+  return [
+    { label: "A01", value: "A01" },
+    { label: "A02", value: "A02" },
+    { label: "B01", value: "B01" },
+    { label: "B02", value: "B02" },
+  ];
+}
+
+export function obtenerProveedoresLarva() {
+  return [
+    { label: "Larvas del Pacífico", value: "pacifico" },
+    { label: "AquaLarva", value: "aqua" },
+    { label: "Maricultura CR", value: "maricultura" },
+  ];
+}
+
+export function obtenerTecnicasCultivo() {
+  return [
+    { label: "Extensiva", value: "extensiva" },
+    { label: "Semi-intensiva", value: "semi" },
+    { label: "Intensiva", value: "intensiva" },
+  ];
+}
