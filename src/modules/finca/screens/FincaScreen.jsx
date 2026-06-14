@@ -1,76 +1,113 @@
-import { useRouter } from "expo-router";
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
-import Card from "../../../shared/components/Card.jsx";
-import Texts from "../../../shared/components/Text.jsx";
+import { ScrollView, View } from "react-native";
+import { useState } from "react";
 import { fincas } from "./FincaData.js";
 import { styles } from "../../finca/styles/FincaStyles.js";
-import Titles from "../../../shared/components/Title.jsx";
+import { ICONS } from "../../../theme/icons.js";
+import { COLORS } from "../../../theme/colors.js";
+import Button from "../../../shared/components/Button.jsx";
+import Title from "../../../shared/components/Title.jsx";
+import Text from "../../../shared/components/Text.jsx";
+import Icon from "../../../shared/components/Icons.jsx";
+import ModalEliminarFinca from "./ModalEliminarFinca.jsx";
 
-export default function FincasScreen() {
-  const router = useRouter();
+export default function FincasScreen({ onDetail, onNew }) {
+  const [ModalVisible, setModalVisible] = useState(false);
+  const [FincaNombreSeleccionada, setFincaNombreSeleccionada] = useState(null);
+
+  function abrirModalEliminar(Finca) {
+    setFincaNombreSeleccionada(Finca.nombre);
+    setModalVisible(true);
+  }
+
+  function cancelarEliminar() {
+    setModalVisible(false);
+    setFincaNombreSeleccionada(null);
+  }
+
+  function confirmarEliminar() {
+    console.log("Eliminando finca:", FincaNombreSeleccionada);
+    setModalVisible(false);
+    setFincaNombreSeleccionada(null);
+  }
 
   return (
-    <View style={styles.container}>
-      <ScrollView style={styles.contentWrapper}>
-        {fincas.map((finca) => (
-          <TouchableOpacity
-            key={finca.id}
-            style={{ marginBottom: 12 }}
-            onPress={() => router.push(`/finca/detalle?id=${finca.id}`)}
-          >
-            <Card>
-              <View style={styles.cardContent}>
-                <View style={styles.iconContainer}>
-                  <Text>📍</Text>
-                </View>
-
-                <View style={{ flex: 1 }}>
-                  <Titles level={4} numberOfLines={1}>
-                    {finca.nombre}
-                  </Titles>
-                  <Texts tamano="md" color="#666" fuente="Roboto_500Medium">
-                    {finca.ubicacion}
-                  </Texts>
-                  <Texts tamano="md" color="#0088FF" fuente="Roboto_500Medium">
-                    {finca.responsable}
-                  </Texts>
-                  <View style={styles.detalles}>
-                    <Texts
-                      tamano="sm"
-                      color="#FFF"
-                      fuente="Roboto_500Medium"
-                      estilo={styles.detalle}
-                    >
-                      {finca.estanques} estanques
-                    </Texts>
-                    <Texts
-                      tamano="sm"
-                      color="#FFF"
-                      fuente="Roboto_500Medium"
-                      estilo={styles.detalle}
-                    >
-                      {finca.Area} ha
-                    </Texts>
-                  </View>
-                </View>
-
-                <View style={styles.IconoDetalle}>
-                  <Text style={styles.iconoDetalleText}>→</Text>
-                </View>
-              </View>
-            </Card>
-          </TouchableOpacity>
-        ))}
-        <TouchableOpacity
-          style={styles.addButton}
-          onPress={() => router.push("/finca/nueva")}
+    <ScrollView style={styles.container}>
+      {fincas.map((Finca) => (
+        <Button
+          key={Finca.id}
+          style={styles.ContentWrapper}
+          onPress={() => onDetail(Finca.id)}
         >
-          <Text style={{ fontSize: 24, marginRight: 8 }}>➕</Text>
-          <Texts tamano="md" color="#0088FF" fuente="Roboto_500Medium">
-            Registrar nueva finca
-          </Texts>
-        </TouchableOpacity>
-      </ScrollView>
-    </View>
+          <View style={styles.CardContent}>
+            <View style={styles.IconContainer}>
+              <Icon icon={ICONS.location} size={25} color={COLORS.primary} />
+            </View>
+
+            <View style={{ flex: 1 }}>
+              <Title level={4} numberOfLines={1}>
+                {Finca.nombre}
+              </Title>
+
+              <Text numberOfLines={2} color={COLORS.textTertiary}>
+                {Finca.provincia}, {Finca.canton}, {Finca.distrito}
+              </Text>
+              <Text color={COLORS.primary}>{Finca.responsable}</Text>
+
+              <View style={styles.Detalles}>
+                <Text size={14} style={styles.Detalle}>
+                  {Finca.estanques} estanques
+                </Text>
+                <Text size={14} style={styles.Detalle}>
+                  {Finca.areaTotal} ha
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          <View>
+            <Button
+              style={styles.Eliminar}
+              onPress={() => abrirModalEliminar(Finca)}
+            >
+              <Icon
+                icon={ICONS.delete}
+                style={{ color: COLORS.error }}
+                size={20}
+              />
+              <Text size={12} style={{ color: COLORS.error }}>
+                Eliminar
+              </Text>
+            </Button>
+            <Button style={styles.Editar} onPress={() => onNew()}>
+              <Icon
+                icon={ICONS.edit}
+                style={{ color: COLORS.primary }}
+                size={20}
+              />
+              <Text size={12} style={{ color: COLORS.primary }}>
+                Editar
+              </Text>
+            </Button>
+          </View>
+        </Button>
+      ))}
+      <Button style={styles.AddButton} onPress={() => onNew()}>
+        <Icon icon={ICONS.add} size={15} />
+        <Text size={15}>REGISTRAR NUEVA FINCA</Text>
+      </Button>
+
+      <ModalEliminarFinca
+        visible={ModalVisible}
+        nombre={FincaNombreSeleccionada}
+        onCancelar={cancelarEliminar}
+        onConfirmar={confirmarEliminar}
+      />
+      <ModalEliminarFinca
+        visible={ModalVisible}
+        nombre={FincaNombreSeleccionada}
+        onCancelar={cancelarEliminar}
+        onConfirmar={confirmarEliminar}
+      />
+    </ScrollView>
   );
 }
