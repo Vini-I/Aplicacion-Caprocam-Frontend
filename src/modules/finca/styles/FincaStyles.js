@@ -1,74 +1,100 @@
-import { StyleSheet, Dimensions, Platform } from "react-native";
-
-const { width } = Dimensions.get("window");
-const isLargeScreen = width > 700; 
+import { StyleSheet } from "react-native";
+import { COLORS } from "../../../theme/colors.js";
 
 export const styles = StyleSheet.create({
-  container: {
+  Container: {
     flex: 1,
-    paddingHorizontal: 10,
-    alignItems:"center",
-    width: "100%",
+    backgroundColor: COLORS.surface,
   },
 
-  contentWrapper: {
+  ContentWrapper: {
+    flex: 1,
+    flexDirection: "row",
     width: "100%",
     maxWidth: 700,
+    alignSelf: "center",
+    paddingHorizontal: 16,
+    backgroundColor: COLORS.white,
+    shadowColor: COLORS.black,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
   },
 
-  cardContent: {
+  CardContent: {
+    flex: 1,
     flexDirection: "row",
-    alignItems: "center",
-    width: "100%",
-    paddingVertical: 1,
+    alignSelf: "flex-start",
   },
 
-  iconContainer: {
-    width: 48,
-    height: 48,
-    backgroundColor: "#E3F2FD",
+  IconContainer: {
+    width: 45,
+    height: 45,
+    backgroundColor: COLORS.secondary,
     borderRadius: 28,
     marginRight: 16,
     justifyContent: "center",
     alignItems: "center",
+    flexShrink: 0,
   },
 
-  detalles: {
+  Detalles: {
     flexDirection: "row",
-    gap: 12,
-    marginTop: 8,
+    gap: 8,
+    marginTop: 6,
+    overflow: "hidden",
   },
 
-  detalle: {
-    color: "#FFF",
-    backgroundColor: "#0088FF",
+  Detalle: {
+    color: COLORS.primary,
+    backgroundColor: COLORS.secondary,
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 12,
-    fontSize: 13,
   },
 
-  IconoDetalle: {
-    justifyContent: "center",
-    alignItems: "center",
-    paddingLeft: 12,
-  },
-
-  iconoDetalleText: {
-    fontSize: 22,
-    color: "#6c757d",
-  },
-
-  addButton: {
-    maxWidth: 700,
-    marginTop: 20,
+  Eliminar: {
+    backgroundColor: COLORS.white,
+    borderColor: COLORS.error,
     borderWidth: 2,
-    borderColor: "#0088FF",
+    marginBottom: "auto",
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 6,
+    marginHorizontal: 2,
+    paddingHorizontal: 6,
+    paddingVertical: 4,
+  },
+
+  Editar: {
+    backgroundColor: COLORS.white,
+    borderColor: COLORS.primary,
+    borderWidth: 2,
+    marginBottom: "auto",
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 6,
+    marginHorizontal: 2,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+
+  AddButton: {
+    maxWidth: 700,
+    alignSelf: "center",
+    width: "100%",
+    borderWidth: 2,
+    color: COLORS.black,
+    borderColor: COLORS.primary,
+    backgroundColor: COLORS.white,
     borderStyle: "dashed",
     borderRadius: 12,
-    paddingVertical: 18,
     flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
+    gap: 8,
+    marginTop: 10,
   },
 });

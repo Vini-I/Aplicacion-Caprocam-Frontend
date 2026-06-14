@@ -4,11 +4,8 @@ import { Dimensions, ScrollView, View, Pressable } from "react-native";
 import Button from "../../../shared/components/Button.jsx";
 import Card from "../../../shared/components/Card.jsx";
 import Input from "../../../shared/components/Input.jsx";
-import Select from "../../../shared/components/Select.jsx";
 import Text from "../../../shared/components/Text.jsx";
 import Icon from "../../../shared/components/Icons.jsx";
-
-import CustomAlert from "../../../shared/components/Alert.jsx"; 
 
 import { provincias, ubicaciones } from "../screens/FincaNuevaData.js";
 
@@ -19,13 +16,9 @@ import { styles } from "../styles/StylesFincaNueva.js";
 const { width } = Dimensions.get("window");
 const isLargeScreen = width > 700;
 
-export default function FincaNuevaScreen() {
+export default function FincaEditarScreen() {
   const [formulario, setFormulario] = useState({
-    codigoInterno: "",
     nombre: "",
-    provincia: "",
-    canton: "",
-    distrito: "",
     otrasSenas: "", 
     propietario: "",
     areaTotal: "",
@@ -64,11 +57,7 @@ export default function FincaNuevaScreen() {
   const registrarFinca = () => {
     const nuevosErrores = {};
 
-    if (!formulario.codigoInterno.trim()) nuevosErrores.codigoInterno = true;
     if (!formulario.nombre.trim()) nuevosErrores.nombre = true;
-    if (!formulario.provincia) nuevosErrores.provincia = true;
-    if (!formulario.canton) nuevosErrores.canton = true;
-    if (!formulario.distrito) nuevosErrores.distrito = true;
     if (!formulario.otrasSenas.trim()) nuevosErrores.otrasSenas = true;
     if (!formulario.propietario.trim()) nuevosErrores.propietario = true;
     if (!formulario.areaTotal.trim()) nuevosErrores.areaTotal = true;
@@ -81,11 +70,6 @@ export default function FincaNuevaScreen() {
     console.log({ ...formulario, telefonos });
   };
 
-  const cantones = formulario.provincia !== "" ? Object.keys(ubicaciones[formulario.provincia] || {}) : [];
-  const distritos = formulario.provincia !== "" && formulario.canton !== "" ? ubicaciones[formulario.provincia][formulario.canton] || [] : [];
-
-  const opcionesCantones = cantones.map((canton) => ({ label: canton, value: canton }));
-  const opcionesDistritos = distritos.map((distrito) => ({ label: distrito, value: distrito }));
 
   const ContentWrapper = ({ children }) => <View style={styles.contentWrapper}>{children}</View>;
 
@@ -101,15 +85,7 @@ export default function FincaNuevaScreen() {
             IDENTIFICACIÓN
           </Text>
           <View style={styles.row}>
-            <View style={styles.column}>
-              <Input
-                label="Código interno *"
-                value={formulario.codigoInterno}
-                onChangeText={(valor) => actualizarCampo("codigoInterno", valor)}
-                placeholder="Ej: FP-01"
-                style={errores.codigoInterno ? { borderColor: COLORS.error, backgroundColor: COLORS.surface } : null}
-              />
-            </View>
+            
             <View style={styles.column}>
               <Input
                 label="Nombre de la finca *"
@@ -119,66 +95,6 @@ export default function FincaNuevaScreen() {
                 style={errores.nombre ? { borderColor: COLORS.error, backgroundColor: COLORS.surface } : null}
               />
             </View>
-          </View>
-        </Card>
-
-        <Card>
-          <Text style={styles.sectionTitle} size={14} weight="700" color={COLORS.textPrimary}>
-            UBICACIÓN
-          </Text>
-          <View style={styles.row}>
-            <View style={styles.column}>
-              <Select
-                label="Provincia *"
-                value={formulario.provincia}
-                options={provincias}
-                placeholder="Seleccione una provincia"
-                onChange={(valor) => {
-                  actualizarCampo("provincia", valor);
-                  actualizarCampo("canton", "");
-                  actualizarCampo("distrito", "");
-                }}
-                selectStyle={errores.provincia ? { borderColor: COLORS.error, backgroundColor: COLORS.surface } : null}
-              />
-            </View>
-            <View style={styles.column}>
-              <Select
-                label="Cantón *"
-                value={formulario.canton}
-                options={opcionesCantones}
-                placeholder="Seleccione un cantón"
-                disabled={formulario.provincia === ""}
-                onChange={(valor) => {
-                  actualizarCampo("canton", valor);
-                  actualizarCampo("distrito", "");
-                }}
-                selectStyle={errores.canton ? { borderColor: COLORS.error, backgroundColor: COLORS.surface } : null}
-              />
-            </View>
-          </View>
-          <View style={styles.row}>
-            <View style={styles.column}>
-              <Select
-                label="Distrito *"
-                value={formulario.distrito}
-                options={opcionesDistritos}
-                placeholder="Seleccione un distrito"
-                disabled={formulario.canton === ""}
-                onChange={(valor) => actualizarCampo("distrito", valor)}
-                selectStyle={errores.distrito ? { borderColor: COLORS.error, backgroundColor: COLORS.surface } : null}
-              />
-            </View>
-          </View>
-
-          <View style={styles.fullWidthRow}>
-            <Input
-              label="Otras señas *"
-              value={formulario.otrasSenas}
-              onChangeText={(valor) => actualizarCampo("otrasSenas", valor)}
-              placeholder="Ej: 200m norte de la escuela central, portón negro"
-              multiline={true}
-              style={errores.otrasSenas ? { borderColor: COLORS.error, backgroundColor: COLORS.surface  } : null}
-            />
           </View>
         </Card>
 
@@ -267,23 +183,13 @@ export default function FincaNuevaScreen() {
           </View>
         </Card>
 
-        {Object.keys(errores).length > 0 && (
-  <CustomAlert 
-    variant="danger" 
-    message="Rellene los espacios importantes para continuar." 
-    containerStyle={{ alignItems: "center", justifyContent: "center", width: "100%" }}
-    textStyle={{ textAlign: "center", width: "100%" }}
-    style={{ textAlign: "center", width: "100%" }}
-  />
-)}
-
         <View style={styles.buttonContainer}>
           <Button onPress={registrarFinca} style={styles.saveButton}>
             <View style={styles.buttonContent}>
               {ICONS && ICONS.save ? (
-                <Icon icon={ICONS.save} size={24} color={COLORS.white} />
+                <Icon icon={ICONS.edit} size={24} color={COLORS.white} />
               ) : null}
-              <Text style={styles.buttonText}>Registrar finca</Text>
+              <Text style={styles.buttonText}>Editer Finca</Text>
             </View>
           </Button>
         </View>
