@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: "600",
-    color: COLORS.primary,
+    color: COLORS.textPrimary,
     marginBottom: 6,
   },
   select: {
