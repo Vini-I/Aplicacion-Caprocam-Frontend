@@ -47,6 +47,7 @@ import styles from '../styles/webLoginStyles';
  */
 export default function WebLoginScreen({ onLoginSuccess = () => { } }) {
 
+  // Se comenta el handle login por mientras, para que no de error de función no definida. El flujo de autenticación se implementará en la próxima etapa.
   const {
     username,
     setUsername,
@@ -55,11 +56,16 @@ export default function WebLoginScreen({ onLoginSuccess = () => { } }) {
     errors,
     loading,
     serverError,
-    handleLogin,
+    // handleLogin,
     handleRegister,
     isFormValid,
     buttonVariant,
   } = useAuth({ onLoginSuccess });
+
+  // Eliminar luego, placeholder para simular login exitoso
+  const handleLoginPress = () => {
+   onLoginSuccess();
+  }
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -168,7 +174,7 @@ export default function WebLoginScreen({ onLoginSuccess = () => { } }) {
           <Button
             variant={buttonVariant}
             disabled={!isFormValid || loading}
-            onPress={handleLogin}
+            onPress={handleLoginPress}
           >
             {AUTH_MESSAGES.BUTTON_LOGIN}
           </Button>
