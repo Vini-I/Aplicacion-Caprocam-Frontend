@@ -2,6 +2,11 @@ import { Tabs } from "expo-router";
 import { Drawer } from "expo-router/drawer";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 
+import { ICONS } from "../../../theme/icons";
+import { COLORS } from "../../../theme/colors";
+
+import Icon from "../../../shared/components/Icons";
+
 export default function TabsLayout() {
   return (
 
@@ -14,6 +19,18 @@ export default function TabsLayout() {
           ),
           tabBarLabel: "Inicio",
           title: "Home",
+        }}
+      />
+
+      <Tabs.Screen
+        name="finca"
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <Icon icon={ICONS.location} size={15} color={COLORS.textTertiary}/>
+          ),
+          tabBarActiveTintColor: "teal",
+          tabBarLabel: "Finca",
+          title: "Finca",
         }}
       />
 
