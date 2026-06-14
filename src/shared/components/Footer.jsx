@@ -26,6 +26,8 @@
 
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
+import { COLORS } from "../../theme/colors";
+import { ICONS } from "../../theme/icons";
 
 export default function Footer({
   text = "",
@@ -67,8 +69,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderTopWidth: 1,
-    borderTopColor: "#E5E7EB",
-    backgroundColor: "#ffffff",
+    borderTopColor: COLORS.secondary,
+    backgroundColor: COLORS.white,
   },
   fixedBottom: {
     marginTop: "auto",
@@ -76,13 +78,13 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#212529",
+    color: COLORS.textSecondary,
     textAlign: "center",
   },
   subText: {
     marginTop: 4,
     fontSize: 12,
-    color: "#6c757d",
+    color: COLORS.textTertiary,
     textAlign: "center",
   },
 });

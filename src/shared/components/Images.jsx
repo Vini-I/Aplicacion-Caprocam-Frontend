@@ -24,6 +24,8 @@
 import React from "react";
 import { Image, StyleSheet } from "react-native";
 
+import { COLORS } from "../../theme/colors";
+
 export default function Images({
   source,
   width = 100,
@@ -57,6 +59,6 @@ export default function Images({
 
 const styles = StyleSheet.create({
   image: {
-    backgroundColor: "#E5E7EB",
+    backgroundColor: COLORS.surface,
   },
 });

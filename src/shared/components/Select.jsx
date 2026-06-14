@@ -42,6 +42,7 @@
 
 import React, { useState } from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
+import { COLORS } from "../../theme/colors";
 
 function getSelectedLabel(options, value, placeholder) {
   let selectedLabel = placeholder;
@@ -142,49 +143,49 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#212529",
+    color: COLORS.primary,
     marginBottom: 6,
   },
   select: {
     minHeight: 45,
     borderWidth: 1,
-    borderColor: "#ced4da",
+    borderColor: COLORS.secondary,
     borderRadius: 8,
     paddingVertical: 10,
     paddingHorizontal: 12,
-    backgroundColor: "#ffffff",
+    backgroundColor: COLORS.white,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
   disabledSelect: {
-    backgroundColor: "#e9ecef",
+    backgroundColor: COLORS.secondary,
     opacity: 0.7,
   },
   selectedText: {
     fontSize: 16,
-    color: "#212529",
+    color: COLORS.textSecondary,
   },
   arrow: {
     fontSize: 18,
-    color: "#6c757d",
+    color: COLORS.textTertiary,
   },
   optionsContainer: {
     marginTop: 4,
     borderWidth: 1,
-    borderColor: "#ced4da",
+    borderColor: COLORS.secondary,
     borderRadius: 8,
-    backgroundColor: "#ffffff",
+    backgroundColor: COLORS.white,
     overflow: "hidden",
   },
   option: {
     paddingVertical: 12,
     paddingHorizontal: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#E5E7EB",
+    borderBottomColor: COLORS.secondary,
   },
   optionText: {
     fontSize: 15,
-    color: "#212529",
+    color: COLORS.textPrimary,
   },
 });
