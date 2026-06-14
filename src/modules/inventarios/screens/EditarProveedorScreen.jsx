@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { View, ScrollView, Text, StyleSheet } from "react-native";
+import { useLocalSearchParams } from "expo-router";
+import { proveedoresService } from "../services/proveedoresService";
 
 import Card from "../../../shared/components/Card";
 import Input from "../../../shared/components/Input";
@@ -23,40 +25,9 @@ const PROVEEDORES = [
   { label: "Trisan", value: "Trisan" },
 ];
 
-const proveedores = [
-  {
-    id: 1,
-    nombre: "Biomar",
-    tipoProducto: "alimento",
-    telefono: "+506 2222-3344",
-    correo: "ventas@biomar.com",
-    direccion: "San José, Costa Rica",
-    notas: "",
-  },
-  {
-    id: 2,
-    nombre: "Farivet",
-    tipoProducto: "antibioticos",
-    telefono: "+506 3333-4455",
-    correo: "info@farivet.com",
-    direccion: "Alajuela, Costa Rica",
-    notas: "",
-  },
-  {
-    id: 3,
-    nombre: "Trisan",
-    tipoProducto: "fertilizantes",
-    telefono: "+506 4444-5566",
-    correo: "contacto@trisan.com",
-    direccion: "Cartago, Costa Rica",
-    notas: "",
-  },
-];
-
-const idRecibido = 2;
-const proveedorEjemplo = proveedores.find((p) => p.id === idRecibido);
-
 export default function EditarProveedorScreen() {
+    const { id } = useLocalSearchParams();
+    const proveedorEjemplo = proveedoresService.getProveedorById(id);
   const [nombre, setNombre] = useState(proveedorEjemplo.nombre);
   const [tipoProducto, setTipoProducto] = useState(
     proveedorEjemplo.tipoProducto,

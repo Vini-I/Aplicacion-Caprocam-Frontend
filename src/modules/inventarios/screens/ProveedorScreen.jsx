@@ -16,12 +16,14 @@
  * - Button: acciones de regresar y editar proveedor.
  */
 import React from "react";
-import { View, Text, ScrollView, StyleSheet } from "react-native";
+import { useRouter } from "expo-router";
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from "react-native";
 import { FontAwesome, AntDesign, MaterialIcons } from "@expo/vector-icons";
 
 import Navbar from "../../../shared/components/Navbar";
 import Card from "../../../shared/components/Card";
 import Button from "../../../shared/components/Button";
+import Icon from "../../../shared/components/Icons";
 
 import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
@@ -31,9 +33,11 @@ export default function ProveedorScreen({ proveedores = [] }) {
   function handleRegresar() {
     console.log("Regresar");
   }
+  const router = useRouter();
 
   function handleEditarProveedor(proveedorId) {
-    console.log("Editar proveedor:", proveedorId);
+
+    router.push(`/registros/editar-proveedor?id=${proveedorId}`);
   }
 
   function renderProveedor(proveedor) {
@@ -95,6 +99,14 @@ export default function ProveedorScreen({ proveedores = [] }) {
             <AntDesign name={ICONS.exit.name} size={22} color={COLORS.white} />
           </Button>
         }
+        rightContent={
+    <Button 
+      style={styles.botonAgregar}
+      onPress={() => router.push("/registros/nuevoProveedor")}
+    >
+      <Icon icon={ICONS.add} size={20} color={COLORS.white} />
+    </Button>
+  }
         style={styles.header}
         titleStyle={styles.headerTitle}
       />
@@ -111,7 +123,18 @@ export default function ProveedorScreen({ proveedores = [] }) {
           {proveedores.map(renderProveedor)}
         </View>
       </ScrollView>
+
+    <View style={styles.tabsInternas}>
+      <TouchableOpacity style={styles.tab} onPress={() => router.back()}>
+        <Text style={styles.tabTexto}>Inventario</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={[styles.tab, styles.tabActiva]}>
+        <Text style={[styles.tabTexto, styles.tabTextoActivo]}>Proveedores</Text>
+      </TouchableOpacity>
     </View>
+
+  </View>
   );
 }
 
@@ -220,4 +243,26 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: TYPOGRAPHY.fontFamily.bold,
   },
+ tabsInternas: {
+  flexDirection: "row",
+  borderTopWidth: 1,
+  borderTopColor: COLORS.secondary,
+  backgroundColor: COLORS.white,
+},
+tab: {
+  flex: 1,
+  alignItems: "center",
+  paddingVertical: 10,
+  gap: 4,
+},
+tabActiva: {
+  borderTopWidth: 2,
+  borderTopColor: COLORS.primary,
+},
+btnAgregar: {
+  backgroundColor: "rgba(255,255,255,0.2)",
+  paddingVertical: 6,
+  paddingHorizontal: 6,
+  marginTop: 0,
+},
 });
