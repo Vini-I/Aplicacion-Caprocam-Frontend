@@ -1,7 +1,15 @@
 import React, { useState } from "react";
-import { View, ScrollView, Text, StyleSheet } from "react-native";
+import {
+  View,
+  ScrollView,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+} from "react-native";
 import { useLocalSearchParams } from "expo-router";
-import { proveedoresService } from "../services/proveedoresService";
+import { getProveedorById } from "../services/proveedoresService";
+import { useRouter } from "expo-router";
+import { AntDesign } from "@expo/vector-icons";
 
 import Card from "../../../shared/components/Card";
 import Input from "../../../shared/components/Input";
@@ -10,6 +18,7 @@ import Alert from "../../../shared/components/Alert";
 import Select from "../../../shared/components/Select";
 import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
+import { ICONS } from "../../../theme/icons";
 
 const TIPOS_PRODUCTO = [
   { label: "Alimento", value: "alimento" },
@@ -26,8 +35,8 @@ const PROVEEDORES = [
 ];
 
 export default function EditarProveedorScreen() {
-    const { id } = useLocalSearchParams();
-    const proveedorEjemplo = proveedoresService.getProveedorById(id);
+  const { id } = useLocalSearchParams();
+  const proveedorEjemplo = getProveedorById(id) || {};
   const [nombre, setNombre] = useState(proveedorEjemplo.nombre);
   const [tipoProducto, setTipoProducto] = useState(
     proveedorEjemplo.tipoProducto,
@@ -38,6 +47,7 @@ export default function EditarProveedorScreen() {
   const [notas, setNotas] = useState(proveedorEjemplo.notas);
   const [mensaje, setMensaje] = useState("");
   const [mensajeVariant, setMensajeVariant] = useState("info");
+  const router = useRouter();
 
   function guardar() {
     if (telefono === "") {
@@ -67,7 +77,12 @@ export default function EditarProveedorScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerSubtitle}></Text>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.backButton}
+        >
+          <AntDesign name={ICONS.exit.name} size={22} color={COLORS.white} />
+        </TouchableOpacity>
         <Text style={styles.headerTitle}>Editar Proveedor</Text>
       </View>
 
@@ -84,10 +99,11 @@ export default function EditarProveedorScreen() {
         )}
 
         <Card>
-          <Input label="Nombre de la empresa" 
-          value={nombre} 
-          editable={false} 
-          style={{color: COLORS.textSecondary }}
+          <Input
+            label="Nombre de la empresa"
+            value={nombre}
+            editable={false}
+            style={{ color: COLORS.textSecondary }}
           />
 
           <Select
@@ -142,6 +158,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderBottomLeftRadius: 25,
     borderBottomRightRadius: 25,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
   },
   headerTitle: {
     fontSize: 30,
@@ -157,4 +176,14 @@ const styles = StyleSheet.create({
   content: { padding: 16, width: "100%", maxWidth: 900, alignSelf: "center" },
   alert: { marginBottom: 16 },
   selectLabel: { color: COLORS.textSecondary },
+
+  backButton: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 8,
+  },
 });

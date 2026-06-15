@@ -1,5 +1,8 @@
 import React, { useState } from "react";
-import { View, ScrollView, Text, StyleSheet } from "react-native";
+import { View, ScrollView, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { useRouter } from "expo-router";
+import { AntDesign } from "@expo/vector-icons";
+import { ICONS } from "../../../theme/icons";
 
 // Componentes de UI reutilizables del proyecto.
 // Cada uno encapsula su propio estilo y lógica interna.
@@ -53,6 +56,8 @@ export default function NuevoProveedorScreen() {
   const [mensaje, setMensaje] = useState("");
   const [mensajeVariant, setMensajeVariant] = useState("info");
 
+  const router = useRouter();
+
   // ── Función principal: guardar proveedor ───────────────────
   function guardar() {
     // Validación 1: el nombre es obligatorio porque identifica al proveedor.
@@ -94,7 +99,12 @@ export default function NuevoProveedorScreen() {
 
       {/* Encabezado: muestra la sección ("Proveedores") y el título de la pantalla */}
       <View style={styles.header}>
-        <Text style={styles.headerSubtitle}>Proveedores</Text>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.backButton}
+        >
+          <AntDesign name={ICONS.exit.name} size={22} color={COLORS.white} />
+        </TouchableOpacity>
         <Text style={styles.headerTitle}>Nuevo proveedor</Text>
       </View>
 
@@ -207,6 +217,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderBottomLeftRadius: 25,
     borderBottomRightRadius: 25,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
   },
   headerTitle: {
     fontSize: 30,
@@ -247,5 +260,13 @@ const styles = StyleSheet.create({
   },
   textoBoton: {
     fontFamily: TYPOGRAPHY.fontFamily.medium,
+  },
+  backButton: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+  backgroundColor: "rgba(255,255,255,0.2)",
+  justifyContent: "center",
+  alignItems: "center",
   },
 });
