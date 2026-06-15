@@ -53,7 +53,6 @@ export default function CustomText({
         },
         style,
       ]}
-      fontFamily={fuente}
       numberOfLines={numberOfLines}
     >
       {children}
