@@ -3,7 +3,7 @@
  * Indica visualmente los productos con stock bajo.
  */
 
-import { useState } from "react";
+import { useState, useCallback, useRef } from "react";
 import { View, FlatList, StyleSheet, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 
