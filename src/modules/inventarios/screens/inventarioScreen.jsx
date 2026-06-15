@@ -3,25 +3,30 @@
  * Indica visualmente los productos con stock bajo.
  */
 
+// modules/inventarios/screens/inventarioScreen.jsx
+
 import { useState, useCallback, useRef } from "react";
 import { View, FlatList, StyleSheet, TouchableOpacity } from "react-native";
-import { useRouter } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter, useFocusEffect } from "expo-router";
 
 import Navbar from "../../../shared/components/Navbar";
 import Card from "../../../shared/components/Card";
 import Badge from "../../../shared/components/Badge";
 import Button from "../../../shared/components/Button";
-import Input from "../../../shared/components/Input";
 import CustomText from "../../../shared/components/Text";
 import Title from "../../../shared/components/Title";
 import EmptyState from "../../../shared/components/EmptyState";
 import Icon from "../../../shared/components/Icons";
+import SearchBar from "../components/SearchBar";
+import FilterButton from "../components/FilterButton";
 
 import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
 import { ICONS } from "../../../theme/icons";
 
-import { productosInventario } from "../services/inventarioService";
+import { getProductosInventario } from "../services/inventarioService";
+
 
 const colorCategoria = {
   Alimentación: { fondo: COLORS.warningLight, texto: COLORS.warning },
@@ -54,85 +59,147 @@ function FilaDetalle({ etiqueta, valor, resaltado = false }) {
   );
 }
 
-function TarjetaProducto({ producto }) {
+function TarjetaProducto({ producto, onEditar }) {
   const tieneStockBajo = producto.cantidad < producto.stockMinimo;
   const colores = colorCategoria[producto.categoria] || colorCategoriaDefault;
   const precioFormateado = `₡${producto.precioUnidad.toLocaleString("es-CR")}`;
 
   return (
-    <TouchableOpacity activeOpacity={0.85}>
-      <Card style={[styles.tarjeta, tieneStockBajo && styles.tarjetaStockBajo]}>
-        <View style={styles.tarjetaEncabezado}>
-          <Title level={5} style={styles.nombreProducto}>
-            {producto.nombre}
-          </Title>
-          {tieneStockBajo && (
-            <Badge
-              label="▲ Stock bajo"
-              variant="danger"
-              style={styles.badgeStockBajo}
-            />
-          )}
-        </View>
+    <Card style={[styles.tarjeta, tieneStockBajo && styles.tarjetaStockBajo]}>
+      {/* Encabezado: nombre + badge stock bajo */}
+      <View style={styles.tarjetaEncabezado}>
+        <Title level={5} style={styles.nombreProducto}>
+          {producto.nombre}
+        </Title>
+        {tieneStockBajo && (
+          <Badge
+            label="▲ Stock bajo"
+            variant="danger"
+            style={styles.badgeStockBajo}
+          />
+        )}
+      </View>
 
-        <Badge
-          label={producto.categoria}
-          style={[styles.badgeCategoria, { backgroundColor: colores.fondo }]}
-          textStyle={{ color: colores.texto }}
+      <Badge
+        label={producto.categoria}
+        style={[styles.badgeCategoria, { backgroundColor: colores.fondo }]}
+        textStyle={{ color: colores.texto }}
+      />
+
+      <View style={styles.filasDetalle}>
+        <FilaDetalle
+          etiqueta="Cantidad"
+          valor={`${producto.cantidad} ${producto.unidad}`}
+          resaltado={tieneStockBajo}
         />
+        <FilaDetalle
+          etiqueta="Stock mínimo"
+          valor={`${producto.stockMinimo} ${producto.unidad}`}
+        />
+        <FilaDetalle etiqueta="Proveedor" valor={producto.proveedor} />
+        <FilaDetalle etiqueta="Precio/unidad" valor={precioFormateado} />
+      </View>
 
-        <View style={styles.filasDetalle}>
-          <FilaDetalle
-            etiqueta="Cantidad"
-            valor={`${producto.cantidad} ${producto.unidad}`}
-            resaltado={tieneStockBajo}
-          />
-          <FilaDetalle
-            etiqueta="Stock mínimo"
-            valor={`${producto.stockMinimo} ${producto.unidad}`}
-          />
-          <FilaDetalle etiqueta="Proveedor" valor={producto.proveedor} />
-          <FilaDetalle etiqueta="Precio/unidad" valor={precioFormateado} />
-        </View>
-
-        <View
-          style={[
-            styles.tarjetaPie,
-            tieneStockBajo && styles.tarjetaPieStockBajo,
-          ]}
+      {/* Pie: botón editar */}
+      <View
+        style={[
+          styles.tarjetaPie,
+          tieneStockBajo && styles.tarjetaPieStockBajo,
+        ]}
+      >
+        <TouchableOpacity
+          onPress={() => onEditar(producto)}
+          style={styles.botonEditar}
+          activeOpacity={0.75}
         >
+          <Icon
+            icon={ICONS.edit}        // ajusta al nombre real en tu ICONS
+            size={13}
+            color={tieneStockBajo ? COLORS.textQuaternary : COLORS.primary}
+          />
           <CustomText
             size={12}
             color={tieneStockBajo ? COLORS.textQuaternary : COLORS.primary}
           >
-            Toca para editar
+            Editar
           </CustomText>
-          <Icon
-            icon={ICONS.enter}
-            size={12}
-            color={tieneStockBajo ? COLORS.textQuaternary : COLORS.primary}
-          />
-        </View>
-      </Card>
-    </TouchableOpacity>
+        </TouchableOpacity>
+      </View>
+    </Card>
   );
 }
 
 export default function InventarioScreen() {
+  const router = useRouter();
+  const [productos, setProductos] = useState([]);
   const [busqueda, setBusqueda] = useState("");
+  const [filtros, setFiltros] = useState({
+    categories: [],
+    suppliers: [],
+    units: [],
+    lowStock: false,
+    expiryDate: "",
+  });
 
-  const productosFiltrados = productosInventario.filter((p) => {
+  // Recarga productos cada vez que la pantalla recibe el foco
+  // (cubre el caso de volver del form después de guardar)
+  useFocusEffect(
+    useCallback(() => {
+      setProductos(getProductosInventario());
+      setBusqueda("");           // ← limpia búsqueda
+      setFiltros({               // ← limpia filtros
+        categories: [],
+        suppliers: [],
+        units: [],
+        lowStock: false,
+        expiryDate: "",
+      });
+      flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
+
+    }, [])
+  );
+
+  const CATEGORIAS = [...new Set(productos.map((p) => p.categoria))];
+  const PROVEEDORES = [...new Set(productos.map((p) => p.proveedor))];
+  const UNIDADES = [...new Set(productos.map((p) => p.unidad))];
+
+  const productosFiltrados = productos.filter((p) => {
     const texto = busqueda.toLowerCase();
-    return (
+    const coincideTexto =
       p.nombre.toLowerCase().includes(texto) ||
-      p.proveedor.toLowerCase().includes(texto)
-    );
+      p.proveedor.toLowerCase().includes(texto) ||
+      p.categoria.toLowerCase().includes(texto);
+    const coincideCategoria =
+      filtros.categories.length === 0 || filtros.categories.includes(p.categoria);
+    const coincideProveedor =
+      filtros.suppliers.length === 0 || filtros.suppliers.includes(p.proveedor);
+    const coincideUnidad =
+      filtros.units.length === 0 || filtros.units.includes(p.unidad);
+    const coincideStock =
+      !filtros.lowStock || p.cantidad < p.stockMinimo;
+
+    return coincideTexto && coincideCategoria && coincideProveedor && coincideUnidad && coincideStock;
   });
   const router = useRouter();
 
-  const cantidadStockBajo = productosInventario.filter(
-    (p) => p.cantidad < p.stockMinimo,
+  const flatListRef = useRef(null);
+
+  const cantidadStockBajo = productos.filter(
+    (p) => p.cantidad < p.stockMinimo
   ).length;
+
+  // Navega al form en modo crear
+  function handleNuevo() {
+    router.push("/(drawer)/inventarios/ProductForm");
+  }
+
+  // Navega al form en modo editar, pasando el producto serializado como param
+  function handleEditar(producto) {
+    router.push({
+      pathname: "/(drawer)/inventarios/ProductForm",
+      params: { productoParam: JSON.stringify(producto) },
+    });
+  }
 
   function renderHeader() {
     return (
@@ -147,38 +214,10 @@ export default function InventarioScreen() {
               style={styles.alertaTexto}
             >
               {cantidadStockBajo}{" "}
-              {cantidadStockBajo === 1 ? "producto" : "productos"} con stock
-              bajo
+              {cantidadStockBajo === 1 ? "producto" : "productos"} con stock bajo
             </CustomText>
           </View>
         )}
-
-        <View style={styles.barraBusqueda}>
-          <View style={styles.inputWrapper}>
-            <Icon
-              icon={ICONS.filter}
-              size={14}
-              color={COLORS.textQuaternary}
-              style={styles.iconoBusqueda}
-            />
-            <Input
-              placeholder="Buscar producto o proveedor..."
-              value={busqueda}
-              onChangeText={setBusqueda}
-              style={styles.inputBusqueda}
-              containerStyle={styles.inputContainer}
-            />
-          </View>
-          <Button variant="outline" style={styles.botonFiltrar}>
-            <View style={styles.botonFiltrarContenido}>
-              <Icon icon={ICONS.filter} size={14} color={COLORS.primary} />
-              <CustomText size={13} weight="600" color={COLORS.primary}>
-                {" "}
-                Filtrar
-              </CustomText>
-            </View>
-          </Button>
-        </View>
 
         <CustomText
           size={13}
@@ -195,7 +234,12 @@ export default function InventarioScreen() {
   }
 
   function renderProducto({ item }) {
-    return <TarjetaProducto producto={item} />;
+    return (
+      <TarjetaProducto
+        producto={item}
+        onEditar={handleEditar}
+      />
+    );
   }
 
   return (
@@ -205,12 +249,29 @@ export default function InventarioScreen() {
         style={styles.navbar}
         titleStyle={styles.navbarTitulo}
         rightContent={
-          <Button style={styles.botonAgregar}>
+          <Button style={styles.botonAgregar} onPress={handleNuevo}>
             <Icon icon={ICONS.add} size={20} color={COLORS.white} />
           </Button>
         }
       />
+      <View style={styles.barraBusqueda}>
+        <SearchBar
+          value={busqueda}
+          onChangeText={setBusqueda}
+          containerStyle={styles.searchBarContainer}
+        />
+        <FilterButton
+          categories={CATEGORIAS}
+          suppliers={PROVEEDORES}
+          units={UNIDADES}
+          activeFilters={filtros}
+          onApply={setFiltros}
+          buttonStyle={styles.filterButton}
+        />
+      </View>
+
       <FlatList
+        ref={flatListRef}
         data={productosFiltrados}
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderProducto}
@@ -246,26 +307,23 @@ export default function InventarioScreen() {
 }
 
 const styles = StyleSheet.create({
-  contenedor: {
-    flex: 1,
-    backgroundColor: COLORS.surface,
-  },
+  contenedor: { flex: 1, backgroundColor: COLORS.surface },
 
-  navbar: {
-    backgroundColor: COLORS.primary,
-    borderBottomWidth: 0,
-  },
+  navbar: { backgroundColor: COLORS.primary, borderBottomWidth: 0 },
+
   navbarTitulo: {
-    color: COLORS.white,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-  },
+  color: COLORS.white,
+  fontSize: 20,                          // pisa el 18 del Navbar
+  fontFamily: TYPOGRAPHY.fontFamily.bold, // pisa el fontWeight: "700"
+  fontWeight: undefined,                 // limpia el fontWeight hardcodeado
+    },
+
   botonAgregar: {
     backgroundColor: "rgba(255,255,255,0.2)",
     paddingVertical: 6,
     paddingHorizontal: 6,
     marginTop: 0,
   },
-
   alertaBanner: {
     flexDirection: "row",
     alignItems: "center",
@@ -277,10 +335,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     gap: 8,
   },
-  alertaTexto: {
-    marginLeft: 4,
-  },
-
+  alertaTexto: { marginLeft: 4 },
   barraBusqueda: {
     flexDirection: "row",
     alignItems: "center",
@@ -288,46 +343,11 @@ const styles = StyleSheet.create({
     marginTop: 12,
     gap: 8,
   },
-  inputWrapper: {
-    flex: 1,
-    position: "relative",
-  },
-  iconoBusqueda: {
-    position: "absolute",
-    left: 12,
-    top: 12,
-    zIndex: 1,
-  },
-  inputContainer: {
-    marginBottom: 0,
-  },
-  inputBusqueda: {
-    paddingLeft: 36,
-  },
-  botonFiltrar: {
-    marginTop: 0,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-  },
-  botonFiltrarContenido: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-
-  contadorResultados: {
-    marginHorizontal: 16,
-    marginTop: 10,
-    marginBottom: 4,
-  },
-
-  lista: {
-    paddingBottom: 24,
-  },
-
-  tarjeta: {
-    marginHorizontal: 16,
-    marginTop: 12,
-  },
+  searchBarContainer: { flex: 1 },
+  filterButton: { alignSelf: "center", marginTop: 0, height: 43 },
+  contadorResultados: { marginHorizontal: 16, marginTop: 10, marginBottom: 4 },
+  lista: { paddingBottom: 24 },
+  tarjeta: { marginHorizontal: 16, marginTop: 12 },
   tarjetaStockBajo: {
     backgroundColor: COLORS.errorLight,
     borderColor: COLORS.errorLight,
@@ -338,27 +358,15 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     marginBottom: 6,
   },
-  nombreProducto: {
-    flex: 1,
-    marginRight: 8,
-  },
+  nombreProducto: { flex: 1, marginRight: 8 },
   badgeStockBajo: {
     backgroundColor: COLORS.white,
     borderWidth: 1,
     borderColor: COLORS.error,
   },
-  badgeCategoria: {
-    marginBottom: 12,
-  },
-  filasDetalle: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 12,
-  },
-  filaDetalle: {
-    width: "45%",
-    gap: 2,
-  },
+  badgeCategoria: { marginBottom: 12 },
+  filasDetalle: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
+  filaDetalle: { width: "45%", gap: 2 },
   tarjetaPie: {
     flexDirection: "row",
     alignItems: "center",
@@ -369,8 +377,11 @@ const styles = StyleSheet.create({
     borderTopColor: COLORS.secondary,
     paddingTop: 10,
   },
-  tarjetaPieStockBajo: {
-    borderTopColor: COLORS.errorLight,
+  tarjetaPieStockBajo: { borderTopColor: COLORS.errorLight },
+  botonEditar: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
   },
   tabsInternas: {
   flexDirection: "row",
