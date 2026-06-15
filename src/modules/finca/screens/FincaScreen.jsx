@@ -10,7 +10,7 @@ import Text from "../../../shared/components/Text.jsx";
 import Icon from "../../../shared/components/Icons.jsx";
 import ModalEliminarFinca from "./ModalEliminarFinca.jsx";
 
-export default function FincasScreen({ onDetail, onNew }) {
+export default function FincasScreen({ onDetail, onNew, onEdit }) {
   const [ModalVisible, setModalVisible] = useState(false);
   const [FincaNombreSeleccionada, setFincaNombreSeleccionada] = useState(null);
 
@@ -36,7 +36,7 @@ export default function FincasScreen({ onDetail, onNew }) {
         <Button
           key={Finca.id}
           style={styles.ContentWrapper}
-          onPress={() => onDetail(Finca.id)}
+          onPress={() => onDetail(Finca.codigoInterno)}
         >
           <View style={styles.CardContent}>
             <View style={styles.IconContainer}>
@@ -78,7 +78,7 @@ export default function FincasScreen({ onDetail, onNew }) {
                 Eliminar
               </Text>
             </Button>
-            <Button style={styles.Editar} onPress={() => onNew()}>
+            <Button style={styles.Editar} onPress={() => onEdit()}>
               <Icon
                 icon={ICONS.edit}
                 style={{ color: COLORS.primary }}
