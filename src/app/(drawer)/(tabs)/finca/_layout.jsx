@@ -10,6 +10,10 @@ export default function RegistrosStackLayout() {
       
       <Stack.Screen name="detalle" options={{ title: "Detalle Finca" }} />
 
+      <Stack.Screen name="editarfinca" options={{ title: "Editar Finca" }}/>
+
+      <Stack.Screen name="estanque" options={{ title: "Nuevo Estanque" }}/>
+
     </Stack>
   );
 }
