@@ -1,27 +1,38 @@
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  StyleSheet,
-} from "react-native";
+/**
+ * Pantalla: SiembraListScreen
+ *
+ * Muestra el listado de siembras activas registradas en el módulo de siembra.
+ *
+ * Funcionalidades principales:
+ * - Visualizar las siembras activas.
+ * - Mostrar información resumida de cada siembra mediante tarjetas.
+ * - Acceder al detalle o edición de una siembra.
+ *
+ * Componentes utilizados:
+ * - Navbar: encabezado principal de la pantalla.
+ * - Button: acción para crear una nueva siembra.
+ * - SiembraCard: tarjeta reutilizable para mostrar cada siembra.
+ */
+import { View, Text, ScrollView, StyleSheet } from "react-native";
 
+import Navbar from "../../../shared/components/Navbar";
+import Button from "../../../shared/components/Button";
 import SiembraCard from "../components/SiembraCard";
 import { obtenerSiembras } from "../services/SiembraService";
+import { COLORS } from "../../../theme/colors";
+import { TYPOGRAPHY } from "../../../theme/typography";
+import { useRouter } from "expo-router";
 
-/**
- * Pantalla principal del módulo de siembra.
- * Muestra las siembras activas y permite iniciar el registro de una nueva siembra.
- */
 export default function SiembraListScreen() {
   const siembras = obtenerSiembras();
+  const router = useRouter();
 
   const handleNuevaSiembra = () => {
-    console.log("Ir a nueva siembra");
+   router.push("/siembra/nueva");
   };
 
   const handleDetalleSiembra = (siembraId) => {
-    console.log("Ir al detalle de la siembra:", siembraId);
+    router.push("/siembra/detalle");
   };
 
   const renderSiembraCard = (siembra) => (
@@ -33,7 +44,6 @@ export default function SiembraListScreen() {
       diasCultivo={siembra.diasCultivo}
       diasMaduracion={siembra.diasMaduracion}
       cantidadSembrada={siembra.cantidadSembrada}
-      produccionEstimada={siembra.produccionEstimada}
       estado={siembra.estado}
       onPress={() => handleDetalleSiembra(siembra.siembraId)}
     />
@@ -41,31 +51,31 @@ export default function SiembraListScreen() {
 
   return (
     <View style={styles.screen}>
-      <View style={styles.header}>
+      <Navbar title="Siembra" style={styles.header} titleStyle={styles.title}>
         <Text style={styles.moduleText}>Módulo</Text>
-
-        <Text style={styles.title}>Siembra</Text>
-      </View>
-
-      <View style={styles.contentHeader}>
-        <Text style={styles.sectionTitle}>
-          Siembras activas ({siembras.length})
-        </Text>
-
-        <TouchableOpacity
-          style={styles.newButton}
-          onPress={handleNuevaSiembra}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.newButtonText}>+ Nueva Siembra</Text>
-        </TouchableOpacity>
-      </View>
+      </Navbar>
 
       <ScrollView
-        contentContainerStyle={styles.list}
+        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {siembras.map(renderSiembraCard)}
+        <View style={styles.wrapper}>
+          <View style={styles.contentHeader}>
+            <Text style={styles.sectionTitle}>
+              Siembras activas ({siembras.length})
+            </Text>
+
+            <Button
+              onPress={handleNuevaSiembra}
+              style={styles.newButton}
+              textStyle={styles.newButtonText}
+            >
+              + Nueva Siembra
+            </Button>
+          </View>
+
+          {siembras.map(renderSiembraCard)}
+        </View>
       </ScrollView>
     </View>
   );
@@ -74,60 +84,64 @@ export default function SiembraListScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: "#EEF2FF",
+    backgroundColor: COLORS.secondary,
   },
-
   header: {
-    backgroundColor: "#009EF5",
+    backgroundColor: COLORS.primary,
     paddingTop: 48,
     paddingHorizontal: 20,
     paddingBottom: 28,
     borderBottomLeftRadius: 22,
     borderBottomRightRadius: 22,
+    borderBottomWidth: 0,
   },
 
   moduleText: {
-    color: "#E0F2FE",
+    color: COLORS.white,
     fontSize: 13,
-    fontWeight: "600",
+    fontFamily: TYPOGRAPHY.fontFamily.medium,
+    opacity: 0.85,
   },
 
   title: {
-    color: "#FFFFFF",
+    color: COLORS.white,
     fontSize: 26,
-    fontWeight: "800",
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
   },
-
-  contentHeader: {
+  scrollContent: {
+    paddingBottom: 24,
+  },
+  wrapper: {
+    flex: 1,
+    width: "100%",
+    maxWidth: 720,
+    alignSelf: "center",
     paddingHorizontal: 16,
+  },
+  contentHeader: {
     paddingTop: 22,
     paddingBottom: 14,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    gap: 12,
   },
-
   sectionTitle: {
-    color: "#0F172A",
+    color: COLORS.textSecondary,
     fontSize: 18,
-    fontWeight: "800",
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
+    flex: 1,
   },
-
   newButton: {
-    backgroundColor: "#009EF5",
+    backgroundColor: COLORS.primary,
     borderRadius: 16,
     paddingHorizontal: 14,
     paddingVertical: 12,
+    marginTop: 0,
   },
-
   newButtonText: {
-    color: "#FFFFFF",
+    color: COLORS.white,
     fontSize: 14,
-    fontWeight: "700",
-  },
-
-  list: {
-    paddingHorizontal: 16,
-    paddingBottom: 24,
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
   },
 });
