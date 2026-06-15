@@ -79,6 +79,7 @@ export const styles = StyleSheet.create({
         marginBottom: 8,
     },
     removePhoneButton: {
+        backgroundColor: COLORS.surface,
         width: 40,
         height: 40,
         justifyContent: "center",

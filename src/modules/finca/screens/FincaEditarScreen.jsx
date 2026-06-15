@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Dimensions, ScrollView, View, Pressable } from "react-native";
+import { Dimensions, ScrollView, View } from "react-native";
 
 import Button from "../../../shared/components/Button.jsx";
 import Card from "../../../shared/components/Card.jsx";
@@ -114,13 +114,13 @@ export default function FincaEditarScreen() {
 
           <View style={styles.phoneHeader}>
             <Text size={14} weight="600" color={COLORS.textPrimary}>Teléfonos</Text>
-            <Pressable style={styles.addPhoneButton} onPress={agregarTelefono}>
+            <Button style={styles.addPhoneButton} onPress={agregarTelefono}>
               {ICONS && ICONS.add ? (
                 <Icon icon={ICONS.add} size={18} color={COLORS.black} />
               ) : (
                 <Text style={{ fontSize: 18, color: COLORS.black, fontWeight: "bold" }}>+</Text>
               )}
-            </Pressable>
+            </Button>
           </View>
 
           {(telefonos || []).map((telefono, index) => (
@@ -135,13 +135,13 @@ export default function FincaEditarScreen() {
                 />
               </View>
               {index > 0 && (
-                <Pressable style={styles.removePhoneButton} onPress={() => eliminarTelefono(index)}>
+                <Button style={styles.removePhoneButton} onPress={() => eliminarTelefono(index)}>
                   {ICONS && ICONS.delete ? (
                     <Icon icon={ICONS.delete} size={20} color={COLORS.error} />
                   ) : (
                     <Text style={{ fontSize: 16, color: COLORS.error, fontWeight: "bold" }}>✕</Text>
                   )}
-                </Pressable>
+                </Button>
               )}
             </View>
           ))}
