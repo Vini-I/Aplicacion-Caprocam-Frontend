@@ -5,9 +5,9 @@ import { useFonts, Roboto_400Regular, Roboto_500Medium, Roboto_700Bold } from "@
 export default function RootLayout() {
 
   const [fontsLoaded] = useFonts({
-    Roboto_400Regular,
-    Roboto_500Medium,
-    Roboto_700Bold
+    "Roboto-Regular": Roboto_400Regular,
+    "Roboto-Medium": Roboto_500Medium,
+    "Roboto-Bold": Roboto_700Bold,
   });
 
   if (!fontsLoaded) {
@@ -18,14 +18,12 @@ export default function RootLayout() {
     <Stack screenOptions={{ headerShown: false }}>
 
       <Stack.Screen name="loginWeb" />
-      
+
       <Stack.Screen name="login" />
 
       <Stack.Screen name="colaboradores" />
 
-
-
-      {/* <Stack.Screen name="index" /> */}
+      <Stack.Screen name="index" />
 
 
 
