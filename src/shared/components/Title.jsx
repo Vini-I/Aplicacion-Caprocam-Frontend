@@ -32,12 +32,12 @@ import { TYPOGRAPHY } from "../../theme/typography";
 
 function getScale(level) {
   const scale = {
-    1: { fontSize: 32, fontWeight: "700", lineHeight: 40 },
-    2: { fontSize: 28, fontWeight: "700", lineHeight: 36 },
-    3: { fontSize: 24, fontWeight: "600", lineHeight: 32 },
-    4: { fontSize: 20, fontWeight: "600", lineHeight: 28 },
-    5: { fontSize: 16, fontWeight: "600", lineHeight: 24 },
-    6: { fontSize: 14, fontWeight: "600", lineHeight: 20 },
+    1: { fontSize: 32, fontFamily: TYPOGRAPHY.fontFamily.bold, lineHeight: 40 },
+    2: { fontSize: 28, fontFamily: TYPOGRAPHY.fontFamily.bold, lineHeight: 36 },
+    3: { fontSize: 24, fontFamily: TYPOGRAPHY.fontFamily.medium, lineHeight: 32 },
+    4: { fontSize: 20, fontFamily: TYPOGRAPHY.fontFamily.medium, lineHeight: 28 },
+    5: { fontSize: 16, fontFamily: TYPOGRAPHY.fontFamily.medium, lineHeight: 24 },
+    6: { fontSize: 14, fontFamily: TYPOGRAPHY.fontFamily.medium, lineHeight: 20 },
   };
 
   let selectedScale = scale[1];
@@ -75,7 +75,7 @@ export default function Title({
   numberOfLines,
   style,
   containerStyle,
-  fuente = TYPOGRAPHY.fontFamily.regular
+  fuente
 }) {
   let textColor = color;
 
@@ -83,12 +83,13 @@ export default function Title({
     textColor = COLORS.textTertiary;
   }
 
+  const fuenteFinal = fuente || getScale(level).fontFamily;
+
   return (
     <View style={[styles.container, containerStyle]}>
       <Text
-        style={[getScale(level), { color: textColor, textAlign: align }, style]}
+        style={[getScale(level), { color: textColor, textAlign: align, fontFamily: fuenteFinal}, style]}
         numberOfLines={numberOfLines}
-        fontFamily={fuente}
       >
         {children}
       </Text>
