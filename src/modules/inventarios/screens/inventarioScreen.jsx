@@ -180,6 +180,7 @@ export default function InventarioScreen() {
 
     return coincideTexto && coincideCategoria && coincideProveedor && coincideUnidad && coincideStock;
   });
+  const router = useRouter();
 
   const flatListRef = useRef(null);
 
@@ -242,7 +243,7 @@ export default function InventarioScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.contenedor}>
+    <View style={styles.contenedor}>
       <Navbar
         title="Inventario"
         style={styles.navbar}
@@ -283,7 +284,25 @@ export default function InventarioScreen() {
         }
         contentContainerStyle={styles.lista}
       />
-    </SafeAreaView>
+      <View style={styles.tabsInternas}>
+        <TouchableOpacity style={[styles.tab, styles.tabActiva]}>
+          <Icon icon={ICONS.document} size={20} color={COLORS.primary} />
+          <CustomText size={12} color={COLORS.primary} weight="600">
+            Inventario
+          </CustomText>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.tab}
+          onPress={() => router.push("/registros/proveedores")}
+        >
+          <Icon icon={ICONS.user} size={20} color={COLORS.textTertiary} />
+          <CustomText size={12} color={COLORS.textTertiary}>
+            Proveedores
+          </CustomText>
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 }
 
@@ -364,4 +383,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 4,
   },
+  tabsInternas: {
+  flexDirection: "row",
+  borderTopWidth: 1,
+  borderTopColor: COLORS.secondary,
+  backgroundColor: COLORS.white,
+},
+tab: {
+  flex: 1,
+  alignItems: "center",
+  paddingVertical: 10,
+  gap: 4,
+},
+tabActiva: {
+  borderTopWidth: 2,
+  borderTopColor: COLORS.primary,
+},
 });
