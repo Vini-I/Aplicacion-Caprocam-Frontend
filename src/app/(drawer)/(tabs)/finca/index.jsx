@@ -12,10 +12,15 @@ export default function Finca() {
     router.push("/finca/nueva");
   };
 
+  const handleEditarFinca = () => {
+    router.push("/finca/editarFinca")
+  }
+
   return (
     <FincaScreen
       onDetail={handleVerDetalle}
       onNew={handleNuevaFinca}
+      onEdit={handleEditarFinca}
     />
   );
 }

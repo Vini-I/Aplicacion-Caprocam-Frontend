@@ -1,5 +1,5 @@
 import { ScrollView, View, TouchableOpacity } from "react-native";
-import { useSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { fincas } from "./FincaData";
 import { styles } from "../styles/FincaDetalleStyles";
 import { ICONS } from "../../../theme/icons";
@@ -11,10 +11,12 @@ import Icon from "../../../shared/components/Icons";
 import Button from "../../../shared/components/Button";
 
 
-export default function FincaDetalleScreen({ id }) {
+export default function FincaDetalleScreen({ onEstanque }) {
   const router = useRouter();
 
-  const finca = fincas.find((f) => String(f.id) === String(id));
+  const { id } = useLocalSearchParams();
+
+  const finca = fincas.find((f) => f.codigoInterno === id);
 
   if (!finca) {
     return (
@@ -93,7 +95,7 @@ export default function FincaDetalleScreen({ id }) {
         </Card>
         <Button
           style={styles.addButton}
-          onPress={() => router.push("/finca/nueva")}
+          onPress={() => onEstanque()}
         >
           <Icon icon={ICONS.add} size={15} />
           <Text size={15}>
