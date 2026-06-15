@@ -10,22 +10,14 @@
 /**
  * Obtiene el mensaje de validación según lo que falta seleccionar
  *
- * @param {boolean} hasShift - ¿Usuario seleccionó turno?
  * @param {boolean} hasWorker - ¿Usuario seleccionó trabajador?
  * @returns {string} Mensaje apropiado o vacío si todo está completo
  *
  * Ejemplo:
- * getLoginValidationMessage(false, false) // "Selecciona un turno y tu nombre"
- * getLoginValidationMessage(true, false)  // "Selecciona tu nombre"
- * getLoginValidationMessage(true, true)   // ""
+ * getLoginValidationMessage(false) // "Selecciona tu nombre"
+ * getLoginValidationMessage(true)  // ""
  */
-export const getLoginValidationMessage = (hasShift, hasWorker) => {
-  if (!hasShift && !hasWorker) {
-    return 'Selecciona un turno y tu nombre';
-  }
-  if (!hasShift) {
-    return 'Selecciona un turno';
-  }
+export const getLoginValidationMessage = (hasWorker) => {
   if (!hasWorker) {
     return 'Selecciona tu nombre';
   }
@@ -35,16 +27,15 @@ export const getLoginValidationMessage = (hasShift, hasWorker) => {
 /**
  * Determina si el formulario es válido para enviar
  *
- * @param {boolean} hasShift - ¿Usuario seleccionó turno?
  * @param {boolean} hasWorker - ¿Usuario seleccionó trabajador?
- * @returns {boolean} true si ambos están seleccionados
+ * @returns {boolean} true si el trabajador está seleccionado
  *
  * Ejemplo:
- * isLoginFormValid(true, true)   // true
- * isLoginFormValid(true, false)  // false
+ * isLoginFormValid(true)   // true
+ * isLoginFormValid(false)  // false
  */
-export const isLoginFormValid = (hasShift, hasWorker) => {
-  return hasShift && hasWorker;
+export const isLoginFormValid = (hasWorker) => {
+  return hasWorker;
 };
 
 /**

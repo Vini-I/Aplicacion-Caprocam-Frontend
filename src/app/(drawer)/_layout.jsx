@@ -26,6 +26,17 @@ export default function DrawerLayout() {
         }} 
       />
 
+        <Drawer.Screen 
+        name="linksPrueba"
+        options={{ 
+          drawerLabel: "Links de Prueba",
+          title: "Links de Prueba",
+          drawerIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="link" color={color} size={size} />
+          )
+        }} 
+      />
+
       
 
 

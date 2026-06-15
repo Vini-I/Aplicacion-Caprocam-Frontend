@@ -24,7 +24,7 @@ export const LOGIN_MESSAGES = {
   ERROR_PREFIX: 'Error: ',
 
   // Botón
-  BUTTON_TEXT: 'Comenzar turno →',
+  BUTTON_TEXT: 'Continuar',
 
   // Empresa
   COMPANY_NAME: 'Caprocam',
