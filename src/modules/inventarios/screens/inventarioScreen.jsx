@@ -5,7 +5,6 @@
 
 import { useState } from "react";
 import { View, FlatList, StyleSheet, TouchableOpacity } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 
 import Navbar from "../../../shared/components/Navbar";
@@ -200,7 +199,7 @@ export default function InventarioScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.contenedor}>
+    <View style={styles.contenedor}>
       <Navbar
         title="Inventario"
         style={styles.navbar}
@@ -242,7 +241,7 @@ export default function InventarioScreen() {
           </CustomText>
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 

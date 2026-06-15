@@ -17,13 +17,20 @@
  */
 import React from "react";
 import { useRouter } from "expo-router";
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+} from "react-native";
 import { FontAwesome, AntDesign, MaterialIcons } from "@expo/vector-icons";
 
 import Navbar from "../../../shared/components/Navbar";
 import Card from "../../../shared/components/Card";
 import Button from "../../../shared/components/Button";
 import Icon from "../../../shared/components/Icons";
+import CustomText from "../../../shared/components/Text";
 
 import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
@@ -36,8 +43,7 @@ export default function ProveedorScreen({ proveedores = [] }) {
   const router = useRouter();
 
   function handleEditarProveedor(proveedorId) {
-
-    router.push(`/registros/editar-proveedor?id=${proveedorId}`);
+    router.push(`/registros/editarProveedor?id=${proveedorId}`);
   }
 
   function renderProveedor(proveedor) {
@@ -100,13 +106,13 @@ export default function ProveedorScreen({ proveedores = [] }) {
           </Button>
         }
         rightContent={
-    <Button 
-      style={styles.botonAgregar}
-      onPress={() => router.push("/registros/nuevoProveedor")}
-    >
-      <Icon icon={ICONS.add} size={20} color={COLORS.white} />
-    </Button>
-  }
+          <Button
+            style={styles.btnAgregar}
+            onPress={() => router.push("/registros/nuevoProveedor")}
+          >
+            <Icon icon={ICONS.add} size={20} color={COLORS.white} />
+          </Button>
+        }
         style={styles.header}
         titleStyle={styles.headerTitle}
       />
@@ -124,17 +130,25 @@ export default function ProveedorScreen({ proveedores = [] }) {
         </View>
       </ScrollView>
 
-    <View style={styles.tabsInternas}>
-      <TouchableOpacity style={styles.tab} onPress={() => router.back()}>
-        <Text style={styles.tabTexto}>Inventario</Text>
-      </TouchableOpacity>
+      <View style={styles.tabsInternas}>
+        <TouchableOpacity
+          style={styles.tab}
+          onPress={() => router.replace("/registros/inventarios")}
+        >
+          <Icon icon={ICONS.document} size={20} color={COLORS.textTertiary} />
+          <CustomText size={12} color={COLORS.textTertiary}>
+            Inventario
+          </CustomText>
+        </TouchableOpacity>
 
-      <TouchableOpacity style={[styles.tab, styles.tabActiva]}>
-        <Text style={[styles.tabTexto, styles.tabTextoActivo]}>Proveedores</Text>
-      </TouchableOpacity>
+        <TouchableOpacity style={[styles.tab, styles.tabActiva]}>
+          <Icon icon={ICONS.user} size={20} color={COLORS.primary} />
+          <CustomText size={12} color={COLORS.primary} weight="600">
+            Proveedores
+          </CustomText>
+        </TouchableOpacity>
+      </View>
     </View>
-
-  </View>
   );
 }
 
@@ -243,26 +257,26 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: TYPOGRAPHY.fontFamily.bold,
   },
- tabsInternas: {
-  flexDirection: "row",
-  borderTopWidth: 1,
-  borderTopColor: COLORS.secondary,
-  backgroundColor: COLORS.white,
-},
-tab: {
-  flex: 1,
-  alignItems: "center",
-  paddingVertical: 10,
-  gap: 4,
-},
-tabActiva: {
-  borderTopWidth: 2,
-  borderTopColor: COLORS.primary,
-},
-btnAgregar: {
-  backgroundColor: "rgba(255,255,255,0.2)",
-  paddingVertical: 6,
-  paddingHorizontal: 6,
-  marginTop: 0,
-},
+  tabsInternas: {
+    flexDirection: "row",
+    borderTopWidth: 1,
+    borderTopColor: COLORS.secondary,
+    backgroundColor: COLORS.white,
+  },
+  tab: {
+    flex: 1,
+    alignItems: "center",
+    paddingVertical: 10,
+    gap: 4,
+  },
+  tabActiva: {
+    borderTopWidth: 2,
+    borderTopColor: COLORS.primary,
+  },
+  btnAgregar: {
+    backgroundColor: "rgba(255,255,255,0.2)",
+    paddingVertical: 6,
+    paddingHorizontal: 6,
+    marginTop: 0,
+  },
 });
