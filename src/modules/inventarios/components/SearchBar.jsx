@@ -37,7 +37,7 @@ import { ICONS } from "../../../theme/icons";
 export default function SearchBar({
   value = "",
   onChangeText,
-  placeholder = "Buscar producto, categoría, proveedor...",
+  placeholder = "",
   editable = true,
   containerStyle,
 }) {
@@ -46,7 +46,7 @@ export default function SearchBar({
     <View style={[styles.container, containerStyle]}>
       <Input value={value}
         onChangeText={onChangeText}
-        placeholder = "Buscar producto, categoría, proveedor..."
+        placeholder = {placeholder}
         editable = {editable}
         containerStyle={styles.inputContainer}
         style={styles.input}
