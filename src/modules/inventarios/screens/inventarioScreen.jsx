@@ -7,7 +7,6 @@
 
 import { useState, useCallback, useRef } from "react";
 import { View, FlatList, StyleSheet, TouchableOpacity } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useFocusEffect } from "expo-router";
 
 import Navbar from "../../../shared/components/Navbar";
@@ -65,72 +64,46 @@ function TarjetaProducto({ producto, onEditar }) {
   const precioFormateado = `₡${producto.precioUnidad.toLocaleString("es-CR")}`;
 
   return (
-    <Card style={[styles.tarjeta, tieneStockBajo && styles.tarjetaStockBajo]}>
-      {/* Encabezado: nombre + badge stock bajo */}
-      <View style={styles.tarjetaEncabezado}>
-        <Title level={5} style={styles.nombreProducto}>
-          {producto.nombre}
-        </Title>
+    <TouchableOpacity activeOpacity={0.7} onPress={() => onEditar(producto)}>
+      <Card style={[styles.tarjeta, tieneStockBajo && styles.tarjetaStockBajo]}>
+        <View style={styles.tarjetaEncabezado}>
+          <Title level={5} style={styles.nombreProducto}>
+            {producto.nombre}
+          </Title>
+        </View>
+
         {tieneStockBajo && (
-          <Badge
-            label="▲ Stock bajo"
-            variant="danger"
-            style={styles.badgeStockBajo}
-          />
+          <Badge label="▲ Stock bajo" variant="danger" style={styles.badgeStockBajo} />
         )}
-      </View>
 
-      <Badge
-        label={producto.categoria}
-        style={[styles.badgeCategoria, { backgroundColor: colores.fondo }]}
-        textStyle={{ color: colores.texto }}
-      />
-
-      <View style={styles.filasDetalle}>
-        <FilaDetalle
-          etiqueta="Cantidad"
-          valor={`${producto.cantidad} ${producto.unidad}`}
-          resaltado={tieneStockBajo}
+        <Badge
+          label={producto.categoria}
+          style={[styles.badgeCategoria, { backgroundColor: colores.fondo }]}
+          textStyle={{ color: colores.texto }}
         />
-        <FilaDetalle
-          etiqueta="Stock mínimo"
-          valor={`${producto.stockMinimo} ${producto.unidad}`}
-        />
-        <FilaDetalle etiqueta="Proveedor" valor={producto.proveedor} />
-        <FilaDetalle etiqueta="Precio/unidad" valor={precioFormateado} />
-      </View>
 
-      {/* Pie: botón editar */}
-      <View
-        style={[
-          styles.tarjetaPie,
-          tieneStockBajo && styles.tarjetaPieStockBajo,
-        ]}
-      >
-        <TouchableOpacity
-          onPress={() => onEditar(producto)}
-          style={styles.botonEditar}
-          activeOpacity={0.75}
-        >
-          <Icon
-            icon={ICONS.edit}        // ajusta al nombre real en tu ICONS
-            size={13}
-            color={tieneStockBajo ? COLORS.textQuaternary : COLORS.primary}
+        <View style={styles.filasDetalle}>
+          <FilaDetalle
+            etiqueta="Cantidad"
+            valor={`${producto.cantidad} ${producto.unidad}`}
+            resaltado={tieneStockBajo}
           />
-          <CustomText
-            size={12}
-            color={tieneStockBajo ? COLORS.textQuaternary : COLORS.primary}
-          >
-            Editar
-          </CustomText>
-        </TouchableOpacity>
-      </View>
-    </Card>
+          <FilaDetalle etiqueta="Stock mínimo" valor={`${producto.stockMinimo} ${producto.unidad}`} />
+          <FilaDetalle etiqueta="Proveedor" valor={producto.proveedor} />
+          <FilaDetalle etiqueta="Precio/unidad" valor={precioFormateado} />
+        </View>
+      </Card>
+    </TouchableOpacity>
   );
 }
 
 export default function InventarioScreen() {
   const router = useRouter();
+  const flatListRef = useRef(null);
+
+  function handleRegresarInicio() {
+    router.replace("/inicio");
+  }
   const [productos, setProductos] = useState([]);
   const [busqueda, setBusqueda] = useState("");
   const [filtros, setFiltros] = useState({
@@ -181,7 +154,6 @@ export default function InventarioScreen() {
     return coincideTexto && coincideCategoria && coincideProveedor && coincideUnidad && coincideStock;
   });
 
-  const flatListRef = useRef(null);
 
   const cantidadStockBajo = productos.filter(
     (p) => p.cantidad < p.stockMinimo
@@ -189,14 +161,14 @@ export default function InventarioScreen() {
 
   // Navega al form en modo crear
   function handleNuevo() {
-    router.push("/(drawer)/inventarios/ProductForm");
+    router.push("/(drawer)/inventarios/productForm");
   }
 
-  // Navega al form en modo editar, pasando el producto serializado como param
+  // Navega a la pantalla de detalle del producto
   function handleEditar(producto) {
     router.push({
-      pathname: "/(drawer)/inventarios/ProductForm",
-      params: { productoParam: JSON.stringify(producto) },
+      pathname: "/(drawer)/inventarios/detalleProducto",
+      params: { id: producto.id.toString() },
     });
   }
 
@@ -242,14 +214,19 @@ export default function InventarioScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.contenedor}>
+    <View style={styles.contenedor}>
       <Navbar
         title="Inventario"
         style={styles.navbar}
         titleStyle={styles.navbarTitulo}
+        leftContent={
+          <Button variant="outline" onPress={handleRegresarInicio} style={styles.backButton} >
+            <Icon icon={ICONS.home} size={22} color={COLORS.white} />
+          </Button>
+        }
         rightContent={
           <Button style={styles.botonAgregar} onPress={handleNuevo}>
-            <Icon icon={ICONS.add} size={20} color={COLORS.white} />
+            <Icon icon={ICONS.add} size={22} color={COLORS.white} />
           </Button>
         }
       />
@@ -257,6 +234,7 @@ export default function InventarioScreen() {
         <SearchBar
           value={busqueda}
           onChangeText={setBusqueda}
+          placeholder="Buscar producto, categoría, proveedor..."
           containerStyle={styles.searchBarContainer}
         />
         <FilterButton
@@ -265,6 +243,8 @@ export default function InventarioScreen() {
           units={UNIDADES}
           activeFilters={filtros}
           onApply={setFiltros}
+          showLowStock={true}     // ← no aplica para proveedores
+          showExpiryDate={true}
           buttonStyle={styles.filterButton}
         />
       </View>
@@ -283,7 +263,25 @@ export default function InventarioScreen() {
         }
         contentContainerStyle={styles.lista}
       />
-    </SafeAreaView>
+      <View style={styles.tabsInternas}>
+        <TouchableOpacity style={[styles.tab, styles.tabActiva]}>
+          <Icon icon={ICONS.document} size={20} color={COLORS.primary} />
+          <CustomText size={12} color={COLORS.primary} weight="600">
+            Inventario
+          </CustomText>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.tab}
+          onPress={() => router.push("/(drawer)/inventarios/proveedorScreen")}
+        >
+          <Icon icon={ICONS.user} size={20} color={COLORS.textTertiary} />
+          <CustomText size={12} color={COLORS.textTertiary}>
+            Proveedores
+          </CustomText>
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 }
 
@@ -293,11 +291,11 @@ const styles = StyleSheet.create({
   navbar: { backgroundColor: COLORS.primary, borderBottomWidth: 0 },
 
   navbarTitulo: {
-  color: COLORS.white,
-  fontSize: 20,                          // pisa el 18 del Navbar
-  fontFamily: TYPOGRAPHY.fontFamily.bold, // pisa el fontWeight: "700"
-  fontWeight: undefined,                 // limpia el fontWeight hardcodeado
-    },
+    color: COLORS.white,
+    fontSize: 20,                          // pisa el 18 del Navbar
+    fontFamily: TYPOGRAPHY.fontFamily.bold, // pisa el fontWeight: "700"
+    fontWeight: undefined,                 // limpia el fontWeight hardcodeado
+  },
 
   botonAgregar: {
     backgroundColor: "rgba(255,255,255,0.2)",
@@ -305,6 +303,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     marginTop: 0,
   },
+
+  backButton: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    borderWidth: 0,
+    paddingHorizontal: 0,
+    paddingVertical: 0,
+    marginTop: 0,
+  },
+
   alertaBanner: {
     flexDirection: "row",
     alignItems: "center",
@@ -316,7 +326,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     gap: 8,
   },
+
   alertaTexto: { marginLeft: 4 },
+
   barraBusqueda: {
     flexDirection: "row",
     alignItems: "center",
@@ -324,44 +336,63 @@ const styles = StyleSheet.create({
     marginTop: 12,
     gap: 8,
   },
+
   searchBarContainer: { flex: 1 },
+
   filterButton: { alignSelf: "center", marginTop: 0, height: 43 },
+
   contadorResultados: { marginHorizontal: 16, marginTop: 10, marginBottom: 4 },
+
   lista: { paddingBottom: 24 },
+
   tarjeta: { marginHorizontal: 16, marginTop: 12 },
+
   tarjetaStockBajo: {
     backgroundColor: COLORS.errorLight,
     borderColor: COLORS.errorLight,
   },
+
   tarjetaEncabezado: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "flex-start",
+    justifyContent: "space-between",
     marginBottom: 6,
   },
+
   nombreProducto: { flex: 1, marginRight: 8 },
-  badgeStockBajo: {
-    backgroundColor: COLORS.white,
-    borderWidth: 1,
-    borderColor: COLORS.error,
+  botonEditar: {
+    padding: 4,
   },
+
   badgeCategoria: { marginBottom: 12 },
   filasDetalle: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
   filaDetalle: { width: "45%", gap: 2 },
-  tarjetaPie: {
+
+  botonEditar: {
+    backgroundColor: "transparent",
+    paddingVertical: 0,
+    paddingHorizontal: 0,
+    marginTop: 0,
+    padding: 4,
+    borderWidth: 0,
+  },
+
+  tabsInternas: {
     flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "flex-end",
-    marginTop: 12,
-    gap: 4,
     borderTopWidth: 1,
     borderTopColor: COLORS.secondary,
-    paddingTop: 10,
+    backgroundColor: COLORS.white,
   },
-  tarjetaPieStockBajo: { borderTopColor: COLORS.errorLight },
-  botonEditar: {
-    flexDirection: "row",
+
+  tab: {
+    flex: 1,
     alignItems: "center",
+    paddingVertical: 10,
     gap: 4,
+  },
+
+  tabActiva: {
+    borderTopWidth: 2,
+    borderTopColor: COLORS.primary,
   },
 });

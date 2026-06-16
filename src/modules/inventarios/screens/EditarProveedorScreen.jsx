@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { View, ScrollView, StyleSheet } from "react-native";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { getProveedorById, updateProveedor } from "../services/proveedoresService";
 
 import Navbar from "../../../shared/components/Navbar";
 import Card from "../../../shared/components/Card";
@@ -13,7 +14,6 @@ import Icon from "../../../shared/components/Icons";
 import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
 import { ICONS } from "../../../theme/icons";
-import { addProveedor } from "../services/proveedoresService";
 
 const TIPOS_PRODUCTO = [
   { label: "Alimento", value: "alimento" },
@@ -23,51 +23,60 @@ const TIPOS_PRODUCTO = [
   { label: "Equipos", value: "equipos" },
 ];
 
-export default function NuevoProveedorScreen() {
-  const [nombre, setNombre] = useState("");
-  const [tipoProducto, setTipoProducto] = useState("");
-  const [telefono, setTelefono] = useState("");
-  const [correo, setCorreo] = useState("");
-  const [direccion, setDireccion] = useState("");
-  const [notas, setNotas] = useState("");
-
+export default function EditarProveedorScreen() {
+  const { id } = useLocalSearchParams();
+  const base = getProveedorById(id) || {};
   const router = useRouter();
 
-  const hasRequiredData = nombre.trim() !== "" && tipoProducto !== "";
-  const canSave = hasRequiredData;
+  const [nombre, setNombre] = useState(base.nombre ?? "");
+  const [tipoProducto, setTipoProducto] = useState(base.tipoProducto ?? "");
+  const [telefono, setTelefono] = useState(base.telefono ?? "");
+  const [correo, setCorreo] = useState(base.correo ?? "");
+  const [direccion, setDireccion] = useState(base.direccion ?? "");
+  const [notas, setNotas] = useState(base.notas ?? "");
+
+  const originalForm = {
+    nombre: base.nombre ?? "",
+    tipoProducto: base.tipoProducto ?? "",
+    telefono: base.telefono ?? "",
+    correo: base.correo ?? "",
+    direccion: base.direccion ?? "",
+    notas: base.notas ?? "",
+  };
+  const currentForm = { nombre, tipoProducto, telefono, correo, direccion, notas };
+  const hasChanges = JSON.stringify(currentForm) !== JSON.stringify(originalForm);
+
+  const hasRequiredData = telefono !== "" && correo !== "";
+  const canSave = hasRequiredData && hasChanges;
 
   const validationMessage = !hasRequiredData
     ? "Complete los campos obligatorios para guardar."
-    : "";
+    : !hasChanges
+      ? "Realice algún cambio para guardar la actualización."
+      : "";
 
-  function handleSubmit() {
+  function volverADetalle() {
+    router.replace({
+      pathname: "/(drawer)/inventarios/detalleProveedor",
+      params: { id: base.id.toString() },
+    });
+  }
+
+  function guardar() {
     if (!canSave) return;
 
-    const proveedor = {
-      nombre: nombre.trim(),
-      tipoProducto,
-      telefono,
-      correo,
-      direccion,
-      notas,
-    };
-
-    addProveedor(proveedor);
-    router.replace("/(drawer)/inventarios/proveedorScreen");
+    updateProveedor({ id: base.id, nombre, tipoProducto, telefono, correo, direccion, notas });
+    volverADetalle();
   }
 
   return (
     <View style={styles.screen}>
       <Navbar
-        title="Nuevo proveedor"
+        title="Editar proveedor"
         style={styles.navbar}
         titleStyle={styles.navbarTitle}
         leftContent={
-          <Button
-            variant="ghost"
-            onPress={() => router.replace("/(drawer)/inventarios/proveedorScreen")}
-            style={styles.backBtn}
-          >
+          <Button variant="ghost" onPress={volverADetalle} style={styles.backBtn}>
             <Icon icon={ICONS.exit} size={20} color={COLORS.white} />
           </Button>
         }
@@ -85,21 +94,19 @@ export default function NuevoProveedorScreen() {
           titleStyle={styles.cardTitle}
         >
           <Input
-            label="Nombre de la empresa *"
+            label="Nombre de la empresa"
             value={nombre}
-            onChangeText={setNombre}
-            placeholder="Ej. Biomar S.A."
+            editable={false}
             containerStyle={styles.field}
-            style={styles.input}
+            style={[styles.input, { color: COLORS.textSecondary }]}
             labelStyle={styles.label}
           />
 
           <Select
-            label="Tipo de producto *"
+            label="Tipo de producto"
             value={tipoProducto}
-            options={TIPOS_PRODUCTO}
             onChange={setTipoProducto}
-            placeholder="Seleccione un tipo de producto"
+            options={TIPOS_PRODUCTO}
             containerStyle={styles.field}
             selectStyle={styles.select}
             labelStyle={styles.label}
@@ -149,12 +156,12 @@ export default function NuevoProveedorScreen() {
           />
 
           <Button
-            onPress={handleSubmit}
+            onPress={guardar}
             disabled={!canSave}
             style={[styles.saveButton, !canSave && styles.saveButtonDisabled]}
             textStyle={styles.saveButtonText}
           >
-            Guardar proveedor
+            Guardar cambios
           </Button>
 
           {validationMessage !== "" && (
