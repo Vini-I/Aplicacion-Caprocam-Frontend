@@ -180,6 +180,7 @@ export default function InventarioScreen() {
 
     return coincideTexto && coincideCategoria && coincideProveedor && coincideUnidad && coincideStock;
   });
+  const router = useRouter();
 
   const flatListRef = useRef(null);
 
