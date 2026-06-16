@@ -42,9 +42,10 @@
 
 // modules/inventarios/screens/ProductForm.jsx
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { View, ScrollView, StyleSheet } from "react-native";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useRouter, useLocalSearchParams, useFocusEffect } from "expo-router";
+
 
 import Navbar from "../../../shared/components/Navbar";
 import Card from "../../../shared/components/Card";
@@ -61,6 +62,7 @@ import { TYPOGRAPHY } from "../../../theme/typography";
 import { ICONS } from "../../../theme/icons";
 
 import { addProducto, updateProducto } from "../services/inventarioService";
+import { getProveedores, getProveedoresByCategoria } from "../services/proveedoresService";
 
 // ─────────────────────────────────────────────
 // Opciones de selects
@@ -72,16 +74,6 @@ const CATEGORIAS = [
   { label: "Fertilizante", value: "Fertilizante" },
   { label: "Antibiótico", value: "Antibiótico" },
   { label: "Probiótico", value: "Probiótico" },
-];
-
-const PROVEEDORES = [
-  { label: "Biomar", value: "Biomar" },
-  { label: "Trisan", value: "Trisan" },
-  { label: "AgroTica", value: "AgroTica" },
-  { label: "BioAgro CR", value: "BioAgro CR" },
-  { label: "AquaChem", value: "AquaChem" },
-  { label: "MediVet CR", value: "MediVet CR" },
-  { label: "Farivet", value: "Farivet" },
 ];
 
 const UNIDADES = [
@@ -112,6 +104,19 @@ export default function ProductForm() {
   const [form, setForm] = useState(initialForm);
   const [originalForm, setOriginalForm] = useState(initialForm);
   const [productoId, setProductoId] = useState(null); // null = modo crear
+  const [opcionesProveedores, setOpcionesProveedores] = useState([]);
+
+  useEffect(() => {
+    const lista = getProveedoresByCategoria(form.categoria).map((p) => ({
+      label: p.nombre,
+      value: p.nombre,
+    }));
+    setOpcionesProveedores(lista);
+    // Si el proveedor seleccionado ya no está en la lista, lo limpia
+    if (form.proveedor && !lista.find((p) => p.value === form.proveedor)) {
+      setForm((prev) => ({ ...prev, proveedor: "" }));
+    }
+  }, [form.categoria]);
 
   // ── Carga datos si viene un producto para editar ──
   useEffect(() => {
@@ -193,11 +198,14 @@ export default function ProductForm() {
 
     if (isEditMode) {
       updateProducto({ ...producto, id: productoId });
+      router.replace({
+        pathname: "/(drawer)/inventarios/detalleProducto",
+        params: { id: productoId.toString() },
+      });
     } else {
       addProducto(producto);
+      router.replace("/(drawer)/inventarios/inventarioScreen");
     }
-
-    router.replace("/(drawer)/inventarios/inventarioScreen");
   }
 
   return (
@@ -209,7 +217,14 @@ export default function ProductForm() {
         leftContent={
           <Button
             variant="ghost"
-            onPress={() => router.replace("/(drawer)/inventarios/inventarioScreen")}
+            onPress={() =>
+              isEditMode
+                ? router.replace({
+                  pathname: "/(drawer)/inventarios/detalleProducto",
+                  params: { id: productoId.toString() },
+                })
+                : router.replace("/(drawer)/inventarios/inventarioScreen")
+            }
             style={styles.backBtn}
           >
             <Icon icon={ICONS.exit} size={20} color={COLORS.white} />
@@ -257,7 +272,7 @@ export default function ProductForm() {
           <Select
             label="Proveedor"
             value={form.proveedor}
-            options={PROVEEDORES}
+            options={opcionesProveedores}
             onChange={(v) => handleField("proveedor", v)}
             containerStyle={styles.field}
             selectStyle={styles.select}
