@@ -55,6 +55,7 @@ export default function FisicoQuimica({ onBack }) {
   const [, setPhReadings] = useState([]);
   const [, setOxReadings] = useState([]);
   const [showAlert, setShowAlert] = useState(false);
+  const [showAlertEdit, setShowAlertEdit] = useState(false);
   const alertTimerRef = useRef(null);
   const router = useRouter();
 
@@ -71,7 +72,18 @@ export default function FisicoQuimica({ onBack }) {
     alertTimerRef.current = setTimeout(() => {
       setShowAlert(false);
       alertTimerRef.current = null;
-      router.replace("/(drawer)/(tabs)/registros");  // ← reemplaza onBack()
+      router.replace("/(drawer)/(tabs)/registros");
+
+    }, 500);
+  };
+
+  const handleEditar = () => {
+    setShowAlertEdit(true);
+    if (alertTimerRef.current) clearTimeout(alertTimerRef.current);
+    alertTimerRef.current = setTimeout(() => {
+      setShowAlertEdit(false);
+      alertTimerRef.current = null;
+      router.replace("/(drawer)/(tabs)/registros");
 
     }, 500);
   };
@@ -168,18 +180,59 @@ export default function FisicoQuimica({ onBack }) {
             textStyle={{ textAlign: "center", fontWeight: "bold" }}
           />
         )}
+
+        {showAlertEdit && (
+          <Alert
+            variant="success"
+            message="¡Módulo actualizado exitosamente!"
+            style={{ width: "60%", alignSelf: "center" }}
+            textStyle={{ textAlign: "center", fontWeight: "bold" }}
+          />
+        )}
+
         <View style={{ height: 24 }} />
       </ScrollView>
 
       {/* ── Footer / Guardar ── */}
       <Footer
         children={
-          <Button variant="primary" onPress={handleGuardar}>
-            Guardar módulo
-          </Button>
+
+          <View style={{ flexDirection: "column", justifyContent: "center", gap: 16, alignItems: "center" }}>
+          <View>
+              {showAlert && (
+          <Alert
+            variant="success"
+            message="¡Módulo guardado exitosamente!"
+            style={{ width: "60%", alignSelf: "center" }}
+            textStyle={{ textAlign: "center", fontWeight: "bold" }}
+          />
+        )}
+
+        {showAlertEdit && (
+          <Alert
+            variant="success"
+            message="¡Módulo actualizado exitosamente!"
+            style={{ width: "60%", alignSelf: "center" }}
+            textStyle={{ textAlign: "center", fontWeight: "bold" }}
+          />
+        )}
+            </View>
+
+          <View style={{ flexDirection: "row", justifyContent: "center", gap: 16, alignItems: "center" }}>
+
+            <Button variant="outline" onPress={handleEditar}>
+              Actualizar módulo
+            </Button>
+
+            <Button variant="primary" onPress={handleGuardar}>
+              Guardar módulo
+            </Button>
+          </View>
+          </View>
         }
         fixedBottom={true}
       />
+
     </View>
   );
 }
