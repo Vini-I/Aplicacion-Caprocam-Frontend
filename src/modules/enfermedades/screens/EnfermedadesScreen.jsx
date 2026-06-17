@@ -1,11 +1,17 @@
 /**
  * ============================================================
- * SCREEN: ENFERMEDADES
+ * PANTALLA ENFERMEDADES
  * ============================================================
  *
- * Pantalla para registrar eventos sanitarios en estanques.
- * Incluye calendario local, periodo de retiro numerico,
- * riesgo por severidad y diseno responsive.
+ * Registra eventos sanitarios asociados a estanques.
+ *
+ * Ajustes aplicados:
+ * - Usa CustomText para textos visibles.
+ * - Usa Button para acciones, sin Pressable ni TouchableOpacity directo.
+ * - Usa Title para encabezados y títulos de sección.
+ * - Usa DateInput para fecha de reporte y proxima revision.
+ * - Usa NumberInput para mortalidad y periodo de retiro.
+ * - Usa COLORS, ICONS y TYPOGRAPHY desde theme.
  */
 
 import React, { useState } from "react";
@@ -13,27 +19,26 @@ import {
   ScrollView,
   View,
   StyleSheet,
-  TouchableOpacity,
-  Text,
   useWindowDimensions,
-  Modal as NativeModal,
 } from "react-native";
 
-import Card from "../../../shared/components/Card";
-import Input from "../../../shared/components/Input";
-import Select from "../../../shared/components/Select";
-import Button from "../../../shared/components/Button";
-import Title from "../../../shared/components/Title";
-import CustomText from "../../../shared/components/Text";
 import Alert from "../../../shared/components/Alert";
 import Badge from "../../../shared/components/Badge";
-import ProgressBar from "../../../shared/components/ProgressBar";
-import Modal from "../../../shared/components/Modal";
+import Button from "../../../shared/components/Button";
+import Card from "../../../shared/components/Card";
+import DateInput from "../../../shared/components/DateInput";
 import Icon from "../../../shared/components/Icons";
+import Input from "../../../shared/components/Input";
+import Modal from "../../../shared/components/Modal";
+import NumberInput from "../../../shared/components/NumberInput";
+import ProgressBar from "../../../shared/components/ProgressBar";
+import Select from "../../../shared/components/Select";
+import CustomText from "../../../shared/components/Text";
+import Title from "../../../shared/components/Title";
 
 import { COLORS } from "../../../theme/colors";
-import { TYPOGRAPHY } from "../../../theme/typography";
 import { ICONS } from "../../../theme/icons";
+import { TYPOGRAPHY } from "../../../theme/typography";
 
 const ESTANQUES = [
   { label: "EST-01 - Finca La Reina", value: "est-01" },
@@ -78,229 +83,13 @@ const ESTADOS_CASO = [
   { label: "Cerrado", value: "cerrado" },
 ];
 
-function formatearFecha(fecha) {
+function obtenerFechaActual() {
+  const fecha = new Date();
   const dia = String(fecha.getDate()).padStart(2, "0");
   const mes = String(fecha.getMonth() + 1).padStart(2, "0");
   const anio = fecha.getFullYear();
 
   return `${dia}/${mes}/${anio}`;
-}
-
-function obtenerFechaActual() {
-  return formatearFecha(new Date());
-}
-
-function convertirTextoAFecha(texto) {
-  const partes = texto.split("/");
-
-  if (partes.length !== 3) {
-    return new Date();
-  }
-
-  const dia = Number(partes[0]);
-  const mes = Number(partes[1]) - 1;
-  const anio = Number(partes[2]);
-
-  if (Number.isNaN(dia) === true) {
-    return new Date();
-  }
-
-  if (Number.isNaN(mes) === true) {
-    return new Date();
-  }
-
-  if (Number.isNaN(anio) === true) {
-    return new Date();
-  }
-
-  return new Date(anio, mes, dia);
-}
-
-function obtenerNombreMes(fecha) {
-  const meses = [
-    "Enero",
-    "Febrero",
-    "Marzo",
-    "Abril",
-    "Mayo",
-    "Junio",
-    "Julio",
-    "Agosto",
-    "Septiembre",
-    "Octubre",
-    "Noviembre",
-    "Diciembre",
-  ];
-
-  return meses[fecha.getMonth()];
-}
-
-function obtenerDiasMes(fecha) {
-  const anio = fecha.getFullYear();
-  const mes = fecha.getMonth();
-  const totalDias = new Date(anio, mes + 1, 0).getDate();
-  const primerDia = new Date(anio, mes, 1).getDay();
-  let dias = [];
-  let indice = 0;
-
-  while (indice < primerDia) {
-    dias.push(null);
-    indice = indice + 1;
-  }
-
-  let dia = 1;
-
-  while (dia <= totalDias) {
-    dias.push(dia);
-    dia = dia + 1;
-  }
-
-  return dias;
-}
-
-function esMismaFecha(fechaUno, fechaDos) {
-  let mismaFecha = false;
-
-  if (
-    fechaUno.getDate() === fechaDos.getDate() &&
-    fechaUno.getMonth() === fechaDos.getMonth() &&
-    fechaUno.getFullYear() === fechaDos.getFullYear()
-  ) {
-    mismaFecha = true;
-  }
-
-  return mismaFecha;
-}
-
-function CalendarInput({ label, value, onChangeText }) {
-  const [visible, setVisible] = useState(false);
-  const [mesVisible, setMesVisible] = useState(convertirTextoAFecha(value));
-
-  const fechaSeleccionada = convertirTextoAFecha(value);
-  const dias = obtenerDiasMes(mesVisible);
-
-  function abrirCalendario() {
-    setMesVisible(convertirTextoAFecha(value));
-    setVisible(true);
-  }
-
-  function cerrarCalendario() {
-    setVisible(false);
-  }
-
-  function cambiarMes(cantidad) {
-    const nuevaFecha = new Date(
-      mesVisible.getFullYear(),
-      mesVisible.getMonth() + cantidad,
-      1,
-    );
-
-    setMesVisible(nuevaFecha);
-  }
-
-  function seleccionarDia(dia) {
-    const nuevaFecha = new Date(
-      mesVisible.getFullYear(),
-      mesVisible.getMonth(),
-      dia,
-    );
-
-    onChangeText(formatearFecha(nuevaFecha));
-    setVisible(false);
-  }
-
-  return (
-    <View style={styles.calendarContainer}>
-      <Text style={styles.label}>{label}</Text>
-
-      <TouchableOpacity style={styles.calendarField} onPress={abrirCalendario}>
-        <Text style={styles.calendarValue}>{value}</Text>
-        <Icon icon={ICONS.calendar} size={18} color={COLORS.primary} />
-      </TouchableOpacity>
-
-      <NativeModal
-        visible={visible}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={cerrarCalendario}
-      >
-        <View style={styles.calendarOverlay}>
-          <View style={styles.calendarModal}>
-            <View style={styles.calendarHeader}>
-              <TouchableOpacity
-                style={styles.calendarArrow}
-                onPress={function () {
-                  cambiarMes(-1);
-                }}
-              >
-                <Text style={styles.calendarArrowText}>‹</Text>
-              </TouchableOpacity>
-
-              <Text style={styles.calendarTitle}>
-                {obtenerNombreMes(mesVisible)} {mesVisible.getFullYear()}
-              </Text>
-
-              <TouchableOpacity
-                style={styles.calendarArrow}
-                onPress={function () {
-                  cambiarMes(1);
-                }}
-              >
-                <Text style={styles.calendarArrowText}>›</Text>
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.weekRow}>
-              <Text style={styles.weekText}>D</Text>
-              <Text style={styles.weekText}>L</Text>
-              <Text style={styles.weekText}>M</Text>
-              <Text style={styles.weekText}>M</Text>
-              <Text style={styles.weekText}>J</Text>
-              <Text style={styles.weekText}>V</Text>
-              <Text style={styles.weekText}>S</Text>
-            </View>
-
-            <View style={styles.daysGrid}>
-              {dias.map(function (dia, index) {
-                if (dia === null) {
-                  return <View key={`empty-${index}`} style={styles.dayBox} />;
-                }
-
-                const fechaDia = new Date(
-                  mesVisible.getFullYear(),
-                  mesVisible.getMonth(),
-                  dia,
-                );
-                let dayStyle = [styles.dayButton];
-                let dayTextStyle = [styles.dayText];
-
-                if (esMismaFecha(fechaDia, fechaSeleccionada) === true) {
-                  dayStyle.push(styles.daySelected);
-                  dayTextStyle.push(styles.dayTextSelected);
-                }
-
-                return (
-                  <TouchableOpacity
-                    key={`day-${dia}`}
-                    style={dayStyle}
-                    onPress={function () {
-                      seleccionarDia(dia);
-                    }}
-                  >
-                    <Text style={dayTextStyle}>{dia}</Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-
-            <Button onPress={cerrarCalendario}>
-              <Text style={styles.buttonText}>Cerrar</Text>
-            </Button>
-          </View>
-        </View>
-      </NativeModal>
-    </View>
-  );
 }
 
 export default function EnfermedadesScreen({ navigation }) {
@@ -322,7 +111,7 @@ export default function EnfermedadesScreen({ navigation }) {
   const [tipoEvento, setTipoEvento] = useState("");
   const [enfermedad, setEnfermedad] = useState("");
   const [severidad, setSeveridad] = useState("");
-  const [mortalidad, setMortalidad] = useState("");
+  const [mortalidad, setMortalidad] = useState("0");
   const [sintomas, setSintomas] = useState("");
   const [diagnostico, setDiagnostico] = useState("");
   const [usaProbiotico, setUsaProbiotico] = useState("");
@@ -460,93 +249,51 @@ export default function EnfermedadesScreen({ navigation }) {
 
     if (severidad === "baja") {
       recomendacion =
-        "Mantener observacion diaria y revisar parametros fisicoquimicos.";
+        "Mantener observacion diaria y registrar cualquier cambio en sintomas o mortalidad.";
     }
 
     if (severidad === "media") {
       recomendacion =
-        "Aumentar monitoreo, revisar alimentacion y registrar cambios.";
+        "Aumentar monitoreo, revisar parametros fisicoquimicos y documentar la evolucion del caso.";
     }
 
     if (severidad === "alta") {
       recomendacion =
-        "Solicitar apoyo tecnico y tomar muestra para diagnostico.";
+        "Solicitar revision tecnica, separar evidencias y evaluar acciones sanitarias con diagnostico.";
     }
 
     if (severidad === "critica") {
       recomendacion =
-        "Atender como emergencia sanitaria y dar seguimiento continuo.";
+        "Atender el evento de forma prioritaria, evitar aplicar productos sin diagnostico y registrar mortalidad.";
     }
 
     return recomendacion;
-  }
-
-  function cambiarPeriodo(texto) {
-    const soloNumeros = texto.replace(/[^0-9]/g, "");
-
-    if (soloNumeros === "") {
-      setPeriodoRetiro("0");
-      return;
-    }
-
-    setPeriodoRetiro(soloNumeros);
-  }
-
-  function disminuirPeriodo() {
-    const valor = Number(periodoRetiro);
-
-    if (valor > 0) {
-      setPeriodoRetiro(String(valor - 1));
-    }
-  }
-
-  function aumentarPeriodo() {
-    const valor = Number(periodoRetiro);
-    setPeriodoRetiro(String(valor + 1));
   }
 
   function validar() {
     let valido = true;
 
     if (estanque === "") {
-      setMensaje("Debe seleccionar el estanque.");
+      setMensaje("Debe seleccionar el estanque relacionado.");
       setTipoMensaje("warning");
       valido = false;
     }
 
     if (valido === true && tipoEvento === "") {
-      setMensaje("Debe seleccionar el tipo de evento.");
+      setMensaje("Debe seleccionar el tipo de evento sanitario.");
       setTipoMensaje("warning");
       valido = false;
     }
 
     if (valido === true && enfermedad === "") {
-      setMensaje("Debe seleccionar la enfermedad.");
+      setMensaje("Debe seleccionar la enfermedad detectada.");
       setTipoMensaje("warning");
       valido = false;
     }
 
     if (valido === true && severidad === "") {
-      setMensaje("Debe seleccionar la severidad.");
+      setMensaje("Debe seleccionar la severidad del caso.");
       setTipoMensaje("warning");
-      valido = false;
-    }
-
-    if (valido === true && sintomas === "") {
-      setMensaje("Debe describir los sintomas observados.");
-      setTipoMensaje("warning");
-      valido = false;
-    }
-
-    if (valido === true && diagnostico === "") {
-      setMensaje("Debe indicar si existe diagnostico de laboratorio.");
-      setTipoMensaje("warning");
-      valido = false;
-    }
-
-    if (valido === true && usaAntibiotico === "si" && diagnostico !== "si") {
-      setMensaje("No registre antibioticos sin diagnostico de laboratorio.");
-      setTipoMensaje("danger");
       valido = false;
     }
 
@@ -564,9 +311,7 @@ export default function EnfermedadesScreen({ navigation }) {
   }
 
   function registrar() {
-    const valido = validar();
-
-    if (valido === false) {
+    if (validar() === false) {
       return;
     }
 
@@ -578,7 +323,7 @@ export default function EnfermedadesScreen({ navigation }) {
       enfermedad: enfermedad,
       severidad: severidad,
       riesgo: obtenerRiesgo(),
-      mortalidad: mortalidad,
+      mortalidad: Number(mortalidad),
       sintomas: sintomas,
       diagnosticoLaboratorio: diagnostico,
       usaProbiotico: usaProbiotico,
@@ -598,12 +343,20 @@ export default function EnfermedadesScreen({ navigation }) {
   }
 
   return (
-    <ScrollView style={styles.screen}>
+    <ScrollView style={styles.screen} showsVerticalScrollIndicator={false}>
       <View style={headerStyle}>
-        <TouchableOpacity onPress={volver} style={styles.cancelButton}>
-          <Icon icon={ICONS.exit} size={18} color={COLORS.white} />
-          <Text style={styles.cancelText}>Cancelar</Text>
-        </TouchableOpacity>
+        <Button variant="outline" onPress={volver} style={styles.cancelButton}>
+          <View style={styles.inlineButtonContent}>
+            <Icon icon={ICONS.exit} size={18} color={COLORS.white} />
+            <CustomText
+              size={16}
+              color={COLORS.white}
+              style={styles.cancelText}
+            >
+              Cancelar
+            </CustomText>
+          </View>
+        </Button>
 
         <View style={styles.headerRow}>
           <View style={styles.headerIcon}>
@@ -613,16 +366,17 @@ export default function EnfermedadesScreen({ navigation }) {
               color={COLORS.primary}
             />
           </View>
-
-          <View>
-            <Title level={3} color={COLORS.white} style={styles.headerTitle}>
+          <View style={styles.headerTextBox}>
+            <Title
+              level={3}
+              color={COLORS.white}
+              fuente={TYPOGRAPHY.fontFamily.bold}
+            >
               Enfermedades
             </Title>
-
             <CustomText
               size={14}
               color={COLORS.white}
-              weight="500"
               style={styles.headerSubtitle}
             >
               Registro sanitario del estanque
@@ -641,19 +395,22 @@ export default function EnfermedadesScreen({ navigation }) {
           />
         )}
 
-        <Card title="RESUMEN DEL RIESGO" titleStyle={styles.cardTitle}>
+        <Card>
+          <SectionTitle title="Resumen del riesgo" icon={ICONS.notification} />
           <View style={styles.riskRow}>
             <Icon
               icon={ICONS.notification}
               size={24}
               color={obtenerColorRiesgo()}
             />
-
             <View style={styles.riskTextBox}>
-              <CustomText size={13} color={COLORS.textTertiary} weight="600">
+              <CustomText
+                size={13}
+                color={COLORS.textTertiary}
+                style={styles.boldText}
+              >
                 Nivel sanitario actual
               </CustomText>
-
               <Badge
                 label={obtenerTextoRiesgo()}
                 variant={obtenerVarianteRiesgo()}
@@ -661,15 +418,16 @@ export default function EnfermedadesScreen({ navigation }) {
               />
             </View>
           </View>
-
           <ProgressBar
-            progress={obtenerRiesgo()}
+            label="Riesgo"
+            value={obtenerRiesgo()}
             color={obtenerColorRiesgo()}
             backgroundColor={COLORS.secondary}
           />
         </Card>
 
-        <Card title="IDENTIFICACION" titleStyle={styles.cardTitle}>
+        <Card>
+          <SectionTitle title="Identificacion" icon={ICONS.id} />
           <View style={gridStyle}>
             <View style={itemStyle}>
               <Select
@@ -682,10 +440,11 @@ export default function EnfermedadesScreen({ navigation }) {
               />
             </View>
             <View style={itemStyle}>
-              <CalendarInput
+              <DateInput
                 label="Fecha del reporte *"
                 value={fechaReporte}
                 onChangeText={setFechaReporte}
+                labelStyle={styles.label}
               />
             </View>
             <View style={itemStyle}>
@@ -710,7 +469,8 @@ export default function EnfermedadesScreen({ navigation }) {
           </View>
         </Card>
 
-        <Card title="ENFERMEDAD DETECTADA" titleStyle={styles.cardTitle}>
+        <Card>
+          <SectionTitle title="Enfermedad detectada" icon={ICONS.report} />
           <View style={gridStyle}>
             <View style={itemStyle}>
               <Select
@@ -728,32 +488,24 @@ export default function EnfermedadesScreen({ navigation }) {
                 options={SEVERIDADES}
                 value={severidad}
                 onChange={setSeveridad}
-                placeholder="Seleccione la severidad"
+                placeholder="Seleccione severidad"
                 labelStyle={styles.label}
               />
             </View>
             <View style={itemStyle}>
-              <Input
-                label="Mortalidad observada"
+              <NumberInput
+                label="Mortalidad registrada"
                 value={mortalidad}
                 onChangeText={setMortalidad}
-                placeholder="Ej: 20 camarones"
-                labelStyle={styles.label}
-              />
-            </View>
-            <View style={itemStyle}>
-              <Select
-                label="Diagnostico de laboratorio *"
-                options={SI_NO}
-                value={diagnostico}
-                onChange={setDiagnostico}
-                placeholder="Seleccione una opcion"
+                min={0}
+                max={999999}
+                step={1}
                 labelStyle={styles.label}
               />
             </View>
             <View style={itemFullStyle}>
               <Input
-                label="Sintomas observados *"
+                label="Sintomas"
                 value={sintomas}
                 onChangeText={setSintomas}
                 placeholder="Describa sintomas observados"
@@ -762,14 +514,26 @@ export default function EnfermedadesScreen({ navigation }) {
                 style={styles.textArea}
               />
             </View>
+            <View style={itemFullStyle}>
+              <Input
+                label="Diagnostico de laboratorio"
+                value={diagnostico}
+                onChangeText={setDiagnostico}
+                placeholder="Resultado o referencia del diagnostico"
+                multiline={true}
+                labelStyle={styles.label}
+                style={styles.textArea}
+              />
+            </View>
           </View>
         </Card>
 
-        <Card title="MANEJO SANITARIO" titleStyle={styles.cardTitle}>
+        <Card>
+          <SectionTitle title="Tratamiento" icon={ICONS.chemicalContainer} />
           <View style={gridStyle}>
             <View style={itemStyle}>
               <Select
-                label="Uso de probioticos"
+                label="¿Usa probiotico?"
                 options={SI_NO}
                 value={usaProbiotico}
                 onChange={setUsaProbiotico}
@@ -784,11 +548,12 @@ export default function EnfermedadesScreen({ navigation }) {
                 onChangeText={setProductoProbiotico}
                 placeholder="Ej: BIOMIN"
                 labelStyle={styles.label}
+                editable={usaProbiotico === "si"}
               />
             </View>
             <View style={itemStyle}>
               <Select
-                label="Uso de antibioticos"
+                label="¿Usa antibiotico?"
                 options={SI_NO}
                 value={usaAntibiotico}
                 onChange={setUsaAntibiotico}
@@ -801,41 +566,28 @@ export default function EnfermedadesScreen({ navigation }) {
                 label="Producto antibiotico"
                 value={productoAntibiotico}
                 onChangeText={setProductoAntibiotico}
-                placeholder="Ej: oxitetraciclina"
+                placeholder="Ej: TM700"
                 labelStyle={styles.label}
+                editable={usaAntibiotico === "si"}
               />
             </View>
             <View style={itemStyle}>
-              <View style={styles.periodoContainer}>
-                <Text style={styles.label}>Periodo de retiro</Text>
-                <View style={styles.periodoRow}>
-                  <TouchableOpacity
-                    style={styles.periodoButton}
-                    onPress={disminuirPeriodo}
-                  >
-                    <Text style={styles.periodoButtonText}>-</Text>
-                  </TouchableOpacity>
-                  <Input
-                    value={periodoRetiro}
-                    onChangeText={cambiarPeriodo}
-                    keyboardType="numeric"
-                    containerStyle={styles.periodoInputContainer}
-                    style={styles.periodoInput}
-                  />
-                  <Text style={styles.periodoSuffix}>(dias)</Text>
-                  <TouchableOpacity
-                    style={styles.periodoButton}
-                    onPress={aumentarPeriodo}
-                  >
-                    <Text style={styles.periodoButtonText}>+</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
+              <NumberInput
+                label="Periodo de retiro (dias)"
+                value={periodoRetiro}
+                onChangeText={setPeriodoRetiro}
+                min={0}
+                max={365}
+                step={1}
+                editable={usaAntibiotico === "si"}
+                labelStyle={styles.label}
+              />
             </View>
           </View>
         </Card>
 
-        <Card title="SEGUIMIENTO" titleStyle={styles.cardTitle}>
+        <Card>
+          <SectionTitle title="Seguimiento" icon={ICONS.update} />
           <View style={gridStyle}>
             <View style={itemStyle}>
               <Select
@@ -848,10 +600,12 @@ export default function EnfermedadesScreen({ navigation }) {
               />
             </View>
             <View style={itemStyle}>
-              <CalendarInput
+              <DateInput
                 label="Proxima revision"
                 value={proximaRevision}
                 onChangeText={setProximaRevision}
+                allowFutureDates={true}
+                labelStyle={styles.label}
               />
             </View>
             <View style={itemFullStyle}>
@@ -876,16 +630,28 @@ export default function EnfermedadesScreen({ navigation }) {
             }}
             style={styles.actionButton}
           >
-            <View style={styles.buttonContentOutline}>
+            <View style={styles.inlineButtonContentCentered}>
               <Icon icon={ICONS.info} size={18} color={COLORS.primary} />
-              <Text style={styles.buttonOutlineText}>Ver recomendacion</Text>
+              <CustomText
+                size={16}
+                color={COLORS.primary}
+                style={styles.outlineButtonText}
+              >
+                Ver recomendacion
+              </CustomText>
             </View>
           </Button>
 
           <Button onPress={registrar} style={styles.actionButton}>
-            <View style={styles.buttonContent}>
+            <View style={styles.inlineButtonContentCentered}>
               <Icon icon={ICONS.save} size={18} color={COLORS.white} />
-              <Text style={styles.buttonText}>Registrar caso</Text>
+              <CustomText
+                size={16}
+                color={COLORS.white}
+                style={styles.saveText}
+              >
+                Registrar caso
+              </CustomText>
             </View>
           </Button>
         </View>
@@ -905,6 +671,7 @@ export default function EnfermedadesScreen({ navigation }) {
           <Title
             level={4}
             color={COLORS.textSecondary}
+            fuente={TYPOGRAPHY.fontFamily.bold}
             style={styles.modalTitle}
           >
             Recomendacion sanitaria
@@ -913,7 +680,6 @@ export default function EnfermedadesScreen({ navigation }) {
         <CustomText
           size={15}
           color={COLORS.textSecondary}
-          weight="500"
           style={styles.modalText}
         >
           {obtenerRecomendacion()}
@@ -923,12 +689,24 @@ export default function EnfermedadesScreen({ navigation }) {
   );
 }
 
+function SectionTitle({ title, icon }) {
+  return (
+    <View style={styles.sectionTitleRow}>
+      <Icon icon={icon} size={18} color={COLORS.primary} />
+      <Title
+        level={5}
+        color={COLORS.textSecondary}
+        fuente={TYPOGRAPHY.fontFamily.bold}
+        style={styles.sectionTitle}
+      >
+        {title}
+      </Title>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    width: "100%",
-    backgroundColor: COLORS.surface,
-  },
+  screen: { flex: 1, width: "100%", backgroundColor: COLORS.surface },
   header: {
     width: "100%",
     backgroundColor: COLORS.primary,
@@ -938,296 +716,70 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 22,
     borderBottomRightRadius: 22,
   },
-  headerDesktop: {
-    paddingHorizontal: 48,
-  },
+  headerDesktop: { paddingHorizontal: 48 },
   cancelButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 18,
+    alignSelf: "flex-start",
+    backgroundColor: "transparent",
+    borderWidth: 0,
+    paddingHorizontal: 0,
+    paddingVertical: 0,
+    marginTop: 0,
+    marginBottom: 20,
   },
-  cancelText: {
-    color: COLORS.white,
-    fontSize: 16,
-    fontFamily: TYPOGRAPHY.fontFamily.medium,
-    marginLeft: 8,
-  },
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
+  cancelText: { marginLeft: 8, fontFamily: TYPOGRAPHY.fontFamily.medium },
+  headerRow: { flexDirection: "row", alignItems: "center" },
   headerIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 16,
+    width: 54,
+    height: 54,
+    borderRadius: 18,
     backgroundColor: COLORS.white,
     alignItems: "center",
     justifyContent: "center",
     marginRight: 14,
   },
-  headerTitle: {
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-  },
-  headerSubtitle: {
-    fontFamily: TYPOGRAPHY.fontFamily.medium,
-    marginTop: 2,
-  },
-  content: {
-    width: "100%",
-    padding: 18,
-  },
-  contentTablet: {
-    paddingHorizontal: 32,
-  },
-  contentDesktop: {
-    paddingHorizontal: 48,
-  },
-  alert: {
+  headerTextBox: { flex: 1 },
+  headerSubtitle: { marginTop: 2, fontFamily: TYPOGRAPHY.fontFamily.regular },
+  content: { padding: 18 },
+  contentTablet: { paddingHorizontal: 28 },
+  contentDesktop: { maxWidth: 1100, alignSelf: "center", width: "100%" },
+  alert: { marginBottom: 16 },
+  alertText: { fontFamily: TYPOGRAPHY.fontFamily.medium },
+  sectionTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 14,
   },
-  alertText: {
-    fontFamily: TYPOGRAPHY.fontFamily.medium,
-  },
-  cardTitle: {
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    color: COLORS.textSecondary,
-  },
+  sectionTitle: { marginLeft: 8, textTransform: "uppercase" },
   label: {
-    color: COLORS.textSecondary,
-    fontSize: 14,
-    fontFamily: TYPOGRAPHY.fontFamily.medium,
-    fontWeight: "600",
-    marginBottom: 6,
-  },
-  grid: {
-    width: "100%",
-    flexDirection: "column",
-  },
-  gridTablet: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 12,
-  },
-  gridDesktop: {
-    gap: 18,
-  },
-  gridItem: {
-    width: "100%",
-  },
-  gridItemTablet: {
-    flexGrow: 1,
-    flexShrink: 1,
-    flexBasis: "48%",
-  },
-  gridItemDesktop: {
-    flexBasis: "31%",
-  },
-  gridItemFull: {
-    flexBasis: "100%",
-  },
-  riskRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  riskTextBox: {
-    marginLeft: 12,
-    flex: 1,
-  },
-  badge: {
-    marginTop: 6,
-  },
-  textArea: {
-    minHeight: 105,
-    textAlignVertical: "top",
-    color: COLORS.textSecondary,
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
-  },
-  calendarContainer: {
-    width: "100%",
-    marginBottom: 12,
-  },
-  calendarField: {
-    minHeight: 45,
-    borderWidth: 1,
-    borderColor: COLORS.secondary,
-    borderRadius: 8,
-    backgroundColor: COLORS.white,
-    paddingHorizontal: 12,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  calendarValue: {
-    color: COLORS.textSecondary,
-    fontSize: 16,
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
-  },
-  calendarOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.45)",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 20,
-  },
-  calendarModal: {
-    width: "100%",
-    maxWidth: 380,
-    backgroundColor: COLORS.white,
-    borderRadius: 16,
-    padding: 18,
-  },
-  calendarHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 14,
-  },
-  calendarArrow: {
-    width: 38,
-    height: 38,
-    borderRadius: 10,
-    backgroundColor: COLORS.secondary,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  calendarArrowText: {
-    color: COLORS.primary,
-    fontSize: 28,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    lineHeight: 30,
-  },
-  calendarTitle: {
-    color: COLORS.textSecondary,
-    fontSize: 17,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-  },
-  weekRow: {
-    flexDirection: "row",
-    marginBottom: 8,
-  },
-  weekText: {
-    flex: 1,
-    textAlign: "center",
-    color: COLORS.textTertiary,
-    fontSize: 13,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-  },
-  daysGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-  },
-  dayBox: {
-    width: "14.285%",
-    height: 42,
-  },
-  dayButton: {
-    width: "14.285%",
-    height: 42,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 10,
-  },
-  daySelected: {
-    backgroundColor: COLORS.primary,
-  },
-  dayText: {
-    color: COLORS.textSecondary,
-    fontSize: 15,
+    color: COLORS.textPrimary,
     fontFamily: TYPOGRAPHY.fontFamily.medium,
   },
-  dayTextSelected: {
-    color: COLORS.white,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-  },
-  periodoContainer: {
-    width: "100%",
-    marginBottom: 12,
-  },
-  periodoRow: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  periodoButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 8,
-    backgroundColor: COLORS.primary,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  periodoButtonText: {
-    color: COLORS.white,
-    fontSize: 22,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-  },
-  periodoInputContainer: {
-    flex: 1,
-    marginHorizontal: 8,
-    marginBottom: 0,
-  },
-  periodoInput: {
-    textAlign: "center",
-    color: COLORS.textSecondary,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-  },
-  periodoSuffix: {
-    color: COLORS.textTertiary,
-    fontSize: 14,
-    fontFamily: TYPOGRAPHY.fontFamily.medium,
-    marginRight: 8,
-  },
-  actions: {
-    marginBottom: 34,
-    gap: 12,
-  },
-  actionsTablet: {
-    flexDirection: "row",
-  },
-  actionButton: {
-    flex: 1,
-    minHeight: 48,
-  },
-  buttonContent: {
+  boldText: { fontFamily: TYPOGRAPHY.fontFamily.bold },
+  grid: { width: "100%" },
+  gridTablet: { flexDirection: "row", flexWrap: "wrap", columnGap: 12 },
+  gridDesktop: { flexDirection: "row", flexWrap: "wrap", columnGap: 14 },
+  gridItem: { width: "100%" },
+  gridItemTablet: { width: "48.5%" },
+  gridItemDesktop: { width: "32%" },
+  gridItemFull: { width: "100%" },
+  textArea: { minHeight: 90, textAlignVertical: "top" },
+  riskRow: { flexDirection: "row", alignItems: "center", marginBottom: 14 },
+  riskTextBox: { marginLeft: 12, flex: 1 },
+  badge: { marginTop: 6 },
+  actions: { marginBottom: 32 },
+  actionsTablet: { flexDirection: "row", justifyContent: "flex-end", gap: 12 },
+  actionButton: { minWidth: 190, borderRadius: 14 },
+  inlineButtonContent: { flexDirection: "row", alignItems: "center" },
+  inlineButtonContentCentered: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
   },
-  buttonContentOutline: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  buttonText: {
-    color: COLORS.white,
-    fontSize: 16,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    marginLeft: 8,
-  },
-  buttonOutlineText: {
-    color: COLORS.primary,
-    fontSize: 16,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    marginLeft: 8,
-  },
-  modalOverlay: {
-    backgroundColor: "rgba(0, 0, 0, 0.45)",
-  },
-  modalContainer: {
-    maxWidth: 520,
-    borderRadius: 18,
-  },
-  modalHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 14,
-    gap: 10,
-  },
-  modalTitle: {
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-  },
-  modalText: {
-    lineHeight: 22,
-    fontFamily: TYPOGRAPHY.fontFamily.medium,
-  },
+  saveText: { marginLeft: 8, fontFamily: TYPOGRAPHY.fontFamily.bold },
+  outlineButtonText: { marginLeft: 8, fontFamily: TYPOGRAPHY.fontFamily.bold },
+  modalOverlay: { padding: 20 },
+  modalContainer: { borderRadius: 18 },
+  modalHeader: { flexDirection: "row", alignItems: "center", marginBottom: 12 },
+  modalTitle: { marginLeft: 10 },
+  modalText: { lineHeight: 22, fontFamily: TYPOGRAPHY.fontFamily.regular },
 });
