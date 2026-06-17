@@ -34,7 +34,7 @@ let productos = [
     cantidad: 120,
     unidad: "kg",
     stockMinimo: 40,
-    proveedor: "AgroTica",
+    proveedor: "Farivet",
     precioUnidad: 850,
   },
   {
@@ -44,7 +44,7 @@ let productos = [
     cantidad: 15,
     unidad: "litros",
     stockMinimo: 20,
-    proveedor: "BioAgro CR",
+    proveedor: "Farivet",
     precioUnidad: 4200,
   },
   {
@@ -54,7 +54,7 @@ let productos = [
     cantidad: 80,
     unidad: "kg",
     stockMinimo: 30,
-    proveedor: "AquaChem",
+    proveedor: "Trisan",
     precioUnidad: 2100,
   },
   {
@@ -70,11 +70,11 @@ let productos = [
   {
     id: 7,
     nombre: "Fertilizante NPK",
-    categoria: "Tratamiento",
+    categoria: "Fertilizante",
     cantidad: 10,
     unidad: "kg",
     stockMinimo: 25,
-    proveedor: "AgroTica",
+    proveedor: "Farivet",
     precioUnidad: 1750,
   },
   {
@@ -84,7 +84,7 @@ let productos = [
     cantidad: 5,
     unidad: "litros",
     stockMinimo: 10,
-    proveedor: "MediVet CR",
+    proveedor: "Trisan",
     precioUnidad: 3900,
   },
 ];
@@ -116,4 +116,18 @@ export function updateProducto(productoActualizado) {
   productos = productos.map((p) =>
     p.id === productoActualizado.id ? { ...p, ...productoActualizado } : p
   );
+}
+
+/**
+ * Obtiene un producto por id.
+ */
+export function getProductoById(id) {
+  return productos.find((p) => String(p.id) === String(id));
+}
+
+/**
+ * Elimina un producto por id.
+ */
+export function deleteProducto(id) {
+  productos = productos.filter((p) => p.id !== parseInt(id));
 }

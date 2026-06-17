@@ -210,5 +210,11 @@ export const ICONS = {
     provider: "MaterialIcons",
     name: "notifications",
     },
+
+    // Navegación adicional
+    back: {
+    provider: "AntDesign",
+    name: "arrow-left",
+    },
      
 };
