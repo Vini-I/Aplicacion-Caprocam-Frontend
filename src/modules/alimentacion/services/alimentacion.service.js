@@ -27,6 +27,10 @@ const alimentacionService = {
         const lista = await alimentacionService.getAll();
         await AsyncStorage.setItem(CLAVE, JSON.stringify(lista.filter(r => r.id !== id)));
     },
+
+    clearAll: async () => {
+        await AsyncStorage.removeItem(CLAVE);
+    },
 };
 
 export default alimentacionService;
