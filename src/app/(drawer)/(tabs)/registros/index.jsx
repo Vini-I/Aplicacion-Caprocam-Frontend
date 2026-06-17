@@ -13,6 +13,8 @@ import { COLORS } from "../../../../theme/colors";
 import { TYPOGRAPHY } from "../../../../theme/typography";
 
 import FisicoQuimica from "../../../../modules/mantAgua/screens/fisicoQuimica";
+import MortalidadScreen from "../../../../modules/mortalidad/screens/MortalidadScreen";
+import AlimentacionScreen from "../../../../modules/alimentacion/screens/AlimentacionScreen";
 
 const FINCAS = [
   { id: 1, nombre: "Finca El Pacífico" },
@@ -52,11 +54,11 @@ const MODULOS = [
     color: "#8B5CF6",
   },
   {
-    id: "conteo",
-    label: "Conteo",
-    descripcion: "Camarones y sobrevivencia",
-    icono: "calculator",
-    color: "#F59E0B",
+  id: "mortalidad",
+  label: "Mortalidad",
+  descripcion: "Conteo y sobrevivencia de camarones",
+  icono: "calculator",
+  color: "#F59E0B",
   },
 ];
 
@@ -134,6 +136,14 @@ export default function RegistrosIndex() {
     return <FisicoQuimica onBack={() => setModuloActivo(null)} />;
   }
 
+  if (moduloActivo === "mortalidad") {
+    return <MortalidadScreen onBack={() => setModuloActivo(null)} />;
+  }
+
+  if (moduloActivo === "alimentacion") {
+    return <AlimentacionScreen onBack={() => setModuloActivo(null)} />;
+  }
+
   return (
     <SafeAreaView style={styles.contenedor}>
       <ScrollView
@@ -202,7 +212,10 @@ export default function RegistrosIndex() {
             <ModuloCard
               key={m.id}
               modulo={m}
-              onPress={m.id === "fisicoquimica" ? () => setModuloActivo("fisicoquimica") : null}
+              onPress={m.id === "fisicoquimica" ? () => setModuloActivo("fisicoquimica") 
+                     : m.id === "mortalidad"? () => setModuloActivo("mortalidad")
+                     : m.id === "alimentacion"? () => setModuloActivo("alimentacion")
+                     :null}
             />
           ))}
         </View>
