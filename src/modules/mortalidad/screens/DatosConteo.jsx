@@ -1,18 +1,25 @@
 import React from "react";
+import { View } from "react-native";
 import Card from "../../../shared/components/Card";
 import Title from "../../../shared/components/Title";
-
 import FormularioConteo from "./FormularioConteo";
 import { styles } from "../services/mortalidadStyles";
+import { TYPOGRAPHY } from "../../../theme/typography";
 
 export default function DatosConteo() {
   return (
-    <Card>
-      <Title style={styles.subTitle}>
+    <View>
+      <Title
+        style={[
+          styles.subTitle,
+          { fontFamily: TYPOGRAPHY.fontFamily.medium }
+        ]}
+      >
         Datos de Conteo
       </Title>
-
-      <FormularioConteo />
-    </Card>
+      <Card>
+        <FormularioConteo />
+      </Card>
+    </View>
   );
 }

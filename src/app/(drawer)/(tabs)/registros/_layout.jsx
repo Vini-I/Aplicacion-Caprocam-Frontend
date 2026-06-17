@@ -11,6 +11,8 @@ export default function RegistrosStackLayout() {
 
       <Stack.Screen name="Enfermedades" options={{ title: "Enfermedades", }} />
 
+      <Stack.Screen name="Mortalidad" options={{ title: "Registro de Mortalidad" }} />
+
     </Stack>
   );
 }
