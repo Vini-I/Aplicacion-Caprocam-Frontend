@@ -1,260 +1,230 @@
 /**
  * ============================================================
- * PANTALLA: LOGIN (Selección de Turno y Trabajador)
+ * PANTALLA: LOGIN
  * ============================================================
  *
- * Esta es la pantalla principal del módulo de login.
- *
- * RESPONSABILIDADES:
- * 1. Mostrar opciones de turnos (Mañana, Tarde, Noche)
- * 2. Permitir seleccionar un turno
- * 3. Mostrar lista de trabajadores disponibles
- * 4. Permitir seleccionar un trabajador
- * 5. Botón "Comenzar turno" para confirmar
- *
- * FLUJO:
- * 1. Al montar: useWorkers obtiene la lista de trabajadores
- * 2. Usuario selecciona un turno (selectedShift state)
- * 3. Usuario selecciona un trabajador (selectedWorker state)
- * 4. Usuario presiona botón - (por ahora solo console.log, después irá a home)
- *
- * ============================================================
+ * Selecciona un trabajador y valida su PIN para continuar.
  */
 
 import { View, ScrollView } from 'react-native';
-import { useState } from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-// Componentes compartidos
+import Avatar from '../../../shared/components/Avatar';
 import Button from '../../../shared/components/Button';
 import Card from '../../../shared/components/Card';
+import Icon from '../../../shared/components/Icons';
+import Modal from '../../../shared/components/Modal';
+import Text from '../../../shared/components/Text';
 import Title from '../../../shared/components/Title';
-import CustomText from '../../../shared/components/Text';
-import Images from '../../../shared/components/Images';
+import Input from '../../../shared/components/Input';
 
-// Hook personalizado
-import { useWorkers } from '../hooks/useWorkers';
-
-// Componentes internos
-import { ShiftButton } from '../components/ShiftButton';
-import { WorkerCard } from '../components/WorkerCard';
-
-// Constantes
-import { SHIFTS } from '../constants/shifts';
+import { COLORS } from '../../../theme/colors';
+import { ICONS } from '../../../theme/icons';
 import { LOGIN_MESSAGES } from '../constants/messages';
-
-// Utilidades
-import { formatDateInSpanish } from '../utils/dateFormatter';
-import { getLoginValidationMessage, isLoginFormValid, getButtonType } from '../utils/loginValidator';
-
-// Estilos
+import { useLoginFlow } from '../hooks/useLoginFlow';
 import styles from '../styles/loginStyles';
 
-
 /**
- * COMPONENTE PRINCIPAL
+ * LoginScreen
  *
- * LoginScreen - Pantalla de login con selección de turno y trabajador
+ * Composición principal de la pantalla.
  */
-export default function LoginScreen( {onLoginSuccess = () => {}} ) {
-  // ============ ESTADO ============
-
-  // Obtener trabajadores usando el hook (con loading/error)
-  const { workers, loading, error } = useWorkers();
-
-  // Turno seleccionado (null = ninguno seleccionado)
-  const [selectedShift, setSelectedShift] = useState(null);
-
-  // Trabajador seleccionado (null = ninguno)
-  const [selectedWorker, setSelectedWorker] = useState(null);
-
-  // ============ DATOS DERIVADOS ============
-
-  // Calcular fecha formateada
-  const formattedDate = formatDateInSpanish();
-
-  // Determinar si el formulario es válido
-  const isFormValid = isLoginFormValid(!!selectedShift, !!selectedWorker);
-
-  // Obtener mensaje de validación
-  const validationMessage = getLoginValidationMessage(!!selectedShift, !!selectedWorker);
-
-  // Obtener tipo de botón según validación
-  const buttonType = getButtonType(isFormValid);
-
-  // ============ FUNCIONES ============
-
-  /**
-   * handleStartShift()
-   *
-   * Se ejecuta cuando el usuario presiona "Comenzar turno"
-   *
-   * AHORA: Solo hace console.log (para debug)
-   * FUTURO: Navegar a home, guardar sesión, etc.
-   */
-  const handleStartShift = () => {
-    onLoginSuccess();
-    // TODO: Navegar a home cuando se implemente navegación
-  };
-
-  /**
-   * handleSelectShift(shiftId)
-   *
-   * Manejar cuando el usuario selecciona un turno
-   *
-   * @param {string} shiftId - El ID del turno seleccionado
-   */
-  const handleSelectShift = (shiftId) => {
-    setSelectedShift(shiftId);
-  };
-
-  /**
-   * handleSelectWorker(workerId)
-   *
-   * Manejar cuando el usuario selecciona un trabajador
-   *
-   * @param {string} workerId - El ID del trabajador
-   */
-  const handleSelectWorker = (workerId) => {
-    setSelectedWorker(workerId);
-  };
-
-  // ============ RENDER ============
+export default function LoginScreen({ onLoginSuccess = () => {} }) {
+  const loginFlow = useLoginFlow({ onLoginSuccess });
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      {/* HEADER CON NOMBRE DE EMPRESA Y FECHA */}
-      <View style={styles.header}>
-        <View style={styles.headerContent}>
-          {/* Logo/Icono */}
-          <Card backgroundColor="#0079CB">
-            <Images Icon={require('../../../assets/shrimp-solid.png')} style={{ width: 50, height: 50 }} />
-          </Card>
+    <View style={styles.screen}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <LoginHeader formattedDate={loginFlow.formattedDate} />
+        <WorkerSection
+          workers={loginFlow.workers}
+          loading={loginFlow.loading}
+          error={loginFlow.error}
+          selectedWorker={loginFlow.selectedWorker}
+          onSelectWorker={loginFlow.setSelectedWorker}
+        />
+      </ScrollView>
 
-          <Title level={1} color="#FFFFFF" align="center">
-            {LOGIN_MESSAGES.COMPANY_NAME}
-          </Title>
-          <CustomText
-            tamano="sm"
-            color="#FFFFFF"
-            alineacion="center"
-            estilo={styles.date}
-          >
-            {formattedDate}
-          </CustomText>
-        </View>
+      <SafeAreaView edges={['bottom']} style={styles.safeActionArea}>
+        <ActionSection
+          isFormValid={loginFlow.isFormValid}
+          validationMessage={loginFlow.validationMessage}
+          onContinue={loginFlow.openPinModal}
+        />
+      </SafeAreaView>
+
+      <PinModal
+        visible={loginFlow.isPinModalVisible}
+        pinCode={loginFlow.pinCode}
+        pinError={loginFlow.pinError}
+        isAuthenticating={loginFlow.isAuthenticating}
+        onClose={loginFlow.closePinModal}
+        onPinChange={loginFlow.handlePinChange}
+        onSubmit={loginFlow.submitPin}
+      />
+    </View>
+  );
+}
+
+/**
+ * LoginHeader
+ *
+ * Tarjeta superior con identidad de la app y fecha.
+ */
+function LoginHeader({ formattedDate }) {
+  return (
+    <Card style={styles.heroCard}>
+      <View style={styles.logoContainer}>
+        <Icon icon={ICONS.shrimp} size={32} color={COLORS.primary} />
       </View>
+      <Title level={1} color={COLORS.textPrimary} align="center" style={styles.companyName}>
+        {LOGIN_MESSAGES.COMPANY_NAME}
+      </Title>
+      <Text size={13} color={COLORS.textTertiary} align="center" style={styles.dateText}>
+        {formattedDate}
+      </Text>
+    </Card>
+  );
+}
 
-      {/* SECCION: SELECCIÓN DE TURNO */}
-      <View style={styles.section}>
-        <CustomText
-          tamano="lg"
-          color="#333333"
-          alineacion="center"
-          estilo={{ fontWeight: 'bold', marginBottom: 5 }}
-        >
-          {LOGIN_MESSAGES.SHIFT_TITLE}
-        </CustomText>
-        <CustomText
-          tamano="sm"
-          color="#0084D1"
-          alineacion="center"
-          estilo={{ marginBottom: 15 }}
-        >
-          {LOGIN_MESSAGES.SHIFT_SUBTITLE}
-        </CustomText>
-
-        {/* TURNOS - Mostrar los 3 botones */}
-        <View style={styles.shiftsContainer}>
-          {SHIFTS.map((shift) => (
-            <ShiftButton
-              key={shift.id}
-              shift={shift}
-              isSelected={selectedShift === shift.id}
-              onPress={() => handleSelectShift(shift.id)}
+/**
+ * WorkerSection
+ *
+ * Lista a los trabajadores disponibles.
+ */
+function WorkerSection({ workers, loading, error, selectedWorker, onSelectWorker }) {
+  return (
+    <Card style={styles.sectionCard}>
+      <Title level={4} color={COLORS.textPrimary} align="center">
+        {LOGIN_MESSAGES.WORKER_TITLE}
+      </Title>
+      <Text size={13} color={COLORS.textTertiary} align="center" style={styles.sectionSubtitle}>
+        {LOGIN_MESSAGES.WORKER_SUBTITLE}
+      </Text>
+      {loading && <SectionStatus message={LOGIN_MESSAGES.LOADING} />}
+      {error && <SectionStatus message={`${LOGIN_MESSAGES.ERROR_PREFIX}${error}`} error />}
+      {!loading && !error && (
+        <View style={styles.workersList}>
+          {workers.map((worker) => (
+            <WorkerItem
+              key={worker.id}
+              worker={worker}
+              isSelected={selectedWorker === worker.id}
+              onPress={() => onSelectWorker(worker.id)}
             />
           ))}
         </View>
-      </View>
+      )}
+    </Card>
+  );
+}
 
-      {/* SECCION: SELECCIÓN DE TRABAJADOR */}
-      <View style={styles.section}>
-        <CustomText
-          tamano="lg"
-          color="#333333"
-          alineacion="center"
-          estilo={{ fontWeight: 'bold', marginBottom: 5 }}
-        >
-          {LOGIN_MESSAGES.WORKER_TITLE}
-        </CustomText>
-        <CustomText
-          tamano="sm"
-          color="#0084D1"
-          alineacion="center"
-          estilo={{ marginBottom: 15 }}
-        >
-          {LOGIN_MESSAGES.WORKER_SUBTITLE}
-        </CustomText>
-
-        {/* MOSTRAR ESTADO DE CARGA O ERROR */}
-        {loading && (
-          <CustomText
-            tamano="md"
-            color="#666666"
-            alineacion="center"
-            estilo={{ marginVertical: 20 }}
-          >
-            {LOGIN_MESSAGES.LOADING}
-          </CustomText>
-        )}
-
-        {error && (
-          <CustomText
-            tamano="md"
-            color="#DC3545"
-            alineacion="center"
-            estilo={{ marginVertical: 20 }}
-          >
-            {LOGIN_MESSAGES.ERROR_PREFIX}
-            {error}
-          </CustomText>
-        )}
-
-        {/* LISTA DE TRABAJADORES */}
-        {!loading && !error && (
-          <View>
-            {workers.map((worker) => (
-              <WorkerCard
-                key={worker.id}
-                worker={worker}
-                isSelected={selectedWorker === worker.id}
-                onPress={() => handleSelectWorker(worker.id)}
-              />
-            ))}
+/**
+ * WorkerItem
+ *
+ * Botón tocable para seleccionar un trabajador.
+ */
+function WorkerItem({ worker, isSelected, onPress }) {
+  return (
+    <Button onPress={onPress} variant="outline" style={styles.workerButton}>
+      <Card style={[styles.workerCard, isSelected && styles.workerCardSelected]}>
+        <Avatar
+          name={worker.name}
+          size={48}
+          backgroundColor={isSelected ? COLORS.primary : COLORS.secondary}
+          textColor={isSelected ? COLORS.white : COLORS.textPrimary}
+        />
+        <View style={styles.workerInfo}>
+          <Text size={15} weight="700" color={COLORS.textPrimary}>
+            {worker.name}
+          </Text>
+          <Text size={13} color={COLORS.textTertiary}>
+            {worker.role}
+          </Text>
+        </View>
+        {isSelected && (
+          <View style={styles.selectionBadge}>
+            <Text size={14} weight="700" color={COLORS.white}>
+              ✓
+            </Text>
           </View>
         )}
-      </View>
+      </Card>
+    </Button>
+  );
+}
 
-      {/* BOTON: COMENZAR TURNO */}
-      <View style={styles.buttonContainer}>
-        <View style={styles.startButtonWrapper}>
-          <Button
-            title={LOGIN_MESSAGES.BUTTON_TEXT}
-            onPress={handleStartShift}
-            type={buttonType}
-          />
-        </View>
-      </View>
+/**
+ * SectionStatus
+ *
+ * Mensaje centrado para carga o error.
+ */
+function SectionStatus({ message, error = false }) {
+  return (
+    <Text size={14} color={error ? COLORS.error : COLORS.textTertiary} align="center" style={styles.statusText}>
+      {message}
+    </Text>
+  );
+}
 
-      {/* MENSAJE DE VALIDACIÓN */}
+/**
+ * ActionSection
+ *
+ * Footer fijo con el botón de continuar.
+ */
+function ActionSection({ isFormValid, validationMessage, onContinue }) {
+  return (
+    <View style={styles.footerContent}>
+      <Button onPress={onContinue} variant={isFormValid ? 'primary' : 'secondary'} disabled={!isFormValid}>
+        {LOGIN_MESSAGES.BUTTON_TEXT}
+      </Button>
       <View style={styles.validationContainer}>
-        <CustomText
-          tamano="sm"
-          color="#666666"
-          alineacion="center"
-        >
+        <Text size={12} color={COLORS.textTertiary} align="center">
           {validationMessage}
-        </CustomText>
+        </Text>
       </View>
-    </ScrollView>
+    </View>
+  );
+}
+
+/**
+ * PinModal
+ *
+ * Modal para ingresar el PIN de 4 dígitos.
+ */
+function PinModal({ visible, pinCode, pinError, isAuthenticating, onClose, onPinChange, onSubmit }) {
+  return (
+    <Modal
+      visible={visible}
+      onClose={onClose}
+      showCloseButton
+      closeText="Cancelar"
+      containerStyle={styles.modalContainer}
+      overlayStyle={styles.modalOverlay}
+    >
+      <Title level={5} color={COLORS.textPrimary} align="center" style={styles.modalTitle}>
+        Digite su PIN
+      </Title>
+      <Input
+        value={pinCode}
+        onChangeText={onPinChange}
+        placeholder="0000"
+        keyboardType="number-pad"
+        maxLength={4}
+        secureTextEntry
+        autoFocus={visible}
+        editable={!isAuthenticating}
+        containerStyle={styles.pinInputContainer}
+        style={styles.pinInput}
+      />
+      {pinError !== '' && (
+        <Text size={12} color={COLORS.error} align="center" style={styles.pinErrorText}>
+          {pinError}
+        </Text>
+      )}
+      <Button onPress={onSubmit} disabled={pinCode.length !== 4 || isAuthenticating}>
+        Ingresar
+      </Button>
+    </Modal>
   );
 }

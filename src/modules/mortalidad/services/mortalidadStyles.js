@@ -1,5 +1,6 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet, Platform, StatusBar } from "react-native";
 import { COLORS } from "../../../theme/colors";
+
 
 export const styles = StyleSheet.create({
   container: {
@@ -8,19 +9,19 @@ export const styles = StyleSheet.create({
     backgroundColor: COLORS.surface,
   },
 
-  caprocamTitle: {
-    fontSize: 32,
+  title: {
+    fontSize: 28,
     fontWeight: "bold",
     color: COLORS.primary,
     textAlign: "center",
-    marginTop: 10,
-    marginBottom: 24,
   },
 
   subTitle: {
     color: COLORS.textSecondary,
     marginBottom: 10,
     marginTop: 6,
+    fontSize: 16,
+    fontWeight: "600",
   },
 
   label: {
@@ -62,5 +63,25 @@ export const styles = StyleSheet.create({
 
   half: {
     width: "48%",
+  },
+
+  backBtn: { 
+    flexDirection: "row", alignItems: "center", gap: 4 
+  },
+
+  headerTitle: { 
+    flexDirection: "row", alignItems: "center", gap: 10 
+  },
+
+  headerTitleText: { 
+    fontSize: 22, fontWeight: "700" 
+  },
+
+  header: {
+    backgroundColor: COLORS.primary,
+    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight + 8 : 56,
+    paddingBottom: 20,
+    paddingHorizontal: 20,
+    gap: 12,
   },
 });
