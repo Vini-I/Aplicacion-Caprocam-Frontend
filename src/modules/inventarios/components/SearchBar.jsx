@@ -37,27 +37,16 @@ import { ICONS } from "../../../theme/icons";
 export default function SearchBar({
   value = "",
   onChangeText,
-  placeholder = "Buscar producto, categoría, proveedor...",
+  placeholder = "",
   editable = true,
   containerStyle,
 }) {
-  const [internalValue, setInternalValue] = useState(value);
-
-  useEffect(() => {
-    setInternalValue(value);
-  }, [value]);
-
-  //Aca se aplicaria la logica de busqueda conectada al backend, por ahora solo actualiza el estado del texto
-  const handleChangeText = (text) => {
-    setInternalValue(text);
-    onChangeText?.(text);
-  };
 
   return (
     <View style={[styles.container, containerStyle]}>
-      <Input value={internalValue}
-        onChangeText={handleChangeText}
-        placeholder = "Buscar producto, categoría, proveedor..."
+      <Input value={value}
+        onChangeText={onChangeText}
+        placeholder = {placeholder}
         editable = {editable}
         containerStyle={styles.inputContainer}
         style={styles.input}
@@ -87,5 +76,6 @@ const styles = StyleSheet.create({
     borderWidth: 0,
     paddingHorizontal: 0,
     backgroundColor: "transparent",
+    outlineStyle: "none",
   },
 });

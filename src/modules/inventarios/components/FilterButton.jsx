@@ -84,6 +84,13 @@ export default function FilterButton({
     expiryDate: "",
   },
   onApply,
+  showLowStock = true,    // ← nuevo prop, default true para inventarioScreen
+  showExpiryDate = true,
+  // Backwards-compatible: `style` applies to the inner Button.
+  style,
+  // New explicit props:
+  buttonStyle,
+  containerStyle,
 }) {
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -94,17 +101,17 @@ export default function FilterButton({
   const [pendingExpiryDate, setPendingExpiryDate] = useState("");
 
   const activeCount =
-    activeFilters.categories.length +
-    activeFilters.suppliers.length +
-    activeFilters.units.length +
+    (activeFilters.categories?.length || 0) +
+    (activeFilters.suppliers?.length || 0) +
+    (activeFilters.units?.length || 0) +
     (activeFilters.lowStock ? 1 : 0) +
     (activeFilters.expiryDate ? 1 : 0);
 
   function openModal() {
-    setPendingCategories([...activeFilters.categories]);
-    setPendingSuppliers([...activeFilters.suppliers]);
-    setPendingUnits([...activeFilters.units]);
-    setPendingLowStock(activeFilters.lowStock);
+    setPendingCategories([...(activeFilters.categories || [])]);
+    setPendingSuppliers([...(activeFilters.suppliers || [])]);
+    setPendingUnits([...(activeFilters.units || [])]);
+    setPendingLowStock(activeFilters.lowStock || false);
     setPendingExpiryDate(activeFilters.expiryDate || "");
     setModalVisible(true);
   }
@@ -143,32 +150,39 @@ export default function FilterButton({
   return (
     <>
       {/* ── Boton principal ── */}
-      <Button
-        variant="outline"
-        onPress={openModal}
-        style={[styles.filterBtn, activeCount > 0 && styles.filterBtnActive]}
-      >
-        <Icon
-          icon={ICONS.filter}
-          size={16}
-          color={activeCount > 0 ? COLORS.primary : COLORS.textSecondary}
-        />
-        <CustomText
-          size={14}
-          weight="500"
-          color={activeCount > 0 ? COLORS.primary : COLORS.textSecondary}
-          style={styles.filterBtnText}
+      <View style={containerStyle}>
+        <Button
+          variant="outline"
+          onPress={openModal}
+          style={[
+            styles.filterBtn,
+            activeCount > 0 && styles.filterBtnActive,
+            // prefer explicit `buttonStyle`, fall back to `style` for compat
+            buttonStyle || style,
+          ]}
         >
-          Filtrar
-        </CustomText>
-        {activeCount > 0 && (
-          <Badge
-            label={String(activeCount)}
-            style={styles.badge}
-            textStyle={styles.badgeText}
+          <Icon
+            icon={ICONS.filter}
+            size={16}
+            color={activeCount > 0 ? COLORS.primary : COLORS.textSecondary}
           />
-        )}
-      </Button>
+          <CustomText
+            size={14}
+            weight="500"
+            color={activeCount > 0 ? COLORS.primary : COLORS.textSecondary}
+            style={styles.filterBtnText}
+          >
+            Filtrar
+          </CustomText>
+          {activeCount > 0 && (
+            <Badge
+              label={String(activeCount)}
+              style={styles.badge}
+              textStyle={styles.badgeText}
+            />
+          )}
+        </Button>
+      </View>
 
       {/* ── Modal ── */}
       <Modal
@@ -189,73 +203,83 @@ export default function FilterButton({
 
         <ScrollView showsVerticalScrollIndicator={false}>
 
-          {/* Seccion: Clasificacion */}
-          <FilterSection label="Clasificación">
-            {normalize(categories).map((cat) => (
-              <Chip
-                key={cat.value}
-                label={cat.label}
-                selected={pendingCategories.includes(cat.value)}
-                onPress={() =>
-                  toggleItem(pendingCategories, setPendingCategories, cat.value)
-                }
+          {/* Seccion: Clasificacion — solo si llegan categorías */}
+          {categories.length > 0 && (
+            <FilterSection label="Clasificación">
+              {normalize(categories).map((cat) => (
+                <Chip
+                  key={cat.value}
+                  label={cat.label}
+                  selected={pendingCategories.includes(cat.value)}
+                  onPress={() =>
+                    toggleItem(pendingCategories, setPendingCategories, cat.value)
+                  }
+                />
+              ))}
+            </FilterSection>
+          )}
+
+          {/* Seccion: Proveedor — solo si llegan suppliers */}
+          {suppliers.length > 0 && (
+            <FilterSection label="Proveedor">
+              {normalize(suppliers).map((sup) => (
+                <Chip
+                  key={sup.value}
+                  label={sup.label}
+                  selected={pendingSuppliers.includes(sup.value)}
+                  onPress={() =>
+                    toggleItem(pendingSuppliers, setPendingSuppliers, sup.value)
+                  }
+                />
+              ))}
+            </FilterSection>
+          )}
+
+          {/* Seccion: Unidad de medida — solo si llegan units */}
+          {units.length > 0 && (
+            <FilterSection label="Unidad de medida">
+              {normalize(units).map((unit) => (
+                <Chip
+                  key={unit.value}
+                  label={unit.label}
+                  selected={pendingUnits.includes(unit.value)}
+                  onPress={() =>
+                    toggleItem(pendingUnits, setPendingUnits, unit.value)
+                  }
+                />
+              ))}
+            </FilterSection>
+          )}
+
+          {/* Seccion: Fecha de caducidad — solo si se habilita explícitamente */}
+          {showExpiryDate && (
+            <FilterSection label="Fecha de caducidad">
+              <DateInput
+                value={pendingExpiryDate}
+                onChangeText={setPendingExpiryDate}
+                allowFutureDates={true}
+                containerStyle={styles.dateInput}
               />
-            ))}
-          </FilterSection>
+            </FilterSection>
+          )}
 
-          {/* Seccion: Proveedor */}
-          <FilterSection label="Proveedor">
-            {normalize(suppliers).map((sup) => (
-              <Chip
-                key={sup.value}
-                label={sup.label}
-                selected={pendingSuppliers.includes(sup.value)}
-                onPress={() =>
-                  toggleItem(pendingSuppliers, setPendingSuppliers, sup.value)
-                }
-              />
-            ))}
-          </FilterSection>
-
-          {/* Seccion: Unidad de medida */}
-          <FilterSection label="Unidad de medida">
-            {normalize(units).map((unit) => (
-              <Chip
-                key={unit.value}
-                label={unit.label}
-                selected={pendingUnits.includes(unit.value)}
-                onPress={() =>
-                  toggleItem(pendingUnits, setPendingUnits, unit.value)
-                }
-              />
-            ))}
-          </FilterSection>
-
-          {/* Seccion: Fecha de caducidad */}
-          <FilterSection label="Fecha de caducidad">
-            <DateInput
-              value={pendingExpiryDate}
-              onChangeText={setPendingExpiryDate}
-              allowFutureDates={true}
-              containerStyle={styles.dateInput}
-            />
-          </FilterSection>
-
-          {/* Checkbox: Stock bajo */}
-          <Button
-            variant="outline"
-            onPress={() => setPendingLowStock((prev) => !prev)}
-            style={styles.checkboxRow}
-          >
-            <CustomText size={14} color={COLORS.textPrimary} style={styles.checkboxLabel}>
-              Solo productos con stock bajo
-            </CustomText>
-            <View style={[styles.checkbox, pendingLowStock && styles.checkboxActive]}>
-              {pendingLowStock && (
-                <Icon icon={ICONS.check} size={14} color={COLORS.white} />
-              )}
-            </View>
-          </Button>
+          {/* Checkbox: Stock bajo — solo si se habilita explícitamente */}
+          {showLowStock && (
+            <Button
+              variant="outline"
+              onPress={() => setPendingLowStock((prev) => !prev)}
+              style={styles.checkboxRow}
+            >
+              <CustomText size={14} color={COLORS.textPrimary} style={styles.checkboxLabel}>
+                Solo productos con stock bajo
+              </CustomText>
+              <View style={[styles.checkbox, pendingLowStock && styles.checkboxActive]}>
+                {pendingLowStock && (
+                  <Icon icon={ICONS.check} size={14} color={COLORS.white} />
+                )}
+              </View>
+            </Button>
+          )}
 
         </ScrollView>
 
@@ -364,11 +388,15 @@ const styles = StyleSheet.create({
     height: 18,
     paddingHorizontal: 6,
     paddingVertical: 3,
+    marginTop: 4,
+    justifyContent: "center",
+    alignItems: "center",
   },
   badgeText: {
     color: COLORS.white,
     fontSize: 10,
     fontWeight: "600",
+    textAlign: "center",
   },
   overlay: {
     backgroundColor: "rgba(0,0,0,0.45)",
@@ -389,18 +417,18 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   closeBtn: {
-  width: 32,
-  height: 32,
-  borderRadius: 99,
-  borderWidth: 1,
-  borderColor: COLORS.textTertiary,
-  backgroundColor: COLORS.secondary,
-  alignItems: "center",
-  justifyContent: "center",
-  marginTop: 0,
-  paddingVertical: 0,
-  paddingHorizontal: 0,
-},
+    width: 32,
+    height: 32,
+    borderRadius: 99,
+    borderWidth: 1,
+    borderColor: COLORS.textTertiary,
+    backgroundColor: COLORS.secondary,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 0,
+    paddingVertical: 0,
+    paddingHorizontal: 0,
+  },
   dateInput: {
     flex: 1,
     marginBottom: 0,

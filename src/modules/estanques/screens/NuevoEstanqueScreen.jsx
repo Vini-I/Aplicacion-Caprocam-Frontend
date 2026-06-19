@@ -1,84 +1,92 @@
 /**
- * Pantalla: NuevoEstanquePage
+ * ============================================================
+ * PANTALLA NUEVO ESTANQUE
+ * ============================================================
  *
- * Esta pantalla permite registrar un nuevo estanque dentro de una finca acuícola.
- * El formulario está diseñado para capturar la información principal necesaria
- * para identificar el estanque, conocer sus dimensiones, registrar datos de
- * siembra y agregar información relacionada con alimentación y equipos.
+ * Registra un nuevo estanque usando los componentes compartidos
+ * del proyecto y el tema centralizado de Caprocam.
  *
- * Funcionalidad general:
- * - Muestra un encabezado con la opción de cancelar, el título "Nuevo Estanque"
- *   y el nombre de la finca asociada.
- * - Permite ingresar el código del estanque, seleccionar su estado y definir
- *   el tipo de estanque.
- * - Registra las dimensiones físicas del estanque mediante largo, ancho y
- *   profundidad.
- * - Permite indicar la fuente de agua utilizada, como estero, golfo o reservorio.
- * - Registra datos de siembra como especie, fecha de siembra, densidad de
- *   siembra y uso de precría.
- * - Incluye información de alimentación, proveedor de alimento, número de
- *   aireadores y si el estanque cuenta con alimentador automático.
- * - Valida que los campos principales estén completos antes de registrar.
- * - Muestra mensajes de alerta cuando falta información o cuando el registro
- *   se realiza correctamente.
- *
- * Estados utilizados:
- * - codigo: almacena el código identificador del estanque.
- * - estado: almacena el estado actual del estanque, por ejemplo activo,
- *   en preparación o cosechado.
- * - tipoEstanque: almacena el tipo de estanque seleccionado.
- * - largo, ancho y profundidad: almacenan las dimensiones del estanque.
- * - fuenteAgua: almacena la procedencia del agua utilizada.
- * - especie: almacena la especie cultivada en el estanque.
- * - fechaSiembra: almacena la fecha en que se realiza la siembra.
- * - densidadSiembra: almacena la cantidad de camarones por metro cuadrado.
- * - precria: indica si el estanque utiliza precría o siembra directa.
- * - metodoAlimentacion: almacena el método de alimentación utilizado.
- * - proveedorAlimento: almacena el proveedor del alimento.
- * - numeroAireadores: almacena la cantidad de aireadores disponibles.
- * - tieneAlimentadorAutomatico: indica si se cuenta con alimentador automático.
- * - mensaje: almacena el mensaje que se muestra en pantalla mediante una alerta.
- *
- * Funciones principales:
- * - seleccionarEstado: actualiza el estado seleccionado del estanque.
- * - registrarEstanque: valida los campos obligatorios y construye el objeto
- *   con la información del nuevo estanque.
- * - cancelar: permite regresar a la pantalla anterior usando la navegación.
- *
- * Componentes utilizados:
- * - Card: agrupa visualmente cada sección del formulario.
- * - Input: permite ingresar datos escritos o numéricos.
- * - Select: permite seleccionar opciones predefinidas.
- * - Button: ejecuta la acción de registrar el estanque.
- * - Title: muestra el título principal de la pantalla.
- * - CustomText: muestra textos informativos o etiquetas.
- * - Alert: muestra mensajes de validación o confirmación.
- *
- * Nota:
- * La pantalla solo construye y muestra por consola el objeto del nuevo estanque.
- * Más adelante, este objeto puede enviarse a una API, guardarse en una base de
- * datos o conectarse con el estado global de la aplicación.
+ * Ajustes aplicados:
+ * - Usa CustomText para textos visibles.
+ * - Usa Button para acciones y opciones, sin Pressable directo.
+ * - Usa Title para encabezados y títulos de sección.
+ * - Usa NumberInput para densidad de siembra y aireadores.
+ * - Usa DateInput para la fecha de siembra.
+ * - Usa COLORS, ICONS y TYPOGRAPHY desde theme.
  */
 
-
 import React, { useState } from "react";
-import {
-  ScrollView,
-  View,
-  StyleSheet,
-  TouchableOpacity,
-  Text,
-} from "react-native";
+import { ScrollView, View, StyleSheet } from "react-native";
 
-import Card from "../components/Card";
-import Input from "../components/Input";
-import Select from "../components/Select";
-import Button from "../components/Button";
-import Title from "../components/Title";
-import CustomText from "../components/Text";
-import Alert from "../components/Alert";
+import Alert from "../../../shared/components/Alert";
+import Button from "../../../shared/components/Button";
+import Card from "../../../shared/components/Card";
+import DateInput from "../../../shared/components/DateInput";
+import Icon from "../../../shared/components/Icons";
+import Input from "../../../shared/components/Input";
+import NumberInput from "../../../shared/components/NumberInput";
+import Select from "../../../shared/components/Select";
+import CustomText from "../../../shared/components/Text";
+import Title from "../../../shared/components/Title";
 
-export default function NuevoEstanquePage({ navigation }) {
+import { COLORS } from "../../../theme/colors";
+import { ICONS } from "../../../theme/icons";
+import { TYPOGRAPHY } from "../../../theme/typography";
+
+function obtenerFechaActual() {
+  const fecha = new Date();
+  const dia = String(fecha.getDate()).padStart(2, "0");
+  const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+  const anio = fecha.getFullYear();
+
+  return `${dia}/${mes}/${anio}`;
+}
+
+const TIPOS_ESTANQUE = [
+  { label: "Estanque de tierra semiintensivo", value: "tierra_semiintensivo" },
+  { label: "Estanque reservorio", value: "reservorio" },
+  { label: "Estanque con geomembrana", value: "geomembrana" },
+  { label: "Estanque superintensivo", value: "superintensivo" },
+];
+
+const FUENTES_AGUA = [
+  { label: "Estero", value: "estero" },
+  { label: "Golfo", value: "golfo" },
+  { label: "Reservorio", value: "reservorio" },
+];
+
+const ESPECIES = [
+  {
+    label: "Litopenaeus vannamei - Camaron blanco",
+    value: "litopenaeus_vannamei",
+  },
+];
+
+const OPCIONES_PRECRIA = [
+  { label: "Si, usa precria", value: "si" },
+  { label: "No, siembra directa", value: "no" },
+];
+
+const METODOS_ALIMENTACION = [
+  { label: "Manual", value: "manual" },
+  { label: "Automatico", value: "automatico" },
+  { label: "Manual y automatico", value: "manual_automatico" },
+];
+
+const OPCIONES_ALIMENTADOR = [
+  { label: "Si", value: "si" },
+  { label: "No", value: "no" },
+];
+
+const ESTADOS_ESTANQUE = [
+  { label: "Activo", value: "activo" },
+  { label: "En preparacion", value: "preparacion" },
+  { label: "Cosechado", value: "cosechado" },
+  { label: "Mantenimiento", value: "mantenimiento" },
+  { label: "Engorde", value: "engorde" },
+];
+
+export default function NuevoEstanqueScreen({ navigation }) {
   const [codigo, setCodigo] = useState("");
   const [estado, setEstado] = useState("activo");
   const [tipoEstanque, setTipoEstanque] = useState("");
@@ -87,116 +95,46 @@ export default function NuevoEstanquePage({ navigation }) {
   const [profundidad, setProfundidad] = useState("");
   const [fuenteAgua, setFuenteAgua] = useState("");
   const [especie, setEspecie] = useState("litopenaeus_vannamei");
-  const [fechaSiembra, setFechaSiembra] = useState("");
+  const [fechaSiembra, setFechaSiembra] = useState(obtenerFechaActual());
   const [densidadSiembra, setDensidadSiembra] = useState("12");
   const [precria, setPrecria] = useState("");
   const [metodoAlimentacion, setMetodoAlimentacion] = useState("");
   const [proveedorAlimento, setProveedorAlimento] = useState("Biomar");
-  const [numeroAireadores, setNumeroAireadores] = useState("");
+  const [numeroAireadores, setNumeroAireadores] = useState("0");
   const [tieneAlimentadorAutomatico, setTieneAlimentadorAutomatico] =
     useState("");
   const [mensaje, setMensaje] = useState("");
+  const [tipoMensaje, setTipoMensaje] = useState("info");
 
-  const tiposEstanque = [
-    {
-      label: "Estanque de tierra semiintensivo",
-      value: "tierra_semiintensivo",
-    },
-    {
-      label: "Estanque reservorio",
-      value: "reservorio",
-    },
-    {
-      label: "Estanque con geomembrana",
-      value: "geomembrana",
-    },
-    {
-      label: "Estanque súperintensivo",
-      value: "superintensivo",
-    },
-  ];
+  function cancelar() {
+    if (navigation) {
+      navigation.goBack();
+    }
+  }
 
-  const fuentesAgua = [
-    {
-      label: "Estero",
-      value: "estero",
-    },
-    {
-      label: "Golfo",
-      value: "golfo",
-    },
-    {
-      label: "Reservorio",
-      value: "reservorio",
-    },
-  ];
-
-  const especies = [
-    {
-      label: "Litopenaeus vannamei - Camarón blanco",
-      value: "litopenaeus_vannamei",
-    },
-  ];
-
-  const opcionesPrecria = [
-    {
-      label: "Sí, usa precría",
-      value: "si",
-    },
-    {
-      label: "No, siembra directa",
-      value: "no",
-    },
-  ];
-
-  const metodosAlimentacion = [
-    {
-      label: "Manual",
-      value: "manual",
-    },
-    {
-      label: "Automático",
-      value: "automatico",
-    },
-    {
-      label: "Manual y automático",
-      value: "manual_automatico",
-    },
-  ];
-
-  const opcionesAlimentador = [
-    {
-      label: "Sí",
-      value: "si",
-    },
-    {
-      label: "No",
-      value: "no",
-    },
-  ];
-
-  function seleccionarEstado(nuevoEstado) {
-    setEstado(nuevoEstado);
+  function mostrarError(texto) {
+    setTipoMensaje("warning");
+    setMensaje(texto);
   }
 
   function registrarEstanque() {
     if (codigo === "") {
-      setMensaje("Debe ingresar el código del estanque.");
+      mostrarError("Debe ingresar el codigo del estanque.");
       return;
     }
 
     if (tipoEstanque === "") {
-      setMensaje("Debe seleccionar el tipo de estanque.");
+      mostrarError("Debe seleccionar el tipo de estanque.");
       return;
     }
 
     if (largo === "" || ancho === "" || profundidad === "") {
-      setMensaje("Debe completar largo, ancho y profundidad.");
+      mostrarError("Debe completar largo, ancho y profundidad.");
       return;
     }
 
     if (fechaSiembra === "") {
-      setMensaje("Debe ingresar la fecha de siembra.");
+      mostrarError("Debe seleccionar la fecha de siembra.");
       return;
     }
 
@@ -210,104 +148,116 @@ export default function NuevoEstanquePage({ navigation }) {
       fuenteAgua: fuenteAgua,
       especie: especie,
       fechaSiembra: fechaSiembra,
-      densidadSiembra: densidadSiembra,
+      densidadSiembra: Number(densidadSiembra),
       precria: precria,
       metodoAlimentacion: metodoAlimentacion,
       proveedorAlimento: proveedorAlimento,
-      numeroAireadores: numeroAireadores,
+      numeroAireadores: Number(numeroAireadores),
       tieneAlimentadorAutomatico: tieneAlimentadorAutomatico,
     };
 
     console.log("Estanque registrado:", nuevoEstanque);
-
+    setTipoMensaje("success");
     setMensaje("Estanque registrado correctamente.");
   }
 
-  function cancelar() {
-    if (navigation) {
-      navigation.goBack();
-    }
-  }
-
   return (
-    <ScrollView style={styles.screen}>
+    <ScrollView style={styles.screen} showsVerticalScrollIndicator={false}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={cancelar}>
-          <Text style={styles.cancelar}>‹ Cancelar</Text>
-        </TouchableOpacity>
+        <Button
+          variant="outline"
+          onPress={cancelar}
+          style={styles.cancelButton}
+        >
+          <View style={styles.inlineButtonContent}>
+            <Icon icon={ICONS.exit} size={18} color={COLORS.white} />
+            <CustomText
+              size={16}
+              color={COLORS.white}
+              style={styles.cancelText}
+            >
+              Cancelar
+            </CustomText>
+          </View>
+        </Button>
 
-        <Title level={3} color="#ffffff" style={styles.headerTitle}>
-          Nuevo Estanque
-        </Title>
+        <View style={styles.headerRow}>
+          <View style={styles.headerIcon}>
+            <Icon icon={ICONS.water} size={30} color={COLORS.white} />
+          </View>
 
-        <CustomText tamano="md" color="#ffffff">
-          Finca: Finca La Reina
-        </CustomText>
+          <View style={styles.headerTextBox}>
+            <Title
+              level={3}
+              color={COLORS.white}
+              fuente={TYPOGRAPHY.fontFamily.bold}
+            >
+              Nuevo Estanque
+            </Title>
+            <CustomText
+              size={14}
+              color={COLORS.white}
+              style={styles.headerSubtitle}
+            >
+              Finca: Finca La Reina
+            </CustomText>
+          </View>
+        </View>
       </View>
 
       <View style={styles.content}>
         {mensaje !== "" && (
-          <View style={styles.alertWrapper}>
-            <Alert
-              alertWidth="100%"
-              alertHeight={48}
-              alertColor="#e8f4ff"
-              borderColor="#009EF5"
-              borderWidth={1}
-              borderRadius={12}
-              alertMessage={mensaje}
-              textColor="#1E3A5F"
-              textSize={14}
-              textFontWeight="600"
-            />
-          </View>
+          <Alert
+            variant={tipoMensaje}
+            message={mensaje}
+            style={styles.alert}
+            textStyle={styles.alertText}
+          />
         )}
 
-        <Card title="IDENTIFICACIÓN">
+        <Card>
+          <SectionTitle title="Identificacion" icon={ICONS.id} />
           <Input
-            label="Código del estanque *"
+            label="Codigo del estanque *"
             value={codigo}
             onChangeText={setCodigo}
-            placeholder="Ej: EST-01, E-01, TANQUE-A"
+            placeholder="Ej: EST-01"
+            labelStyle={styles.label}
           />
-
           <Select
             label="Tipo de estanque *"
-            options={tiposEstanque}
+            options={TIPOS_ESTANQUE}
             value={tipoEstanque}
             onChange={setTipoEstanque}
-            placeholder="Seleccione el tipo de estanque"
+            placeholder="Seleccione el tipo"
+            labelStyle={styles.label}
           />
 
-          <CustomText tamano="sm" color="#1E3A5F">
-            Estado
+          <CustomText
+            size={14}
+            color={COLORS.textPrimary}
+            style={styles.labelText}
+          >
+            Estado del estanque
           </CustomText>
 
-          <View style={styles.optionsRow}>
-            <EstadoOption
-              title="Activo"
-              value="activo"
-              selectedValue={estado}
-              onPress={seleccionarEstado}
-            />
-
-            <EstadoOption
-              title="En preparación"
-              value="preparacion"
-              selectedValue={estado}
-              onPress={seleccionarEstado}
-            />
-
-            <EstadoOption
-              title="Cosechado"
-              value="cosechado"
-              selectedValue={estado}
-              onPress={seleccionarEstado}
-            />
+          <View style={styles.optionsGrid}>
+            {ESTADOS_ESTANQUE.map(function (item) {
+              return (
+                <OptionButton
+                  key={item.value}
+                  label={item.label}
+                  value={item.value}
+                  selectedValue={estado}
+                  onPress={setEstado}
+                />
+              );
+            })}
           </View>
         </Card>
 
-        <Card title="DIMENSIONES">
+        <Card>
+          <SectionTitle title="Dimensiones" icon={ICONS.ruler} />
           <View style={styles.twoColumns}>
             <View style={styles.column}>
               <Input
@@ -315,202 +265,236 @@ export default function NuevoEstanquePage({ navigation }) {
                 value={largo}
                 onChangeText={setLargo}
                 placeholder="Ej: 100"
+                keyboardType="numeric"
+                labelStyle={styles.label}
               />
             </View>
-
             <View style={styles.column}>
               <Input
                 label="Ancho (m) *"
                 value={ancho}
                 onChangeText={setAncho}
                 placeholder="Ej: 80"
+                keyboardType="numeric"
+                labelStyle={styles.label}
               />
             </View>
           </View>
-
           <Input
             label="Profundidad (m) *"
             value={profundidad}
             onChangeText={setProfundidad}
             placeholder="Ej: 0.80"
+            keyboardType="numeric"
+            labelStyle={styles.label}
           />
-
           <Select
             label="Fuente de agua"
-            options={fuentesAgua}
+            options={FUENTES_AGUA}
             value={fuenteAgua}
             onChange={setFuenteAgua}
-            placeholder="Seleccione la fuente de agua"
+            placeholder="Seleccione la fuente"
+            labelStyle={styles.label}
           />
         </Card>
 
-        <Card title="SIEMBRA">
+        <Card>
+          <SectionTitle title="Siembra" icon={ICONS.shrimp} />
           <Select
             label="Especie"
-            options={especies}
+            options={ESPECIES}
             value={especie}
             onChange={setEspecie}
             placeholder="Seleccione la especie"
+            labelStyle={styles.label}
           />
-
-          <Input
+          <DateInput
             label="Fecha de siembra *"
             value={fechaSiembra}
             onChangeText={setFechaSiembra}
-            placeholder="dd/mm/aaaa"
+            labelStyle={styles.label}
           />
-
-          <Input
+          <NumberInput
             label="Densidad de siembra (ind/m²) *"
             value={densidadSiembra}
             onChangeText={setDensidadSiembra}
-            placeholder="Ej: 12"
+            min={0}
+            max={9999}
+            step={1}
+            labelStyle={styles.label}
           />
-
           <Select
-            label="Precría"
-            options={opcionesPrecria}
+            label="Precria"
+            options={OPCIONES_PRECRIA}
             value={precria}
             onChange={setPrecria}
-            placeholder="Seleccione si usa precría"
+            placeholder="Seleccione si usa precria"
+            labelStyle={styles.label}
           />
         </Card>
 
-        <Card title="ALIMENTACIÓN Y EQUIPOS">
+        <Card>
+          <SectionTitle title="Alimentacion y equipos" icon={ICONS.food} />
           <Select
-            label="Método de alimentación"
-            options={metodosAlimentacion}
+            label="Metodo de alimentacion"
+            options={METODOS_ALIMENTACION}
             value={metodoAlimentacion}
             onChange={setMetodoAlimentacion}
-            placeholder="Seleccione el método"
+            placeholder="Seleccione el metodo"
+            labelStyle={styles.label}
           />
-
           <Input
             label="Proveedor de alimento"
             value={proveedorAlimento}
             onChangeText={setProveedorAlimento}
             placeholder="Ej: Biomar"
+            labelStyle={styles.label}
           />
-
-          <Input
+          <NumberInput
             label="N° aireadores"
             value={numeroAireadores}
             onChangeText={setNumeroAireadores}
-            placeholder="Ej: 4"
+            min={0}
+            max={999}
+            step={1}
+            labelStyle={styles.label}
           />
-
           <Select
-            label="¿Tiene alimentador automático?"
-            options={opcionesAlimentador}
+            label="¿Tiene alimentador automatico?"
+            options={OPCIONES_ALIMENTADOR}
             value={tieneAlimentadorAutomatico}
             onChange={setTieneAlimentadorAutomatico}
-            placeholder="Seleccione una opción"
+            placeholder="Seleccione una opcion"
+            labelStyle={styles.label}
           />
         </Card>
 
-        <View style={styles.buttonContainer}>
-          <Button title="Registrar estanque" onPress={registrarEstanque} />
-        </View>
+        <Button onPress={registrarEstanque} style={styles.saveButton}>
+          <View style={styles.inlineButtonContentCentered}>
+            <Icon icon={ICONS.save} size={18} color={COLORS.white} />
+            <CustomText size={16} color={COLORS.white} style={styles.saveText}>
+              Registrar estanque
+            </CustomText>
+          </View>
+        </Button>
       </View>
     </ScrollView>
   );
 }
 
-function EstadoOption({ title, value, selectedValue, onPress }) {
-  let optionStyle = [styles.optionButton];
-  let textStyle = [styles.optionText];
+function SectionTitle({ title, icon }) {
+  return (
+    <View style={styles.sectionTitleRow}>
+      <Icon icon={icon} size={18} color={COLORS.primary} />
+      <Title
+        level={5}
+        color={COLORS.textSecondary}
+        fuente={TYPOGRAPHY.fontFamily.bold}
+        style={styles.sectionTitle}
+      >
+        {title}
+      </Title>
+    </View>
+  );
+}
+
+function OptionButton({ label, value, selectedValue, onPress }) {
+  let buttonStyle = [styles.optionButton];
+  let textColor = COLORS.textSecondary;
+  let textFont = TYPOGRAPHY.fontFamily.medium;
 
   if (value === selectedValue) {
-    optionStyle.push(styles.optionSelected);
-    textStyle.push(styles.optionTextSelected);
+    buttonStyle.push(styles.optionButtonSelected);
+    textColor = COLORS.primary;
+    textFont = TYPOGRAPHY.fontFamily.bold;
   }
 
-  function presionar() {
+  function handlePress() {
     onPress(value);
   }
 
   return (
-    <TouchableOpacity style={optionStyle} onPress={presionar}>
-      <Text style={textStyle}>{title}</Text>
-    </TouchableOpacity>
+    <Button variant="outline" onPress={handlePress} style={buttonStyle}>
+      <CustomText
+        size={13}
+        color={textColor}
+        align="center"
+        style={{ fontFamily: textFont }}
+      >
+        {label}
+      </CustomText>
+    </Button>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: "#F4F7FA",
-  },
-
+  screen: { flex: 1, backgroundColor: COLORS.surface },
   header: {
-    backgroundColor: "#009EF5",
+    backgroundColor: COLORS.primary,
     paddingTop: 24,
-    paddingHorizontal: 24,
+    paddingHorizontal: 22,
     paddingBottom: 28,
     borderBottomLeftRadius: 22,
     borderBottomRightRadius: 22,
   },
-
-  cancelar: {
-    color: "#ffffff",
-    fontSize: 16,
-    fontWeight: "600",
+  cancelButton: {
+    alignSelf: "flex-start",
+    backgroundColor: "transparent",
+    borderWidth: 0,
+    paddingHorizontal: 0,
+    paddingVertical: 0,
+    marginTop: 0,
     marginBottom: 20,
   },
-
-  headerTitle: {
-    marginBottom: 4,
-  },
-
-  content: {
-    padding: 18,
-  },
-
-  alertWrapper: {
-    marginBottom: 16,
-  },
-
-  optionsRow: {
+  cancelText: { marginLeft: 8, fontFamily: TYPOGRAPHY.fontFamily.medium },
+  inlineButtonContent: { flexDirection: "row", alignItems: "center" },
+  inlineButtonContentCentered: {
     flexDirection: "row",
-    gap: 10,
-  },
-
-  optionButton: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: "#D9E2EC",
-    borderRadius: 12,
-    paddingVertical: 12,
     alignItems: "center",
-    backgroundColor: "#ffffff",
+    justifyContent: "center",
   },
-
-  optionSelected: {
-    borderColor: "#009EF5",
-    backgroundColor: "#EAF7FF",
+  headerRow: { flexDirection: "row", alignItems: "center" },
+  headerIcon: {
+    width: 54,
+    height: 54,
+    borderRadius: 18,
+    backgroundColor: "rgba(255,255,255,0.18)",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 14,
   },
-
-  optionText: {
-    color: "#1E3A5F",
-    fontSize: 14,
-    fontWeight: "600",
-  },
-
-  optionTextSelected: {
-    color: "#006DB3",
-    fontWeight: "700",
-  },
-
-  twoColumns: {
+  headerTextBox: { flex: 1 },
+  headerSubtitle: { marginTop: 2, fontFamily: TYPOGRAPHY.fontFamily.regular },
+  content: { padding: 18 },
+  alert: { marginBottom: 16 },
+  alertText: { fontFamily: TYPOGRAPHY.fontFamily.medium },
+  sectionTitleRow: {
     flexDirection: "row",
-    gap: 12,
+    alignItems: "center",
+    marginBottom: 14,
   },
-
-  column: {
-    flex: 1,
+  sectionTitle: { marginLeft: 8, textTransform: "uppercase" },
+  label: {
+    color: COLORS.textPrimary,
+    fontFamily: TYPOGRAPHY.fontFamily.medium,
   },
-
-  buttonContainer: {
-    marginBottom: 32,
+  labelText: { marginBottom: 8, fontFamily: TYPOGRAPHY.fontFamily.medium },
+  twoColumns: { flexDirection: "row", gap: 12 },
+  column: { flex: 1 },
+  optionsGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+  optionButton: {
+    minWidth: "30%",
+    flexGrow: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    marginTop: 0,
+    borderColor: COLORS.secondary,
+    backgroundColor: COLORS.white,
   },
+  optionButtonSelected: {
+    borderColor: COLORS.primary,
+    backgroundColor: COLORS.secondary,
+  },
+  saveButton: { minHeight: 50, borderRadius: 14, marginBottom: 32 },
+  saveText: { marginLeft: 8, fontFamily: TYPOGRAPHY.fontFamily.bold },
 });

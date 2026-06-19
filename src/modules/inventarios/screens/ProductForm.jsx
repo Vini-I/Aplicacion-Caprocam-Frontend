@@ -40,8 +40,12 @@
  * ============================================================
  */
 
-import React, { useEffect, useState } from "react";
-import { View, ScrollView, StyleSheet, Text } from "react-native";
+// modules/inventarios/screens/ProductForm.jsx
+
+import React, { useEffect, useState, useCallback } from "react";
+import { View, ScrollView, StyleSheet } from "react-native";
+import { useRouter, useLocalSearchParams, useFocusEffect } from "expo-router";
+
 
 import Navbar from "../../../shared/components/Navbar";
 import Card from "../../../shared/components/Card";
@@ -49,202 +53,158 @@ import Input from "../../../shared/components/Input";
 import Select from "../../../shared/components/Select";
 import Button from "../../../shared/components/Button";
 import NumberInput from "../../../shared/components/NumberInput";
-import ProductDateInput from "../components/ProductDateInput";
-import { TYPOGRAPHY } from '../theme/typography';
-import { COLORS } from "../../../theme/colors";
+import CustomText from "../../../shared/components/Text";
+import Icon from "../../../shared/components/Icons";
+import DateInput from "../../../shared/components/DateInput";
 
-/**
- * Estado inicial del formulario.
- *
- * Se usa cuando:
- * - Se abre el formulario para crear un producto nuevo.
- * - Se limpia el formulario después de guardar.
- * - No se recibe ningún producto para editar.
- */
+import { COLORS } from "../../../theme/colors";
+import { TYPOGRAPHY } from "../../../theme/typography";
+import { ICONS } from "../../../theme/icons";
+
+import { addProducto, updateProducto } from "../services/inventarioService";
+import { getProveedores, getProveedoresByCategoria } from "../services/proveedoresService";
+
+// ─────────────────────────────────────────────
+// Opciones de selects
+// ─────────────────────────────────────────────
+const CATEGORIAS = [
+  { label: "Alimentación", value: "Alimentación" },
+  { label: "Tratamiento", value: "Tratamiento" },
+  { label: "Químico", value: "Químico" },
+  { label: "Fertilizante", value: "Fertilizante" },
+  { label: "Antibiótico", value: "Antibiótico" },
+  { label: "Probiótico", value: "Probiótico" },
+];
+
+const UNIDADES = [
+  { label: "kg", value: "kg" },
+  { label: "g", value: "g" },
+  { label: "litros", value: "litros" },
+  { label: "mL", value: "mL" },
+  { label: "unidades", value: "unidades" },
+];
+
+// ─────────────────────────────────────────────
+// Estado inicial limpio (sin fechas)
+// ─────────────────────────────────────────────
 const initialForm = {
-  name: "",
-  category: "",
-  supplierId: "",
-  entryDate: "",
-  expirationDate: "",
-  quantity: "",
-  unit: "kg",
-  minStock: "",
-  currency: "usd",
-  price: "",
+  nombre: "",
+  categoria: "",
+  proveedor: "",
+  cantidad: "",
+  unidad: "kg",
+  stockMinimo: "",
+  precioUnidad: "",
 };
 
-export default function ProductForm({
-  productToEdit = null,
-  onSave = () => {},
-}) {
-  /**
-   * form:
-   * Guarda los datos actuales que el usuario escribe o selecciona.
-   */
+export default function ProductForm() {
+  const router = useRouter();
+  const params = useLocalSearchParams();
+
   const [form, setForm] = useState(initialForm);
-
-  /**
-   * originalForm:
-   * Guarda una copia del producto original.
-   * Sirve para saber si el usuario hizo cambios.
-   */
   const [originalForm, setOriginalForm] = useState(initialForm);
+  const [productoId, setProductoId] = useState(null); // null = modo crear
+  const [opcionesProveedores, setOpcionesProveedores] = useState([]);
 
-  /**
-   * useEffect:
-   * Se ejecuta cuando cambia productToEdit.
-   *
-   * Si viene un producto desde la futura lista de inventarios,
-   * el formulario carga esos datos.
-   *
-   * Si no viene ningún producto, el formulario queda vacío.
-   */
   useEffect(() => {
-    if (productToEdit) {
-      const productData = {
-        ...initialForm,
-        ...productToEdit,
-      };
+    const lista = getProveedoresByCategoria(form.categoria).map((p) => ({
+      label: p.nombre,
+      value: p.nombre,
+    }));
+    setOpcionesProveedores(lista);
+    // Si el proveedor seleccionado ya no está en la lista, lo limpia
+    if (form.proveedor && !lista.find((p) => p.value === form.proveedor)) {
+      setForm((prev) => ({ ...prev, proveedor: "" }));
+    }
+  }, [form.categoria]);
 
-      setForm(productData);
-      setOriginalForm(productData);
+  // ── Carga datos si viene un producto para editar ──
+  useEffect(() => {
+    if (params?.productoParam) {
+      try {
+        const producto = JSON.parse(params.productoParam);
+
+        const cargado = {
+          nombre: producto.nombre ?? "",
+          categoria: producto.categoria ?? "",
+          proveedor: producto.proveedor ?? "",
+          cantidad: producto.cantidad !== undefined ? String(producto.cantidad) : "",
+          unidad: producto.unidad ?? "kg",
+          stockMinimo: producto.stockMinimo !== undefined ? String(producto.stockMinimo) : "",
+          precioUnidad: producto.precioUnidad !== undefined ? String(producto.precioUnidad) : "",
+        };
+
+        setForm(cargado);
+        setOriginalForm(cargado);
+        setProductoId(producto.id);
+      } catch {
+        // param malformado → modo crear
+        setForm(initialForm);
+        setOriginalForm(initialForm);
+        setProductoId(null);
+      }
     } else {
       setForm(initialForm);
       setOriginalForm(initialForm);
+      setProductoId(null);
     }
-  }, [productToEdit]);
+  }, [params?.productoParam]);
 
-  /**
-   * Indica si el formulario está creando o editando.
-   *
-   * true  = editar producto existente
-   * false = crear producto nuevo
-   */
-  const isEditMode = !!productToEdit;
+  const isEditMode = productoId !== null;
 
-  /**
-   * Compara el formulario actual con el formulario original.
-   *
-   * Si son diferentes, significa que el usuario realizó cambios.
-   */
-  const hasChanges =
-    JSON.stringify(form) !== JSON.stringify(originalForm);
+  const hasChanges = JSON.stringify(form) !== JSON.stringify(originalForm);
 
-  /**
-   * Validación de campos obligatorios.
-   *
-   * Por ahora son obligatorios:
-   * - Nombre
-   * - Categoría
-   * - Fecha de ingreso
-   * - Cantidad
-   * - Stock mínimo
-   * - Precio
-   *
-   * Proveedor y fecha de caducidad quedan opcionales.
-   */
   const hasRequiredData =
-    (form.name || "").trim() !== "" &&
-    form.category !== "" &&
-    form.entryDate !== "" &&
-    form.quantity !== "" &&
-    form.minStock !== "" &&
-    form.price !== "";
+    form.nombre.trim() !== "" &&
+    form.categoria !== "" &&
+    form.cantidad !== "" &&
+    form.stockMinimo !== "" &&
+    form.precioUnidad !== "";
 
-  /**
-   * Controla si el botón puede guardar.
-   *
-   * En modo crear:
-   * - Se puede guardar si los campos obligatorios están completos.
-   *
-   * En modo editar:
-   * - Se puede guardar si los campos están completos y además hubo cambios.
-   */
-  const canSave = isEditMode
-    ? hasRequiredData && hasChanges
-    : hasRequiredData;
+  const canSave = isEditMode ? hasRequiredData && hasChanges : hasRequiredData;
 
-  /**
-   * Mensaje de ayuda que se muestra debajo del botón.
-   */
   const validationMessage = !hasRequiredData
-    ? "Complete los campos obligatorios para guardar el producto."
+    ? "Complete los campos obligatorios para guardar."
     : isEditMode && !hasChanges
       ? "Realice algún cambio para guardar la actualización."
       : "";
 
-  /**
-   * Opciones temporales para los selects.
-   * Más adelante pueden venir desde una API o desde otro módulo.
-   */
-  const categories = [
-    { label: "Alimento", value: "alimento" },
-    { label: "Insumos", value: "insumos" },
-    { label: "Equipos", value: "equipos" },
-    { label: "Salud", value: "salud" },
-  ];
-
-  const suppliers = [
-    { label: "Proveedor 1", value: "1" },
-    { label: "Proveedor 2", value: "2" },
-  ];
-
-  const units = [
-    { label: "kg", value: "kg" },
-    { label: "g", value: "g" },
-    { label: "L", value: "l" },
-    { label: "mL", value: "ml" },
-  ];
-
-  const currencies = [
-    { label: "$", value: "usd" },
-    { label: "₡", value: "crc" },
-  ];
-
-  /**
-   * Actualiza un campo específico del formulario.
-   *
-   * field: nombre del campo que se quiere actualizar.
-   * value: nuevo valor del campo.
-   */
   function handleField(field, value) {
+    setForm((prev) => ({ ...prev, [field]: value }));
+  }
+  function handleCategoriaChange(value) {
+    const categoriasConCaducidad = ["Alimentación", "Tratamiento"];
+
     setForm((prev) => ({
       ...prev,
-      [field]: value,
+      categoria: value,
+      // Si la nueva categoría no requiere fecha, la limpia
+      expirationDate: categoriasConCaducidad.includes(value) ? prev.expirationDate : "",
     }));
   }
 
-  /**
-   * Guarda la información del producto.
-   *
-   * Si faltan datos obligatorios, no hace nada.
-   * Si todo está correcto:
-   * - Crea un objeto productData.
-   * - Mantiene el id si se está editando.
-   * - Crea un id temporal si es producto nuevo.
-   * - Envía los datos usando onSave(productData).
-   */
   function handleSubmit() {
     if (!canSave) return;
 
-    const productData = {
-      ...form,
-      id: productToEdit?.id ?? Date.now(),
+    const producto = {
+      nombre: form.nombre.trim(),
+      categoria: form.categoria,
+      proveedor: form.proveedor,
+      cantidad: Number(form.cantidad),
+      unidad: form.unidad,
+      stockMinimo: Number(form.stockMinimo),
+      precioUnidad: Number(form.precioUnidad),
     };
 
-    console.log(productData);
-    onSave(productData);
-
-    setOriginalForm(productData);
-
-    /**
-     * Si es un producto nuevo, se limpia el formulario.
-     * Si es edición, no se limpia porque se mantienen los datos editados.
-     */
-    if (!isEditMode) {
-      setForm(initialForm);
-      setOriginalForm(initialForm);
+    if (isEditMode) {
+      updateProducto({ ...producto, id: productoId });
+      router.replace({
+        pathname: "/(drawer)/inventarios/detalleProducto",
+        params: { id: productoId.toString() },
+      });
+    } else {
+      addProducto(producto);
+      router.replace("/(drawer)/inventarios/inventarioScreen");
     }
   }
 
@@ -254,6 +214,26 @@ export default function ProductForm({
         title={isEditMode ? "Editar producto" : "Nuevo producto"}
         style={styles.navbar}
         titleStyle={styles.navbarTitle}
+        leftContent={
+          <Button
+            variant="ghost"
+            onPress={() =>
+              isEditMode
+                ? router.replace({
+                  pathname: "/(drawer)/inventarios/detalleProducto",
+                  params: { id: productoId.toString() },
+                })
+                : router.replace("/(drawer)/inventarios/inventarioScreen")
+            }
+            style={styles.backBtn}
+          >
+            <Icon icon={ICONS.exit} size={20} color={COLORS.white} />
+          </Button>
+        }
+        rightContent={
+          // Placeholder invisible para balancear y no empujar altura
+          <View style={styles.navbarPlaceholder} />
+        }
       />
 
       <ScrollView
@@ -266,37 +246,89 @@ export default function ProductForm({
           style={styles.card}
           titleStyle={styles.cardTitle}
         >
+          {/* Nombre */}
           <Input
-            label="Nombre del producto"
-            value={form.name}
-            onChangeText={(val) => handleField("name", val)}
+            label="Nombre del producto *"
+            value={form.nombre}
+            onChangeText={(v) => handleField("nombre", v)}
             placeholder="Ej. Alimento camarón 35%"
             containerStyle={styles.field}
             style={styles.input}
             labelStyle={styles.label}
           />
 
+          {/* Categoría */}
           <Select
-            label="Categoría"
-            value={form.category}
-            options={categories}
-            onChange={(val) => handleField("category", val)}
+            label="Categoría *"
+            value={form.categoria}
+            options={CATEGORIAS}
+            onChange={handleCategoriaChange}
             containerStyle={styles.field}
             selectStyle={styles.select}
             labelStyle={styles.label}
           />
 
+          {/* Proveedor */}
           <Select
             label="Proveedor"
-            value={form.supplierId}
-            options={suppliers}
-            onChange={(val) => handleField("supplierId", val)}
+            value={form.proveedor}
+            options={opcionesProveedores}
+            onChange={(v) => handleField("proveedor", v)}
             containerStyle={styles.field}
             selectStyle={styles.select}
             labelStyle={styles.label}
           />
 
-          <ProductDateInput
+          {/* Cantidad */}
+          <NumberInput
+            label="Cantidad *"
+            value={form.cantidad}
+            onChangeText={(v) => handleField("cantidad", v)}
+            min={0}
+            max={99999}
+            step={1}
+            containerStyle={styles.field}
+            labelStyle={styles.label}
+            style={styles.numberInput}
+          />
+
+          {/* Unidad */}
+          <Select
+            label="Unidad"
+            value={form.unidad}
+            options={UNIDADES}
+            onChange={(v) => handleField("unidad", v)}
+            containerStyle={styles.field}
+            selectStyle={styles.select}
+            labelStyle={styles.label}
+          />
+
+          {/* Stock mínimo */}
+          <NumberInput
+            label="Stock mínimo *"
+            value={form.stockMinimo}
+            onChangeText={(v) => handleField("stockMinimo", v)}
+            min={0}
+            max={99999}
+            step={1}
+            containerStyle={styles.field}
+            labelStyle={styles.label}
+            style={styles.numberInput}
+          />
+
+          {/* Precio por unidad */}
+          <Input
+            label="Precio por unidad *"
+            value={form.precioUnidad}
+            onChangeText={(v) => handleField("precioUnidad", v)}
+            placeholder="0"
+            keyboardType="numeric"
+            containerStyle={styles.field}
+            style={styles.input}
+            labelStyle={styles.label}
+          />
+
+          <DateInput
             label="Fecha de ingreso"
             value={form.entryDate}
             onChangeText={(val) => handleField("entryDate", val)}
@@ -304,86 +336,32 @@ export default function ProductForm({
             labelStyle={styles.label}
           />
 
-          <ProductDateInput
-            label="Fecha de caducidad"
-            value={form.expirationDate}
-            onChangeText={(val) => handleField("expirationDate", val)}
-            allowFutureDates={true}
-            containerStyle={styles.field}
-            labelStyle={styles.label}
-          />
+          {(form.categoria === "Alimentación" || form.categoria === "Tratamiento") && (
+            <DateInput
+              key={form.categoria}              // ← esto es lo que fuerza el remount
+              label="Fecha de caducidad"
+              value={form.expirationDate}
+              onChangeText={(val) => handleField("expirationDate", val)}
+              allowFutureDates={true}
+              containerStyle={styles.field}
+              labelStyle={styles.label}
+            />
+          )}
 
-          <NumberInput
-            label="Cantidad"
-            value={form.quantity}
-            onChangeText={(val) => handleField("quantity", val)}
-            min={0}
-            max={9999}
-            step={1}
-            containerStyle={styles.field}
-            labelStyle={styles.label}
-            style={styles.numberInput}
-          />
-
-          <Select
-            label="Unidad"
-            value={form.unit}
-            options={units}
-            onChange={(val) => handleField("unit", val)}
-            containerStyle={styles.field}
-            selectStyle={styles.select}
-            labelStyle={styles.label}
-          />
-
-          <NumberInput
-            label="Stock mínimo"
-            value={form.minStock}
-            onChangeText={(val) => handleField("minStock", val)}
-            min={0}
-            max={9999}
-            step={1}
-            containerStyle={styles.field}
-            labelStyle={styles.label}
-            style={styles.numberInput}
-          />
-
-          <Select
-            label="Moneda"
-            value={form.currency}
-            options={currencies}
-            onChange={(val) => handleField("currency", val)}
-            containerStyle={styles.field}
-            selectStyle={styles.select}
-            labelStyle={styles.label}
-          />
-
-          <Input
-            label="Precio"
-            value={form.price}
-            onChangeText={(val) => handleField("price", val)}
-            placeholder="0.00"
-            keyboardType="numeric"
-            containerStyle={styles.field}
-            style={styles.input}
-            labelStyle={styles.label}
-          />
-
+          {/* Botón guardar */}
           <Button
             onPress={handleSubmit}
             disabled={!canSave}
-            style={[
-              styles.saveButton,
-              !canSave && styles.saveButtonDisabled,
-            ]}
+            style={[styles.saveButton, !canSave && styles.saveButtonDisabled]}
             textStyle={styles.saveButtonText}
           >
             {isEditMode ? "Guardar cambios" : "Guardar producto"}
           </Button>
 
           {validationMessage !== "" && (
-            <Text style={styles.validationText}>
+            <CustomText style={styles.validationText}>
               {validationMessage}
-            </Text>
+            </CustomText>
           )}
         </Card>
       </ScrollView>
@@ -391,96 +369,90 @@ export default function ProductForm({
   );
 }
 
-
 const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: COLORS.surface,
-  },
-
+  screen: { flex: 1, backgroundColor: COLORS.surface },
   navbar: {
     backgroundColor: COLORS.primary,
+    borderBottomWidth: 0,
     borderBottomColor: COLORS.primary,
-    paddingVertical: 16,
   },
 
   navbarTitle: {
     color: COLORS.white,
     fontSize: 20,
     fontFamily: TYPOGRAPHY.fontFamily.bold,
+    fontWeight: undefined,
   },
 
-  content: {
-    padding: 16,
-    paddingBottom: 32,
+  backBtn: {
+    marginTop: 0,
+    paddingVertical: 0,
+    paddingHorizontal: 0,
+    backgroundColor: "transparent",
+    borderWidth: 0,
   },
 
+  navbarPlaceholder: {
+    width: 32,
+    height: 32,
+  },
+  content: { padding: 16, paddingBottom: 32 },
   card: {
     borderRadius: 18,
     padding: 18,
     backgroundColor: COLORS.white,
-    borderColor: COLORS.divider,
+    borderColor: COLORS.header,
   },
-
   cardTitle: {
     fontSize: 19,
     fontFamily: TYPOGRAPHY.fontFamily.bold,
+    fontWeight: undefined,   // ← anula cualquier peso interno del Card
     color: COLORS.textSecondary,
     marginBottom: 16,
   },
-
-  field: {
-    marginBottom: 14,
-  },
-
+  field: { marginBottom: 14 },
   label: {
     fontSize: 14,
     fontFamily: TYPOGRAPHY.fontFamily.bold,
+    fontWeight: undefined,   // ← agrega esto para anular el fontWeight interno
     color: COLORS.black,
     marginBottom: 6,
   },
-
   input: {
     minHeight: 48,
     borderRadius: 12,
-    borderColor: COLORS.divider,
+    borderColor: COLORS.header,
     backgroundColor: COLORS.white,
     paddingHorizontal: 14,
     fontSize: 15,
     fontFamily: TYPOGRAPHY.fontFamily.regular,
   },
-
   numberInput: {
     borderRadius: 12,
-    borderColor: COLORS.divider,
+    borderColor: COLORS.header,
     backgroundColor: COLORS.white,
   },
-
   select: {
     minHeight: 48,
     borderRadius: 12,
-    borderColor: COLORS.divider,
+    borderColor: COLORS.header,
     backgroundColor: COLORS.white,
     paddingHorizontal: 14,
   },
-
   saveButton: {
     marginTop: 10,
     borderRadius: 14,
     paddingVertical: 14,
     backgroundColor: COLORS.primary,
   },
-
   saveButtonDisabled: {
     backgroundColor: COLORS.textQuaternary || "#D1D5DB",
   },
-
   saveButtonText: {
     fontSize: 16,
     fontFamily: TYPOGRAPHY.fontFamily.bold,
     color: COLORS.white,
   },
-
   validationText: {
     marginTop: 8,
     fontSize: 13,
