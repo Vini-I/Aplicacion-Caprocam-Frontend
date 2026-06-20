@@ -11,16 +11,11 @@
  * - Usa Title para encabezados y títulos de sección.
  * - Usa DateInput para fecha de reporte y proxima revision.
  * - Usa NumberInput para mortalidad y periodo de retiro.
- * - Usa COLORS, ICONS y TYPOGRAPHY desde theme.
+ * - Usa styles desde la carpeta del modulo.
  */
 
 import React, { useState } from "react";
-import {
-  ScrollView,
-  View,
-  StyleSheet,
-  useWindowDimensions,
-} from "react-native";
+import { ScrollView, View, useWindowDimensions } from "react-native";
 
 import Alert from "../../../shared/components/Alert";
 import Badge from "../../../shared/components/Badge";
@@ -35,6 +30,8 @@ import ProgressBar from "../../../shared/components/ProgressBar";
 import Select from "../../../shared/components/Select";
 import CustomText from "../../../shared/components/Text";
 import Title from "../../../shared/components/Title";
+
+import { styles } from "../styles/EnfermedadesStyles";
 
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
@@ -94,6 +91,7 @@ function obtenerFechaActual() {
 
 export default function EnfermedadesScreen({ navigation }) {
   const { width } = useWindowDimensions();
+
   let esTablet = false;
   let esDesktop = false;
 
@@ -337,6 +335,7 @@ export default function EnfermedadesScreen({ navigation }) {
     };
 
     console.log("Caso sanitario registrado:", casoSanitario);
+
     setMensaje("Caso sanitario registrado correctamente.");
     setTipoMensaje("success");
     setModalVisible(true);
@@ -348,6 +347,7 @@ export default function EnfermedadesScreen({ navigation }) {
         <Button variant="outline" onPress={volver} style={styles.cancelButton}>
           <View style={styles.inlineButtonContent}>
             <Icon icon={ICONS.exit} size={18} color={COLORS.white} />
+
             <CustomText
               size={16}
               color={COLORS.white}
@@ -366,6 +366,7 @@ export default function EnfermedadesScreen({ navigation }) {
               color={COLORS.primary}
             />
           </View>
+
           <View style={styles.headerTextBox}>
             <Title
               level={3}
@@ -374,6 +375,7 @@ export default function EnfermedadesScreen({ navigation }) {
             >
               Enfermedades
             </Title>
+
             <CustomText
               size={14}
               color={COLORS.white}
@@ -397,12 +399,14 @@ export default function EnfermedadesScreen({ navigation }) {
 
         <Card>
           <SectionTitle title="Resumen del riesgo" icon={ICONS.notification} />
+
           <View style={styles.riskRow}>
             <Icon
               icon={ICONS.notification}
               size={24}
               color={obtenerColorRiesgo()}
             />
+
             <View style={styles.riskTextBox}>
               <CustomText
                 size={13}
@@ -411,6 +415,7 @@ export default function EnfermedadesScreen({ navigation }) {
               >
                 Nivel sanitario actual
               </CustomText>
+
               <Badge
                 label={obtenerTextoRiesgo()}
                 variant={obtenerVarianteRiesgo()}
@@ -418,6 +423,7 @@ export default function EnfermedadesScreen({ navigation }) {
               />
             </View>
           </View>
+
           <ProgressBar
             label="Riesgo"
             value={obtenerRiesgo()}
@@ -427,7 +433,8 @@ export default function EnfermedadesScreen({ navigation }) {
         </Card>
 
         <Card>
-          <SectionTitle title="Identificacion" icon={ICONS.id} />
+          <SectionTitle title="Identificacion" icon={ICONS.document} />
+
           <View style={gridStyle}>
             <View style={itemStyle}>
               <Select
@@ -439,6 +446,7 @@ export default function EnfermedadesScreen({ navigation }) {
                 labelStyle={styles.label}
               />
             </View>
+
             <View style={itemStyle}>
               <DateInput
                 label="Fecha del reporte *"
@@ -447,6 +455,7 @@ export default function EnfermedadesScreen({ navigation }) {
                 labelStyle={styles.label}
               />
             </View>
+
             <View style={itemStyle}>
               <Input
                 label="Responsable"
@@ -456,6 +465,7 @@ export default function EnfermedadesScreen({ navigation }) {
                 labelStyle={styles.label}
               />
             </View>
+
             <View style={itemStyle}>
               <Select
                 label="Tipo de evento *"
@@ -471,6 +481,7 @@ export default function EnfermedadesScreen({ navigation }) {
 
         <Card>
           <SectionTitle title="Enfermedad detectada" icon={ICONS.report} />
+
           <View style={gridStyle}>
             <View style={itemStyle}>
               <Select
@@ -482,6 +493,7 @@ export default function EnfermedadesScreen({ navigation }) {
                 labelStyle={styles.label}
               />
             </View>
+
             <View style={itemStyle}>
               <Select
                 label="Severidad *"
@@ -492,6 +504,7 @@ export default function EnfermedadesScreen({ navigation }) {
                 labelStyle={styles.label}
               />
             </View>
+
             <View style={itemStyle}>
               <NumberInput
                 label="Mortalidad registrada"
@@ -503,6 +516,7 @@ export default function EnfermedadesScreen({ navigation }) {
                 labelStyle={styles.label}
               />
             </View>
+
             <View style={itemFullStyle}>
               <Input
                 label="Sintomas"
@@ -514,6 +528,7 @@ export default function EnfermedadesScreen({ navigation }) {
                 style={styles.textArea}
               />
             </View>
+
             <View style={itemFullStyle}>
               <Input
                 label="Diagnostico de laboratorio"
@@ -530,6 +545,7 @@ export default function EnfermedadesScreen({ navigation }) {
 
         <Card>
           <SectionTitle title="Tratamiento" icon={ICONS.chemicalContainer} />
+
           <View style={gridStyle}>
             <View style={itemStyle}>
               <Select
@@ -541,6 +557,7 @@ export default function EnfermedadesScreen({ navigation }) {
                 labelStyle={styles.label}
               />
             </View>
+
             <View style={itemStyle}>
               <Input
                 label="Producto probiotico"
@@ -551,6 +568,7 @@ export default function EnfermedadesScreen({ navigation }) {
                 editable={usaProbiotico === "si"}
               />
             </View>
+
             <View style={itemStyle}>
               <Select
                 label="¿Usa antibiotico?"
@@ -561,6 +579,7 @@ export default function EnfermedadesScreen({ navigation }) {
                 labelStyle={styles.label}
               />
             </View>
+
             <View style={itemStyle}>
               <Input
                 label="Producto antibiotico"
@@ -571,6 +590,7 @@ export default function EnfermedadesScreen({ navigation }) {
                 editable={usaAntibiotico === "si"}
               />
             </View>
+
             <View style={itemStyle}>
               <NumberInput
                 label="Periodo de retiro (dias)"
@@ -588,6 +608,7 @@ export default function EnfermedadesScreen({ navigation }) {
 
         <Card>
           <SectionTitle title="Seguimiento" icon={ICONS.update} />
+
           <View style={gridStyle}>
             <View style={itemStyle}>
               <Select
@@ -599,6 +620,7 @@ export default function EnfermedadesScreen({ navigation }) {
                 labelStyle={styles.label}
               />
             </View>
+
             <View style={itemStyle}>
               <DateInput
                 label="Proxima revision"
@@ -608,6 +630,7 @@ export default function EnfermedadesScreen({ navigation }) {
                 labelStyle={styles.label}
               />
             </View>
+
             <View style={itemFullStyle}>
               <Input
                 label="Observaciones"
@@ -632,6 +655,7 @@ export default function EnfermedadesScreen({ navigation }) {
           >
             <View style={styles.inlineButtonContentCentered}>
               <Icon icon={ICONS.info} size={18} color={COLORS.primary} />
+
               <CustomText
                 size={16}
                 color={COLORS.primary}
@@ -645,6 +669,7 @@ export default function EnfermedadesScreen({ navigation }) {
           <Button onPress={registrar} style={styles.actionButton}>
             <View style={styles.inlineButtonContentCentered}>
               <Icon icon={ICONS.save} size={18} color={COLORS.white} />
+
               <CustomText
                 size={16}
                 color={COLORS.white}
@@ -668,6 +693,7 @@ export default function EnfermedadesScreen({ navigation }) {
       >
         <View style={styles.modalHeader}>
           <Icon icon={ICONS.certificate} size={26} color={COLORS.primary} />
+
           <Title
             level={4}
             color={COLORS.textSecondary}
@@ -677,6 +703,7 @@ export default function EnfermedadesScreen({ navigation }) {
             Recomendacion sanitaria
           </Title>
         </View>
+
         <CustomText
           size={15}
           color={COLORS.textSecondary}
@@ -693,6 +720,7 @@ function SectionTitle({ title, icon }) {
   return (
     <View style={styles.sectionTitleRow}>
       <Icon icon={icon} size={18} color={COLORS.primary} />
+
       <Title
         level={5}
         color={COLORS.textSecondary}
@@ -704,82 +732,3 @@ function SectionTitle({ title, icon }) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  screen: { flex: 1, width: "100%", backgroundColor: COLORS.surface },
-  header: {
-    width: "100%",
-    backgroundColor: COLORS.primary,
-    paddingTop: 24,
-    paddingHorizontal: 24,
-    paddingBottom: 28,
-    borderBottomLeftRadius: 22,
-    borderBottomRightRadius: 22,
-  },
-  headerDesktop: { paddingHorizontal: 48 },
-  cancelButton: {
-    alignSelf: "flex-start",
-    backgroundColor: "transparent",
-    borderWidth: 0,
-    paddingHorizontal: 0,
-    paddingVertical: 0,
-    marginTop: 0,
-    marginBottom: 20,
-  },
-  cancelText: { marginLeft: 8, fontFamily: TYPOGRAPHY.fontFamily.medium },
-  headerRow: { flexDirection: "row", alignItems: "center" },
-  headerIcon: {
-    width: 54,
-    height: 54,
-    borderRadius: 18,
-    backgroundColor: COLORS.white,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 14,
-  },
-  headerTextBox: { flex: 1 },
-  headerSubtitle: { marginTop: 2, fontFamily: TYPOGRAPHY.fontFamily.regular },
-  content: { padding: 18 },
-  contentTablet: { paddingHorizontal: 28 },
-  contentDesktop: { maxWidth: 1100, alignSelf: "center", width: "100%" },
-  alert: { marginBottom: 16 },
-  alertText: { fontFamily: TYPOGRAPHY.fontFamily.medium },
-  sectionTitleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 14,
-  },
-  sectionTitle: { marginLeft: 8, textTransform: "uppercase" },
-  label: {
-    color: COLORS.textPrimary,
-    fontFamily: TYPOGRAPHY.fontFamily.medium,
-  },
-  boldText: { fontFamily: TYPOGRAPHY.fontFamily.bold },
-  grid: { width: "100%" },
-  gridTablet: { flexDirection: "row", flexWrap: "wrap", columnGap: 12 },
-  gridDesktop: { flexDirection: "row", flexWrap: "wrap", columnGap: 14 },
-  gridItem: { width: "100%" },
-  gridItemTablet: { width: "48.5%" },
-  gridItemDesktop: { width: "32%" },
-  gridItemFull: { width: "100%" },
-  textArea: { minHeight: 90, textAlignVertical: "top" },
-  riskRow: { flexDirection: "row", alignItems: "center", marginBottom: 14 },
-  riskTextBox: { marginLeft: 12, flex: 1 },
-  badge: { marginTop: 6 },
-  actions: { marginBottom: 32 },
-  actionsTablet: { flexDirection: "row", justifyContent: "flex-end", gap: 12 },
-  actionButton: { minWidth: 190, borderRadius: 14 },
-  inlineButtonContent: { flexDirection: "row", alignItems: "center" },
-  inlineButtonContentCentered: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  saveText: { marginLeft: 8, fontFamily: TYPOGRAPHY.fontFamily.bold },
-  outlineButtonText: { marginLeft: 8, fontFamily: TYPOGRAPHY.fontFamily.bold },
-  modalOverlay: { padding: 20 },
-  modalContainer: { borderRadius: 18 },
-  modalHeader: { flexDirection: "row", alignItems: "center", marginBottom: 12 },
-  modalTitle: { marginLeft: 10 },
-  modalText: { lineHeight: 22, fontFamily: TYPOGRAPHY.fontFamily.regular },
-});

@@ -11,16 +11,11 @@
  * - Usa Title para encabezados y títulos de sección.
  * - Usa NumberInput para densidad y aireadores.
  * - Usa DateInput para fechas.
- * - Usa COLORS, ICONS y TYPOGRAPHY desde theme.
+ * - Usa styles desde la carpeta del modulo.
  */
 
 import React, { useState } from "react";
-import {
-  ScrollView,
-  View,
-  StyleSheet,
-  useWindowDimensions,
-} from "react-native";
+import { ScrollView, View, useWindowDimensions } from "react-native";
 
 import Alert from "../../../shared/components/Alert";
 import Button from "../../../shared/components/Button";
@@ -32,6 +27,8 @@ import NumberInput from "../../../shared/components/NumberInput";
 import Select from "../../../shared/components/Select";
 import CustomText from "../../../shared/components/Text";
 import Title from "../../../shared/components/Title";
+
+import { styles } from "../styles/EstanqueStyles";
 
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
@@ -129,7 +126,7 @@ export default function EditarEstanqueScreen({ navigation }) {
   const [codigo, setCodigo] = useState(ESTANQUE_INICIAL.codigo);
   const [estado, setEstado] = useState(ESTANQUE_INICIAL.estado);
   const [tipoEstanque, setTipoEstanque] = useState(
-    ESTANQUE_INICIAL.tipoEstanque,
+    ESTANQUE_INICIAL.tipoEstanque
   );
   const [largo, setLargo] = useState(ESTANQUE_INICIAL.largo);
   const [ancho, setAncho] = useState(ESTANQUE_INICIAL.ancho);
@@ -137,29 +134,29 @@ export default function EditarEstanqueScreen({ navigation }) {
   const [fuenteAgua, setFuenteAgua] = useState(ESTANQUE_INICIAL.fuenteAgua);
   const [especie, setEspecie] = useState(ESTANQUE_INICIAL.especie);
   const [fechaSiembra, setFechaSiembra] = useState(
-    ESTANQUE_INICIAL.fechaSiembra,
+    ESTANQUE_INICIAL.fechaSiembra
   );
   const [fechaInicioEngorde, setFechaInicioEngorde] = useState(
-    ESTANQUE_INICIAL.fechaInicioEngorde,
+    ESTANQUE_INICIAL.fechaInicioEngorde
   );
   const [fechaMantenimiento, setFechaMantenimiento] = useState(
-    ESTANQUE_INICIAL.fechaMantenimiento,
+    ESTANQUE_INICIAL.fechaMantenimiento
   );
   const [densidadSiembra, setDensidadSiembra] = useState(
-    ESTANQUE_INICIAL.densidadSiembra,
+    ESTANQUE_INICIAL.densidadSiembra
   );
   const [precria, setPrecria] = useState(ESTANQUE_INICIAL.precria);
   const [metodoAlimentacion, setMetodoAlimentacion] = useState(
-    ESTANQUE_INICIAL.metodoAlimentacion,
+    ESTANQUE_INICIAL.metodoAlimentacion
   );
   const [proveedorAlimento, setProveedorAlimento] = useState(
-    ESTANQUE_INICIAL.proveedorAlimento,
+    ESTANQUE_INICIAL.proveedorAlimento
   );
   const [numeroAireadores, setNumeroAireadores] = useState(
-    ESTANQUE_INICIAL.numeroAireadores,
+    ESTANQUE_INICIAL.numeroAireadores
   );
   const [tieneAlimentadorAutomatico, setTieneAlimentadorAutomatico] = useState(
-    ESTANQUE_INICIAL.tieneAlimentadorAutomatico,
+    ESTANQUE_INICIAL.tieneAlimentadorAutomatico
   );
   const [mensaje, setMensaje] = useState("");
   const [tipoMensaje, setTipoMensaje] = useState("info");
@@ -255,6 +252,7 @@ export default function EditarEstanqueScreen({ navigation }) {
     };
 
     console.log("Estanque actualizado:", estanqueActualizado);
+
     setTipoMensaje("success");
     setMensaje("Cambios del estanque guardados correctamente.");
   }
@@ -269,6 +267,7 @@ export default function EditarEstanqueScreen({ navigation }) {
         >
           <View style={styles.inlineButtonContent}>
             <Icon icon={ICONS.exit} size={18} color={COLORS.white} />
+
             <CustomText
               size={16}
               color={COLORS.white}
@@ -283,6 +282,7 @@ export default function EditarEstanqueScreen({ navigation }) {
           <View style={styles.headerIcon}>
             <Icon icon={ICONS.edit} size={28} color={COLORS.white} />
           </View>
+
           <View style={styles.headerTextBox}>
             <Title
               level={3}
@@ -291,6 +291,7 @@ export default function EditarEstanqueScreen({ navigation }) {
             >
               Editar Estanque
             </Title>
+
             <CustomText
               size={14}
               color={COLORS.white}
@@ -313,7 +314,8 @@ export default function EditarEstanqueScreen({ navigation }) {
         )}
 
         <Card>
-          <SectionTitle title="Identificacion" icon={ICONS.id} />
+          <SectionTitle title="Identificacion" icon={ICONS.document} />
+
           <View style={gridStyle}>
             <View style={itemStyle}>
               <Input
@@ -324,6 +326,7 @@ export default function EditarEstanqueScreen({ navigation }) {
                 labelStyle={styles.label}
               />
             </View>
+
             <View style={itemStyle}>
               <Select
                 label="Tipo de estanque *"
@@ -334,6 +337,7 @@ export default function EditarEstanqueScreen({ navigation }) {
                 labelStyle={styles.label}
               />
             </View>
+
             <View style={itemFullStyle}>
               <CustomText
                 size={14}
@@ -342,6 +346,7 @@ export default function EditarEstanqueScreen({ navigation }) {
               >
                 Estado del estanque
               </CustomText>
+
               <View style={styles.optionsGrid}>
                 {ESTADOS_ESTANQUE.map(function (item) {
                   return (
@@ -361,6 +366,7 @@ export default function EditarEstanqueScreen({ navigation }) {
 
         <Card>
           <SectionTitle title="Dimensiones" icon={ICONS.ruler} />
+
           <View style={gridStyle}>
             <View style={itemStyle}>
               <Input
@@ -371,6 +377,7 @@ export default function EditarEstanqueScreen({ navigation }) {
                 labelStyle={styles.label}
               />
             </View>
+
             <View style={itemStyle}>
               <Input
                 label="Ancho (m) *"
@@ -380,6 +387,7 @@ export default function EditarEstanqueScreen({ navigation }) {
                 labelStyle={styles.label}
               />
             </View>
+
             <View style={itemStyle}>
               <Input
                 label="Profundidad (m) *"
@@ -389,6 +397,7 @@ export default function EditarEstanqueScreen({ navigation }) {
                 labelStyle={styles.label}
               />
             </View>
+
             <View style={itemStyle}>
               <Select
                 label="Fuente de agua"
@@ -403,6 +412,7 @@ export default function EditarEstanqueScreen({ navigation }) {
 
         <Card>
           <SectionTitle title="Siembra y fechas" icon={ICONS.calendar} />
+
           <View style={gridStyle}>
             <View style={itemStyle}>
               <Select
@@ -413,6 +423,7 @@ export default function EditarEstanqueScreen({ navigation }) {
                 labelStyle={styles.label}
               />
             </View>
+
             <View style={itemStyle}>
               <DateInput
                 label="Fecha de siembra *"
@@ -421,6 +432,7 @@ export default function EditarEstanqueScreen({ navigation }) {
                 labelStyle={styles.label}
               />
             </View>
+
             <View style={itemStyle}>
               <DateInput
                 label="Fecha inicio engorde"
@@ -429,6 +441,7 @@ export default function EditarEstanqueScreen({ navigation }) {
                 labelStyle={styles.label}
               />
             </View>
+
             <View style={itemStyle}>
               <DateInput
                 label="Fecha mantenimiento"
@@ -437,6 +450,7 @@ export default function EditarEstanqueScreen({ navigation }) {
                 labelStyle={styles.label}
               />
             </View>
+
             <View style={itemStyle}>
               <NumberInput
                 label="Densidad de siembra (ind/m²) *"
@@ -448,6 +462,7 @@ export default function EditarEstanqueScreen({ navigation }) {
                 labelStyle={styles.label}
               />
             </View>
+
             <View style={itemStyle}>
               <Select
                 label="Precria"
@@ -462,6 +477,7 @@ export default function EditarEstanqueScreen({ navigation }) {
 
         <Card>
           <SectionTitle title="Alimentacion y equipos" icon={ICONS.food} />
+
           <View style={gridStyle}>
             <View style={itemStyle}>
               <Select
@@ -472,6 +488,7 @@ export default function EditarEstanqueScreen({ navigation }) {
                 labelStyle={styles.label}
               />
             </View>
+
             <View style={itemStyle}>
               <Input
                 label="Proveedor de alimento"
@@ -480,6 +497,7 @@ export default function EditarEstanqueScreen({ navigation }) {
                 labelStyle={styles.label}
               />
             </View>
+
             <View style={itemStyle}>
               <NumberInput
                 label="N° aireadores"
@@ -491,6 +509,7 @@ export default function EditarEstanqueScreen({ navigation }) {
                 labelStyle={styles.label}
               />
             </View>
+
             <View style={itemStyle}>
               <Select
                 label="¿Tiene alimentador automatico?"
@@ -511,9 +530,11 @@ export default function EditarEstanqueScreen({ navigation }) {
           >
             Cancelar
           </Button>
+
           <Button onPress={guardarCambios} style={styles.actionButton}>
             <View style={styles.inlineButtonContentCentered}>
               <Icon icon={ICONS.save} size={18} color={COLORS.white} />
+
               <CustomText
                 size={16}
                 color={COLORS.white}
@@ -533,6 +554,7 @@ function SectionTitle({ title, icon }) {
   return (
     <View style={styles.sectionTitleRow}>
       <Icon icon={icon} size={18} color={COLORS.primary} />
+
       <Title
         level={5}
         color={COLORS.textSecondary}
@@ -573,86 +595,3 @@ function OptionButton({ label, value, selectedValue, onPress }) {
     </Button>
   );
 }
-
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: COLORS.surface },
-  header: {
-    width: "100%",
-    backgroundColor: COLORS.primary,
-    paddingTop: 24,
-    paddingHorizontal: 24,
-    paddingBottom: 28,
-    borderBottomLeftRadius: 22,
-    borderBottomRightRadius: 22,
-  },
-  headerDesktop: { paddingHorizontal: 48 },
-  cancelButton: {
-    alignSelf: "flex-start",
-    backgroundColor: "transparent",
-    borderWidth: 0,
-    paddingHorizontal: 0,
-    paddingVertical: 0,
-    marginTop: 0,
-    marginBottom: 20,
-  },
-  cancelText: { marginLeft: 8, fontFamily: TYPOGRAPHY.fontFamily.medium },
-  headerRow: { flexDirection: "row", alignItems: "center" },
-  headerIcon: {
-    width: 54,
-    height: 54,
-    borderRadius: 18,
-    backgroundColor: "rgba(255,255,255,0.18)",
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 14,
-  },
-  headerTextBox: { flex: 1 },
-  headerSubtitle: { marginTop: 2, fontFamily: TYPOGRAPHY.fontFamily.regular },
-  content: { padding: 18 },
-  contentTablet: { paddingHorizontal: 28 },
-  contentDesktop: { maxWidth: 1100, alignSelf: "center", width: "100%" },
-  alert: { marginBottom: 16 },
-  alertText: { fontFamily: TYPOGRAPHY.fontFamily.medium },
-  sectionTitleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 14,
-  },
-  sectionTitle: { marginLeft: 8, textTransform: "uppercase" },
-  label: {
-    color: COLORS.textPrimary,
-    fontFamily: TYPOGRAPHY.fontFamily.medium,
-  },
-  labelText: { marginBottom: 8, fontFamily: TYPOGRAPHY.fontFamily.medium },
-  grid: { width: "100%" },
-  gridTablet: { flexDirection: "row", flexWrap: "wrap", columnGap: 12 },
-  gridDesktop: { flexDirection: "row", flexWrap: "wrap", columnGap: 14 },
-  gridItem: { width: "100%" },
-  gridItemTablet: { width: "48.5%" },
-  gridItemDesktop: { width: "32%" },
-  gridItemFull: { width: "100%" },
-  optionsGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  optionButton: {
-    minWidth: "30%",
-    flexGrow: 1,
-    paddingVertical: 10,
-    paddingHorizontal: 10,
-    marginTop: 0,
-    borderColor: COLORS.secondary,
-    backgroundColor: COLORS.white,
-  },
-  optionButtonSelected: {
-    borderColor: COLORS.primary,
-    backgroundColor: COLORS.secondary,
-  },
-  actions: { marginBottom: 32 },
-  actionsTablet: { flexDirection: "row", justifyContent: "flex-end", gap: 12 },
-  actionButton: { minWidth: 180, borderRadius: 14 },
-  inlineButtonContent: { flexDirection: "row", alignItems: "center" },
-  inlineButtonContentCentered: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  saveText: { marginLeft: 8, fontFamily: TYPOGRAPHY.fontFamily.bold },
-});
