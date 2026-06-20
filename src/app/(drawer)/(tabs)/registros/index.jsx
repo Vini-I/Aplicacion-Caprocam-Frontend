@@ -13,6 +13,9 @@ import { COLORS } from "../../../../theme/colors";
 import { TYPOGRAPHY } from "../../../../theme/typography";
 
 import FisicoQuimica from "../../../../modules/mantAgua/screens/fisicoQuimica";
+import MortalidadScreen from "../../../../modules/mortalidad/screens/MortalidadScreen";
+import AlimentacionScreen from "../../../../modules/alimentacion/screens/AlimentacionScreen";
+import EnfermedadesScreen from "../../../../modules/enfermedades/screens/EnfermedadesScreen";
 
 const FINCAS = [
   { id: 1, nombre: "Finca El Pacífico" },
@@ -52,11 +55,18 @@ const MODULOS = [
     color: "#8B5CF6",
   },
   {
-    id: "conteo",
-    label: "Conteo",
-    descripcion: "Camarones y sobrevivencia",
+    id: "mortalidad",
+    label: "Mortalidad",
+    descripcion: "Conteo y sobrevivencia de camarones",
     icono: "calculator",
     color: "#F59E0B",
+  },
+  {
+    id: "enfermedades",
+    label: "Enfermedades",
+    descripcion: "Registro sanitario de estanques",
+    icono: "medical-bag",
+    color: "#EF4444",
   },
 ];
 
@@ -87,10 +97,12 @@ function ModuloCard({ modulo, onPress }) {
       onPress={onPress ?? undefined}
       activeOpacity={disponible ? 0.75 : 1}
     >
-      <View style={[
-        styles.moduloIcono,
-        { backgroundColor: disponible ? modulo.color : COLORS.textQuaternary },
-      ]}>
+      <View
+        style={[
+          styles.moduloIcono,
+          { backgroundColor: disponible ? modulo.color : COLORS.textQuaternary },
+        ]}
+      >
         <MaterialCommunityIcons name={modulo.icono} size={22} color="#FFFFFF" />
       </View>
 
@@ -132,6 +144,18 @@ export default function RegistrosIndex() {
 
   if (moduloActivo === "fisicoquimica") {
     return <FisicoQuimica onBack={() => setModuloActivo(null)} />;
+  }
+
+  if (moduloActivo === "mortalidad") {
+    return <MortalidadScreen onBack={() => setModuloActivo(null)} />;
+  }
+
+  if (moduloActivo === "alimentacion") {
+    return <AlimentacionScreen onBack={() => setModuloActivo(null)} />;
+  }
+
+  if (moduloActivo === "enfermedades") {
+    return <EnfermedadesScreen onBack={() => setModuloActivo(null)} />;
   }
 
   return (
@@ -202,7 +226,11 @@ export default function RegistrosIndex() {
             <ModuloCard
               key={m.id}
               modulo={m}
-              onPress={m.id === "fisicoquimica" ? () => setModuloActivo("fisicoquimica") : null}
+              onPress={m.id === "fisicoquimica" ? () => setModuloActivo("fisicoquimica")
+                     : m.id === "mortalidad" ? () => setModuloActivo("mortalidad")
+                     : m.id === "alimentacion" ? () => setModuloActivo("alimentacion")
+                     : m.id === "enfermedades" ? () => setModuloActivo("enfermedades")
+                     : null}
             />
           ))}
         </View>

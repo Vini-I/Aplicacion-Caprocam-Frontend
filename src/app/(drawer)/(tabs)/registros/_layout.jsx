@@ -9,7 +9,13 @@ export default function RegistrosStackLayout() {
 
       <Stack.Screen name="EditarEstanque" options={{ title: "Editar Estanque", }} />
 
-      <Stack.Screen name="Enfermedades" options={{ title: "Enfermedades", }} />
+      <Stack.Screen name="Enfermedades" options={{ title: "Enfermedades" }} />
+
+      <Stack.Screen name="Mortalidad" options={{ title: "Registro de Mortalidad" }} />
+
+      <Stack.Screen name="Alimentacion" options={{ title: "Registro de Alimentación" }} />
+
+      <Stack.Screen name="DetalleEstanque" options={{ title: "Detalle Estanque" }} />
 
     </Stack>
   );

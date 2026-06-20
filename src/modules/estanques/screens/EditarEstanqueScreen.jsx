@@ -11,16 +11,13 @@
  * - Usa Title para encabezados y títulos de sección.
  * - Usa NumberInput para densidad y aireadores.
  * - Usa DateInput para fechas.
- * - Usa COLORS, ICONS y TYPOGRAPHY desde theme.
+ * - Usa styles desde la carpeta del modulo.
+ *-  Al guardar, vuelve a DetalleEstanque con los datos actualizados.
  */
 
 import React, { useState } from "react";
-import {
-  ScrollView,
-  View,
-  StyleSheet,
-  useWindowDimensions,
-} from "react-native";
+import { ScrollView, View, useWindowDimensions } from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
 import Alert from "../../../shared/components/Alert";
 import Button from "../../../shared/components/Button";
@@ -32,6 +29,8 @@ import NumberInput from "../../../shared/components/NumberInput";
 import Select from "../../../shared/components/Select";
 import CustomText from "../../../shared/components/Text";
 import Title from "../../../shared/components/Title";
+
+import { styles } from "../styles/EstanqueStyle";
 
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
@@ -46,17 +45,48 @@ function obtenerFechaActual() {
   return `${dia}/${mes}/${anio}`;
 }
 
+function obtenerParametro(valor, defecto) {
+  let resultado = defecto;
+
+  if (valor !== undefined && valor !== null && valor !== "") {
+    resultado = String(valor);
+  }
+
+  return resultado;
+}
+
 const TIPOS_ESTANQUE = [
-  { label: "Estanque de tierra semiintensivo", value: "tierra_semiintensivo" },
-  { label: "Estanque reservorio", value: "reservorio" },
-  { label: "Estanque con geomembrana", value: "geomembrana" },
-  { label: "Estanque superintensivo", value: "superintensivo" },
+  {
+    label: "Estanque de tierra semiintensivo",
+    value: "tierra_semiintensivo",
+  },
+  {
+    label: "Estanque reservorio",
+    value: "reservorio",
+  },
+  {
+    label: "Estanque con geomembrana",
+    value: "geomembrana",
+  },
+  {
+    label: "Estanque superintensivo",
+    value: "superintensivo",
+  },
 ];
 
 const FUENTES_AGUA = [
-  { label: "Estero", value: "estero" },
-  { label: "Golfo", value: "golfo" },
-  { label: "Reservorio", value: "reservorio" },
+  {
+    label: "Estero",
+    value: "estero",
+  },
+  {
+    label: "Golfo",
+    value: "golfo",
+  },
+  {
+    label: "Reservorio",
+    value: "reservorio",
+  },
 ];
 
 const ESPECIES = [
@@ -67,53 +97,106 @@ const ESPECIES = [
 ];
 
 const OPCIONES_PRECRIA = [
-  { label: "Si, usa precria", value: "si" },
-  { label: "No, siembra directa", value: "no" },
+  {
+    label: "Si, usa precria",
+    value: "si",
+  },
+  {
+    label: "No, siembra directa",
+    value: "no",
+  },
 ];
 
 const METODOS_ALIMENTACION = [
-  { label: "Manual", value: "manual" },
-  { label: "Automatico", value: "automatico" },
-  { label: "Manual y automatico", value: "manual_automatico" },
+  {
+    label: "Manual",
+    value: "manual",
+  },
+  {
+    label: "Automatico",
+    value: "automatico",
+  },
+  {
+    label: "Manual y automatico",
+    value: "manual_automatico",
+  },
 ];
 
 const OPCIONES_ALIMENTADOR = [
-  { label: "Si", value: "si" },
-  { label: "No", value: "no" },
+  {
+    label: "Si",
+    value: "si",
+  },
+  {
+    label: "No",
+    value: "no",
+  },
 ];
 
 const ESTADOS_ESTANQUE = [
-  { label: "Activo", value: "activo" },
-  { label: "En preparacion", value: "preparacion" },
-  { label: "Mantenimiento", value: "mantenimiento" },
-  { label: "Engorde", value: "engorde" },
-  { label: "Cosechado", value: "cosechado" },
+  {
+    label: "Activo",
+    value: "activo",
+  },
+  {
+    label: "En preparacion",
+    value: "preparacion",
+  },
+  {
+    label: "Mantenimiento",
+    value: "mantenimiento",
+  },
+  {
+    label: "Engorde",
+    value: "engorde",
+  },
+  {
+    label: "Cosechado",
+    value: "cosechado",
+  },
 ];
 
-const ESTANQUE_INICIAL = {
-  id: 1,
-  finca: "Finca La Reina",
-  codigo: "EST-01",
-  estado: "engorde",
-  tipoEstanque: "tierra_semiintensivo",
-  largo: "100",
-  ancho: "80",
-  profundidad: "0.80",
-  fuenteAgua: "estero",
-  especie: "litopenaeus_vannamei",
-  fechaSiembra: obtenerFechaActual(),
-  fechaInicioEngorde: obtenerFechaActual(),
-  fechaMantenimiento: obtenerFechaActual(),
-  densidadSiembra: "12",
-  precria: "si",
-  metodoAlimentacion: "manual_automatico",
-  proveedorAlimento: "Biomar",
-  numeroAireadores: "4",
-  tieneAlimentadorAutomatico: "si",
-};
-
 export default function EditarEstanqueScreen({ navigation }) {
+  const router = useRouter();
+  const params = useLocalSearchParams();
   const { width } = useWindowDimensions();
+
+  const estanqueBase = {
+    id: obtenerParametro(params.id, String(Date.now())),
+    finca: obtenerParametro(params.finca, "Finca La Reina"),
+    codigo: obtenerParametro(params.codigo, "EST-01"),
+    estado: obtenerParametro(params.estado, "engorde"),
+    tipoEstanque: obtenerParametro(
+      params.tipoEstanque,
+      "tierra_semiintensivo"
+    ),
+    largo: obtenerParametro(params.largo, "100"),
+    ancho: obtenerParametro(params.ancho, "80"),
+    profundidad: obtenerParametro(params.profundidad, "0.80"),
+    fuenteAgua: obtenerParametro(params.fuenteAgua, "estero"),
+    especie: obtenerParametro(params.especie, "litopenaeus_vannamei"),
+    fechaSiembra: obtenerParametro(params.fechaSiembra, obtenerFechaActual()),
+    fechaInicioEngorde: obtenerParametro(
+      params.fechaInicioEngorde,
+      obtenerFechaActual()
+    ),
+    fechaMantenimiento: obtenerParametro(
+      params.fechaMantenimiento,
+      obtenerFechaActual()
+    ),
+    densidadSiembra: obtenerParametro(params.densidadSiembra, "12"),
+    precria: obtenerParametro(params.precria, "si"),
+    metodoAlimentacion: obtenerParametro(
+      params.metodoAlimentacion,
+      "manual_automatico"
+    ),
+    proveedorAlimento: obtenerParametro(params.proveedorAlimento, "Biomar"),
+    numeroAireadores: obtenerParametro(params.numeroAireadores, "4"),
+    tieneAlimentadorAutomatico: obtenerParametro(
+      params.tieneAlimentadorAutomatico,
+      "si"
+    ),
+  };
 
   let esTablet = false;
   let esDesktop = false;
@@ -126,40 +209,36 @@ export default function EditarEstanqueScreen({ navigation }) {
     esDesktop = true;
   }
 
-  const [codigo, setCodigo] = useState(ESTANQUE_INICIAL.codigo);
-  const [estado, setEstado] = useState(ESTANQUE_INICIAL.estado);
-  const [tipoEstanque, setTipoEstanque] = useState(
-    ESTANQUE_INICIAL.tipoEstanque,
-  );
-  const [largo, setLargo] = useState(ESTANQUE_INICIAL.largo);
-  const [ancho, setAncho] = useState(ESTANQUE_INICIAL.ancho);
-  const [profundidad, setProfundidad] = useState(ESTANQUE_INICIAL.profundidad);
-  const [fuenteAgua, setFuenteAgua] = useState(ESTANQUE_INICIAL.fuenteAgua);
-  const [especie, setEspecie] = useState(ESTANQUE_INICIAL.especie);
-  const [fechaSiembra, setFechaSiembra] = useState(
-    ESTANQUE_INICIAL.fechaSiembra,
-  );
+  const [codigo, setCodigo] = useState(estanqueBase.codigo);
+  const [estado, setEstado] = useState(estanqueBase.estado);
+  const [tipoEstanque, setTipoEstanque] = useState(estanqueBase.tipoEstanque);
+  const [largo, setLargo] = useState(estanqueBase.largo);
+  const [ancho, setAncho] = useState(estanqueBase.ancho);
+  const [profundidad, setProfundidad] = useState(estanqueBase.profundidad);
+  const [fuenteAgua, setFuenteAgua] = useState(estanqueBase.fuenteAgua);
+  const [especie, setEspecie] = useState(estanqueBase.especie);
+  const [fechaSiembra, setFechaSiembra] = useState(estanqueBase.fechaSiembra);
   const [fechaInicioEngorde, setFechaInicioEngorde] = useState(
-    ESTANQUE_INICIAL.fechaInicioEngorde,
+    estanqueBase.fechaInicioEngorde
   );
   const [fechaMantenimiento, setFechaMantenimiento] = useState(
-    ESTANQUE_INICIAL.fechaMantenimiento,
+    estanqueBase.fechaMantenimiento
   );
   const [densidadSiembra, setDensidadSiembra] = useState(
-    ESTANQUE_INICIAL.densidadSiembra,
+    estanqueBase.densidadSiembra
   );
-  const [precria, setPrecria] = useState(ESTANQUE_INICIAL.precria);
+  const [precria, setPrecria] = useState(estanqueBase.precria);
   const [metodoAlimentacion, setMetodoAlimentacion] = useState(
-    ESTANQUE_INICIAL.metodoAlimentacion,
+    estanqueBase.metodoAlimentacion
   );
   const [proveedorAlimento, setProveedorAlimento] = useState(
-    ESTANQUE_INICIAL.proveedorAlimento,
+    estanqueBase.proveedorAlimento
   );
   const [numeroAireadores, setNumeroAireadores] = useState(
-    ESTANQUE_INICIAL.numeroAireadores,
+    estanqueBase.numeroAireadores
   );
   const [tieneAlimentadorAutomatico, setTieneAlimentadorAutomatico] = useState(
-    ESTANQUE_INICIAL.tieneAlimentadorAutomatico,
+    estanqueBase.tieneAlimentadorAutomatico
   );
   const [mensaje, setMensaje] = useState("");
   const [tipoMensaje, setTipoMensaje] = useState("info");
@@ -190,7 +269,10 @@ export default function EditarEstanqueScreen({ navigation }) {
   function cancelar() {
     if (navigation) {
       navigation.goBack();
+      return;
     }
+
+    router.back();
   }
 
   function mostrarAdvertencia(texto) {
@@ -211,11 +293,23 @@ export default function EditarEstanqueScreen({ navigation }) {
       valido = false;
     }
 
-    if (
-      valido === true &&
-      (largo === "" || ancho === "" || profundidad === "")
-    ) {
-      mostrarAdvertencia("Debe completar largo, ancho y profundidad.");
+    if (valido === true && largo === "") {
+      mostrarAdvertencia("Debe ingresar el largo del estanque.");
+      valido = false;
+    }
+
+    if (valido === true && ancho === "") {
+      mostrarAdvertencia("Debe ingresar el ancho del estanque.");
+      valido = false;
+    }
+
+    if (valido === true && profundidad === "") {
+      mostrarAdvertencia("Debe ingresar la profundidad del estanque.");
+      valido = false;
+    }
+
+    if (valido === true && fechaSiembra === "") {
+      mostrarAdvertencia("Debe seleccionar la fecha de siembra.");
       valido = false;
     }
 
@@ -233,8 +327,8 @@ export default function EditarEstanqueScreen({ navigation }) {
     }
 
     const estanqueActualizado = {
-      id: ESTANQUE_INICIAL.id,
-      finca: ESTANQUE_INICIAL.finca,
+      id: estanqueBase.id,
+      finca: estanqueBase.finca,
       codigo: codigo,
       estado: estado,
       tipoEstanque: tipoEstanque,
@@ -246,17 +340,43 @@ export default function EditarEstanqueScreen({ navigation }) {
       fechaSiembra: fechaSiembra,
       fechaInicioEngorde: fechaInicioEngorde,
       fechaMantenimiento: fechaMantenimiento,
-      densidadSiembra: Number(densidadSiembra),
+      densidadSiembra: densidadSiembra,
       precria: precria,
       metodoAlimentacion: metodoAlimentacion,
       proveedorAlimento: proveedorAlimento,
-      numeroAireadores: Number(numeroAireadores),
+      numeroAireadores: numeroAireadores,
       tieneAlimentadorAutomatico: tieneAlimentadorAutomatico,
     };
 
     console.log("Estanque actualizado:", estanqueActualizado);
+
     setTipoMensaje("success");
     setMensaje("Cambios del estanque guardados correctamente.");
+
+    router.push({
+      pathname: "/registros/DetalleEstanque",
+      params: {
+        id: estanqueActualizado.id,
+        finca: estanqueActualizado.finca,
+        codigo: estanqueActualizado.codigo,
+        estado: estanqueActualizado.estado,
+        tipoEstanque: estanqueActualizado.tipoEstanque,
+        largo: estanqueActualizado.largo,
+        ancho: estanqueActualizado.ancho,
+        profundidad: estanqueActualizado.profundidad,
+        fuenteAgua: estanqueActualizado.fuenteAgua,
+        especie: estanqueActualizado.especie,
+        fechaSiembra: estanqueActualizado.fechaSiembra,
+        fechaInicioEngorde: estanqueActualizado.fechaInicioEngorde,
+        fechaMantenimiento: estanqueActualizado.fechaMantenimiento,
+        densidadSiembra: estanqueActualizado.densidadSiembra,
+        precria: estanqueActualizado.precria,
+        metodoAlimentacion: estanqueActualizado.metodoAlimentacion,
+        proveedorAlimento: estanqueActualizado.proveedorAlimento,
+        numeroAireadores: estanqueActualizado.numeroAireadores,
+        tieneAlimentadorAutomatico: estanqueActualizado.tieneAlimentadorAutomatico,
+      },
+    });
   }
 
   return (
@@ -269,6 +389,7 @@ export default function EditarEstanqueScreen({ navigation }) {
         >
           <View style={styles.inlineButtonContent}>
             <Icon icon={ICONS.exit} size={18} color={COLORS.white} />
+
             <CustomText
               size={16}
               color={COLORS.white}
@@ -283,6 +404,7 @@ export default function EditarEstanqueScreen({ navigation }) {
           <View style={styles.headerIcon}>
             <Icon icon={ICONS.edit} size={28} color={COLORS.white} />
           </View>
+
           <View style={styles.headerTextBox}>
             <Title
               level={3}
@@ -291,12 +413,13 @@ export default function EditarEstanqueScreen({ navigation }) {
             >
               Editar Estanque
             </Title>
+
             <CustomText
               size={14}
               color={COLORS.white}
               style={styles.headerSubtitle}
             >
-              {ESTANQUE_INICIAL.finca}
+              {estanqueBase.finca} - {estanqueBase.codigo}
             </CustomText>
           </View>
         </View>
@@ -313,7 +436,8 @@ export default function EditarEstanqueScreen({ navigation }) {
         )}
 
         <Card>
-          <SectionTitle title="Identificacion" icon={ICONS.id} />
+          <SectionTitle title="Identificacion" icon={ICONS.document} />
+
           <View style={gridStyle}>
             <View style={itemStyle}>
               <Input
@@ -324,6 +448,7 @@ export default function EditarEstanqueScreen({ navigation }) {
                 labelStyle={styles.label}
               />
             </View>
+
             <View style={itemStyle}>
               <Select
                 label="Tipo de estanque *"
@@ -334,6 +459,7 @@ export default function EditarEstanqueScreen({ navigation }) {
                 labelStyle={styles.label}
               />
             </View>
+
             <View style={itemFullStyle}>
               <CustomText
                 size={14}
@@ -342,6 +468,7 @@ export default function EditarEstanqueScreen({ navigation }) {
               >
                 Estado del estanque
               </CustomText>
+
               <View style={styles.optionsGrid}>
                 {ESTADOS_ESTANQUE.map(function (item) {
                   return (
@@ -361,6 +488,7 @@ export default function EditarEstanqueScreen({ navigation }) {
 
         <Card>
           <SectionTitle title="Dimensiones" icon={ICONS.ruler} />
+
           <View style={gridStyle}>
             <View style={itemStyle}>
               <Input
@@ -371,6 +499,7 @@ export default function EditarEstanqueScreen({ navigation }) {
                 labelStyle={styles.label}
               />
             </View>
+
             <View style={itemStyle}>
               <Input
                 label="Ancho (m) *"
@@ -380,6 +509,7 @@ export default function EditarEstanqueScreen({ navigation }) {
                 labelStyle={styles.label}
               />
             </View>
+
             <View style={itemStyle}>
               <Input
                 label="Profundidad (m) *"
@@ -389,6 +519,7 @@ export default function EditarEstanqueScreen({ navigation }) {
                 labelStyle={styles.label}
               />
             </View>
+
             <View style={itemStyle}>
               <Select
                 label="Fuente de agua"
@@ -403,6 +534,7 @@ export default function EditarEstanqueScreen({ navigation }) {
 
         <Card>
           <SectionTitle title="Siembra y fechas" icon={ICONS.calendar} />
+
           <View style={gridStyle}>
             <View style={itemStyle}>
               <Select
@@ -413,6 +545,7 @@ export default function EditarEstanqueScreen({ navigation }) {
                 labelStyle={styles.label}
               />
             </View>
+
             <View style={itemStyle}>
               <DateInput
                 label="Fecha de siembra *"
@@ -421,6 +554,7 @@ export default function EditarEstanqueScreen({ navigation }) {
                 labelStyle={styles.label}
               />
             </View>
+
             <View style={itemStyle}>
               <DateInput
                 label="Fecha inicio engorde"
@@ -429,6 +563,7 @@ export default function EditarEstanqueScreen({ navigation }) {
                 labelStyle={styles.label}
               />
             </View>
+
             <View style={itemStyle}>
               <DateInput
                 label="Fecha mantenimiento"
@@ -437,6 +572,7 @@ export default function EditarEstanqueScreen({ navigation }) {
                 labelStyle={styles.label}
               />
             </View>
+
             <View style={itemStyle}>
               <NumberInput
                 label="Densidad de siembra (ind/m²) *"
@@ -448,6 +584,7 @@ export default function EditarEstanqueScreen({ navigation }) {
                 labelStyle={styles.label}
               />
             </View>
+
             <View style={itemStyle}>
               <Select
                 label="Precria"
@@ -462,6 +599,7 @@ export default function EditarEstanqueScreen({ navigation }) {
 
         <Card>
           <SectionTitle title="Alimentacion y equipos" icon={ICONS.food} />
+
           <View style={gridStyle}>
             <View style={itemStyle}>
               <Select
@@ -472,6 +610,7 @@ export default function EditarEstanqueScreen({ navigation }) {
                 labelStyle={styles.label}
               />
             </View>
+
             <View style={itemStyle}>
               <Input
                 label="Proveedor de alimento"
@@ -480,6 +619,7 @@ export default function EditarEstanqueScreen({ navigation }) {
                 labelStyle={styles.label}
               />
             </View>
+
             <View style={itemStyle}>
               <NumberInput
                 label="N° aireadores"
@@ -491,6 +631,7 @@ export default function EditarEstanqueScreen({ navigation }) {
                 labelStyle={styles.label}
               />
             </View>
+
             <View style={itemStyle}>
               <Select
                 label="¿Tiene alimentador automatico?"
@@ -511,9 +652,11 @@ export default function EditarEstanqueScreen({ navigation }) {
           >
             Cancelar
           </Button>
+
           <Button onPress={guardarCambios} style={styles.actionButton}>
             <View style={styles.inlineButtonContentCentered}>
               <Icon icon={ICONS.save} size={18} color={COLORS.white} />
+
               <CustomText
                 size={16}
                 color={COLORS.white}
@@ -533,6 +676,7 @@ function SectionTitle({ title, icon }) {
   return (
     <View style={styles.sectionTitleRow}>
       <Icon icon={icon} size={18} color={COLORS.primary} />
+
       <Title
         level={5}
         color={COLORS.textSecondary}
@@ -573,86 +717,3 @@ function OptionButton({ label, value, selectedValue, onPress }) {
     </Button>
   );
 }
-
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: COLORS.surface },
-  header: {
-    width: "100%",
-    backgroundColor: COLORS.primary,
-    paddingTop: 24,
-    paddingHorizontal: 24,
-    paddingBottom: 28,
-    borderBottomLeftRadius: 22,
-    borderBottomRightRadius: 22,
-  },
-  headerDesktop: { paddingHorizontal: 48 },
-  cancelButton: {
-    alignSelf: "flex-start",
-    backgroundColor: "transparent",
-    borderWidth: 0,
-    paddingHorizontal: 0,
-    paddingVertical: 0,
-    marginTop: 0,
-    marginBottom: 20,
-  },
-  cancelText: { marginLeft: 8, fontFamily: TYPOGRAPHY.fontFamily.medium },
-  headerRow: { flexDirection: "row", alignItems: "center" },
-  headerIcon: {
-    width: 54,
-    height: 54,
-    borderRadius: 18,
-    backgroundColor: "rgba(255,255,255,0.18)",
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 14,
-  },
-  headerTextBox: { flex: 1 },
-  headerSubtitle: { marginTop: 2, fontFamily: TYPOGRAPHY.fontFamily.regular },
-  content: { padding: 18 },
-  contentTablet: { paddingHorizontal: 28 },
-  contentDesktop: { maxWidth: 1100, alignSelf: "center", width: "100%" },
-  alert: { marginBottom: 16 },
-  alertText: { fontFamily: TYPOGRAPHY.fontFamily.medium },
-  sectionTitleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 14,
-  },
-  sectionTitle: { marginLeft: 8, textTransform: "uppercase" },
-  label: {
-    color: COLORS.textPrimary,
-    fontFamily: TYPOGRAPHY.fontFamily.medium,
-  },
-  labelText: { marginBottom: 8, fontFamily: TYPOGRAPHY.fontFamily.medium },
-  grid: { width: "100%" },
-  gridTablet: { flexDirection: "row", flexWrap: "wrap", columnGap: 12 },
-  gridDesktop: { flexDirection: "row", flexWrap: "wrap", columnGap: 14 },
-  gridItem: { width: "100%" },
-  gridItemTablet: { width: "48.5%" },
-  gridItemDesktop: { width: "32%" },
-  gridItemFull: { width: "100%" },
-  optionsGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  optionButton: {
-    minWidth: "30%",
-    flexGrow: 1,
-    paddingVertical: 10,
-    paddingHorizontal: 10,
-    marginTop: 0,
-    borderColor: COLORS.secondary,
-    backgroundColor: COLORS.white,
-  },
-  optionButtonSelected: {
-    borderColor: COLORS.primary,
-    backgroundColor: COLORS.secondary,
-  },
-  actions: { marginBottom: 32 },
-  actionsTablet: { flexDirection: "row", justifyContent: "flex-end", gap: 12 },
-  actionButton: { minWidth: 180, borderRadius: 14 },
-  inlineButtonContent: { flexDirection: "row", alignItems: "center" },
-  inlineButtonContentCentered: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  saveText: { marginLeft: 8, fontFamily: TYPOGRAPHY.fontFamily.bold },
-});

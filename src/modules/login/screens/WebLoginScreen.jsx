@@ -77,7 +77,11 @@ export default function WebLoginScreen({ onLoginSuccess = () => { } }) {
           {/* Logo */}
           <Card style={styles.logoCard}>
             <Images
-              Icon={require('../../../assets/shrimp-solid.png')}
+              source={require('../../../assets/shrimp-solid.png')}
+              width={64}
+              height={64}
+              borderRadius={0}
+              resizeMode="contain"
               style={styles.logoImage}
             />
           </Card>
@@ -135,7 +139,6 @@ export default function WebLoginScreen({ onLoginSuccess = () => { } }) {
             placeholder={AUTH_MESSAGES.PLACEHOLDER_PASSWORD}
             editable={!loading}
             secureTextEntry={true}
-            maxLength={8}
           />
 
           {/* Error de validación del campo contraseña */}
