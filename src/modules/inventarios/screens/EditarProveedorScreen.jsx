@@ -1,7 +1,11 @@
 import React, { useState } from "react";
-import { View, ScrollView, StyleSheet } from "react-native";
+import { View, ScrollView } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { getProveedorById, updateProveedor } from "../services/proveedoresService";
+import {
+  getProveedorById,
+  updateProveedor,
+  TIPOS_PRODUCTO,
+} from "../services/proveedoresService";
 
 import Navbar from "../../../shared/components/Navbar";
 import Card from "../../../shared/components/Card";
@@ -11,17 +15,26 @@ import Button from "../../../shared/components/Button";
 import CustomText from "../../../shared/components/Text";
 import Icon from "../../../shared/components/Icons";
 
+import { styles } from "../styles/editarProveedorStyles";
 import { COLORS } from "../../../theme/colors";
-import { TYPOGRAPHY } from "../../../theme/typography";
 import { ICONS } from "../../../theme/icons";
 
-const TIPOS_PRODUCTO = [
-  { label: "Alimento", value: "alimento" },
-  { label: "Antibióticos", value: "antibioticos" },
-  { label: "Fertilizantes", value: "fertilizantes" },
-  { label: "Probióticos", value: "probioticos" },
-  { label: "Equipos", value: "equipos" },
-];
+function validarTelefono(valor) {
+  if (!valor) return "El teléfono es obligatorio.";
+  const soloDigitos = valor.replace(/\D/g, "");
+  if (soloDigitos.length !== 8)
+    return "El teléfono debe tener exactamente 8 dígitos.";
+  return "";
+}
+
+function validarCorreo(valor) {
+  if (!valor) return "El correo es obligatorio.";
+  if (!valor.includes("@")) return "El correo debe contener @.";
+  const partes = valor.split("@");
+  if (!partes[1] || !partes[1].includes("."))
+    return "Ingrese un correo válido. Ej: ventas@empresa.com";
+  return "";
+}
 
 export default function EditarProveedorScreen() {
   const { id } = useLocalSearchParams();
@@ -35,6 +48,9 @@ export default function EditarProveedorScreen() {
   const [direccion, setDireccion] = useState(base.direccion ?? "");
   const [notas, setNotas] = useState(base.notas ?? "");
 
+  const [errorTelefono, setErrorTelefono] = useState("");
+  const [errorCorreo, setErrorCorreo] = useState("");
+
   const originalForm = {
     nombre: base.nombre ?? "",
     tipoProducto: base.tipoProducto ?? "",
@@ -43,8 +59,16 @@ export default function EditarProveedorScreen() {
     direccion: base.direccion ?? "",
     notas: base.notas ?? "",
   };
-  const currentForm = { nombre, tipoProducto, telefono, correo, direccion, notas };
-  const hasChanges = JSON.stringify(currentForm) !== JSON.stringify(originalForm);
+  const currentForm = {
+    nombre,
+    tipoProducto,
+    telefono,
+    correo,
+    direccion,
+    notas,
+  };
+  const hasChanges =
+    JSON.stringify(currentForm) !== JSON.stringify(originalForm);
 
   const hasRequiredData = telefono !== "" && correo !== "";
   const canSave = hasRequiredData && hasChanges;
@@ -55,6 +79,16 @@ export default function EditarProveedorScreen() {
       ? "Realice algún cambio para guardar la actualización."
       : "";
 
+  function handleTelefonoChange(valor) {
+    setTelefono(valor);
+    setErrorTelefono(validarTelefono(valor));
+  }
+
+  function handleCorreoChange(valor) {
+    setCorreo(valor);
+    setErrorCorreo(validarCorreo(valor));
+  }
+
   function volverADetalle() {
     router.replace({
       pathname: "/(drawer)/inventarios/detalleProveedor",
@@ -63,9 +97,23 @@ export default function EditarProveedorScreen() {
   }
 
   function guardar() {
-    if (!canSave) return;
+    const errorTel = validarTelefono(telefono);
+    const errorCorr = validarCorreo(correo);
+    setErrorTelefono(errorTel);
+    setErrorCorreo(errorCorr);
 
-    updateProveedor({ id: base.id, nombre, tipoProducto, telefono, correo, direccion, notas });
+    if (errorTel !== "" || errorCorr !== "") return;
+    if (!hasChanges) return;
+
+    updateProveedor({
+      id: base.id,
+      nombre,
+      tipoProducto,
+      telefono,
+      correo,
+      direccion,
+      notas,
+    });
     volverADetalle();
   }
 
@@ -76,7 +124,11 @@ export default function EditarProveedorScreen() {
         style={styles.navbar}
         titleStyle={styles.navbarTitle}
         leftContent={
-          <Button variant="ghost" onPress={volverADetalle} style={styles.backBtn}>
+          <Button
+            variant="ghost"
+            onPress={volverADetalle}
+            style={styles.backBtn}
+          >
             <Icon icon={ICONS.exit} size={20} color={COLORS.white} />
           </Button>
         }
@@ -115,24 +167,30 @@ export default function EditarProveedorScreen() {
           <Input
             label="Teléfono"
             value={telefono}
-            onChangeText={setTelefono}
+            onChangeText={handleTelefonoChange}
             placeholder="+506 2222-3344"
             keyboardType="phone-pad"
             containerStyle={styles.field}
             style={styles.input}
             labelStyle={styles.label}
           />
+          {errorTelefono !== "" && (
+            <CustomText style={styles.validationText}>{errorTelefono}</CustomText>
+          )}
 
           <Input
             label="Correo electrónico"
             value={correo}
-            onChangeText={setCorreo}
+            onChangeText={handleCorreoChange}
             placeholder="ventas@empresa.com"
             keyboardType="email-address"
             containerStyle={styles.field}
             style={styles.input}
             labelStyle={styles.label}
           />
+          {errorCorreo !== "" && (
+            <CustomText style={styles.validationText}>{errorCorreo}</CustomText>
+          )}
 
           <Input
             label="Dirección"
@@ -174,84 +232,3 @@ export default function EditarProveedorScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: COLORS.surface },
-  navbar: {
-    backgroundColor: COLORS.primary,
-    borderBottomWidth: 0,
-  },
-  navbarTitle: {
-    color: COLORS.white,
-    fontSize: 20,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    fontWeight: undefined,
-  },
-  backBtn: {
-    marginTop: 0,
-    paddingVertical: 0,
-    paddingHorizontal: 0,
-    backgroundColor: "transparent",
-    borderWidth: 0,
-  },
-  navbarPlaceholder: { width: 32, height: 32 },
-  content: { padding: 16, paddingBottom: 32 },
-  card: {
-    borderRadius: 18,
-    padding: 18,
-    backgroundColor: COLORS.white,
-    borderColor: COLORS.header,
-  },
-  cardTitle: {
-    fontSize: 19,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    fontWeight: undefined,
-    color: COLORS.textSecondary,
-    marginBottom: 16,
-  },
-  field: { marginBottom: 14 },
-  label: {
-    fontSize: 14,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    fontWeight: undefined,
-    color: COLORS.black,
-    marginBottom: 6,
-  },
-  input: {
-    minHeight: 48,
-    borderRadius: 12,
-    borderColor: COLORS.header,
-    backgroundColor: COLORS.white,
-    paddingHorizontal: 14,
-    fontSize: 15,
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
-  },
-  select: {
-    minHeight: 48,
-    borderRadius: 12,
-    borderColor: COLORS.header,
-    backgroundColor: COLORS.white,
-    paddingHorizontal: 14,
-  },
-  saveButton: {
-    marginTop: 10,
-    borderRadius: 14,
-    paddingVertical: 14,
-    backgroundColor: COLORS.primary,
-  },
-  saveButtonDisabled: {
-    backgroundColor: COLORS.textQuaternary || "#D1D5DB",
-  },
-  saveButtonText: {
-    fontSize: 16,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    color: COLORS.white,
-  },
-  validationText: {
-    marginTop: 8,
-    fontSize: 13,
-    textAlign: "center",
-    color: COLORS.textTertiary,
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
-  },
-});
