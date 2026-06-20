@@ -17,6 +17,7 @@
 
 import React, { useState } from "react";
 import { ScrollView, View } from "react-native";
+import { useRouter } from "expo-router";
 
 import Alert from "../../../shared/components/Alert";
 import Button from "../../../shared/components/Button";
@@ -45,16 +46,37 @@ function obtenerFechaActual() {
 }
 
 const TIPOS_ESTANQUE = [
-  { label: "Estanque de tierra semiintensivo", value: "tierra_semiintensivo" },
-  { label: "Estanque reservorio", value: "reservorio" },
-  { label: "Estanque con geomembrana", value: "geomembrana" },
-  { label: "Estanque superintensivo", value: "superintensivo" },
+  {
+    label: "Estanque de tierra semiintensivo",
+    value: "tierra_semiintensivo",
+  },
+  {
+    label: "Estanque reservorio",
+    value: "reservorio",
+  },
+  {
+    label: "Estanque con geomembrana",
+    value: "geomembrana",
+  },
+  {
+    label: "Estanque superintensivo",
+    value: "superintensivo",
+  },
 ];
 
 const FUENTES_AGUA = [
-  { label: "Estero", value: "estero" },
-  { label: "Golfo", value: "golfo" },
-  { label: "Reservorio", value: "reservorio" },
+  {
+    label: "Estero",
+    value: "estero",
+  },
+  {
+    label: "Golfo",
+    value: "golfo",
+  },
+  {
+    label: "Reservorio",
+    value: "reservorio",
+  },
 ];
 
 const ESPECIES = [
@@ -65,30 +87,68 @@ const ESPECIES = [
 ];
 
 const OPCIONES_PRECRIA = [
-  { label: "Si, usa precria", value: "si" },
-  { label: "No, siembra directa", value: "no" },
+  {
+    label: "Si, usa precria",
+    value: "si",
+  },
+  {
+    label: "No, siembra directa",
+    value: "no",
+  },
 ];
 
 const METODOS_ALIMENTACION = [
-  { label: "Manual", value: "manual" },
-  { label: "Automatico", value: "automatico" },
-  { label: "Manual y automatico", value: "manual_automatico" },
+  {
+    label: "Manual",
+    value: "manual",
+  },
+  {
+    label: "Automatico",
+    value: "automatico",
+  },
+  {
+    label: "Manual y automatico",
+    value: "manual_automatico",
+  },
 ];
 
 const OPCIONES_ALIMENTADOR = [
-  { label: "Si", value: "si" },
-  { label: "No", value: "no" },
+  {
+    label: "Si",
+    value: "si",
+  },
+  {
+    label: "No",
+    value: "no",
+  },
 ];
 
 const ESTADOS_ESTANQUE = [
-  { label: "Activo", value: "activo" },
-  { label: "En preparacion", value: "preparacion" },
-  { label: "Mantenimiento", value: "mantenimiento" },
-  { label: "Engorde", value: "engorde" },
-  { label: "Cosechado", value: "cosechado" },
+  {
+    label: "Activo",
+    value: "activo",
+  },
+  {
+    label: "En preparacion",
+    value: "preparacion",
+  },
+  {
+    label: "Mantenimiento",
+    value: "mantenimiento",
+  },
+  {
+    label: "Engorde",
+    value: "engorde",
+  },
+  {
+    label: "Cosechado",
+    value: "cosechado",
+  },
 ];
 
 export default function NuevoEstanqueScreen({ navigation }) {
+  const router = useRouter();
+
   const [codigo, setCodigo] = useState("");
   const [estado, setEstado] = useState("activo");
   const [tipoEstanque, setTipoEstanque] = useState("");
@@ -98,6 +158,12 @@ export default function NuevoEstanqueScreen({ navigation }) {
   const [fuenteAgua, setFuenteAgua] = useState("");
   const [especie, setEspecie] = useState("litopenaeus_vannamei");
   const [fechaSiembra, setFechaSiembra] = useState(obtenerFechaActual());
+  const [fechaInicioEngorde, setFechaInicioEngorde] = useState(
+    obtenerFechaActual()
+  );
+  const [fechaMantenimiento, setFechaMantenimiento] = useState(
+    obtenerFechaActual()
+  );
   const [densidadSiembra, setDensidadSiembra] = useState("12");
   const [precria, setPrecria] = useState("");
   const [metodoAlimentacion, setMetodoAlimentacion] = useState("");
@@ -111,7 +177,10 @@ export default function NuevoEstanqueScreen({ navigation }) {
   function cancelar() {
     if (navigation) {
       navigation.goBack();
+      return;
     }
+
+    router.back();
   }
 
   function mostrarError(texto) {
@@ -130,8 +199,18 @@ export default function NuevoEstanqueScreen({ navigation }) {
       return;
     }
 
-    if (largo === "" || ancho === "" || profundidad === "") {
-      mostrarError("Debe completar largo, ancho y profundidad.");
+    if (largo === "") {
+      mostrarError("Debe ingresar el largo del estanque.");
+      return;
+    }
+
+    if (ancho === "") {
+      mostrarError("Debe ingresar el ancho del estanque.");
+      return;
+    }
+
+    if (profundidad === "") {
+      mostrarError("Debe ingresar la profundidad del estanque.");
       return;
     }
 
@@ -140,7 +219,14 @@ export default function NuevoEstanqueScreen({ navigation }) {
       return;
     }
 
+    if (Number(densidadSiembra) <= 0) {
+      mostrarError("La densidad de siembra debe ser mayor a 0.");
+      return;
+    }
+
     const nuevoEstanque = {
+      id: String(Date.now()),
+      finca: "Finca La Reina",
       codigo: codigo,
       estado: estado,
       tipoEstanque: tipoEstanque,
@@ -150,11 +236,13 @@ export default function NuevoEstanqueScreen({ navigation }) {
       fuenteAgua: fuenteAgua,
       especie: especie,
       fechaSiembra: fechaSiembra,
-      densidadSiembra: Number(densidadSiembra),
+      fechaInicioEngorde: fechaInicioEngorde,
+      fechaMantenimiento: fechaMantenimiento,
+      densidadSiembra: densidadSiembra,
       precria: precria,
       metodoAlimentacion: metodoAlimentacion,
       proveedorAlimento: proveedorAlimento,
-      numeroAireadores: Number(numeroAireadores),
+      numeroAireadores: numeroAireadores,
       tieneAlimentadorAutomatico: tieneAlimentadorAutomatico,
     };
 
@@ -162,6 +250,31 @@ export default function NuevoEstanqueScreen({ navigation }) {
 
     setTipoMensaje("success");
     setMensaje("Estanque registrado correctamente.");
+
+    router.push({
+      pathname: "/registros/DetalleEstanque",
+      params: {
+        id: nuevoEstanque.id,
+        finca: nuevoEstanque.finca,
+        codigo: nuevoEstanque.codigo,
+        estado: nuevoEstanque.estado,
+        tipoEstanque: nuevoEstanque.tipoEstanque,
+        largo: nuevoEstanque.largo,
+        ancho: nuevoEstanque.ancho,
+        profundidad: nuevoEstanque.profundidad,
+        fuenteAgua: nuevoEstanque.fuenteAgua,
+        especie: nuevoEstanque.especie,
+        fechaSiembra: nuevoEstanque.fechaSiembra,
+        fechaInicioEngorde: nuevoEstanque.fechaInicioEngorde,
+        fechaMantenimiento: nuevoEstanque.fechaMantenimiento,
+        densidadSiembra: nuevoEstanque.densidadSiembra,
+        precria: nuevoEstanque.precria,
+        metodoAlimentacion: nuevoEstanque.metodoAlimentacion,
+        proveedorAlimento: nuevoEstanque.proveedorAlimento,
+        numeroAireadores: nuevoEstanque.numeroAireadores,
+        tieneAlimentadorAutomatico: nuevoEstanque.tieneAlimentadorAutomatico,
+      },
+    });
   }
 
   return (
@@ -174,6 +287,7 @@ export default function NuevoEstanqueScreen({ navigation }) {
         >
           <View style={styles.inlineButtonContent}>
             <Icon icon={ICONS.exit} size={18} color={COLORS.white} />
+
             <CustomText
               size={16}
               color={COLORS.white}
@@ -309,7 +423,7 @@ export default function NuevoEstanqueScreen({ navigation }) {
         </Card>
 
         <Card>
-          <SectionTitle title="Siembra" icon={ICONS.shrimp} />
+          <SectionTitle title="Siembra y fechas" icon={ICONS.calendar} />
 
           <Select
             label="Especie"
@@ -324,6 +438,20 @@ export default function NuevoEstanqueScreen({ navigation }) {
             label="Fecha de siembra *"
             value={fechaSiembra}
             onChangeText={setFechaSiembra}
+            labelStyle={styles.label}
+          />
+
+          <DateInput
+            label="Fecha inicio de engorde"
+            value={fechaInicioEngorde}
+            onChangeText={setFechaInicioEngorde}
+            labelStyle={styles.label}
+          />
+
+          <DateInput
+            label="Fecha mantenimiento"
+            value={fechaMantenimiento}
+            onChangeText={setFechaMantenimiento}
             labelStyle={styles.label}
           />
 
@@ -390,6 +518,7 @@ export default function NuevoEstanqueScreen({ navigation }) {
         <Button onPress={registrarEstanque} style={styles.saveButton}>
           <View style={styles.inlineButtonContentCentered}>
             <Icon icon={ICONS.save} size={18} color={COLORS.white} />
+
             <CustomText size={16} color={COLORS.white} style={styles.saveText}>
               Registrar estanque
             </CustomText>

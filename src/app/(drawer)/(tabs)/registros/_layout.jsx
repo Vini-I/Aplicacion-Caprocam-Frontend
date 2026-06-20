@@ -15,6 +15,8 @@ export default function RegistrosStackLayout() {
 
       <Stack.Screen name="Alimentacion" options={{ title: "Registro de Alimentación" }} />
 
+      <Stack.Screen name="DetalleEstanque" options={{ title: "Detalle Estanque" }} />
+
     </Stack>
   );
 }
