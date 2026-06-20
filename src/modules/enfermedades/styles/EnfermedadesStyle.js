@@ -3,8 +3,8 @@
  * ESTILOS DEL MODULO ENFERMEDADES
  * ============================================================
  *
- * Centraliza los estilos usados por:
- * - EnfermedadesScreen.jsx
+ * Estilos para el formulario de registro de enfermedades
+ * y los detalles guardados.
  */
 
 import { StyleSheet } from "react-native";
@@ -109,10 +109,6 @@ export const styles = StyleSheet.create({
     fontFamily: TYPOGRAPHY.fontFamily.medium,
   },
 
-  boldText: {
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-  },
-
   grid: {
     width: "100%",
   },
@@ -145,39 +141,36 @@ export const styles = StyleSheet.create({
     width: "100%",
   },
 
+  optionsGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
+  },
+
+  optionButton: {
+    minWidth: "30%",
+    flexGrow: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    marginTop: 0,
+    borderColor: COLORS.secondary,
+    backgroundColor: COLORS.white,
+  },
+
+  optionButtonSelected: {
+    borderColor: COLORS.primary,
+    backgroundColor: COLORS.secondary,
+  },
+
   textArea: {
-    minHeight: 90,
+    minHeight: 100,
     textAlignVertical: "top",
   },
 
-  riskRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 14,
-  },
-
-  riskTextBox: {
-    marginLeft: 12,
-    flex: 1,
-  },
-
-  badge: {
-    marginTop: 6,
-  },
-
-  actions: {
-    marginBottom: 32,
-  },
-
-  actionsTablet: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    gap: 12,
-  },
-
-  actionButton: {
-    minWidth: 190,
+  saveButton: {
+    minHeight: 50,
     borderRadius: 14,
+    marginBottom: 18,
   },
 
   inlineButtonContent: {
@@ -196,31 +189,34 @@ export const styles = StyleSheet.create({
     fontFamily: TYPOGRAPHY.fontFamily.bold,
   },
 
-  outlineButtonText: {
-    marginLeft: 8,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
+  emptyText: {
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
   },
 
-  modalOverlay: {
-    padding: 20,
-  },
-
-  modalContainer: {
-    borderRadius: 18,
-  },
-
-  modalHeader: {
-    flexDirection: "row",
-    alignItems: "center",
+  savedCase: {
+    borderWidth: 1,
+    borderColor: COLORS.secondary,
+    backgroundColor: COLORS.surface,
+    borderRadius: 14,
+    padding: 14,
     marginBottom: 12,
   },
 
-  modalTitle: {
-    marginLeft: 10,
+  savedCaseTitle: {
+    marginBottom: 10,
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
   },
 
-  modalText: {
-    lineHeight: 22,
+  infoRow: {
+    marginBottom: 8,
+  },
+
+  infoLabel: {
+    marginBottom: 2,
+    fontFamily: TYPOGRAPHY.fontFamily.medium,
+  },
+
+  infoValue: {
     fontFamily: TYPOGRAPHY.fontFamily.regular,
   },
 });

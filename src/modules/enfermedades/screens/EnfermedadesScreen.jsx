@@ -1,32 +1,30 @@
 /**
  * ============================================================
- * PANTALLA ENFERMEDADES
+ * SCREEN: ENFERMEDADES
  * ============================================================
  *
- * Registra eventos sanitarios asociados a estanques.
+ * Modulo para registrar enfermedades por finca y estanque.
  *
- * Ajustes aplicados:
- * - Usa CustomText para textos visibles.
- * - Usa Button para acciones, sin Pressable ni TouchableOpacity directo.
- * - Usa Title para encabezados y títulos de sección.
- * - Usa DateInput para fecha de reporte y proxima revision.
- * - Usa NumberInput para mortalidad y periodo de retiro.
- * - Usa styles desde la carpeta del modulo.
+ * Funcionalidad:
+ * - Permite seleccionar una finca.
+ * - Carga los estanques de la finca seleccionada.
+ * - Permite seleccionar una o varias enfermedades.
+ * - Permite escribir un reporte sanitario.
+ * - Guarda el registro en memoria local de la pantalla.
+ * - Muestra los detalles guardados debajo del formulario.
  */
 
 import React, { useState } from "react";
 import { ScrollView, View, useWindowDimensions } from "react-native";
+import { useRouter } from "expo-router";
 
 import Alert from "../../../shared/components/Alert";
-import Badge from "../../../shared/components/Badge";
 import Button from "../../../shared/components/Button";
 import Card from "../../../shared/components/Card";
 import DateInput from "../../../shared/components/DateInput";
 import Icon from "../../../shared/components/Icons";
 import Input from "../../../shared/components/Input";
-import Modal from "../../../shared/components/Modal";
 import NumberInput from "../../../shared/components/NumberInput";
-import ProgressBar from "../../../shared/components/ProgressBar";
 import Select from "../../../shared/components/Select";
 import CustomText from "../../../shared/components/Text";
 import Title from "../../../shared/components/Title";
@@ -37,47 +35,89 @@ import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
 import { TYPOGRAPHY } from "../../../theme/typography";
 
-const ESTANQUES = [
-  { label: "EST-01 - Finca La Reina", value: "est-01" },
-  { label: "EST-02 - Finca La Reina", value: "est-02" },
-  { label: "EST-03 - Finca La Reina", value: "est-03" },
+const FINCAS = [
+  {
+    label: "Finca El Pacífico",
+    value: "finca_el_pacifico",
+  },
+  {
+    label: "Finca Santa Rosa",
+    value: "finca_santa_rosa",
+  },
 ];
 
-const EVENTOS = [
-  { label: "Monitoreo preventivo", value: "monitoreo_preventivo" },
-  { label: "Sospecha de enfermedad", value: "sospecha_enfermedad" },
-  { label: "Enfermedad confirmada", value: "enfermedad_confirmada" },
-  { label: "Mortalidad elevada", value: "mortalidad_elevada" },
-];
+const ESTANQUES_POR_FINCA = {
+  finca_el_pacifico: [
+    {
+      label: "E-01 - Litopenaeus vannamei",
+      value: "E-01",
+    },
+    {
+      label: "E-02 - Litopenaeus vannamei",
+      value: "E-02",
+    },
+  ],
+
+  finca_santa_rosa: [
+    {
+      label: "E-01 - Litopenaeus stylirostris",
+      value: "E-01",
+    },
+  ],
+};
 
 const ENFERMEDADES = [
-  { label: "WSSV - Mancha Blanca", value: "wssv" },
-  { label: "AHPND - Necrosis Hepatopancreatica Aguda", value: "ahpnd" },
-  { label: "NHP - Necrosis Hepatopancreatica", value: "nhp" },
-  { label: "IHHNV", value: "ihhnv" },
-  { label: "Vibriosis", value: "vibriosis" },
-  { label: "Gregarinas", value: "gregarinas" },
-  { label: "Epicomensales", value: "epicomensales" },
-  { label: "Otro", value: "otro" },
+  {
+    label: "WSSV - Mancha Blanca",
+    value: "wssv",
+  },
+  {
+    label: "AHPND - Necrosis hepatopancreática aguda",
+    value: "ahpnd",
+  },
+  {
+    label: "Vibriosis",
+    value: "vibriosis",
+  },
+  {
+    label: "Gregarinas",
+    value: "gregarinas",
+  },
+  {
+    label: "IHHNV",
+    value: "ihhnv",
+  },
+  {
+    label: "NHP",
+    value: "nhp",
+  },
+  {
+    label: "Epicomensales",
+    value: "epicomensales",
+  },
+  {
+    label: "Otro",
+    value: "otro",
+  },
 ];
 
 const SEVERIDADES = [
-  { label: "Baja", value: "baja" },
-  { label: "Media", value: "media" },
-  { label: "Alta", value: "alta" },
-  { label: "Critica", value: "critica" },
-];
-
-const SI_NO = [
-  { label: "Si", value: "si" },
-  { label: "No", value: "no" },
-];
-
-const ESTADOS_CASO = [
-  { label: "En observacion", value: "observacion" },
-  { label: "En tratamiento", value: "tratamiento" },
-  { label: "Controlado", value: "controlado" },
-  { label: "Cerrado", value: "cerrado" },
+  {
+    label: "Baja",
+    value: "baja",
+  },
+  {
+    label: "Media",
+    value: "media",
+  },
+  {
+    label: "Alta",
+    value: "alta",
+  },
+  {
+    label: "Crítica",
+    value: "critica",
+  },
 ];
 
 function obtenerFechaActual() {
@@ -89,7 +129,20 @@ function obtenerFechaActual() {
   return `${dia}/${mes}/${anio}`;
 }
 
-export default function EnfermedadesScreen({ navigation }) {
+function obtenerNombrePorValor(lista, valor) {
+  let nombre = valor;
+
+  lista.forEach(function (item) {
+    if (item.value === valor) {
+      nombre = item.label;
+    }
+  });
+
+  return nombre;
+}
+
+export default function EnfermedadesScreen({ onBack, navigation }) {
+  const router = useRouter();
   const { width } = useWindowDimensions();
 
   let esTablet = false;
@@ -103,40 +156,31 @@ export default function EnfermedadesScreen({ navigation }) {
     esDesktop = true;
   }
 
+  const [finca, setFinca] = useState("");
   const [estanque, setEstanque] = useState("");
   const [fechaReporte, setFechaReporte] = useState(obtenerFechaActual());
   const [responsable, setResponsable] = useState("");
-  const [tipoEvento, setTipoEvento] = useState("");
-  const [enfermedad, setEnfermedad] = useState("");
+  const [enfermedadesSeleccionadas, setEnfermedadesSeleccionadas] = useState(
+    [],
+  );
   const [severidad, setSeveridad] = useState("");
   const [mortalidad, setMortalidad] = useState("0");
-  const [sintomas, setSintomas] = useState("");
-  const [diagnostico, setDiagnostico] = useState("");
-  const [usaProbiotico, setUsaProbiotico] = useState("");
-  const [productoProbiotico, setProductoProbiotico] = useState("");
-  const [usaAntibiotico, setUsaAntibiotico] = useState("");
-  const [productoAntibiotico, setProductoAntibiotico] = useState("");
-  const [periodoRetiro, setPeriodoRetiro] = useState("0");
-  const [estadoCaso, setEstadoCaso] = useState("");
-  const [proximaRevision, setProximaRevision] = useState(obtenerFechaActual());
-  const [observaciones, setObservaciones] = useState("");
+  const [reporte, setReporte] = useState("");
   const [mensaje, setMensaje] = useState("");
   const [tipoMensaje, setTipoMensaje] = useState("info");
-  const [modalVisible, setModalVisible] = useState(false);
+  const [casosRegistrados, setCasosRegistrados] = useState([]);
 
   let headerStyle = [styles.header];
   let contentStyle = [styles.content];
   let gridStyle = [styles.grid];
   let itemStyle = [styles.gridItem];
   let itemFullStyle = [styles.gridItem];
-  let actionsStyle = [styles.actions];
 
   if (esTablet === true) {
     contentStyle.push(styles.contentTablet);
     gridStyle.push(styles.gridTablet);
     itemStyle.push(styles.gridItemTablet);
     itemFullStyle.push(styles.gridItemFull);
-    actionsStyle.push(styles.actionsTablet);
   }
 
   if (esDesktop === true) {
@@ -147,198 +191,145 @@ export default function EnfermedadesScreen({ navigation }) {
     itemFullStyle.push(styles.gridItemFull);
   }
 
+  let opcionesEstanques = [];
+
+  if (finca !== "") {
+    opcionesEstanques = ESTANQUES_POR_FINCA[finca];
+  }
+
+  if (opcionesEstanques === undefined) {
+    opcionesEstanques = [];
+  }
+
   function volver() {
+    if (onBack) {
+      onBack();
+      return;
+    }
+
     if (navigation) {
       navigation.goBack();
+      return;
     }
+
+    router.back();
   }
 
-  function obtenerRiesgo() {
-    let riesgo = 0;
-
-    if (severidad === "baja") {
-      riesgo = 25;
-    }
-
-    if (severidad === "media") {
-      riesgo = 50;
-    }
-
-    if (severidad === "alta") {
-      riesgo = 75;
-    }
-
-    if (severidad === "critica") {
-      riesgo = 100;
-    }
-
-    return riesgo;
+  function cambiarFinca(valor) {
+    setFinca(valor);
+    setEstanque("");
   }
 
-  function obtenerColorRiesgo() {
-    let color = COLORS.primary;
+  function cambiarEnfermedad(valor) {
+    let nuevasEnfermedades = [];
+    let yaExiste = false;
 
-    if (severidad === "baja") {
-      color = COLORS.success;
+    enfermedadesSeleccionadas.forEach(function (item) {
+      if (item === valor) {
+        yaExiste = true;
+      }
+    });
+
+    if (yaExiste === true) {
+      enfermedadesSeleccionadas.forEach(function (item) {
+        if (item !== valor) {
+          nuevasEnfermedades.push(item);
+        }
+      });
     }
 
-    if (severidad === "media") {
-      color = COLORS.warning;
+    if (yaExiste === false) {
+      enfermedadesSeleccionadas.forEach(function (item) {
+        nuevasEnfermedades.push(item);
+      });
+
+      nuevasEnfermedades.push(valor);
     }
 
-    if (severidad === "alta") {
-      color = COLORS.warning;
-    }
-
-    if (severidad === "critica") {
-      color = COLORS.error;
-    }
-
-    return color;
+    setEnfermedadesSeleccionadas(nuevasEnfermedades);
   }
 
-  function obtenerTextoRiesgo() {
-    let texto = "Sin clasificar";
-
-    if (severidad === "baja") {
-      texto = "Riesgo bajo";
-    }
-
-    if (severidad === "media") {
-      texto = "Riesgo medio";
-    }
-
-    if (severidad === "alta") {
-      texto = "Riesgo alto";
-    }
-
-    if (severidad === "critica") {
-      texto = "Riesgo critico";
-    }
-
-    return texto;
+  function limpiarFormulario() {
+    setFinca("");
+    setEstanque("");
+    setFechaReporte(obtenerFechaActual());
+    setResponsable("");
+    setEnfermedadesSeleccionadas([]);
+    setSeveridad("");
+    setMortalidad("0");
+    setReporte("");
   }
 
-  function obtenerVarianteRiesgo() {
-    let variante = "info";
-
-    if (severidad === "baja") {
-      variante = "success";
-    }
-
-    if (severidad === "media") {
-      variante = "warning";
-    }
-
-    if (severidad === "alta") {
-      variante = "warning";
-    }
-
-    if (severidad === "critica") {
-      variante = "danger";
-    }
-
-    return variante;
-  }
-
-  function obtenerRecomendacion() {
-    let recomendacion =
-      "Complete la informacion del caso para generar una recomendacion.";
-
-    if (severidad === "baja") {
-      recomendacion =
-        "Mantener observacion diaria y registrar cualquier cambio en sintomas o mortalidad.";
-    }
-
-    if (severidad === "media") {
-      recomendacion =
-        "Aumentar monitoreo, revisar parametros fisicoquimicos y documentar la evolucion del caso.";
-    }
-
-    if (severidad === "alta") {
-      recomendacion =
-        "Solicitar revision tecnica, separar evidencias y evaluar acciones sanitarias con diagnostico.";
-    }
-
-    if (severidad === "critica") {
-      recomendacion =
-        "Atender el evento de forma prioritaria, evitar aplicar productos sin diagnostico y registrar mortalidad.";
-    }
-
-    return recomendacion;
-  }
-
-  function validar() {
+  function validarFormulario() {
     let valido = true;
 
-    if (estanque === "") {
-      setMensaje("Debe seleccionar el estanque relacionado.");
+    if (finca === "") {
       setTipoMensaje("warning");
+      setMensaje("Debe seleccionar una finca.");
       valido = false;
     }
 
-    if (valido === true && tipoEvento === "") {
-      setMensaje("Debe seleccionar el tipo de evento sanitario.");
+    if (valido === true && estanque === "") {
       setTipoMensaje("warning");
+      setMensaje("Debe seleccionar un estanque.");
       valido = false;
     }
 
-    if (valido === true && enfermedad === "") {
-      setMensaje("Debe seleccionar la enfermedad detectada.");
+    if (valido === true && enfermedadesSeleccionadas.length === 0) {
       setTipoMensaje("warning");
+      setMensaje("Debe seleccionar al menos una enfermedad.");
       valido = false;
     }
 
     if (valido === true && severidad === "") {
-      setMensaje("Debe seleccionar la severidad del caso.");
       setTipoMensaje("warning");
+      setMensaje("Debe seleccionar la severidad del caso.");
       valido = false;
     }
 
-    if (
-      valido === true &&
-      usaAntibiotico === "si" &&
-      Number(periodoRetiro) <= 0
-    ) {
-      setMensaje("El periodo de retiro debe ser mayor a 0 dias.");
+    if (valido === true && reporte === "") {
       setTipoMensaje("warning");
+      setMensaje("Debe escribir un reporte del caso.");
       valido = false;
     }
 
     return valido;
   }
 
-  function registrar() {
-    if (validar() === false) {
+  function registrarEnfermedad() {
+    if (validarFormulario() === false) {
       return;
     }
 
-    const casoSanitario = {
+    const nuevoCaso = {
+      id: String(Date.now()),
+      finca: finca,
+      fincaNombre: obtenerNombrePorValor(FINCAS, finca),
       estanque: estanque,
       fechaReporte: fechaReporte,
       responsable: responsable,
-      tipoEvento: tipoEvento,
-      enfermedad: enfermedad,
+      enfermedades: enfermedadesSeleccionadas,
       severidad: severidad,
-      riesgo: obtenerRiesgo(),
-      mortalidad: Number(mortalidad),
-      sintomas: sintomas,
-      diagnosticoLaboratorio: diagnostico,
-      usaProbiotico: usaProbiotico,
-      productoProbiotico: productoProbiotico,
-      usaAntibiotico: usaAntibiotico,
-      productoAntibiotico: productoAntibiotico,
-      periodoRetiroDias: Number(periodoRetiro),
-      estadoCaso: estadoCaso,
-      proximaRevision: proximaRevision,
-      observaciones: observaciones,
+      mortalidad: mortalidad,
+      reporte: reporte,
     };
 
-    console.log("Caso sanitario registrado:", casoSanitario);
+    let nuevosCasos = [];
 
-    setMensaje("Caso sanitario registrado correctamente.");
+    casosRegistrados.forEach(function (caso) {
+      nuevosCasos.push(caso);
+    });
+
+    nuevosCasos.push(nuevoCaso);
+
+    setCasosRegistrados(nuevosCasos);
+
+    console.log("Enfermedad registrada:", nuevoCaso);
+
     setTipoMensaje("success");
-    setModalVisible(true);
+    setMensaje("Enfermedad registrada correctamente.");
+
+    limpiarFormulario();
   }
 
   return (
@@ -353,7 +344,7 @@ export default function EnfermedadesScreen({ navigation }) {
               color={COLORS.white}
               style={styles.cancelText}
             >
-              Cancelar
+              Volver
             </CustomText>
           </View>
         </Button>
@@ -381,7 +372,7 @@ export default function EnfermedadesScreen({ navigation }) {
               color={COLORS.white}
               style={styles.headerSubtitle}
             >
-              Registro sanitario del estanque
+              Registro sanitario por finca y estanque
             </CustomText>
           </View>
         </View>
@@ -398,48 +389,24 @@ export default function EnfermedadesScreen({ navigation }) {
         )}
 
         <Card>
-          <SectionTitle title="Resumen del riesgo" icon={ICONS.notification} />
-
-          <View style={styles.riskRow}>
-            <Icon
-              icon={ICONS.notification}
-              size={24}
-              color={obtenerColorRiesgo()}
-            />
-
-            <View style={styles.riskTextBox}>
-              <CustomText
-                size={13}
-                color={COLORS.textTertiary}
-                style={styles.boldText}
-              >
-                Nivel sanitario actual
-              </CustomText>
-
-              <Badge
-                label={obtenerTextoRiesgo()}
-                variant={obtenerVarianteRiesgo()}
-                style={styles.badge}
-              />
-            </View>
-          </View>
-
-          <ProgressBar
-            label="Riesgo"
-            value={obtenerRiesgo()}
-            color={obtenerColorRiesgo()}
-            backgroundColor={COLORS.secondary}
-          />
-        </Card>
-
-        <Card>
-          <SectionTitle title="Identificacion" icon={ICONS.document} />
+          <SectionTitle title="Ubicación del caso" icon={ICONS.document} />
 
           <View style={gridStyle}>
             <View style={itemStyle}>
               <Select
-                label="Estanque relacionado *"
-                options={ESTANQUES}
+                label="Finca *"
+                options={FINCAS}
+                value={finca}
+                onChange={cambiarFinca}
+                placeholder="Seleccione la finca"
+                labelStyle={styles.label}
+              />
+            </View>
+
+            <View style={itemStyle}>
+              <Select
+                label="Estanque *"
+                options={opcionesEstanques}
                 value={estanque}
                 onChange={setEstanque}
                 placeholder="Seleccione el estanque"
@@ -465,42 +432,38 @@ export default function EnfermedadesScreen({ navigation }) {
                 labelStyle={styles.label}
               />
             </View>
-
-            <View style={itemStyle}>
-              <Select
-                label="Tipo de evento *"
-                options={EVENTOS}
-                value={tipoEvento}
-                onChange={setTipoEvento}
-                placeholder="Seleccione el evento"
-                labelStyle={styles.label}
-              />
-            </View>
           </View>
         </Card>
 
         <Card>
-          <SectionTitle title="Enfermedad detectada" icon={ICONS.report} />
+          <SectionTitle title="Enfermedades que presenta" icon={ICONS.report} />
+
+          <View style={styles.optionsGrid}>
+            {ENFERMEDADES.map(function (item) {
+              return (
+                <OptionButton
+                  key={item.value}
+                  label={item.label}
+                  value={item.value}
+                  selectedValues={enfermedadesSeleccionadas}
+                  onPress={cambiarEnfermedad}
+                />
+              );
+            })}
+          </View>
+        </Card>
+
+        <Card>
+          <SectionTitle title="Reporte sanitario" icon={ICONS.info} />
 
           <View style={gridStyle}>
-            <View style={itemStyle}>
-              <Select
-                label="Enfermedad *"
-                options={ENFERMEDADES}
-                value={enfermedad}
-                onChange={setEnfermedad}
-                placeholder="Seleccione la enfermedad"
-                labelStyle={styles.label}
-              />
-            </View>
-
             <View style={itemStyle}>
               <Select
                 label="Severidad *"
                 options={SEVERIDADES}
                 value={severidad}
                 onChange={setSeveridad}
-                placeholder="Seleccione severidad"
+                placeholder="Seleccione la severidad"
                 labelStyle={styles.label}
               />
             </View>
@@ -519,22 +482,10 @@ export default function EnfermedadesScreen({ navigation }) {
 
             <View style={itemFullStyle}>
               <Input
-                label="Sintomas"
-                value={sintomas}
-                onChangeText={setSintomas}
-                placeholder="Describa sintomas observados"
-                multiline={true}
-                labelStyle={styles.label}
-                style={styles.textArea}
-              />
-            </View>
-
-            <View style={itemFullStyle}>
-              <Input
-                label="Diagnostico de laboratorio"
-                value={diagnostico}
-                onChangeText={setDiagnostico}
-                placeholder="Resultado o referencia del diagnostico"
+                label="Reporte *"
+                value={reporte}
+                onChangeText={setReporte}
+                placeholder="Describa síntomas, observaciones o acciones realizadas"
                 multiline={true}
                 labelStyle={styles.label}
                 style={styles.textArea}
@@ -542,176 +493,35 @@ export default function EnfermedadesScreen({ navigation }) {
             </View>
           </View>
         </Card>
+
+        <Button onPress={registrarEnfermedad} style={styles.saveButton}>
+          <View style={styles.inlineButtonContentCentered}>
+            <Icon icon={ICONS.save} size={18} color={COLORS.white} />
+
+            <CustomText size={16} color={COLORS.white} style={styles.saveText}>
+              Registrar enfermedad
+            </CustomText>
+          </View>
+        </Button>
 
         <Card>
-          <SectionTitle title="Tratamiento" icon={ICONS.chemicalContainer} />
+          <SectionTitle title="Detalles guardados" icon={ICONS.certificate} />
 
-          <View style={gridStyle}>
-            <View style={itemStyle}>
-              <Select
-                label="¿Usa probiotico?"
-                options={SI_NO}
-                value={usaProbiotico}
-                onChange={setUsaProbiotico}
-                placeholder="Seleccione una opcion"
-                labelStyle={styles.label}
-              />
-            </View>
+          {casosRegistrados.length === 0 && (
+            <CustomText
+              size={14}
+              color={COLORS.textTertiary}
+              style={styles.emptyText}
+            >
+              Aún no hay enfermedades registradas.
+            </CustomText>
+          )}
 
-            <View style={itemStyle}>
-              <Input
-                label="Producto probiotico"
-                value={productoProbiotico}
-                onChangeText={setProductoProbiotico}
-                placeholder="Ej: BIOMIN"
-                labelStyle={styles.label}
-                editable={usaProbiotico === "si"}
-              />
-            </View>
-
-            <View style={itemStyle}>
-              <Select
-                label="¿Usa antibiotico?"
-                options={SI_NO}
-                value={usaAntibiotico}
-                onChange={setUsaAntibiotico}
-                placeholder="Seleccione una opcion"
-                labelStyle={styles.label}
-              />
-            </View>
-
-            <View style={itemStyle}>
-              <Input
-                label="Producto antibiotico"
-                value={productoAntibiotico}
-                onChangeText={setProductoAntibiotico}
-                placeholder="Ej: TM700"
-                labelStyle={styles.label}
-                editable={usaAntibiotico === "si"}
-              />
-            </View>
-
-            <View style={itemStyle}>
-              <NumberInput
-                label="Periodo de retiro (dias)"
-                value={periodoRetiro}
-                onChangeText={setPeriodoRetiro}
-                min={0}
-                max={365}
-                step={1}
-                editable={usaAntibiotico === "si"}
-                labelStyle={styles.label}
-              />
-            </View>
-          </View>
+          {casosRegistrados.map(function (caso) {
+            return <CasoRegistrado key={caso.id} caso={caso} />;
+          })}
         </Card>
-
-        <Card>
-          <SectionTitle title="Seguimiento" icon={ICONS.update} />
-
-          <View style={gridStyle}>
-            <View style={itemStyle}>
-              <Select
-                label="Estado del caso"
-                options={ESTADOS_CASO}
-                value={estadoCaso}
-                onChange={setEstadoCaso}
-                placeholder="Seleccione el estado"
-                labelStyle={styles.label}
-              />
-            </View>
-
-            <View style={itemStyle}>
-              <DateInput
-                label="Proxima revision"
-                value={proximaRevision}
-                onChangeText={setProximaRevision}
-                allowFutureDates={true}
-                labelStyle={styles.label}
-              />
-            </View>
-
-            <View style={itemFullStyle}>
-              <Input
-                label="Observaciones"
-                value={observaciones}
-                onChangeText={setObservaciones}
-                placeholder="Agregue observaciones"
-                multiline={true}
-                labelStyle={styles.label}
-                style={styles.textArea}
-              />
-            </View>
-          </View>
-        </Card>
-
-        <View style={actionsStyle}>
-          <Button
-            variant="outline"
-            onPress={function () {
-              setModalVisible(true);
-            }}
-            style={styles.actionButton}
-          >
-            <View style={styles.inlineButtonContentCentered}>
-              <Icon icon={ICONS.info} size={18} color={COLORS.primary} />
-
-              <CustomText
-                size={16}
-                color={COLORS.primary}
-                style={styles.outlineButtonText}
-              >
-                Ver recomendacion
-              </CustomText>
-            </View>
-          </Button>
-
-          <Button onPress={registrar} style={styles.actionButton}>
-            <View style={styles.inlineButtonContentCentered}>
-              <Icon icon={ICONS.save} size={18} color={COLORS.white} />
-
-              <CustomText
-                size={16}
-                color={COLORS.white}
-                style={styles.saveText}
-              >
-                Registrar caso
-              </CustomText>
-            </View>
-          </Button>
-        </View>
       </View>
-
-      <Modal
-        visible={modalVisible}
-        onClose={function () {
-          setModalVisible(false);
-        }}
-        closeText="Cerrar"
-        overlayStyle={styles.modalOverlay}
-        containerStyle={styles.modalContainer}
-      >
-        <View style={styles.modalHeader}>
-          <Icon icon={ICONS.certificate} size={26} color={COLORS.primary} />
-
-          <Title
-            level={4}
-            color={COLORS.textSecondary}
-            fuente={TYPOGRAPHY.fontFamily.bold}
-            style={styles.modalTitle}
-          >
-            Recomendacion sanitaria
-          </Title>
-        </View>
-
-        <CustomText
-          size={15}
-          color={COLORS.textSecondary}
-          style={styles.modalText}
-        >
-          {obtenerRecomendacion()}
-        </CustomText>
-      </Modal>
     </ScrollView>
   );
 }
@@ -729,6 +539,106 @@ function SectionTitle({ title, icon }) {
       >
         {title}
       </Title>
+    </View>
+  );
+}
+
+function OptionButton({ label, value, selectedValues, onPress }) {
+  let seleccionado = false;
+
+  selectedValues.forEach(function (item) {
+    if (item === value) {
+      seleccionado = true;
+    }
+  });
+
+  let buttonStyle = [styles.optionButton];
+  let textColor = COLORS.textSecondary;
+  let textFont = TYPOGRAPHY.fontFamily.medium;
+
+  if (seleccionado === true) {
+    buttonStyle.push(styles.optionButtonSelected);
+    textColor = COLORS.primary;
+    textFont = TYPOGRAPHY.fontFamily.bold;
+  }
+
+  function handlePress() {
+    onPress(value);
+  }
+
+  return (
+    <Button variant="outline" onPress={handlePress} style={buttonStyle}>
+      <CustomText
+        size={13}
+        color={textColor}
+        align="center"
+        style={{ fontFamily: textFont }}
+      >
+        {label}
+      </CustomText>
+    </Button>
+  );
+}
+
+function CasoRegistrado({ caso }) {
+  let enfermedadesTexto = "";
+
+  caso.enfermedades.forEach(function (item, index) {
+    let nombre = obtenerNombrePorValor(ENFERMEDADES, item);
+
+    if (index === 0) {
+      enfermedadesTexto = nombre;
+    }
+
+    if (index > 0) {
+      enfermedadesTexto = `${enfermedadesTexto}, ${nombre}`;
+    }
+  });
+
+  return (
+    <View style={styles.savedCase}>
+      <CustomText
+        size={15}
+        color={COLORS.textPrimary}
+        style={styles.savedCaseTitle}
+      >
+        {caso.fincaNombre} - {caso.estanque}
+      </CustomText>
+
+      <Info label="Fecha" value={caso.fechaReporte} />
+      <Info label="Responsable" value={caso.responsable} />
+      <Info label="Enfermedades" value={enfermedadesTexto} />
+      <Info label="Severidad" value={caso.severidad} />
+      <Info label="Mortalidad" value={caso.mortalidad} />
+      <Info label="Reporte" value={caso.reporte} />
+    </View>
+  );
+}
+
+function Info({ label, value }) {
+  let valorFinal = value;
+
+  if (value === "" || value === undefined || value === null) {
+    valorFinal = "No registrado";
+  }
+
+  return (
+    <View style={styles.infoRow}>
+      <CustomText
+        size={13}
+        color={COLORS.textTertiary}
+        style={styles.infoLabel}
+      >
+        {label}
+      </CustomText>
+
+      <CustomText
+        size={14}
+        color={COLORS.textSecondary}
+        style={styles.infoValue}
+      >
+        {valorFinal}
+      </CustomText>
     </View>
   );
 }
