@@ -29,7 +29,7 @@ import Select from "../../../shared/components/Select";
 import CustomText from "../../../shared/components/Text";
 import Title from "../../../shared/components/Title";
 
-import { styles } from "../styles/EnfermedadesStyles";
+import { styles } from "../styles/EnfermedadesStyle";
 
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";

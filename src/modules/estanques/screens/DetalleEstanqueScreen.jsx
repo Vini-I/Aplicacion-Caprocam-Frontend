@@ -9,7 +9,7 @@ import Icon from "../../../shared/components/Icons";
 import CustomText from "../../../shared/components/Text";
 import Title from "../../../shared/components/Title";
 
-import { styles } from "../styles/EstanqueStyles";
+import { styles } from "../styles/EstanqueStyle";
 
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
