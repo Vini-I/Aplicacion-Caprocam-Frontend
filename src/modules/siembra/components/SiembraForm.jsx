@@ -15,36 +15,97 @@
  * - Select: selección de estanque, proveedor y técnica de cultivo.
  * - NumberInput: campos numéricos para cantidad y duración del ciclo.
  */
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, View, Platform, Text } from "react-native";
 
 import Card from "../../../shared/components/Card";
 import Input from "../../../shared/components/Input";
 import NumberInput from "../../../shared/components/NumberInput";
 import Select from "../../../shared/components/Select";
+import DateInput from "../../../shared/components/DateInput";
 
 import {
-  obtenerEstanques,
+  obtenerFincas,
+  obtenerEstanquesPorFinca,
   obtenerProveedoresLarva,
   obtenerTecnicasCultivo,
+  obtenerTiposLarva,
 } from "../services/SiembraService";
 
 import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
 
+function convertDateToWeb(textDate) {
+  const parts = textDate.split("/");
+
+  if (parts.length !== 3) {
+    return "";
+  }
+
+  const day = parts[0];
+  const month = parts[1];
+  const year = parts[2];
+
+  return `${year}-${month}-${day}`;
+}
+
+function convertWebDateToText(webDate) {
+  const parts = webDate.split("-");
+
+  if (parts.length !== 3) {
+    return "";
+  }
+
+  const year = parts[0];
+  const month = parts[1];
+  const day = parts[2];
+
+  return `${day}/${month}/${year}`;
+}
+
+function getTodayWebDate() {
+  const today = new Date();
+
+  const day = String(today.getDate()).padStart(2, "0");
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const year = today.getFullYear();
+
+  return `${year}-${month}-${day}`;
+}
+
 export default function SiembraForm({ formData, onChange }) {
-  const estanques = obtenerEstanques();
+  const fincas = obtenerFincas();
+  const estanques = obtenerEstanquesPorFinca(formData.finca);
   const proveedoresLarva = obtenerProveedoresLarva();
   const tecnicasCultivo = obtenerTecnicasCultivo();
+  const tiposLarva = obtenerTiposLarva();
 
   function renderInformacionBasica() {
     return (
       <Card title="Información básica" titleStyle={styles.cardTitle}>
-        <Input
-          label="Fecha de siembra"
-          inputType="date"
-          value={formData.fechaSiembra}
-          onChangeText={(value) => onChange("fechaSiembra", value)}
-        />
+        {Platform.OS === "web" ? (
+          <View style={styles.webDateContainer}>
+            <Text style={styles.webDateLabel}>Fecha de siembra</Text>
+
+            <input
+              type="date"
+              value={convertDateToWeb(formData.fechaSiembra)}
+              max={getTodayWebDate()}
+              onChange={(event) =>
+                onChange(
+                  "fechaSiembra",
+                  convertWebDateToText(event.target.value),
+                )
+              }
+              style={styles.webDateInput}
+            />
+          </View>
+        ) : (
+          <DateInput
+            label="Fecha de siembra"
+            value={formData.fechaSiembra}
+            onChangeText={(value) => onChange("fechaSiembra", value)}
+          />
+        )}
 
         <Input
           label="Hora de ingreso"
@@ -54,11 +115,23 @@ export default function SiembraForm({ formData, onChange }) {
         />
 
         <Select
+          label="Finca"
+          placeholder="Seleccionar finca"
+          options={fincas}
+          value={formData.finca}
+          onChange={(value) => {
+            onChange("finca", value);
+            onChange("estanque", "");
+          }}
+        />
+
+        <Select
           label="Estanque"
           placeholder="Seleccionar estanque"
           options={estanques}
           value={formData.estanque}
           onChange={(value) => onChange("estanque", value)}
+          disabled={formData.finca === ""}
         />
 
         <Select
@@ -67,6 +140,14 @@ export default function SiembraForm({ formData, onChange }) {
           options={proveedoresLarva}
           value={formData.proveedorLarva}
           onChange={(value) => onChange("proveedorLarva", value)}
+        />
+
+        <Select
+          label="Tipo de larva"
+          placeholder="Seleccionar tipo de larva"
+          options={tiposLarva}
+          value={formData.tipoLarva}
+          onChange={(value) => onChange("tipoLarva", value)}
         />
       </Card>
     );
@@ -126,5 +207,26 @@ const styles = StyleSheet.create({
   cardTitle: {
     color: COLORS.primary,
     fontFamily: TYPOGRAPHY.fontFamily.bold,
+  },
+  webDateContainer: {
+    marginBottom: 12,
+  },
+  webDateLabel: {
+    fontSize: 14,
+    fontFamily: TYPOGRAPHY.fontFamily.medium,
+    color: COLORS.textSecondary,
+    marginBottom: 6,
+  },
+  webDateInput: {
+    height: 45,
+    borderWidth: 1,
+    borderColor: COLORS.secondary,
+    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    fontSize: 16,
+    color: COLORS.textSecondary,
+    backgroundColor: COLORS.white,
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
   },
 });

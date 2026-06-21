@@ -15,7 +15,6 @@
  * - Button: acción para ver detalles o editar.
  */
 import { View, Text, StyleSheet } from "react-native";
-import { MaterialIcons } from "@expo/vector-icons";
 
 import Card from "../../../shared/components/Card";
 import Badge from "../../../shared/components/Badge";
@@ -23,6 +22,7 @@ import Button from "../../../shared/components/Button";
 
 import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
+import Icon from "../../../shared/components/Icons";
 import { ICONS } from "../../../theme/icons";
 
 export default function SiembraCard({
@@ -64,11 +64,7 @@ export default function SiembraCard({
 
       <Button onPress={onPress} style={styles.actionButton}>
         <View style={styles.actionButtonContent}>
-          <MaterialIcons
-            name={ICONS.edit.name}
-            size={16}
-            color={COLORS.white}
-          />
+          <Icon icon={ICONS.edit} size={16} color={COLORS.white} />
 
           <Text style={styles.actionButtonText}>Ver detalles / editar</Text>
         </View>
