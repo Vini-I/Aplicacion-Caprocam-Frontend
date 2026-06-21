@@ -1,11 +1,24 @@
+/**
+ * EditarProveedorScreen
+ * Pantalla para editar la información de un proveedor existente.
+ * Permite modificar el tipo de producto, teléfono, correo, dirección y notas del proveedor.
+ * Incluye validaciones para teléfono y correo electrónico.
+ * Al guardar, redirige a la pantalla de detalle del proveedor.
+ *
+ * Funcionalidades principales:
+ * - Mostrar los datos actuales del proveedor en un formulario editable.
+ * - Validar que el teléfono tenga exactamente 8 dígitos.
+ * - Validar que el correo tenga un formato válido.
+ * - Mostrar mensajes de error en tiempo real al escribir.
+ * - Navegar de vuelta al detalle del proveedor al guardar.
+ *
+ * Datos:
+ * - Los datos iniciales del proveedor se cargan desde proveedorData (datos de ejemplo).
+ */
 import React, { useState } from "react";
 import { View, ScrollView } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import {
-  getProveedorById,
-  updateProveedor,
-  TIPOS_PRODUCTO,
-} from "../services/proveedoresService";
+import { useRouter } from "expo-router";
+import { tiposProducto, proveedoresMock } from "../services/proveedorData";
 
 import Navbar from "../../../shared/components/Navbar";
 import Card from "../../../shared/components/Card";
@@ -19,6 +32,7 @@ import { styles } from "../styles/editarProveedorStyles";
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
 
+// Validación de teléfono: debe tener exactamente 8 dígitos (sin espacios ni guiones)
 function validarTelefono(valor) {
   if (!valor) return "El teléfono es obligatorio.";
   const soloDigitos = valor.replace(/\D/g, "");
@@ -27,6 +41,7 @@ function validarTelefono(valor) {
   return "";
 }
 
+// Validación de correo: debe tener un formato válido (contener @ y .)
 function validarCorreo(valor) {
   if (!valor) return "El correo es obligatorio.";
   if (!valor.includes("@")) return "El correo debe contener @.";
@@ -37,47 +52,18 @@ function validarCorreo(valor) {
 }
 
 export default function EditarProveedorScreen() {
-  const { id } = useLocalSearchParams();
-  const base = getProveedorById(id) || {};
   const router = useRouter();
+  const base = proveedoresMock[0];
 
-  const [nombre, setNombre] = useState(base.nombre ?? "");
-  const [tipoProducto, setTipoProducto] = useState(base.tipoProducto ?? "");
-  const [telefono, setTelefono] = useState(base.telefono ?? "");
-  const [correo, setCorreo] = useState(base.correo ?? "");
-  const [direccion, setDireccion] = useState(base.direccion ?? "");
-  const [notas, setNotas] = useState(base.notas ?? "");
+  const [nombre, setNombre] = useState(base.nombre);
+  const [tipoProducto, setTipoProducto] = useState(base.tipoProducto);
+  const [telefono, setTelefono] = useState(base.telefono);
+  const [correo, setCorreo] = useState(base.correo);
+  const [direccion, setDireccion] = useState(base.direccion);
+  const [notas, setNotas] = useState(base.notas);
 
   const [errorTelefono, setErrorTelefono] = useState("");
   const [errorCorreo, setErrorCorreo] = useState("");
-
-  const originalForm = {
-    nombre: base.nombre ?? "",
-    tipoProducto: base.tipoProducto ?? "",
-    telefono: base.telefono ?? "",
-    correo: base.correo ?? "",
-    direccion: base.direccion ?? "",
-    notas: base.notas ?? "",
-  };
-  const currentForm = {
-    nombre,
-    tipoProducto,
-    telefono,
-    correo,
-    direccion,
-    notas,
-  };
-  const hasChanges =
-    JSON.stringify(currentForm) !== JSON.stringify(originalForm);
-
-  const hasRequiredData = telefono !== "" && correo !== "";
-  const canSave = hasRequiredData && hasChanges;
-
-  const validationMessage = !hasRequiredData
-    ? "Complete los campos obligatorios para guardar."
-    : !hasChanges
-      ? "Realice algún cambio para guardar la actualización."
-      : "";
 
   function handleTelefonoChange(valor) {
     setTelefono(valor);
@@ -101,19 +87,7 @@ export default function EditarProveedorScreen() {
     const errorCorr = validarCorreo(correo);
     setErrorTelefono(errorTel);
     setErrorCorreo(errorCorr);
-
     if (errorTel !== "" || errorCorr !== "") return;
-    if (!hasChanges) return;
-
-    updateProveedor({
-      id: base.id,
-      nombre,
-      tipoProducto,
-      telefono,
-      correo,
-      direccion,
-      notas,
-    });
     volverADetalle();
   }
 
@@ -124,11 +98,7 @@ export default function EditarProveedorScreen() {
         style={styles.navbar}
         titleStyle={styles.navbarTitle}
         leftContent={
-          <Button
-            variant="ghost"
-            onPress={volverADetalle}
-            style={styles.backBtn}
-          >
+          <Button variant="ghost" onPress={volverADetalle}>
             <Icon icon={ICONS.exit} size={20} color={COLORS.white} />
           </Button>
         }
@@ -158,7 +128,7 @@ export default function EditarProveedorScreen() {
             label="Tipo de producto"
             value={tipoProducto}
             onChange={setTipoProducto}
-            options={TIPOS_PRODUCTO}
+            options={tiposProducto}
             containerStyle={styles.field}
             selectStyle={styles.select}
             labelStyle={styles.label}
@@ -175,7 +145,7 @@ export default function EditarProveedorScreen() {
             labelStyle={styles.label}
           />
           {errorTelefono !== "" && (
-            <CustomText style={styles.validationText}>{errorTelefono}</CustomText>
+            <CustomText style={styles.errorText}>{errorTelefono}</CustomText>
           )}
 
           <Input
@@ -189,7 +159,7 @@ export default function EditarProveedorScreen() {
             labelStyle={styles.label}
           />
           {errorCorreo !== "" && (
-            <CustomText style={styles.validationText}>{errorCorreo}</CustomText>
+            <CustomText style={styles.errorText}>{errorCorreo}</CustomText>
           )}
 
           <Input
@@ -215,18 +185,11 @@ export default function EditarProveedorScreen() {
 
           <Button
             onPress={guardar}
-            disabled={!canSave}
-            style={[styles.saveButton, !canSave && styles.saveButtonDisabled]}
+            style={styles.saveButton}
             textStyle={styles.saveButtonText}
           >
             Guardar cambios
           </Button>
-
-          {validationMessage !== "" && (
-            <CustomText style={styles.validationText}>
-              {validationMessage}
-            </CustomText>
-          )}
         </Card>
       </ScrollView>
     </View>
