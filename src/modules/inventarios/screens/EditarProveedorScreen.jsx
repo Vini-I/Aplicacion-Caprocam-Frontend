@@ -1,7 +1,24 @@
+/**
+ * EditarProveedorScreen
+ * Pantalla para editar la información de un proveedor existente.
+ * Permite modificar el tipo de producto, teléfono, correo, dirección y notas del proveedor.
+ * Incluye validaciones para teléfono y correo electrónico.
+ * Al guardar, redirige a la pantalla de detalle del proveedor.
+ *
+ * Funcionalidades principales:
+ * - Mostrar los datos actuales del proveedor en un formulario editable.
+ * - Validar que el teléfono tenga exactamente 8 dígitos.
+ * - Validar que el correo tenga un formato válido.
+ * - Mostrar mensajes de error en tiempo real al escribir.
+ * - Navegar de vuelta al detalle del proveedor al guardar.
+ *
+ * Datos:
+ * - Los datos iniciales del proveedor se cargan desde proveedorData (datos de ejemplo).
+ */
 import React, { useState } from "react";
-import { View, ScrollView, StyleSheet } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { getProveedorById, updateProveedor } from "../services/proveedoresService";
+import { View, ScrollView } from "react-native";
+import { useRouter } from "expo-router";
+import { tiposProducto, proveedoresMock } from "../services/proveedorData";
 
 import Navbar from "../../../shared/components/Navbar";
 import Card from "../../../shared/components/Card";
@@ -11,49 +28,52 @@ import Button from "../../../shared/components/Button";
 import CustomText from "../../../shared/components/Text";
 import Icon from "../../../shared/components/Icons";
 
+import { styles } from "../styles/editarProveedorStyles";
 import { COLORS } from "../../../theme/colors";
-import { TYPOGRAPHY } from "../../../theme/typography";
 import { ICONS } from "../../../theme/icons";
 
-const TIPOS_PRODUCTO = [
-  { label: "Alimento", value: "alimento" },
-  { label: "Antibióticos", value: "antibioticos" },
-  { label: "Fertilizantes", value: "fertilizantes" },
-  { label: "Probióticos", value: "probioticos" },
-  { label: "Equipos", value: "equipos" },
-];
+// Validación de teléfono: debe tener exactamente 8 dígitos (sin espacios ni guiones)
+function validarTelefono(valor) {
+  if (!valor) return "El teléfono es obligatorio.";
+  const soloDigitos = valor.replace(/\D/g, "");
+  if (soloDigitos.length !== 8)
+    return "El teléfono debe tener exactamente 8 dígitos.";
+  return "";
+}
+
+// Validación de correo: debe tener un formato válido (contener @ y .)
+function validarCorreo(valor) {
+  if (!valor) return "El correo es obligatorio.";
+  if (!valor.includes("@")) return "El correo debe contener @.";
+  const partes = valor.split("@");
+  if (!partes[1] || !partes[1].includes("."))
+    return "Ingrese un correo válido. Ej: ventas@empresa.com";
+  return "";
+}
 
 export default function EditarProveedorScreen() {
-  const { id } = useLocalSearchParams();
-  const base = getProveedorById(id) || {};
   const router = useRouter();
+  const base = proveedoresMock[0];
 
-  const [nombre, setNombre] = useState(base.nombre ?? "");
-  const [tipoProducto, setTipoProducto] = useState(base.tipoProducto ?? "");
-  const [telefono, setTelefono] = useState(base.telefono ?? "");
-  const [correo, setCorreo] = useState(base.correo ?? "");
-  const [direccion, setDireccion] = useState(base.direccion ?? "");
-  const [notas, setNotas] = useState(base.notas ?? "");
+  const [nombre, setNombre] = useState(base.nombre);
+  const [tipoProducto, setTipoProducto] = useState(base.tipoProducto);
+  const [telefono, setTelefono] = useState(base.telefono);
+  const [correo, setCorreo] = useState(base.correo);
+  const [direccion, setDireccion] = useState(base.direccion);
+  const [notas, setNotas] = useState(base.notas);
 
-  const originalForm = {
-    nombre: base.nombre ?? "",
-    tipoProducto: base.tipoProducto ?? "",
-    telefono: base.telefono ?? "",
-    correo: base.correo ?? "",
-    direccion: base.direccion ?? "",
-    notas: base.notas ?? "",
-  };
-  const currentForm = { nombre, tipoProducto, telefono, correo, direccion, notas };
-  const hasChanges = JSON.stringify(currentForm) !== JSON.stringify(originalForm);
+  const [errorTelefono, setErrorTelefono] = useState("");
+  const [errorCorreo, setErrorCorreo] = useState("");
 
-  const hasRequiredData = telefono !== "" && correo !== "";
-  const canSave = hasRequiredData && hasChanges;
+  function handleTelefonoChange(valor) {
+    setTelefono(valor);
+    setErrorTelefono(validarTelefono(valor));
+  }
 
-  const validationMessage = !hasRequiredData
-    ? "Complete los campos obligatorios para guardar."
-    : !hasChanges
-      ? "Realice algún cambio para guardar la actualización."
-      : "";
+  function handleCorreoChange(valor) {
+    setCorreo(valor);
+    setErrorCorreo(validarCorreo(valor));
+  }
 
   function volverADetalle() {
     router.replace({
@@ -63,9 +83,11 @@ export default function EditarProveedorScreen() {
   }
 
   function guardar() {
-    if (!canSave) return;
-
-    updateProveedor({ id: base.id, nombre, tipoProducto, telefono, correo, direccion, notas });
+    const errorTel = validarTelefono(telefono);
+    const errorCorr = validarCorreo(correo);
+    setErrorTelefono(errorTel);
+    setErrorCorreo(errorCorr);
+    if (errorTel !== "" || errorCorr !== "") return;
     volverADetalle();
   }
 
@@ -76,7 +98,7 @@ export default function EditarProveedorScreen() {
         style={styles.navbar}
         titleStyle={styles.navbarTitle}
         leftContent={
-          <Button variant="ghost" onPress={volverADetalle} style={styles.backBtn}>
+          <Button variant="ghost" onPress={volverADetalle}>
             <Icon icon={ICONS.exit} size={20} color={COLORS.white} />
           </Button>
         }
@@ -106,7 +128,7 @@ export default function EditarProveedorScreen() {
             label="Tipo de producto"
             value={tipoProducto}
             onChange={setTipoProducto}
-            options={TIPOS_PRODUCTO}
+            options={tiposProducto}
             containerStyle={styles.field}
             selectStyle={styles.select}
             labelStyle={styles.label}
@@ -115,24 +137,30 @@ export default function EditarProveedorScreen() {
           <Input
             label="Teléfono"
             value={telefono}
-            onChangeText={setTelefono}
+            onChangeText={handleTelefonoChange}
             placeholder="+506 2222-3344"
             keyboardType="phone-pad"
             containerStyle={styles.field}
             style={styles.input}
             labelStyle={styles.label}
           />
+          {errorTelefono !== "" && (
+            <CustomText style={styles.errorText}>{errorTelefono}</CustomText>
+          )}
 
           <Input
             label="Correo electrónico"
             value={correo}
-            onChangeText={setCorreo}
+            onChangeText={handleCorreoChange}
             placeholder="ventas@empresa.com"
             keyboardType="email-address"
             containerStyle={styles.field}
             style={styles.input}
             labelStyle={styles.label}
           />
+          {errorCorreo !== "" && (
+            <CustomText style={styles.errorText}>{errorCorreo}</CustomText>
+          )}
 
           <Input
             label="Dirección"
@@ -157,101 +185,13 @@ export default function EditarProveedorScreen() {
 
           <Button
             onPress={guardar}
-            disabled={!canSave}
-            style={[styles.saveButton, !canSave && styles.saveButtonDisabled]}
+            style={styles.saveButton}
             textStyle={styles.saveButtonText}
           >
             Guardar cambios
           </Button>
-
-          {validationMessage !== "" && (
-            <CustomText style={styles.validationText}>
-              {validationMessage}
-            </CustomText>
-          )}
         </Card>
       </ScrollView>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: COLORS.surface },
-  navbar: {
-    backgroundColor: COLORS.primary,
-    borderBottomWidth: 0,
-  },
-  navbarTitle: {
-    color: COLORS.white,
-    fontSize: 20,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    fontWeight: undefined,
-  },
-  backBtn: {
-    marginTop: 0,
-    paddingVertical: 0,
-    paddingHorizontal: 0,
-    backgroundColor: "transparent",
-    borderWidth: 0,
-  },
-  navbarPlaceholder: { width: 32, height: 32 },
-  content: { padding: 16, paddingBottom: 32 },
-  card: {
-    borderRadius: 18,
-    padding: 18,
-    backgroundColor: COLORS.white,
-    borderColor: COLORS.header,
-  },
-  cardTitle: {
-    fontSize: 19,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    fontWeight: undefined,
-    color: COLORS.textSecondary,
-    marginBottom: 16,
-  },
-  field: { marginBottom: 14 },
-  label: {
-    fontSize: 14,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    fontWeight: undefined,
-    color: COLORS.black,
-    marginBottom: 6,
-  },
-  input: {
-    minHeight: 48,
-    borderRadius: 12,
-    borderColor: COLORS.header,
-    backgroundColor: COLORS.white,
-    paddingHorizontal: 14,
-    fontSize: 15,
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
-  },
-  select: {
-    minHeight: 48,
-    borderRadius: 12,
-    borderColor: COLORS.header,
-    backgroundColor: COLORS.white,
-    paddingHorizontal: 14,
-  },
-  saveButton: {
-    marginTop: 10,
-    borderRadius: 14,
-    paddingVertical: 14,
-    backgroundColor: COLORS.primary,
-  },
-  saveButtonDisabled: {
-    backgroundColor: COLORS.textQuaternary || "#D1D5DB",
-  },
-  saveButtonText: {
-    fontSize: 16,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    color: COLORS.white,
-  },
-  validationText: {
-    marginTop: 8,
-    fontSize: 13,
-    textAlign: "center",
-    color: COLORS.textTertiary,
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
-  },
-});
