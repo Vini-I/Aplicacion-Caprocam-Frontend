@@ -4,12 +4,12 @@ import {useRouter} from 'expo-router';
 export default function RegistrosIndex() {
   const router = useRouter();
 
-  const handleFisicoQuimica =  () => { router.push('/(drawer)/(tabs)/registros/FisicoQuimica'); };
-  const handleAlimentacion =  () => { router.push('/(drawer)/(tabs)/registros/Alimentacion'); };
-  const handleMortalidad =  () => { router.push('/(drawer)/(tabs)/registros/Mortalidad'); };
+  const irAFisicoQuimica =  () => { router.push('/(drawer)/(tabs)/registros/FisicoQuimica'); };
+  const irAAlimentacion =  () => { router.push('/(drawer)/(tabs)/registros/Alimentacion'); };
+  const irAMortalidad =  () => { router.push('/(drawer)/(tabs)/registros/Mortalidad'); };
   return <RegistroScreen 
-    onFisicoQuimica={handleFisicoQuimica}
-    onAlimentacion={handleAlimentacion}
-    onMortalidad={handleMortalidad}
+    onFisicoQuimica={irAFisicoQuimica}
+    onAlimentacion={irAAlimentacion}
+    onMortalidad={irAMortalidad}
   />;
 }
