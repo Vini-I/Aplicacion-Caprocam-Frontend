@@ -1,11 +1,20 @@
 import React from 'react';
-import { View, ScrollView, Pressable, StyleSheet, Alert } from 'react-native';
+import { View, ScrollView, Pressable, StyleSheet, Alert, Platform } from 'react-native';
 import { FontAwesome6 } from '@expo/vector-icons';
 import useAlimentacionForm from '../hooks/useAlimentacionForm';
 import AlimentacionForm from '../components/AlimentacionForm';
 import alimentacionService from '../services/alimentacion.service';
-import CustomText from '../../../shared/components/Text';
+import Text from '../../../shared/components/Text';
 import { COLORS } from '../../../theme/colors';
+
+const showAlert = (title, message, buttons) => {
+    if (Platform.OS === 'web') {
+        window.alert(`${title}\n\n${message}`);
+        buttons?.[0]?.onPress?.();
+    } else {
+        Alert.alert(title, message, buttons);
+    }
+};
 
 export default function RegistroAlimentacionScreen({ navigation }) {
     const { form, updateField, resetForm, validarForm } = useAlimentacionForm();
@@ -14,16 +23,17 @@ export default function RegistroAlimentacionScreen({ navigation }) {
         const { valido, errores } = validarForm();
         if (!valido) {
             const lista = Object.values(errores).map(e => `• ${e}`).join('\n');
-            Alert.alert('Campos incompletos', `Por favor complete:\n${lista}`);
+            showAlert('Campos incompletos', `Por favor complete:\n${lista}`);
             return;
         }
         try {
+            console.log('Guardando:', form);
             await alimentacionService.create(form);
-            Alert.alert('Éxito', 'Alimentación registrada correctamente', [
+            showAlert('Éxito', 'Alimentación registrada correctamente', [
                 { text: 'OK', onPress: () => { resetForm(); navigation?.goBack(); } },
             ]);
         } catch {
-            Alert.alert('Error', 'No se pudo guardar el registro');
+            showAlert('Error', 'No se pudo guardar el registro');
         }
     };
 
@@ -38,7 +48,7 @@ export default function RegistroAlimentacionScreen({ navigation }) {
                 onPress={handleGuardar}
             >
                 <FontAwesome6 name="floppy-disk" size={18} color={COLORS.white} solid />
-                <CustomText tamano="md" color={COLORS.white} fuente="Roboto_500Medium">Guardar módulo</CustomText>
+                <Text tamano="md" color={COLORS.white} fuente="Roboto_500Medium">Guardar módulo</Text>
             </Pressable>
         </View>
     );

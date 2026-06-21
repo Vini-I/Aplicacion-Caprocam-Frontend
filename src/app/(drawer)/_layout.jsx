@@ -5,27 +5,27 @@ import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityI
 export default function DrawerLayout() {
   return (
     <Drawer screenOptions={{ headerShown: true }}>
-      <Drawer.Screen 
-        name="(tabs)" 
-        options={{ 
+      <Drawer.Screen
+        name="(tabs)"
+        options={{
           drawerLabel: "Panel Principal",
           title: "Caprocam",
           drawerIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="view-dashboard" color={color} size={size} />
           )
-        }} 
+        }}
       />
-      <Drawer.Screen 
-        name="configuracion" 
-        options={{ 
+      <Drawer.Screen
+        name="configuracion"
+        options={{
           drawerLabel: "Configuración",
           title: "Ajustes de la Aplicación",
           drawerIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="cog" color={color} size={size} />
           )
-        }} 
+        }}
       />
-       <Drawer.Screen
+      <Drawer.Screen
         name="inventarios"
         options={{
           drawerLabel: "Inventario",
@@ -36,16 +36,30 @@ export default function DrawerLayout() {
           ),
         }}
       />
-
-        <Drawer.Screen 
+      <Drawer.Screen
+        name="proveedores"
+        options={{
+          drawerLabel: "Proveedores",
+          title: "Proveedores",
+          headerShown: false,
+          drawerIcon: ({ color, size }) => (
+            <MaterialCommunityIcons
+              name="truck-delivery"
+              color={color}
+              size={size}
+            />
+          ),
+        }}
+      />
+      <Drawer.Screen
         name="linksPrueba"
-        options={{ 
+        options={{
           drawerLabel: "Links de Prueba",
           title: "Links de Prueba",
           drawerIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="link" color={color} size={size} />
           )
-        }} 
+        }}
       />
 
       <Drawer.Screen name="inicio" options={{ drawerItemStyle: { display: "none" } }} />
