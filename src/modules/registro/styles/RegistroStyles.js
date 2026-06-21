@@ -89,5 +89,3 @@ export const styles = StyleSheet.create({
   moduloLabel: { marginBottom: 2 },
   moduloDesc: { marginBottom: 8, lineHeight: 16 },
 });
-
-export default styles;

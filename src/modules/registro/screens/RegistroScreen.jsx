@@ -1,8 +1,7 @@
-import React from 'react';
 import { View, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import CustomText from '../../../shared/components/Text';
+import Text from '../../../shared/components/Text';
 import { COLORS } from '../../../theme/colors';
 
 import FisicoQuimicaScreen from '../../mantAgua/screens/FisicoQuimicaScreen';
@@ -73,18 +72,18 @@ export default function RegistroScreen() {
 
                 {/* ── Selección ── */}
                 <View style={styles.seccion}>
-                    <CustomText size={11} weight="600" color={COLORS.textTertiary} style={styles.seccionLabel}>
+                    <Text size={11} weight="600" color={COLORS.textTertiary} style={styles.seccionLabel}>
                         SELECCIÓN
-                    </CustomText>
+                    </Text>
 
-                    <CustomText size={13} color={COLORS.textSecondary} style={styles.subLabel}>Finca</CustomText>
+                    <Text size={13} color={COLORS.textSecondary} style={styles.subLabel}>Finca</Text>
                     <View style={styles.chips}>
                         {FINCAS.map((f) => (
                             <Chip key={f.id} label={f.nombre} selected={fincaSeleccionada === f.id} onPress={() => handleFinca(f.id)} />
                         ))}
                     </View>
 
-                    <CustomText size={13} color={COLORS.textSecondary} style={styles.subLabel}>Estanque</CustomText>
+                    <Text size={13} color={COLORS.textSecondary} style={styles.subLabel}>Estanque</Text>
                     <View style={styles.chips}>
                         {estanques.map((e) => (
                             <Chip key={e.id} label={e.id} selected={estanqueSeleccionado === e.id} onPress={() => setEstanqueSeleccionado(e.id)} />
@@ -92,16 +91,16 @@ export default function RegistroScreen() {
                     </View>
 
                     {finca && estanque && (
-                        <CustomText size={12} color={COLORS.textTertiary}>
+                        <Text size={12} color={COLORS.textTertiary}>
                             {finca.nombre} → {estanque.id} · {estanque.especie}
-                        </CustomText>
+                        </Text>
                     )}
                 </View>
 
                 {/* ── Módulos ── */}
-                <CustomText size={11} weight="600" color={COLORS.textTertiary} style={styles.seccionLabel}>
+                <Text size={11} weight="600" color={COLORS.textTertiary} style={styles.seccionLabel}>
                     MÓDULOS DEL REGISTRO
-                </CustomText>
+                </Text>
 
                 <View style={styles.grilla}>
                     {MODULOS.map((m) => (

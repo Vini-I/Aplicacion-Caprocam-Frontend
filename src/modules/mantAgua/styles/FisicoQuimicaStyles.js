@@ -58,5 +58,3 @@ export const styles = StyleSheet.create({
   alertBox: { width: '60%', alignSelf: 'center' },
   alertText: { textAlign: 'center', fontWeight: 'bold' },
 });
-
-export default styles;

@@ -1,6 +1,4 @@
-import React from 'react';
-import { TouchableOpacity } from 'react-native';
-import CustomText from '../../../shared/components/Text';
+import Text from '../../../shared/components/Text';
 import Button from '../../../shared/components/Button';
 import { COLORS } from '../../../theme/colors';
 import { styles } from '../styles/RegistroStyles';
@@ -36,13 +34,13 @@ export default function Chip({ label, selected, onPress }) {
       onPress={onPress}
       style={[styles.chip, selected && styles.chipSelected]}
     >
-      <CustomText
+      <Text
         size={13}
         weight={selected ? '600' : '400'}
         color={selected ? COLORS.primary : COLORS.textTertiary}
       >
         {label}
-      </CustomText>
+      </Text>
     </Button>
   );
 }

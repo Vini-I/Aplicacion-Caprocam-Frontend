@@ -28,10 +28,9 @@
  * <ModuloCard modulo={modulo} onPress={null} />
  */
 
-import React from 'react';
 import { View } from 'react-native';
 import Button from '../../../shared/components/Button';
-import CustomText from '../../../shared/components/Text';
+import Text from '../../../shared/components/Text';
 import Icon from '../../../shared/components/Icons';
 import { ICONS } from '../../../theme/icons';
 import { COLORS } from '../../../theme/colors';
@@ -53,17 +52,17 @@ export default function ModuloCard({ modulo, onPress }) {
         <Icon icon={ICONS[modulo.icono]} size={22} color={COLORS.white} />
       </View>
 
-      <CustomText size={14} weight="600" color={disponible ? COLORS.textSecondary : COLORS.textQuaternary} style={styles.moduloLabel}>
+      <Text size={14} weight="600" color={disponible ? COLORS.textSecondary : COLORS.textQuaternary} style={styles.moduloLabel}>
         {modulo.label}
-      </CustomText>
+      </Text>
 
-      <CustomText size={12} color={COLORS.textTertiary} style={styles.moduloDesc}>
+      <Text size={12} color={COLORS.textTertiary} style={styles.moduloDesc}>
         {modulo.descripcion}
-      </CustomText>
+      </Text>
 
-      <CustomText size={12} color={disponible ? COLORS.primary : COLORS.textQuaternary}>
+      <Text size={12} color={disponible ? COLORS.primary : COLORS.textQuaternary}>
         {disponible ? 'Toca para registrar →' : 'Próximamente'}
-      </CustomText>
+      </Text>
     </Button>
   );
 }

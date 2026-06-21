@@ -23,8 +23,7 @@
  * Se renderiza desde RegistroScreen.jsx cuando moduloActivo === 'fisicoquimica'.
  */
 
-import React from 'react';
-import { View, ScrollView, TouchableOpacity, StatusBar } from 'react-native';
+import { View, ScrollView, StatusBar } from 'react-native';
 import Button from '../../../shared/components/Button';
 import Alert from '../../../shared/components/Alert';
 import Text from '../../../shared/components/Text';
@@ -39,10 +38,10 @@ import { styles } from '../styles/FisicoQuimicaStyles';
 
 export default function FisicoQuimicaScreen({ onBack }) {
   const {
-    setSalinidad,
-    setTempReadings, setPhReadings, setOxReadings,
-    showAlert, showAlertEdit,
-    handleGuardar, handleEditar,
+    setLecturasSalinidad,
+    setLecturasTemp, setLecturasPh, setLecturasOx,
+    mostrarAlerta, mostrarAlertaEdicion,
+    alGuardar, alEditar,
   } = useFisicoQuimica();
 
   return (
@@ -74,8 +73,8 @@ export default function FisicoQuimicaScreen({ onBack }) {
           idealMin={7.5} idealMax={8.5}
           sliderMin={4} sliderMax={10}
           step={0.1} decimals={1}
-          maxReadings={2} labelStyle="daynight"
-          onChange={setPhReadings}
+          maxLecturas={2} labelStyle="daynight"
+          onChange={setLecturasPh}
         />
 
         <RangeCard
@@ -84,8 +83,8 @@ export default function FisicoQuimicaScreen({ onBack }) {
           idealMin={15} idealMax={35}
           sliderMin={0} sliderMax={50}
           step={0.1} decimals={1}
-          maxReadings={2} labelStyle="daynight"
-          onChange={setSalinidad}
+          maxLecturas={2} labelStyle="daynight"
+          onChange={setLecturasSalinidad}
         />
 
         <RangeCard
@@ -94,8 +93,8 @@ export default function FisicoQuimicaScreen({ onBack }) {
           idealMin={28} idealMax={30}
           sliderMin={15} sliderMax={45}
           step={0.5} decimals={1}
-          maxReadings={2} labelStyle="daynight"
-          onChange={setTempReadings}
+          maxLecturas={2} labelStyle="daynight"
+          onChange={setLecturasTemp}
         />
 
         <RangeCard
@@ -104,16 +103,9 @@ export default function FisicoQuimicaScreen({ onBack }) {
           idealMin={5} idealMax={7}
           sliderMin={0} sliderMax={20}
           step={0.1} decimals={1}
-          maxReadings={5} labelStyle="numeric"
-          onChange={setOxReadings}
+          maxLecturas={5} labelStyle="numeric"
+          onChange={setLecturasOx}
         />
-
-        {showAlert && (
-          <Alert variant="success" message="¡Módulo guardado exitosamente!" style={styles.alertBox} textStyle={styles.alertText} />
-        )}
-        {showAlertEdit && (
-          <Alert variant="success" message="¡Módulo actualizado exitosamente!" style={styles.alertBox} textStyle={styles.alertText} />
-        )}
 
         <View style={{ height: 24 }} />
       </ScrollView>
@@ -123,17 +115,17 @@ export default function FisicoQuimicaScreen({ onBack }) {
         children={
           <View style={styles.footerContent}>
             <View>
-              {showAlert && (
+              {mostrarAlerta && (
                 <Alert variant="success" message="¡Módulo guardado exitosamente!" style={styles.alertBox} textStyle={styles.alertText} />
               )}
-              {showAlertEdit && (
+              {mostrarAlertaEdicion && (
                 <Alert variant="success" message="¡Módulo actualizado exitosamente!" style={styles.alertBox} textStyle={styles.alertText} />
               )}
             </View>
 
             <View style={styles.footerActions}>
-              <Button variant="outline" onPress={handleEditar}>Actualizar módulo</Button>
-              <Button variant="primary" onPress={handleGuardar}>Guardar módulo</Button>
+              <Button variant="outline" onPress={alEditar}>Actualizar módulo</Button>
+              <Button variant="primary" onPress={alGuardar}>Guardar módulo</Button>
             </View>
           </View>
         }

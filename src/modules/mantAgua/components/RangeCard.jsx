@@ -1,9 +1,9 @@
-import React from 'react';
-import { View, TextInput} from 'react-native';
+import { View, TextInput } from 'react-native';
 import ProgressBar from '../../../shared/components/ProgressBar';
 import Button from '../../../shared/components/Button';
 import Text from '../../../shared/components/Text';
 import Title from '../../../shared/components/Title';
+import Input from '../../../shared/components/Input';
 import Icon from '../../../shared/components/Icons';
 import { COLORS } from '../../../theme/colors';
 import { ICONS } from '../../../theme/icons';
@@ -22,7 +22,7 @@ import { cardStyles as s, innerStyles as inner } from '../styles/RangeCardStyles
  *
  * Permite:
  * - Mostrar una etiqueta y una unidad de medida
- * - Registrar una o varias mediciones (hasta maxReadings)
+ * - Registrar una o varias mediciones (hasta maxLecturas)
  * - Marcar si el valor está dentro del rango ideal
  * - Mostrar una barra de progreso por cada lectura
  * - Trabajar con un rango ideal completo (idealMin + idealMax)
@@ -45,12 +45,12 @@ import { cardStyles as s, innerStyles as inner } from '../styles/RangeCardStyles
  * sliderMax      number   — Valor máximo permitido al editar
  * step           number   — Incremento/decremento de los botones +/-. Default: 0.1
  * decimals       number   — Decimales a mostrar/redondear. Default: 1
- * maxReadings    number   — Tope de lecturas que se pueden agregar. Default: 4
+ * maxLecturas    number   — Tope de lecturas que se pueden agregar. Default: 4
  * showRangeColor boolean  — Si false, nunca pinta de verde aunque esté en rango. Default: true
  * labelStyle     string   — "numeric" (①②③) o "daynight" (sol/luna). Default: "numeric"
  * badgeLabel     string?  — Texto del badge superior derecho. Si no se pasa,
  *                            se autogenera con idealMin/idealMax
- * onChange       fn?      — (readings) => void, se llama con el arreglo
+ * onChange       fn?      — (lecturas) => void, se llama con el arreglo
  *                            completo de lecturas en cada cambio
  *
  * ============================================================
@@ -68,9 +68,9 @@ import { cardStyles as s, innerStyles as inner } from '../styles/RangeCardStyles
  *   sliderMax={10}
  *   step={0.1}
  *   decimals={1}
- *   maxReadings={2}
+ *   maxLecturas={2}
  *   labelStyle="daynight"
- *   onChange={(lecturas) => setPhReadings(lecturas)}
+ *   onChange={(lecturas) => setLecturasPh(lecturas)}
  * />
  *
  * // Solo mínimo recomendado (sin idealMax), hasta 5 lecturas numeradas
@@ -81,17 +81,17 @@ import { cardStyles as s, innerStyles as inner } from '../styles/RangeCardStyles
  *   idealMin={5}
  *   sliderMin={0}
  *   sliderMax={20}
- *   maxReadings={5}
+ *   maxLecturas={5}
  *   labelStyle="numeric"
- *   onChange={(lecturas) => setOxReadings(lecturas)}
+ *   onChange={(lecturas) => setLecturasOx(lecturas)}
  * />
  */
 
-const LABELS_DAYNIGHT = [
+const ETIQUETAS_DIA_NOCHE = [
   { type: 'icon', icon: ICONS.morningSun },
   { type: 'icon', icon: ICONS.nightSun },
 ];
-const LABELS_NUMERIC = [
+const ETIQUETAS_NUMERICAS = [
   { type: 'text', value: '①' },
   { type: 'text', value: '②' },
   { type: 'text', value: '③' },
@@ -109,28 +109,25 @@ export default function RangeCard({
   sliderMax,
   step = 0.1,
   decimals = 1,
-  maxReadings = 4,
+  maxLecturas = 4,
   showRangeColor = true,
   labelStyle = 'numeric',
   badgeLabel,
   onChange,
 }) {
   const {
-    readings,
-    addReading,
-    removeReading,
-    normalize,
-    hasUpperIdeal,
-    globalProgress,
-    allOk,
-    getReadingHandlers,
-  } = useRangeCard({ idealMin, idealMax, sliderMin, sliderMax, step, decimals, maxReadings, onChange });
+    lecturas,
+    agregarLectura,
+    eliminarLectura,
+    normalizar,
+    tieneMaxIdeal,
+    obtenerManejadores,
+  } = useRangeCard({ idealMin, idealMax, sliderMin, sliderMax, step, decimals, maxLecturas, onChange });
 
-  const barColor = allOk ? COLORS.success : globalProgress > 0 ? COLORS.warning : COLORS.secondary;
-  const LABELS = labelStyle === 'daynight' ? LABELS_DAYNIGHT : LABELS_NUMERIC;
+  const ETIQUETAS = labelStyle === 'daynight' ? ETIQUETAS_DIA_NOCHE : ETIQUETAS_NUMERICAS;
 
-  const resolvedBadge = badgeLabel ?? (
-    hasUpperIdeal
+  const textoBadge = badgeLabel ?? (
+    tieneMaxIdeal
       ? `Ideal: ${idealMin}–${idealMax} ${unit}`
       : `Min ${idealMin} ${unit}`
   );
@@ -143,21 +140,21 @@ export default function RangeCard({
           <Title level={5} color={COLORS.textPrimary}>{title}</Title>
           <Text size={13} color={COLORS.textTertiary}>({unit})</Text>
         </View>
-        <Text size={12} color={COLORS.primary}>{resolvedBadge}</Text>
+        <Text size={12} color={COLORS.primary}>{textoBadge}</Text>
       </View>
 
-      {readings.map((r, idx) => {
-        const inRange = r.value >= idealMin && r.value <= idealMax;
-        const inMinRange = r.value >= idealMin;
-        const showGreen = showRangeColor && (hasUpperIdeal ? inRange : inMinRange);
-        const readingProgress = Math.min(Math.max(normalize(r.value), 0), 1);
-        const miniBarColor = showGreen ? COLORS.success : COLORS.primary;
-        const { decrement, increment, handleChangeText, handleFocus, handleBlur } = getReadingHandlers(r);
+      {lecturas.map((r, idx) => {
+        const enRango = r.value >= idealMin && r.value <= idealMax;
+        const sobreMinimo = r.value >= idealMin;
+        const mostrarVerde = showRangeColor && (tieneMaxIdeal ? enRango : sobreMinimo);
+        const progresoLectura = Math.min(Math.max(normalizar(r.value), 0), 1);
+        const colorBarraMini = mostrarVerde ? COLORS.success : COLORS.primary;
+        const { decrementar, incrementar, handleChangeText, handleFocus, handleBlur } = obtenerManejadores(r);
 
         return (
           <View key={r.id} style={inner.readingRow}>
             {(() => {
-              const lbl = LABELS[idx] ?? { type: 'text', value: `${idx + 1}` };
+              const lbl = ETIQUETAS[idx] ?? { type: 'text', value: `${idx + 1}` };
               return lbl.type === 'icon' ? (
                 <Icon icon={lbl.icon} size={18} color={COLORS.primary} />
               ) : (
@@ -168,7 +165,7 @@ export default function RangeCard({
             })()}
 
             <Button
-              onPress={decrement}
+              onPress={decrementar}
               style={[inner.stepBtn, inner.stepBtnIdle]}
             >
               <Text size={22} color={COLORS.white} style={{ lineHeight: 26 }}>−</Text>
@@ -176,18 +173,18 @@ export default function RangeCard({
 
             <View style={{ flex: 1 }}>
               <View style={inner.valueRow}>
-                <TextInput
+                <Input
                   value={r.editing ? r.rawInput : r.value.toFixed(decimals)}
                   onChangeText={handleChangeText}
                   onFocus={handleFocus}
                   onBlur={handleBlur}
                   keyboardType="decimal-pad"
                   selectTextOnFocus
+                  containerStyle={inner.valueInputContainer}
                   style={[
                     inner.valueInput,
                     {
-                      color: showGreen ? COLORS.success : COLORS.primary,
-                      borderBottomColor: COLORS.primary,
+                      color: mostrarVerde ? COLORS.success : COLORS.primary,
                       borderBottomWidth: r.editing ? 1.5 : 0,
                     },
                   ]}
@@ -195,23 +192,23 @@ export default function RangeCard({
                 <Text size={13} color={COLORS.textQuaternary} style={{ marginLeft: 3, fontWeight: '600' }}>
                   {unit}
                 </Text>
-                {showGreen && !r.editing && (
+                {mostrarVerde && !r.editing && (
                   <Icon icon={ICONS.check} size={15} color={COLORS.success} style={{ marginLeft: 4 }} />
                 )}
               </View>
-              <ProgressBar showLabel={false} progress={Math.round(readingProgress * 100)} color={miniBarColor} />
+              <ProgressBar showLabel={false} progress={Math.round(progresoLectura * 100)} color={colorBarraMini} />
             </View>
 
             <Button
-              onPress={increment}
+              onPress={incrementar}
               style={[inner.stepBtn, inner.stepBtnIdle]}
             >
               <Text size={20} color={COLORS.white} style={{ lineHeight: 26 }}>+</Text>
             </Button>
 
-            {readings.length > 1 ? (
+            {lecturas.length > 1 ? (
               <Button
-                onPress={() => removeReading(r.id)}
+                onPress={() => eliminarLectura(r.id)}
                 style={{ backgroundColor: 'transparent', padding: 0, marginTop: 0, marginLeft: 2 }}
               >
                 <Icon icon={ICONS.delete} size={20} color={COLORS.textQuaternary} />
@@ -223,8 +220,8 @@ export default function RangeCard({
         );
       })}
 
-      {readings.length < maxReadings && (
-        <Button variant="primary" onPress={addReading}>+ Agregar medición</Button>
+      {lecturas.length < maxLecturas && (
+        <Button variant="primary" onPress={agregarLectura}>+ Agregar medición</Button>
       )}
     </View>
   );

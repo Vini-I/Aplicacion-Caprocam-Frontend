@@ -1,10 +1,10 @@
 import { useCallback, useState } from 'react';
 
-const clamp = (val, min, max) => Math.min(Math.max(val, min), max);
-const fmt   = (val, decimals) => val.toFixed(decimals);
+const limitar = (val, min, max) => Math.min(Math.max(val, min), max);
+const formatear = (val, decimals) => val.toFixed(decimals);
 
-function makeReading(id, value, decimals) {
-  return { id, value, rawInput: fmt(value, decimals), editing: false };
+function crearLectura(id, value, decimals) {
+  return { id, value, rawInput: formatear(value, decimals), editing: false };
 }
 
 /**
@@ -13,8 +13,8 @@ function makeReading(id, value, decimals) {
  * ============================================================
  *
  * Maneja el estado de las lecturas de RangeCard: agregar/quitar
- * lecturas, clamping de valores dentro de sliderMin/sliderMax,
- * formateo de decimales y cálculo del progreso global.
+ * lecturas, clamping de valores dentro de sliderMin/sliderMax y
+ * formateo de decimales.
  *
  * ---
  * PARÁMETROS (objeto único)
@@ -25,37 +25,35 @@ function makeReading(id, value, decimals) {
  * sliderMax    number  — límite superior permitido al editar
  * step         number  — incremento de los botones +/-
  * decimals     number  — decimales a redondear
- * maxReadings  number  — tope de lecturas
- * onChange     fn?     — (readings) => void, callback hacia el padre
+ * maxLecturas  number  — tope de lecturas
+ * onChange     fn?     — (lecturas) => void, callback hacia el padre
  *
  * ---
  * RETORNA
  * ---
- * readings            array  — [{ id, value, rawInput, editing }]
- * addReading          fn     — agrega una lectura nueva (respeta maxReadings)
- * removeReading       fn(id) — elimina una lectura (nunca deja el array vacío)
- * normalize           fn(v)  — convierte un valor a 0–1 según sliderMin/sliderMax
- * hasUpperIdeal       bool   — true si se definió idealMax
- * globalProgress      number — promedio de todas las lecturas, normalizado 0–1
- * allOk               bool   — true si todas las lecturas están en rango ideal
- * getReadingHandlers  fn(r)  — dado un objeto de lectura, retorna
- *                              { decrement, increment, handleChangeText, handleFocus, handleBlur }
+ * lecturas            array  — [{ id, value, rawInput, editing }]
+ * agregarLectura      fn     — agrega una lectura nueva (respeta maxLecturas)
+ * eliminarLectura     fn(id) — elimina una lectura (nunca deja el array vacío)
+ * normalizar          fn(v)  — convierte un valor a 0–1 según sliderMin/sliderMax
+ * tieneMaxIdeal       bool   — true si se definió idealMax
+ * obtenerManejadores  fn(r)  — dado un objeto de lectura, retorna
+ *                              { decrementar, incrementar, handleChangeText, handleFocus, handleBlur }
  *
  * ---
  * EJEMPLO DE USO
  * ---
  * const {
- *   readings, addReading, removeReading,
- *   normalize, hasUpperIdeal, globalProgress, allOk,
- *   getReadingHandlers,
+ *   lecturas, agregarLectura, eliminarLectura,
+ *   normalizar, tieneMaxIdeal,
+ *   obtenerManejadores,
  * } = useRangeCard({
  *   idealMin: 7.5, idealMax: 8.5,
  *   sliderMin: 4, sliderMax: 10,
- *   step: 0.1, decimals: 1, maxReadings: 2,
- *   onChange: (r) => setPhReadings(r),
+ *   step: 0.1, decimals: 1, maxLecturas: 2,
+ *   onChange: (r) => setLecturasPh(r),
  * });
  *
- * const { increment, decrement, handleChangeText, handleBlur } = getReadingHandlers(readings[0]);
+ * const { incrementar, decrementar, handleChangeText, handleBlur } = obtenerManejadores(lecturas[0]);
  */
 
 export default function useRangeCard({
@@ -65,16 +63,16 @@ export default function useRangeCard({
   sliderMax,
   step,
   decimals,
-  maxReadings,
+  maxLecturas,
   onChange,
 }) {
-  const [readings, setReadings] = useState([
-    makeReading(1, idealMin, decimals),
+  const [lecturas, setLecturas] = useState([
+    crearLectura(1, idealMin, decimals),
   ]);
 
-  const updateReading = useCallback(
+  const actualizarLectura = useCallback(
     (id, patch) => {
-      setReadings((prev) => {
+      setLecturas((prev) => {
         const next = prev.map((r) => (r.id === id ? { ...r, ...patch } : r));
         onChange?.(next);
         return next;
@@ -83,17 +81,17 @@ export default function useRangeCard({
     [onChange]
   );
 
-  const addReading = useCallback(() => {
-    if (readings.length >= maxReadings) return;
-    setReadings((prev) => {
-      const next = [...prev, makeReading(Date.now(), idealMin, decimals)];
+  const agregarLectura = useCallback(() => {
+    if (lecturas.length >= maxLecturas) return;
+    setLecturas((prev) => {
+      const next = [...prev, crearLectura(Date.now(), idealMin, decimals)];
       onChange?.(next);
       return next;
     });
-  }, [readings.length, maxReadings, idealMin, decimals, onChange]);
+  }, [lecturas.length, maxLecturas, idealMin, decimals, onChange]);
 
-  const removeReading = useCallback((id) => {
-    setReadings((prev) => {
+  const eliminarLectura = useCallback((id) => {
+    setLecturas((prev) => {
       if (prev.length <= 1) return prev;
       const next = prev.filter((r) => r.id !== id);
       onChange?.(next);
@@ -101,59 +99,51 @@ export default function useRangeCard({
     });
   }, [onChange]);
 
-  const normalize     = (v) => (v - sliderMin) / (sliderMax - sliderMin);
-  const hasUpperIdeal = Number.isFinite(idealMax);
+  const normalizar = (v) => (v - sliderMin) / (sliderMax - sliderMin);
+  const tieneMaxIdeal = Number.isFinite(idealMax);
 
-  const avg = readings.reduce((s, r) => s + r.value, 0) / readings.length;
-  const allOk = readings.every((r) =>
-    hasUpperIdeal ? r.value >= idealMin && r.value <= idealMax : r.value >= idealMin
-  );
-  const globalProgress = clamp(normalize(avg), 0, 1);
-
-  // Devuelve los 4 handlers de una lectura puntual (botones +/-, input, blur)
-  const getReadingHandlers = useCallback(
+  // Devuelve los manejadores de una lectura puntual (botones +/-, input, blur)
+  const obtenerManejadores = useCallback(
     (r) => ({
-      decrement: () => {
-        const next = parseFloat(clamp(r.value - step, sliderMin, sliderMax).toFixed(decimals));
-        updateReading(r.id, { value: next, rawInput: fmt(next, decimals) });
+      decrementar: () => {
+        const next = parseFloat(limitar(r.value - step, sliderMin, sliderMax).toFixed(decimals));
+        actualizarLectura(r.id, { value: next, rawInput: formatear(next, decimals) });
       },
-      increment: () => {
-        const next = parseFloat(clamp(r.value + step, sliderMin, sliderMax).toFixed(decimals));
-        updateReading(r.id, { value: next, rawInput: fmt(next, decimals) });
+      incrementar: () => {
+        const next = parseFloat(limitar(r.value + step, sliderMin, sliderMax).toFixed(decimals));
+        actualizarLectura(r.id, { value: next, rawInput: formatear(next, decimals) });
       },
       handleChangeText: (text) => {
         const cleaned = text.replace(/[^0-9.]/g, '');
-        const parts   = cleaned.split('.');
+        const parts = cleaned.split('.');
         const integer = parts[0].slice(0, 2);
-        const result  = parts.length > 1 ? `${integer}.${parts[1]}` : integer;
-        const parsed  = parseFloat(result);
+        const result = parts.length > 1 ? `${integer}.${parts[1]}` : integer;
+        const parsed = parseFloat(result);
         if (!isNaN(parsed)) {
-          const clamped = parseFloat(clamp(parsed, sliderMin, sliderMax).toFixed(decimals));
-          updateReading(r.id, { rawInput: result, value: clamped });
+          const clamped = parseFloat(limitar(parsed, sliderMin, sliderMax).toFixed(decimals));
+          actualizarLectura(r.id, { rawInput: result, value: clamped });
         } else {
-          updateReading(r.id, { rawInput: result });
+          actualizarLectura(r.id, { rawInput: result });
         }
       },
-      handleFocus: () => updateReading(r.id, { editing: true, rawInput: fmt(r.value, decimals) }),
+      handleFocus: () => actualizarLectura(r.id, { editing: true, rawInput: formatear(r.value, decimals) }),
       handleBlur: () => {
         const parsed = parseFloat(r.rawInput);
-        const safe   = isNaN(parsed)
+        const safe = isNaN(parsed)
           ? r.value
-          : parseFloat(clamp(parsed, sliderMin, sliderMax).toFixed(decimals));
-        updateReading(r.id, { value: safe, rawInput: fmt(safe, decimals), editing: false });
+          : parseFloat(limitar(parsed, sliderMin, sliderMax).toFixed(decimals));
+        actualizarLectura(r.id, { value: safe, rawInput: formatear(safe, decimals), editing: false });
       },
     }),
-    [step, sliderMin, sliderMax, decimals, updateReading]
+    [step, sliderMin, sliderMax, decimals, actualizarLectura]
   );
 
   return {
-    readings,
-    addReading,
-    removeReading,
-    normalize,
-    hasUpperIdeal,
-    globalProgress,
-    allOk,
-    getReadingHandlers,
+    lecturas,
+    agregarLectura,
+    eliminarLectura,
+    normalizar,
+    tieneMaxIdeal,
+    obtenerManejadores,
   };
 }
