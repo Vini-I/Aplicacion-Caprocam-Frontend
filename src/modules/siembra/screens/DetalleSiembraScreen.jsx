@@ -1,10 +1,12 @@
 import React, { useState } from "react";
+import { useRouter } from "expo-router";
 import {
   View,
   ScrollView,
   Text,
-  StyleSheet,
+  Pressable,
   useWindowDimensions,
+  Platform,
 } from "react-native";
 
 // Componentes de UI reutilizables del proyecto
@@ -19,10 +21,12 @@ import Alert from "../../../shared/components/Alert";
 import NumberInput from "../../../shared/components/NumberInput";
 import Icon from "../../../shared/components/Icons";
 
-// Tema global: colores, tipografía e iconos
+// Tema global: colores e iconos
 import { COLORS } from "../../../theme/colors";
-import { TYPOGRAPHY } from "../../../theme/typography";
 import { ICONS } from "../../../theme/icons";
+
+// Estilos del modulo separados en su propio archivo
+import { styles } from "../styles/DetalleSiembraScreen.styles";
 
 // Opciones para el select de tipo de larva
 const tiposLarva = [
@@ -55,7 +59,30 @@ function calcularEtapa(dia, diasTotales) {
   return 1;
 }
 
+// Devuelve la fecha actual en formato dd/mm/aaaa
+function obtenerFechaActual() {
+  const fecha = new Date();
+  const dia = String(fecha.getDate()).padStart(2, "0");
+  const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+  const anio = fecha.getFullYear();
+
+  return `${dia}/${mes}/${anio}`;
+}
+
+// Convierte una fecha en formato aaaa-mm-dd (HTML) a dd/mm/aaaa (formulario)
+function convertirADdMmAaaa(fechaIso) {
+  const [anio, mes, dia] = fechaIso.split("-");
+  return `${dia}/${mes}/${anio}`;
+}
+
+// Convierte una fecha en formato dd/mm/aaaa (formulario) a aaaa-mm-dd (HTML)
+function convertirAAaaaMmDd(fechaTexto) {
+  const [dia, mes, anio] = fechaTexto.split("/");
+  return `${anio}-${mes}-${dia}`;
+}
+
 export default function DetalleSiembraScreen() {
+  const router = useRouter();
 
   // Controla si el formulario está en modo lectura o edición
   const [isEditing, setIsEditing] = useState(false);
@@ -65,7 +92,7 @@ export default function DetalleSiembraScreen() {
   const [mensajeVariant, setMensajeVariant] = useState("info");
 
   // Campos del formulario
-  const [fechaSiembra, setFechaSiembra] = useState("");
+  const [fechaSiembra, setFechaSiembra] = useState(obtenerFechaActual());
   const [cantidad, setCantidad] = useState("1000");
   const [area, setArea] = useState("0.5");
   const [densidad, setDensidad] = useState("12");
@@ -80,7 +107,7 @@ export default function DetalleSiembraScreen() {
   // Copia del último estado guardado. Se usa para restaurar
   // los campos si el usuario cancela la edición.
   const [valoresGuardados, setValoresGuardados] = useState({
-    fechaSiembra: "",
+    fechaSiembra: obtenerFechaActual(),
     cantidad: "1000",
     area: "0.5",
     densidad: "12",
@@ -162,13 +189,55 @@ export default function DetalleSiembraScreen() {
     setIsEditing(false);
   }
 
+  // Regresa a la pantalla principal del módulo de siembra
+  function regresarASiembra() {
+    router.push("/siembra");
+  }
+
+  // Renderiza el campo de fecha de siembra según la plataforma (web o móvil)
+  function renderFechaSiembraEditable() {
+    if (Platform.OS === "web") {
+      return (
+        <View style={styles.webDateContainer}>
+          <Text style={styles.labelNombre}>Fecha de siembra</Text>
+          <input
+            type="date"
+            value={convertirAAaaaMmDd(fechaSiembra)}
+            max={convertirAAaaaMmDd(obtenerFechaActual())}
+            onChange={(e) => setFechaSiembra(convertirADdMmAaaa(e.target.value))}
+            style={styles.webDateInput}
+          />
+        </View>
+      );
+    }
+
+    return (
+      <DateInput
+        label="Fecha de siembra"
+        inputType="date"
+        value={fechaSiembra}
+        onChangeText={setFechaSiembra}
+        inputStyle={styles.inputEditing}
+        labelStyle={styles.labelNombre}
+      />
+    );
+  }
+
   return (
     <View style={styles.container}>
 
-      {/* Encabezado con nombre de la finca */}
+      {/* Encabezado con boton de regreso y nombre de la finca */}
       <View style={styles.header}>
-        <Text style={styles.headerSubtitle}>Detalle de Siembra</Text>
-        <Text style={styles.headerTitle}>A01 – Finca Pivot</Text>
+        <View style={styles.headerTop}>
+          <Pressable onPress={regresarASiembra} style={styles.backButton}>
+            <Icon icon={ICONS.exit} size={22} color={COLORS.white} />
+          </Pressable>
+
+          <View>
+            <Text style={styles.headerSubtitle}>Detalle de Siembra</Text>
+            <Text style={styles.headerTitle}>A01 – Finca Pivot</Text>
+          </View>
+        </View>
       </View>
 
       <ScrollView
@@ -331,14 +400,7 @@ export default function DetalleSiembraScreen() {
           ) : (
             // Modo edición: campos habilitados para modificar
             <>
-              <DateInput
-                label="Fecha de siembra"
-                inputType="date"
-                value={fechaSiembra}
-                onChangeText={setFechaSiembra}
-                inputStyle={styles.inputEditing}
-                labelStyle={styles.labelNombre}
-              />
+              {renderFechaSiembraEditable()}
               <NumberInput
                 label="Camarones sembrados"
                 value={cantidad}
@@ -439,155 +501,3 @@ export default function DetalleSiembraScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  // Fondo general de la pantalla
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.surface,
-  },
-  // Franja superior con color primario y esquinas redondeadas abajo
-  header: {
-    backgroundColor: COLORS.primary,
-    paddingTop: 20,
-    paddingBottom: 25,
-    paddingHorizontal: 20,
-    borderBottomLeftRadius: 25,
-    borderBottomRightRadius: 25,
-  },
-  headerTitle: {
-    fontSize: 30,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    color: COLORS.white,
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    fontFamily: TYPOGRAPHY.fontFamily.medium,
-    color: COLORS.white,
-    opacity: 0.9,
-  },
-  // Limita el ancho en pantallas grandes y centra el contenido
-  content: {
-    padding: 16,
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
-  },
-  alert: {
-    marginBottom: 16,
-  },
-  // Fila con ícono + badge + título de la siembra
-  resumenHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  // Cuadro de fondo del ícono del camarón
-  iconContainer: {
-    width: 56,
-    height: 56,
-    borderRadius: 16,
-    backgroundColor: COLORS.primary,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 14,
-  },
-  resumenInfo: {
-    flex: 1,
-  },
-  siembraTitle: {
-    fontSize: 28,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    color: COLORS.textSecondary,
-    marginTop: 8,
-  },
-  // Subtítulos de sección dentro de la tarjeta resumen
-  subtitle: {
-    fontSize: 14,
-    fontFamily: TYPOGRAPHY.fontFamily.medium,
-    color: COLORS.textTertiary,
-    marginTop: 1,
-    marginBottom: 16,
-  },
-  // Fila horizontal de los tres badges de etapa
-  etapas: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 8,
-    gap: 16,
-  },
-  badgeText: {
-    fontFamily: TYPOGRAPHY.fontFamily.medium,
-  },
-  // En web los badges de etapa se expanden para ocupar el mismo ancho
-  badgeEtapa: {
-    alignSelf: "center",
-    paddingHorizontal: 24,
-    paddingVertical: 10,
-    flex: 1,
-    alignItems: "center",
-  },
-  cardTitle: {
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-  },
-  // Fila de botones Guardar / Cancelar en modo edición
-  actions: {
-    flexDirection: "row",
-    gap: 12,
-    marginTop: 10,
-  },
-  // Cada botón ocupa el mismo ancho dentro de la fila
-  button: {
-    flex: 1,
-  },
-  textoBoton: {
-    fontFamily: TYPOGRAPHY.fontFamily.medium,
-  },
-  // Estilo de Select en modo lectura: sin borde y fondo secundario
-  selectVista: {
-    backgroundColor: COLORS.secondary,
-    opacity: 1,
-    borderWidth: 0,
-  },
-  // Estilo de Input/NumberInput en modo lectura: fondo gris, sin edición visual
-  inputNombre: {
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
-    borderWidth: 1,
-    borderColor: COLORS.secondary,
-    backgroundColor: COLORS.secondary,
-    opacity: 1,
-    color: COLORS.black,
-  },
-  labelNombre: {
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
-  },
-  labelSelect: {
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
-    color: COLORS.textSecondary,
-  },
-  textoSeleccionado: {
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
-  },
-  textoOpciones: {
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
-  },
-  // Estilo de Input/NumberInput en modo edición: borde visible, fondo blanco
-  inputEditing: {
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
-    borderWidth: 1,
-    borderColor: COLORS.secondary,
-    opacity: 1,
-    color: COLORS.black,
-  },
-  dateInputLectura: {
-    borderWidth: 1,
-    borderColor: COLORS.secondary,
-    backgroundColor: COLORS.secondary,
-    opacity: 1,
-  },
-  dateInputTexto: {
-    color: COLORS.black,
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
-  },
-});
