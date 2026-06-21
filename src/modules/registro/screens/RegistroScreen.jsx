@@ -4,10 +4,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Text from '../../../shared/components/Text';
 import { COLORS } from '../../../theme/colors';
 
-import FisicoQuimicaScreen from '../../mantAgua/screens/FisicoQuimicaScreen';
-import MortalidadScreen from '../../mortalidad/screens/MortalidadScreen';
-import AlimentacionScreen from '../../alimentacion/screens/AlimentacionScreen';
-
 import Chip from '../components/Chip';
 import ModuloCard from '../components/ModuloCard';
 import useRegistro from '../hooks/useRegistro';
@@ -23,9 +19,15 @@ import { styles } from '../styles/RegistroStyles';
  * finca + estanque y luego un módulo (alimentación, crecimiento,
  * físico-química, mortalidad) para registrar mediciones.
  *
- * El estado de selección y módulo activo vive en useRegistro().
+ * El estado de selección de finca/estanque vive en useRegistro().
  * Los datos estáticos (FINCAS, ESTANQUES, MODULOS) vienen de
  * RegistroData.js.
+ *
+ * La navegación entre módulos NO la maneja esta pantalla: cada
+ * módulo es una ruta real de expo-router. RegistroScreen solo
+ * dispara los callbacks de navegación que le llegan por props
+ * (onFisicoQuimica, onAlimentacion, onMortalidad), definidos en
+ * registros/index.jsx con router.push().
  *
  * ---
  * FLUJO
@@ -33,38 +35,36 @@ import { styles } from '../styles/RegistroStyles';
  * 1. Usuario selecciona finca → se actualiza el estanque por
  *    defecto de esa finca automáticamente
  * 2. Usuario selecciona estanque
- * 3. Usuario toca un ModuloCard disponible → se renderiza la
- *    pantalla de ese módulo en lugar de la grilla
- * 4. Cada pantalla de módulo recibe onBack para volver a la grilla
+ * 3. Usuario toca un ModuloCard disponible → se ejecuta el
+ *    callback de navegación correspondiente (router.push a la
+ *    ruta del módulo)
+ *
+ * ---
+ * PROPS
+ * ---
+ * onFisicoQuimica  fn  — navega a la ruta de Físico-Química
+ * onAlimentacion   fn  — navega a la ruta de Alimentación
+ * onMortalidad     fn  — navega a la ruta de Mortalidad
  *
  * ---
  * USO
  * ---
- * Se renderiza directo desde app/(drawer)/(tabs)/registros/index.jsx
+ * Se renderiza desde app/(drawer)/(tabs)/registros/index.jsx
  *
- * <RegistroScreen />  (sin props)
+ * <RegistroScreen
+ *   onFisicoQuimica={() => router.push('/(drawer)/(tabs)/registros/FisicoQuimica')}
+ *   onAlimentacion={() => router.push('/(drawer)/(tabs)/registros/Alimentacion')}
+ *   onMortalidad={() => router.push('/(drawer)/(tabs)/registros/Mortalidad')}
+ * />
  */
 
-export default function RegistroScreen() {
+export default function RegistroScreen({ onFisicoQuimica, onAlimentacion, onMortalidad }) {
     const {
         fincaSeleccionada,
         estanqueSeleccionado, setEstanqueSeleccionado,
-        moduloActivo,
         estanques, finca, estanque,
         handleFinca,
-        abrirModulo,
-        cerrarModulo,
     } = useRegistro();
-
-    if (moduloActivo === 'fisicoquimica') {
-        return <FisicoQuimicaScreen onBack={cerrarModulo} />;
-    }
-    if (moduloActivo === 'mortalidad') {
-        return <MortalidadScreen onBack={cerrarModulo} />;
-    }
-    if (moduloActivo === 'alimentacion') {
-        return <AlimentacionScreen onBack={cerrarModulo} />;
-    }
 
     return (
         <SafeAreaView style={styles.contenedor}>
@@ -108,9 +108,11 @@ export default function RegistroScreen() {
                             key={m.id}
                             modulo={m}
                             onPress={
-                                m.id === 'fisicoquimica' || m.id === 'mortalidad' || m.id === 'alimentacion'
-                                    ? () => abrirModulo(m.id)
-                                    : null
+                                m.id === 'fisicoquimica' ? onFisicoQuimica :
+                                m.id === 'alimentacion' ? onAlimentacion :
+                                m.id === 'mortalidad' ? onMortalidad :
+                                null
+
                             }
                         />
                     ))}

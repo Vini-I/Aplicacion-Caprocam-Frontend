@@ -1,0 +1,15 @@
+import RegistroScreen from '../../../../modules/registro/screens/RegistroScreen';
+import {useRouter} from 'expo-router';
+
+export default function RegistrosIndex() {
+  const router = useRouter();
+
+  const handleFisicoQuimica =  () => { router.push('/(drawer)/(tabs)/registros/FisicoQuimica'); };
+  const handleAlimentacion =  () => { router.push('/(drawer)/(tabs)/registros/Alimentacion'); };
+  const handleMortalidad =  () => { router.push('/(drawer)/(tabs)/registros/Mortalidad'); };
+  return <RegistroScreen 
+    onFisicoQuimica={handleFisicoQuimica}
+    onAlimentacion={handleAlimentacion}
+    onMortalidad={handleMortalidad}
+  />;
+}

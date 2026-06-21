@@ -35,6 +35,7 @@ import { COLORS } from '../../../theme/colors';
 import { ICONS } from '../../../theme/icons';
 import useFisicoQuimica from '../hooks/useFisicoQuimica';
 import { styles } from '../styles/FisicoQuimicaStyles';
+import {useRouter} from 'expo-router';
 
 export default function FisicoQuimicaScreen({ onBack }) {
   const {
@@ -44,12 +45,14 @@ export default function FisicoQuimicaScreen({ onBack }) {
     alGuardar, alEditar,
   } = useFisicoQuimica();
 
+  const router = useRouter();
+
   return (
     <View style={styles.screen}>
       <StatusBar barStyle="light-content" backgroundColor={COLORS.primary} />
 
       <View style={styles.header}>
-        <Button onPress={onBack} style={styles.backBtn}>
+        <Button onPress={() => router.back()} style={styles.backBtn}>
           <Icon icon={ICONS.exit} size={20} color={COLORS.white} />
           <Text size={14} color={COLORS.white}>Módulos</Text>
         </Button>

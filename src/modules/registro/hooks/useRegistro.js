@@ -6,7 +6,6 @@ export default function useRegistro() {
   const [estanqueSeleccionado, setEstanqueSeleccionado] = useState(
     ESTANQUES[FINCAS[0].id][0].id
   );
-  const [moduloActivo, setModuloActivo] = useState(null);
 
   const estanques = ESTANQUES[fincaSeleccionada] ?? [];
   const finca = FINCAS.find((f) => f.id === fincaSeleccionada);
@@ -17,16 +16,10 @@ export default function useRegistro() {
     setEstanqueSeleccionado(ESTANQUES[id][0].id);
   }, []);
 
-  const abrirModulo = useCallback((moduloId) => setModuloActivo(moduloId), []);
-  const cerrarModulo = useCallback(() => setModuloActivo(null), []);
-
   return {
     fincaSeleccionada,
     estanqueSeleccionado, setEstanqueSeleccionado,
-    moduloActivo,
     estanques, finca, estanque,
     handleFinca,
-    abrirModulo,
-    cerrarModulo,
   };
 }
