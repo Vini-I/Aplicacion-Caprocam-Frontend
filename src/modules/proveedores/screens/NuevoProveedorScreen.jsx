@@ -17,11 +17,16 @@ import { ICONS } from "../../../theme/icons";
 import { styles, ICON_SIZES } from "../styles/StylesNuevoProveedor.js";
 import { TIPOS_PRODUCTO } from "../screens/NuevoProveedorData.js";
 
+// Regex para validar teléfonos con o sin código de país +506
 const TELEFONO_REGEX = /^(\+?506[\s-]?)?\d{4}[\s-]?\d{4}$/;
 const TELEFONO_MAX_LENGTH = 14;
+
+// Regex básico para validar formato de correo electrónico
 const CORREO_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function NuevoProveedorScreen() {
+
+  // Campos del formulario
   const [nombre, setNombre] = useState("");
   const [tipoProducto, setTipoProducto] = useState("");
   const [telefono, setTelefono] = useState("");
@@ -29,16 +34,19 @@ export default function NuevoProveedorScreen() {
   const [direccion, setDireccion] = useState("");
   const [notas, setNotas] = useState("");
 
+  // Estado de validación y alertas
   const [errores, setErrores] = useState({});
   const [mensajeError, setMensajeError] = useState("");
   const [guardadoExitoso, setGuardadoExitoso] = useState(false);
 
   const router = useRouter();
 
+  // Permite solo dígitos, espacios, guiones y el símbolo + en el teléfono
   const handleTelefonoChange = (valor) => {
     setTelefono(valor.replace(/[^\d\s\-+]/g, ""));
   };
 
+  // Retorna el mensaje de error según los campos inválidos
   function obtenerMensajeError(nuevosErrores) {
     if (nuevosErrores.nombre || nuevosErrores.tipoProducto || nuevosErrores.telefono) {
       return "Complete los campos obligatorios para guardar.";
@@ -48,6 +56,7 @@ export default function NuevoProveedorScreen() {
     return "";
   }
 
+  // Valida los campos y guarda el proveedor si no hay errores
   function handleSubmit() {
     const nuevosErrores = {};
 
@@ -86,6 +95,8 @@ export default function NuevoProveedorScreen() {
 
   return (
     <View style={styles.screen}>
+
+      {/* Navbar con botón para volver a la lista de proveedores */}
       <View style={styles.navbar}>
         <View style={styles.navbarRow}>
           <Button
@@ -99,6 +110,7 @@ export default function NuevoProveedorScreen() {
         </View>
       </View>
 
+      {/* Formulario con scroll para evitar que el teclado tape los campos */}
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.content}
@@ -110,8 +122,9 @@ export default function NuevoProveedorScreen() {
           style={styles.card}
           titleStyle={styles.cardTitle}
         >
+          {/* Campos del formulario */}
           <Input
-            label="Nombre de la empresa *"
+            label="Nombre de la empresa "
             value={nombre}
             onChangeText={setNombre}
             placeholder="Ej. Biomar S.A."
@@ -121,7 +134,7 @@ export default function NuevoProveedorScreen() {
           />
 
           <Select
-            label="Tipo de producto *"
+            label="Tipo de producto "
             value={tipoProducto}
             options={TIPOS_PRODUCTO}
             onChange={setTipoProducto}
@@ -134,7 +147,7 @@ export default function NuevoProveedorScreen() {
           />
 
           <Input
-            label="Teléfono *"
+            label="Teléfono "
             value={telefono}
             onChangeText={handleTelefonoChange}
             placeholder="+506 7689-9087"
@@ -178,10 +191,8 @@ export default function NuevoProveedorScreen() {
             labelStyle={styles.label}
           />
 
-          <Button
-            onPress={handleSubmit}
-            style={styles.saveButton}
-          >
+          {/* Botón para guardar, dispara la validación */}
+          <Button onPress={handleSubmit} style={styles.saveButton}>
             <View style={styles.buttonContent}>
               <Icon icon={ICONS.save} size={ICON_SIZES.save} color={COLORS.white} />
               <Text style={styles.saveButtonText}>Guardar proveedor</Text>
