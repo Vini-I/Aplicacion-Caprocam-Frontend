@@ -26,10 +26,11 @@
 // IMPORTS
 // ============================================================
 import React, { useState } from "react";
-import { View, StyleSheet, ActivityIndicator, Alert } from "react-native";
+import { View, ActivityIndicator, Alert } from "react-native";
 import Input from "../../../shared/components/Input";
 import Select from "../../../shared/components/Select";
 import Button from "../../../shared/components/Button";
+import { styles } from "../styles/colaboradorFormStyles";
 
 // ============================================================
 // CONSTANTES Y VALIDADORES
@@ -298,12 +299,3 @@ export default function ColaboradorForm({
     </View>
   );
 }
-
-// ============================================================
-// ESTILOS
-// ============================================================
-const styles = StyleSheet.create({
-  container: { paddingVertical: 8 },
-  buttonContainer: { flexDirection: "row", gap: 12, marginTop: 16 },
-  loader: { marginTop: 4, marginBottom: 8 },
-});
