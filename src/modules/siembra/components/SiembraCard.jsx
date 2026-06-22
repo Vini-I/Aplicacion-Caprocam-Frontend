@@ -14,14 +14,12 @@
  * - Badge: etiqueta para el estado de la siembra.
  * - Button: acción para ver detalles o editar.
  */
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text } from "react-native";
 
 import Card from "../../../shared/components/Card";
 import Badge from "../../../shared/components/Badge";
 import Button from "../../../shared/components/Button";
-
-import { COLORS } from "../../../theme/colors";
-import { TYPOGRAPHY } from "../../../theme/typography";
+import { styles } from "../styles/SiembraCardStyle";
 import Icon from "../../../shared/components/Icons";
 import { ICONS } from "../../../theme/icons";
 
@@ -64,7 +62,7 @@ export default function SiembraCard({
 
       <Button onPress={onPress} style={styles.actionButton}>
         <View style={styles.actionButtonContent}>
-          <Icon icon={ICONS.edit} size={16} color={COLORS.white} />
+          <Icon icon={ICONS.edit} size={16} style={styles.actionButtonIcon} />
 
           <Text style={styles.actionButtonText}>Ver detalles / editar</Text>
         </View>
@@ -72,80 +70,3 @@ export default function SiembraCard({
     </Card>
   );
 }
-
-const styles = StyleSheet.create({
-  card: {
-    width: "100%",
-    maxWidth: 680,
-    alignSelf: "center",
-    marginBottom: 16,
-  },
-
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 14,
-  },
-
-  diasText: {
-    color: COLORS.primary,
-    fontSize: 13,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-  },
-
-  body: {
-    marginBottom: 16,
-  },
-
-  estanqueText: {
-    color: COLORS.textSecondary,
-    fontSize: 30,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-  },
-  estadoBadge: {
-    backgroundColor: COLORS.success,
-  },
-
-  estadoText: {
-    color: COLORS.white,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-  },
-  fincaText: {
-    color: COLORS.textTertiary,
-    fontSize: 14,
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
-    marginBottom: 10,
-  },
-
-  siembraText: {
-    color: COLORS.textTertiary,
-    fontSize: 13,
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
-    marginBottom: 6,
-  },
-
-  cantidadText: {
-    color: COLORS.textSecondary,
-    fontSize: 18,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-  },
-
-  actionButton: {
-    backgroundColor: COLORS.primary,
-    borderRadius: 12,
-  },
-
-  actionButtonContent: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 8,
-  },
-
-  actionButtonText: {
-    color: COLORS.white,
-    fontSize: 14,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-  },
-});
