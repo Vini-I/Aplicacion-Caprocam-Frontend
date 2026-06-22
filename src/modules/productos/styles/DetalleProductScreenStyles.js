@@ -1,7 +1,6 @@
 
 import { StyleSheet } from "react-native";
 import { COLORS } from "../../../theme/colors.js";
-import { TYPOGRAPHY } from "../../../theme/typography";
 
 
 export const colorCategoria = {

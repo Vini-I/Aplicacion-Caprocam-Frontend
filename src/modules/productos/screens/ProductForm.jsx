@@ -87,7 +87,7 @@ export default function ProductForm() {
         leftContent={
           <Button
             variant="ghost"
-            jsxonPress={handleBack}
+            onPress={handleBack}
             style={styles.backBtn}
           >
             <Icon icon={ICONS.exit} size={20} color={COLORS.white} />
