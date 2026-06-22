@@ -17,7 +17,7 @@ export const styles = StyleSheet.create({
     borderBottomLeftRadius: 25,
     borderBottomRightRadius: 25,
   },
-  
+
   headerTop: {
     flexDirection: "row",
     alignItems: "center",
@@ -42,7 +42,7 @@ export const styles = StyleSheet.create({
     color: COLORS.white,
     opacity: 0.9,
   },
-  
+
   content: {
     padding: 16,
     width: "100%",
@@ -52,13 +52,13 @@ export const styles = StyleSheet.create({
   alert: {
     marginBottom: 16,
   },
- 
+
   resumenHeader: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 12,
   },
- 
+
   iconContainer: {
     width: 56,
     height: 56,
@@ -67,6 +67,13 @@ export const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginRight: 14,
+  },
+  headerIcon: {
+    color: COLORS.white,
+  },
+
+  summaryIcon: {
+    color: COLORS.white,
   },
   resumenInfo: {
     flex: 1,
@@ -77,7 +84,7 @@ export const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     marginTop: 8,
   },
- 
+
   subtitle: {
     fontSize: 14,
     fontFamily: TYPOGRAPHY.fontFamily.medium,
@@ -85,7 +92,7 @@ export const styles = StyleSheet.create({
     marginTop: 1,
     marginBottom: 16,
   },
-  
+
   etapas: {
     flexDirection: "row",
     justifyContent: "center",
@@ -96,7 +103,7 @@ export const styles = StyleSheet.create({
   badgeText: {
     fontFamily: TYPOGRAPHY.fontFamily.medium,
   },
-  
+
   badgeEtapa: {
     alignSelf: "center",
     paddingHorizontal: 24,
@@ -107,26 +114,26 @@ export const styles = StyleSheet.create({
   cardTitle: {
     fontFamily: TYPOGRAPHY.fontFamily.bold,
   },
-  
+
   actions: {
     flexDirection: "row",
     gap: 12,
     marginTop: 10,
   },
-  
+
   button: {
     flex: 1,
   },
   textoBoton: {
     fontFamily: TYPOGRAPHY.fontFamily.medium,
   },
- 
+
   selectVista: {
     backgroundColor: COLORS.secondary,
     opacity: 1,
     borderWidth: 0,
   },
- 
+
   inputNombre: {
     fontFamily: TYPOGRAPHY.fontFamily.regular,
     borderWidth: 1,
@@ -148,7 +155,7 @@ export const styles = StyleSheet.create({
   textoOpciones: {
     fontFamily: TYPOGRAPHY.fontFamily.regular,
   },
-  
+
   inputEditing: {
     fontFamily: TYPOGRAPHY.fontFamily.regular,
     borderWidth: 1,
@@ -166,18 +173,30 @@ export const styles = StyleSheet.create({
     color: COLORS.black,
     fontFamily: TYPOGRAPHY.fontFamily.regular,
   },
- 
+
   webDateContainer: {
+    width: "100%",
     marginBottom: 12,
   },
+
   webDateInput: {
-    padding: 12,
-    borderRadius: 8,
-    border: "1px solid " + COLORS.textTertiary,
-    fontSize: 16,
     width: "100%",
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
+    boxSizing: "border-box",
+    height: 45,
+    borderWidth: 1,
+    borderColor: COLORS.secondary,
+    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    fontSize: 16,
     color: COLORS.textSecondary,
     backgroundColor: COLORS.white,
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
+  },
+  webDateLabel: {
+    fontSize: 14,
+    fontFamily: TYPOGRAPHY.fontFamily.medium,
+    color: COLORS.textSecondary,
+    marginBottom: 6,
   },
 });
