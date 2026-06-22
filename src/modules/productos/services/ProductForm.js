@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useLocalSearchParams } from "expo-router";
 
 import { addProducto, updateProducto } from "../../inventarios/services/inventarioService";
-import { getProveedoresByCategoria } from "../../inventarios/services/proveedoresService";
+import { getProveedoresByCategoria } from "../../proveedores/services/ProveedorData";
 
 // ─────────────────────────────────────────────
 // Opciones de selects
