@@ -22,16 +22,16 @@ import { useDetalleProducto } from "../services/DetalleProductoScreen";
 function FilaDetalle({ etiqueta, valor, resaltado = false }) {
   return (
     <View style={styles.filaDetalle}>
-      <CustomText size={12} color={COLORS.textTertiary}>
+      <Text size={12} color={COLORS.textTertiary}>
         {etiqueta}
-      </CustomText>
-      <CustomText
+      </Text>
+      <Text
         size={14}
         weight="600"
         color={resaltado ? COLORS.error : COLORS.textSecondary}
       >
         {valor}
-      </CustomText>
+      </Text>
     </View>
   );
 }
@@ -68,7 +68,7 @@ export default function DetalleProductoScreen() {
           }
         />
         <View style={styles.emptyContainer}>
-          <CustomText>El producto no existe</CustomText>
+          <Text>El producto no existe</Text>
         </View>
       </View>
     );
@@ -149,9 +149,9 @@ export default function DetalleProductoScreen() {
                         onPress={handleEditar}
                     >
                         <Icon icon={ICONS.edit} size={20} color={COLORS.white} />
-                        <CustomText color={COLORS.white} weight="600" size={14}>
+                        <Text color={COLORS.white} weight="600" size={14}>
                             Editar
-                        </CustomText>
+                        </Text>
                     </Button>
 
                     <Button
@@ -159,9 +159,9 @@ export default function DetalleProductoScreen() {
                         onPress={handleEliminar}
                     >
                         <Icon icon={ICONS.delete} size={20} color={COLORS.white} />
-                        <CustomText color={COLORS.white} weight="600" size={14}>
+                        <Text color={COLORS.white} weight="600" size={14}>
                             Eliminar
-                        </CustomText>
+                        </Text>
                     </Button>
                 </View>
             </ScrollView>
@@ -174,14 +174,14 @@ export default function DetalleProductoScreen() {
                 <Title level={5} style={styles.modalTitulo}>
                     Eliminar producto
                 </Title>
-                <CustomText size={14} color={COLORS.textSecondary} style={styles.modalTexto}>
+                <Text size={14} color={COLORS.textSecondary} style={styles.modalTexto}>
                     ¿Está seguro que desea eliminar "{producto.nombre}"? Esta acción no se puede deshacer.
-                </CustomText>
+                </Text>
                 <Button style={styles.botonModalEliminar} onPress={confirmarEliminar}>
                     <Icon icon={ICONS.delete} size={18} color={COLORS.white} />
-                    <CustomText color={COLORS.white} weight="600" size={14}>
+                    <Text color={COLORS.white} weight="600" size={14}>
                         Eliminar
-                    </CustomText>
+                    </Text>
                 </Button>
             </Modal>
         </View>

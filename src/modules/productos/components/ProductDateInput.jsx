@@ -50,7 +50,7 @@ import { COLORS } from "../../../theme/colors";
  *
  * Se usa para mostrar el encabezado del calendario.
  */
-const MONTHS = [
+const MESES = [
   "enero",
   "febrero",
   "marzo",
@@ -71,7 +71,7 @@ const MONTHS = [
  * Se usan abreviaturas claras para evitar confusión entre
  * martes y miércoles.
  */
-const WEEK_DAYS = ["Lu", "Ma", "Mi", "Ju", "Vi", "Sá", "Do"];
+const DIAS_SEMANA = ["Lu", "Ma", "Mi", "Ju", "Vi", "Sá", "Do"];
 
 /**
  * Convierte una fecha de JavaScript a formato dd/mm/aaaa.
@@ -79,12 +79,12 @@ const WEEK_DAYS = ["Lu", "Ma", "Mi", "Ju", "Vi", "Sá", "Do"];
  * Ejemplo:
  * new Date(2026, 5, 13) -> "13/06/2026"
  */
-function formatDate(date) {
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const year = date.getFullYear();
+function formato_fecha(date) {
+  const dia = String(date.getDate()).padStart(2, "0");
+  const mes = String(date.getMonth() + 1).padStart(2, "0");
+  const año = date.getFullYear();
 
-  return `${day}/${month}/${year}`;
+  return `${dia}/${mes}/${año}`;
 }
 
 /**
@@ -99,11 +99,11 @@ function textToDate(value) {
 
   if (parts.length !== 3) return new Date();
 
-  const day = Number(parts[0]);
-  const month = Number(parts[1]) - 1;
-  const year = Number(parts[2]);
+  const dia = Number(parts[0]);
+  const mes = Number(parts[1]) - 1;
+  const año = Number(parts[2]);
 
-  return new Date(year, month, day);
+  return new Date(año, mes, dia);
 }
 
 /**
@@ -114,8 +114,8 @@ function textToDate(value) {
  * febrero = 1
  * marzo = 2
  */
-function getDaysInMonth(year, month) {
-  return new Date(year, month + 1, 0).getDate();
+function getDiasEnMes(año, mes) {
+  return new Date(año, mes + 1, 0).getDate();
 }
 
 /**
@@ -130,10 +130,10 @@ function getDaysInMonth(year, month) {
  * martes = 1
  * miércoles = 2
  */
-function getFirstDayOfMonth(year, month) {
-  const day = new Date(year, month, 1).getDay();
+function getPrimerDiaMes(año, mes) {
+  const dias = new Date(año, mes, 1).getDay();
 
-  return day === 0 ? 6 : day - 1;
+  return dias === 0 ? 6 : dias - 1;
 }
 
 export default function ProductDateInput({
@@ -169,13 +169,13 @@ export default function ProductDateInput({
    * today:
    * Se usa para validar fechas futuras.
    */
-  const today = new Date();
+  const Hoy = new Date();
 
   /**
-   * selectedDate:
+   * diaSelecionado:
    * Guarda la fecha seleccionada actualmente.
    */
-  const selectedDate = value ? textToDate(value) : null;
+  const diaSelecionado = value ? textToDate(value) : null;
 
   /**
    * daysInMonth:
@@ -184,13 +184,13 @@ export default function ProductDateInput({
    * firstDay:
    * Posición donde debe iniciar el día 1 del mes.
    */
-  const daysInMonth = getDaysInMonth(currentYear, currentMonth);
-  const firstDay = getFirstDayOfMonth(currentYear, currentMonth);
+  const diasEnMes = getDiasEnMes(currentYear, currentMonth);
+  const primerDia = getPrimerDiaMes(currentYear, currentMonth);
 
   /**
    * Abre o cierra el calendario.
    */
-  function openCalendar() {
+  function abrirCalendario() {
     setShowCalendar(!showCalendar);
   }
 
@@ -213,7 +213,7 @@ export default function ProductDateInput({
    *
    * Si está en diciembre, pasa a enero del año siguiente.
    */
-  function nextMonth() {
+  function siguienteMes() {
     if (currentMonth === 11) {
       setCurrentMonth(0);
       setCurrentYear(currentYear + 1);
@@ -228,15 +228,15 @@ export default function ProductDateInput({
    * Si allowFutureDates es false, no permite seleccionar
    * fechas posteriores a hoy.
    */
-  function selectDay(day) {
-    const newDate = new Date(currentYear, currentMonth, day);
+  function seleccionarDia(dia) {
+    const nuevodia = new Date(currentYear, currentMonth, dia);
 
-    if (!allowFutureDates && newDate > today) {
+    if (!allowFutureDates && nuevodia > Hoy) {
       return;
     }
 
     if (onChangeText) {
-      onChangeText(formatDate(newDate));
+      onChangeText(formato_fecha(nuevodia));
     }
 
     setShowCalendar(false);
@@ -247,13 +247,13 @@ export default function ProductDateInput({
    *
    * Esto permite pintarlo con otro color.
    */
-  function isSelectedDay(day) {
-    if (!selectedDate) return false;
+  function isSelectedDay(dia) {
+    if (!diaSelecionado) return false;
 
     return (
-      selectedDate.getDate() === day &&
-      selectedDate.getMonth() === currentMonth &&
-      selectedDate.getFullYear() === currentYear
+      diaSelecionado.getDate() === dia &&
+      diaSelecionado.getMonth() === currentMonth &&
+      diaSelecionado.getFullYear() === currentYear
     );
   }
 
@@ -263,10 +263,10 @@ export default function ProductDateInput({
    * Sirve para deshabilitar fechas futuras cuando
    * allowFutureDates es false.
    */
-  function isFutureDay(day) {
-    const date = new Date(currentYear, currentMonth, day);
+  function isFutureDay(dia) {
+    const nuevodia = new Date(currentYear, currentMonth, dia);
 
-    return !allowFutureDates && date > today;
+    return !allowFutureDates && nuevodia > Hoy;
   }
 
   /**
@@ -276,9 +276,9 @@ export default function ProductDateInput({
    * monthDays:
    * Lista de días reales del mes.
    */
-  const emptyDays = Array.from({ length: firstDay });
+  const emptyDays = Array.from({ length: primerDia });
   const monthDays = Array.from(
-    { length: daysInMonth },
+    { length: diasEnMes },
     (_, index) => index + 1
   );
 
@@ -288,7 +288,7 @@ export default function ProductDateInput({
         <Text style={[styles.label, labelStyle]}>{label}</Text>
       )}
 
-      <Pressable style={styles.input} onPress={openCalendar}>
+      <Pressable style={styles.input} onPress={abrirCalendario}>
         <Text style={value ? styles.inputText : styles.placeholderText}>
           {value || "Seleccione una fecha"}
         </Text>
@@ -302,16 +302,19 @@ export default function ProductDateInput({
             </Pressable>
 
             <Text style={styles.monthText}>
-              {MONTHS[currentMonth]} {currentYear}
+              {MESES[currentMonth]} {currentYear}
             </Text>
 
-            <Pressable onPress={nextMonth} style={styles.arrowButton}>
+
+
+
+            <Pressable onPress={siguienteMes} style={styles.arrowButton}>
               <Text style={styles.arrowText}>›</Text>
             </Pressable>
           </View>
 
           <View style={styles.weekRow}>
-            {WEEK_DAYS.map((day, index) => (
+            {DIAS_SEMANA.map((day, index) => (
               <Text key={index} style={styles.weekDay}>
                 {day}
               </Text>
@@ -323,14 +326,14 @@ export default function ProductDateInput({
               <View key={`empty-${index}`} style={styles.dayBox} />
             ))}
 
-            {monthDays.map((day) => {
-              const selected = isSelectedDay(day);
-              const future = isFutureDay(day);
+            {monthDays.map((dia) => {
+              const selected = isSelectedDay(dia);
+              const future = isFutureDay(dia);
 
               return (
                 <Pressable
-                  key={day}
-                  onPress={() => selectDay(day)}
+                  key={dia}
+                  onPress={() => seleccionarDia(dia)}
                   disabled={future}
                   style={[
                     styles.dayBox,
@@ -345,7 +348,7 @@ export default function ProductDateInput({
                       future && styles.disabledDayText,
                     ]}
                   >
-                    {day}
+                    {dia}
                   </Text>
                 </Pressable>
               );
