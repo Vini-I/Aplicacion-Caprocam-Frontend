@@ -4,7 +4,7 @@ import Title from "../../../shared/components/Title";
 import DatosConteo from "./DatosConteo";
 import InformacionEstanque from "./InformacionEstanque";
 import RegistroConteo from "./RegistroConteo";
-import { styles } from "../services/mortalidadStyles";
+import { styles } from "../styles/mortalidadStyles"; 
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
 import { TYPOGRAPHY } from "../../../theme/typography";
@@ -51,7 +51,7 @@ export default function MortalidadScreen({ onBack }) {
   ];
 
   return (
-    <ScrollView>
+    <ScrollView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={onBack} style={styles.backBtn} activeOpacity={0.7}>
           <Icon icon={ICONS.exit} size={20} color={COLORS.white} />
