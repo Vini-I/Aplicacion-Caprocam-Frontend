@@ -25,13 +25,40 @@ export default function DrawerLayout() {
           )
         }} 
       />
+       <Drawer.Screen
+        name="inventarios"
+        options={{
+          drawerLabel: "Inventario",
+          title: "Inventario",
+          headerShown: false,
+          drawerIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="package-variant-closed" color={color} size={size} />
+          ),
+        }}
+      />
 
-      
-
+        <Drawer.Screen 
+        name="linksPrueba"
+        options={{ 
+          drawerLabel: "Links de Prueba",
+          title: "Links de Prueba",
+          drawerIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="link" color={color} size={size} />
+          )
+        }} 
+      />
 
       <Drawer.Screen name="inicio" options={{ drawerItemStyle: { display: "none" } }} />
       <Drawer.Screen name="registros" options={{ drawerItemStyle: { display: "none" } }} />
       <Drawer.Screen name="reportes" options={{ drawerItemStyle: { display: "none" } }} />
+      <Drawer.Screen name="inventarios/_layout" options={{ drawerItemStyle: { display: "none" } }} />
+      <Drawer.Screen name="inventarios/inventarioScreen" options={{ drawerItemStyle: { display: "none" } }} />
+      <Drawer.Screen name="inventarios/productForm" options={{ drawerItemStyle: { display: "none" } }} />
+      <Drawer.Screen name="inventarios/nuevoProveedor" options={{ drawerItemStyle: { display: "none" } }} />
+      <Drawer.Screen name="inventarios/editarProveedor" options={{ drawerItemStyle: { display: "none" } }} />
+      <Drawer.Screen name="inventarios/proveedorScreen" options={{ drawerItemStyle: { display: "none" } }} />
+
+
     </Drawer>
   );
 }
