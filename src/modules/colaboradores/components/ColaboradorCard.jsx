@@ -25,9 +25,12 @@
 // IMPORTS
 // ============================================================
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, TouchableOpacity } from "react-native";
 import Card from "../../../shared/components/Card";
 import Badge from "../../../shared/components/Badge";
+import CustomText from "../../../shared/components/Text";
+import { styles } from "../styles/colaboradorCardStyles";
+import { COLORS } from "../../../theme/colors";
 
 // ============================================================
 // COMPONENTE
@@ -55,75 +58,25 @@ export default function ColaboradorCard({ colaborador, onPress, onEdit, onDelete
     <TouchableOpacity onPress={() => onPress?.(colaborador.id)} activeOpacity={0.7}>
       <Card style={styles.card}>
         <View style={styles.header}>
-          <Text style={styles.nombre}>{colaborador.nombre}</Text>
+          <CustomText style={styles.nombre}>{colaborador.nombre}</CustomText>
           <Badge
             label={rolLabels[colaborador.rol] || colaborador.rol}
             variant={rolVariant[colaborador.rol] || "info"}
           />
         </View>
         <View style={styles.details}>
-          <Text style={styles.detailText}>📞 {colaborador.telefono}</Text>
-          <Text style={styles.detailText}>✉️ {colaborador.email}</Text>
+          <CustomText style={styles.detailText}>📞 {colaborador.telefono}</CustomText>
+          <CustomText style={styles.detailText}>✉️ {colaborador.email}</CustomText>
         </View>
         <View style={styles.actions}>
           <TouchableOpacity onPress={() => onEdit?.(colaborador)} style={styles.editBtn}>
-            <Text style={styles.btnText}>Editar</Text>
+            <CustomText style={styles.btnText}>Editar</CustomText>
           </TouchableOpacity>
           <TouchableOpacity onPress={() => onDelete?.(colaborador.id)} style={styles.deleteBtn}>
-            <Text style={styles.btnText}>Eliminar</Text>
+            <CustomText style={styles.btnText}>Eliminar</CustomText>
           </TouchableOpacity>
         </View>
       </Card>
     </TouchableOpacity>
   );
 }
-
-// ============================================================
-// ESTILOS
-// ============================================================
-const styles = StyleSheet.create({
-  card: {
-    marginBottom: 12,
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 8,
-  },
-  nombre: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#1E3A5F",
-  },
-  details: {
-    marginBottom: 12,
-  },
-  detailText: {
-    fontSize: 13,
-    color: "#4E6482",
-    marginBottom: 2,
-  },
-  actions: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    gap: 12,
-  },
-  editBtn: {
-    backgroundColor: "#009EF5",
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-  },
-  deleteBtn: {
-    backgroundColor: "#DC3545",
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-  },
-  btnText: {
-    color: "#FFF",
-    fontWeight: "600",
-    fontSize: 12,
-  },
-});
