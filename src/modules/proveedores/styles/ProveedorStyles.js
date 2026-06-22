@@ -1,0 +1,186 @@
+/**
+ * ProveedorStyles
+ * Estilos para la pantalla de proveedores
+ */
+import { StyleSheet } from "react-native";
+import { COLORS } from "../../../theme/colors";
+import { TYPOGRAPHY } from "../../../theme/typography";
+
+export const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: COLORS.secondary,
+  },
+
+  navbar: {
+    backgroundColor: COLORS.primary,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    paddingTop: 30,
+  },
+
+  navbarRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    position: "relative",
+  },
+
+  navbarTitle: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    textAlign: "left",
+    color: COLORS.white,
+    fontSize: 20,
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
+    fontWeight: undefined,
+  },
+
+  card: {
+    marginBottom: 14,
+  },
+
+  cardHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 14,
+  },
+
+  avatar: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: COLORS.secondary,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+
+  avatarText: {
+    color: COLORS.primary,
+    fontSize: 16,
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
+  },
+
+  providerInfo: {
+    flex: 1,
+  },
+
+  providerName: {
+    color: COLORS.textSecondary,
+    fontSize: 18,
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
+  },
+
+  providerType: {
+    color: COLORS.textTertiary,
+    fontSize: 13,
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
+    marginTop: 2,
+  },
+
+  contactRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 8,
+    gap: 8,
+  },
+
+  contactText: {
+    color: COLORS.textSecondary,
+    fontSize: 14,
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
+  },
+
+  barraBusqueda: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    marginTop: 12,
+    gap: 8,
+  },
+
+  btnVerDetalle: {
+    backgroundColor: COLORS.primary,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    marginTop: 0,
+  },
+
+  btnVerDetalleText: {
+    fontSize: 13,
+    color: COLORS.white,
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
+  },
+
+  btnHome: {
+    marginTop: 0,
+    backgroundColor: "transparent",
+    paddingVertical: 0,
+    paddingHorizontal: 0,
+    borderWidth: 0,
+  },
+
+  searchBarContainer: {
+    flex: 1,
+  },
+
+  filterButton: {
+    alignSelf: "center",
+    marginTop: 0,
+    height: 43,
+  },
+
+  contadorResultados: {
+    marginHorizontal: 16,
+    marginTop: 10,
+    marginBottom: 4,
+    fontSize: 13,
+    color: COLORS.textTertiary,
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
+  },
+
+  lista: {
+    paddingBottom: 100,
+  },
+
+  btnAgregar: {
+    position: "absolute",
+    bottom: 70,
+    left: 16,
+    right: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: COLORS.primary,
+    paddingVertical: 14,
+    borderRadius: 10,
+    gap: 8,
+  },
+
+  btnAgregarText: {
+    color: COLORS.white,
+    fontSize: 14,
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
+  },
+});
+
+export const ICON_STYLES = {
+  home: {
+    size: 28,
+    color: COLORS.white,
+  },
+  add: {
+    size: 18,
+    color: COLORS.white,
+  },
+  phone: {
+    size: 14,
+    color: COLORS.textTertiary,
+  },
+  user: {
+    size: 14,
+    color: COLORS.textTertiary,
+  },
+};
