@@ -1,6 +1,5 @@
 import { StyleSheet } from "react-native";
 import { COLORS } from "../../../theme/colors.js";
-import { TYPOGRAPHY } from "../../../theme/typography.js";
 
 
 export const styles = StyleSheet.create({
@@ -14,7 +13,6 @@ export const styles = StyleSheet.create({
   navbarTitle: {
     color: COLORS.white,
     fontSize: 20,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
     fontWeight: undefined,
   },
 
@@ -39,7 +37,6 @@ export const styles = StyleSheet.create({
   },
   cardTitle: {
     fontSize: 19,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
     fontWeight: undefined,   // ← anula cualquier peso interno del Card
     color: COLORS.textSecondary,
     marginBottom: 16,
@@ -47,7 +44,6 @@ export const styles = StyleSheet.create({
   field: { marginBottom: 14 },
   label: {
     fontSize: 14,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
     fontWeight: undefined,   // ← agrega esto para anular el fontWeight interno
     color: COLORS.black,
     marginBottom: 6,
@@ -58,8 +54,7 @@ export const styles = StyleSheet.create({
     borderColor: COLORS.header,
     backgroundColor: COLORS.white,
     paddingHorizontal: 14,
-    fontSize: 15,
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
+    fontSize: 15
   },
   numberInput: {
     borderRadius: 12,
@@ -84,7 +79,6 @@ export const styles = StyleSheet.create({
   },
   saveButtonText: {
     fontSize: 16,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
     color: COLORS.white,
   },
   validationText: {
@@ -92,6 +86,5 @@ export const styles = StyleSheet.create({
     fontSize: 13,
     textAlign: "center",
     color: COLORS.textTertiary,
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
   },
 });

@@ -24,7 +24,6 @@ export const styles = StyleSheet.create({
     navbarTitulo: {
         color: COLORS.white,
         fontSize: 18,
-        fontFamily: TYPOGRAPHY.fontFamily.bold,
         fontWeight: undefined,
     },
     backButton: {

@@ -87,14 +87,7 @@ export default function ProductForm() {
         leftContent={
           <Button
             variant="ghost"
-            onPress={() =>
-              isEditMode
-                ? router.handleBack({
-                  pathname: "/(drawer)/inventarios/detalleProducto",
-                  params: { id: productoId.toString() },
-                })
-                : router.handleBack("/(drawer)/inventarios/inventarioScreen")
-            }
+            jsxonPress={handleBack}
             style={styles.backBtn}
           >
             <Icon icon={ICONS.exit} size={20} color={COLORS.white} />
