@@ -7,11 +7,10 @@ import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
 
 export const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: COLORS.secondary,
-  },
-
+ screen: {
+  flex: 1,
+  backgroundColor: COLORS.secondary,
+},
   navbar: {
     backgroundColor: COLORS.primary,
     paddingVertical: 10,
@@ -142,22 +141,24 @@ export const styles = StyleSheet.create({
   },
 
   lista: {
-    paddingBottom: 100,
+    paddingBottom: 16,
   },
 
+listaContainer: {
+  flex: 1,
+},
+
   btnAgregar: {
-    position: "absolute",
-    bottom: 70,
-    left: 16,
-    right: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: COLORS.primary,
-    paddingVertical: 14,
-    borderRadius: 10,
-    gap: 8,
-  },
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "center",
+  backgroundColor: COLORS.primary,
+  paddingVertical: 14,
+  marginHorizontal: 16,
+  marginBottom: 16,
+  borderRadius: 10,
+  gap: 8,
+},
 
   btnAgregarText: {
     color: COLORS.white,
