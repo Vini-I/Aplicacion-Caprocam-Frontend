@@ -15,13 +15,14 @@
  * - Select: selección de estanque, proveedor y técnica de cultivo.
  * - NumberInput: campos numéricos para cantidad y duración del ciclo.
  */
-import { StyleSheet, View, Platform, Text } from "react-native";
+import { View, Platform, Text } from "react-native";
 
 import Card from "../../../shared/components/Card";
 import Input from "../../../shared/components/Input";
 import NumberInput from "../../../shared/components/NumberInput";
 import Select from "../../../shared/components/Select";
 import DateInput from "../../../shared/components/DateInput";
+import { styles } from "../styles/SiembraFormStyles";
 
 import {
   obtenerFincas,
@@ -30,9 +31,6 @@ import {
   obtenerTecnicasCultivo,
   obtenerTiposLarva,
 } from "../services/SiembraService";
-
-import { COLORS } from "../../../theme/colors";
-import { TYPOGRAPHY } from "../../../theme/typography";
 
 function convertDateToWeb(textDate) {
   const parts = textDate.split("/");
@@ -199,34 +197,3 @@ export default function SiembraForm({ formData, onChange }) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    gap: 12,
-  },
-  cardTitle: {
-    color: COLORS.primary,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-  },
-  webDateContainer: {
-    marginBottom: 12,
-  },
-  webDateLabel: {
-    fontSize: 14,
-    fontFamily: TYPOGRAPHY.fontFamily.medium,
-    color: COLORS.textSecondary,
-    marginBottom: 6,
-  },
-  webDateInput: {
-    height: 45,
-    borderWidth: 1,
-    borderColor: COLORS.secondary,
-    borderRadius: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    fontSize: 16,
-    color: COLORS.textSecondary,
-    backgroundColor: COLORS.white,
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
-  },
-});
