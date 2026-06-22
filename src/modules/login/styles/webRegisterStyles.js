@@ -1,9 +1,8 @@
 /**
- * ESTILOS: WebLoginScreen
+ * ESTILOS: WebRegisterScreen
  *
- * Solo contiene lo exclusivo de esta pantalla. Los estilos de
- * encabezado, separador y error de campo viven ahora en sus
- * componentes compartidos (Header, Separator, FormField).
+ * Solo lo exclusivo de esta pantalla. Header, Separator y
+ * error de campo viven en sus componentes compartidos.
  */
 
 import { StyleSheet } from 'react-native';
@@ -25,6 +24,15 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     marginVertical: 8,
+  },
+
+  // Modal de éxito del registro
+  modalTitle: {
+    marginBottom: 12,
+  },
+
+  modalBody: {
+    lineHeight: 22,
   },
 });
 
