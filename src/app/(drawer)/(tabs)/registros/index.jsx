@@ -12,4 +12,5 @@ export default function RegistrosIndex() {
     onAlimentacion={irAAlimentacion}
     onMortalidad={irAMortalidad}
   />;
+  
 }
