@@ -7,8 +7,8 @@
  * de enviarlo a la API.
  *
  * - Usuario no puede estar vacío
- * - Contraseña: exactamente 8 caracteres
- * - Primer carácter debe ser mayúscula (A-Z)
+ * - Contraseña: mínimo 8 caracteres
+ * - Debe contener al menos una mayúscula (A-Z) en cualquier posición
  * - Debe contener al menos 4 dígitos numéricos
  *
  */
@@ -35,8 +35,8 @@ export const validateUsername = (username) => {
  *
  * Valida que la contraseña cumpla las reglas del proyecto:
  * - Obligatoria (no vacía)
- * - Exactamente 8 caracteres
- * - El primer carácter debe ser una letra mayúscula (A-Z)
+ * - Mínimo 8 caracteres
+ * - Debe contener al menos una letra mayúscula (A-Z) en cualquier posición
  * - Debe contener al menos 4 dígitos numéricos (0-9)
  *
  * @param {string} password 
@@ -47,13 +47,13 @@ export const validatePassword = (password) => {
     return AUTH_MESSAGES.ERROR_PASSWORD_REQUIRED;
   }
 
-  if (password.length !== 8) {
+  if (password.length < 8) {
     return AUTH_MESSAGES.ERROR_PASSWORD_LENGTH;
   }
 
-  // Verificar que el primer carácter sea una letra mayúscula
-  const startsWithUppercase = /^[A-Z]/.test(password);
-  if (!startsWithUppercase) {
+  // Verificar que contenga al menos una letra mayúscula en cualquier posición
+  const hasUppercase = /[A-Z]/.test(password);
+  if (!hasUppercase) {
     return AUTH_MESSAGES.ERROR_PASSWORD_UPPERCASE;
   }
 

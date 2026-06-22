@@ -12,6 +12,7 @@ import Card from "../../../shared/components/Card";
 import Badge from "../../../shared/components/Badge";
 import Button from "../../../shared/components/Button";
 import Input from "../../../shared/components/Input";
+import DateInput from "../../../shared/components/DateInput";
 import Select from "../../../shared/components/Select";
 import ProgressBar from "../../../shared/components/ProgressBar";
 import Alert from "../../../shared/components/Alert";
@@ -232,12 +233,13 @@ export default function DetalleSiembraScreen() {
           {!isEditing ? (
             // Modo lectura: todos los campos deshabilitados
             <>
-              <Input
+              <DateInput
                 label="Fecha de siembra"
                 inputType="date"
                 value={fechaSiembra}
-                editable={false}
-                style={styles.inputNombre}
+                disabled={true}
+                inputStyle={styles.dateInputLectura}
+                textStyle={styles.dateInputTexto}
                 labelStyle={styles.labelNombre}
               />
               <NumberInput
@@ -283,12 +285,13 @@ export default function DetalleSiembraScreen() {
                 selectedTextStyle={styles.textoSeleccionado}
                 optionTextStyle={styles.textoOpciones}
               />
-              <Input
+              <DateInput
                 label="Fecha ingreso de larva"
                 inputType="date"
                 value={fechaIngreso}
-                editable={false}
-                style={styles.inputNombre}
+                disabled={true}
+                inputStyle={styles.dateInputLectura}
+                textStyle={styles.dateInputTexto}
                 labelStyle={styles.labelNombre}
               />
               <Input
@@ -328,12 +331,12 @@ export default function DetalleSiembraScreen() {
           ) : (
             // Modo edición: campos habilitados para modificar
             <>
-              <Input
+              <DateInput
                 label="Fecha de siembra"
                 inputType="date"
                 value={fechaSiembra}
                 onChangeText={setFechaSiembra}
-                style={styles.inputEditing}
+                inputStyle={styles.inputEditing}
                 labelStyle={styles.labelNombre}
               />
               <NumberInput
@@ -364,12 +367,12 @@ export default function DetalleSiembraScreen() {
                 selectedTextStyle={styles.textoSeleccionado}
                 optionTextStyle={styles.textoOpciones}
               />
-              <Input
+              <DateInput
                 label="Fecha ingreso de larva"
                 inputType="date"
                 value={fechaIngreso}
                 onChangeText={setFechaIngreso}
-                style={styles.inputEditing}
+                inputStyle={styles.inputEditing}
                 labelStyle={styles.labelNombre}
               />
               <Input
@@ -576,5 +579,15 @@ const styles = StyleSheet.create({
     borderColor: COLORS.secondary,
     opacity: 1,
     color: COLORS.black,
+  },
+  dateInputLectura: {
+    borderWidth: 1,
+    borderColor: COLORS.secondary,
+    backgroundColor: COLORS.secondary,
+    opacity: 1,
+  },
+  dateInputTexto: {
+    color: COLORS.black,
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
   },
 });
