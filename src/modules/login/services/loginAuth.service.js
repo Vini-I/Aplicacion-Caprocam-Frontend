@@ -1,21 +1,129 @@
 /**
  * ============================================================
- * SERVICIO: Autenticación de login
+ * AUTH SERVICE
  * ============================================================
  *
- * Punto de integración para validar el PIN con backend.
+ * Para autenticar usuarios mediante JSON Web Tokens (JWT).
+ *
  */
+
+import { AUTH_MESSAGES } from '../constants/authMessages';
+
+const API_BASE_URL = 'https://api.caprocam.com';
+
+// FUNCIONES DEL SERVICIO
 
 /**
- * verifyPinCredentials
+ * Envía las credenciales al backend y retorna el JWT si son correctas.
  *
- * Valida el PIN localmente por ahora.
- * Cuando exista backend, aquí se reemplaza por fetch/axios.
+ * @param {string} username 
+ * @param {string} password
+ * @returns {Promise<Object>}
+ * @throws {Error}
+ *
  */
-export async function verifyPinCredentials({ workerId, pinCode }) {
-  if (workerId == null || pinCode.length !== 4) {
-    return { isValid: false, message: 'Datos inválidos para autenticar.' };
-  }
+export const login = async (username, password) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        username: username.trim(),
+        password,
+      }),
+    });
 
-  return { isValid: true, message: '' };
-}
+    // Parsear la respuesta como JSON
+    const data = await response.json();
+
+    // Si el servidor respondió con error (401, 403, 500, etc.)
+    if (!response.ok) {
+      // Usar el mensaje del servidor si lo trae, si no usar el genérico
+      if (response.status === 401) {
+        throw new Error(AUTH_MESSAGES.ERROR_INVALID_CREDENTIALS);
+      }
+      if (response.status >= 500) {
+        throw new Error(AUTH_MESSAGES.ERROR_SERVER);
+      }
+      throw new Error(data.message || AUTH_MESSAGES.ERROR_UNKNOWN);
+    }
+
+    // Login exitoso 
+    return {
+      token: data.token,
+      user: data.user,
+    };
+
+  } catch (error) {
+    // Si el error es de red (sin conexión), no tiene response
+    if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
+      throw new Error(AUTH_MESSAGES.ERROR_NETWORK);
+    }
+
+    // Re-lanzar errores que ya tienen mensaje apropiado
+    throw error;
+  }
+};
+
+/**
+ * Registra un nuevo usuario en el sistema.
+ *
+ * NOTA DE BACKEND PENDIENTE:
+ * La pantalla de registro (WebRegisterScreen) captura nombre,
+ * apellidos, correo electrónico, usuario y contraseña. Sin
+ * embargo, el endpoint POST /api/auth/register todavía solo
+ * acepta { username, password }. Por eso esta función recibe
+ * un objeto `profileData` opcional con { nombre, apellidos, email }
+ * que de momento NO se envía al backend; queda listo en el
+ * código para activarse en cuanto el backend lo soporte.
+ *
+ * TODO (backend): agregar nombre, apellidos y email al body
+ * de este fetch una vez que el endpoint los acepte, y eliminar
+ * este comentario.
+ *
+ * @param {string} username
+ * @param {string} password
+ * @param {Object} [profileData] - { nombre, apellidos, email } (aún no se envía al backend)
+ * @returns {Promise<Object>}
+ * @throws {Error}
+ */
+export const register = async (username, password, profileData = {}) => {
+  // eslint-disable-next-line no-unused-vars
+  const { nombre, apellidos, email } = profileData; // pendiente de backend, ver TODO arriba
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        username: username.trim(),
+        password,
+        // nombre, apellidos, email: pendientes de soporte en el backend (ver TODO arriba)
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      if (response.status >= 500) {
+        throw new Error(AUTH_MESSAGES.ERROR_SERVER);
+      }
+      throw new Error(data.message || AUTH_MESSAGES.ERROR_UNKNOWN);
+    }
+
+    return {
+      token: data.token,
+      user: data.user,
+    };
+
+  } catch (error) {
+    if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
+      throw new Error(AUTH_MESSAGES.ERROR_NETWORK);
+    }
+    throw error;
+  }
+};
