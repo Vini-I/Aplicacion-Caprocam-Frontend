@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+
 import { View, ScrollView } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { getProductoById, deleteProducto } from "../../inventarios/services/inventarioService";
@@ -84,7 +84,7 @@ export default function DetalleProductoScreen() {
                 leftContent={
                     <Button
                         variant="outline"
-                        onPress={() => router.replace("/(drawer)/inventarios/inventarioScreen")}
+                        onPress={() => router.handleBack("/(drawer)/inventarios/inventarioScreen")}
                         style={styles.backButton}
                     >
                         <Icon icon={ICONS.back} size={22} color={COLORS.white} />

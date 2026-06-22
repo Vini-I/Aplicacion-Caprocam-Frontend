@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { getProductoById, deleteProducto } from "../../inventarios/services/inventarioService";
 
-import { colorCategoria, colorCategoriaDefault } from "../styles/DetalleProductScreen.styles";
+import { colorCategoria, colorCategoriaDefault } from "../styles/DetalleProductScreenStyles";
 
 export function useDetalleProducto() {
   const { id } = useLocalSearchParams();

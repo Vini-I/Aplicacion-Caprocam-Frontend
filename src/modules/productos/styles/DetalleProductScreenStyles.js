@@ -10,7 +10,7 @@ export const colorCategoria = {
     Químico: { fondo: COLORS.secondary, texto: COLORS.primary },
     Fertilizante: { fondo: COLORS.secondary, texto: COLORS.primary },
     Antibiótico: { fondo: COLORS.secondary, texto: COLORS.primary },
-    Probiótico: { fondo: COLORS.successLight, texto: "#0D9488" },
+    Probiótico: { fondo: COLORS.successLight, texto: COLORS.success },
 };
 
 export const colorCategoriaDefault = {

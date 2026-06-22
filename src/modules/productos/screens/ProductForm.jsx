@@ -89,11 +89,11 @@ export default function ProductForm() {
             variant="ghost"
             onPress={() =>
               isEditMode
-                ? router.replace({
+                ? router.handleBack({
                   pathname: "/(drawer)/inventarios/detalleProducto",
                   params: { id: productoId.toString() },
                 })
-                : router.replace("/(drawer)/inventarios/inventarioScreen")
+                : router.handleBack("/(drawer)/inventarios/inventarioScreen")
             }
             style={styles.backBtn}
           >
@@ -229,9 +229,9 @@ export default function ProductForm() {
           </Button>
 
           {validationMessage !== "" && (
-            <CustomText style={styles.validationText}>
+            <Text style={styles.validationText}>
               {validationMessage}
-            </CustomText>
+            </Text>
           )}
         </Card>
       </ScrollView>
