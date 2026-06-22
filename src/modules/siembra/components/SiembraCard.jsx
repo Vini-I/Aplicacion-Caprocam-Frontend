@@ -19,7 +19,7 @@ import { View, Text } from "react-native";
 import Card from "../../../shared/components/Card";
 import Badge from "../../../shared/components/Badge";
 import Button from "../../../shared/components/Button";
-import { styles } from "../styles/SiembraCardStyle";
+import { styles } from "../styles/SiembraCardStyles";
 import Icon from "../../../shared/components/Icons";
 import { ICONS } from "../../../theme/icons";
 
