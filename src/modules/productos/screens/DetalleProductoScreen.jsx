@@ -7,7 +7,7 @@ import Navbar from "../../../shared/components/Navbar";
 import Icon from "../../../shared/components/Icons";
 import Card from "../../../shared/components/Card";
 import Button from "../../../shared/components/Button";
-import CustomText from "../../../shared/components/Text";
+import Text from "../../../shared/components/Text";
 import Title from "../../../shared/components/Title";
 import Badge from "../../../shared/components/Badge";
 import Modal from "../../../shared/components/Modal";
@@ -15,9 +15,9 @@ import Modal from "../../../shared/components/Modal";
 import { ICONS } from "../../../theme/icons";
 import { COLORS } from "../../../theme/colors";
 
-import { styles,colorCategoria,colorCategoriaDefault } from "../styles/DetalleProductScreen.styles";
+import { styles,colorCategoria,colorCategoriaDefault } from "../styles/DetalleProductScreenStyles";
 
-import { useDetalleProducto } from "../services/functions.DetalleProductoScreen";
+import { useDetalleProducto } from "../services/DetalleProductoScreen";
 
 function FilaDetalle({ etiqueta, valor, resaltado = false }) {
   return (

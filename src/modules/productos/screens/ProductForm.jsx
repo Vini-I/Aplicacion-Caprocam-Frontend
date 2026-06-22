@@ -53,15 +53,15 @@ import Input from "../../../shared/components/Input";
 import Select from "../../../shared/components/Select";
 import Button from "../../../shared/components/Button";
 import NumberInput from "../../../shared/components/NumberInput";
-import CustomText from "../../../shared/components/Text";
+import Text from "../../../shared/components/Text";
 import Icon from "../../../shared/components/Icons";
 import DateInput from "../../../shared/components/DateInput";
 
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
-import { CATEGORIAS, UNIDADES, useProductForm } from "../services/functions.ProductForm";
+import { CATEGORIAS, UNIDADES, useProductForm } from "../services/ProductForm";
 
-import { styles } from "../styles/ProductForm.styles";
+import { styles } from "../styles/ProductFormStyles";
 
 
 export default function ProductForm() {
