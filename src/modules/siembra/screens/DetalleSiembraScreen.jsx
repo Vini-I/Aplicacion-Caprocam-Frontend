@@ -26,7 +26,7 @@ import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
 
 // Estilos del modulo separados en su propio archivo
-import { styles } from "../styles/DetalleSiembraScreen.styles";
+import { styles } from "../styles/DetalleSiembraStyles";
 
 // Opciones para el select de tipo de larva
 const tiposLarva = [
