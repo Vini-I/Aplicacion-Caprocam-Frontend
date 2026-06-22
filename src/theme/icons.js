@@ -107,7 +107,7 @@ export const ICONS = {
     name: "add",
     },
     save: {
-    provider: "Entypo",
+    provider: "Ionicons",
     name: "save",
     },
     check: {
@@ -162,6 +162,10 @@ export const ICONS = {
     provider: "FontAwesome5",
     name: "ruler",
     },
+    weight: {
+    provider: "FontAwesome6",
+    name: "weight-hanging",
+    },
 
     // Alimentación
     food: {
@@ -171,6 +175,10 @@ export const ICONS = {
     chemicalContainer: {
     provider: "Entypo",
     name: "lab-flask",
+    },
+    gift: {
+    provider: "FontAwesome5",
+    name: "gift",
     },
      
     // Crecimiento
@@ -201,6 +209,12 @@ export const ICONS = {
     notification: {
     provider: "MaterialIcons",
     name: "notifications",
+    },
+
+    // Navegación adicional
+    back: {
+    provider: "AntDesign",
+    name: "arrow-left",
     },
      
 };
