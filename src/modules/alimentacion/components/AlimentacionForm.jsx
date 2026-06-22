@@ -2,9 +2,9 @@ import React from 'react';
 import { View, Pressable, StyleSheet } from 'react-native';
 import Card from '../../../shared/components/Card';
 import Input from '../../../shared/components/Input';
-import Select from '../../../shared/components/Select';
+import Select from "../../../shared/components/Select";
 import Text from '../../../shared/components/Text';
-import CampoFecha from './CampoFecha';
+import DateInput from "../../../shared/components/DateInput";
 import { COLORS } from '../../../theme/colors';
 import { TYPOGRAPHY } from '../../../theme/typography';
 
@@ -46,11 +46,14 @@ export default function AlimentacionForm({
     return (
         <View>
             <Card title="Información General">
-                <CampoFecha
-                    valor={form.fecha}
-                    onChange={(v) => updateField('fecha', v)}
+                <DateInput
+                    label="Fecha de Registro"
+                    value={form.fecha ?? ""}
+                    onChangeText={(v) => updateField("fecha", v)}
+                    labelStyle={{
+                    fontFamily: TYPOGRAPHY.fontFamily.medium,
+                    }}
                 />
-
                 <View style={styles.horasContainer}>
                     {HORAS.map((h) => {
                         const selected = form.hora === h;

@@ -18,7 +18,7 @@
 // IMPORTS
 // ============================================================
 import React, { useState, useEffect } from "react";
-import { View, ScrollView, Text, StyleSheet, Modal as RNModal, Alert } from "react-native";
+import { View, ScrollView, Modal as RNModal, Alert } from "react-native";
 import { useColaboradores } from "../hooks/useColaboradores";
 import ColaboradorCard from "../components/ColaboradorCard";
 import ColaboradorForm from "../components/ColaboradorForm";
@@ -28,6 +28,8 @@ import Spinner from "../../../shared/components/Spinner";
 import Button from "../../../shared/components/Button";
 import Title from "../../../shared/components/Title";
 import Input from "../../../shared/components/Input";
+import CustomText from "../../../shared/components/Text";
+import { styles } from "../styles/miPersonalStyles";
 
 // ============================================================
 // COMPONENTE PRINCIPAL
@@ -163,7 +165,7 @@ export default function MiPersonalScreen() {
   // RENDERIZADO CONDICIONAL
   // --------------------------------------------------------
   if (loading && colaboradores.length === 0) return <Spinner text="Cargando personal..." />;
-  if (error) return <Text style={styles.error}>Error: {error}</Text>;
+  if (error) return <CustomText style={styles.error}>Error: {error}</CustomText>;
 
   // --------------------------------------------------------
   // RENDER PRINCIPAL
@@ -177,9 +179,9 @@ export default function MiPersonalScreen() {
           onChangeText={setSearchText}
           containerStyle={styles.searchInput}
         />
-        <View style={styles.addButtonContainer}>
-        <Button onPress={handleAdd} variant="primary">Agregar colaborador</Button>
-        </View>
+        <Button onPress={handleAdd} variant="primary">
+          Agregar colaborador
+        </Button>
       </View>
 
       <ScrollView contentContainerStyle={styles.list}>
@@ -215,18 +217,18 @@ export default function MiPersonalScreen() {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Confirmar eliminación</Text>
+            <CustomText style={styles.modalTitle}>Confirmar eliminación</CustomText>
 
             {deleteTarget && (
               <>
-                <Text style={styles.modalText}>
+                <CustomText style={styles.modalText}>
                   ¿Está seguro que desea eliminar a:
-                </Text>
-                <Text style={styles.modalName}>{deleteTarget.nombre}</Text>
-                <Text style={styles.modalSubText}>
+                </CustomText>
+                <CustomText style={styles.modalName}>{deleteTarget.nombre}</CustomText>
+                <CustomText style={styles.modalSubText}>
                   Para confirmar, ingrese la cédula del colaborador:
-                <Text style={styles.modalCedula}>{deleteTarget.cedula}</Text>
-                </Text>
+                <CustomText style={styles.modalCedula}>{deleteTarget.cedula}</CustomText>
+                </CustomText>
               </>
             )}
 
@@ -268,23 +270,3 @@ export default function MiPersonalScreen() {
     </View>
   );
 }
-
-// ============================================================
-// ESTILOS
-// ============================================================
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F4F7FA" },
-  searchContainer: { paddingHorizontal: 16, paddingVertical: 12, backgroundColor: "#FFF", marginTop: 8 },
-  searchInput: { marginBottom: 0 },
-  list: { padding: 16 },
-  error: { color: "red", textAlign: "center", marginTop: 20 },
-  modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.6)", justifyContent: "center", alignItems: "center" },
-  modalContent: { backgroundColor: "#FFF", borderRadius: 16, padding: 24, width: "85%", maxWidth: 400 },
-  modalTitle: { fontSize: 18, fontWeight: "bold", color: "#DC3545", marginBottom: 16, textAlign: "center" },
-  modalText: { fontSize: 14, color: "#4E6482", marginBottom: 8, textAlign: "center" },
-  modalName: { fontSize:14, fontWeight: "bold", color: "#1E3A5F", marginBottom: 16, textAlign: "center" },
-  modalSubText: { fontSize: 14, color: "#4E6482", marginBottom: 8, textAlign: "center" },
-  modalCedula: { fontSize: 14, fontWeight: "600", color: "#009EF5", marginBottom: 16, textAlign: "center" },
-  modalInput: { marginBottom: 20 },
-  modalButtons: { flexDirection: "row", gap: 12, justifyContent: "center" },
-});

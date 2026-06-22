@@ -1,73 +1,99 @@
-import React, { useState } from "react";
+/**
+ * ============================================================
+ * PANTALLA FISICOQUIMICA
+ * ============================================================
+ *
+ * Esta pantalla agrupa las mediciones fisico-quimicas del
+ * modulo de agua y permite registrarlas con los componentes
+ * reutilizables del proyecto.
+ *
+ * Permite:
+ * - Consultar y editar temperatura
+ * - Consultar y editar oxigeno disuelto
+ * - Consultar y editar pH
+ * - Seleccionar salinidad desde una ruleta
+ * - Mostrar confirmacion visual al guardar
+ *
+ * ---
+ * USO
+ * ---
+ *
+ * Se renderiza dentro del flujo de navegacion del modulo y
+ * recibe la prop onBack para volver a la vista anterior.
+ *
+ * ============================================================
+ * EJEMPLO DE USO
+ * ============================================================
+ *
+ * <FisicoQuimica onBack={volver} />
+ */
+
+import React, { useEffect, useRef, useState } from "react";
+import { useRouter } from "expo-router";
 import {
   View,
-  Text,
   ScrollView,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   StatusBar,
   Platform,
-  Alert,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import Button from '../../../shared/components/Button';
+import Alert from '../../../shared/components/Alert';
+import Text from '../../../shared/components/Text';
+import Title from '../../../shared/components/Title';
+import Footer from '../../../shared/components/Footer';
+import Icon from '../../../shared/components/Icons';
+import RangeCard from '../components/RangeCard';
+import SingleWheelCard from '../components/SingleWheelCard';
+import { COLORS } from '../../../theme/colors';
+import { ICONS } from '../../../theme/icons';
 
-// ─── Paleta de colores del proyecto ──────────────────────────────────────────
-const C = {
-  primary:    "#009EF5",
-  headerBg:   "#009EF5",
-  bg:         "#F1F5F9",
-  card:       "#FFFFFF",
-  border:     "#E2E8F0",
-  inputBg:    "#F8FAFC",
-  text:       "#1E293B",
-  textSub:    "#64748B",
-  textHint:   "#94A3B8",
-  white:      "#FFFFFF",
-};
+export default function FisicoQuimica({ onBack }) {
+  const [salinidad, setSalinidad] = useState("14");
+  const [, setTempReadings] = useState([]);
+  const [, setPhReadings] = useState([]);
+  const [, setOxReadings] = useState([]);
+  const [showAlert, setShowAlert] = useState(false);
+  const alertTimerRef = useRef(null);
+  const router = useRouter();
 
-export default function fisicoQuimica({ onBack }) {
-  // ── Estado ──────────────────────────────────────────────────────────────────
-  const [tempAM,      setTempAM]      = useState("28.0");
-  const [tempPM,      setTempPM]      = useState("29.5");
-  const [oxigeno,     setOxigeno]     = useState(["", "", "", "", ""]);
-  const [phAM,        setPhAM]        = useState("7.8");
-  const [phPM,        setPhPM]        = useState("8.0");
-  const [salinidad,   setSalinidad]   = useState("14");
-  const [alcalinidad, setAlcalinidad] = useState("128");
-  const [secchi,      setSecchi]      = useState("35");
-  const [amonio,      setAmonio]      = useState("<0.01");
-  const [nitrito,     setNitrito]     = useState("0.00");
-  const [nitrato,     setNitrato]     = useState("0.00");
-  const [fosfatos,    setFosfatos]    = useState("0.00");
 
-  const updateOx = (i, v) => {
-    const arr = [...oxigeno];
-    arr[i] = v;
-    setOxigeno(arr);
-  };
+  useEffect(() => {
+    return () => {
+      if (alertTimerRef.current) clearTimeout(alertTimerRef.current);
+    };
+  }, []);
 
   const handleGuardar = () => {
-    Alert.alert("Módulo guardado", "Físico-Química registrado correctamente.");
+    setShowAlert(true);
+    if (alertTimerRef.current) clearTimeout(alertTimerRef.current);
+    alertTimerRef.current = setTimeout(() => {
+      setShowAlert(false);
+      alertTimerRef.current = null;
+      router.replace("/(drawer)/(tabs)/registros");  // ← reemplaza onBack()
+
+    }, 500);
   };
 
   return (
     <View style={styles.screen}>
-      <StatusBar barStyle="light-content" backgroundColor={C.headerBg} />
+      <StatusBar barStyle="light-content" backgroundColor={COLORS.primary} />
 
       {/* ── Header ── */}
       <View style={styles.header}>
-        <TouchableOpacity
-          onPress={onBack}
-          style={styles.backBtn}
-          activeOpacity={0.7}
-        >
-          <Ionicons name="chevron-back" size={20} color={C.white} />
-          <Text style={styles.backText}>Módulos</Text>
+        <TouchableOpacity onPress={onBack} style={styles.backBtn} activeOpacity={0.7}>
+          <Icon icon={ICONS.exit} size={20} color={COLORS.white} />
+          <Text size={14} color={COLORS.white}>
+            Módulos
+          </Text>
         </TouchableOpacity>
+
         <View style={styles.headerTitle}>
-          <Ionicons name="flask" size={20} color={C.white} />
-          <Text style={styles.headerTitleText}>Físico-Química</Text>
+          <Icon icon={ICONS.chemicalContainer} size={20} color={COLORS.white} />
+          <Title level={4} color={COLORS.white} style={styles.headerTitleText}>
+            Físico-Química
+          </Title>
         </View>
       </View>
 
@@ -77,381 +103,101 @@ export default function fisicoQuimica({ onBack }) {
         showsVerticalScrollIndicator={false}
       >
 
-        {/* ── TEMPERATURA ─────────────────────────────────────────────────── */}
-        <View style={styles.card}>
-          {/* Card header */}
-          <View style={styles.cardHeader}>
-            <View style={styles.cardHeaderLeft}>
-              <Ionicons name="thermometer" size={18} color={C.primary} />
-              <Text style={styles.cardTitle}>Temperatura</Text>
-              <Text style={styles.cardUnit}> (°C)</Text>
-            </View>
-            <Text style={styles.badge}>Ideal: 28–30°C</Text>
-          </View>
+        {/* ── TEMPERATURA ── */}
+        <RangeCard
+          title="Temperatura"
+          unit="°C"
+          icon={<Icon icon={ICONS.temperature} color={COLORS.primary} size={18} />}
+          idealMin={28} idealMax={30}
+          sliderMin={15} sliderMax={45}
+          step={0.5} decimals={1}
+          maxReadings={2} labelStyle="daynight"
+          colors={COLORS}
+          styles={styles}
+          onChange={(r) => setTempReadings(r)}
+        />
 
-          {/* Inputs AM / PM */}
-          <View style={styles.row2}>
-            {/* AM */}
-            <View style={{ flex: 1 }}>
-              <Text style={styles.inputLabel}>AM</Text>
-              <View style={styles.inputRow}>
-                <TextInput
-                  style={styles.input}
-                  value={tempAM}
-                  onChangeText={setTempAM}
-                  keyboardType="decimal-pad"
-                  placeholder="—"
-                  placeholderTextColor={C.textHint}
-                />
-              </View>
-            </View>
-            {/* PM */}
-            <View style={{ flex: 1 }}>
-              <Text style={styles.inputLabel}>PM</Text>
-              <View style={styles.inputRow}>
-                <TextInput
-                  style={styles.input}
-                  value={tempPM}
-                  onChangeText={setTempPM}
-                  keyboardType="decimal-pad"
-                  placeholder="—"
-                  placeholderTextColor={C.textHint}
-                />
-              </View>
-            </View>
-          </View>
-        </View>
+        {/* ── OXÍGENO DISUELTO ── */}
+        <RangeCard
+          title="Oxígeno Disuelto"
+          unit="mg/L"
+          icon={<Icon icon={ICONS.water} color={COLORS.primary} size={18} />}
+          idealMin={5}
+          sliderMin={0} sliderMax={20}
+          step={0.1} decimals={1}
+          showProgress={false} showRangeColor={false}
+          maxReadings={5} labelStyle="numeric"
+          colors={COLORS}
+          styles={styles}
+          onChange={(r) => setOxReadings(r)}
+        />
 
-        {/* ── OXÍGENO DISUELTO ─────────────────────────────────────────────── */}
-        <View style={styles.card}>
-          <View style={styles.cardHeader}>
-            <View style={styles.cardHeaderLeft}>
-              <Ionicons name="water" size={18} color={C.primary} />
-              <Text style={styles.cardTitle}>Oxígeno Disuelto</Text>
-              <Text style={styles.cardUnit}> (mg/L)</Text>
-            </View>
-            <Text style={styles.badge}>Mín: 5 mg/L</Text>
-          </View>
+        {/* ── pH ── */}
+        <RangeCard
+          title="pH"
+          unit="pH"
+          icon={<Icon icon={ICONS.chemicalContainer} color={COLORS.primary} size={18} />}
+          idealMin={7.5} idealMax={8.5}
+          sliderMin={4} sliderMax={10}
+          step={0.1} decimals={1}
+          maxReadings={2} labelStyle="daynight"
+          colors={COLORS}
+          styles={styles}
+          onChange={(r) => setPhReadings(r)}
+        />
 
-          <Text style={styles.subHint}>Hasta 5 lecturas diarias</Text>
+        {/* ── SALINIDAD ── */}
+        <SingleWheelCard
+          title="Salinidad"
+          icon={<Icon icon={ICONS.frequency} color={COLORS.primary} size={18} />}
+          label="Salinidad"
+          unit="ppt"
+          min={5} max={40}
+          idealMin={10} idealMax={25}
+          value={salinidad}
+          colors={COLORS}
+          styles={styles}
+          onChange={setSalinidad}
+        />
 
-          <View style={styles.oxRow}>
-            {["1\n5AM", "2", "3", "4", "5"].map((lbl, i) => (
-              <View key={i} style={styles.oxItem}>
-                <Text style={styles.oxLabel}>{lbl}</Text>
-                <TextInput
-                  style={styles.oxInput}
-                  value={oxigeno[i]}
-                  onChangeText={(v) => updateOx(i, v)}
-                  keyboardType="decimal-pad"
-                  placeholder="—"
-                  placeholderTextColor={C.textHint}
-                />
-              </View>
-            ))}
-          </View>
-        </View>
-
-        {/* ── pH ──────────────────────────────────────────────────────────── */}
-        <View style={styles.card}>
-          <View style={styles.cardHeader}>
-            <View style={styles.cardHeaderLeft}>
-              <Ionicons name="pulse" size={18} color={C.primary} />
-              <Text style={styles.cardTitle}>pH</Text>
-            </View>
-            <Text style={styles.badge}>Ideal: 7.5–8.5</Text>
-          </View>
-
-          <View style={styles.row2}>
-            {/* AM */}
-            <View style={{ flex: 1 }}>
-              <Text style={styles.inputLabel}>AM</Text>
-              <View style={styles.inputRow}>
-                <TextInput
-                  style={styles.input}
-                  value={phAM}
-                  onChangeText={setPhAM}
-                  keyboardType="decimal-pad"
-                  placeholder="—"
-                  placeholderTextColor={C.textHint}
-                />
-              </View>
-            </View>
-            {/* PM */}
-            <View style={{ flex: 1 }}>
-              <Text style={styles.inputLabel}>PM</Text>
-              <View style={styles.inputRow}>
-                <TextInput
-                  style={styles.input}
-                  value={phPM}
-                  onChangeText={setPhPM}
-                  keyboardType="decimal-pad"
-                  placeholder="—"
-                  placeholderTextColor={C.textHint}
-                />
-              </View>
-            </View>
-          </View>
-        </View>
-
-        {/* ── SALINIDAD Y ALCALINIDAD ──────────────────────────────────────── */}
-        <View style={styles.card}>
-          <View style={styles.cardHeader}>
-            <View style={styles.cardHeaderLeft}>
-              <Ionicons name="analytics" size={18} color={C.primary} />
-              <Text style={styles.cardTitle}>Salinidad y Alcalinidad</Text>
-            </View>
-          </View>
-
-          <View style={styles.row2}>
-            {/* Salinidad */}
-            <View style={{ flex: 1 }}>
-              <Text style={styles.inputLabel}>Salinidad</Text>
-              <View style={styles.inputRow}>
-                <TextInput
-                  style={styles.input}
-                  value={salinidad}
-                  onChangeText={setSalinidad}
-                  keyboardType="decimal-pad"
-                  placeholder="—"
-                  placeholderTextColor={C.textHint}
-                />
-                <Text style={styles.unit}>ppt</Text>
-              </View>
-              <Text style={styles.hint}>5–40 ppt</Text>
-            </View>
-            {/* Alcalinidad */}
-            <View style={{ flex: 1 }}>
-              <Text style={styles.inputLabel}>Alcalinidad</Text>
-              <View style={styles.inputRow}>
-                <TextInput
-                  style={styles.input}
-                  value={alcalinidad}
-                  onChangeText={setAlcalinidad}
-                  keyboardType="decimal-pad"
-                  placeholder="—"
-                  placeholderTextColor={C.textHint}
-                />
-                <Text style={styles.unit}>mg/L</Text>
-              </View>
-              <Text style={styles.hint}>80–150 mg/L</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* ── TURBIDEZ SECCHI ──────────────────────────────────────────────── */}
-        <View style={styles.card}>
-          <View style={styles.cardHeader}>
-            <View style={styles.cardHeaderLeft}>
-              <Ionicons name="eye" size={18} color={C.primary} />
-              <Text style={styles.cardTitle}>Turbidez Secchi</Text>
-              <Text style={styles.cardUnit}> (cm)</Text>
-            </View>
-            <Text style={styles.badge}>Ideal: 25–45 cm</Text>
-          </View>
-
-          <Text style={styles.inputLabel}>Lectura disco Secchi</Text>
-          <View style={styles.inputRow}>
-            <TextInput
-              style={styles.input}
-              value={secchi}
-              onChangeText={setSecchi}
-              keyboardType="decimal-pad"
-              placeholder="—"
-              placeholderTextColor={C.textHint}
-            />
-            <Text style={styles.unit}>cm</Text>
-          </View>
-          <Text style={styles.hint}>Profundidad visible</Text>
-        </View>
-
-        {/* ── NUTRIENTES ──────────────────────────────────────────────────── */}
-        <View style={styles.card}>
-          <View style={styles.cardHeader}>
-            <View style={styles.cardHeaderLeft}>
-              <Ionicons name="flask" size={18} color={C.primary} />
-              <Text style={styles.cardTitle}>Nutrientes</Text>
-              <Text style={styles.cardUnit}> (mg/L)</Text>
-            </View>
-          </View>
-
-          {/* Fila 1: Amonio + Nitrito */}
-          <View style={styles.row2}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.inputLabel}>Amonio (NH₃)</Text>
-              <View style={styles.inputRow}>
-                <TextInput
-                  style={styles.input}
-                  value={amonio}
-                  onChangeText={setAmonio}
-                  keyboardType="decimal-pad"
-                  placeholder="—"
-                  placeholderTextColor={C.textHint}
-                />
-                <Text style={styles.unit}>mg/L</Text>
-              </View>
-              <Text style={styles.hint}>Máx: 0.1</Text>
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.inputLabel}>Nitrito (NO₂)</Text>
-              <View style={styles.inputRow}>
-                <TextInput
-                  style={styles.input}
-                  value={nitrito}
-                  onChangeText={setNitrito}
-                  keyboardType="decimal-pad"
-                  placeholder="—"
-                  placeholderTextColor={C.textHint}
-                />
-                <Text style={styles.unit}>mg/L</Text>
-              </View>
-              <Text style={styles.hint}>Máx: 0.1</Text>
-            </View>
-          </View>
-
-          {/* Fila 2: Nitrato + Fosfatos */}
-          <View style={[styles.row2, { marginTop: 12 }]}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.inputLabel}>Nitrato (NO₃)</Text>
-              <View style={styles.inputRow}>
-                <TextInput
-                  style={styles.input}
-                  value={nitrato}
-                  onChangeText={setNitrato}
-                  keyboardType="decimal-pad"
-                  placeholder="—"
-                  placeholderTextColor={C.textHint}
-                />
-                <Text style={styles.unit}>mg/L</Text>
-              </View>
-              <Text style={styles.hint}>Máx: 10</Text>
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.inputLabel}>Fosfatos (PO₄)</Text>
-              <View style={styles.inputRow}>
-                <TextInput
-                  style={styles.input}
-                  value={fosfatos}
-                  onChangeText={setFosfatos}
-                  keyboardType="decimal-pad"
-                  placeholder="—"
-                  placeholderTextColor={C.textHint}
-                />
-                <Text style={styles.unit}>mg/L</Text>
-              </View>
-              <Text style={styles.hint}>Máx: 1</Text>
-            </View>
-          </View>
-        </View>
-
+        {showAlert && (
+          <Alert
+            variant="success"
+            message="¡Módulo guardado exitosamente!"
+            style={{ width: "60%", alignSelf: "center" }}
+            textStyle={{ textAlign: "center", fontWeight: "bold" }}
+          />
+        )}
         <View style={{ height: 24 }} />
       </ScrollView>
 
       {/* ── Footer / Guardar ── */}
-      <View style={styles.footer}>
-        <TouchableOpacity
-          style={styles.saveBtn}
-          onPress={handleGuardar}
-          activeOpacity={0.85}
-        >
-          <Ionicons name="save" size={18} color={C.white} />
-          <Text style={styles.saveBtnText}>Guardar módulo</Text>
-        </TouchableOpacity>
-      </View>
+      <Footer
+        children={
+          <Button variant="primary" onPress={handleGuardar}>
+            Guardar módulo
+          </Button>
+        }
+        fixedBottom={true}
+      />
     </View>
   );
 }
 
-// ─── Estilos ─────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: C.bg },
+  screen: { flex: 1, backgroundColor: COLORS.surface },
 
-  // Header
   header: {
-    backgroundColor: C.headerBg,
+    backgroundColor: COLORS.primary,
     paddingTop: Platform.OS === "android" ? StatusBar.currentHeight + 8 : 56,
     paddingBottom: 20,
     paddingHorizontal: 20,
     gap: 12,
   },
-  backBtn:         { flexDirection: "row", alignItems: "center", gap: 4 },
-  backText:        { fontSize: 14, color: C.white },
-  headerTitle:     { flexDirection: "row", alignItems: "center", gap: 10 },
-  headerTitleText: { fontSize: 22, fontWeight: "700", color: C.white },
+  backBtn: { flexDirection: "row", alignItems: "center", gap: 4 },
+  headerTitle: { flexDirection: "row", alignItems: "center", gap: 10 },
+  headerTitleText: { fontSize: 22, fontWeight: "700" },
 
-  // Scroll
-  scroll:        { flex: 1 },
+  scroll: { flex: 1 },
   scrollContent: { padding: 16, gap: 12 },
-
-  // Card
-  card: {
-    backgroundColor: C.card,
-    borderRadius: 14,
-    padding: 16,
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
-  },
-  cardHeader:     { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 14 },
-  cardHeaderLeft: { flexDirection: "row", alignItems: "center", gap: 6 },
-  cardTitle:      { fontSize: 15, fontWeight: "700", color: C.text },
-  cardUnit:       { fontSize: 13, color: C.textSub },
-  badge:          { fontSize: 12, color: C.primary },
-
-  // Layout
-  row2: { flexDirection: "row", gap: 12 },
-
-  // Inputs
-  inputLabel: { fontSize: 13, color: C.textSub, marginBottom: 6 },
-  inputRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: C.inputBg,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: C.border,
-    paddingHorizontal: 12,
-    height: 48,
-  },
-  input: { flex: 1, fontSize: 16, color: C.text },
-  unit:  { fontSize: 13, color: C.textHint, marginLeft: 4 },
-  hint:  { fontSize: 11, color: C.textHint, marginTop: 4 },
-
-  // Oxígeno
-  subHint: { fontSize: 12, color: C.textHint, marginBottom: 10 },
-  oxRow:   { flexDirection: "row", gap: 8 },
-  oxItem:  { flex: 1, alignItems: "center", gap: 4 },
-  oxLabel: { fontSize: 11, color: C.textSub, textAlign: "center" },
-  oxInput: {
-    width: "100%",
-    backgroundColor: C.inputBg,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: C.border,
-    height: 40,
-    textAlign: "center",
-    fontSize: 14,
-    color: C.text,
-  },
-
-  // Footer
-  footer: {
-    padding: 16,
-    paddingBottom: Platform.OS === "ios" ? 32 : 16,
-    backgroundColor: C.card,
-    borderTopWidth: 1,
-    borderTopColor: C.border,
-  },
-  saveBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    backgroundColor: C.headerBg,
-    borderRadius: 14,
-    height: 52,
-  },
-  saveBtnText: { fontSize: 16, fontWeight: "700", color: C.white },
 });

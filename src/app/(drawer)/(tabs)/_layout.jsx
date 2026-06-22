@@ -10,7 +10,7 @@ import Icon from "../../../shared/components/Icons";
 export default function TabsLayout() {
   return (
 
-    <Tabs screenOptions={{ tabBarActiveTintColor: "teal" , headerShown: false}}>
+    <Tabs screenOptions={{ tabBarActiveTintColor: "teal", headerShown: false }}>
       <Tabs.Screen
         name="inicio"
         options={{
@@ -26,7 +26,7 @@ export default function TabsLayout() {
         name="finca"
         options={{
           tabBarIcon: ({ color, size }) => (
-            <Icon icon={ICONS.location} size={15} color={COLORS.textTertiary}/>
+            <Icon icon={ICONS.location} size={15} color={COLORS.textTertiary} />
           ),
           tabBarActiveTintColor: "teal",
           tabBarLabel: "Finca",
@@ -57,7 +57,45 @@ export default function TabsLayout() {
           title: "Reportes",
         }}
       />
+
+      <Tabs.Screen
+        name="siembra"
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons
+              name="sprout"
+              color={color}
+              size={size}
+            />
+          ),
+          tabBarLabel: "Siembra",
+          title: "Siembra",
+        }}
+      />
+
+      <Tabs.Screen
+        name="colaboradores/colaboradores"
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="account-group" color={color} size={size} />
+          ),
+          tabBarLabel: "Colaboradores",
+          title: "Colaboradores",
+        }}
+      />
+
+            <Tabs.Screen
+        name="colaboradores/miPersonal"
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="account-supervisor" color={color} size={size} />
+          ),
+          tabBarLabel: "Mi Personal",
+          title: "Mi Personal",
+        }}
+      />      
+      
     </Tabs>
-    
+
   );
 }
