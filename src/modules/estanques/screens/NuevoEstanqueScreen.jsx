@@ -12,11 +12,12 @@
  * - Usa Title para encabezados y títulos de sección.
  * - Usa NumberInput para densidad de siembra y aireadores.
  * - Usa DateInput para la fecha de siembra.
- * - Usa COLORS, ICONS y TYPOGRAPHY desde theme.
+ * - Usa styles desde la carpeta del modulo.
  */
 
 import React, { useState } from "react";
-import { ScrollView, View, StyleSheet } from "react-native";
+import { ScrollView, View } from "react-native";
+import { useRouter } from "expo-router";
 
 import Alert from "../../../shared/components/Alert";
 import Button from "../../../shared/components/Button";
@@ -28,6 +29,8 @@ import NumberInput from "../../../shared/components/NumberInput";
 import Select from "../../../shared/components/Select";
 import CustomText from "../../../shared/components/Text";
 import Title from "../../../shared/components/Title";
+
+import { styles } from "../styles/EstanqueStyle";
 
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
@@ -43,16 +46,37 @@ function obtenerFechaActual() {
 }
 
 const TIPOS_ESTANQUE = [
-  { label: "Estanque de tierra semiintensivo", value: "tierra_semiintensivo" },
-  { label: "Estanque reservorio", value: "reservorio" },
-  { label: "Estanque con geomembrana", value: "geomembrana" },
-  { label: "Estanque superintensivo", value: "superintensivo" },
+  {
+    label: "Estanque de tierra semiintensivo",
+    value: "tierra_semiintensivo",
+  },
+  {
+    label: "Estanque reservorio",
+    value: "reservorio",
+  },
+  {
+    label: "Estanque con geomembrana",
+    value: "geomembrana",
+  },
+  {
+    label: "Estanque superintensivo",
+    value: "superintensivo",
+  },
 ];
 
 const FUENTES_AGUA = [
-  { label: "Estero", value: "estero" },
-  { label: "Golfo", value: "golfo" },
-  { label: "Reservorio", value: "reservorio" },
+  {
+    label: "Estero",
+    value: "estero",
+  },
+  {
+    label: "Golfo",
+    value: "golfo",
+  },
+  {
+    label: "Reservorio",
+    value: "reservorio",
+  },
 ];
 
 const ESPECIES = [
@@ -63,30 +87,68 @@ const ESPECIES = [
 ];
 
 const OPCIONES_PRECRIA = [
-  { label: "Si, usa precria", value: "si" },
-  { label: "No, siembra directa", value: "no" },
+  {
+    label: "Si, usa precria",
+    value: "si",
+  },
+  {
+    label: "No, siembra directa",
+    value: "no",
+  },
 ];
 
 const METODOS_ALIMENTACION = [
-  { label: "Manual", value: "manual" },
-  { label: "Automatico", value: "automatico" },
-  { label: "Manual y automatico", value: "manual_automatico" },
+  {
+    label: "Manual",
+    value: "manual",
+  },
+  {
+    label: "Automatico",
+    value: "automatico",
+  },
+  {
+    label: "Manual y automatico",
+    value: "manual_automatico",
+  },
 ];
 
 const OPCIONES_ALIMENTADOR = [
-  { label: "Si", value: "si" },
-  { label: "No", value: "no" },
+  {
+    label: "Si",
+    value: "si",
+  },
+  {
+    label: "No",
+    value: "no",
+  },
 ];
 
 const ESTADOS_ESTANQUE = [
-  { label: "Activo", value: "activo" },
-  { label: "En preparacion", value: "preparacion" },
-  { label: "Cosechado", value: "cosechado" },
-  { label: "Mantenimiento", value: "mantenimiento" },
-  { label: "Engorde", value: "engorde" },
+  {
+    label: "Activo",
+    value: "activo",
+  },
+  {
+    label: "En preparacion",
+    value: "preparacion",
+  },
+  {
+    label: "Mantenimiento",
+    value: "mantenimiento",
+  },
+  {
+    label: "Engorde",
+    value: "engorde",
+  },
+  {
+    label: "Cosechado",
+    value: "cosechado",
+  },
 ];
 
 export default function NuevoEstanqueScreen({ navigation }) {
+  const router = useRouter();
+
   const [codigo, setCodigo] = useState("");
   const [estado, setEstado] = useState("activo");
   const [tipoEstanque, setTipoEstanque] = useState("");
@@ -96,6 +158,12 @@ export default function NuevoEstanqueScreen({ navigation }) {
   const [fuenteAgua, setFuenteAgua] = useState("");
   const [especie, setEspecie] = useState("litopenaeus_vannamei");
   const [fechaSiembra, setFechaSiembra] = useState(obtenerFechaActual());
+  const [fechaInicioEngorde, setFechaInicioEngorde] = useState(
+    obtenerFechaActual()
+  );
+  const [fechaMantenimiento, setFechaMantenimiento] = useState(
+    obtenerFechaActual()
+  );
   const [densidadSiembra, setDensidadSiembra] = useState("12");
   const [precria, setPrecria] = useState("");
   const [metodoAlimentacion, setMetodoAlimentacion] = useState("");
@@ -109,7 +177,10 @@ export default function NuevoEstanqueScreen({ navigation }) {
   function cancelar() {
     if (navigation) {
       navigation.goBack();
+      return;
     }
+
+    router.back();
   }
 
   function mostrarError(texto) {
@@ -128,8 +199,18 @@ export default function NuevoEstanqueScreen({ navigation }) {
       return;
     }
 
-    if (largo === "" || ancho === "" || profundidad === "") {
-      mostrarError("Debe completar largo, ancho y profundidad.");
+    if (largo === "") {
+      mostrarError("Debe ingresar el largo del estanque.");
+      return;
+    }
+
+    if (ancho === "") {
+      mostrarError("Debe ingresar el ancho del estanque.");
+      return;
+    }
+
+    if (profundidad === "") {
+      mostrarError("Debe ingresar la profundidad del estanque.");
       return;
     }
 
@@ -138,7 +219,14 @@ export default function NuevoEstanqueScreen({ navigation }) {
       return;
     }
 
+    if (Number(densidadSiembra) <= 0) {
+      mostrarError("La densidad de siembra debe ser mayor a 0.");
+      return;
+    }
+
     const nuevoEstanque = {
+      id: String(Date.now()),
+      finca: "Finca La Reina",
       codigo: codigo,
       estado: estado,
       tipoEstanque: tipoEstanque,
@@ -148,17 +236,45 @@ export default function NuevoEstanqueScreen({ navigation }) {
       fuenteAgua: fuenteAgua,
       especie: especie,
       fechaSiembra: fechaSiembra,
-      densidadSiembra: Number(densidadSiembra),
+      fechaInicioEngorde: fechaInicioEngorde,
+      fechaMantenimiento: fechaMantenimiento,
+      densidadSiembra: densidadSiembra,
       precria: precria,
       metodoAlimentacion: metodoAlimentacion,
       proveedorAlimento: proveedorAlimento,
-      numeroAireadores: Number(numeroAireadores),
+      numeroAireadores: numeroAireadores,
       tieneAlimentadorAutomatico: tieneAlimentadorAutomatico,
     };
 
     console.log("Estanque registrado:", nuevoEstanque);
+
     setTipoMensaje("success");
     setMensaje("Estanque registrado correctamente.");
+
+    router.push({
+      pathname: "/registros/DetalleEstanque",
+      params: {
+        id: nuevoEstanque.id,
+        finca: nuevoEstanque.finca,
+        codigo: nuevoEstanque.codigo,
+        estado: nuevoEstanque.estado,
+        tipoEstanque: nuevoEstanque.tipoEstanque,
+        largo: nuevoEstanque.largo,
+        ancho: nuevoEstanque.ancho,
+        profundidad: nuevoEstanque.profundidad,
+        fuenteAgua: nuevoEstanque.fuenteAgua,
+        especie: nuevoEstanque.especie,
+        fechaSiembra: nuevoEstanque.fechaSiembra,
+        fechaInicioEngorde: nuevoEstanque.fechaInicioEngorde,
+        fechaMantenimiento: nuevoEstanque.fechaMantenimiento,
+        densidadSiembra: nuevoEstanque.densidadSiembra,
+        precria: nuevoEstanque.precria,
+        metodoAlimentacion: nuevoEstanque.metodoAlimentacion,
+        proveedorAlimento: nuevoEstanque.proveedorAlimento,
+        numeroAireadores: nuevoEstanque.numeroAireadores,
+        tieneAlimentadorAutomatico: nuevoEstanque.tieneAlimentadorAutomatico,
+      },
+    });
   }
 
   return (
@@ -171,6 +287,7 @@ export default function NuevoEstanqueScreen({ navigation }) {
         >
           <View style={styles.inlineButtonContent}>
             <Icon icon={ICONS.exit} size={18} color={COLORS.white} />
+
             <CustomText
               size={16}
               color={COLORS.white}
@@ -194,6 +311,7 @@ export default function NuevoEstanqueScreen({ navigation }) {
             >
               Nuevo Estanque
             </Title>
+
             <CustomText
               size={14}
               color={COLORS.white}
@@ -216,7 +334,8 @@ export default function NuevoEstanqueScreen({ navigation }) {
         )}
 
         <Card>
-          <SectionTitle title="Identificacion" icon={ICONS.id} />
+          <SectionTitle title="Identificacion" icon={ICONS.document} />
+
           <Input
             label="Codigo del estanque *"
             value={codigo}
@@ -224,6 +343,7 @@ export default function NuevoEstanqueScreen({ navigation }) {
             placeholder="Ej: EST-01"
             labelStyle={styles.label}
           />
+
           <Select
             label="Tipo de estanque *"
             options={TIPOS_ESTANQUE}
@@ -258,6 +378,7 @@ export default function NuevoEstanqueScreen({ navigation }) {
 
         <Card>
           <SectionTitle title="Dimensiones" icon={ICONS.ruler} />
+
           <View style={styles.twoColumns}>
             <View style={styles.column}>
               <Input
@@ -269,6 +390,7 @@ export default function NuevoEstanqueScreen({ navigation }) {
                 labelStyle={styles.label}
               />
             </View>
+
             <View style={styles.column}>
               <Input
                 label="Ancho (m) *"
@@ -280,6 +402,7 @@ export default function NuevoEstanqueScreen({ navigation }) {
               />
             </View>
           </View>
+
           <Input
             label="Profundidad (m) *"
             value={profundidad}
@@ -288,6 +411,7 @@ export default function NuevoEstanqueScreen({ navigation }) {
             keyboardType="numeric"
             labelStyle={styles.label}
           />
+
           <Select
             label="Fuente de agua"
             options={FUENTES_AGUA}
@@ -299,7 +423,8 @@ export default function NuevoEstanqueScreen({ navigation }) {
         </Card>
 
         <Card>
-          <SectionTitle title="Siembra" icon={ICONS.shrimp} />
+          <SectionTitle title="Siembra y fechas" icon={ICONS.calendar} />
+
           <Select
             label="Especie"
             options={ESPECIES}
@@ -308,12 +433,28 @@ export default function NuevoEstanqueScreen({ navigation }) {
             placeholder="Seleccione la especie"
             labelStyle={styles.label}
           />
+
           <DateInput
             label="Fecha de siembra *"
             value={fechaSiembra}
             onChangeText={setFechaSiembra}
             labelStyle={styles.label}
           />
+
+          <DateInput
+            label="Fecha inicio de engorde"
+            value={fechaInicioEngorde}
+            onChangeText={setFechaInicioEngorde}
+            labelStyle={styles.label}
+          />
+
+          <DateInput
+            label="Fecha mantenimiento"
+            value={fechaMantenimiento}
+            onChangeText={setFechaMantenimiento}
+            labelStyle={styles.label}
+          />
+
           <NumberInput
             label="Densidad de siembra (ind/m²) *"
             value={densidadSiembra}
@@ -323,6 +464,7 @@ export default function NuevoEstanqueScreen({ navigation }) {
             step={1}
             labelStyle={styles.label}
           />
+
           <Select
             label="Precria"
             options={OPCIONES_PRECRIA}
@@ -335,6 +477,7 @@ export default function NuevoEstanqueScreen({ navigation }) {
 
         <Card>
           <SectionTitle title="Alimentacion y equipos" icon={ICONS.food} />
+
           <Select
             label="Metodo de alimentacion"
             options={METODOS_ALIMENTACION}
@@ -343,6 +486,7 @@ export default function NuevoEstanqueScreen({ navigation }) {
             placeholder="Seleccione el metodo"
             labelStyle={styles.label}
           />
+
           <Input
             label="Proveedor de alimento"
             value={proveedorAlimento}
@@ -350,6 +494,7 @@ export default function NuevoEstanqueScreen({ navigation }) {
             placeholder="Ej: Biomar"
             labelStyle={styles.label}
           />
+
           <NumberInput
             label="N° aireadores"
             value={numeroAireadores}
@@ -359,6 +504,7 @@ export default function NuevoEstanqueScreen({ navigation }) {
             step={1}
             labelStyle={styles.label}
           />
+
           <Select
             label="¿Tiene alimentador automatico?"
             options={OPCIONES_ALIMENTADOR}
@@ -372,6 +518,7 @@ export default function NuevoEstanqueScreen({ navigation }) {
         <Button onPress={registrarEstanque} style={styles.saveButton}>
           <View style={styles.inlineButtonContentCentered}>
             <Icon icon={ICONS.save} size={18} color={COLORS.white} />
+
             <CustomText size={16} color={COLORS.white} style={styles.saveText}>
               Registrar estanque
             </CustomText>
@@ -386,6 +533,7 @@ function SectionTitle({ title, icon }) {
   return (
     <View style={styles.sectionTitleRow}>
       <Icon icon={icon} size={18} color={COLORS.primary} />
+
       <Title
         level={5}
         color={COLORS.textSecondary}
@@ -426,75 +574,3 @@ function OptionButton({ label, value, selectedValue, onPress }) {
     </Button>
   );
 }
-
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: COLORS.surface },
-  header: {
-    backgroundColor: COLORS.primary,
-    paddingTop: 24,
-    paddingHorizontal: 22,
-    paddingBottom: 28,
-    borderBottomLeftRadius: 22,
-    borderBottomRightRadius: 22,
-  },
-  cancelButton: {
-    alignSelf: "flex-start",
-    backgroundColor: "transparent",
-    borderWidth: 0,
-    paddingHorizontal: 0,
-    paddingVertical: 0,
-    marginTop: 0,
-    marginBottom: 20,
-  },
-  cancelText: { marginLeft: 8, fontFamily: TYPOGRAPHY.fontFamily.medium },
-  inlineButtonContent: { flexDirection: "row", alignItems: "center" },
-  inlineButtonContentCentered: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  headerRow: { flexDirection: "row", alignItems: "center" },
-  headerIcon: {
-    width: 54,
-    height: 54,
-    borderRadius: 18,
-    backgroundColor: "rgba(255,255,255,0.18)",
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 14,
-  },
-  headerTextBox: { flex: 1 },
-  headerSubtitle: { marginTop: 2, fontFamily: TYPOGRAPHY.fontFamily.regular },
-  content: { padding: 18 },
-  alert: { marginBottom: 16 },
-  alertText: { fontFamily: TYPOGRAPHY.fontFamily.medium },
-  sectionTitleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 14,
-  },
-  sectionTitle: { marginLeft: 8, textTransform: "uppercase" },
-  label: {
-    color: COLORS.textPrimary,
-    fontFamily: TYPOGRAPHY.fontFamily.medium,
-  },
-  labelText: { marginBottom: 8, fontFamily: TYPOGRAPHY.fontFamily.medium },
-  twoColumns: { flexDirection: "row", gap: 12 },
-  column: { flex: 1 },
-  optionsGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  optionButton: {
-    minWidth: "30%",
-    flexGrow: 1,
-    paddingVertical: 10,
-    paddingHorizontal: 10,
-    marginTop: 0,
-    borderColor: COLORS.secondary,
-    backgroundColor: COLORS.white,
-  },
-  optionButtonSelected: {
-    borderColor: COLORS.primary,
-    backgroundColor: COLORS.secondary,
-  },
-  saveButton: { minHeight: 50, borderRadius: 14, marginBottom: 32 },
-  saveText: { marginLeft: 8, fontFamily: TYPOGRAPHY.fontFamily.bold },
-});
