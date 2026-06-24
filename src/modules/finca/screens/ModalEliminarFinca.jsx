@@ -1,6 +1,5 @@
 import { COLORS } from "../../../theme/colors.js";
 import { styles } from "../styles/FincaStyles.js";
-import { Platform } from "react-native";
 import { ICONS } from "../../../theme/icons.js";
 import Text from "../../../shared/components/Text.jsx";
 import Title from "../../../shared/components/Title.jsx";
@@ -22,12 +21,9 @@ export default function ModalEliminarFinca({
       buttonStyle={{ backgroundColor: COLORS.textTertiary }}
       overlayStyle={{ backgroundColor: "#00000066" }}
       containerStyle={{
-        maxWidth: 700,
+        maxWidth: 900,
         width: "100%",
         alignSelf: "center",
-        ...(Platform.OS === "web" && {
-          marginRight: 15,
-        }),
       }}
     >
       <Title level={3} style={{ alignSelf: "center" }}>

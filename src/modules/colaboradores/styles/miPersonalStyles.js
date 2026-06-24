@@ -2,7 +2,10 @@ import { StyleSheet } from "react-native";
 import { COLORS } from "../../../theme/colors";
 
 export const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.surface },
+  container: { 
+    flex: 1, 
+    backgroundColor: COLORS.surface 
+  },
 searchContainer: {
   paddingHorizontal: 16,
   paddingVertical: 12,

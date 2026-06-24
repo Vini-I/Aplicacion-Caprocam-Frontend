@@ -5,6 +5,9 @@ import { TYPOGRAPHY } from "../../../theme/typography";
 export const styles = StyleSheet.create({
   card: {
     marginBottom: 16,
+    width: "100%",
+    maxWidth: 900,
+    alignSelf: "center", 
   },
   row: {
     flexDirection: "row",

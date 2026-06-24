@@ -380,7 +380,7 @@ export default function EditarEstanqueScreen({ navigation }) {
   }
 
   return (
-    <ScrollView style={styles.screen} showsVerticalScrollIndicator={false}>
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <View style={headerStyle}>
         <Button
           variant="outline"
