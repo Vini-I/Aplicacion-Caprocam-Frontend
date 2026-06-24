@@ -58,7 +58,7 @@ import { styles } from '../styles/RegistroStyles';
  * />
  */
 
-export default function RegistroScreen({ onFisicoQuimica, onAlimentacion, onMortalidad }) {
+export default function RegistroScreen({ onFisicoQuimica, onAlimentacion, onMortalidad, onCrecimiento}) {
     const {
         fincaSeleccionada,
         estanqueSeleccionado, setEstanqueSeleccionado,
@@ -111,6 +111,7 @@ export default function RegistroScreen({ onFisicoQuimica, onAlimentacion, onMort
                                 m.id === 'fisicoquimica' ? onFisicoQuimica :
                                 m.id === 'alimentacion' ? onAlimentacion :
                                 m.id === 'mortalidad' ? onMortalidad :
+                                m.id === 'crecimiento' ? onCrecimiento :
                                 null
 
                             }
