@@ -113,7 +113,7 @@ export default function EditarProveedorScreen() {
   }
 
   return (
-    <View style={styles.screen}>
+    <View style={styles.container}>
 
       <Navbar
         title="Editar proveedor"

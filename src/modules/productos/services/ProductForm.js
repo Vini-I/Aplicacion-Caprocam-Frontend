@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useLocalSearchParams } from "expo-router";
 
-import { addProducto, updateProducto } from "../../inventarios/services/inventarioService";
+import { addProducto, updateProducto } from "../../inventarios/services/InventarioService";
 import { getProveedoresByCategoria } from "../../proveedores/services/ProveedorData";
 
 // ─────────────────────────────────────────────

@@ -6,7 +6,7 @@ import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
 
 export const styles = StyleSheet.create({
-  screen: {
+  container: {
     flex: 1,
     backgroundColor: COLORS.surface,
   },
@@ -34,8 +34,11 @@ export const styles = StyleSheet.create({
   },
 
   content: {
-    padding: 16,
-    paddingBottom: 32,
+    paddingTop: 40,
+    paddingBottom: 40,
+    width: "100%",
+    maxWidth: 900,
+    alignSelf: "center",
   },
 
   card: {

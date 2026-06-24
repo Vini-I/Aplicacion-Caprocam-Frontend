@@ -76,7 +76,7 @@ export default function DetalleProveedorScreen() {
   }
 
   return (
-    <View style={styles.contenedor}>
+    <View style={styles.container}>
 
       {/* Navbar con botón para volver a la lista */}
       <Navbar

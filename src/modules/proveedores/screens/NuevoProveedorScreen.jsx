@@ -94,7 +94,7 @@ export default function NuevoProveedorScreen() {
   }
 
   return (
-    <View style={styles.screen}>
+    <View style={styles.container}>
 
       {/* Navbar con botón para volver a la lista de proveedores */}
       <View style={styles.navbar}>

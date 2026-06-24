@@ -1,10 +1,10 @@
 // styles/StylesDetalleProveedor.js
-import { StyleSheet, Platform } from "react-native";
+import { StyleSheet } from "react-native";
 import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
 
 export const styles = StyleSheet.create({
-  contenedor: {
+  container: {
     flex: 1,
     backgroundColor: COLORS.surface,
   },
@@ -42,8 +42,11 @@ export const styles = StyleSheet.create({
   },
 
   contenido: {
-    padding: 16,
+    paddingTop: 30,
     paddingBottom: 40,
+    width: "100%",
+    maxWidth: 900,
+    alignSelf: "center",
   },
 
   tarjeta: {
@@ -172,12 +175,9 @@ export const styles = StyleSheet.create({
   },
 
   modalContainer: {
-    maxWidth: 700,
     width: "100%",
+    maxWidth: 900,
     alignSelf: "center",
-    ...(Platform.OS === "web" && {
-      marginRight: 15,
-    }),
   },
 
   modalTitle: { alignSelf: "center" },

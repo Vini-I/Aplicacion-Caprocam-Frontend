@@ -8,9 +8,9 @@ export const ICON_SIZES = {
 };
 
 export const styles = StyleSheet.create({
-  screen: {
+  container: {
     flex: 1,
-    backgroundColor: COLORS.surface
+    backgroundColor: COLORS.white
   },
   navbar: {
     backgroundColor: COLORS.primary,
@@ -48,9 +48,11 @@ export const styles = StyleSheet.create({
   },
   card: {
     borderRadius: 18,
-    padding: 18,
     backgroundColor: COLORS.white,
     borderColor: COLORS.secondary,
+    width: "100%",
+    maxWidth: 900,
+    alignSelf: "center",
   },
   cardTitle: {
     fontSize: 19,

@@ -1,7 +1,7 @@
 
 import { View, ScrollView } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { getProductoById, deleteProducto } from "../../inventarios/services/inventarioService";
+import { getProductoById, deleteProducto } from "../../inventarios/services/InventarioService.js";
 
 import Navbar from "../../../shared/components/Navbar";
 import Icon from "../../../shared/components/Icons";

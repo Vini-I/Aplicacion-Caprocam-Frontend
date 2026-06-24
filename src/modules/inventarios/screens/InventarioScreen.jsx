@@ -17,11 +17,7 @@ import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
 import { styles } from "../styles/InventarioStyles";
 
-<<<<<<< HEAD
-import { getProductosInventario } from "../services/InventarioService";
-=======
-import { getProductosInventario } from "../services/inventarioService.js";
->>>>>>> team6
+import { getProductosInventario } from "../services/InventarioService.js";
 
 function FilaDetalle({ etiqueta, valor, resaltado = false }) {
   return (
