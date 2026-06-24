@@ -30,6 +30,7 @@ export default function GestionAlimentacion({
     <ScrollView style={styles.contenido}>
       <EncabezadoAlimentacion onBack={onBack} />
 
+      <View style={styles.alimentacionContent}>
       <AlimentacionStats {...calcularStats(alimentaciones)} />
 
       <AlimentacionForm form={form} updateField={updateField} />
@@ -50,6 +51,7 @@ export default function GestionAlimentacion({
         }
         fixedBottom={true}
       />
+    </View>
     </ScrollView>
   );
 }
