@@ -6,7 +6,7 @@ const isLargeScreen = width > 700;
 
 export const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
+    flex: 1,
     padding: 16,
     backgroundColor: COLORS.white,
   },
@@ -14,7 +14,6 @@ export const styles = StyleSheet.create({
 contentWrapper: {
     width: "100%",
     maxWidth: 900,
-    marginRight: "auto",
     alignSelf: "center",
   },
 

@@ -1,5 +1,5 @@
 import { ScrollView, View } from "react-native";
-import { styles } from "../../../modules/mantCrecimiento/styles/EstanqueStyles.js";
+import { styles } from "../../../modules/mantCrecimiento/styles/CrecimientoStyle.js";
 import Card from "../../../shared/components/Card.jsx";
 import Input from "../../../shared/components/Input.jsx";
 import Text from "../../../shared/components/Text.jsx";
@@ -40,7 +40,7 @@ export default function FincaCrecimientoScreen() {
 
   return (
     <ScrollView style={styles.container}>
-      <Card>
+      <Card  style={styles.contentWrapper}>
         <View style={styles.headerRow}>
           <Icon
             icon={ICONS.growth}
