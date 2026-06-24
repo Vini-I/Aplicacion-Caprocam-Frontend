@@ -13,7 +13,11 @@ import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
 
 export const styles = StyleSheet.create({
-  screen: { flex: 1, width: "100%", backgroundColor: COLORS.surface },
+  container: { 
+    flex: 1, 
+    width: "100%", 
+    backgroundColor: COLORS.white,
+  },
 
   header: {
     width: "100%",
@@ -25,7 +29,9 @@ export const styles = StyleSheet.create({
     borderBottomRightRadius: 22,
   },
 
-  headerDesktop: { paddingHorizontal: 48 },
+  headerDesktop: { 
+    paddingHorizontal: 48 
+  },
 
   cancelButton: {
     alignSelf: "flex-start",
@@ -37,9 +43,15 @@ export const styles = StyleSheet.create({
     marginBottom: 20,
   },
 
-  cancelText: { marginLeft: 8, fontFamily: TYPOGRAPHY.fontFamily.medium },
+  cancelText: { 
+    marginLeft: 8, 
+    fontFamily: TYPOGRAPHY.fontFamily.medium 
+  },
 
-  inlineButtonContent: { flexDirection: "row", alignItems: "center" },
+  inlineButtonContent: { 
+    flexDirection: "row", 
+    alignItems: "center" 
+  },
 
   inlineButtonContentCentered: {
     flexDirection: "row",
@@ -73,6 +85,9 @@ export const styles = StyleSheet.create({
 
   content: {
     padding: 18,
+    width: "100%",
+    maxWidth: 900,
+    alignSelf: "center", 
   },
 
   contentTablet: {

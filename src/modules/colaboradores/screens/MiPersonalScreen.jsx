@@ -197,7 +197,7 @@ export default function MiPersonalScreen() {
       </ScrollView>
 
       {/* Modal para crear/editar */}
-      <Modal visible={modalVisible} onClose={() => setModalVisible(false)}>
+      <Modal visible={modalVisible} onClose={() => setModalVisible(false)} style={styles.modalContent}>
         <Title level={4}>{editingColaborador ? "Editar" : "Nuevo"} Colaborador</Title>
         <ColaboradorForm
           initialData={editingColaborador || {}}
@@ -214,6 +214,7 @@ export default function MiPersonalScreen() {
         transparent={true}
         animationType="fade"
         onRequestClose={() => setShowConfirmModal(false)}
+        style={styles.modalContent}
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>

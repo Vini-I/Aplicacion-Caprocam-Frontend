@@ -5,7 +5,10 @@ import { ICONS } from "../../../theme/icons";
 
 
 export const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.surface },
+  container: { 
+    flex: 1, 
+    backgroundColor: COLORS.white 
+  },
   tabBar: {
     flexDirection: "row",
     backgroundColor: COLORS.white,
@@ -36,6 +39,9 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
+    width: "100%",
+    maxWidth: 900,
+    alignSelf: "center", 
   },
   searchInput: { flex: 1, marginBottom: 0 },
   addButtonContainer: { alignSelf: "center" },

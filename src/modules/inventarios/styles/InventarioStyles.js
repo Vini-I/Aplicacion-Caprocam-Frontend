@@ -5,7 +5,7 @@ import { TYPOGRAPHY } from "../../../theme/typography";
 export const styles = StyleSheet.create({
   contenedor: {
     flex: 1,
-    backgroundColor: COLORS.surface,
+    backgroundColor: COLORS.white,
   },
 
   navbar: {
@@ -40,6 +40,9 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 14,
     borderRadius: 8,
     gap: 8,
+    width: "100%",
+    maxWidth: 900,
+    alignSelf: "center",
   },
 
   alertaTexto: {
@@ -50,9 +53,12 @@ export const styles = StyleSheet.create({
   barraBusqueda: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 16,
     marginTop: 12,
     gap: 8,
+    width: "100%",
+    maxWidth: 900,
+    alignSelf: "center",
+    marginRight: 16
   },
 
   searchBarContainer: {
@@ -63,6 +69,7 @@ export const styles = StyleSheet.create({
     alignSelf: "center",
     height: 43,
     marginBottom: 10,
+    marginRight: 3
   },
 
   contadorResultados: {
@@ -70,15 +77,24 @@ export const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 4,
     fontFamily: TYPOGRAPHY.fontFamily.regular,
+    width: "100%",
+    maxWidth: 895,
+    alignSelf: "center",
   },
 
   lista: {
     paddingBottom: 24,
+    width: "100%",
+    maxWidth: 900,
+    alignSelf: "center",
   },
 
   tarjeta: {
     marginHorizontal: 16,
     marginTop: 12,
+    width: "100%",
+    maxWidth: 900,
+    alignSelf: "center",
   },
 
   tarjetaStockBajo: {

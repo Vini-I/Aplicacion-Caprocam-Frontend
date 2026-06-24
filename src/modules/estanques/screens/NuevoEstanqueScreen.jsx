@@ -278,7 +278,7 @@ export default function NuevoEstanqueScreen({ navigation }) {
   }
 
   return (
-    <ScrollView style={styles.screen} showsVerticalScrollIndicator={false}>
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.header}>
         <Button
           variant="outline"
