@@ -19,6 +19,7 @@
 // IMPORTS
 // ============================================================
 import React, { useState } from "react";
+import { COLORS } from "../../../theme/colors";
 import { View, ScrollView, TouchableOpacity, Modal as RNModal, Alert } from "react-native";
 import { useColaboradores } from "../hooks/useColaboradores";
 import ColaboradorCard from "../components/ColaboradorCard";
@@ -227,7 +228,7 @@ export default function ColaboradoresListScreen() {
         </TouchableOpacity>
       </View>
 
-      <Modal visible={modalVisible} onClose={() => setModalVisible(false)}>
+      <Modal visible={modalVisible} onClose={() => setModalVisible(false)} containerStyle={styles.modalContainer}>
         <Title level={4}>{editingColaborador ? "Editar" : "Nuevo"} colaborador</Title>
         <ColaboradorForm
           initialData={editingColaborador || {}}

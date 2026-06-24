@@ -3,11 +3,10 @@ import { COLORS } from "../../../theme/colors";
 import Icon from "../../../shared/components/Icons";
 import { ICONS } from "../../../theme/icons";
 
-
 export const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    backgroundColor: COLORS.white 
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.white,
   },
   tabBar: {
     flexDirection: "row",
@@ -41,7 +40,7 @@ export const styles = StyleSheet.create({
     gap: 8,
     width: "100%",
     maxWidth: 900,
-    alignSelf: "center", 
+    alignSelf: "center",
   },
   searchInput: { flex: 1, marginBottom: 0 },
   addButtonContainer: { alignSelf: "center" },
@@ -52,6 +51,11 @@ export const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.6)",
     justifyContent: "center",
     alignItems: "center",
+  },
+  modalContainer: {
+    width: "100%",
+    maxWidth: 900,
+    alignSelf: "center",
   },
   modalContent: {
     backgroundColor: COLORS.white,
