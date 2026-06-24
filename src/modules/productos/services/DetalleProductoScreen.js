@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { getProductoById, deleteProducto } from "../../inventarios/services/inventarioService";
+import { getProductoById, deleteProducto } from "../../inventarios/services/InventarioService";
 
 import { colorCategoria, colorCategoriaDefault } from "../styles/DetalleProductScreenStyles";
 
