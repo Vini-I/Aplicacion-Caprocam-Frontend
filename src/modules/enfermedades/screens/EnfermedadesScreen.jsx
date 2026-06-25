@@ -6,12 +6,15 @@
  * Modulo para registrar enfermedades por finca y estanque.
  *
  * Funcionalidad:
- * - Permite seleccionar una finca.
- * - Carga los estanques de la finca seleccionada.
+ * - Permite seleccionar finca y estanque.
  * - Permite seleccionar una o varias enfermedades.
- * - Permite escribir un reporte sanitario.
- * - Guarda el registro en memoria local de la pantalla.
- * - Muestra los detalles guardados debajo del formulario.
+ * - Guarda los registros usando useEnfermedades.
+ * - Los registros quedan disponibles para el dashboard.
+ *
+ * Importante:
+ * - Este modulo NO registra parasitos.
+ * - Gregarinas y epicomensales pasan a Parasitologia.
+ * - NHP queda aqui como enfermedad bacteriana asociada a Hepatobacter penaei.
  */
 
 import React, { useState } from "react";
@@ -29,96 +32,21 @@ import Select from "../../../shared/components/Select";
 import CustomText from "../../../shared/components/Text";
 import Title from "../../../shared/components/Title";
 
+import { FINCAS, ESTANQUES } from "../../registro/screens/RegistroData";
+
+import useEnfermedades from "../hooks/useEnfermedades";
+import {
+  ENFERMEDADES_CATALOGO,
+  SEVERIDADES_ENFERMEDAD,
+  obtenerNombreEnfermedad,
+  obtenerNombreSeveridad,
+} from "../services/EnfermedadesService";
+
 import { styles } from "../styles/EnfermedadesStyle";
 
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
 import { TYPOGRAPHY } from "../../../theme/typography";
-
-const FINCAS = [
-  {
-    label: "Finca El Pacífico",
-    value: "finca_el_pacifico",
-  },
-  {
-    label: "Finca Santa Rosa",
-    value: "finca_santa_rosa",
-  },
-];
-
-const ESTANQUES_POR_FINCA = {
-  finca_el_pacifico: [
-    {
-      label: "E-01 - Litopenaeus vannamei",
-      value: "E-01",
-    },
-    {
-      label: "E-02 - Litopenaeus vannamei",
-      value: "E-02",
-    },
-  ],
-
-  finca_santa_rosa: [
-    {
-      label: "E-01 - Litopenaeus stylirostris",
-      value: "E-01",
-    },
-  ],
-};
-
-const ENFERMEDADES = [
-  {
-    label: "WSSV - Mancha Blanca",
-    value: "wssv",
-  },
-  {
-    label: "AHPND - Necrosis hepatopancreática aguda",
-    value: "ahpnd",
-  },
-  {
-    label: "Vibriosis",
-    value: "vibriosis",
-  },
-  {
-    label: "Gregarinas",
-    value: "gregarinas",
-  },
-  {
-    label: "IHHNV",
-    value: "ihhnv",
-  },
-  {
-    label: "NHP",
-    value: "nhp",
-  },
-  {
-    label: "Epicomensales",
-    value: "epicomensales",
-  },
-  {
-    label: "Otro",
-    value: "otro",
-  },
-];
-
-const SEVERIDADES = [
-  {
-    label: "Baja",
-    value: "baja",
-  },
-  {
-    label: "Media",
-    value: "media",
-  },
-  {
-    label: "Alta",
-    value: "alta",
-  },
-  {
-    label: "Crítica",
-    value: "critica",
-  },
-];
 
 function obtenerFechaActual() {
   const fecha = new Date();
@@ -129,21 +57,73 @@ function obtenerFechaActual() {
   return `${dia}/${mes}/${anio}`;
 }
 
-function obtenerNombrePorValor(lista, valor) {
-  let nombre = valor;
+function obtenerOpcionesFincas() {
+  const opciones = [];
 
-  lista.forEach(function (item) {
-    if (item.value === valor) {
-      nombre = item.label;
+  FINCAS.forEach(function (finca) {
+    opciones.push({
+      label: finca.nombre,
+      value: finca.id,
+    });
+  });
+
+  return opciones;
+}
+
+function obtenerOpcionesEstanques(fincaId) {
+  let opciones = [];
+
+  if (fincaId !== "") {
+    const estanquesFinca = ESTANQUES[fincaId];
+
+    if (estanquesFinca !== undefined) {
+      estanquesFinca.forEach(function (estanque) {
+        opciones.push({
+          label: `${estanque.id} - ${estanque.especie}`,
+          value: estanque.id,
+        });
+      });
+    }
+  }
+
+  return opciones;
+}
+
+function obtenerNombreFinca(fincaId) {
+  let nombre = "";
+
+  FINCAS.forEach(function (finca) {
+    if (finca.id === fincaId) {
+      nombre = finca.nombre;
     }
   });
 
   return nombre;
 }
 
+function obtenerTextoEnfermedades(enfermedades) {
+  let texto = "";
+
+  enfermedades.forEach(function (item, index) {
+    const nombre = obtenerNombreEnfermedad(item);
+
+    if (index === 0) {
+      texto = nombre;
+    }
+
+    if (index > 0) {
+      texto = `${texto}, ${nombre}`;
+    }
+  });
+
+  return texto;
+}
+
 export default function EnfermedadesScreen({ onBack, navigation }) {
   const router = useRouter();
   const { width } = useWindowDimensions();
+
+  const { enfermedades, loading, error, guardarEnfermedad } = useEnfermedades();
 
   let esTablet = false;
   let esDesktop = false;
@@ -168,7 +148,6 @@ export default function EnfermedadesScreen({ onBack, navigation }) {
   const [reporte, setReporte] = useState("");
   const [mensaje, setMensaje] = useState("");
   const [tipoMensaje, setTipoMensaje] = useState("info");
-  const [casosRegistrados, setCasosRegistrados] = useState([]);
 
   let headerStyle = [styles.header];
   let contentStyle = [styles.content];
@@ -191,15 +170,8 @@ export default function EnfermedadesScreen({ onBack, navigation }) {
     itemFullStyle.push(styles.gridItemFull);
   }
 
-  let opcionesEstanques = [];
-
-  if (finca !== "") {
-    opcionesEstanques = ESTANQUES_POR_FINCA[finca];
-  }
-
-  if (opcionesEstanques === undefined) {
-    opcionesEstanques = [];
-  }
+  const opcionesFincas = obtenerOpcionesFincas();
+  const opcionesEstanques = obtenerOpcionesEstanques(finca);
 
   function volver() {
     if (onBack) {
@@ -287,44 +259,45 @@ export default function EnfermedadesScreen({ onBack, navigation }) {
       valido = false;
     }
 
-    if (valido === true && reporte === "") {
+    if (valido === true && reporte.trim() === "") {
       setTipoMensaje("warning");
       setMensaje("Debe escribir un reporte del caso.");
+      valido = false;
+    }
+
+    if (valido === true && Number(mortalidad) < 0) {
+      setTipoMensaje("warning");
+      setMensaje("La mortalidad no puede ser negativa.");
       valido = false;
     }
 
     return valido;
   }
 
-  function registrarEnfermedad() {
+  async function registrarEnfermedad() {
     if (validarFormulario() === false) {
       return;
     }
 
     const nuevoCaso = {
-      id: String(Date.now()),
       finca: finca,
-      fincaNombre: obtenerNombrePorValor(FINCAS, finca),
+      fincaNombre: obtenerNombreFinca(finca),
       estanque: estanque,
       fechaReporte: fechaReporte,
       responsable: responsable,
       enfermedades: enfermedadesSeleccionadas,
       severidad: severidad,
       mortalidad: mortalidad,
-      reporte: reporte,
+      reporte: reporte.trim(),
     };
 
-    let nuevosCasos = [];
+    const guardado = await guardarEnfermedad(nuevoCaso);
 
-    casosRegistrados.forEach(function (caso) {
-      nuevosCasos.push(caso);
-    });
-
-    nuevosCasos.push(nuevoCaso);
-
-    setCasosRegistrados(nuevosCasos);
-
-    console.log("Enfermedad registrada:", nuevoCaso);
+    if (guardado === null) {
+      setTipoMensaje("danger");
+      setMensaje("No se pudo guardar la enfermedad.");
+      return;
+    }
 
     setTipoMensaje("success");
     setMensaje("Enfermedad registrada correctamente.");
@@ -388,14 +361,23 @@ export default function EnfermedadesScreen({ onBack, navigation }) {
           />
         )}
 
+        {error !== "" && (
+          <Alert
+            variant="danger"
+            message={error}
+            style={styles.alert}
+            textStyle={styles.alertText}
+          />
+        )}
+
         <Card>
-          <SectionTitle title="Ubicación del caso" icon={ICONS.document} />
+          <SectionTitle title="Ubicacion del caso" icon={ICONS.document} />
 
           <View style={gridStyle}>
             <View style={itemStyle}>
               <Select
                 label="Finca *"
-                options={FINCAS}
+                options={opcionesFincas}
                 value={finca}
                 onChange={cambiarFinca}
                 placeholder="Seleccione la finca"
@@ -439,7 +421,7 @@ export default function EnfermedadesScreen({ onBack, navigation }) {
           <SectionTitle title="Enfermedades que presenta" icon={ICONS.report} />
 
           <View style={styles.optionsGrid}>
-            {ENFERMEDADES.map(function (item) {
+            {ENFERMEDADES_CATALOGO.map(function (item) {
               return (
                 <OptionButton
                   key={item.value}
@@ -460,7 +442,7 @@ export default function EnfermedadesScreen({ onBack, navigation }) {
             <View style={itemStyle}>
               <Select
                 label="Severidad *"
-                options={SEVERIDADES}
+                options={SEVERIDADES_ENFERMEDAD}
                 value={severidad}
                 onChange={setSeveridad}
                 placeholder="Seleccione la severidad"
@@ -485,7 +467,7 @@ export default function EnfermedadesScreen({ onBack, navigation }) {
                 label="Reporte *"
                 value={reporte}
                 onChangeText={setReporte}
-                placeholder="Describa síntomas, observaciones o acciones realizadas"
+                placeholder="Describa sintomas, observaciones o acciones realizadas"
                 multiline={true}
                 labelStyle={styles.label}
                 style={styles.textArea}
@@ -494,7 +476,11 @@ export default function EnfermedadesScreen({ onBack, navigation }) {
           </View>
         </Card>
 
-        <Button onPress={registrarEnfermedad} style={styles.saveButton}>
+        <Button
+          onPress={registrarEnfermedad}
+          style={styles.saveButton}
+          disabled={loading}
+        >
           <View style={styles.inlineButtonContentCentered}>
             <Icon icon={ICONS.save} size={18} color={COLORS.white} />
 
@@ -507,17 +493,17 @@ export default function EnfermedadesScreen({ onBack, navigation }) {
         <Card>
           <SectionTitle title="Detalles guardados" icon={ICONS.certificate} />
 
-          {casosRegistrados.length === 0 && (
+          {enfermedades.length === 0 && (
             <CustomText
               size={14}
               color={COLORS.textTertiary}
               style={styles.emptyText}
             >
-              Aún no hay enfermedades registradas.
+              Aun no hay enfermedades registradas.
             </CustomText>
           )}
 
-          {casosRegistrados.map(function (caso) {
+          {enfermedades.map(function (caso) {
             return <CasoRegistrado key={caso.id} caso={caso} />;
           })}
         </Card>
@@ -581,19 +567,8 @@ function OptionButton({ label, value, selectedValues, onPress }) {
 }
 
 function CasoRegistrado({ caso }) {
-  let enfermedadesTexto = "";
-
-  caso.enfermedades.forEach(function (item, index) {
-    let nombre = obtenerNombrePorValor(ENFERMEDADES, item);
-
-    if (index === 0) {
-      enfermedadesTexto = nombre;
-    }
-
-    if (index > 0) {
-      enfermedadesTexto = `${enfermedadesTexto}, ${nombre}`;
-    }
-  });
+  const enfermedadesTexto = obtenerTextoEnfermedades(caso.enfermedades);
+  const severidadTexto = obtenerNombreSeveridad(caso.severidad);
 
   return (
     <View style={styles.savedCase}>
@@ -608,7 +583,7 @@ function CasoRegistrado({ caso }) {
       <Info label="Fecha" value={caso.fechaReporte} />
       <Info label="Responsable" value={caso.responsable} />
       <Info label="Enfermedades" value={enfermedadesTexto} />
-      <Info label="Severidad" value={caso.severidad} />
+      <Info label="Severidad" value={severidadTexto} />
       <Info label="Mortalidad" value={caso.mortalidad} />
       <Info label="Reporte" value={caso.reporte} />
     </View>
@@ -618,7 +593,15 @@ function CasoRegistrado({ caso }) {
 function Info({ label, value }) {
   let valorFinal = value;
 
-  if (value === "" || value === undefined || value === null) {
+  if (value === "") {
+    valorFinal = "No registrado";
+  }
+
+  if (value === undefined) {
+    valorFinal = "No registrado";
+  }
+
+  if (value === null) {
     valorFinal = "No registrado";
   }
 
