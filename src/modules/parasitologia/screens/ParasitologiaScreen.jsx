@@ -1,20 +1,21 @@
 /**
  * ============================================================
- * SCREEN: ENFERMEDADES
+ * SCREEN: PARASITOLOGIA
  * ============================================================
  *
- * Modulo para registrar enfermedades por finca y estanque.
+ * Modulo para registrar parasitos por finca y estanque.
  *
  * Funcionalidad:
  * - Permite seleccionar finca y estanque.
- * - Permite seleccionar una o varias enfermedades.
- * - Guarda los registros usando useEnfermedades.
- * - Los registros quedan disponibles para el dashboard.
+ * - Permite seleccionar el parasito encontrado.
+ * - Calcula porcentaje de infeccion.
+ * - Calcula grado de infeccion.
+ * - Guarda registros usando useParasitologia.
  *
  * Importante:
- * - Este modulo NO registra parasitos.
- * - Gregarinas y epicomensales pasan a Parasitologia.
- * - NHP queda aqui como enfermedad bacteriana asociada a Hepatobacter penaei.
+ * - No se mide con si/no.
+ * - Se mide con camarones muestreados e infectados.
+ * - Gregarinas y epicomensales van aqui, no en Enfermedades.
  */
 
 import React, { useState } from "react";
@@ -34,15 +35,14 @@ import Title from "../../../shared/components/Title";
 
 import { FINCAS, ESTANQUES } from "../../registro/screens/RegistroData";
 
-import useEnfermedades from "../hooks/UseEnfermedades";
+import useParasitologia from "../hooks/useParasitologia";
 import {
-  ENFERMEDADES_CATALOGO,
-  SEVERIDADES_ENFERMEDAD,
-  obtenerNombreEnfermedad,
-  obtenerNombreSeveridad,
-} from "../services/EnfermedadesService";
+  PARASITOS_CATALOGO,
+  calcularGradoInfeccion,
+  obtenerNombreParasito,
+} from "../services/ParasitologiaService";
 
-import { styles } from "../styles/EnfermedadesStyle";
+import { styles } from "../styles/ParasitologiaStyle";
 
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
@@ -101,29 +101,30 @@ function obtenerNombreFinca(fincaId) {
   return nombre;
 }
 
-function obtenerTextoEnfermedades(enfermedades) {
-  let texto = "";
+function obtenerColorGrado(grado) {
+  let color = COLORS.success;
 
-  enfermedades.forEach(function (item, index) {
-    const nombre = obtenerNombreEnfermedad(item);
+  if (Number(grado) === 2) {
+    color = COLORS.warning;
+  }
 
-    if (index === 0) {
-      texto = nombre;
-    }
+  if (Number(grado) === 3) {
+    color = COLORS.error;
+  }
 
-    if (index > 0) {
-      texto = `${texto}, ${nombre}`;
-    }
-  });
+  if (Number(grado) === 4) {
+    color = COLORS.error;
+  }
 
-  return texto;
+  return color;
 }
 
-export default function EnfermedadesScreen({ onBack, navigation }) {
+export default function ParasitologiaScreen({ onBack, navigation }) {
   const router = useRouter();
   const { width } = useWindowDimensions();
 
-  const { enfermedades, loading, error, guardarEnfermedad } = useEnfermedades();
+  const { registrosParasitologia, loading, error, guardarRegistro } =
+    useParasitologia();
 
   let esTablet = false;
   let esDesktop = false;
@@ -140,12 +141,10 @@ export default function EnfermedadesScreen({ onBack, navigation }) {
   const [estanque, setEstanque] = useState("");
   const [fechaReporte, setFechaReporte] = useState(obtenerFechaActual());
   const [responsable, setResponsable] = useState("");
-  const [enfermedadesSeleccionadas, setEnfermedadesSeleccionadas] = useState(
-    [],
-  );
-  const [severidad, setSeveridad] = useState("");
-  const [mortalidad, setMortalidad] = useState("0");
-  const [reporte, setReporte] = useState("");
+  const [parasito, setParasito] = useState("");
+  const [camaronesMuestreados, setCamaronesMuestreados] = useState("0");
+  const [camaronesInfectados, setCamaronesInfectados] = useState("0");
+  const [observaciones, setObservaciones] = useState("");
   const [mensaje, setMensaje] = useState("");
   const [tipoMensaje, setTipoMensaje] = useState("info");
 
@@ -173,6 +172,13 @@ export default function EnfermedadesScreen({ onBack, navigation }) {
   const opcionesFincas = obtenerOpcionesFincas();
   const opcionesEstanques = obtenerOpcionesEstanques(finca);
 
+  const gradoCalculado = calcularGradoInfeccion(
+    camaronesMuestreados,
+    camaronesInfectados,
+  );
+
+  const colorGrado = obtenerColorGrado(gradoCalculado.grado);
+
   function volver() {
     if (onBack) {
       onBack();
@@ -192,44 +198,15 @@ export default function EnfermedadesScreen({ onBack, navigation }) {
     setEstanque("");
   }
 
-  function cambiarEnfermedad(valor) {
-    let nuevasEnfermedades = [];
-    let yaExiste = false;
-
-    enfermedadesSeleccionadas.forEach(function (item) {
-      if (item === valor) {
-        yaExiste = true;
-      }
-    });
-
-    if (yaExiste === true) {
-      enfermedadesSeleccionadas.forEach(function (item) {
-        if (item !== valor) {
-          nuevasEnfermedades.push(item);
-        }
-      });
-    }
-
-    if (yaExiste === false) {
-      enfermedadesSeleccionadas.forEach(function (item) {
-        nuevasEnfermedades.push(item);
-      });
-
-      nuevasEnfermedades.push(valor);
-    }
-
-    setEnfermedadesSeleccionadas(nuevasEnfermedades);
-  }
-
   function limpiarFormulario() {
     setFinca("");
     setEstanque("");
     setFechaReporte(obtenerFechaActual());
     setResponsable("");
-    setEnfermedadesSeleccionadas([]);
-    setSeveridad("");
-    setMortalidad("0");
-    setReporte("");
+    setParasito("");
+    setCamaronesMuestreados("0");
+    setCamaronesInfectados("0");
+    setObservaciones("");
   }
 
   function validarFormulario() {
@@ -247,60 +224,69 @@ export default function EnfermedadesScreen({ onBack, navigation }) {
       valido = false;
     }
 
-    if (valido === true && enfermedadesSeleccionadas.length === 0) {
+    if (valido === true && fechaReporte === "") {
       setTipoMensaje("warning");
-      setMensaje("Debe seleccionar al menos una enfermedad.");
+      setMensaje("Debe seleccionar la fecha del reporte.");
       valido = false;
     }
 
-    if (valido === true && severidad === "") {
+    if (valido === true && parasito === "") {
       setTipoMensaje("warning");
-      setMensaje("Debe seleccionar la severidad del caso.");
+      setMensaje("Debe seleccionar el parasito.");
       valido = false;
     }
 
-    if (valido === true && reporte.trim() === "") {
+    if (valido === true && Number(camaronesMuestreados) <= 0) {
       setTipoMensaje("warning");
-      setMensaje("Debe escribir un reporte del caso.");
+      setMensaje("Debe ingresar la cantidad de camarones muestreados.");
       valido = false;
     }
 
-    if (valido === true && Number(mortalidad) < 0) {
+    if (valido === true && Number(camaronesInfectados) < 0) {
       setTipoMensaje("warning");
-      setMensaje("La mortalidad no puede ser negativa.");
+      setMensaje("Los camarones infectados no pueden ser negativos.");
+      valido = false;
+    }
+
+    if (
+      valido === true &&
+      Number(camaronesInfectados) > Number(camaronesMuestreados)
+    ) {
+      setTipoMensaje("warning");
+      setMensaje("Los camarones infectados no pueden superar la muestra.");
       valido = false;
     }
 
     return valido;
   }
 
-  async function registrarEnfermedad() {
+  async function registrarParasitologia() {
     if (validarFormulario() === false) {
       return;
     }
 
-    const nuevoCaso = {
+    const nuevoRegistro = {
       finca: finca,
       fincaNombre: obtenerNombreFinca(finca),
       estanque: estanque,
       fechaReporte: fechaReporte,
       responsable: responsable,
-      enfermedades: enfermedadesSeleccionadas,
-      severidad: severidad,
-      mortalidad: mortalidad,
-      reporte: reporte.trim(),
+      parasito: parasito,
+      camaronesMuestreados: camaronesMuestreados,
+      camaronesInfectados: camaronesInfectados,
+      observaciones: observaciones.trim(),
     };
 
-    const guardado = await guardarEnfermedad(nuevoCaso);
+    const guardado = await guardarRegistro(nuevoRegistro);
 
     if (guardado === null) {
       setTipoMensaje("danger");
-      setMensaje("No se pudo guardar la enfermedad.");
+      setMensaje("No se pudo guardar el registro de parasitologia.");
       return;
     }
 
     setTipoMensaje("success");
-    setMensaje("Enfermedad registrada correctamente.");
+    setMensaje("Registro de parasitologia guardado correctamente.");
 
     limpiarFormulario();
   }
@@ -324,11 +310,7 @@ export default function EnfermedadesScreen({ onBack, navigation }) {
 
         <View style={styles.headerRow}>
           <View style={styles.headerIcon}>
-            <Icon
-              icon={ICONS.chemicalContainer}
-              size={26}
-              color={COLORS.primary}
-            />
+            <Icon icon={ICONS.parasite} size={28} color={COLORS.primary} />
           </View>
 
           <View style={styles.headerTextBox}>
@@ -337,7 +319,7 @@ export default function EnfermedadesScreen({ onBack, navigation }) {
               color={COLORS.white}
               fuente={TYPOGRAPHY.fontFamily.bold}
             >
-              Enfermedades
+              Parasitologia
             </Title>
 
             <CustomText
@@ -345,7 +327,7 @@ export default function EnfermedadesScreen({ onBack, navigation }) {
               color={COLORS.white}
               style={styles.headerSubtitle}
             >
-              Registro sanitario por finca y estanque
+              Registro por grados de infeccion
             </CustomText>
           </View>
         </View>
@@ -371,7 +353,7 @@ export default function EnfermedadesScreen({ onBack, navigation }) {
         )}
 
         <Card>
-          <SectionTitle title="Ubicacion del caso" icon={ICONS.document} />
+          <SectionTitle title="Ubicacion del muestreo" icon={ICONS.document} />
 
           <View style={gridStyle}>
             <View style={itemStyle}>
@@ -418,43 +400,37 @@ export default function EnfermedadesScreen({ onBack, navigation }) {
         </Card>
 
         <Card>
-          <SectionTitle title="Enfermedades que presenta" icon={ICONS.report} />
-
-          <View style={styles.optionsGrid}>
-            {ENFERMEDADES_CATALOGO.map(function (item) {
-              return (
-                <OptionButton
-                  key={item.value}
-                  label={item.label}
-                  value={item.value}
-                  selectedValues={enfermedadesSeleccionadas}
-                  onPress={cambiarEnfermedad}
-                />
-              );
-            })}
-          </View>
-        </Card>
-
-        <Card>
-          <SectionTitle title="Reporte sanitario" icon={ICONS.info} />
+          <SectionTitle title="Conteo parasitologico" icon={ICONS.microscope} />
 
           <View style={gridStyle}>
             <View style={itemStyle}>
               <Select
-                label="Severidad *"
-                options={SEVERIDADES_ENFERMEDAD}
-                value={severidad}
-                onChange={setSeveridad}
-                placeholder="Seleccione la severidad"
+                label="Parasito *"
+                options={PARASITOS_CATALOGO}
+                value={parasito}
+                onChange={setParasito}
+                placeholder="Seleccione el parasito"
                 labelStyle={styles.label}
               />
             </View>
 
             <View style={itemStyle}>
               <NumberInput
-                label="Mortalidad registrada"
-                value={mortalidad}
-                onChangeText={setMortalidad}
+                label="Camarones muestreados *"
+                value={camaronesMuestreados}
+                onChangeText={setCamaronesMuestreados}
+                min={0}
+                max={999999}
+                step={1}
+                labelStyle={styles.label}
+              />
+            </View>
+
+            <View style={itemStyle}>
+              <NumberInput
+                label="Camarones infectados *"
+                value={camaronesInfectados}
+                onChangeText={setCamaronesInfectados}
                 min={0}
                 max={999999}
                 step={1}
@@ -463,11 +439,105 @@ export default function EnfermedadesScreen({ onBack, navigation }) {
             </View>
 
             <View style={itemFullStyle}>
+              <View style={styles.previewCard}>
+                <View style={styles.previewHeader}>
+                  <Icon icon={ICONS.report} size={20} color={COLORS.primary} />
+
+                  <CustomText
+                    size={15}
+                    color={COLORS.textPrimary}
+                    style={styles.previewTitle}
+                  >
+                    Resultado calculado
+                  </CustomText>
+                </View>
+
+                <View style={styles.previewGrid}>
+                  <View style={styles.previewBox}>
+                    <CustomText
+                      size={12}
+                      color={COLORS.textTertiary}
+                      style={styles.previewLabel}
+                    >
+                      Muestreados
+                    </CustomText>
+
+                    <CustomText
+                      size={20}
+                      color={COLORS.textSecondary}
+                      style={styles.previewValue}
+                    >
+                      {camaronesMuestreados}
+                    </CustomText>
+                  </View>
+
+                  <View style={styles.previewBox}>
+                    <CustomText
+                      size={12}
+                      color={COLORS.textTertiary}
+                      style={styles.previewLabel}
+                    >
+                      Infectados
+                    </CustomText>
+
+                    <CustomText
+                      size={20}
+                      color={COLORS.textSecondary}
+                      style={styles.previewValue}
+                    >
+                      {camaronesInfectados}
+                    </CustomText>
+                  </View>
+
+                  <View style={styles.previewBox}>
+                    <CustomText
+                      size={12}
+                      color={COLORS.textTertiary}
+                      style={styles.previewLabel}
+                    >
+                      Porcentaje
+                    </CustomText>
+
+                    <CustomText
+                      size={20}
+                      color={COLORS.textSecondary}
+                      style={styles.previewValue}
+                    >
+                      {gradoCalculado.porcentaje}%
+                    </CustomText>
+                  </View>
+                </View>
+
+                <View style={styles.gradeBox}>
+                  <View style={styles.gradeHeader}>
+                    <CustomText size={14} color={COLORS.textSecondary}>
+                      Grado de infeccion
+                    </CustomText>
+
+                    <View style={styles.gradeBadge}>
+                      <CustomText size={13} color={colorGrado} weight="800">
+                        {gradoCalculado.nombre}
+                      </CustomText>
+                    </View>
+                  </View>
+
+                  <CustomText
+                    size={13}
+                    color={COLORS.textTertiary}
+                    style={styles.gradeDescription}
+                  >
+                    {gradoCalculado.descripcion}
+                  </CustomText>
+                </View>
+              </View>
+            </View>
+
+            <View style={itemFullStyle}>
               <Input
-                label="Reporte *"
-                value={reporte}
-                onChangeText={setReporte}
-                placeholder="Describa sintomas, observaciones o acciones realizadas"
+                label="Observaciones"
+                value={observaciones}
+                onChangeText={setObservaciones}
+                placeholder="Describa observaciones del muestreo"
                 multiline={true}
                 labelStyle={styles.label}
                 style={styles.textArea}
@@ -477,7 +547,7 @@ export default function EnfermedadesScreen({ onBack, navigation }) {
         </Card>
 
         <Button
-          onPress={registrarEnfermedad}
+          onPress={registrarParasitologia}
           style={styles.saveButton}
           disabled={loading}
         >
@@ -485,7 +555,7 @@ export default function EnfermedadesScreen({ onBack, navigation }) {
             <Icon icon={ICONS.save} size={18} color={COLORS.white} />
 
             <CustomText size={16} color={COLORS.white} style={styles.saveText}>
-              Registrar enfermedad
+              Registrar parasitologia
             </CustomText>
           </View>
         </Button>
@@ -493,18 +563,20 @@ export default function EnfermedadesScreen({ onBack, navigation }) {
         <Card>
           <SectionTitle title="Detalles guardados" icon={ICONS.certificate} />
 
-          {enfermedades.length === 0 && (
+          {registrosParasitologia.length === 0 && (
             <CustomText
               size={14}
               color={COLORS.textTertiary}
               style={styles.emptyText}
             >
-              Aun no hay enfermedades registradas.
+              Aun no hay registros de parasitologia.
             </CustomText>
           )}
 
-          {enfermedades.map(function (caso) {
-            return <CasoRegistrado key={caso.id} caso={caso} />;
+          {registrosParasitologia.map(function (registro) {
+            return (
+              <RegistroParasitologia key={registro.id} registro={registro} />
+            );
           })}
         </Card>
       </View>
@@ -529,63 +601,45 @@ function SectionTitle({ title, icon }) {
   );
 }
 
-function OptionButton({ label, value, selectedValues, onPress }) {
-  let seleccionado = false;
-
-  selectedValues.forEach(function (item) {
-    if (item === value) {
-      seleccionado = true;
-    }
-  });
-
-  let buttonStyle = [styles.optionButton];
-  let textColor = COLORS.textSecondary;
-  let textFont = TYPOGRAPHY.fontFamily.medium;
-
-  if (seleccionado === true) {
-    buttonStyle.push(styles.optionButtonSelected);
-    textColor = COLORS.primary;
-    textFont = TYPOGRAPHY.fontFamily.bold;
-  }
-
-  function handlePress() {
-    onPress(value);
-  }
-
-  return (
-    <Button variant="outline" onPress={handlePress} style={buttonStyle}>
-      <CustomText
-        size={13}
-        color={textColor}
-        align="center"
-        style={{ fontFamily: textFont }}
-      >
-        {label}
-      </CustomText>
-    </Button>
-  );
-}
-
-function CasoRegistrado({ caso }) {
-  const enfermedadesTexto = obtenerTextoEnfermedades(caso.enfermedades);
-  const severidadTexto = obtenerNombreSeveridad(caso.severidad);
+function RegistroParasitologia({ registro }) {
+  const colorGrado = obtenerColorGrado(registro.gradoInfeccion);
 
   return (
     <View style={styles.savedCase}>
-      <CustomText
-        size={15}
-        color={COLORS.textPrimary}
-        style={styles.savedCaseTitle}
-      >
-        {caso.fincaNombre} - {caso.estanque}
-      </CustomText>
+      <View style={styles.savedCaseHeader}>
+        <View style={styles.savedCaseTitleBox}>
+          <CustomText
+            size={15}
+            color={COLORS.textPrimary}
+            style={styles.savedCaseTitle}
+          >
+            {registro.fincaNombre} - {registro.estanque}
+          </CustomText>
 
-      <Info label="Fecha" value={caso.fechaReporte} />
-      <Info label="Responsable" value={caso.responsable} />
-      <Info label="Enfermedades" value={enfermedadesTexto} />
-      <Info label="Severidad" value={severidadTexto} />
-      <Info label="Mortalidad" value={caso.mortalidad} />
-      <Info label="Reporte" value={caso.reporte} />
+          <CustomText
+            size={12}
+            color={COLORS.textTertiary}
+            style={styles.savedCaseSubtitle}
+          >
+            {registro.parasitoNombre}
+          </CustomText>
+        </View>
+
+        <View style={styles.savedGradeBadge}>
+          <CustomText size={12} color={colorGrado} weight="800">
+            {registro.nombreGrado}
+          </CustomText>
+        </View>
+      </View>
+
+      <Info label="Fecha" value={registro.fechaReporte} />
+      <Info label="Responsable" value={registro.responsable} />
+      <Info label="Parasito" value={obtenerNombreParasito(registro.parasito)} />
+      <Info label="Muestreados" value={registro.camaronesMuestreados} />
+      <Info label="Infectados" value={registro.camaronesInfectados} />
+      <Info label="Porcentaje" value={`${registro.porcentajeInfeccion}%`} />
+      <Info label="Descripcion" value={registro.descripcionGrado} />
+      <Info label="Observaciones" value={registro.observaciones} />
     </View>
   );
 }
@@ -593,15 +647,15 @@ function CasoRegistrado({ caso }) {
 function Info({ label, value }) {
   let valorFinal = value;
 
-  if (value === "") {
+  if (valorFinal === "") {
     valorFinal = "No registrado";
   }
 
-  if (value === undefined) {
+  if (valorFinal === undefined) {
     valorFinal = "No registrado";
   }
 
-  if (value === null) {
+  if (valorFinal === null) {
     valorFinal = "No registrado";
   }
 
