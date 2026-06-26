@@ -11,6 +11,7 @@
  * import Icon from "../../../shared/components/Icons";
  *
  * <Icon icon={ICONS.add} size={15} />
+ *
  */
 
 export const ICONS = {
@@ -36,7 +37,7 @@ export const ICONS = {
     name: "clock",
   },
 
-  // Navegacion
+  // Navegación
   enter: {
     provider: "AntDesign",
     name: "arrow-right",
@@ -50,7 +51,7 @@ export const ICONS = {
     name: "home-filled",
   },
 
-  // Ubicacion
+  // Ubicación
   location: {
     provider: "FontAwesome6",
     name: "location-dot",
@@ -78,7 +79,7 @@ export const ICONS = {
     name: "earth-americas",
   },
 
-  // Reportes y estadisticas
+  // Reportes y estadísticas
   chart: {
     provider: "MaterialIcons",
     name: "show-chart",
@@ -164,7 +165,7 @@ export const ICONS = {
     name: "weight-hanging",
   },
 
-  // Alimentacion
+  // Alimentación
   food: {
     provider: "MaterialCommunityIcons",
     name: "silverware-fork-knife",
@@ -208,7 +209,7 @@ export const ICONS = {
     name: "notifications",
   },
 
-  // Navegacion adicional
+  // Navegación adicional
   back: {
     provider: "AntDesign",
     name: "arrow-left",
@@ -243,6 +244,7 @@ export const ICONS = {
     provider: "MaterialCommunityIcons",
     name: "chevron-up",
   },
+<<<<<<< HEAD
 
   // Sanidad
    shieldAlert: {
@@ -254,4 +256,6 @@ export const ICONS = {
     provider: "MaterialCommunityIcons",
     name: "bacteria-outline",
   },
+=======
+>>>>>>> 5548437372d04620436ca7f1bbe6d930dfcd8298
 };
