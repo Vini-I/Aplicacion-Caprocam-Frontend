@@ -3,7 +3,7 @@
  * SISTEMA DE ICONOS CENTRALIZADO
  * ============================================================
  *
- * Define todos los colores utilizados en la aplicación.
+ * Define todos los iconos utilizados en la aplicacion.
  * Esto permite mantener consistencia visual y facilita cambios globales.
  *
  * USO:
@@ -11,7 +11,6 @@
  * import Icon from "../../../shared/components/Icons";
  *
  * <Icon icon={ICONS.add} size={15} />
- *
  */
 
 export const ICONS = {
@@ -37,7 +36,7 @@ export const ICONS = {
     name: "clock",
   },
 
-  // Navegación
+  // Navegacion
   enter: {
     provider: "AntDesign",
     name: "arrow-right",
@@ -51,7 +50,7 @@ export const ICONS = {
     name: "home-filled",
   },
 
-  // Ubicación
+  // Ubicacion
   location: {
     provider: "FontAwesome6",
     name: "location-dot",
@@ -79,7 +78,7 @@ export const ICONS = {
     name: "earth-americas",
   },
 
-  // Reportes y estadísticas
+  // Reportes y estadisticas
   chart: {
     provider: "MaterialIcons",
     name: "show-chart",
@@ -165,7 +164,7 @@ export const ICONS = {
     name: "weight-hanging",
   },
 
-  // Alimentación
+  // Alimentacion
   food: {
     provider: "MaterialCommunityIcons",
     name: "silverware-fork-knife",
@@ -209,7 +208,7 @@ export const ICONS = {
     name: "notifications",
   },
 
-  // Navegación adicional
+  // Navegacion adicional
   back: {
     provider: "AntDesign",
     name: "arrow-left",
@@ -244,7 +243,8 @@ export const ICONS = {
     provider: "MaterialCommunityIcons",
     name: "chevron-up",
   },
-  
+
+  // Sanidad
   parasite: {
     provider: "MaterialCommunityIcons",
     name: "bacteria-outline",
