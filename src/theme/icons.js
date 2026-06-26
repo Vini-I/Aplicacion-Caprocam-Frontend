@@ -244,18 +244,4 @@ export const ICONS = {
     provider: "MaterialCommunityIcons",
     name: "chevron-up",
   },
-<<<<<<< HEAD
-
-  // Sanidad
-   shieldAlert: {
-    provider: "MaterialCommunityIcons",
-    name: "shield-alert-outline",
-  },
-
-  parasite: {
-    provider: "MaterialCommunityIcons",
-    name: "bacteria-outline",
-  },
-=======
->>>>>>> 5548437372d04620436ca7f1bbe6d930dfcd8298
 };
