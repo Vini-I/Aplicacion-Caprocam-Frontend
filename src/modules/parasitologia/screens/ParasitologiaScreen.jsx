@@ -40,7 +40,7 @@ import {
   PARASITOS_CATALOGO,
   calcularGradoInfeccion,
   obtenerNombreParasito,
-} from "../services/PrasitologiaService";
+} from "../services/ParasitologiaService";
 
 import { styles } from "../styles/ParasitologiaStyle";
 

@@ -3,7 +3,7 @@
  * SISTEMA DE ICONOS CENTRALIZADO
  * ============================================================
  *
- * Define todos los colores utilizados en la aplicación.
+ * Define todos los iconos utilizados en la aplicacion.
  * Esto permite mantener consistencia visual y facilita cambios globales.
  *
  * USO:
@@ -243,5 +243,16 @@ export const ICONS = {
   chevronUp: {
     provider: "MaterialCommunityIcons",
     name: "chevron-up",
+  },
+
+  // Parasitologia
+    parasite: {
+    provider: "MaterialCommunityIcons",
+    name: "bacteria-outline",
+  },
+  
+   microscope: {
+    provider: "MaterialCommunityIcons",
+    name: "microscope",
   },
 };

@@ -1,14 +1,14 @@
-import { View, ScrollView } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, ScrollView } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-import Text from '../../../shared/components/Text';
-import { COLORS } from '../../../theme/colors';
+import Text from "../../../shared/components/Text";
+import { COLORS } from "../../../theme/colors";
 
-import Chip from '../components/Chip';
-import ModuloCard from '../components/ModuloCard';
-import useRegistro from '../hooks/useRegistro';
-import { MODULOS, FINCAS } from './RegistroData';
-import { styles } from '../styles/RegistroStyles';
+import Chip from "../components/Chip";
+import ModuloCard from "../components/ModuloCard";
+import useRegistro from "../hooks/useRegistro";
+import { MODULOS, FINCAS } from "./RegistroData";
+import { styles } from "../styles/RegistroStyles";
 
 /**
  * ============================================================
@@ -16,110 +16,154 @@ import { styles } from '../styles/RegistroStyles';
  * ============================================================
  *
  * Punto de entrada del flujo de registro: el usuario elige
- * finca + estanque y luego un módulo (alimentación, crecimiento,
- * físico-química, mortalidad) para registrar mediciones.
+ * finca + estanque y luego un modulo para registrar informacion.
  *
- * El estado de selección de finca/estanque vive en useRegistro().
- * Los datos estáticos (FINCAS, ESTANQUES, MODULOS) vienen de
- * RegistroData.js.
+ * El estado de seleccion de finca/estanque vive en useRegistro().
+ * Los datos estaticos vienen desde RegistroData.js.
  *
- * La navegación entre módulos NO la maneja esta pantalla: cada
- * módulo es una ruta real de expo-router. RegistroScreen solo
- * dispara los callbacks de navegación que le llegan por props
- * (onFisicoQuimica, onAlimentacion, onMortalidad), definidos en
- * registros/index.jsx con router.push().
+ * La navegacion entre modulos NO la maneja esta pantalla.
+ * RegistroScreen solo ejecuta los callbacks que recibe por props.
  *
- * ---
- * FLUJO
- * ---
- * 1. Usuario selecciona finca → se actualiza el estanque por
- *    defecto de esa finca automáticamente
- * 2. Usuario selecciona estanque
- * 3. Usuario toca un ModuloCard disponible → se ejecuta el
- *    callback de navegación correspondiente (router.push a la
- *    ruta del módulo)
- *
- * ---
- * PROPS
- * ---
- * onFisicoQuimica  fn  — navega a la ruta de Físico-Química
- * onAlimentacion   fn  — navega a la ruta de Alimentación
- * onMortalidad     fn  — navega a la ruta de Mortalidad
- *
- * ---
- * USO
- * ---
- * Se renderiza desde app/(drawer)/(tabs)/registros/index.jsx
- *
- * <RegistroScreen
- *   onFisicoQuimica={() => router.push('/(drawer)/(tabs)/registros/FisicoQuimica')}
- *   onAlimentacion={() => router.push('/(drawer)/(tabs)/registros/Alimentacion')}
- *   onMortalidad={() => router.push('/(drawer)/(tabs)/registros/Mortalidad')}
- * />
+ * Modulos conectados:
+ * - Fisico-Quimica
+ * - Alimentacion
+ * - Mortalidad
+ * - Crecimiento
+ * - Enfermedades
+ * - Parasitologia
  */
 
-export default function RegistroScreen({ onFisicoQuimica, onAlimentacion, onMortalidad, onCrecimiento}) {
-    const {
-        fincaSeleccionada,
-        estanqueSeleccionado, setEstanqueSeleccionado,
-        estanques, finca, estanque,
-        handleFinca,
-    } = useRegistro();
+export default function RegistroScreen({
+  onFisicoQuimica,
+  onAlimentacion,
+  onMortalidad,
+  onCrecimiento,
+  onEnfermedades,
+  onParasitologia,
+}) {
+  const {
+    fincaSeleccionada,
+    estanqueSeleccionado,
+    setEstanqueSeleccionado,
+    estanques,
+    finca,
+    estanque,
+    handleFinca,
+  } = useRegistro();
 
-    return (
-        <SafeAreaView style={styles.contenedor}>
-            <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+  /**
+   * ============================================================
+   * OBTENER ACCION DEL MODULO
+   * ============================================================
+   *
+   * Retorna la funcion de navegacion correspondiente segun
+   * el modulo seleccionado.
+   */
 
-                {/* ── Selección ── */}
-                <View style={styles.seccion}>
-                    <Text size={11} weight="600" color={COLORS.textTertiary} style={styles.seccionLabel}>
-                        SELECCIÓN
-                    </Text>
+  function obtenerAccionModulo(moduloId) {
+    let accion = null;
 
-                    <Text size={13} color={COLORS.textSecondary} style={styles.subLabel}>Finca</Text>
-                    <View style={styles.chips}>
-                        {FINCAS.map((f) => (
-                            <Chip key={f.id} label={f.nombre} selected={fincaSeleccionada === f.id} onPress={() => handleFinca(f.id)} />
-                        ))}
-                    </View>
+    if (moduloId === "fisicoquimica") {
+      accion = onFisicoQuimica;
+    }
 
-                    <Text size={13} color={COLORS.textSecondary} style={styles.subLabel}>Estanque</Text>
-                    <View style={styles.chips}>
-                        {estanques.map((e) => (
-                            <Chip key={e.id} label={e.id} selected={estanqueSeleccionado === e.id} onPress={() => setEstanqueSeleccionado(e.id)} />
-                        ))}
-                    </View>
+    if (moduloId === "alimentacion") {
+      accion = onAlimentacion;
+    }
 
-                    {finca && estanque && (
-                        <Text size={12} color={COLORS.textTertiary}>
-                            {finca.nombre} → {estanque.id} · {estanque.especie}
-                        </Text>
-                    )}
-                </View>
+    if (moduloId === "mortalidad") {
+      accion = onMortalidad;
+    }
 
-                {/* ── Módulos ── */}
-                <Text size={11} weight="600" color={COLORS.textTertiary} style={styles.seccionLabel}>
-                    MÓDULOS DEL REGISTRO
-                </Text>
+    if (moduloId === "crecimiento") {
+      accion = onCrecimiento;
+    }
 
-                <View style={styles.grilla}>
-                    {MODULOS.map((m) => (
-                        <ModuloCard
-                            key={m.id}
-                            modulo={m}
-                            onPress={
-                                m.id === 'fisicoquimica' ? onFisicoQuimica :
-                                m.id === 'alimentacion' ? onAlimentacion :
-                                m.id === 'mortalidad' ? onMortalidad :
-                                m.id === 'crecimiento' ? onCrecimiento :
-                                null
+    if (moduloId === "enfermedades") {
+      accion = onEnfermedades;
+    }
 
-                            }
-                        />
-                    ))}
-                </View>
+    if (moduloId === "parasitologia") {
+      accion = onParasitologia;
+    }
 
-            </ScrollView>
-        </SafeAreaView>
-    );
+    return accion;
+  }
+
+  return (
+    <SafeAreaView style={styles.contenedor}>
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Seleccion */}
+        <View style={styles.seccion}>
+          <Text
+            size={11}
+            weight="600"
+            color={COLORS.textTertiary}
+            style={styles.seccionLabel}
+          >
+            SELECCION
+          </Text>
+
+          <Text size={13} color={COLORS.textSecondary} style={styles.subLabel}>
+            Finca
+          </Text>
+
+          <View style={styles.chips}>
+            {FINCAS.map((f) => (
+              <Chip
+                key={f.id}
+                label={f.nombre}
+                selected={fincaSeleccionada === f.id}
+                onPress={() => handleFinca(f.id)}
+              />
+            ))}
+          </View>
+
+          <Text size={13} color={COLORS.textSecondary} style={styles.subLabel}>
+            Estanque
+          </Text>
+
+          <View style={styles.chips}>
+            {estanques.map((e) => (
+              <Chip
+                key={e.id}
+                label={e.id}
+                selected={estanqueSeleccionado === e.id}
+                onPress={() => setEstanqueSeleccionado(e.id)}
+              />
+            ))}
+          </View>
+
+          {finca && estanque && (
+            <Text size={12} color={COLORS.textTertiary}>
+              {finca.nombre} - {estanque.id} - {estanque.especie}
+            </Text>
+          )}
+        </View>
+
+        {/* Modulos */}
+        <Text
+          size={11}
+          weight="600"
+          color={COLORS.textTertiary}
+          style={styles.seccionLabel}
+        >
+          MODULOS DEL REGISTRO
+        </Text>
+
+        <View style={styles.grilla}>
+          {MODULOS.map((m) => (
+            <ModuloCard
+              key={m.id}
+              modulo={m}
+              onPress={obtenerAccionModulo(m.id)}
+            />
+          ))}
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
 }
