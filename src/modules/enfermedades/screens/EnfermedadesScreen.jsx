@@ -34,7 +34,7 @@ import Title from "../../../shared/components/Title";
 
 import { FINCAS, ESTANQUES } from "../../registro/screens/RegistroData";
 
-import useEnfermedades from "../hooks/useEnfermedades";
+import useEnfermedades from "../hooks/UseEnfermedades";
 import {
   ENFERMEDADES_CATALOGO,
   SEVERIDADES_ENFERMEDAD,
