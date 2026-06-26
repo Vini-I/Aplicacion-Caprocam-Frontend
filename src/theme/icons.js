@@ -244,4 +244,10 @@ export const ICONS = {
     provider: "MaterialCommunityIcons",
     name: "chevron-up",
   },
+
+  // Parasitologia
+    parasite: {
+    provider: "MaterialCommunityIcons",
+    name: "bacteria-outline",
+  },
 };
