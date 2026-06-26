@@ -5,20 +5,17 @@
  *
  * Dashboard principal de Caprocam.
  *
- * Este archivo NO crea informacion inventada directamente.
- * Trabaja con la informacion que ya existe en los modulos:
+ * Este archivo trabaja con la informacion existente en los modulos
+ * del proyecto:
  *
- * - Fincas: src/modules/finca/screens/FincaData.js
- * - Estanques: src/modules/mantCrecimiento/screens/EstanqueData.js
- * - Siembras: src/modules/siembra/services/SiembraService.js
- * - Alimentacion: src/modules/alimentacion/hooks/useAlimentacion.js
- * - Fisico-Quimica: src/modules/mantAgua/services/FisicoQuimicaServices.js
+ * - Fincas
+ * - Estanques
+ * - Siembras
+ * - Alimentacion
+ * - Fisico-Quimica
  *
- * Nota:
- * El modulo de Enfermedades y Mortalidad actualmente guarda informacion
- * en estados internos de pantalla. Como no tienen servicio exportado,
- * el dashboard no puede leer esos registros reales hasta que se cree
- * un service o hook compartido para esos modulos.
+ * Tambien corrige el grafico de fincas para que las barras y
+ * nombres no se salgan del cuadro.
  */
 
 import React, { useEffect, useState } from "react";
@@ -50,6 +47,21 @@ function obtenerTextoSeguro(valor, respaldo) {
   }
 
   return texto;
+}
+
+function obtenerNumeroSeguro(valor) {
+  let numero = 0;
+
+  if (valor !== undefined && valor !== null && valor !== "") {
+    const texto = String(valor).replace(",", ".");
+    const numeroConvertido = Number(texto);
+
+    if (Number.isNaN(numeroConvertido) === false) {
+      numero = numeroConvertido;
+    }
+  }
+
+  return numero;
 }
 
 function convertirFecha(fechaTexto) {
@@ -125,7 +137,7 @@ function obtenerFincasDashboard() {
 
     if (existe === false) {
       fincas.push({
-        id: String(estanque.fincaId),
+        id: `finca-estanque-${estanque.fincaId}`,
         nombre: estanque.fincaNombre,
         ubicacion: "Registrada en crecimiento",
         area: 0,
@@ -185,7 +197,7 @@ function obtenerTotalSembrado(siembras) {
   let total = 0;
 
   siembras.forEach(function (siembra) {
-    total = total + Number(siembra.cantidadSembrada);
+    total = total + obtenerNumeroSeguro(siembra.cantidadSembrada);
   });
 
   return total;
@@ -195,7 +207,7 @@ function obtenerKgAlimentacion(alimentaciones) {
   let total = 0;
 
   alimentaciones.forEach(function (registro) {
-    total = total + Number(registro.cantidadKg);
+    total = total + obtenerNumeroSeguro(registro.cantidadKg);
   });
 
   return total;
@@ -245,7 +257,7 @@ function obtenerAlimentacionSemanal(alimentaciones) {
 
     dias.forEach(function (dia) {
       if (dia.dia === diaRegistro) {
-        dia.kg = dia.kg + Number(registro.cantidadKg);
+        dia.kg = dia.kg + obtenerNumeroSeguro(registro.cantidadKg);
       }
     });
   });
@@ -257,8 +269,8 @@ function obtenerMayorKgSemanal(alimentacionSemanal) {
   let mayor = 1;
 
   alimentacionSemanal.forEach(function (item) {
-    if (Number(item.kg) > mayor) {
-      mayor = Number(item.kg);
+    if (obtenerNumeroSeguro(item.kg) > mayor) {
+      mayor = obtenerNumeroSeguro(item.kg);
     }
   });
 
@@ -269,7 +281,46 @@ function obtenerPorcentajeAlimentacion(kg, mayorKg) {
   let porcentaje = 0;
 
   if (mayorKg > 0) {
-    porcentaje = (Number(kg) / Number(mayorKg)) * 100;
+    porcentaje = (obtenerNumeroSeguro(kg) / obtenerNumeroSeguro(mayorKg)) * 100;
+  }
+
+  if (porcentaje > 100) {
+    porcentaje = 100;
+  }
+
+  return porcentaje;
+}
+
+function obtenerMayorEstanquesFinca(fincas) {
+  let mayor = 1;
+
+  fincas.forEach(function (finca) {
+    let totalEstanques = contarEstanquesPorFinca(finca.nombre);
+
+    if (totalEstanques === 0) {
+      totalEstanques = finca.estanques;
+    }
+
+    if (obtenerNumeroSeguro(totalEstanques) > mayor) {
+      mayor = obtenerNumeroSeguro(totalEstanques);
+    }
+  });
+
+  return mayor;
+}
+
+function obtenerPorcentajeEstanques(totalEstanques, mayorEstanques) {
+  let porcentaje = 0;
+
+  if (mayorEstanques > 0) {
+    porcentaje =
+      (obtenerNumeroSeguro(totalEstanques) /
+        obtenerNumeroSeguro(mayorEstanques)) *
+      100;
+  }
+
+  if (porcentaje > 100) {
+    porcentaje = 100;
   }
 
   return porcentaje;
@@ -286,7 +337,10 @@ function obtenerUltimosRegistros(
     registros.push({
       id: `alimentacion-${registro.id}`,
       modulo: "Alimentacion",
-      detalle: `${obtenerTextoSeguro(registro.estanque, "Sin estanque")} · ${obtenerTextoSeguro(registro.finca, "Sin finca")}`,
+      detalle: `${obtenerTextoSeguro(
+        registro.estanque,
+        "Sin estanque",
+      )} · ${obtenerTextoSeguro(registro.finca, "Sin finca")}`,
       fechaVisible: obtenerTextoSeguro(
         registro.hora,
         formatearFechaCorta(registro.fecha),
@@ -324,16 +378,17 @@ function obtenerUltimosRegistros(
 
 function obtenerColorEstado(estado) {
   let color = COLORS.textTertiary;
+  const textoEstado = obtenerTextoSeguro(estado, "").toLowerCase();
 
-  if (estado === "activo") {
+  if (textoEstado === "activo") {
     color = COLORS.primary;
   }
 
-  if (estado === "cosechado") {
+  if (textoEstado === "cosechado") {
     color = COLORS.textTertiary;
   }
 
-  if (estado === "preparación") {
+  if (textoEstado.includes("prepar") === true) {
     color = COLORS.warning;
   }
 
@@ -376,7 +431,6 @@ function StatCard({
   }
 
   const iconBoxStyles = [styles.statIconBox, iconStyle];
-
   const valueStyles = [styles.statValue];
 
   if (danger === true) {
@@ -406,6 +460,7 @@ function StatCard({
           size={13}
           color={COLORS.textTertiary}
           style={styles.statLabel}
+          numberOfLines={1}
         >
           {label}
         </CustomText>
@@ -415,6 +470,8 @@ function StatCard({
 }
 
 function FincasPanel({ fincas }) {
+  const mayorEstanques = obtenerMayorEstanquesFinca(fincas);
+
   return (
     <Card style={styles.detailCard}>
       <SectionHeader
@@ -449,6 +506,11 @@ function FincasPanel({ fincas }) {
               totalEstanques = finca.estanques;
             }
 
+            const porcentaje = obtenerPorcentajeEstanques(
+              totalEstanques,
+              mayorEstanques,
+            );
+
             return (
               <View key={finca.id} style={styles.barItem}>
                 <View style={styles.barTrack}>
@@ -456,16 +518,17 @@ function FincasPanel({ fincas }) {
                     style={[
                       styles.barFill,
                       {
-                        height: `${totalEstanques * 10}%`,
+                        height: `${porcentaje}%`,
                       },
                     ]}
                   />
                 </View>
 
                 <CustomText
-                  size={11}
+                  size={10}
                   color={COLORS.textTertiary}
                   align="center"
+                  numberOfLines={1}
                   style={styles.barLabel}
                 >
                   {finca.nombre}
@@ -490,13 +553,19 @@ function FincasPanel({ fincas }) {
             </View>
 
             <View style={styles.rowContent}>
-              <CustomText size={15} weight="700" color={COLORS.textSecondary}>
+              <CustomText
+                size={15}
+                weight="700"
+                color={COLORS.textSecondary}
+                numberOfLines={1}
+              >
                 {finca.nombre}
               </CustomText>
 
               <CustomText
                 size={12}
                 color={COLORS.textTertiary}
+                numberOfLines={1}
                 style={styles.rowDescription}
               >
                 {finca.ubicacion} · {finca.area} ha
@@ -552,6 +621,7 @@ function EstanquesPanel({ alimentacionSemanal }) {
           <View style={styles.legendRow}>
             <View style={styles.legendItem}>
               <View style={styles.legendBlue} />
+
               <CustomText size={11} color={COLORS.textTertiary}>
                 Activo: {activos}
               </CustomText>
@@ -559,6 +629,7 @@ function EstanquesPanel({ alimentacionSemanal }) {
 
             <View style={styles.legendItem}>
               <View style={styles.legendGray} />
+
               <CustomText size={11} color={COLORS.textTertiary}>
                 Cosechado: {cosechados}
               </CustomText>
@@ -623,7 +694,12 @@ function EstanquesPanel({ alimentacionSemanal }) {
             </View>
 
             <View style={styles.rowContent}>
-              <CustomText size={15} weight="700" color={COLORS.textSecondary}>
+              <CustomText
+                size={15}
+                weight="700"
+                color={COLORS.textSecondary}
+                numberOfLines={1}
+              >
                 {estanque.codigo}
               </CustomText>
 
@@ -631,6 +707,7 @@ function EstanquesPanel({ alimentacionSemanal }) {
                 size={12}
                 color={COLORS.textTertiary}
                 style={styles.rowDescription}
+                numberOfLines={1}
               >
                 {estanque.fincaNombre} · {estanque.area} ha
               </CustomText>
@@ -671,10 +748,10 @@ function ProduccionPanel({ siembras }) {
 
       <View style={styles.divider} />
 
-      <View style={styles.mortalityTotalBox}>
+      <View style={styles.productionTotalBox}>
         <Icon icon={ICONS.shrimp} size={34} color={COLORS.warning} />
 
-        <View style={styles.mortalityTotalText}>
+        <View style={styles.totalBoxText}>
           <CustomText size={30} weight="900" color={COLORS.warning}>
             {totalSembrado}
           </CustomText>
@@ -699,7 +776,12 @@ function ProduccionPanel({ siembras }) {
             <Icon icon={ICONS.shrimp} size={20} color={COLORS.warning} />
 
             <View style={styles.rowContent}>
-              <CustomText size={15} weight="700" color={COLORS.textSecondary}>
+              <CustomText
+                size={15}
+                weight="700"
+                color={COLORS.textSecondary}
+                numberOfLines={1}
+              >
                 {siembra.estanque} · {siembra.finca}
               </CustomText>
 
@@ -707,6 +789,7 @@ function ProduccionPanel({ siembras }) {
                 size={12}
                 color={COLORS.textTertiary}
                 style={styles.rowDescription}
+                numberOfLines={1}
               >
                 {siembra.especie} · {siembra.fechaSiembra}
               </CustomText>
@@ -716,7 +799,7 @@ function ProduccionPanel({ siembras }) {
               </CustomText>
             </View>
 
-            <View style={styles.badgeMedia}>
+            <View style={[styles.badge, styles.badgeMedia]}>
               <CustomText size={12} weight="700" color={COLORS.warning}>
                 {siembra.estado}
               </CustomText>
@@ -741,10 +824,10 @@ function AlimentacionPanel({ alimentaciones }) {
 
       <View style={styles.divider} />
 
-      <View style={styles.mortalityTotalBox}>
+      <View style={styles.feedTotalBox}>
         <Icon icon={ICONS.weight} size={34} color="#FF5A6D" />
 
-        <View style={styles.mortalityTotalText}>
+        <View style={styles.totalBoxText}>
           <CustomText size={32} weight="900" color="#FF002A">
             {totalKg}
           </CustomText>
@@ -765,11 +848,16 @@ function AlimentacionPanel({ alimentaciones }) {
 
       {alimentaciones.map(function (item) {
         return (
-          <View key={item.id} style={styles.mortalityRow}>
+          <View key={item.id} style={styles.feedRow}>
             <Icon icon={ICONS.food} size={18} color="#FF5A6D" />
 
             <View style={styles.rowContent}>
-              <CustomText size={15} weight="700" color={COLORS.textSecondary}>
+              <CustomText
+                size={15}
+                weight="700"
+                color={COLORS.textSecondary}
+                numberOfLines={1}
+              >
                 {obtenerTextoSeguro(item.estanque, "Sin estanque")}
               </CustomText>
 
@@ -777,6 +865,7 @@ function AlimentacionPanel({ alimentaciones }) {
                 size={12}
                 color={COLORS.textTertiary}
                 style={styles.rowDescription}
+                numberOfLines={1}
               >
                 {obtenerTextoSeguro(item.finca, "Sin finca")} ·{" "}
                 {formatearFechaCorta(item.fecha)}
@@ -822,7 +911,12 @@ function UltimosRegistros({ registros }) {
             </View>
 
             <View style={styles.rowContent}>
-              <CustomText size={15} weight="700" color={COLORS.textSecondary}>
+              <CustomText
+                size={15}
+                weight="700"
+                color={COLORS.textSecondary}
+                numberOfLines={1}
+              >
                 {item.modulo}
               </CustomText>
 
@@ -830,6 +924,7 @@ function UltimosRegistros({ registros }) {
                 size={12}
                 color={COLORS.textTertiary}
                 style={styles.rowDescription}
+                numberOfLines={1}
               >
                 {item.detalle}
               </CustomText>
@@ -856,6 +951,7 @@ export default function DashboardScreen() {
   const fincasDashboard = obtenerFincasDashboard();
   const siembras = obtenerSiembras();
   const alimentacionSemanal = obtenerAlimentacionSemanal(alimentaciones);
+
   const ultimosRegistros = obtenerUltimosRegistros(
     alimentaciones,
     siembras,
@@ -900,7 +996,7 @@ export default function DashboardScreen() {
             <Icon icon={ICONS.dashboard} size={24} color={COLORS.primary} />
           </View>
 
-          <View>
+          <View style={styles.headerTextBox}>
             <Title level={5} style={styles.headerTitle}>
               Dashboard general
             </Title>
@@ -909,6 +1005,7 @@ export default function DashboardScreen() {
               size={12}
               color={COLORS.textTertiary}
               style={styles.headerSubtitle}
+              numberOfLines={1}
             >
               Resumen operativo y sanitario
             </CustomText>

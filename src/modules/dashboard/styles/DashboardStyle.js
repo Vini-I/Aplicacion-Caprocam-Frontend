@@ -3,14 +3,13 @@
  * ESTILOS DEL DASHBOARD GENERAL
  * ============================================================
  *
- * Archivo exclusivo para la pantalla DashboardScreen.
+ * Archivo exclusivo para DashboardScreen.
  *
  * Incluye:
- * - Layout responsive.
- * - Tarjetas principales del dashboard.
+ * - Tarjetas principales.
  * - Paneles de detalle.
  * - Graficos simples con View.
- * - Tipografia usando TYPOGRAPHY del tema global.
+ * - Correccion para que los graficos no se salgan del cuadro.
  */
 
 import { StyleSheet } from "react-native";
@@ -62,6 +61,10 @@ export const styles = StyleSheet.create({
     marginRight: 12,
   },
 
+  headerTextBox: {
+    flex: 1,
+  },
+
   headerTitle: {
     fontFamily: TYPOGRAPHY.fontFamily.bold,
     color: COLORS.textPrimary,
@@ -98,7 +101,7 @@ export const styles = StyleSheet.create({
   },
 
   statCardTablet: {
-    width: "48.9%",
+    width: "48.5%",
   },
 
   statCardActive: {
@@ -221,13 +224,14 @@ export const styles = StyleSheet.create({
   },
 
   barChart: {
-    height: 160,
+    height: 170,
     width: "100%",
     borderLeftWidth: 1,
     borderBottomWidth: 1,
     borderColor: COLORS.textQuaternary,
     marginBottom: 18,
     position: "relative",
+    overflow: "hidden",
   },
 
   chartGridLines: {
@@ -235,7 +239,7 @@ export const styles = StyleSheet.create({
     left: 0,
     right: 0,
     top: 0,
-    bottom: 22,
+    bottom: 28,
     justifyContent: "space-between",
   },
 
@@ -251,19 +255,21 @@ export const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "row",
     alignItems: "flex-end",
-    justifyContent: "space-around",
-    paddingHorizontal: 12,
+    justifyContent: "space-between",
+    paddingHorizontal: 8,
   },
 
   barItem: {
+    flex: 1,
     alignItems: "center",
-    width: "38%",
+    minWidth: 0,
   },
 
   barTrack: {
     height: 115,
     width: 36,
     justifyContent: "flex-end",
+    alignItems: "center",
   },
 
   barFill: {
@@ -271,10 +277,13 @@ export const styles = StyleSheet.create({
     backgroundColor: "#38BDF8",
     borderTopLeftRadius: 8,
     borderTopRightRadius: 8,
+    maxHeight: 115,
   },
 
   barLabel: {
+    width: "100%",
     marginTop: 6,
+    paddingHorizontal: 2,
     fontFamily: TYPOGRAPHY.fontFamily.regular,
   },
 
@@ -311,6 +320,8 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 10,
     gap: 10,
+    flexWrap: "wrap",
+    justifyContent: "center",
   },
 
   legendItem: {
@@ -339,6 +350,7 @@ export const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: COLORS.textQuaternary,
     position: "relative",
+    overflow: "hidden",
   },
 
   lineBars: {
@@ -354,6 +366,7 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "flex-end",
     height: "100%",
+    minWidth: 0,
   },
 
   lineBar: {
@@ -361,6 +374,7 @@ export const styles = StyleSheet.create({
     backgroundColor: "#38BDF8",
     borderRadius: 8,
     marginBottom: 4,
+    maxHeight: 105,
   },
 
   infoRowBlue: {
@@ -403,6 +417,7 @@ export const styles = StyleSheet.create({
 
   rowContent: {
     flex: 1,
+    minWidth: 0,
   },
 
   rowDescription: {
@@ -413,6 +428,7 @@ export const styles = StyleSheet.create({
   rowRight: {
     alignItems: "flex-end",
     justifyContent: "center",
+    marginLeft: 8,
   },
 
   estadoBadge: {
@@ -420,35 +436,32 @@ export const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 999,
     marginBottom: 4,
+    backgroundColor: "#EAF7FF",
   },
 
-  estadoActivo: {
-    backgroundColor: "#DDF6FF",
-  },
-
-  estadoCosechado: {
-    backgroundColor: "#E5E7EB",
-  },
-
-  diseaseRow: {
+  productionTotalBox: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#F8FAFC",
-    borderRadius: 12,
-    paddingVertical: 13,
-    paddingHorizontal: 12,
-    marginBottom: 8,
+    backgroundColor: "#FFF9E8",
+    borderRadius: 14,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: "#FDE68A",
   },
 
-  diseaseDot: {
-    width: 11,
-    height: 11,
-    borderRadius: 6,
-    marginRight: 12,
+  feedTotalBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFF0F2",
+    borderRadius: 14,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: "#FFCCD5",
   },
 
-  caseText: {
-    marginLeft: 6,
+  totalBoxText: {
+    marginLeft: 18,
+    flex: 1,
   },
 
   caseRow: {
@@ -468,36 +481,12 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
   },
 
-  badgeAlta: {
-    backgroundColor: "#FFE4E6",
-    borderColor: "#FDA4AF",
-  },
-
   badgeMedia: {
     backgroundColor: "#FEF3C7",
     borderColor: "#FCD34D",
   },
 
-  badgeBaja: {
-    backgroundColor: "#DCFCE7",
-    borderColor: "#86EFAC",
-  },
-
-  mortalityTotalBox: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#FFF0F2",
-    borderRadius: 14,
-    padding: 18,
-    borderWidth: 1,
-    borderColor: "#FFCCD5",
-  },
-
-  mortalityTotalText: {
-    marginLeft: 18,
-  },
-
-  mortalityRow: {
+  feedRow: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#FFF0F2",

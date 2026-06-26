@@ -245,6 +245,11 @@ export const ICONS = {
   },
 
   // Sanidad
+   shieldAlert: {
+    provider: "MaterialCommunityIcons",
+    name: "shield-alert-outline",
+  },
+
   parasite: {
     provider: "MaterialCommunityIcons",
     name: "bacteria-outline",
