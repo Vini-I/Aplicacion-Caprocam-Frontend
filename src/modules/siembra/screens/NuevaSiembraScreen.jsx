@@ -16,27 +16,41 @@
  * - Modal: aviso cuando existen campos incompletos.
  */
 import React, { useState } from "react";
-import { View, Text, ScrollView, StyleSheet } from "react-native";
+import { View, Text, ScrollView } from "react-native";
 
+import { styles } from "../styles/NuevaSiembraStyles";
 import Navbar from "../../../shared/components/Navbar";
 import Button from "../../../shared/components/Button";
 import Modal from "../../../shared/components/Modal";
+import Icon from "../../../shared/components/Icons";
+import { ICONS } from "../../../theme/icons";
 import SiembraForm from "../components/SiembraForm";
-import { COLORS } from "../../../theme/colors";
-import { TYPOGRAPHY } from "../../../theme/typography";
 import { useRouter } from "expo-router";
+
+//FUNCION PARA PONER LA FECHA POR DEFECTO
+function getTodayTextDate() {
+  const today = new Date();
+
+  const day = String(today.getDate()).padStart(2, "0");
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const year = today.getFullYear();
+
+  return `${day}/${month}/${year}`;
+}
 
 export default function NuevaSiembraScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const router = useRouter();
   const [formData, setFormData] = useState({
-    fechaSiembra: "",
+    fechaSiembra: getTodayTextDate(),
     horaIngreso: "",
+    finca: "",
     estanque: "",
     proveedorLarva: "",
     cantidadSembrada: "",
     certificadoLarva: "",
     tecnicaCultivo: "",
+    tipoLarva: "vannamei",
     diasMaduracion: "30",
   });
 
@@ -51,12 +65,14 @@ export default function NuevaSiembraScreen() {
     const camposObligatorios = [
       "fechaSiembra",
       "horaIngreso",
+      "finca",
       "estanque",
       "proveedorLarva",
       "cantidadSembrada",
       "certificadoLarva",
       "tecnicaCultivo",
       "diasMaduracion",
+      "tipoLarva",
     ];
 
     const hayCamposVacios = camposObligatorios.some(
@@ -83,17 +99,14 @@ export default function NuevaSiembraScreen() {
           <Button
             variant="outline"
             onPress={handleCerrar}
-            style={styles.closeButton}
-            textStyle={styles.closeText}
+            style={styles.backButton}
           >
-            ✕
+            <Icon icon={ICONS.back} size={22} style={styles.iconColor} />
           </Button>
         }
         style={styles.header}
         titleStyle={styles.title}
-      >
-        <Text style={styles.moduleText}>Módulo Siembra</Text>
-      </Navbar>
+      ></Navbar>
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -125,78 +138,3 @@ export default function NuevaSiembraScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.secondary,
-  },
-  header: {
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: 20,
-    paddingTop: 50,
-    paddingBottom: 30,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-    borderBottomWidth: 0,
-  },
-  moduleText: {
-    color: COLORS.white,
-    fontSize: 12,
-    fontFamily: TYPOGRAPHY.fontFamily.medium,
-    opacity: 0.85,
-  },
-  title: {
-    color: COLORS.white,
-    fontSize: 28,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-  },
-  scrollContent: {
-    paddingVertical: 28,
-    paddingBottom: 40,
-  },
-  wrapper: {
-    width: "100%",
-    maxWidth: 720,
-    alignSelf: "center",
-    paddingHorizontal: 18,
-  },
-  closeButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: "rgba(255,255,255,0.2)",
-    borderWidth: 0,
-    paddingHorizontal: 0,
-    paddingVertical: 0,
-    marginTop: 0,
-  },
-  closeText: {
-    color: COLORS.white,
-    fontSize: 20,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-  },
-  createButton: {
-    backgroundColor: COLORS.primary,
-    height: 56,
-    borderRadius: 14,
-    marginTop: 24,
-    marginBottom: 20,
-  },
-  createButtonText: {
-    color: COLORS.white,
-    fontSize: 16,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-  },
-  modalTitle: {
-    color: COLORS.textSecondary,
-    fontSize: 18,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    marginBottom: 8,
-  },
-  modalMessage: {
-    color: COLORS.textTertiary,
-    fontSize: 14,
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
-  },
-});

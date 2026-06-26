@@ -1,3 +1,3 @@
-import DetalleProductoScreen from '../../../modules/inventarios/screens/DetalleProductoScreen';
+import DetalleProductoScreen from '../../../modules/productos/screens/DetalleProductoScreen';
 
 export default DetalleProductoScreen;

@@ -22,7 +22,9 @@
 // IMPORTS
 // ============================================================
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, TouchableOpacity } from "react-native";
+import CustomText from "../../../shared/components/Text";
+import { styles } from "../styles/trabajadoresExternosListStyles";
 
 // ============================================================
 // COMPONENTE
@@ -31,50 +33,26 @@ export default function TrabajadoresExternosList({ trabajadores, onSelectTrabaja
   if (!trabajadores || trabajadores.length === 0) {
     return (
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>👥 Colaboradores a Cargo</Text>
-        <Text style={styles.emptyText}>No hay Colaboradores externos registrados</Text>
+        <CustomText style={styles.cardTitle}>👥 Colaboradores a Cargo</CustomText>
+        <CustomText style={styles.emptyText}>No hay Colaboradores externos registrados</CustomText>
       </View>
     );
   }
 
   return (
     <View style={styles.card}>
-      <Text style={styles.cardTitle}>Colaboradores a Cargo ({trabajadores.length})</Text>
+      <CustomText style={styles.cardTitle}>Colaboradores a Cargo ({trabajadores.length})</CustomText>
 
       {trabajadores.map((item) => (
         <TouchableOpacity key={item.id} onPress={() => onSelectTrabajador?.(item.id)}>
           <View style={styles.item}>
-            <Text style={styles.itemName}>{item.nombre}</Text>
-            <Text style={styles.itemDetail}>📞 {item.telefono}</Text>
-            <Text style={styles.itemDetail}>✉️ {item.email}</Text>
-            <Text style={styles.itemDetail}>Cédula: {item.cedula}</Text>
+            <CustomText style={styles.itemName}>{item.nombre}</CustomText>
+            <CustomText style={styles.itemDetail}>📞 {item.telefono}</CustomText>
+            <CustomText style={styles.itemDetail}>✉️ {item.email}</CustomText>
+            <CustomText style={styles.itemDetail}>Cédula: {item.cedula}</CustomText>
           </View>
         </TouchableOpacity>
       ))}
     </View>
   );
 }
-
-// ============================================================
-// ESTILOS
-// ============================================================
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: "#ffffff",
-    borderRadius: 12,
-    padding: 16,
-    marginHorizontal: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
-  },
-  cardTitle: { fontSize: 16, fontWeight: "700", color: "#1E3A5F", marginBottom: 12 },
-  item: {
-    borderTopWidth: 1,
-    borderTopColor: "#E5E7EB",
-    paddingVertical: 12,
-  },
-  itemName: { fontWeight: "bold", color: "#1E3A5F", fontSize: 15, marginBottom: 4 },
-  itemDetail: { fontSize: 13, color: "#4E6482", marginBottom: 2 },
-  emptyText: { textAlign: "center", color: "#6c757d", paddingVertical: 16 },
-});
