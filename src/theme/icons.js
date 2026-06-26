@@ -250,4 +250,9 @@ export const ICONS = {
     provider: "MaterialCommunityIcons",
     name: "bacteria-outline",
   },
+  
+   microscope: {
+    provider: "MaterialCommunityIcons",
+    name: "microscope",
+  },
 };
