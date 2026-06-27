@@ -20,8 +20,10 @@
 // IMPORTS
 // ============================================================
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View } from "react-native";
 import Card from "../../../shared/components/Card";
+import CustomText from "../../../shared/components/Text";
+import { styles } from "../styles/colaboradorStatsStyles";
 
 // ============================================================
 // COMPONENTE
@@ -33,57 +35,23 @@ export default function ColaboradorStats({ estadisticas }) {
     <Card title="Actividad del colaborador" style={styles.card}>
       <View style={styles.row}>
         <View style={styles.statItem}>
-          <Text style={styles.statValue}>{estadisticas.alimentaciones}</Text>
-          <Text style={styles.statLabel}>Alimentaciones</Text>
+          <CustomText style={styles.statValue}>{estadisticas.alimentaciones}</CustomText>
+          <CustomText style={styles.statLabel}>Alimentaciones</CustomText>
         </View>
         <View style={styles.statItem}>
-          <Text style={styles.statValue}>{estadisticas.estanquesCreados}</Text>
-          <Text style={styles.statLabel}>Estanques creados</Text>
+          <CustomText style={styles.statValue}>{estadisticas.estanquesCreados}</CustomText>
+          <CustomText style={styles.statLabel}>Estanques creados</CustomText>
         </View>
         <View style={styles.statItem}>
-          <Text style={styles.statValue}>{estadisticas.siembrasRegistradas}</Text>
-          <Text style={styles.statLabel}>Siembras registradas</Text>
+          <CustomText style={styles.statValue}>{estadisticas.siembrasRegistradas}</CustomText>
+          <CustomText style={styles.statLabel}>Siembras registradas</CustomText>
         </View>
       </View>
       {estadisticas.ultimaActividad && (
-        <Text style={styles.lastActive}>
+        <CustomText style={styles.lastActive}>
           Última actividad: {estadisticas.ultimaActividad}
-        </Text>
+        </CustomText>
       )}
     </Card>
   );
 }
-
-// ============================================================
-// ESTILOS
-// ============================================================
-const styles = StyleSheet.create({
-  card: {
-    marginBottom: 16,
-  },
-  row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 12,
-  },
-  statItem: {
-    alignItems: "center",
-    flex: 1,
-  },
-  statValue: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#009EF5",
-  },
-  statLabel: {
-    fontSize: 12,
-    color: "#4E6482",
-    marginTop: 4,
-  },
-  lastActive: {
-    fontSize: 12,
-    color: "#6c757d",
-    textAlign: "center",
-    marginTop: 8,
-  },
-});

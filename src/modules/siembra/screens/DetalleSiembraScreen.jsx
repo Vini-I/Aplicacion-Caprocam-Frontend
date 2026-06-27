@@ -1,13 +1,14 @@
 import React, { useState } from "react";
+import { useRouter } from "expo-router";
 import {
   View,
   ScrollView,
   Text,
-  StyleSheet,
+  Pressable,
   useWindowDimensions,
+  Platform,
 } from "react-native";
 
-// Componentes de UI reutilizables del proyecto
 import Card from "../../../shared/components/Card";
 import Badge from "../../../shared/components/Badge";
 import Button from "../../../shared/components/Button";
@@ -19,88 +20,124 @@ import Alert from "../../../shared/components/Alert";
 import NumberInput from "../../../shared/components/NumberInput";
 import Icon from "../../../shared/components/Icons";
 
-// Tema global: colores, tipografía e iconos
-import { COLORS } from "../../../theme/colors";
-import { TYPOGRAPHY } from "../../../theme/typography";
 import { ICONS } from "../../../theme/icons";
+import { styles } from "../styles/DetalleSiembraStyles";
 
-// Opciones para el select de tipo de larva
-const tiposLarva = [
-  { label: "PL10", value: "pl10" },
-  { label: "PL12", value: "pl12" },
-];
+import {
+  obtenerSiembraPorId,
+  obtenerProveedoresLarva,
+  obtenerTecnicasCultivo,
+  obtenerTiposLarva,
+} from "../services/SiembraService";
 
-// Opciones para el select de proveedor
-const tiposProveedor = [
-  { label: "Larvas del Pacífico", value: "pacifico" },
-  { label: "AquaLarva", value: "aqua" },
-  { label: "Maricultura CR", value: "maricultura" },
-];
-
-// Opciones para el select de técnica de cultivo
-const tiposTecnica = [
-  { label: "Extensiva", value: "extensiva" },
-  { label: "Semi-intensiva", value: "semi" },
-  { label: "Intensiva", value: "intensiva" },
-];
-
-// Datos del ciclo actual (en producción vendrían del backend)
 const diaActual = 2;
 const totalDias = 90;
 
-// Retorna la etapa del ciclo: 1=Siembra, 2=Maduración, 3=Cosecha
 function calcularEtapa(dia, diasTotales) {
   if (dia > 60) return 3;
   if (dia > 30) return 2;
   return 1;
 }
 
-export default function DetalleSiembraScreen() {
+function obtenerFechaActual() {
+  const fecha = new Date();
+  const dia = String(fecha.getDate()).padStart(2, "0");
+  const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+  const anio = fecha.getFullYear();
 
-  // Controla si el formulario está en modo lectura o edición
+  return `${dia}/${mes}/${anio}`;
+}
+
+function convertirADdMmAaaa(fechaIso) {
+  const partes = fechaIso.split("-");
+
+  if (partes.length !== 3) {
+    return "";
+  }
+
+  const anio = partes[0];
+  const mes = partes[1];
+  const dia = partes[2];
+
+  return `${dia}/${mes}/${anio}`;
+}
+
+function convertirAAaaaMmDd(fechaTexto) {
+  const partes = fechaTexto.split("/");
+
+  if (partes.length !== 3) {
+    return "";
+  }
+
+  const dia = partes[0];
+  const mes = partes[1];
+  const anio = partes[2];
+
+  return `${anio}-${mes}-${dia}`;
+}
+
+export default function DetalleSiembraScreen() {
+  const router = useRouter();
+
+  const siembra = obtenerSiembraPorId(25);
+
+  const tiposLarva = obtenerTiposLarva();
+  const tiposProveedor = obtenerProveedoresLarva();
+  const tiposTecnica = obtenerTecnicasCultivo();
+
   const [isEditing, setIsEditing] = useState(false);
 
-  // Mensaje de feedback al usuario (éxito o error)
   const [mensaje, setMensaje] = useState("");
   const [mensajeVariant, setMensajeVariant] = useState("info");
 
-  // Campos del formulario
-  const [fechaSiembra, setFechaSiembra] = useState("");
-  const [cantidad, setCantidad] = useState("1000");
-  const [area, setArea] = useState("0.5");
-  const [densidad, setDensidad] = useState("12");
-  const [tipoLarva, setTipoLarva] = useState("pl12");
-  const [proveedor, setProveedor] = useState("pacifico");
-  const [fechaIngreso, setFechaIngreso] = useState("03/06/2026");
-  const [horaIngreso, setHoraIngreso] = useState("08:30");
-  const [certificado, setCertificado] = useState("CERT-2026-001");
-  const [tecnica, setTecnica] = useState("semi");
-  const [diasCiclo, setDiasCiclo] = useState("90");
+  const [fechaSiembra, setFechaSiembra] = useState(
+    siembra?.fechaSiembra ?? obtenerFechaActual(),
+  );
+  const [cantidad, setCantidad] = useState(
+    String(siembra?.cantidadSembrada ?? "1000"),
+  );
+  const [area, setArea] = useState(siembra?.areaEstanque ?? "0.5");
+  const [densidad, setDensidad] = useState(siembra?.densidad ?? "12");
+  const [tipoLarva, setTipoLarva] = useState(
+    siembra?.tipoLarva ?? siembra?.especie ?? "vannamei",
+  );
+  const [proveedor, setProveedor] = useState(
+    siembra?.proveedorLarva ?? "pacifico",
+  );
+  const [fechaIngreso, setFechaIngreso] = useState(
+    siembra?.fechaIngreso ?? siembra?.fechaSiembra ?? obtenerFechaActual(),
+  );
+  const [horaIngreso, setHoraIngreso] = useState(
+    siembra?.horaIngreso ?? "08:30",
+  );
+  const [certificado, setCertificado] = useState(
+    siembra?.certificadoLarva ?? "CERT-2026-001",
+  );
+  const [tecnica, setTecnica] = useState(siembra?.tecnicaCultivo ?? "semi");
+  const [diasCiclo, setDiasCiclo] = useState(
+    String(siembra?.diasMaduracion ?? "90"),
+  );
 
-  // Copia del último estado guardado. Se usa para restaurar
-  // los campos si el usuario cancela la edición.
   const [valoresGuardados, setValoresGuardados] = useState({
-    fechaSiembra: "",
-    cantidad: "1000",
-    area: "0.5",
-    densidad: "12",
-    tipoLarva: "pl12",
-    proveedor: "pacifico",
-    fechaIngreso: "03/06/2026",
-    horaIngreso: "08:30",
-    certificado: "CERT-2026-001",
-    tecnica: "semi",
-    diasCiclo: "90",
+    fechaSiembra: siembra?.fechaSiembra ?? obtenerFechaActual(),
+    cantidad: String(siembra?.cantidadSembrada ?? "1000"),
+    area: siembra?.areaEstanque ?? "0.5",
+    densidad: siembra?.densidad ?? "12",
+    tipoLarva: siembra?.tipoLarva ?? siembra?.especie ?? "vannamei",
+    proveedor: siembra?.proveedorLarva ?? "pacifico",
+    fechaIngreso:
+      siembra?.fechaIngreso ?? siembra?.fechaSiembra ?? obtenerFechaActual(),
+    horaIngreso: siembra?.horaIngreso ?? "08:30",
+    certificado: siembra?.certificadoLarva ?? "CERT-2026-001",
+    tecnica: siembra?.tecnicaCultivo ?? "semi",
+    diasCiclo: String(siembra?.diasMaduracion ?? "90"),
   });
 
-  // Ancho de pantalla para distinguir móvil vs web/tablet
   const { width } = useWindowDimensions();
   const isWeb = width > 768;
 
-  // Etapa actual del ciclo calculada una sola vez por render
   const etapa = calcularEtapa(diaActual, totalDias);
 
-  // Agrupa los valores del formulario en un objeto para validarlos de una vez.
   function obtenerValoresActuales() {
     return {
       fechaSiembra,
@@ -117,19 +154,19 @@ export default function DetalleSiembraScreen() {
     };
   }
 
-  // Devuelve true si algún campo está vacío.
   function hayCamposVacios() {
     const actuales = obtenerValoresActuales();
-    return Object.values(actuales).some((valor) => valor.trim() === "");
+
+    return Object.values(actuales).some(
+      (valor) => String(valor ?? "").trim() === "",
+    );
   }
 
-  // Limpia el mensaje y activa el modo edición
   function iniciarEdicion() {
     setMensaje("");
     setIsEditing(true);
   }
 
-  // Restaura los campos al último valor guardado y vuelve al modo lectura.
   function cancelarEdicion() {
     setFechaSiembra(valoresGuardados.fechaSiembra);
     setCantidad(valoresGuardados.cantidad);
@@ -141,41 +178,110 @@ export default function DetalleSiembraScreen() {
     setHoraIngreso(valoresGuardados.horaIngreso);
     setCertificado(valoresGuardados.certificado);
     setTecnica(valoresGuardados.tecnica);
-    setDiasCiclo(valoresGuardados.diasMaduracion);
+    setDiasCiclo(valoresGuardados.diasCiclo);
 
     setMensaje("");
     setIsEditing(false);
   }
 
   function guardar() {
-    // Valida que ningún campo esté en blanco antes de guardar
     if (hayCamposVacios()) {
       setMensaje("Ningún campo puede quedar en blanco.");
       setMensajeVariant("danger");
       return;
     }
 
-    // Actualiza el snapshot y regresa al modo lectura
     setValoresGuardados(obtenerValoresActuales());
     setMensaje("Siembra guardada correctamente.");
     setMensajeVariant("success");
     setIsEditing(false);
   }
 
+  function regresarASiembra() {
+    router.push("/siembra");
+  }
+
+  function renderFechaSiembraEditable() {
+    if (Platform.OS === "web") {
+      return (
+        <View style={styles.webDateContainer}>
+          <Text style={styles.webDateLabel}>Fecha de siembra</Text>
+
+          <input
+            type="date"
+            value={convertirAAaaaMmDd(fechaSiembra)}
+            max={convertirAAaaaMmDd(obtenerFechaActual())}
+            onChange={(event) =>
+              setFechaSiembra(convertirADdMmAaaa(event.target.value))
+            }
+            style={styles.webDateInput}
+          />
+        </View>
+      );
+    }
+
+    return (
+      <DateInput
+        label="Fecha de siembra"
+        value={fechaSiembra}
+        onChangeText={setFechaSiembra}
+        inputStyle={styles.inputEditing}
+        labelStyle={styles.labelNombre}
+      />
+    );
+  }
+
+  function renderFechaIngresoEditable() {
+    if (Platform.OS === "web") {
+      return (
+        <View style={styles.webDateContainer}>
+          <Text style={styles.webDateLabel}>Fecha ingreso de larva</Text>
+
+          <input
+            type="date"
+            value={convertirAAaaaMmDd(fechaIngreso)}
+            max={convertirAAaaaMmDd(obtenerFechaActual())}
+            onChange={(event) =>
+              setFechaIngreso(convertirADdMmAaaa(event.target.value))
+            }
+            style={styles.webDateInput}
+          />
+        </View>
+      );
+    }
+
+    return (
+      <DateInput
+        label="Fecha ingreso de larva"
+        value={fechaIngreso}
+        onChangeText={setFechaIngreso}
+        inputStyle={styles.inputEditing}
+        labelStyle={styles.labelNombre}
+      />
+    );
+  }
+
   return (
     <View style={styles.container}>
-
-      {/* Encabezado con nombre de la finca */}
       <View style={styles.header}>
-        <Text style={styles.headerSubtitle}>Detalle de Siembra</Text>
-        <Text style={styles.headerTitle}>A01 – Finca Pivot</Text>
+        <View style={styles.headerTop}>
+          <Pressable onPress={regresarASiembra} style={styles.backButton}>
+            <Icon icon={ICONS.exit} size={22} style={styles.headerIcon} />
+          </Pressable>
+
+          <View>
+            <Text style={styles.headerSubtitle}>Detalle de Siembra</Text>
+            <Text style={styles.headerTitle}>
+              {siembra?.estanque ?? "A01"} – {siembra?.finca ?? "Finca"}
+            </Text>
+          </View>
+        </View>
       </View>
 
       <ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        {/* Muestra el alert solo si hay un mensaje activo */}
         {mensaje !== "" && (
           <Alert
             message={mensaje}
@@ -184,28 +290,30 @@ export default function DetalleSiembraScreen() {
           />
         )}
 
-        {/* Tarjeta resumen: ícono, día actual, progreso y etapa */}
         <Card>
           <View style={styles.resumenHeader}>
             <View style={styles.iconContainer}>
-              <Icon icon={ICONS.shrimp} size={28} color={COLORS.white} />
+              <Icon icon={ICONS.shrimp} size={28} style={styles.summaryIcon} />
             </View>
+
             <View style={styles.resumenInfo}>
               <Badge
                 label={`Día ${diaActual} de ${totalDias}`}
                 variant="success"
                 textStyle={styles.badgeText}
               />
-              <Text style={styles.siembraTitle}>Siembra #25</Text>
+
+              <Text style={styles.siembraTitle}>
+                Siembra #{siembra?.siembraId ?? 25}
+              </Text>
             </View>
           </View>
 
           <Text style={styles.subtitle}>Avance del ciclo</Text>
-          {/* Porcentaje calculado en base al día actual vs total */}
           <ProgressBar progress={Math.round((diaActual / totalDias) * 100)} />
 
           <Text style={styles.subtitle}>Estado de Etapa</Text>
-          {/* Cada badge se colorea según la etapa alcanzada */}
+
           <View style={styles.etapas}>
             <Badge
               label="Siembra"
@@ -228,20 +336,18 @@ export default function DetalleSiembraScreen() {
           </View>
         </Card>
 
-        {/* Tarjeta con los datos del lote: alterna entre lectura y edición */}
         <Card title="Información de la Siembra" titleStyle={styles.cardTitle}>
           {!isEditing ? (
-            // Modo lectura: todos los campos deshabilitados
             <>
               <DateInput
                 label="Fecha de siembra"
-                inputType="date"
                 value={fechaSiembra}
                 disabled={true}
                 inputStyle={styles.dateInputLectura}
                 textStyle={styles.dateInputTexto}
                 labelStyle={styles.labelNombre}
               />
+
               <NumberInput
                 label="Camarones sembrados"
                 value={cantidad}
@@ -249,8 +355,9 @@ export default function DetalleSiembraScreen() {
                 style={styles.inputNombre}
                 labelStyle={styles.labelNombre}
                 min={0}
-                max={100}
+                max={1000000}
               />
+
               <Input
                 label="Área (ha)"
                 value={area}
@@ -258,6 +365,7 @@ export default function DetalleSiembraScreen() {
                 style={styles.inputNombre}
                 labelStyle={styles.labelNombre}
               />
+
               <Input
                 label="Densidad"
                 value={densidad}
@@ -265,6 +373,7 @@ export default function DetalleSiembraScreen() {
                 style={styles.inputNombre}
                 labelStyle={styles.labelNombre}
               />
+
               <Select
                 label="Tipo de larva"
                 options={tiposLarva}
@@ -275,6 +384,7 @@ export default function DetalleSiembraScreen() {
                 selectedTextStyle={styles.textoSeleccionado}
                 optionTextStyle={styles.textoOpciones}
               />
+
               <Select
                 label="Proveedor"
                 options={tiposProveedor}
@@ -285,15 +395,16 @@ export default function DetalleSiembraScreen() {
                 selectedTextStyle={styles.textoSeleccionado}
                 optionTextStyle={styles.textoOpciones}
               />
+
               <DateInput
                 label="Fecha ingreso de larva"
-                inputType="date"
                 value={fechaIngreso}
                 disabled={true}
                 inputStyle={styles.dateInputLectura}
                 textStyle={styles.dateInputTexto}
                 labelStyle={styles.labelNombre}
               />
+
               <Input
                 label="Hora ingreso"
                 value={horaIngreso}
@@ -301,6 +412,7 @@ export default function DetalleSiembraScreen() {
                 style={styles.inputNombre}
                 labelStyle={styles.labelNombre}
               />
+
               <Input
                 label="Certificado de larva"
                 value={certificado}
@@ -308,6 +420,7 @@ export default function DetalleSiembraScreen() {
                 style={styles.inputNombre}
                 labelStyle={styles.labelNombre}
               />
+
               <Select
                 label="Técnica de cultivo"
                 options={tiposTecnica}
@@ -318,8 +431,9 @@ export default function DetalleSiembraScreen() {
                 selectedTextStyle={styles.textoSeleccionado}
                 optionTextStyle={styles.textoOpciones}
               />
+
               <NumberInput
-                label="Duracion estimada del Ciclo"
+                label="Duración estimada del ciclo"
                 value={diasCiclo}
                 editable={false}
                 style={styles.inputNombre}
@@ -329,16 +443,9 @@ export default function DetalleSiembraScreen() {
               />
             </>
           ) : (
-            // Modo edición: campos habilitados para modificar
             <>
-              <DateInput
-                label="Fecha de siembra"
-                inputType="date"
-                value={fechaSiembra}
-                onChangeText={setFechaSiembra}
-                inputStyle={styles.inputEditing}
-                labelStyle={styles.labelNombre}
-              />
+              {renderFechaSiembraEditable()}
+
               <NumberInput
                 label="Camarones sembrados"
                 value={cantidad}
@@ -349,6 +456,7 @@ export default function DetalleSiembraScreen() {
                 max={100000}
                 step={1000}
               />
+
               <Select
                 label="Tipo de larva"
                 options={tiposLarva}
@@ -358,6 +466,7 @@ export default function DetalleSiembraScreen() {
                 selectedTextStyle={styles.textoSeleccionado}
                 optionTextStyle={styles.textoOpciones}
               />
+
               <Select
                 label="Proveedor"
                 options={tiposProveedor}
@@ -367,14 +476,9 @@ export default function DetalleSiembraScreen() {
                 selectedTextStyle={styles.textoSeleccionado}
                 optionTextStyle={styles.textoOpciones}
               />
-              <DateInput
-                label="Fecha ingreso de larva"
-                inputType="date"
-                value={fechaIngreso}
-                onChangeText={setFechaIngreso}
-                inputStyle={styles.inputEditing}
-                labelStyle={styles.labelNombre}
-              />
+
+              {renderFechaIngresoEditable()}
+
               <Input
                 label="Hora ingreso"
                 value={horaIngreso}
@@ -382,6 +486,7 @@ export default function DetalleSiembraScreen() {
                 style={styles.inputEditing}
                 labelStyle={styles.labelNombre}
               />
+
               <Input
                 label="Certificado de larva"
                 value={certificado}
@@ -389,6 +494,7 @@ export default function DetalleSiembraScreen() {
                 style={styles.inputEditing}
                 labelStyle={styles.labelNombre}
               />
+
               <Select
                 label="Técnica de cultivo"
                 options={tiposTecnica}
@@ -398,8 +504,9 @@ export default function DetalleSiembraScreen() {
                 selectedTextStyle={styles.textoSeleccionado}
                 optionTextStyle={styles.textoOpciones}
               />
+
               <NumberInput
-                label="Días estimada del ciclo"
+                label="Días estimados del ciclo"
                 value={diasCiclo}
                 onChangeText={setDiasCiclo}
                 style={styles.inputEditing}
@@ -411,7 +518,6 @@ export default function DetalleSiembraScreen() {
           )}
         </Card>
 
-        {/* Botones: en lectura muestra Editar, en edición muestra Guardar y Cancelar */}
         {!isEditing ? (
           <Button onPress={iniciarEdicion} textStyle={styles.textoBoton}>
             Editar
@@ -425,6 +531,7 @@ export default function DetalleSiembraScreen() {
             >
               Guardar
             </Button>
+
             <Button
               variant="outline"
               style={styles.button}
@@ -439,155 +546,3 @@ export default function DetalleSiembraScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  // Fondo general de la pantalla
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.surface,
-  },
-  // Franja superior con color primario y esquinas redondeadas abajo
-  header: {
-    backgroundColor: COLORS.primary,
-    paddingTop: 20,
-    paddingBottom: 25,
-    paddingHorizontal: 20,
-    borderBottomLeftRadius: 25,
-    borderBottomRightRadius: 25,
-  },
-  headerTitle: {
-    fontSize: 30,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    color: COLORS.white,
-  },
-  headerSubtitle: {
-    fontSize: 14,
-    fontFamily: TYPOGRAPHY.fontFamily.medium,
-    color: COLORS.white,
-    opacity: 0.9,
-  },
-  // Limita el ancho en pantallas grandes y centra el contenido
-  content: {
-    padding: 16,
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
-  },
-  alert: {
-    marginBottom: 16,
-  },
-  // Fila con ícono + badge + título de la siembra
-  resumenHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  // Cuadro de fondo del ícono del camarón
-  iconContainer: {
-    width: 56,
-    height: 56,
-    borderRadius: 16,
-    backgroundColor: COLORS.primary,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 14,
-  },
-  resumenInfo: {
-    flex: 1,
-  },
-  siembraTitle: {
-    fontSize: 28,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    color: COLORS.textSecondary,
-    marginTop: 8,
-  },
-  // Subtítulos de sección dentro de la tarjeta resumen
-  subtitle: {
-    fontSize: 14,
-    fontFamily: TYPOGRAPHY.fontFamily.medium,
-    color: COLORS.textTertiary,
-    marginTop: 1,
-    marginBottom: 16,
-  },
-  // Fila horizontal de los tres badges de etapa
-  etapas: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 8,
-    gap: 16,
-  },
-  badgeText: {
-    fontFamily: TYPOGRAPHY.fontFamily.medium,
-  },
-  // En web los badges de etapa se expanden para ocupar el mismo ancho
-  badgeEtapa: {
-    alignSelf: "center",
-    paddingHorizontal: 24,
-    paddingVertical: 10,
-    flex: 1,
-    alignItems: "center",
-  },
-  cardTitle: {
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-  },
-  // Fila de botones Guardar / Cancelar en modo edición
-  actions: {
-    flexDirection: "row",
-    gap: 12,
-    marginTop: 10,
-  },
-  // Cada botón ocupa el mismo ancho dentro de la fila
-  button: {
-    flex: 1,
-  },
-  textoBoton: {
-    fontFamily: TYPOGRAPHY.fontFamily.medium,
-  },
-  // Estilo de Select en modo lectura: sin borde y fondo secundario
-  selectVista: {
-    backgroundColor: COLORS.secondary,
-    opacity: 1,
-    borderWidth: 0,
-  },
-  // Estilo de Input/NumberInput en modo lectura: fondo gris, sin edición visual
-  inputNombre: {
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
-    borderWidth: 1,
-    borderColor: COLORS.secondary,
-    backgroundColor: COLORS.secondary,
-    opacity: 1,
-    color: COLORS.black,
-  },
-  labelNombre: {
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
-  },
-  labelSelect: {
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
-    color: COLORS.textSecondary,
-  },
-  textoSeleccionado: {
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
-  },
-  textoOpciones: {
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
-  },
-  // Estilo de Input/NumberInput en modo edición: borde visible, fondo blanco
-  inputEditing: {
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
-    borderWidth: 1,
-    borderColor: COLORS.secondary,
-    opacity: 1,
-    color: COLORS.black,
-  },
-  dateInputLectura: {
-    borderWidth: 1,
-    borderColor: COLORS.secondary,
-    backgroundColor: COLORS.secondary,
-    opacity: 1,
-  },
-  dateInputTexto: {
-    color: COLORS.black,
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
-  },
-});

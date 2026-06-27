@@ -4,14 +4,15 @@ import { COLORS } from "../../../theme/colors.js";
 export const styles = StyleSheet.create({
   Container: {
     flex: 1,
-    backgroundColor: COLORS.surface,
+    padding: 16,
+    backgroundColor: COLORS.white,
   },
 
   ContentWrapper: {
     flex: 1,
     flexDirection: "row",
     width: "100%",
-    maxWidth: 700,
+    maxWidth: 900,
     alignSelf: "center",
     paddingHorizontal: 16,
     backgroundColor: COLORS.white,
@@ -20,8 +21,8 @@ export const styles = StyleSheet.create({
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
     elevation: 2,
   },
 
@@ -44,9 +45,14 @@ export const styles = StyleSheet.create({
 
   Detalles: {
     flexDirection: "row",
+    flexWrap: "wrap",
     gap: 8,
     marginTop: 6,
-    overflow: "hidden",
+  },
+
+  DetallesColumn: {
+    flexDirection: "column",
+    alignItems: "flex-start",
   },
 
   Detalle: {
@@ -55,6 +61,7 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 12,
+    alignSelf: "flex-start",
   },
 
   Eliminar: {
@@ -84,7 +91,7 @@ export const styles = StyleSheet.create({
   },
 
   AddButton: {
-    maxWidth: 700,
+    maxWidth: 900,
     alignSelf: "center",
     width: "100%",
     borderWidth: 2,

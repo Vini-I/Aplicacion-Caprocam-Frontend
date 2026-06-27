@@ -25,13 +25,16 @@
 // IMPORTS
 // ============================================================
 import React, { useState, useEffect } from "react";
-import { View, ScrollView, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, ScrollView, TouchableOpacity } from "react-native";
 import { colaboradoresService } from "../services/colaboradoresService";
 import TrabajadoresExternosList from "../components/TrabajadoresExternosList";
 import Spinner from "../../../shared/components/Spinner";
 import Card from "../../../shared/components/Card";
 import Badge from "../../../shared/components/Badge";
 import Input from "../../../shared/components/Input";
+import CustomText from "../../../shared/components/Text";
+import { styles } from "../styles/colaboradorDetalleStyles";
+import { COLORS } from "../../../theme/colors";
 
 // ============================================================
 // COMPONENTE PRINCIPAL
@@ -120,7 +123,7 @@ export default function ColaboradorDetalleScreen({ colaboradorId, onClose, onSel
   // RENDERIZADO CONDICIONAL
   // --------------------------------------------------------
   if (loading) return <Spinner text="Cargando detalle..." />;
-  if (error) return <Text style={styles.error}>Error: {error}</Text>;
+  if (error) return <CustomText style={styles.error}>Error: {error}</CustomText>;
   if (!colaborador) return null;
 
   // --------------------------------------------------------
@@ -130,39 +133,39 @@ export default function ColaboradorDetalleScreen({ colaboradorId, onClose, onSel
     <ScrollView style={styles.container}>
       {onClose && (
         <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-          <Text style={styles.closeButtonText}>✕ Cerrar</Text>
+          <CustomText style={styles.closeButtonText}>✕ Cerrar</CustomText>
         </TouchableOpacity>
       )}
 
       <Card style={styles.card}>
         <View style={styles.header}>
-          <Text style={styles.name}>{colaborador.nombre}</Text>
+          <CustomText style={styles.name}>{colaborador.nombre}</CustomText>
           <Badge label={rolLabels[colaborador.rol]} variant={rolVariant[colaborador.rol]} />
         </View>
 
         <View style={styles.infoRow}>
-          <Text style={styles.label}>Cédula:</Text>
-          <Text style={styles.value}>{colaborador.cedula}</Text>
+          <CustomText style={styles.label}>Cédula:</CustomText>
+          <CustomText style={styles.value}>{colaborador.cedula}</CustomText>
         </View>
         <View style={styles.infoRow}>
-          <Text style={styles.label}>Teléfono:</Text>
-          <Text style={styles.value}>{colaborador.telefono}</Text>
+          <CustomText style={styles.label}>Teléfono:</CustomText>
+          <CustomText style={styles.value}>{colaborador.telefono}</CustomText>
         </View>
         <View style={styles.infoRow}>
-          <Text style={styles.label}>Correo:</Text>
-          <Text style={styles.value}>{colaborador.email}</Text>
+          <CustomText style={styles.label}>Correo:</CustomText>
+          <CustomText style={styles.value}>{colaborador.email}</CustomText>
         </View>
         <View style={styles.infoRow}>
-          <Text style={styles.label}>Finca ID:</Text>
-          <Text style={styles.value}>{colaborador.fincaId}</Text>
+          <CustomText style={styles.label}>Finca ID:</CustomText>
+          <CustomText style={styles.value}>{colaborador.fincaId}</CustomText>
         </View>
 
         {/* Solo mostrar dueño asociado para trabajadores externos */}
         {externalOwner && colaborador.rol === "external_worker" && (
           <TouchableOpacity onPress={() => onSelectTrabajador?.(externalOwner.id)}>
             <View style={styles.infoRow}>
-              <Text style={styles.label}>Asociado:</Text>
-              <Text style={[styles.value, styles.link]}>{externalOwner.nombre}</Text>
+              <CustomText style={styles.label}>Asociado:</CustomText>
+              <CustomText style={[styles.value, styles.link]}>{externalOwner.nombre}</CustomText>
             </View>
           </TouchableOpacity>
         )}
@@ -171,23 +174,23 @@ export default function ColaboradorDetalleScreen({ colaboradorId, onClose, onSel
       {/* Estadísticas simples */}
       {estadisticas && (
         <View style={styles.statsCard}>
-          <Text style={styles.statsTitle}>Actividad del colaborador</Text>
+          <CustomText style={styles.statsTitle}>Actividad del colaborador</CustomText>
           <View style={styles.statsRow}>
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>{estadisticas.alimentaciones}</Text>
-              <Text style={styles.statLabel}>Alimentaciones</Text>
+              <CustomText style={styles.statValue}>{estadisticas.alimentaciones}</CustomText>
+              <CustomText style={styles.statLabel}>Alimentaciones</CustomText>
             </View>
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>{estadisticas.estanquesCreados}</Text>
-              <Text style={styles.statLabel}>Estanques creados</Text>
+              <CustomText style={styles.statValue}>{estadisticas.estanquesCreados}</CustomText>
+              <CustomText style={styles.statLabel}>Estanques creados</CustomText>
             </View>
             <View style={styles.statItem}>
-              <Text style={styles.statValue}>{estadisticas.siembrasRegistradas}</Text>
-              <Text style={styles.statLabel}>Siembras registradas</Text>
+              <CustomText style={styles.statValue}>{estadisticas.siembrasRegistradas}</CustomText>
+              <CustomText style={styles.statLabel}>Siembras registradas</CustomText>
             </View>
           </View>
           {estadisticas.ultimaActividad && (
-            <Text style={styles.lastActive}>Última actividad: {estadisticas.ultimaActividad}</Text>
+            <CustomText style={styles.lastActive}>Última actividad: {estadisticas.ultimaActividad}</CustomText>
           )}
         </View>
       )}
@@ -220,30 +223,3 @@ export default function ColaboradorDetalleScreen({ colaboradorId, onClose, onSel
     </ScrollView>
   );
 }
-
-// ============================================================
-// ESTILOS
-// ============================================================
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F4F7FA" },
-  closeButton: { padding: 16, alignItems: "flex-end" },
-  closeButtonText: { color: "#009EF5", fontSize: 16, fontWeight: "600" },
-  card: { margin: 16, marginBottom: 12 },
-  header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 16 },
-  name: { fontSize: 20, fontWeight: "700", color: "#1E3A5F", flex: 1, marginRight: 12 },
-  infoRow: { flexDirection: "row", marginBottom: 8, flexWrap: "wrap" },
-  label: { fontWeight: "bold", width: 110, color: "#1E3A5F" },
-  value: { flex: 1, color: "#4E6482" },
-  link: { color: "#009EF5", textDecorationLine: "underline" },
-  error: { color: "red", textAlign: "center", marginTop: 20 },
-  statsCard: { backgroundColor: "#ffffff", borderRadius: 12, padding: 16, marginHorizontal: 16, marginBottom: 12, borderWidth: 1, borderColor: "#E5E7EB" },
-  statsTitle: { fontSize: 16, fontWeight: "700", color: "#1E3A5F", marginBottom: 12 },
-  statsRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 12 },
-  statItem: { alignItems: "center", flex: 1 },
-  statValue: { fontSize: 24, fontWeight: "bold", color: "#009EF5" },
-  statLabel: { fontSize: 12, color: "#4E6482", marginTop: 4 },
-  lastActive: { fontSize: 12, color: "#6c757d", textAlign: "center", marginTop: 8 },
-  trabajadoresSection: { marginTop: 8 },
-  searchContainer: { paddingHorizontal: 16, marginBottom: 8 },
-  searchInput: { marginBottom: 0, backgroundColor: "#FFF", borderRadius: 8 },
-});

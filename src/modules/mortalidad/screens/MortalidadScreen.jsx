@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
-import { ScrollView, View, TouchableOpacity} from "react-native";
+import { ScrollView, View, TouchableOpacity } from "react-native";
 import Title from "../../../shared/components/Title";
 import DatosConteo from "./DatosConteo";
 import InformacionEstanque from "./InformacionEstanque";
 import RegistroConteo from "./RegistroConteo";
-import { styles } from "../styles/mortalidadStyles"; 
+import { styles } from "../styles/mortalidadStyles";
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
 import { TYPOGRAPHY } from "../../../theme/typography";
@@ -35,11 +35,10 @@ export default function MortalidadScreen({ onBack }) {
     alertTimerRef.current = setTimeout(() => {
       setShowAlert(false);
       alertTimerRef.current = null;
-      router.replace("/(drawer)/(tabs)/registros"); 
-
+      router.replace("/(drawer)/(tabs)/registros");
     }, 500);
   };
-  
+
   const fincas = [
     { label: "Finca Norte", value: 1 },
     { label: "Finca Sur", value: 2 },
@@ -52,51 +51,57 @@ export default function MortalidadScreen({ onBack }) {
 
   return (
     <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={onBack} style={styles.backBtn} activeOpacity={0.7}>
-          <Icon icon={ICONS.exit} size={20} color={COLORS.white} />
-          <Text size={14} color={COLORS.white}>
-            Módulos
-          </Text>
-        </TouchableOpacity>
+        <View style={styles.header}>
+          <TouchableOpacity
+            onPress={onBack}
+            style={styles.backBtn}
+            activeOpacity={0.7}
+          >
+            <Icon icon={ICONS.exit} size={20} color={COLORS.white} />
+            <Text size={14} color={COLORS.white}>
+              Módulos
+            </Text>
+          </TouchableOpacity>
 
-        <View style={styles.headerTitle}>
-          <Icon icon={ICONS.frequency} size={20} color={COLORS.white} />
-          <Title level={4} color={COLORS.white} style={styles.headerTitleText}>
-            Mortalidad
-          </Title>
+          <View style={styles.headerTitle}>
+            <Icon icon={ICONS.frequency} size={20} color={COLORS.white} />
+            <Title
+              level={4}
+              color={COLORS.white}
+              style={styles.headerTitleText}
+            >
+              Mortalidad
+            </Title>
+          </View>
         </View>
-      </View>
-      <Title
-        style={[
-          styles.subTitle,
-          { fontFamily: TYPOGRAPHY.fontFamily.medium }
-        ]}
-      >
-        Finca / Estanque
-      </Title>
-      <InformacionEstanque
-        finca={finca}
-        estanque={estanque}
-        setFinca={setFinca}
-        setEstanque={setEstanque}
-        fincas={fincas}
-        estanques={estanques}
-      />
-      <Title
-        style={[
-          styles.subTitle,
-          { fontFamily: TYPOGRAPHY.fontFamily.medium }
-        ]}
-      >
-        Registro de Conteo
-      </Title>
-      <RegistroConteo
-        fecha={fecha}
-        cambiarFecha={setFecha}
-      />
-      <DatosConteo />
-      {showAlert && (
+        <View style={styles.content}>
+        <Title
+          style={[
+            styles.subTitle,
+            { fontFamily: TYPOGRAPHY.fontFamily.medium },
+          ]}
+        >
+          Finca / Estanque
+        </Title>
+        <InformacionEstanque
+          finca={finca}
+          estanque={estanque}
+          setFinca={setFinca}
+          setEstanque={setEstanque}
+          fincas={fincas}
+          estanques={estanques}
+        />
+        <Title
+          style={[
+            styles.subTitle,
+            { fontFamily: TYPOGRAPHY.fontFamily.medium },
+          ]}
+        >
+          Registro de Conteo
+        </Title>
+        <RegistroConteo fecha={fecha} cambiarFecha={setFecha} />
+        <DatosConteo />
+        {showAlert && (
           <Alert
             variant="success"
             message="¡Módulo guardado exitosamente!"
@@ -104,14 +109,15 @@ export default function MortalidadScreen({ onBack }) {
             textStyle={{ textAlign: "center", fontWeight: "bold" }}
           />
         )}
-      <Footer
-        children={
-          <Button variant="primary" onPress={handleGuardar}>
-            Guardar módulo
-          </Button>
-        }
-        fixedBottom={true}
-      />
+        </View>
+        <Footer
+          children={
+            <Button variant="primary" onPress={handleGuardar} style={styles.addButton}>
+              Guardar módulo
+            </Button>
+          }
+          fixedBottom={true}
+        />
     </ScrollView>
   );
 }

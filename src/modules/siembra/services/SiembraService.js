@@ -77,13 +77,35 @@ export function obtenerSiembras() {
 export function obtenerSiembraPorId(siembraId) {
   return siembras.find((siembra) => siembra.siembraId === siembraId);
 }
-export function obtenerEstanques() {
+export function obtenerFincas() {
   return [
-    { label: "A01", value: "A01" },
-    { label: "A02", value: "A02" },
-    { label: "B01", value: "B01" },
-    { label: "B02", value: "B02" },
+    { label: "Finca La Reina", value: "laReina" },
+    { label: "Finca La Esperanza", value: "laEsperanza" },
+    { label: "Finca La Villa", value: "laVilla" },
   ];
+}
+
+export function obtenerEstanquesPorFinca(finca) {
+  const estanquesPorFinca = {
+    laReina: [
+      { label: "A01", value: "A01" },
+      { label: "A02", value: "A02" },
+      { label: "B01", value: "B01" },
+      { label: "B02", value: "B02" },
+      { label: "B03", value: "B03" },
+    ],
+    laEsperanza: [
+      { label: "E01", value: "E01" },
+      { label: "E02", value: "E02" },
+    ],
+    laVilla: [
+      { label: "V01", value: "V01" },
+      { label: "V02", value: "V02" },
+      { label: "V03", value: "V03" },
+    ],
+  };
+
+  return estanquesPorFinca[finca] || [];
 }
 
 export function obtenerProveedoresLarva() {
@@ -99,5 +121,11 @@ export function obtenerTecnicasCultivo() {
     { label: "Extensiva", value: "extensiva" },
     { label: "Semi-intensiva", value: "semi" },
     { label: "Intensiva", value: "intensiva" },
+  ];
+}
+
+export function obtenerTiposLarva() {
+  return [
+    { label: "Litopenaeus vannamei", value: "vannamei" },
   ];
 }

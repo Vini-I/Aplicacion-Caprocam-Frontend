@@ -9,9 +9,16 @@ export const styles = StyleSheet.create({
 
   contenido: {
     flexGrow: 1,
-    padding: 16,
     gap: 12,
     paddingBottom: 100,
+  },
+
+  alimentacionContent: {
+    marginVertical:20,
+    width: "100%",
+    maxWidth: 900,
+    alignSelf: "center",
+    gap: 12,
   },
 
   secLabel: {
@@ -46,10 +53,7 @@ export const styles = StyleSheet.create({
 
   header: {
     backgroundColor: COLORS.primary,
-    paddingTop:
-      Platform.OS === "android"
-        ? StatusBar.currentHeight + 8
-        : 56,
+    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight + 8 : 56,
     paddingBottom: 20,
     paddingHorizontal: 20,
     gap: 12,

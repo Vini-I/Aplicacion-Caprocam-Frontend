@@ -1,14 +1,13 @@
 /**
  * ============================================================
- * TAB: ENFERMEDADES
+ * RUTA: ENFERMEDADES
  * ============================================================
  *
- * Este archivo conecta la tab de registros con la pantalla
- * EnfermedadesScreen del modulo de enfermedades.
+ * Conecta la ruta de registros con EnfermedadesScreen.
  */
 
 import EnfermedadesScreen from "../../../../modules/enfermedades/screens/EnfermedadesScreen";
 
-export default function EnfermedadesTab() {
+export default function EnfermedadesRoute() {
   return <EnfermedadesScreen />;
 }
