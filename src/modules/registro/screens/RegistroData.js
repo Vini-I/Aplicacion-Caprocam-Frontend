@@ -83,4 +83,11 @@ export const MODULOS = [
     icono: "parasite",
     color: COLORS.violet,
   },
+  {
+    id: "raleo",
+    label: "Raleo",
+    descripcion: "Cosecha parcial y densidad",
+    icono: "raleo",
+    color: COLORS.primary,
+  },
 ];

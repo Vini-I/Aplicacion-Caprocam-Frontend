@@ -23,6 +23,8 @@ export default function RegistrosStackLayout() {
 
       <Stack.Screen name="Crecimiento" options={{ title: "Registro Crecimiento" }}/>
 
+      <Stack.Screen name="Raleo" options={{ title: "Raleo" }} />
+
     </Stack>
   );
 }
