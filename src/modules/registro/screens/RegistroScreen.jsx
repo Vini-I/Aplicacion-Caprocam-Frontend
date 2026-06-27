@@ -36,7 +36,7 @@ import { styles } from "../styles/RegistroStyles";
 export default function RegistroScreen({
   onFisicoQuimica,
   onAlimentacion,
-  onMortalidad,
+  onDensidadPoblacional,
   onCrecimiento,
   onEnfermedades,
   onParasitologia,
@@ -71,8 +71,8 @@ export default function RegistroScreen({
       accion = onAlimentacion;
     }
 
-    if (moduloId === "mortalidad") {
-      accion = onMortalidad;
+    if (moduloId === "densidadPoblacional") {
+      accion = onDensidadPoblacional;
     }
 
     if (moduloId === "crecimiento") {

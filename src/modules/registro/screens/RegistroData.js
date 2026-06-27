@@ -63,8 +63,8 @@ export const MODULOS = [
     color: COLORS.violet,
   },
   {
-    id: "mortalidad",
-    label: "Mortalidad",
+    id: "densidadPoblacional",
+    label: "Densidad Poblacional",
     descripcion: "Conteo y sobrevivencia de camarones",
     icono: "report",
     color: COLORS.warning,

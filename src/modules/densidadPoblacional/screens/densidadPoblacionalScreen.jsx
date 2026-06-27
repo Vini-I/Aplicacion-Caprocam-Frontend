@@ -4,7 +4,7 @@ import Title from "../../../shared/components/Title";
 import DatosConteo from "./DatosConteo";
 import InformacionEstanque from "./InformacionEstanque";
 import RegistroConteo from "./RegistroConteo";
-import { styles } from "../styles/mortalidadStyles";
+import { styles } from "../styles/densidadPoblacionalStyles";
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
 import { TYPOGRAPHY } from "../../../theme/typography";
@@ -15,7 +15,7 @@ import Footer from "../../../shared/components/Footer";
 import Alert from "../../../shared/components/Alert";
 import { useRouter } from "expo-router";
 
-export default function MortalidadScreen({ onBack }) {
+export default function densidadPoblacionalScreen({ onBack }) {
   const [finca, setFinca] = useState(null);
   const [estanque, setEstanque] = useState(null);
   const [fecha, setFecha] = useState(new Date());
@@ -51,29 +51,6 @@ export default function MortalidadScreen({ onBack }) {
 
   return (
     <ScrollView style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity
-            onPress={onBack}
-            style={styles.backBtn}
-            activeOpacity={0.7}
-          >
-            <Icon icon={ICONS.exit} size={20} color={COLORS.white} />
-            <Text size={14} color={COLORS.white}>
-              Módulos
-            </Text>
-          </TouchableOpacity>
-
-          <View style={styles.headerTitle}>
-            <Icon icon={ICONS.frequency} size={20} color={COLORS.white} />
-            <Title
-              level={4}
-              color={COLORS.white}
-              style={styles.headerTitleText}
-            >
-              Mortalidad
-            </Title>
-          </View>
-        </View>
         <View style={styles.content}>
         <Title
           style={[
