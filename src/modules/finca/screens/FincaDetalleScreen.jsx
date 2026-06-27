@@ -88,7 +88,7 @@ export default function FincaDetalleScreen({ onEstanque }) {
             </View>
 
 
-            <Button style={styles.buttonExport} onPress={}>
+            <Button style={styles.buttonExport}>
               <Icon icon={ICONS.document} style={styles.iconDocument} />
               <Text size={15}>
                 GENERAR REPORTE FINCA
