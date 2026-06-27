@@ -83,14 +83,18 @@ export default function FincaDetalleScreen({ onEstanque }) {
             </View>
 
             <View style={styles.filaDetalle}>
-              <Text style={styles.etiqueta}>Largo:</Text>
-              <Text style={styles.valor}>{finca.largo}</Text>
+              <Text style={styles.etiqueta}>Espejo Agua:</Text>
+              <Text style={styles.valor}>{finca.espejoAgua}</Text>
             </View>
 
-            <View style={styles.filaDetalle}>
-              <Text style={styles.etiqueta}>Ancho:</Text>
-              <Text style={styles.valor}>{finca.ancho}</Text>
-            </View>
+
+            <Button style={styles.buttonExport} onPress={}>
+              <Icon icon={ICONS.document} style={styles.iconDocument} />
+              <Text size={15}>
+                GENERAR REPORTE FINCA
+              </Text>
+            </Button>
+
           </View>
         </Card>
         <Button
