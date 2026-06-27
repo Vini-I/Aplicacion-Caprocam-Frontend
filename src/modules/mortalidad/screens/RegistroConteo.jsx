@@ -2,7 +2,7 @@ import {React, useState} from "react";
 import Card from "../../../shared/components/Card";
 import Input from "../../../shared/components/Input";
 import { View, Text, Pressable, } from "react-native";
-import { styles } from "../services/mortalidadStyles";
+import { styles } from "../styles/mortalidadStyles";
 import { TYPOGRAPHY } from "../../../theme/typography";
 import DateInput from "../../../shared/components/DateInput";
 import Icon from "../../../shared/components/Icons";

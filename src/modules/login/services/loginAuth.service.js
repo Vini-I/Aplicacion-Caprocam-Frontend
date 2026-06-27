@@ -1,10 +1,3 @@
-/**
- * ============================================================
- * SERVICIO: Autenticación de login
- * ============================================================
- *
- * Punto de integración para validar el PIN con backend.
- */
 
 /**
  * verifyPinCredentials
