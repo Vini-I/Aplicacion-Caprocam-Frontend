@@ -36,6 +36,10 @@ export default function RegistrosIndex() {
     router.push("/(drawer)/(tabs)/registros/Parasitologia");
   };
 
+  const irARaleo = () => {
+    router.push("/(drawer)/(tabs)/registros/Raleo");
+  };
+
   return (
     <RegistroScreen
       onFisicoQuimica={irAFisicoQuimica}
@@ -44,6 +48,7 @@ export default function RegistrosIndex() {
       onCrecimiento={irACrecimiento}
       onEnfermedades={irAEnfermedades}
       onParasitologia={irAParasitologia}
+      onRaleo={irARaleo}
     />
   );
 }
