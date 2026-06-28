@@ -6,7 +6,6 @@ import AlimentacionForm from "../components/AlimentacionForm";
 import Text from "../../../shared/components/Text";
 import { styles } from "../styles/alimentacionStyles";
 import { COLORS } from "../../../theme/colors";
-import EncabezadoAlimentacion from "./EncabezadoAlimentacion";
 import Footer from "../../../shared/components/Footer";
 import Button from "../../../shared/components/Button";
 
@@ -28,8 +27,6 @@ export default function GestionAlimentacion({
 
   return (
     <ScrollView style={styles.contenido}>
-      <EncabezadoAlimentacion onBack={onBack} />
-
       <View style={styles.alimentacionContent}>
       <AlimentacionStats {...calcularStats(alimentaciones)} />
 

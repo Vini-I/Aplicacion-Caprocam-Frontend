@@ -3,7 +3,7 @@ import { View } from "react-native";
 import Card from "../../../shared/components/Card";
 import Title from "../../../shared/components/Title";
 import FormularioConteo from "./FormularioConteo";
-import { styles } from "../styles/mortalidadStyles";
+import { styles } from "../styles/densidadPoblacionalStyles";
 import { TYPOGRAPHY } from "../../../theme/typography";
 
 export default function DatosConteo() {

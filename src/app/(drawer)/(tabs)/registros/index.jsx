@@ -20,8 +20,8 @@ export default function RegistrosIndex() {
     router.push("/(drawer)/(tabs)/registros/Alimentacion");
   };
 
-  const irAMortalidad = () => {
-    router.push("/(drawer)/(tabs)/registros/Mortalidad");
+ const irADensidadPoblacional = () => {
+    router.push("/(drawer)/(tabs)/registros/DensidadPoblacional");
   };
 
   const irACrecimiento = () => {
@@ -36,14 +36,19 @@ export default function RegistrosIndex() {
     router.push("/(drawer)/(tabs)/registros/Parasitologia");
   };
 
+  const irARaleo = () => {
+    router.push("/(drawer)/(tabs)/registros/Raleo");
+  };
+
   return (
     <RegistroScreen
       onFisicoQuimica={irAFisicoQuimica}
       onAlimentacion={irAAlimentacion}
-      onMortalidad={irAMortalidad}
+       onDensidadPoblacional={irADensidadPoblacional}
       onCrecimiento={irACrecimiento}
       onEnfermedades={irAEnfermedades}
       onParasitologia={irAParasitologia}
+      onRaleo={irARaleo}
     />
   );
 }
