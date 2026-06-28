@@ -6,7 +6,7 @@ import { TYPOGRAPHY } from "../../../theme/typography";
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.secondary,
+    backgroundColor: COLORS.white,
   },
   header: {
     backgroundColor: COLORS.primary,
@@ -31,9 +31,8 @@ export const styles = StyleSheet.create({
   },
   wrapper: {
     width: "100%",
-    maxWidth: 720,
+    maxWidth: 900,
     alignSelf: "center",
-    paddingHorizontal: 18,
   },
   backButton: {
     width: 44,

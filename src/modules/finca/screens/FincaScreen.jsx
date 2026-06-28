@@ -1,4 +1,4 @@
-import { ScrollView, View } from "react-native";
+import { ScrollView, View, useWindowDimensions } from "react-native";
 import { useState } from "react";
 import { fincas } from "./FincaData.js";
 import { styles } from "../../finca/styles/FincaStyles.js";
@@ -11,6 +11,8 @@ import Icon from "../../../shared/components/Icons.jsx";
 import ModalEliminarFinca from "./ModalEliminarFinca.jsx";
 
 export default function FincasScreen({ onDetail, onNew, onEdit }) {
+  const { width } = useWindowDimensions();
+  const isCompact = width < 380;
   const [ModalVisible, setModalVisible] = useState(false);
   const [FincaNombreSeleccionada, setFincaNombreSeleccionada] = useState(null);
 
@@ -31,7 +33,7 @@ export default function FincasScreen({ onDetail, onNew, onEdit }) {
   }
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.Container}>
       {fincas.map((Finca) => (
         <Button
           key={Finca.id}
@@ -44,16 +46,16 @@ export default function FincasScreen({ onDetail, onNew, onEdit }) {
             </View>
 
             <View style={{ flex: 1 }}>
-              <Title level={4} numberOfLines={1}>
+              <Title level={4} numberOfLines={2}>
                 {Finca.nombre}
               </Title>
 
-              <Text numberOfLines={2} color={COLORS.textTertiary}>
+              <Text numberOfLines={3} color={COLORS.textTertiary}>
                 {Finca.provincia}, {Finca.canton}, {Finca.distrito}
               </Text>
               <Text color={COLORS.primary}>{Finca.responsable}</Text>
 
-              <View style={styles.Detalles}>
+              <View style={[styles.Detalles, isCompact && styles.DetallesColumn]}>
                 <Text size={14} style={styles.Detalle}>
                   {Finca.estanques} estanques
                 </Text>

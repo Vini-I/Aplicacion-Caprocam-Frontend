@@ -3,7 +3,7 @@ import { Text } from "react-native";
 import Card from "../../../shared/components/Card";
 import Input from "../../../shared/components/Input";
 import Select from "../../../shared/components/Select";
-import { styles } from "../services/mortalidadStyles";
+import { styles } from "../styles/mortalidadStyles";
 import { TYPOGRAPHY } from "../../../theme/typography";
 
 export default function InformacionEstanque({

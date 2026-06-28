@@ -109,7 +109,7 @@ export default function ProveedorScreen() {
   }
 
   return (
-    <View style={styles.screen}>
+    <View style={styles.container}>
       {/* Navbar con botón de inicio a la izquierda */}
       <Navbar
         title="Proveedores"

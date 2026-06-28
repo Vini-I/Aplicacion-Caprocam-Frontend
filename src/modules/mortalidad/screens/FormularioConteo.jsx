@@ -1,7 +1,8 @@
 import {React, useState}  from "react";
 import { Text } from "react-native";
 import Input from "../../../shared/components/Input";
-import { styles } from "../services/mortalidadStyles";
+import Select from "../../../shared/components/Select";
+import { styles } from "../styles/mortalidadStyles";
 import { useDatosConteo } from "../hooks/useDatosConteo";
 import { TYPOGRAPHY } from "../../../theme/typography";
 import NumberInput from "../../../shared/components/NumberInput";
@@ -38,9 +39,16 @@ export default function FormularioConteo() {
         style={[styles.label,{fontFamily: TYPOGRAPHY.fontFamily.medium},]}
         >Área de la atarraya
       </Text>
-      <Input
-        value="2.5 metros cuadrados"
-        editable={false}/>
+       <Select
+        value={areaAtarraya}
+        onChange={setAreaAtarraya}
+        options={[
+          { label: "2.5 m²", value: "2.5" },
+          { label: "3.5 m²", value: "3.5" },
+          { label: "4.5 m²", value: "4.5" },
+          { label: "5.5 m²", value: "5.5" },
+        ]}
+      />
       <Text
         style={[styles.label,{fontFamily: TYPOGRAPHY.fontFamily.medium},
         ]}>Promedio por tiro

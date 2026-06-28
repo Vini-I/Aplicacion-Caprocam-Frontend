@@ -19,7 +19,8 @@
 // IMPORTS
 // ============================================================
 import React, { useState } from "react";
-import { View, ScrollView, TouchableOpacity, Text, StyleSheet, Modal as RNModal, Alert } from "react-native";
+import { COLORS } from "../../../theme/colors";
+import { View, ScrollView, TouchableOpacity, Modal as RNModal, Alert } from "react-native";
 import { useColaboradores } from "../hooks/useColaboradores";
 import ColaboradorCard from "../components/ColaboradorCard";
 import ColaboradorForm from "../components/ColaboradorForm";
@@ -29,6 +30,8 @@ import Spinner from "../../../shared/components/Spinner";
 import Button from "../../../shared/components/Button";
 import Title from "../../../shared/components/Title";
 import Input from "../../../shared/components/Input";
+import CustomText from "../../../shared/components/Text";
+import { styles } from "../styles/colaboradoresListStyles";
 
 // ============================================================
 // COMPONENTE PRINCIPAL
@@ -176,28 +179,13 @@ export default function ColaboradoresListScreen() {
   // RENDERIZADO CONDICIONAL
   // --------------------------------------------------------
   if (loading) return <Spinner text="Cargando colaboradores..." />;
-  if (error) return <Text style={styles.error}>Error: {error}</Text>;
+  if (error) return <CustomText style={styles.error}>Error: {error}</CustomText>;
 
   // --------------------------------------------------------
   // RENDER PRINCIPAL
   // --------------------------------------------------------
   return (
     <View style={styles.container}>
-      <View style={styles.tabBar}>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === "internos" && styles.activeTab]}
-          onPress={() => setActiveTab("internos")}
-        >
-          <Text style={styles.tabText}>Personal Interno</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === "externos" && styles.activeTab]}
-          onPress={() => setActiveTab("externos")}
-        >
-          <Text style={styles.tabText}>Dueños Externos</Text>
-        </TouchableOpacity>
-      </View>
-
       <View style={styles.searchRow}>
         <View style={styles.searchContainer}>
           <Input
@@ -207,7 +195,7 @@ export default function ColaboradoresListScreen() {
             containerStyle={styles.searchInput}
           />
           <Button onPress={handleAdd} variant="primary" style={styles.addButtonContainer}>
-          Agregar colaborador
+            Agregar colaborador
           </Button>
         </View>
       </View>
@@ -224,7 +212,23 @@ export default function ColaboradoresListScreen() {
         ))}
       </ScrollView>
 
-      <Modal visible={modalVisible} onClose={() => setModalVisible(false)}>
+      {/* Tabs en la parte inferior */}
+      <View style={styles.tabBar}>
+        <TouchableOpacity
+          style={[styles.tab, activeTab === "internos" && styles.activeTab]}
+          onPress={() => setActiveTab("internos")}
+        >
+          <CustomText style={styles.tabText}>Personal Interno</CustomText>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tab, activeTab === "externos" && styles.activeTab]}
+          onPress={() => setActiveTab("externos")}
+        >
+          <CustomText style={styles.tabText}>Dueños Externos</CustomText>
+        </TouchableOpacity>
+      </View>
+
+      <Modal visible={modalVisible} onClose={() => setModalVisible(false)} containerStyle={styles.modalContainer}>
         <Title level={4}>{editingColaborador ? "Editar" : "Nuevo"} colaborador</Title>
         <ColaboradorForm
           initialData={editingColaborador || {}}
@@ -243,18 +247,18 @@ export default function ColaboradoresListScreen() {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Confirmar eliminación</Text>
+            <CustomText style={styles.modalTitle}>Confirmar eliminación</CustomText>
 
             {deleteTarget && (
               <>
-                <Text style={styles.modalText}>
+                <CustomText style={styles.modalText}>
                   ¿Está seguro que desea eliminar a:
-                </Text>
-                <Text style={styles.modalName}>{deleteTarget.nombre}</Text>
-                <Text style={styles.modalSubText}>
+                </CustomText>
+                <CustomText style={styles.modalName}>{deleteTarget.nombre}</CustomText>
+                <CustomText style={styles.modalSubText}>
                   Para confirmar, ingrese la cédula del colaborador:
-                <Text style={styles.modalCedula}>{deleteTarget.cedula}</Text>
-                </Text>
+                <CustomText style={styles.modalCedula}>{deleteTarget.cedula}</CustomText>
+                </CustomText>
               </>
             )}
 
@@ -295,27 +299,3 @@ export default function ColaboradoresListScreen() {
     </View>
   );
 }
-
-// ============================================================
-// ESTILOS
-// ============================================================
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F4F7FA" },
-  tabBar: { flexDirection: "row", backgroundColor: "#FFF", paddingHorizontal: 16, paddingTop: 8 },
-  tab: { flex: 1, paddingVertical: 12, alignItems: "center", borderBottomWidth: 2, borderBottomColor: "transparent" },
-  activeTab: { borderBottomColor: "#009EF5" },
-  tabText: { fontWeight: "600", color: "#1E3A5F" },
-  searchContainer: { paddingHorizontal: 16, paddingVertical: 12, backgroundColor: "#ffffff", marginTop: 8 },
-  searchInput: { marginBottom: 0 },
-  list: { padding: 16 },
-  error: { color: "red", textAlign: "center", marginTop: 20 },
-  modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.6)", justifyContent: "center", alignItems: "center" },
-  modalContent: { backgroundColor: "#FFF", borderRadius: 16, padding: 24, width: "85%", maxWidth: 400 },
-  modalTitle: { fontSize: 18, fontWeight: "bold", color: "#DC3545", marginBottom: 16, textAlign: "center" },
-  modalText: { fontSize: 14, color: "#4E6482", marginBottom: 8, textAlign: "center" },
-  modalName: { fontSize: 14, fontWeight: "bold", color: "#1E3A5F", marginBottom: 16, textAlign: "center" },
-  modalSubText: { fontSize: 14, color: "#4E6482", marginBottom: 8, textAlign: "center" },
-  modalCedula: { fontSize: 14, fontWeight: "600", color: "#009EF5", marginBottom: 16, textAlign: "center" },
-  modalInput: { marginBottom: 20 },
-  modalButtons: { flexDirection: "row", gap: 12, justifyContent: "center" },
-});
