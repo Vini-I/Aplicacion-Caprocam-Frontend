@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { View, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
 import Button from "../../../shared/components/Button";
@@ -9,27 +9,11 @@ import RaleoForm from "../components/RaleoForm";
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
 import { styles } from "../styles/raleoStyles";
-
-const FORM_INICIAL = {
-  fecha: "",
-  finca: "",
-  estanque: "",
-  porcentajeRaleo: "",
-  pesoPromedio: "",
-  biomasaTotal: "",
-  objetivo: "",
-  metodo: "",
-  responsable: "",
-  observaciones: "",
-};
+import useRaleo from "../hooks/useRaleo";
 
 export default function RaleoScreen() {
   const router = useRouter();
-  const [form, setForm] = useState(FORM_INICIAL);
-
-  function updateField(campo, valor) {
-    setForm((prev) => ({ ...prev, [campo]: valor }));
-  }
+  const { form, updateField } = useRaleo();
 
   return (
     <ScrollView style={styles.screen} showsVerticalScrollIndicator={false}>
