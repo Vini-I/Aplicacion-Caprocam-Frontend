@@ -18,16 +18,16 @@ import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
 
 export const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: COLORS.surface,
+  container: {
+    backgroundColor: COLORS.white,
+    padding: 16,
   },
 
   scrollContent: {
     width: "100%",
-    maxWidth: 760,
+    maxWidth: 900,
     alignSelf: "center",
-    paddingHorizontal: 16,
+
     paddingTop: 14,
     paddingBottom: 28,
   },
