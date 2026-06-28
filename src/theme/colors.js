@@ -38,4 +38,7 @@ export const COLORS = {
   warning: '#F59E0B',
   error: '#EF4444',
   errorLight: '#FEE2E2',
+  
+  //Colores modulos registro
+  violet: '#8B5CF6',
 };

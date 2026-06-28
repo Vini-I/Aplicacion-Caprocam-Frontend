@@ -1,35 +1,32 @@
-import { useLocalSearchParams } from "expo-router";
-import { useMemo, useState } from "react";
 import { ScrollView, View } from "react-native";
-import { styles } from "../../../modules/mantCrecimiento/styles/EstanqueStyles.js";
+import { styles } from "../../../modules/mantCrecimiento/styles/CrecimientoStyle.js";
 import Card from "../../../shared/components/Card.jsx";
 import Input from "../../../shared/components/Input.jsx";
 import Text from "../../../shared/components/Text.jsx";
 import Button from "../../../shared/components/Button.jsx";
-import { searchEstanqueById } from "./EstanqueData.js";
+import Select from "../../../shared/components/Select";
 import { COLORS } from "../../../theme/colors.js";
 import BadgeLabel from "../../../shared/components/Badge.jsx";
 import Title from "../../../shared/components/Title.jsx";
 import Icon from "../../../shared/components/Icons.jsx";
 import { ICONS } from "../../../theme/icons.js";
-
-function guardarDatos() {
-  // Aquí deberia de ir la lógica para guardar los datos ingresados
-}
+import NumberInput from "../../../shared/components/NumberInput.jsx";
+import { useFincaCrecimiento } from "../hooks/useFincaCrecimiento.js";
 
 export default function FincaCrecimientoScreen() {
-  const { id } = useLocalSearchParams();
-  const parsedId = id ? parseInt(id, 10) : null;
-
-  const estanque = useMemo(() => {
-    if (parsedId !== null && !Number.isNaN(parsedId)) {
-      return searchEstanqueById(parsedId);
-    }
-
-    return searchEstanqueById(1);
-
-  }, [parsedId]);
-  const [pesoActual, setPesoActual] = useState("");
+  const {
+    fincaSeleccionada,
+    estanqueSeleccionado,
+    pesoActual,
+    opcionesFincas,
+    estanquesFiltrados,
+    estanqueSeleccionadoObj,
+    estanque,
+    setEstanqueSeleccionado,
+    setPesoActual,
+    handleFincaChange,
+    guardarDatos,
+  } = useFincaCrecimiento();
 
   if (!estanque) {
     return (
@@ -42,53 +39,76 @@ export default function FincaCrecimientoScreen() {
   }
 
   return (
-    <ScrollView style={styles.contentWrapper}>
-      <Card>
-        <View style={styles.cardContent}>
-          <Icon icon={ICONS.growth} size={25} color={COLORS.primary} style={{ paddingRight: 8 }} />
-          <Text style={styles.cardTitle}>Peso y crecimiento</Text>
+    <ScrollView style={styles.container}>
+      <Card  style={styles.contentWrapper}>
+        <View style={styles.headerRow}>
+          <Icon
+            icon={ICONS.growth}
+            size={22}
+            color={COLORS.primary}
+            style={styles.headerIcon}
+          />
+          <Text style={styles.cardTitle}>
+            Peso y crecimiento
+          </Text>
         </View>
+
+        <Select
+          label="Seleccione la finca"
+          placeholder="Seleccione una finca"
+          options={opcionesFincas}
+          value={fincaSeleccionada}
+          onChange={handleFincaChange}
+        />
+
+        <Select
+          label="Seleccione el estanque"
+          placeholder="Seleccione un estanque"
+          options={estanquesFiltrados}
+          value={estanqueSeleccionado}
+          onChange={setEstanqueSeleccionado}
+          disabled={
+            estanqueSeleccionado !== "" && estanquesFiltrados.length === 0
+          }
+        />
+
         <View style={styles.badgeRow}>
           <BadgeLabel
-            label={"Estanque: " + estanque.codigo}
-            variant="success"
-            style={styles.badgeItem}
-          /> 
-          <BadgeLabel
-            label={"Días de cultivo: " + (estanque.diasCultivo ?? "-")}
+            label={"Días de cultivo: " + (estanqueSeleccionadoObj?.diasCultivo ?? "-")}
             variant="success"
           />
         </View>
 
-        <View style={styles.inputRow}>
+        <View style={styles.inputColumn}>
           <View style={styles.inputItem}>
-            <Title level={5}>
-              Peso actual (g) <Icon icon={ICONS.shrimp} size={18} color={COLORS.primary} />
-            </Title>
-            <Input
-              style={{ borderColor: COLORS.primary }}
-              placeholder={"Ej. 24"}
+            <Title level={5}>Peso actual (g)</Title>
+            <NumberInput
+              style={styles.sameInput}
               value={pesoActual}
               onChangeText={setPesoActual}
-              keyboardType="numeric"
+              
+              step={0.5}
+              min={0}
+              max={1000}
             />
           </View>
 
-        {/* querido greivin  o equipo de backend esto es para mostrar el peso de la semana anterior,  
-        se supone que lo ideal es que guarde el valor y despues se cargue */}
+          {/* querido greivin  o equipo de backend esto es para mostrar el peso de la semana anterior,  
+          se supone que lo ideal es que guarde el valor y despues se cargue */}
           <View style={styles.inputItem}>
-            <Title level={5}>
-              Peso semana anterior (g) <Icon icon={ICONS.shrimp} size={18} color={COLORS.primary} />
-            </Title>
+            <Title level={5}>Peso anterior (g)</Title>
             <Input
               disableInput={true}
               editable={false}
-              value={estanque.pesoSemanaAnterior ? estanque.pesoSemanaAnterior.toString() : "-"}
-              style={{ borderColor: COLORS.primary } }
+              value={
+                estanque.pesoSemanaAnterior
+                  ? estanque.pesoSemanaAnterior.toString()
+                  : "Semana Anterior"}
+              style={[styles.sameInput, { borderColor: COLORS.primary }]}
             />
           </View>
         </View>
-              <Button onPress={guardarDatos}>Guardar</Button>
+        <Button onPress={guardarDatos}>Guardar</Button>
       </Card>
     </ScrollView>
   );

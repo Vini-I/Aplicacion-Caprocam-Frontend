@@ -13,7 +13,7 @@ export const styles = StyleSheet.create({
     },
     contentWrapper: {
         width: "100%",
-        maxWidth: 700,
+        maxWidth: 900,
         alignSelf: "center",
     },
     sectionTitle: {
@@ -33,7 +33,7 @@ export const styles = StyleSheet.create({
     },
     buttonContainer: {
         width: "100%",
-        maxWidth: 700,
+        maxWidth: 900,
         alignSelf: "center",
         marginTop: 12,
     },

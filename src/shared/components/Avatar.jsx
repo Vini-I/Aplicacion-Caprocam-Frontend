@@ -28,7 +28,6 @@
  * <Avatar source="https://imagen.com/perfil.png" name="Juan Perez" />
  */
 
-import React from "react";
 import { View, Text, Image, StyleSheet } from "react-native";
 import { COLORS } from "../../theme/colors";
 import { ICONS } from "../../theme/icons";

@@ -1,1 +1,1 @@
-export { default } from "../../../modules/inventarios/screens/ProductForm";
+export { default } from "../../../modules/productos/screens/ProductForm";
