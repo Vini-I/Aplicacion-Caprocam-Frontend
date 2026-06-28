@@ -6,7 +6,7 @@ import { TYPOGRAPHY } from "../../../theme/typography";
 export const styles = StyleSheet.create({
   card: {
     width: "100%",
-    maxWidth: 680,
+    maxWidth: 900,
     alignSelf: "center",
     marginBottom: 16,
   },

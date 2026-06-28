@@ -4,24 +4,30 @@ import { COLORS } from "../../../theme/colors.js";
 export const styles = StyleSheet.create({
   Container: {
     flex: 1,
-    backgroundColor: COLORS.surface,
+    padding: 16,
+    backgroundColor: COLORS.white,
   },
 
   ContentWrapper: {
     flex: 1,
-    flexDirection: "row",
-    width: "100%",
-    maxWidth: 700,
-    alignSelf: "center",
     paddingHorizontal: 16,
     backgroundColor: COLORS.white,
+  },
+
+  Card: {
+    width: "100%",
+    maxWidth: 900,
+    alignSelf: "center",
+    flexDirection: "row",
+    borderRadius: 16,
     shadowColor: COLORS.black,
     shadowOffset: {
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
+    marginVertical: 5,
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
     elevation: 2,
   },
 
@@ -39,22 +45,31 @@ export const styles = StyleSheet.create({
     marginRight: 16,
     justifyContent: "center",
     alignItems: "center",
-    flexShrink: 0,
   },
 
   Detalles: {
     flexDirection: "row",
+    flexWrap: "wrap",
     gap: 8,
     marginTop: 6,
-    overflow: "hidden",
+  },
+
+  DetallesColumn: {
+    flexDirection: "column",
+    alignItems: "flex-start",
   },
 
   Detalle: {
     color: COLORS.primary,
     backgroundColor: COLORS.secondary,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 12,
+    alignSelf: "flex-start",
+  },
+
+  Buttons: {
+    justifyContent: "center",
+    alignSelf: "center",
+    alignItems: "center",
+    marginRight: 20,
   },
 
   Eliminar: {
@@ -79,12 +94,12 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 6,
     marginHorizontal: 2,
-    paddingHorizontal: 8,
+    paddingHorizontal: 12,
     paddingVertical: 4,
   },
 
   AddButton: {
-    maxWidth: 700,
+    maxWidth: 900,
     alignSelf: "center",
     width: "100%",
     borderWidth: 2,

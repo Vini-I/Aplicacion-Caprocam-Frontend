@@ -109,7 +109,7 @@ export default function ProveedorScreen() {
   }
 
   return (
-    <View style={styles.screen}>
+    <View style={styles.container}>
       {/* Navbar con botón de inicio a la izquierda */}
       <Navbar
         title="Proveedores"
@@ -150,27 +150,30 @@ export default function ProveedorScreen() {
         />
       </View>
 
-      {/* Lista de proveedores con contador de resultados y estado vacío */}
-      <FlatList
-        data={proveedoresFiltrados}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => renderProveedor(item)}
-        contentContainerStyle={styles.lista}
-        ListHeaderComponent={
-          <CustomText style={styles.contadorResultados}>
-            {proveedoresFiltrados.length}{" "}
-            {proveedoresFiltrados.length === 1
-              ? "proveedor encontrado"
-              : "proveedores encontrados"}
-          </CustomText>
-        }
-        ListEmptyComponent={
-          <EmptyState
-            title="Sin proveedores"
-            description="No se encontraron proveedores con esa búsqueda."
-          />
-        }
-      />
+      {/* Contenedor con flex:1 para que la lista ocupe el espacio disponible
+          y el boton de agregar quede siempre anclado al fondo de la pantalla */}
+      <View style={styles.listaContainer}>
+        <FlatList
+          data={proveedoresFiltrados}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) => renderProveedor(item)}
+          contentContainerStyle={styles.lista}
+          ListHeaderComponent={
+            <CustomText style={styles.contadorResultados}>
+              {proveedoresFiltrados.length}{" "}
+              {proveedoresFiltrados.length === 1
+                ? "proveedor encontrado"
+                : "proveedores encontrados"}
+            </CustomText>
+          }
+          ListEmptyComponent={
+            <EmptyState
+              title="Sin proveedores"
+              description="No se encontraron proveedores con esa búsqueda."
+            />
+          }
+        />
+      </View>
 
       {/* Boton de agregar fijo en la parte inferior para agregar un nuevo proveedor */}
       <Button

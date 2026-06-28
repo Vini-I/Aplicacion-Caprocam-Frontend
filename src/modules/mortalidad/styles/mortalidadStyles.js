@@ -5,10 +5,13 @@ import { COLORS } from "../../../theme/colors";
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
-    backgroundColor: COLORS.surface,
+    backgroundColor: COLORS.white,
   },
-
+  content:{
+    width: "100%",
+    maxWidth: 900,
+    alignSelf: "center",
+  },
   title: {
     fontSize: 28,
     fontWeight: "bold",
@@ -18,8 +21,8 @@ export const styles = StyleSheet.create({
 
   subTitle: {
     color: COLORS.textSecondary,
-    marginBottom: 10,
-    marginTop: 6,
+
+
     fontSize: 16,
     fontWeight: "600",
   },
@@ -82,6 +85,11 @@ export const styles = StyleSheet.create({
     paddingTop: Platform.OS === "android" ? StatusBar.currentHeight + 8 : 56,
     paddingBottom: 20,
     paddingHorizontal: 20,
-    gap: 12,
+  },
+
+  addButton:{
+    width: "100%",
+    maxWidth: 900,
+    alignSelf: "center",
   },
 });

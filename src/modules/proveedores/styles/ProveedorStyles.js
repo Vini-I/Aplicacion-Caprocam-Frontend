@@ -7,11 +7,10 @@ import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
 
 export const styles = StyleSheet.create({
-  screen: {
+  container: {
     flex: 1,
-    backgroundColor: COLORS.secondary,
+    backgroundColor: COLORS.white,
   },
-
   navbar: {
     backgroundColor: COLORS.primary,
     paddingVertical: 10,
@@ -38,6 +37,9 @@ export const styles = StyleSheet.create({
 
   card: {
     marginBottom: 14,
+    width: "100%",
+    maxWidth: 900,
+    alignSelf: "center",
   },
 
   cardHeader: {
@@ -95,9 +97,11 @@ export const styles = StyleSheet.create({
   barraBusqueda: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 16,
     marginTop: 12,
     gap: 8,
+    width: "100%",
+    maxWidth: 900,
+    alignSelf: "center",
   },
 
   btnVerDetalle: {
@@ -142,21 +146,29 @@ export const styles = StyleSheet.create({
   },
 
   lista: {
-    paddingBottom: 100,
+    paddingBottom: 16,
+    width: "100%",
+    maxWidth: 900,
+    alignSelf: "center",
+  },
+
+  listaContainer: {
+    flex: 1,
   },
 
   btnAgregar: {
-    position: "absolute",
-    bottom: 70,
-    left: 16,
-    right: 16,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: COLORS.primary,
     paddingVertical: 14,
+
+    marginBottom: 16,
     borderRadius: 10,
     gap: 8,
+    width: "100%",
+    maxWidth: 900,
+    alignSelf: "center",
   },
 
   btnAgregarText: {

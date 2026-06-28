@@ -71,7 +71,10 @@ export default function TabsLayout() {
           tabBarLabel: "Siembra",
           title: "Siembra",
         }}
-      />
+      />   
+            <Tabs.Screen name="colaboradores" options={{ drawerItemStyle: { display: "none" } }} />
+            
+      
     </Tabs>
 
   );

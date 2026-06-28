@@ -7,16 +7,14 @@ const isLargeScreen = width > 700;
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 10,
+    padding: 16,
+    backgroundColor: COLORS.white,
   },
 
-  contentWrapper: {
-    flex: 1,
+contentWrapper: {
     width: "100%",
-    maxWidth: 700,
+    maxWidth: 900,
     alignSelf: "center",
-    paddingHorizontal: 16,
-    backgroundColor: COLORS.white,
   },
 
   cardContent: {
@@ -25,9 +23,19 @@ export const styles = StyleSheet.create({
   },
 
   cardTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "700",
     color: COLORS.textSecondary,
+  },
+
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+
+  headerIcon: {
+    marginRight: 8,
   },
 
   inputRow: {
@@ -36,20 +44,31 @@ export const styles = StyleSheet.create({
     marginTop: 14,
   },
 
+  inputColumn: {
+    flexDirection: "column",
+    marginTop: 14,
+  },
+
   inputWrapper: {
     flex: 1,
   },
 
   inputItem: {
+    height: 80,
     flex: 1,
-    marginRight: 10,
+    marginBottom: 12,
+  },
+
+  sameInput: {
+    height: 50,
   },
 
   badgeRow: {
     flexDirection: "row",
     alignItems: "center",
     flexWrap: "wrap",
-    marginTop: 10,
+    marginTop: 12,
+    marginBottom: 14,
   },
 
   badgeItem: {

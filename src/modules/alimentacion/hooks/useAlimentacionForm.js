@@ -8,6 +8,7 @@ function hoy() {
 }
 
 const estadoInicial = {
+    finca:            "",
     estanque:         "",
     fecha:            hoy(),
     hora:             "",
@@ -33,11 +34,13 @@ const useAlimentacionForm = () => {
 
     const validarForm = () => {
         const errores = {};
+        if (!form.finca)                  errores.finca      = "Finca es obligatoria";
         if (!form.estanque)               errores.estanque   = "Estanque es obligatorio";
         if (!form.fecha)                  errores.fecha      = "Fecha es obligatoria";
         if (!form.hora)                   errores.hora       = "Hora es obligatoria";
         if (!form.metodo)                 errores.metodo     = "Método es obligatorio";
         if (Number(form.cantidadKg) <= 0) errores.cantidadKg = "La cantidad debe ser mayor a 0";
+        if (!Number.isInteger(Number(form.cantidadKg))) errores.cantidadKg = "Solo se permiten números enteros";
         return { valido: Object.keys(errores).length === 0, errores };
     };
 
