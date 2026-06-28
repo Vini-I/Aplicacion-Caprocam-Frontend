@@ -72,15 +72,11 @@ export const styles = StyleSheet.create({
   },
 
   content: {
-    padding: 18,
-  },
-
-  contentTablet: {
-    paddingHorizontal: 28,
+    paddingVertical: 18,
   },
 
   contentDesktop: {
-    maxWidth: 1100,
+    maxWidth: 900,
     alignSelf: "center",
     width: "100%",
   },
@@ -113,11 +109,6 @@ export const styles = StyleSheet.create({
     width: "100%",
   },
 
-  gridTablet: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    columnGap: 12,
-  },
 
   gridDesktop: {
     flexDirection: "row",
@@ -129,16 +120,9 @@ export const styles = StyleSheet.create({
     width: "100%",
   },
 
-  gridItemTablet: {
-    width: "48.5%",
-  },
 
   gridItemDesktop: {
     width: "32%",
-  },
-
-  gridItemFull: {
-    width: "100%",
   },
 
   optionsGrid: {

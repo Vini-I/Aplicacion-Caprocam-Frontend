@@ -989,7 +989,7 @@ export default function DashboardScreen() {
   }, []);
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.headerCard}>
           <View style={styles.headerIconBox}>
