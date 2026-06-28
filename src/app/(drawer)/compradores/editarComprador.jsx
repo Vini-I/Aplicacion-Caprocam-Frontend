@@ -1,1 +1,1 @@
-export { default } from "../../../modules/Compradores/screens/EditarCompradorScreen";
+export { default } from "../../../modules/compradores/screens/EditarCompradorScreen";
