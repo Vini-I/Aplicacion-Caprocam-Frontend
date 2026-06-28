@@ -26,11 +26,11 @@ export function useDetalleProducto() {
   function confirmarEliminar() {
     deleteProducto(producto.id);
     setModalEliminarVisible(false);
-    router.replace("/(drawer)/inventarios/inventarioScreen");
+    router.replace("/(drawer)/inventarios/inventarioScreen");//00000000000000000000000000000000000000000000000
   }
 
   function handleBack() {
-    router.replace("/(drawer)/inventarios/inventarioScreen");
+    router.replace("/(drawer)/inventarios/inventarioScreen");//00000000000000000000000000000000000000000000000
   }
 
   function handleCerrarModal() {
