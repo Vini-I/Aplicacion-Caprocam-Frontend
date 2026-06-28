@@ -51,6 +51,21 @@ export default function DrawerLayout() {
           ),
         }}
       />
+
+          
+      <Drawer.Screen
+        name="compradores"
+        options={{
+          drawerLabel: "Compradores",
+          title: "Compradores",
+          drawerIcon: ({ color }) => (
+            <MaterialCommunityIcons name="account-group" size={22} color={color} />
+          ),
+        }}
+      />
+
+
+
       <Drawer.Screen
         name="linksPrueba"
         options={{
@@ -71,7 +86,10 @@ export default function DrawerLayout() {
       <Drawer.Screen name="inventarios/nuevoProveedor" options={{ drawerItemStyle: { display: "none" } }} />
       <Drawer.Screen name="inventarios/editarProveedor" options={{ drawerItemStyle: { display: "none" } }} />
       <Drawer.Screen name="inventarios/proveedorScreen" options={{ drawerItemStyle: { display: "none" } }} />
-
+      <Drawer.Screen name="compradores/nuevoComprador"    options={{ drawerItemStyle: { display: "none" } }} />
+      <Drawer.Screen name="compradores/editarComprador"   options={{ drawerItemStyle: { display: "none" } }} />
+      <Drawer.Screen name="compradores/detalleComprador"  options={{ drawerItemStyle: { display: "none" } }} />
+      <Drawer.Screen name="compradores/compradorScreen"   options={{ drawerItemStyle: { display: "none" } }} />
 
     </Drawer>
   );
