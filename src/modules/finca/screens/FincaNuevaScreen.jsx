@@ -29,8 +29,7 @@ export default function FincaNuevaScreen() {
     otrasSenas: "", 
     propietario: "",
     areaTotal: "",
-    largo: "",
-    ancho: "",
+    espejoAgua: "",
   });
 
   const [telefonos, setTelefonos] = useState([""]);
@@ -72,6 +71,7 @@ export default function FincaNuevaScreen() {
     if (!formulario.otrasSenas.trim()) nuevosErrores.otrasSenas = true;
     if (!formulario.propietario.trim()) nuevosErrores.propietario = true;
     if (!formulario.areaTotal.trim()) nuevosErrores.areaTotal = true;
+    if (!formulario.espejoAgua.trim()) nuevosErrores.espejoAgua = true;
 
     if (Object.keys(nuevosErrores).length > 0) {
       setErrores(nuevosErrores);
@@ -103,10 +103,10 @@ export default function FincaNuevaScreen() {
           <View style={styles.row}>
             <View style={styles.column}>
               <Input
-                label="Código interno *"
+                label="Código CVO *"
                 value={formulario.codigoInterno}
                 onChangeText={(valor) => actualizarCampo("codigoInterno", valor)}
-                placeholder="Ej: FP-01"
+                placeholder="Ej: CVO-01"
                 style={errores.codigoInterno ? { borderColor: COLORS.error, backgroundColor: COLORS.surface } : null}
               />
             </View>
@@ -245,25 +245,15 @@ export default function FincaNuevaScreen() {
               style={errores.areaTotal ? { borderColor: COLORS.error, backgroundColor: COLORS.surface  } : null}
             />
           </View>
-          <View style={styles.row}>
-            <View style={styles.column}>
-              <Input
-                label="Largo (m)"
-                value={formulario.largo}
-                keyboardType="numeric"
-                onChangeText={(valor) => actualizarCampo("largo", valor)}
-                placeholder="0"
-              />
-            </View>
-            <View style={styles.column}>
-              <Input
-                label="Ancho (m)"
-                value={formulario.ancho}
-                keyboardType="numeric"
-                onChangeText={(valor) => actualizarCampo("ancho", valor)}
-                placeholder="0"
-              />
-            </View>
+          <View>
+            <Input
+              label="Espejo de agua (ha) *"
+              value={formulario.espejoAgua}
+              keyboardType="numeric"
+              onChangeText={(valor) => actualizarCampo("espejoAgua", valor)}
+              placeholder="0.0"
+              style={errores.espejoAgua ? { borderColor: COLORS.error, backgroundColor: COLORS.surface  } : null}
+            />
           </View>
         </Card>
 
