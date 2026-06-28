@@ -1,57 +1,33 @@
-import React, { useState, useEffect, useRef } from "react";
-import { ScrollView, View, TouchableOpacity } from "react-native";
+import React from "react";
+import { ScrollView, View } from "react-native";
 import Title from "../../../shared/components/Title";
 import DatosConteo from "./DatosConteo";
 import InformacionEstanque from "./InformacionEstanque";
 import RegistroConteo from "./RegistroConteo";
 import { styles } from "../styles/densidadPoblacionalStyles";
-import { COLORS } from "../../../theme/colors";
-import { ICONS } from "../../../theme/icons";
 import { TYPOGRAPHY } from "../../../theme/typography";
-import Icon from "../../../shared/components/Icons";
-import Text from "../../../shared/components/Text";
 import Button from "../../../shared/components/Button";
 import Footer from "../../../shared/components/Footer";
 import Alert from "../../../shared/components/Alert";
-import { useRouter } from "expo-router";
+import useDensidadPoblacional from "../hooks/useDensidadPoblacional";
 
-export default function densidadPoblacionalScreen({ onBack }) {
-  const [finca, setFinca] = useState(null);
-  const [estanque, setEstanque] = useState(null);
-  const [fecha, setFecha] = useState(new Date());
-  const [showAlert, setShowAlert] = useState(false);
-  const alertTimerRef = useRef(null);
-  const router = useRouter();
-
-  useEffect(() => {
-    return () => {
-      if (alertTimerRef.current) clearTimeout(alertTimerRef.current);
-    };
-  }, []);
-
-  const handleGuardar = () => {
-    setShowAlert(true);
-    if (alertTimerRef.current) clearTimeout(alertTimerRef.current);
-    alertTimerRef.current = setTimeout(() => {
-      setShowAlert(false);
-      alertTimerRef.current = null;
-      router.replace("/(drawer)/(tabs)/registros");
-    }, 500);
-  };
-
-  const fincas = [
-    { label: "Finca Norte", value: 1 },
-    { label: "Finca Sur", value: 2 },
-  ];
-
-  const estanques = [
-    { label: "Estanque A", value: 1 },
-    { label: "Estanque B", value: 2 },
-  ];
+export default function DensidadPoblacionalScreen({ onBack }) {
+  const {
+    finca,
+    setFinca,
+    estanque,
+    setEstanque,
+    fecha,
+    setFecha,
+    showAlert,
+    handleGuardar,
+    fincas,
+    estanques,
+  } = useDensidadPoblacional();
 
   return (
     <ScrollView style={styles.container}>
-        <View style={styles.content}>
+      <View style={styles.content}>
         <Title
           style={[
             styles.subTitle,
@@ -60,6 +36,7 @@ export default function densidadPoblacionalScreen({ onBack }) {
         >
           Finca / Estanque
         </Title>
+
         <InformacionEstanque
           finca={finca}
           estanque={estanque}
@@ -68,6 +45,7 @@ export default function densidadPoblacionalScreen({ onBack }) {
           fincas={fincas}
           estanques={estanques}
         />
+
         <Title
           style={[
             styles.subTitle,
@@ -76,14 +54,23 @@ export default function densidadPoblacionalScreen({ onBack }) {
         >
           Registro de Conteo
         </Title>
-        <RegistroConteo fecha={fecha} cambiarFecha={setFecha} />
+
+        <RegistroConteo
+          fecha={fecha}
+          cambiarFecha={setFecha}
+        />
+
         <DatosConteo />
+
         {showAlert && (
           <Alert
             variant="success"
             message="¡Módulo guardado exitosamente!"
             style={{ width: "60%", alignSelf: "center" }}
-            textStyle={{ textAlign: "center", fontWeight: "bold" }}
+            textStyle={{
+              textAlign: "center",
+              fontWeight: "bold",
+            }}
           />
         )}
         </View>
