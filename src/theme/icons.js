@@ -255,4 +255,18 @@ export const ICONS = {
     provider: "MaterialCommunityIcons",
     name: "microscope",
   },
+
+  //Trazabilidad
+    transfer: {
+    provider: "MaterialCommunityIcons",
+    name: "transfer-right",
+  },
+  trazabilidad: {
+    provider: "MaterialCommunityIcons",
+    name: "map-marker-path",
+  },
+  arrowLongRight: {
+    provider: "MaterialCommunityIcons",
+    name: "arrow-right-bold",
+  },
 };
