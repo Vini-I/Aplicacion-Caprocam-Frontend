@@ -12,12 +12,15 @@ import { COLORS } from '../../../theme/colors';
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.surface,
+    backgroundColor: COLORS.white,
   },
 
   formSection: {
     paddingHorizontal: 20,
     paddingVertical: 24,
+    width: "100%",
+    maxWidth: 900,
+    alignSelf: "center",
   },
 
   serverErrorContainer: {

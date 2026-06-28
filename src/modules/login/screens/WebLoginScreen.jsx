@@ -18,6 +18,7 @@ import FormField  from '../../../shared/components/FormField';
 import { useAuth } from '../hooks/useAuth';
 import { AUTH_MESSAGES as MSG } from '../constants/authMessages';
 import styles from '../styles/webLoginStyles';
+import { COLORS } from "../../../theme/colors";
 
 export default function WebLoginScreen({
   onLoginSuccess = () => {},

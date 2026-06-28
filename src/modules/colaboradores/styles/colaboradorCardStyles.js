@@ -4,6 +4,9 @@ import { COLORS } from "../../../theme/colors";
 export const styles = StyleSheet.create({
   card: {
     marginBottom: 12,
+    width: "100%",
+    maxWidth: 900,
+    alignSelf: "center", 
   },
   header: {
     flexDirection: "row",

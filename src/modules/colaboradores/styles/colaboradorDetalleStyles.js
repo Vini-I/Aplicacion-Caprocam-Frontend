@@ -5,7 +5,13 @@ export const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.surface },
   closeButton: { padding: 16, alignItems: "flex-end" },
   closeButtonText: { color: COLORS.primary, fontSize: 16, fontWeight: "600" },
-  card: { margin: 16, marginBottom: 12 },
+  card: { 
+    margin: 16, 
+    marginBottom: 12,
+    width: "100%",
+    maxWidth: 900,
+    alignSelf: "center", 
+  },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -32,6 +38,9 @@ export const styles = StyleSheet.create({
     marginBottom: 12,
     borderWidth: 1,
     borderColor: COLORS.secondary,
+    width: "100%",
+    maxWidth: 900,
+    alignSelf: "center", 
   },
   statsTitle: {
     fontSize: 16,

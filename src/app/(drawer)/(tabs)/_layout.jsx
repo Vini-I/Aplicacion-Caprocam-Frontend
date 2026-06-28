@@ -71,29 +71,9 @@ export default function TabsLayout() {
           tabBarLabel: "Siembra",
           title: "Siembra",
         }}
-      />
-
-      <Tabs.Screen
-        name="colaboradores/colaboradores"
-        options={{
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="account-group" color={color} size={size} />
-          ),
-          tabBarLabel: "Colaboradores",
-          title: "Colaboradores",
-        }}
-      />
-
-            <Tabs.Screen
-        name="colaboradores/miPersonal"
-        options={{
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="account-supervisor" color={color} size={size} />
-          ),
-          tabBarLabel: "Mi Personal",
-          title: "Mi Personal",
-        }}
-      />      
+      />   
+            <Tabs.Screen name="colaboradores" options={{ drawerItemStyle: { display: "none" } }} />
+            
       
     </Tabs>
 

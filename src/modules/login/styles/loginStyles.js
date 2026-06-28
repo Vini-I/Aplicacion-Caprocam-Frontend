@@ -16,6 +16,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 20,
     paddingBottom: 12,
+    width: "100%",
+    maxWidth: 900,
+    alignSelf: "center",
   },
   safeActionArea: {
     backgroundColor: COLORS.white,
@@ -25,7 +28,11 @@ const styles = StyleSheet.create({
     paddingTop: 10,
   },
   footerContent: {
+    paddingHorizontal: 20,
     paddingBottom: 6,
+    width: "100%",
+    maxWidth: 900,
+    alignSelf: "center",
   },
   heroCard: {
     alignItems: 'center',
@@ -74,6 +81,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 0,
     borderColor: COLORS.secondary,
+    width: "100%",
+    maxWidth: 450,
+    alignSelf: "center",
   },
   workerCardSelected: {
     borderColor: COLORS.primary,
@@ -104,7 +114,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.4)',
   },
   modalContainer: {
-    maxWidth: 380,
+    width: "100%",
+    maxWidth: 450,
+    alignSelf: "center",
   },
   modalTitle: {
     marginBottom: 12,
