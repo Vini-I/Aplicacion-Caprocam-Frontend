@@ -132,7 +132,7 @@ export function useProductForm() {
       });
     } else {
       addProducto(producto);
-      router.replace("/(drawer)/inventarios/inventarioScreen");//000000000000000000000000000000000000000000000000000
+      router.replace("/(drawer)/inventarios");//000000000000000000000000000000000000000000000000000
     }
   }
 
@@ -143,7 +143,7 @@ export function useProductForm() {
         params: { id: productoId.toString() },
       });
     } else {
-      router.replace("/(drawer)/inventarios/inventarioScreen");//00000000000000000000000000000000000000000000000000
+      router.replace("/(drawer)/inventarios");//00000000000000000000000000000000000000000000000
     }
   }
 
