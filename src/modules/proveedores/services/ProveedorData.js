@@ -14,6 +14,7 @@ export const proveedoresMock = [
     direccion: "San José, Costa Rica",
     notas: "",
   },
+  
   {
     id: 2,
     nombre: "Farivet",
@@ -24,6 +25,7 @@ export const proveedoresMock = [
     direccion: "Alajuela, Costa Rica",
     notas: "",
   },
+
   {
     id: 3,
     nombre: "Trisan",
@@ -36,7 +38,6 @@ export const proveedoresMock = [
   },
 ];
 
-// Opciones de tipo de producto para el select en la pantalla de editar proveedor
 export const tiposProducto = [
   { label: "Alimento", value: "alimento" },
   { label: "Antibióticos", value: "antibioticos" },
@@ -44,3 +45,21 @@ export const tiposProducto = [
   { label: "Probióticos", value: "probioticos" },
   { label: "Equipos", value: "equipos" },
 ];
+
+const CATEGORIA_A_TIPO = {
+  "Alimentación": "Alimento",
+  "Tratamiento":  "Antibióticos",
+  "Químico":      "Fertilizantes",
+  "Fertilizante": "Fertilizantes",
+  "Antibiótico":  "Antibióticos",
+  "Probiótico":   "Probióticos",
+};
+
+export function getProveedoresByCategoria(categoria) {
+  if (!categoria) return proveedoresMock;
+
+  const tipo = CATEGORIA_A_TIPO[categoria];
+  if (!tipo) return proveedoresMock;
+
+  return proveedoresMock.filter((p) => p.tipoProducto === tipo);
+}
