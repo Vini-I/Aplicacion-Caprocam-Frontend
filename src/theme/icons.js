@@ -255,4 +255,10 @@ export const ICONS = {
     provider: "MaterialCommunityIcons",
     name: "microscope",
   },
+
+  // Raleo
+  raleo: {
+    provider: "MaterialCommunityIcons",
+    name: "bucket-outline",
+  },
 };
