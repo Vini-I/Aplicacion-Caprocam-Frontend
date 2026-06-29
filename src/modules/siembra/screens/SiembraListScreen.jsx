@@ -31,8 +31,11 @@ export default function SiembraListScreen() {
   };
 
   const handleDetalleSiembra = (siembraId) => {
-    router.push("/siembra/detalle");
-  };
+  router.push({
+    pathname: "/siembra/detalle",
+    params: { id: siembraId },
+  });
+};
 
   const renderSiembraCard = (siembra) => (
     <SiembraCard
