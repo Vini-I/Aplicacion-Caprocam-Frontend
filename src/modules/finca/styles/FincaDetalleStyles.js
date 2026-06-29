@@ -44,10 +44,11 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: COLORS.success,
+    paddingVertical: 8,
   },
 
   iconDocument: {
-    marginRight: 5
+    marginRight: 3
   },
 
   addButton: {

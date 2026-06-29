@@ -2,7 +2,7 @@ import {React, useState}  from "react";
 import { Text } from "react-native";
 import Input from "../../../shared/components/Input";
 import Select from "../../../shared/components/Select";
-import { styles } from "../styles/mortalidadStyles";
+import { styles } from "../styles/densidadPoblacionalStyles";
 import { useDatosConteo } from "../hooks/useDatosConteo";
 import { TYPOGRAPHY } from "../../../theme/typography";
 import NumberInput from "../../../shared/components/NumberInput";

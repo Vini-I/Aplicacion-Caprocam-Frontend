@@ -256,6 +256,12 @@ export const ICONS = {
     name: "microscope",
   },
 
+  // Raleo
+  raleo: {
+    provider: "MaterialCommunityIcons",
+    name: "bucket-outline",
+  },
+
   //Trazabilidad
     transfer: {
     provider: "MaterialCommunityIcons",

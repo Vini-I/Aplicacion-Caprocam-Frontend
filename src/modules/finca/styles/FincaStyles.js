@@ -19,7 +19,8 @@ export const styles = StyleSheet.create({
     maxWidth: 900,
     alignSelf: "center",
     flexDirection: "row",
-    borderRadius: 16,
+    backgroundColor: COLORS.white,
+    borderRadius: 8,
     shadowColor: COLORS.black,
     shadowOffset: {
       width: 0,
@@ -28,7 +29,7 @@ export const styles = StyleSheet.create({
     marginVertical: 5,
     shadowOpacity: 0.2,
     shadowRadius: 8,
-    elevation: 2,
+    elevation: 4,
   },
 
   CardContent: {
@@ -111,5 +112,6 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 8,
     marginTop: 10,
+    marginVertical:20,
   },
 });
