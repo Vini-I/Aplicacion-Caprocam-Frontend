@@ -66,6 +66,17 @@ export default function DrawerLayout() {
         }}
       />
 
+      <Drawer.Screen
+        name="trazabilidad"
+        options={{
+          drawerLabel: "Trazabilidad",
+          title: "Trazabilidad",
+          drawerIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="map-marker-path" color={color} size={size} />
+          )
+        }}
+      />
+
 
 
       <Drawer.Screen
