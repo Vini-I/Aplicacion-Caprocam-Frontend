@@ -19,8 +19,7 @@ export const fincas = [
     // Características
     estanques: 2,
     areaTotal: 12.5,
-    largo: 150,
-    ancho: 80,
+    espejoAgua: 10
   },
   {
     // Identificación
@@ -42,8 +41,7 @@ export const fincas = [
     // Características
     estanques: 5,
     areaTotal: 17.5,
-    largo: 200,
-    ancho: 90,
+    espejoAgua: 15
   },
   {
     // Identificación
@@ -65,7 +63,6 @@ export const fincas = [
     // Características
     estanques: 10,
     areaTotal: 50,
-    largo: 200,
-    ancho: 500,
+    espejoAgua: 46
   },
 ];

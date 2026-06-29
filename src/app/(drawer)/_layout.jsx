@@ -1,6 +1,8 @@
 import { Drawer } from "expo-router/drawer";
 import React from "react";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import { ICONS } from "../../theme/icons";
+import Icon from "../../shared/components/Icons";
 
 export default function DrawerLayout() {
   return (
@@ -76,6 +78,7 @@ export default function DrawerLayout() {
           )
         }}
       />
+
 
       <Drawer.Screen name="inicio" options={{ drawerItemStyle: { display: "none" } }} />
       <Drawer.Screen name="registros" options={{ drawerItemStyle: { display: "none" } }} />

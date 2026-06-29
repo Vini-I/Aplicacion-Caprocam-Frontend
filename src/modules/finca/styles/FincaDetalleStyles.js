@@ -39,6 +39,17 @@ export const styles = StyleSheet.create({
     color: COLORS.textTertiary,
   },
 
+  buttonExport: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: COLORS.success,
+  },
+
+  iconDocument: {
+    marginRight: 5
+  },
+
   addButton: {
     maxWidth: "100%",
     alignSelf: "center",

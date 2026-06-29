@@ -1,75 +1,86 @@
-import { COLORS } from '../../../theme/colors';
-
+import { COLORS } from "../../../theme/colors";
 
 /**
- * Datos estáticos del módulo Registro: fincas, estanques por
- * finca, y módulos disponibles en la grilla.
+ * Datos estaticos del modulo Registro: fincas, estanques por
+ * finca, y modulos disponibles en la grilla.
  *
  * ---
- * FINCAS — { id, nombre }
- * ESTANQUES — objeto indexado por fincaId: { [fincaId]: [{ id, especie }] }
+ * FINCAS - { id, nombre }
+ * ESTANQUES - objeto indexado por fincaId: { [fincaId]: [{ id, especie }] }
  *
  * ---
- * MODULOS — forma de cada item
+ * MODULOS - forma de cada item
  * ---
- * id           string — debe coincidir con el case que maneja
- *                        RegistroScreen (moduloActivo === id)
- * label        string — texto visible en la tarjeta
- * descripcion  string — subtítulo de la tarjeta
- * icono        string — clave de theme/icons.js (debe existir en ICONS)
- * color        string — color de fondo del ícono, tomado de COLORS
+ * id           string - debe coincidir con la accion que maneja
+ *                        RegistroScreen
+ * label        string - texto visible en la tarjeta
+ * descripcion  string - subtitulo de la tarjeta
+ * icono        string - clave de theme/icons.js
+ * color        string - color de fondo del icono, tomado de COLORS
  *
  * ---
- * PARA AGREGAR UN MÓDULO NUEVO A LA GRILLA
+ * PARA AGREGAR UN MODULO NUEVO A LA GRILLA
  * ---
  * 1. Agregar el objeto en MODULOS
- * 2. Agregar el ícono a theme/icons.js si no existe
- * 3. Agregar el case en RegistroScreen.jsx (moduloActivo === 'tuId')
- * 4. Conectar el onPress en el .map() de MODULOS
+ * 2. Agregar el icono a theme/icons.js si no existe
+ * 3. Agregar la funcion de navegacion en registros/index.jsx
+ * 4. Conectar el callback en RegistroScreen.jsx
  */
 
 export const FINCAS = [
-  { id: 1, nombre: 'Finca El Pacífico' },
-  { id: 2, nombre: 'Finca Santa Rosa' },
+  { id: 1, nombre: "Finca El Pacifico" },
+  { id: 2, nombre: "Finca Santa Rosa" },
 ];
 
 export const ESTANQUES = {
   1: [
-    { id: 'E-01', especie: 'Litopenaeus vannamei' },
-    { id: 'E-02', especie: 'Litopenaeus vannamei' },
+    { id: "E-01", especie: "Litopenaeus vannamei" },
+    { id: "E-02", especie: "Litopenaeus vannamei" },
   ],
-  2: [
-    { id: 'E-01', especie: 'Litopenaeus stylirostris' },
-  ],
+  2: [{ id: "E-01", especie: "Litopenaeus stylirostris" }],
 };
 
 export const MODULOS = [
   {
-    id: 'alimentacion',
-    label: 'Alimentación',
-    descripcion: 'Raciones, alimento y comederos',
-    icono: 'food',
+    id: "alimentacion",
+    label: "Alimentacion",
+    descripcion: "Raciones, alimento y comederos",
+    icono: "food",
     color: COLORS.primary,
   },
   {
-    id: 'crecimiento',
-    label: 'Crecimiento',
-    descripcion: 'Peso, incremento y biomasa',
-    icono: 'growth',
+    id: "crecimiento",
+    label: "Crecimiento",
+    descripcion: "Peso, incremento y biomasa",
+    icono: "growth",
     color: COLORS.success,
   },
   {
-    id: 'fisicoquimica',
-    label: 'Físico-Química',
-    descripcion: 'Temp, O₂, pH y nutrientes',
-    icono: 'chemicalContainer',
+    id: "fisicoquimica",
+    label: "Fisico-Quimica",
+    descripcion: "Temp, O2, pH y nutrientes",
+    icono: "chemicalContainer",
     color: COLORS.violet,
   },
   {
-    id: 'mortalidad',
-    label: 'Mortalidad',
-    descripcion: 'Conteo y sobrevivencia de camarones',
-    icono: 'report',            // ICONS.report → bar-graph (no hay "calculator" en tu theme)
+    id: "mortalidad",
+    label: "Mortalidad",
+    descripcion: "Conteo y sobrevivencia de camarones",
+    icono: "report",
     color: COLORS.warning,
+  },
+  {
+    id: "enfermedades",
+    label: "Enfermedades",
+    descripcion: "Casos sanitarios y severidad",
+    icono: "shieldAlert",
+    color: COLORS.error,
+  },
+  {
+    id: "parasitologia",
+    label: "Parasitologia",
+    descripcion: "Parasitos, infeccion y grado",
+    icono: "parasite",
+    color: COLORS.violet,
   },
 ];
