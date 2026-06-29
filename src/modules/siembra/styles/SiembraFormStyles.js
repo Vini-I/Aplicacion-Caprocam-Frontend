@@ -32,4 +32,23 @@ export const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     fontFamily: TYPOGRAPHY.fontFamily.regular,
   },
+    calculationBox: {
+    backgroundColor: "#F4F7FB",
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 12,
+  },
+
+  calculationLabel: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#6B7280",
+    marginBottom: 4,
+  },
+
+  calculationValue: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#1F2937",
+  },
 });
