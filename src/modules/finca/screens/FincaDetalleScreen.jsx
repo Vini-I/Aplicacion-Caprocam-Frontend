@@ -1,9 +1,11 @@
 import { ScrollView, View, TouchableOpacity } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { fincas } from "./FincaData";
+import { useRouter } from "expo-router";
+
 import { styles } from "../styles/FincaDetalleStyles";
 import { ICONS } from "../../../theme/icons";
 import { COLORS } from "../../../theme/colors";
+
+import useFincaDetalle from "../hooks/useFincaDetalle";
 
 import Card from "../../../shared/components/Card";
 import Text from "../../../shared/components/Text";
@@ -14,21 +16,8 @@ import Button from "../../../shared/components/Button";
 export default function FincaDetalleScreen({ onEstanque }) {
   const router = useRouter();
 
-  const { id } = useLocalSearchParams();
-
-  const finca = fincas.find((f) => f.codigoInterno === id);
-
-  if (!finca) {
-    return (
-      <ScrollView contentContainerStyle={styles.container}>
-        <Text>Finca no encontrada</Text>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Text style={{ color: COLORS.textPrimary, marginTop: 20 }}>← Volver</Text>
-        </TouchableOpacity>
-      </ScrollView>
-    );
-  }
-
+  const { finca, haldleGenerar, loading } = useFincaDetalle();
+  
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.contentWrapper}>
@@ -46,7 +35,7 @@ export default function FincaDetalleScreen({ onEstanque }) {
             </View>
 
             <View style={styles.filaDetalle}>
-              <Text style={styles.etiqueta}>ID:</Text>
+              <Text style={styles.etiqueta}>CBO:</Text>
               <Text style={styles.valor}>{finca.codigoInterno}</Text>
             </View>
 
@@ -88,10 +77,10 @@ export default function FincaDetalleScreen({ onEstanque }) {
             </View>
 
 
-            <Button style={styles.buttonExport}>
-              <Icon icon={ICONS.document} style={styles.iconDocument} />
+            <Button style={styles.buttonExport} onPress={haldleGenerar} disabled={loading}>
+              <Icon icon={ICONS.document} style={styles.iconDocument} size={18}/>
               <Text size={15}>
-                GENERAR REPORTE FINCA
+                {loading ? "GENERANDO..." : "GENERAR REPORTE FINCA"}
               </Text>
             </Button>
 
