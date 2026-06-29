@@ -1,4 +1,5 @@
 import { ScrollView, View } from "react-native";
+import { useRouter } from "expo-router";
 
 import Alert from "../../../shared/components/Alert.jsx";
 import Button from "../../../shared/components/Button.jsx";
@@ -29,6 +30,8 @@ function SectionTitle({ icon, title }) {
 }
 
 export default function VentaScreen() {
+  const router = useRouter();
+
   const {
     fincaSeleccionada,
     estanqueSeleccionado,
@@ -50,6 +53,7 @@ export default function VentaScreen() {
     opcionesColaboradores,
     opcionesCompradores,
     totalVenta,
+    ventas,
     setEstanqueSeleccionado,
     setCompradorManual,
     handleFincaChange,
@@ -67,6 +71,17 @@ export default function VentaScreen() {
   const errorInputStyle = {
     borderColor: COLORS.error,
     backgroundColor: COLORS.surface,
+  };
+
+  const abrirDetalleVentas = () => {
+    router.push({
+      pathname: "/detalle-ventas",
+      params: {
+        ventas: JSON.stringify(ventas),
+        fincaSeleccionada,
+        estanqueSeleccionado,
+      },
+    });
   };
 
   return (
@@ -239,7 +254,17 @@ export default function VentaScreen() {
             </View>
           </Button>
         </View>
+
+        <View style={styles.buttonRow}>
+          <Button onPress={abrirDetalleVentas} style={styles.saveButton}>
+            <View style={styles.buttonContent}>
+              <Icon icon={ICONS.report} size={20} color={COLORS.white} />
+              <Text style={styles.buttonText}>Mostrar detalles</Text>
+            </View>
+          </Button>
+        </View>
       </Card>
+      
     </ScrollView>
   );
 }
