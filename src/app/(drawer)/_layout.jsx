@@ -1,6 +1,8 @@
 import { Drawer } from "expo-router/drawer";
 import React from "react";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import { ICONS } from "../../theme/icons";
+import Icon from "../../shared/components/Icons";
 
 export default function DrawerLayout() {
   return (
@@ -51,6 +53,21 @@ export default function DrawerLayout() {
           ),
         }}
       />
+
+          
+      <Drawer.Screen
+        name="compradores"
+        options={{
+          drawerLabel: "Compradores",
+          title: "Compradores",
+          drawerIcon: ({ color }) => (
+            <MaterialCommunityIcons name="account-group" size={22} color={color} />
+          ),
+        }}
+      />
+
+
+
       <Drawer.Screen
         name="linksPrueba"
         options={{
@@ -62,6 +79,7 @@ export default function DrawerLayout() {
         }}
       />
 
+
       <Drawer.Screen name="inicio" options={{ drawerItemStyle: { display: "none" } }} />
       <Drawer.Screen name="registros" options={{ drawerItemStyle: { display: "none" } }} />
       <Drawer.Screen name="reportes" options={{ drawerItemStyle: { display: "none" } }} />
@@ -71,7 +89,10 @@ export default function DrawerLayout() {
       <Drawer.Screen name="inventarios/nuevoProveedor" options={{ drawerItemStyle: { display: "none" } }} />
       <Drawer.Screen name="inventarios/editarProveedor" options={{ drawerItemStyle: { display: "none" } }} />
       <Drawer.Screen name="inventarios/proveedorScreen" options={{ drawerItemStyle: { display: "none" } }} />
-
+      <Drawer.Screen name="compradores/nuevoComprador"    options={{ drawerItemStyle: { display: "none" } }} />
+      <Drawer.Screen name="compradores/editarComprador"   options={{ drawerItemStyle: { display: "none" } }} />
+      <Drawer.Screen name="compradores/detalleComprador"  options={{ drawerItemStyle: { display: "none" } }} />
+      <Drawer.Screen name="compradores/compradorScreen"   options={{ drawerItemStyle: { display: "none" } }} />
 
     </Drawer>
   );
