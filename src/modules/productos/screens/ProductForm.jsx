@@ -59,7 +59,8 @@ import DateInput from "../../../shared/components/DateInput";
 
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
-import { CATEGORIAS, UNIDADES, useProductForm } from "../services/ProductForm";
+import { useProductForm } from "../hooks/useProductForm";
+import { CATEGORIAS,UNIDADES } from "../services/DataProductForm";
 
 import { styles } from "../styles/ProductFormStyles";
 

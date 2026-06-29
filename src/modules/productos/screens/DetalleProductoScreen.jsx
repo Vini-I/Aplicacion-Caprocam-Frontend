@@ -17,7 +17,7 @@ import { COLORS } from "../../../theme/colors";
 
 import { styles,colorCategoria,colorCategoriaDefault } from "../styles/DetalleProductScreenStyles";
 
-import { useDetalleProducto } from "../services/DetalleProductoScreen";
+import { useDetalleProducto } from "../hooks/useDetalleProductoScreen.js";
 
 function FilaDetalle({ etiqueta, valor, resaltado = false }) {
   return (
@@ -168,7 +168,7 @@ export default function DetalleProductoScreen() {
 
             <Modal
                 visible={modalEliminarVisible}
-                onClose={() => setModalEliminarVisible(false)}
+                onClose={handleCerrarModal}
                 closeText="Cancelar"
             >
                 <Title level={5} style={styles.modalTitulo}>
