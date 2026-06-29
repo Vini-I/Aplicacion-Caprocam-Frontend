@@ -13,7 +13,7 @@ export default function RegistrosStackLayout() {
 
       <Stack.Screen name="Parasitologia" options={{ title: "Parasitologia" }} />
 
-      <Stack.Screen name="Mortalidad" options={{ title: "Registro de Mortalidad" }} />
+      <Stack.Screen name="DensidadPoblacional" options={{ title: "Registro de Densidad Poblacional" }} />
 
       <Stack.Screen name="Alimentacion" options={{ title: "Registro de Alimentación" }} />
 
@@ -22,6 +22,8 @@ export default function RegistrosStackLayout() {
       <Stack.Screen name="DetalleEstanque" options={{ title: "Detalle Estanque" }} />
 
       <Stack.Screen name="Crecimiento" options={{ title: "Registro Crecimiento" }}/>
+
+      <Stack.Screen name="Raleo" options={{ title: "Raleo" }} />
 
     </Stack>
   );
