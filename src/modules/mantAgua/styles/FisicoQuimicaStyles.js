@@ -50,6 +50,26 @@ export const styles = StyleSheet.create({
     gap: 12,
   },
 
+  formCard: {
+    marginBottom: 20,
+  },
+  cardHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginBottom: 12,
+  },
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: COLORS.textSecondary,
+  },
+  estanqueInfo: {
+    marginTop: 8,
+    fontSize: 14,
+    color: COLORS.textTertiary,
+  },
+
   footerContent: {
     flexDirection: "column",
     justifyContent: "center",

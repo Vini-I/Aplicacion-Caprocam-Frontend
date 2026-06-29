@@ -24,8 +24,11 @@
  */
 
 import { View, ScrollView, StatusBar } from 'react-native';
+import { useMemo, useState } from 'react';
 import Button from '../../../shared/components/Button';
 import Alert from '../../../shared/components/Alert';
+import Card from '../../../shared/components/Card';
+import Select from '../../../shared/components/Select';
 import Text from '../../../shared/components/Text';
 import Title from '../../../shared/components/Title';
 import Footer from '../../../shared/components/Footer';
@@ -34,8 +37,9 @@ import RangeCard from '../components/RangeCard';
 import { COLORS } from '../../../theme/colors';
 import { ICONS } from '../../../theme/icons';
 import useFisicoQuimica from '../hooks/useFisicoQuimica';
+import { obtenerLecturasPorEstanque } from '../services/FisicoQuimicaServices';
 import { styles } from '../styles/FisicoQuimicaStyles';
-import {useRouter} from 'expo-router';
+import { useRouter } from 'expo-router';
 
 export default function FisicoQuimicaScreen({ onBack }) {
   const {
@@ -46,6 +50,70 @@ export default function FisicoQuimicaScreen({ onBack }) {
   } = useFisicoQuimica();
 
   const router = useRouter();
+  const [fincaSeleccionada, setFincaSeleccionada] = useState("");
+  const [estanqueSeleccionado, setEstanqueSeleccionado] = useState("");
+  const [medicionesPorEstanque, setMedicionesPorEstanque] = useState({
+    ph: [],
+    salinidad: [],
+    temperatura: [],
+    ox: [],
+  });
+
+  const opcionesFincas = useMemo(
+    () => [
+      { label: "Finca Camarón de Occidente", value: "laReina" },
+      { label: "Finca Camarón del Sur", value: "laEsperanza" },
+      { label: "Finca Camarón del Norte", value: "laVilla" },
+    ],
+    [],
+  );
+
+  const estanquesPorFinca = useMemo(
+    () => ({
+      laReina: [
+        { label: "Estanque P-01 (Pre-cría)", value: "A01" },
+        { label: "Estanque P-02 (Pre-cría)", value: "A02" },
+        { label: "Estanque E-08 (Engorde)", value: "B01" },
+        { label: "Estanque E-09 (Engorde)", value: "B02" },
+      ],
+      laEsperanza: [
+        { label: "Estanque P-03 (Pre-cría)", value: "P-03" },
+        { label: "Estanque E-02 (Engorde)", value: "E-02" },
+        { label: "Estanque E-03 (Engorde)", value: "E-03" },
+      ],
+      laVilla: [
+        { label: "Estanque P-04 (Pre-cría)", value: "P-04" },
+        { label: "Estanque E-05 (Engorde)", value: "E-05" },
+      ],
+    }),
+    [],
+  );
+
+  const estanquesFiltrados = useMemo(
+    () => estanquesPorFinca[fincaSeleccionada] || [],
+    [fincaSeleccionada, estanquesPorFinca],
+  );
+
+  const estanqueSeleccionadoObj = useMemo(
+    () =>
+      estanquesFiltrados.find((item) => item.value === estanqueSeleccionado) || null,
+    [estanqueSeleccionado, estanquesFiltrados],
+  );
+
+  const handleFincaChange = (value) => {
+    setFincaSeleccionada(value);
+    setEstanqueSeleccionado("");
+    setMedicionesPorEstanque({ ph: [], salinidad: [], temperatura: [], ox: [] });
+  };
+
+  const handleEstanqueChange = (value) => {
+    setEstanqueSeleccionado(value);
+
+    const lecturas = obtenerLecturasPorEstanque(value);
+    setMedicionesPorEstanque(
+      lecturas ?? { ph: [], salinidad: [], temperatura: [], ox: [] },
+    );
+  };
 
   return (
     <View style={styles.screen}>
@@ -70,6 +138,36 @@ export default function FisicoQuimicaScreen({ onBack }) {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        <Card style={styles.formCard}>
+          <View style={styles.cardHeader}>
+            <Icon icon={ICONS.chemicalContainer} color={COLORS.primary} size={22} />
+            <Text style={styles.cardTitle}>Finca y estanque</Text>
+          </View>
+
+          <Select
+            label="Seleccione la finca"
+            placeholder="Seleccione una finca"
+            options={opcionesFincas}
+            value={fincaSeleccionada}
+            onChange={handleFincaChange}
+          />
+
+          <Select
+            label="Seleccione el estanque"
+            placeholder="Seleccione un estanque"
+            options={estanquesFiltrados}
+            value={estanqueSeleccionado}
+            onChange={handleEstanqueChange}
+            disabled={!fincaSeleccionada}
+          />
+
+          {estanqueSeleccionadoObj && (
+            <Text style={styles.estanqueInfo}>
+              Estanque seleccionado: {estanqueSeleccionadoObj.label}
+            </Text>
+          )}
+        </Card>
+
         <RangeCard
           title="pH" unit="pH"
           icon={<Icon icon={ICONS.chemicalContainer} color={COLORS.primary} size={18} />}
@@ -77,6 +175,7 @@ export default function FisicoQuimicaScreen({ onBack }) {
           sliderMin={4} sliderMax={10}
           step={0.1} decimals={1}
           maxLecturas={2} labelStyle="daynight"
+          initialValues={medicionesPorEstanque.ph}
           onChange={setLecturasPh}
         />
 
@@ -87,6 +186,7 @@ export default function FisicoQuimicaScreen({ onBack }) {
           sliderMin={0} sliderMax={50}
           step={0.1} decimals={1}
           maxLecturas={2} labelStyle="daynight"
+          initialValues={medicionesPorEstanque.salinidad}
           onChange={setLecturasSalinidad}
         />
 
@@ -97,6 +197,7 @@ export default function FisicoQuimicaScreen({ onBack }) {
           sliderMin={15} sliderMax={45}
           step={0.5} decimals={1}
           maxLecturas={2} labelStyle="daynight"
+          initialValues={medicionesPorEstanque.temperatura}
           onChange={setLecturasTemp}
         />
 
@@ -107,6 +208,7 @@ export default function FisicoQuimicaScreen({ onBack }) {
           sliderMin={0} sliderMax={20}
           step={0.1} decimals={1}
           maxLecturas={5} labelStyle="numeric"
+          initialValues={medicionesPorEstanque.ox}
           onChange={setLecturasOx}
         />
 

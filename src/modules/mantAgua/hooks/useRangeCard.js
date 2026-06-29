@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 const limitar = (val, min, max) => Math.min(Math.max(val, min), max);
 const formatear = (val, decimals) => val.toFixed(decimals);
@@ -65,10 +65,30 @@ export default function useRangeCard({
   decimals,
   maxLecturas,
   onChange,
+  initialValues = [],
 }) {
-  const [lecturas, setLecturas] = useState([
-    crearLectura(1, idealMin, decimals),
-  ]);
+  const initialLecturas = Array.isArray(initialValues) ? initialValues : [];
+
+  const [lecturas, setLecturas] = useState(() => {
+    if (initialLecturas.length > 0) {
+      return initialLecturas.map((value, index) =>
+        crearLectura(index + 1, Number(value) || idealMin, decimals),
+      );
+    }
+
+    return [crearLectura(1, idealMin, decimals)];
+  });
+
+  useEffect(() => {
+    const next = initialLecturas.length > 0
+      ? initialLecturas.map((value, index) =>
+          crearLectura(index + 1, Number(value) || idealMin, decimals),
+        )
+      : [crearLectura(1, idealMin, decimals)];
+
+    setLecturas(next);
+    onChange?.(next);
+  }, [JSON.stringify(initialLecturas), idealMin, decimals, onChange]);
 
   const actualizarLectura = useCallback(
     (id, patch) => {
