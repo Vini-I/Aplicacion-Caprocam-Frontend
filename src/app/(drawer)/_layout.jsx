@@ -77,6 +77,38 @@ export default function DrawerLayout() {
         }}
       />
 
+       <Drawer.Screen
+        name="colaboradores"
+        options={{
+          drawerLabel: "Colaboradores",
+          title: "Colaboradores",
+          drawerIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="account-group" color={color} size={size} />
+          )
+        }}
+      />
+
+       <Drawer.Screen
+        name="mantEquipo"
+        options={{
+          drawerLabel: "Mantenimiento de Equipos",
+          title: "Mantenimiento de Equipos",
+          drawerIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="wrench" color={color} size={size} />
+          )
+        }}
+      />
+
+       <Drawer.Screen
+        name="registrarEquipo"
+        options={{
+          drawerLabel: "Registrar Equipo",
+          title: "Registrar Equipo",
+          drawerIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="plus" color={color} size={size} />
+          )
+        }}
+      />
 
 
       <Drawer.Screen
