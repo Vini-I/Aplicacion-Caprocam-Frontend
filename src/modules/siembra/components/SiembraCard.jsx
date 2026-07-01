@@ -56,7 +56,7 @@ export default function SiembraCard({
         <Text style={styles.siembraText}>Siembra #{siembraId}</Text>
 
         <Text style={styles.cantidadText}>
-          {(cantidadSembrada ?? 0).toLocaleString()} camarones
+          {Number(cantidadSembrada ?? 0).toLocaleString()} camarones
         </Text>
       </View>
 

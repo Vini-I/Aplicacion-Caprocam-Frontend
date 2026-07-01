@@ -1,3 +1,5 @@
-import DetalleProductoScreen from '../../../modules/productos/screens/DetalleProductoScreen';
+import DetalleProductoScreen from "../../../modules/productos/screens/DetalleProductoScreen";
 
-export default DetalleProductoScreen;
+export default function DetalleProducto() {
+  return <DetalleProductoScreen />;
+}

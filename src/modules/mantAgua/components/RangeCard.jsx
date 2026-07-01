@@ -113,6 +113,7 @@ export default function RangeCard({
   showRangeColor = true,
   labelStyle = 'numeric',
   badgeLabel,
+  initialValues = [],
   onChange,
 }) {
   const {
@@ -122,7 +123,7 @@ export default function RangeCard({
     normalizar,
     tieneMaxIdeal,
     obtenerManejadores,
-  } = useRangeCard({ idealMin, idealMax, sliderMin, sliderMax, step, decimals, maxLecturas, onChange });
+  } = useRangeCard({ idealMin, idealMax, sliderMin, sliderMax, step, decimals, maxLecturas, onChange, initialValues });
 
   const ETIQUETAS = labelStyle === 'daynight' ? ETIQUETAS_DIA_NOCHE : ETIQUETAS_NUMERICAS;
 
