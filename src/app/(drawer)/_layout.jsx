@@ -77,6 +77,16 @@ export default function DrawerLayout() {
         }}
       />
 
+       <Drawer.Screen
+        name="mantEquipo"
+        options={{
+          drawerLabel: "Mantenimiento de Equipos",
+          title: "Mantenimiento de Equipos",
+          drawerIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="wrench" color={color} size={size} />
+          )
+        }}
+      />
 
 
       <Drawer.Screen

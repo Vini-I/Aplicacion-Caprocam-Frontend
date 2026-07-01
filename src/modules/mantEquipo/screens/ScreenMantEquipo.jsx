@@ -230,7 +230,7 @@ export default function ScreenMantEquipo() {
               />
             </View>
             {/* TODO: conectar con el módulo de tareas cuando esté disponible */}
-            <Pressable style={styles.btnAddTask}>
+            <Pressable style={styles.btnAddTask} onPress={() => router.push("/mantEquipo/tareas")}>
               <Text style={styles.btnLabel}>{TEXTOS_PANTALLA.btnAgregarTarea}</Text>
             </Pressable>
             <Pressable style={styles.btnAddMaint} onPress={modalHook.abrir}>
