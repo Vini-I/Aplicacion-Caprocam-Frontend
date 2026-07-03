@@ -13,6 +13,7 @@ import { verifyPinCredentials } from '../services/loginAuth.service';
 export function useLoginFlow({ onLoginSuccess }) {
   const { workers, loading, error } = useWorkers();
   const [selectedWorker, setSelectedWorker] = useState(null);
+  const [workerSearchText, setWorkerSearchText] = useState('');
   const [isPinModalVisible, setIsPinModalVisible] = useState(false);
   const [pinCode, setPinCode] = useState('');
   const [pinError, setPinError] = useState('');
@@ -21,6 +22,10 @@ export function useLoginFlow({ onLoginSuccess }) {
   const formattedDate = formatDateInSpanish();
   const isFormValid = isLoginFormValid(!!selectedWorker);
   const validationMessage = getLoginValidationMessage(!!selectedWorker);
+  const normalizedSearchText = workerSearchText.trim().toLowerCase();
+  const filteredWorkers = normalizedSearchText === ''
+    ? workers
+    : workers.filter((worker) => String(worker.name ?? '').toLowerCase().includes(normalizedSearchText));
 
   const openPinModal = () => {
     if (!isFormValid) return;
@@ -28,6 +33,8 @@ export function useLoginFlow({ onLoginSuccess }) {
     setPinError('');
     setIsPinModalVisible(true);
   };
+
+  const handleSyncData = () => {};
 
   const closePinModal = () => {
     if (!isAuthenticating) {
@@ -64,10 +71,13 @@ export function useLoginFlow({ onLoginSuccess }) {
 
   return {
     workers,
+    filteredWorkers,
     loading,
     error,
     selectedWorker,
     setSelectedWorker,
+    workerSearchText,
+    setWorkerSearchText,
     formattedDate,
     isFormValid,
     validationMessage,
@@ -76,6 +86,7 @@ export function useLoginFlow({ onLoginSuccess }) {
     pinError,
     isAuthenticating,
     openPinModal,
+    handleSyncData,
     closePinModal,
     handlePinChange,
     submitPin,

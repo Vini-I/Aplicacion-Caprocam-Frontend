@@ -47,7 +47,7 @@ export default function RegistrarEquipoScreen() {
 					<View style={styles.row}>
 						<View style={styles.column}>
 							<Input
-								label="Identificador"
+								label="Identificador*"
 								value={formulario.codigoInterno}
 								onChangeText={(valor) => actualizarCampo("codigoInterno", valor)}
 								placeholder="Ej: EQ-001"
@@ -58,7 +58,7 @@ export default function RegistrarEquipoScreen() {
 
 						<View style={styles.column}>
 							<Input
-								label="Descripción"
+								label="Descripción*"
 								value={formulario.descripcion}
 								onChangeText={(valor) => actualizarCampo("descripcion", valor)}
 								placeholder="Ej: Aireador principal del estanque 3"
@@ -74,7 +74,7 @@ export default function RegistrarEquipoScreen() {
 					<View style={styles.row}>
 						<View style={styles.column}>
 							<DateInput
-								label="Fecha de instalación"
+								label="Fecha de instalación*"
 								value={formulario.fechaInstalacion}
 								onChangeText={(valor) =>
 									actualizarCampo("fechaInstalacion", valor)
@@ -87,7 +87,7 @@ export default function RegistrarEquipoScreen() {
 
 						<View style={styles.column}>
 							<Select
-								label="Tipo"
+								label="Tipo*"
 								value={formulario.tipo}
 								onChange={(valor) => actualizarCampo("tipo", valor)}
 								options={tiposEquipo}
@@ -102,7 +102,7 @@ export default function RegistrarEquipoScreen() {
 
 					<View style={styles.fullWidth}>
 						<Select
-							label="Estado"
+							label="Estado*"
 							value={formulario.estado}
 							onChange={(valor) => actualizarCampo("estado", valor)}
 							options={estadosEquipo}
@@ -118,7 +118,7 @@ export default function RegistrarEquipoScreen() {
 					   con el POST real cuando el endpoint exista. */}
 
 					<Input
-						label="Función del equipo"
+						label="Función del equipo*"
 						value={formulario.funcionEquipo}
 						onChangeText={(valor) => actualizarCampo("funcionEquipo", valor)}
 						placeholder="Ej: Mantener la oxigenación constante en el estanque"

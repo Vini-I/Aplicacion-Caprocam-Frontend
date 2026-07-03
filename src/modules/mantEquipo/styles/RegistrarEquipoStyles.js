@@ -51,7 +51,6 @@ export const styles = StyleSheet.create({
   },
   invalidField: {
     borderColor: COLORS.error,
-    backgroundColor: COLORS.errorLight,
   },
   errorBox: {
     borderWidth: 1,
