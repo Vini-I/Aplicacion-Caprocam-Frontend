@@ -36,10 +36,11 @@ import { styles } from "../styles/RegistroStyles";
 export default function RegistroScreen({
   onFisicoQuimica,
   onAlimentacion,
-  onMortalidad,
+  onDensidadPoblacional,
   onCrecimiento,
   onEnfermedades,
   onParasitologia,
+  onRaleo,
 }) {
   const {
     fincaSeleccionada,
@@ -71,8 +72,8 @@ export default function RegistroScreen({
       accion = onAlimentacion;
     }
 
-    if (moduloId === "mortalidad") {
-      accion = onMortalidad;
+    if (moduloId === "densidadPoblacional") {
+      accion = onDensidadPoblacional;
     }
 
     if (moduloId === "crecimiento") {
@@ -87,6 +88,10 @@ export default function RegistroScreen({
       accion = onParasitologia;
     }
 
+    if (moduloId === "raleo") {
+      accion = onRaleo;
+    }
+
     return accion;
   }
 
@@ -96,54 +101,6 @@ export default function RegistroScreen({
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
       >
-        {/* Seleccion */}
-        <View style={styles.seccion}>
-          <Text
-            size={11}
-            weight="600"
-            color={COLORS.textTertiary}
-            style={styles.seccionLabel}
-          >
-            SELECCION
-          </Text>
-
-          <Text size={13} color={COLORS.textSecondary} style={styles.subLabel}>
-            Finca
-          </Text>
-
-          <View style={styles.chips}>
-            {FINCAS.map((f) => (
-              <Chip
-                key={f.id}
-                label={f.nombre}
-                selected={fincaSeleccionada === f.id}
-                onPress={() => handleFinca(f.id)}
-              />
-            ))}
-          </View>
-
-          <Text size={13} color={COLORS.textSecondary} style={styles.subLabel}>
-            Estanque
-          </Text>
-
-          <View style={styles.chips}>
-            {estanques.map((e) => (
-              <Chip
-                key={e.id}
-                label={e.id}
-                selected={estanqueSeleccionado === e.id}
-                onPress={() => setEstanqueSeleccionado(e.id)}
-              />
-            ))}
-          </View>
-
-          {finca && estanque && (
-            <Text size={12} color={COLORS.textTertiary}>
-              {finca.nombre} - {estanque.id} - {estanque.especie}
-            </Text>
-          )}
-        </View>
-
         {/* Modulos */}
         <Text
           size={11}

@@ -10,20 +10,26 @@ export const styles = StyleSheet.create({
 
   ContentWrapper: {
     flex: 1,
-    flexDirection: "row",
+    paddingHorizontal: 16,
+    backgroundColor: COLORS.white,
+  },
+
+  Card: {
     width: "100%",
     maxWidth: 900,
     alignSelf: "center",
-    paddingHorizontal: 16,
+    flexDirection: "row",
     backgroundColor: COLORS.white,
+    borderRadius: 8,
     shadowColor: COLORS.black,
     shadowOffset: {
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.1,
+    marginVertical: 5,
+    shadowOpacity: 0.2,
     shadowRadius: 8,
-    elevation: 2,
+    elevation: 4,
   },
 
   CardContent: {
@@ -40,7 +46,6 @@ export const styles = StyleSheet.create({
     marginRight: 16,
     justifyContent: "center",
     alignItems: "center",
-    flexShrink: 0,
   },
 
   Detalles: {
@@ -58,10 +63,14 @@ export const styles = StyleSheet.create({
   Detalle: {
     color: COLORS.primary,
     backgroundColor: COLORS.secondary,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 12,
     alignSelf: "flex-start",
+  },
+
+  Buttons: {
+    justifyContent: "center",
+    alignSelf: "center",
+    alignItems: "center",
+    marginRight: 20,
   },
 
   Eliminar: {
@@ -86,7 +95,7 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 6,
     marginHorizontal: 2,
-    paddingHorizontal: 8,
+    paddingHorizontal: 12,
     paddingVertical: 4,
   },
 
@@ -103,5 +112,6 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 8,
     marginTop: 10,
+    marginVertical:20,
   },
 });

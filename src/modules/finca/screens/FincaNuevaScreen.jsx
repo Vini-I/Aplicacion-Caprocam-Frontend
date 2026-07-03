@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { Dimensions, ScrollView, View } from "react-native";
+import { ScrollView, View } from "react-native";
 
 import Button from "../../../shared/components/Button.jsx";
 import Card from "../../../shared/components/Card.jsx";
@@ -11,83 +10,34 @@ import Icon from "../../../shared/components/Icons.jsx";
 import CustomAlert from "../../../shared/components/Alert.jsx"; 
 
 import { provincias, ubicaciones } from "../screens/FincaNuevaData.js";
-
+import { useFincaNueva} from "../hooks/useFincaNueva.js"
 import { ICONS } from "../../../theme/icons.js";
 import { COLORS } from "../../../theme/colors.js";
 import { styles } from "../styles/StylesFincaNueva.js";
 
-const { width } = Dimensions.get("window");
-const isLargeScreen = width > 700;
-
 export default function FincaNuevaScreen() {
-  const [formulario, setFormulario] = useState({
-    codigoInterno: "",
-    nombre: "",
-    provincia: "",
-    canton: "",
-    distrito: "",
-    otrasSenas: "", 
-    propietario: "",
-    areaTotal: "",
-    largo: "",
-    ancho: "",
-  });
+  const {
+    ContentWrapper,
+    formulario,
+    setFormulario,
+    telefonos,
+    setTelefonos,
+    errores,
+    setErrores,
 
-  const [telefonos, setTelefonos] = useState([""]);
-  const [errores, setErrores] = useState({});
+    actualizarCampo,
+    actualizarTelefono,
+    agregarTelefono,
+    eliminarTelefono,
+    registrarFinca,
 
-  const actualizarCampo = (campo, valor) => {
-    setFormulario((actual) => ({
-      ...actual,
-      [campo]: valor,
-    }));
-    if (errores[campo]) {
-      setErrores((actual) => ({ ...actual, [campo]: false }));
-    }
-  };
+    cantones,
+    distritos,
+    opcionesCantones,
+    opcionesDistritos,
 
-  const actualizarTelefono = (index, valor) => {
-    const nuevosTelefonos = [...telefonos];
-    nuevosTelefonos[index] = valor;
-    setTelefonos(nuevosTelefonos);
-  };
-
-  const agregarTelefono = () => {
-    setTelefonos([...telefonos, ""]);
-  };
-
-  const eliminarTelefono = (index) => {
-    const nuevosTelefonos = telefonos.filter((_, i) => i !== index);
-    setTelefonos(nuevosTelefonos);
-  };
-
-  const registrarFinca = () => {
-    const nuevosErrores = {};
-
-    if (!formulario.codigoInterno.trim()) nuevosErrores.codigoInterno = true;
-    if (!formulario.nombre.trim()) nuevosErrores.nombre = true;
-    if (!formulario.provincia) nuevosErrores.provincia = true;
-    if (!formulario.canton) nuevosErrores.canton = true;
-    if (!formulario.distrito) nuevosErrores.distrito = true;
-    if (!formulario.otrasSenas.trim()) nuevosErrores.otrasSenas = true;
-    if (!formulario.propietario.trim()) nuevosErrores.propietario = true;
-    if (!formulario.areaTotal.trim()) nuevosErrores.areaTotal = true;
-
-    if (Object.keys(nuevosErrores).length > 0) {
-      setErrores(nuevosErrores);
-      return;
-    }
-
-    console.log({ ...formulario, telefonos });
-  };
-
-  const cantones = formulario.provincia !== "" ? Object.keys(ubicaciones[formulario.provincia] || {}) : [];
-  const distritos = formulario.provincia !== "" && formulario.canton !== "" ? ubicaciones[formulario.provincia][formulario.canton] || [] : [];
-
-  const opcionesCantones = cantones.map((canton) => ({ label: canton, value: canton }));
-  const opcionesDistritos = distritos.map((distrito) => ({ label: distrito, value: distrito }));
-
-  const ContentWrapper = ({ children }) => <View style={styles.contentWrapper}>{children}</View>;
+    isLargeScreen,
+  } = useFincaNueva();
 
   return (
     <ScrollView
@@ -103,10 +53,10 @@ export default function FincaNuevaScreen() {
           <View style={styles.row}>
             <View style={styles.column}>
               <Input
-                label="Código interno *"
+                label="Código CVO *"
                 value={formulario.codigoInterno}
                 onChangeText={(valor) => actualizarCampo("codigoInterno", valor)}
-                placeholder="Ej: FP-01"
+                placeholder="Ej: CVO-01"
                 style={errores.codigoInterno ? { borderColor: COLORS.error, backgroundColor: COLORS.surface } : null}
               />
             </View>
@@ -245,37 +195,27 @@ export default function FincaNuevaScreen() {
               style={errores.areaTotal ? { borderColor: COLORS.error, backgroundColor: COLORS.surface  } : null}
             />
           </View>
-          <View style={styles.row}>
-            <View style={styles.column}>
-              <Input
-                label="Largo (m)"
-                value={formulario.largo}
-                keyboardType="numeric"
-                onChangeText={(valor) => actualizarCampo("largo", valor)}
-                placeholder="0"
-              />
-            </View>
-            <View style={styles.column}>
-              <Input
-                label="Ancho (m)"
-                value={formulario.ancho}
-                keyboardType="numeric"
-                onChangeText={(valor) => actualizarCampo("ancho", valor)}
-                placeholder="0"
-              />
-            </View>
+          <View>
+            <Input
+              label="Espejo de agua (ha) *"
+              value={formulario.espejoAgua}
+              keyboardType="numeric"
+              onChangeText={(valor) => actualizarCampo("espejoAgua", valor)}
+              placeholder="0.0"
+              style={errores.espejoAgua ? { borderColor: COLORS.error, backgroundColor: COLORS.surface  } : null}
+            />
           </View>
         </Card>
 
         {Object.keys(errores).length > 0 && (
-  <CustomAlert 
-    variant="danger" 
-    message="Rellene los espacios importantes para continuar." 
-    containerStyle={{ alignItems: "center", justifyContent: "center", width: "100%" }}
-    textStyle={{ textAlign: "center", width: "100%" }}
-    style={{ textAlign: "center", width: "100%" }}
-  />
-)}
+        <CustomAlert 
+          variant="danger" 
+          message="Rellene los espacios importantes para continuar." 
+          containerStyle={{ alignItems: "center", justifyContent: "center", width: "100%" }}
+          textStyle={{ textAlign: "center", width: "100%" }}
+          style={{ textAlign: "center", width: "100%" }}
+          />
+        )}
 
         <View style={styles.buttonContainer}>
           <Button onPress={registrarFinca} style={styles.saveButton}>

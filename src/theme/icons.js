@@ -255,4 +255,24 @@ export const ICONS = {
     provider: "MaterialCommunityIcons",
     name: "microscope",
   },
+
+  // Raleo
+  raleo: {
+    provider: "MaterialCommunityIcons",
+    name: "bucket-outline",
+  },
+
+  //Trazabilidad
+    transfer: {
+    provider: "MaterialCommunityIcons",
+    name: "transfer-right",
+  },
+  trazabilidad: {
+    provider: "MaterialCommunityIcons",
+    name: "map-marker-path",
+  },
+  arrowLongRight: {
+    provider: "MaterialCommunityIcons",
+    name: "arrow-right-bold",
+  },
 };
