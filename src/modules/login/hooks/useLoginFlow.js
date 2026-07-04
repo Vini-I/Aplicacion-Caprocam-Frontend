@@ -1,3 +1,12 @@
+/**
+ * ============================================================
+ * HOOK: useLoginFlow
+ * ============================================================
+ *
+ * Orquesta el flujo de login: carga trabajadores, filtra la
+ * lista, controla el PIN y administra la sincronización.
+ */
+
 import { useState } from 'react';
 
 import { useWorkers } from './useWorkers';
@@ -18,6 +27,7 @@ export function useLoginFlow({ onLoginSuccess }) {
   const [pinCode, setPinCode] = useState('');
   const [pinError, setPinError] = useState('');
   const [isAuthenticating, setIsAuthenticating] = useState(false);
+  const [hasSyncedData, setHasSyncedData] = useState(false);
 
   const formattedDate = formatDateInSpanish();
   const isFormValid = isLoginFormValid(!!selectedWorker);
@@ -34,7 +44,10 @@ export function useLoginFlow({ onLoginSuccess }) {
     setIsPinModalVisible(true);
   };
 
-  const handleSyncData = () => {};
+  const handleSyncData = () => {
+    if (hasSyncedData) return;
+    setHasSyncedData(true);
+  };
 
   const closePinModal = () => {
     if (!isAuthenticating) {
@@ -85,6 +98,7 @@ export function useLoginFlow({ onLoginSuccess }) {
     pinCode,
     pinError,
     isAuthenticating,
+    hasSyncedData,
     openPinModal,
     handleSyncData,
     closePinModal,

@@ -43,6 +43,7 @@ export default function LoginScreen({ onLoginSuccess = () => {} }) {
           selectedWorker={loginFlow.selectedWorker}
           onSelectWorker={loginFlow.setSelectedWorker}
           onSyncData={loginFlow.handleSyncData}
+          isSyncDisabled={loginFlow.hasSyncedData}
           searchText={loginFlow.workerSearchText}
           onSearchTextChange={loginFlow.setWorkerSearchText}
           isFormValid={loginFlow.isFormValid}
@@ -96,6 +97,7 @@ function WorkerSection({
   selectedWorker,
   onSelectWorker,
   onSyncData,
+  isSyncDisabled,
   searchText,
   onSearchTextChange,
   isFormValid,
@@ -106,7 +108,7 @@ function WorkerSection({
       <Title level={4} color={COLORS.textPrimary} align="center">
         {LOGIN_MESSAGES.WORKER_TITLE}
       </Title>
-      <Button onPress={onSyncData} variant="primary" style={styles.syncButton}>
+      <Button onPress={onSyncData} variant="primary" disabled={isSyncDisabled} style={styles.syncButton}>
         {LOGIN_MESSAGES.SYNC_BUTTON_TEXT}
       </Button>
       <WorkerSearchBar

@@ -1,3 +1,11 @@
+/**
+ * ============================================================
+ * ESTILOS: LoginScreen
+ * ============================================================
+ *
+ * Centraliza el layout y la apariencia de la pantalla de login.
+ */
+
 import { StyleSheet } from 'react-native';
 
 import { COLORS } from '../../../theme/colors';
