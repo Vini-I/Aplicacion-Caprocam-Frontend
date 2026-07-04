@@ -10,6 +10,10 @@ import CustomText from "../../../shared/components/Text";
 import Title from "../../../shared/components/Title";
 
 import { styles } from "../styles/EstanqueStyle";
+import {
+  obtenerTextoSiNo,
+  obtenerTieneAireadoresInicial,
+} from "../services/AireadoresEstanqueService";
 
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
@@ -18,6 +22,11 @@ import { TYPOGRAPHY } from "../../../theme/typography";
 export default function DetalleEstanqueScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
+
+  const tieneAireadores = obtenerTieneAireadoresInicial(
+    params.tieneAireadores,
+    params.numeroAireadores,
+  );
 
   const estanque = {
     id: params.id,
@@ -38,6 +47,9 @@ export default function DetalleEstanqueScreen() {
     metodoAlimentacion: params.metodoAlimentacion,
     proveedorAlimento: params.proveedorAlimento,
     numeroAireadores: params.numeroAireadores,
+    tieneAireadores: tieneAireadores,
+    codigoAireador: params.codigoAireador,
+    estanqueAireador: params.estanqueAireador,
     tieneAlimentadorAutomatico: params.tieneAlimentadorAutomatico,
   };
 
@@ -67,6 +79,9 @@ export default function DetalleEstanqueScreen() {
         metodoAlimentacion: estanque.metodoAlimentacion,
         proveedorAlimento: estanque.proveedorAlimento,
         numeroAireadores: estanque.numeroAireadores,
+        tieneAireadores: estanque.tieneAireadores,
+        codigoAireador: estanque.codigoAireador,
+        estanqueAireador: estanque.estanqueAireador,
         tieneAlimentadorAutomatico: estanque.tieneAlimentadorAutomatico,
       },
     });
@@ -74,7 +89,7 @@ export default function DetalleEstanqueScreen() {
 
   if (!estanque.codigo) {
     return (
-      <ScrollView style={styles.screen} showsVerticalScrollIndicator={false}>
+      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
           <Alert
             variant="warning"
@@ -92,7 +107,7 @@ export default function DetalleEstanqueScreen() {
   }
 
   return (
-    <ScrollView style={styles.screen} showsVerticalScrollIndicator={false}>
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.header}>
         <Button variant="outline" onPress={volver} style={styles.cancelButton}>
           <View style={styles.inlineButtonContent}>
@@ -184,9 +199,29 @@ export default function DetalleEstanqueScreen() {
             value={estanque.proveedorAlimento}
           />
           <Info
-            label="Numero de aireadores"
-            value={estanque.numeroAireadores}
+            label="Tiene aireadores"
+            value={obtenerTextoSiNo(estanque.tieneAireadores)}
           />
+
+          {estanque.tieneAireadores === "si" && (
+            <View>
+              <Info
+                label="Codigo del aireador"
+                value={estanque.codigoAireador}
+              />
+
+              <Info
+                label="Estanque seleccionado"
+                value={estanque.estanqueAireador}
+              />
+
+              <Info
+                label="Numero de aireadores"
+                value={estanque.numeroAireadores}
+              />
+            </View>
+          )}
+
           <Info
             label="Alimentador automatico"
             value={estanque.tieneAlimentadorAutomatico}
