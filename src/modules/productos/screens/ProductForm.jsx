@@ -81,25 +81,6 @@ export default function ProductForm() {
 
   return (
     <View style={styles.screen}>
-      <Navbar
-        title={isEditMode ? "Editar producto" : "Nuevo producto"}
-        style={styles.navbar}
-        titleStyle={styles.navbarTitle}
-        leftContent={
-          <Button
-            variant="ghost"
-            onPress={handleBack}
-            style={styles.backBtn}
-          >
-            <Icon icon={ICONS.exit} size={20} color={COLORS.white} />
-          </Button>
-        }
-        rightContent={
-          // Placeholder invisible para balancear y no empujar altura
-          <View style={styles.navbarPlaceholder} />
-        }
-      />
-
       <ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}

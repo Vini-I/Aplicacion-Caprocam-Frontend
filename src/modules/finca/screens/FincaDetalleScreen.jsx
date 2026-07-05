@@ -11,6 +11,7 @@ import Card from "../../../shared/components/Card";
 import Text from "../../../shared/components/Text";
 import Icon from "../../../shared/components/Icons";
 import Button from "../../../shared/components/Button";
+import NavbarRegistro from "../../../shared/components/NavbarRegistro";
 
 
 export default function FincaDetalleScreen({ onEstanque }) {
@@ -19,6 +20,12 @@ export default function FincaDetalleScreen({ onEstanque }) {
   const { finca, haldleGenerar, loading } = useFincaDetalle();
   
   return (
+    <>
+    <NavbarRegistro
+        Titulo="Detalle de Finca"
+        Subtitulo={finca.nombre}
+        Icono="document"
+    />
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.contentWrapper}>
         <Card>
@@ -97,5 +104,6 @@ export default function FincaDetalleScreen({ onEstanque }) {
         </Button>
       </View>
     </ScrollView>
+    </>
   );
 }

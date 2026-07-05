@@ -12,6 +12,7 @@ import Icon from "../../../shared/components/Icons.jsx";
 import { ICONS } from "../../../theme/icons.js";
 import NumberInput from "../../../shared/components/NumberInput.jsx";
 import { useFincaCrecimiento } from "../hooks/useFincaCrecimiento.js";
+import NavbarRegistro from "../../../shared/components/NavbarRegistro.jsx";
 
 export default function FincaCrecimientoScreen() {
   const {
@@ -39,6 +40,12 @@ export default function FincaCrecimientoScreen() {
   }
 
   return (
+    <>
+    <NavbarRegistro
+      Titulo="Crecimiento"
+      Subtitulo="Registro de peso"
+      Icono="growth"
+    />
     <ScrollView style={styles.container}>
       <Card  style={styles.contentWrapper}>
         <View style={styles.headerRow}>
@@ -111,5 +118,6 @@ export default function FincaCrecimientoScreen() {
         <Button onPress={guardarDatos}>Guardar</Button>
       </Card>
     </ScrollView>
+    </>
   );
 }

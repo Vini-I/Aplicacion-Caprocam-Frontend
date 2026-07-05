@@ -154,15 +154,6 @@ export default function DetalleVentasScreen() {
           </View>
         </View>
 
-        <View style={styles.buttonRow}>
-          <Button onPress={() => router.back()} style={styles.saveButton}>
-            <View style={styles.buttonContent}>
-              <Icon icon={ICONS.back} size={20} color={COLORS.white} />
-              <Text style={styles.buttonText}>Volver</Text>
-            </View>
-          </Button>
-        </View>
-
         {ventasFiltradas.length > 0 ? (
           <View style={styles.lista}>
             {ventasFiltradas.map((venta) => (

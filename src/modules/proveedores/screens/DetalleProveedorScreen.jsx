@@ -58,21 +58,6 @@ export default function DetalleProveedorScreen() {
 
   return (
     <View style={styles.container}>
-      <Navbar
-        title="Detalle de proveedor"
-        style={styles.navbar}
-        titleStyle={styles.navbarTitulo}
-        leftContent={
-          <Button
-            variant="outline"
-            onPress={() => router.replace("/(drawer)/proveedores/proveedorScreen")}
-            style={styles.backButton}
-          >
-            <Icon icon={ICONS.exit} size={ICON_SIZE.navbar} color={COLORS.white} />
-          </Button>
-        }
-      />
-
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.contenido}

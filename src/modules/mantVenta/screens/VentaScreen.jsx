@@ -29,7 +29,7 @@ function SectionTitle({ icon, title }) {
   );
 }
 
-export default function VentaScreen() {
+export default function VentaScreen({ onDetalleVentas }) {
   const router = useRouter();
 
   const {
@@ -71,17 +71,6 @@ export default function VentaScreen() {
   const errorInputStyle = {
     borderColor: COLORS.error,
     backgroundColor: COLORS.surface,
-  };
-
-  const abrirDetalleVentas = () => {
-    router.push({
-      pathname: "/detalle-ventas",
-      params: {
-        ventas: JSON.stringify(ventas),
-        fincaSeleccionada,
-        estanqueSeleccionado,
-      },
-    });
   };
 
   return (
@@ -256,7 +245,7 @@ export default function VentaScreen() {
         </View>
 
         <View style={styles.buttonRow}>
-          <Button onPress={abrirDetalleVentas} style={styles.saveButton}>
+          <Button onPress={() => onDetalleVentas(ventas, fincaSeleccionada)} style={styles.saveButton}>
             <View style={styles.buttonContent}>
               <Icon icon={ICONS.report} size={20} color={COLORS.white} />
               <Text style={styles.buttonText}>Mostrar detalles</Text>
