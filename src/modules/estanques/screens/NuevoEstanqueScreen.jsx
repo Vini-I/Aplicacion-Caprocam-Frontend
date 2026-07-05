@@ -5,14 +5,6 @@
  *
  * Registra un nuevo estanque usando los componentes compartidos
  * del proyecto y el tema centralizado de Caprocam.
- *
- * Ajustes aplicados:
- * - Usa CustomText para textos visibles.
- * - Usa Button para acciones y opciones, sin Pressable directo.
- * - Usa Title para encabezados y títulos de sección.
- * - Usa NumberInput para densidad de siembra y aireadores.
- * - Usa DateInput para la fecha de siembra.
- * - Usa styles desde la carpeta del modulo.
  */
 
 import React, { useState } from "react";
@@ -31,6 +23,12 @@ import CustomText from "../../../shared/components/Text";
 import Title from "../../../shared/components/Title";
 
 import { styles } from "../styles/EstanqueStyle";
+import {
+  obtenerCodigoAireadorDefault,
+  obtenerEstanqueAireador,
+  obtenerOpcionesAireadores,
+  obtenerOpcionesEstanqueSeleccionado,
+} from "../services/AireadoresEstanqueService";
 
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
@@ -112,6 +110,17 @@ const METODOS_ALIMENTACION = [
   },
 ];
 
+const OPCIONES_AIREADORES = [
+  {
+    label: "Si",
+    value: "si",
+  },
+  {
+    label: "No",
+    value: "no",
+  },
+];
+
 const OPCIONES_ALIMENTADOR = [
   {
     label: "Si",
@@ -122,6 +131,8 @@ const OPCIONES_ALIMENTADOR = [
     value: "no",
   },
 ];
+
+const AIREADORES_EXISTENTES = obtenerOpcionesAireadores();
 
 const ESTADOS_ESTANQUE = [
   {
@@ -158,17 +169,17 @@ export default function NuevoEstanqueScreen({ navigation }) {
   const [fuenteAgua, setFuenteAgua] = useState("");
   const [especie, setEspecie] = useState("litopenaeus_vannamei");
   const [fechaSiembra, setFechaSiembra] = useState(obtenerFechaActual());
-  const [fechaInicioEngorde, setFechaInicioEngorde] = useState(
-    obtenerFechaActual()
-  );
-  const [fechaMantenimiento, setFechaMantenimiento] = useState(
-    obtenerFechaActual()
-  );
+  const [fechaInicioEngorde, setFechaInicioEngorde] =
+    useState(obtenerFechaActual());
+  const [fechaMantenimiento, setFechaMantenimiento] =
+    useState(obtenerFechaActual());
   const [densidadSiembra, setDensidadSiembra] = useState("12");
   const [precria, setPrecria] = useState("");
   const [metodoAlimentacion, setMetodoAlimentacion] = useState("");
   const [proveedorAlimento, setProveedorAlimento] = useState("Biomar");
   const [numeroAireadores, setNumeroAireadores] = useState("0");
+  const [tieneAireadores, setTieneAireadores] = useState("no");
+  const [codigoAireador, setCodigoAireador] = useState("");
   const [tieneAlimentadorAutomatico, setTieneAlimentadorAutomatico] =
     useState("");
   const [mensaje, setMensaje] = useState("");
@@ -186,6 +197,23 @@ export default function NuevoEstanqueScreen({ navigation }) {
   function mostrarError(texto) {
     setTipoMensaje("warning");
     setMensaje(texto);
+  }
+
+  function manejarTieneAireadores(valor) {
+    setTieneAireadores(valor);
+
+    if (valor === "si") {
+      setNumeroAireadores("1");
+
+      if (codigoAireador === "") {
+        setCodigoAireador(obtenerCodigoAireadorDefault());
+      }
+    }
+
+    if (valor === "no") {
+      setNumeroAireadores("0");
+      setCodigoAireador("");
+    }
   }
 
   function registrarEstanque() {
@@ -224,6 +252,11 @@ export default function NuevoEstanqueScreen({ navigation }) {
       return;
     }
 
+    if (tieneAireadores === "si" && codigoAireador === "") {
+      mostrarError("Debe seleccionar el codigo del aireador.");
+      return;
+    }
+
     const nuevoEstanque = {
       id: String(Date.now()),
       finca: "Finca La Reina",
@@ -243,6 +276,13 @@ export default function NuevoEstanqueScreen({ navigation }) {
       metodoAlimentacion: metodoAlimentacion,
       proveedorAlimento: proveedorAlimento,
       numeroAireadores: numeroAireadores,
+      tieneAireadores: tieneAireadores,
+      codigoAireador: codigoAireador,
+      estanqueAireador: obtenerEstanqueAireador(
+        tieneAireadores,
+        codigo,
+        "Finca La Reina",
+      ),
       tieneAlimentadorAutomatico: tieneAlimentadorAutomatico,
     };
 
@@ -272,6 +312,9 @@ export default function NuevoEstanqueScreen({ navigation }) {
         metodoAlimentacion: nuevoEstanque.metodoAlimentacion,
         proveedorAlimento: nuevoEstanque.proveedorAlimento,
         numeroAireadores: nuevoEstanque.numeroAireadores,
+        tieneAireadores: nuevoEstanque.tieneAireadores,
+        codigoAireador: nuevoEstanque.codigoAireador,
+        estanqueAireador: nuevoEstanque.estanqueAireador,
         tieneAlimentadorAutomatico: nuevoEstanque.tieneAlimentadorAutomatico,
       },
     });
@@ -495,15 +538,47 @@ export default function NuevoEstanqueScreen({ navigation }) {
             labelStyle={styles.label}
           />
 
-          <NumberInput
-            label="N° aireadores"
-            value={numeroAireadores}
-            onChangeText={setNumeroAireadores}
-            min={0}
-            max={999}
-            step={1}
+          <Select
+            label="¿Tiene aireadores?"
+            options={OPCIONES_AIREADORES}
+            value={tieneAireadores}
+            onChange={manejarTieneAireadores}
+            placeholder="Seleccione una opcion"
             labelStyle={styles.label}
           />
+
+          {tieneAireadores === "si" && (
+            <View style={styles.aeratorBox}>
+              <Select
+                label="Codigo del aireador"
+                options={AIREADORES_EXISTENTES}
+                value={codigoAireador}
+                onChange={setCodigoAireador}
+                placeholder="Seleccione el codigo"
+                labelStyle={styles.label}
+              />
+
+              <Select
+                label="Estanque seleccionado"
+                options={obtenerOpcionesEstanqueSeleccionado(
+                  codigo,
+                  "Finca La Reina",
+                )}
+                value={codigo}
+                disabled={true}
+                placeholder="Ingrese primero el codigo del estanque"
+                labelStyle={styles.label}
+              />
+
+              <CustomText
+                size={13}
+                color={COLORS.textTertiary}
+                style={styles.helperText}
+              >
+                El aireador se asigna automaticamente al estanque actual.
+              </CustomText>
+            </View>
+          )}
 
           <Select
             label="¿Tiene alimentador automatico?"
