@@ -77,21 +77,6 @@ export default function DetalleProductoScreen() {
 
     return (
         <View style={styles.contenedor}>
-            <Navbar
-                title="Detalle de Producto"
-                style={styles.navbar}
-                titleStyle={styles.navbarTitulo}
-                leftContent={
-                    <Button
-                        variant="outline"
-                        onPress={handleBack}
-                        style={styles.backButton}
-                    >
-                        <Icon icon={ICONS.back} size={22} color={COLORS.white} />
-                    </Button>
-                }
-            />
-
             <ScrollView
                 contentContainerStyle={styles.contentContainer}
                 showsVerticalScrollIndicator={false}

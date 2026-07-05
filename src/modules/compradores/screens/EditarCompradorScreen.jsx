@@ -47,21 +47,6 @@ export default function EditarCompradorScreen() {
   return (
     <View style={styles.container}>
 
-      <Navbar
-        title="Editar comprador"
-        style={styles.navbar}
-        titleStyle={styles.navbarTitle}
-        leftContent={
-          <Button variant="ghost" onPress={volverADetalle}>
-            <Icon
-              icon={ICONS.exit}
-              size={ICON_STYLES.exit.size}
-              color={ICON_STYLES.exit.color}
-            />
-          </Button>
-        }
-        rightContent={<View style={styles.navbarPlaceholder} />}
-      />
 
       {/* Formulario con scroll para evitar que el teclado tape los campos */}
       <ScrollView
