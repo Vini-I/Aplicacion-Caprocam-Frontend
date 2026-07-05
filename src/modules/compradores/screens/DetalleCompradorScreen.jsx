@@ -37,16 +37,6 @@ export default function DetalleCompradorScreen() {
   if (!comprador) {
     return (
       <View style={styles.contenedor}>
-        <Navbar
-          title="Comprador no encontrado"
-          style={styles.navbar}
-          titleStyle={styles.navbarTitulo}
-          leftContent={
-            <Button variant="outline" onPress={irAtras} style={styles.backButton}>
-              <Icon icon={ICONS.exit} size={ICON_SIZE.navbar} color={COLORS.white} />
-            </Button>
-          }
-        />
         <EmptyState
           title="Comprador no encontrado"
           description="El comprador que buscas no existe."
@@ -57,19 +47,6 @@ export default function DetalleCompradorScreen() {
 
   return (
     <View style={styles.container}>
-
-      {/* Navbar con botón para volver a la lista */}
-      <Navbar
-        title="Detalle de comprador"
-        style={styles.navbar}
-        titleStyle={styles.navbarTitulo}
-        leftContent={
-          <Button variant="outline" onPress={irAtras} style={styles.backButton}>
-            <Icon icon={ICONS.exit} size={ICON_SIZE.navbar} color={COLORS.white} />
-          </Button>
-        }
-      />
-
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.contenido}

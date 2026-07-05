@@ -3,10 +3,20 @@ import React from "react";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { ICONS } from "../../theme/icons";
 import Icon from "../../shared/components/Icons";
+import { COLORS } from "../../theme/colors.js";
 
 export default function DrawerLayout() {
   return (
-    <Drawer screenOptions={{ headerShown: true }}>
+    <Drawer
+    screenOptions={{
+      headerShown: true,
+      headerStyle: {
+        backgroundColor: COLORS.primary,
+        borderBottomWidth: 0,
+      },
+      headerTintColor: "#ffffff",
+    }}
+  >
       <Drawer.Screen
         name="(tabs)"
         options={{
@@ -17,6 +27,7 @@ export default function DrawerLayout() {
           )
         }}
       />
+
       <Drawer.Screen
         name="configuracion"
         options={{
@@ -27,23 +38,23 @@ export default function DrawerLayout() {
           )
         }}
       />
+
       <Drawer.Screen
         name="inventarios"
         options={{
           drawerLabel: "Inventario",
           title: "Inventario",
-          headerShown: false,
           drawerIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="package-variant-closed" color={color} size={size} />
           ),
         }}
       />
+
       <Drawer.Screen
         name="proveedores"
         options={{
           drawerLabel: "Proveedores",
           title: "Proveedores",
-          headerShown: false,
           drawerIcon: ({ color, size }) => (
             <MaterialCommunityIcons
               name="truck-delivery"
@@ -53,8 +64,7 @@ export default function DrawerLayout() {
           ),
         }}
       />
-
-          
+ 
       <Drawer.Screen
         name="compradores"
         options={{
@@ -110,6 +120,16 @@ export default function DrawerLayout() {
         }}
       />
 
+      <Drawer.Screen
+        name="venta"
+        options={{
+          drawerLabel: "Venta",
+          title: "Venta",
+          drawerIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="currency-usd" color={color} size={size} />
+          )
+        }}
+      />
 
       <Drawer.Screen
         name="linksPrueba"

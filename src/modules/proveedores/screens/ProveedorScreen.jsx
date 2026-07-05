@@ -87,25 +87,6 @@ export default function ProveedorScreen() {
 
   return (
     <View style={styles.container}>
-      <Navbar
-        title="Proveedores"
-        style={styles.navbar}
-        titleStyle={styles.navbarTitle}
-        leftContent={
-          <Button
-            variant="ghost"
-            onPress={() => router.replace("/inicio")}
-            style={styles.btnHome}
-          >
-            <Icon
-              icon={ICONS.home}
-              size={ICON_STYLES.home.size}
-              color={ICON_STYLES.home.color}
-            />
-          </Button>
-        }
-      />
-
       <View style={styles.barraBusqueda}>
         <SearchBar
           value={busqueda}

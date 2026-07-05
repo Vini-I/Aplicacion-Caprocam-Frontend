@@ -6,36 +6,23 @@ import Icon from "../../../shared/components/Icons";
 import Text from "../../../shared/components/Text";
 import Title from "../../../shared/components/Title";
 import RaleoForm from "../components/RaleoForm";
+import NavbarRegistro from "../../../shared/components/NavbarRegistro";
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
 import { styles } from "../styles/raleoStyles";
 import useRaleo from "../hooks/useRaleo";
 
 export default function RaleoScreen() {
-  const router = useRouter();
   const { form, updateField } = useRaleo();
 
   return (
+    <>
+    <NavbarRegistro
+        Titulo="Raleo"
+        Subtitulo="Cosecha parcial y densidad"
+        Icono="raleo"
+      />
     <ScrollView style={styles.screen} showsVerticalScrollIndicator={false}>
-      <View style={styles.header}>
-        <Button variant="outline" onPress={() => router.back()} style={styles.backBtn}>
-          <View style={styles.backBtnContent}>
-            <Icon icon={ICONS.exit} size={18} color={COLORS.white} />
-            <Text size={16} color={COLORS.white} style={styles.backBtnText}>Volver</Text>
-          </View>
-        </Button>
-
-        <View style={styles.headerTitle}>
-          <View style={styles.headerIcon}>
-            <Icon icon={ICONS.raleo} size={28} color={COLORS.primary} />
-          </View>
-          <View>
-            <Title level={3} color={COLORS.white}>Raleo</Title>
-            <Text size={14} color={COLORS.white}>Cosecha parcial y densidad</Text>
-          </View>
-        </View>
-      </View>
-
       <View style={styles.contenido}>
         <RaleoForm form={form} updateField={updateField} />
 
@@ -47,5 +34,6 @@ export default function RaleoScreen() {
         </Button>
       </View>
     </ScrollView>
+    </>
   );
 }
