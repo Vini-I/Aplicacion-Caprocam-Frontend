@@ -14,7 +14,7 @@ export default function DrawerLayout() {
         backgroundColor: COLORS.primary,
         borderBottomWidth: 0,
       },
-      headerTintColor: "#ffffff",
+      headerTintColor: COLORS.white,
     }}
   >
       <Drawer.Screen
