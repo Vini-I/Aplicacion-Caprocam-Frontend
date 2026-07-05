@@ -1,8 +1,16 @@
-import { useMemo, useState } from "react";
-import { ScrollView, View } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+/**
+ * ============================================================
+ * PANTALLA DE DETALLE DE VENTAS DEL MÓDULO DE VENTAS
+ * ============================================================
+ *
+ * Muestra el historial de ventas filtrado por finca y estanque,
+ * permitiendo revisar los registros de forma organizada.
+ */
 
-import Button from "../../../shared/components/Button.jsx";
+import { useMemo, useState } from "react";
+import { ScrollView, View, useWindowDimensions } from "react-native";
+import { useLocalSearchParams } from "expo-router";
+
 import Card from "../../../shared/components/Card.jsx";
 import Icon from "../../../shared/components/Icons.jsx";
 import Select from "../../../shared/components/Select.jsx";
@@ -12,7 +20,7 @@ import { COLORS } from "../../../theme/colors.js";
 import { ICONS } from "../../../theme/icons.js";
 
 import { fincas } from "../../finca/screens/FincaData.js";
-import { estanques } from "../../mantCrecimiento/screens/EstanqueData.js";
+import { estanques } from "../../mantCrecimiento/services/EstanqueData.js";
 import { formatearMontoColones } from "../hooks/useVenta.js";
 import { obtenerIdNumericoFinca } from "../hooks/useVenta.js";
 import { useVentaDetalle } from "../hooks/useVentaDetalle.js";
@@ -63,8 +71,10 @@ function TarjetaVenta({ venta }) {
 }
 
 export default function DetalleVentasScreen() {
-  const router = useRouter();
   const params = useLocalSearchParams();
+  const { width } = useWindowDimensions();
+  const isWide = width >= 700;
+  const gridStyle = isWide ? styles.inputRow : styles.inputGrid;
 
   const ventas = useMemo(() => {
     if (typeof params.ventas === "string") {
@@ -128,7 +138,7 @@ export default function DetalleVentasScreen() {
         <SectionTitle icon={ICONS.filter} title="Filtrar ventas" />
         <Text style={styles.detalleHint}>{mensajeDetalle}</Text>
 
-        <View style={styles.inputRow}>
+        <View style={gridStyle}>
           <View style={styles.inputItem}>
             <Select
               label="Finca"

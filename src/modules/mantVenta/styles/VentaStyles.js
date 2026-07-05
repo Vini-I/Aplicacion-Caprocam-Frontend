@@ -1,9 +1,15 @@
-import { Dimensions, StyleSheet } from "react-native";
+/**
+ * ============================================================
+ * ESTILOS DEL MÓDULO DE VENTAS
+ * ============================================================
+ *
+ * Centraliza los estilos visuales utilizados por las pantallas
+ * y componentes del módulo de ventas.
+ */
+
+import { StyleSheet } from "react-native";
 import { COLORS } from "../../../theme/colors.js";
 import { TYPOGRAPHY } from "../../../theme/typography.js";
-
-const { width } = Dimensions.get("window");
-const isLargeScreen = width >= 700;
 
 export const styles = StyleSheet.create({
   container: {

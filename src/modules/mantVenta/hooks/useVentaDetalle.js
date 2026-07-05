@@ -1,3 +1,12 @@
+/**
+ * ============================================================
+ * HOOK DE FILTRADO DE DETALLE DE VENTAS
+ * ============================================================
+ *
+ * Aplica los filtros de finca y estanque para mostrar los
+ * registros de ventas correspondientes.
+ */
+
 import { useMemo } from "react";
 
 export function useVentaDetalle({ ventas = [], fincaSeleccionada = "", estanqueSeleccionado = "" }) {
