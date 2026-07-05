@@ -3,7 +3,7 @@ import { COLORS } from "../../../../theme/colors.js";
 
 export default function RegistrosStackLayout() {
   return (
-    <Stack screenOptions={{ headerShown: false, headerStyle: { backgroundColor: COLORS.primary }, headerTintColor: "#fff",}}>
+    <Stack screenOptions={{ headerShown: false, headerStyle: { backgroundColor: COLORS.primary }, headerTintColor: COLORS.white}}>
         
       <Stack.Screen name="index" options={{ title: "Sección Finca" }} />
 

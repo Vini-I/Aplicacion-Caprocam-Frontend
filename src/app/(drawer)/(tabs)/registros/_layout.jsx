@@ -5,7 +5,7 @@ import { ICONS } from "../../../../theme/icons.js";
 
 export default function RegistrosStackLayout() {
   return (
-    <Stack screenOptions={{ headerShown: false, headerStyle: { backgroundColor: COLORS.primary }, headerTintColor: "#fff",}}>
+    <Stack screenOptions={{ headerShown: false, headerStyle: { backgroundColor: COLORS.primary }, headerTintColor: COLORS.white}}>
       <Stack.Screen name="index" options={{ title: "Sección de Registros"}} />
 
       <Stack.Screen name="EditarEstanque" options={{ title: "Editar Estanque"}} />

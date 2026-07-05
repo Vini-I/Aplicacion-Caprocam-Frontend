@@ -14,6 +14,7 @@ import { useFincaNueva} from "../hooks/useFincaNueva.js"
 import { ICONS } from "../../../theme/icons.js";
 import { COLORS } from "../../../theme/colors.js";
 import { styles } from "../styles/StylesFincaNueva.js";
+import { STYLE } from "../../../theme/style";
 
 export default function FincaNuevaScreen() {
   const {
@@ -47,7 +48,7 @@ export default function FincaNuevaScreen() {
       Icono="add"
     />
     <ScrollView
-      style={[styles.container, { paddingHorizontal: isLargeScreen ? 40 : 16 }]}
+      style={[STYLE.container, { paddingHorizontal: isLargeScreen ? 40 : 16 }]}
       contentContainerStyle={styles.content}
       keyboardShouldPersistTaps="handled"
     >

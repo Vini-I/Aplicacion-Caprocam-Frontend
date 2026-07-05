@@ -4,6 +4,7 @@ import { useRouter } from "expo-router";
 import { styles } from "../styles/FincaDetalleStyles";
 import { ICONS } from "../../../theme/icons";
 import { COLORS } from "../../../theme/colors";
+import { STYLE } from "../../../theme/style";
 
 import useFincaDetalle from "../hooks/useFincaDetalle";
 
@@ -26,8 +27,8 @@ export default function FincaDetalleScreen({ onEstanque }) {
         Subtitulo={finca.nombre}
         Icono="document"
     />
-    <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.contentWrapper}>
+    <ScrollView contentContainerStyle={STYLE.container}>
+      <View style={STYLE.contentWrapper}>
         <Card>
           <View style={styles.detalleCard}>
             <View>

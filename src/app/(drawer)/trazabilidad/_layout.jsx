@@ -3,8 +3,8 @@ import { COLORS } from "../../../theme/colors.js";
 
 export default function TrazabilidadStackLayout() {
   return (
-    <Stack screenOptions={{ headerShown: false, headerStyle: { backgroundColor: COLORS.primary }, headerTintColor: "#fff",}}>
-      
+    <Stack screenOptions={{ headerShown: false, headerStyle: { backgroundColor: COLORS.primary }, headerTintColor: COLORS.white}}>
+
       <Stack.Screen name="index" options={{ title: "Sección de Trazabilidad", headerShown: false }} />
 
       <Stack.Screen name="agregar" options={{ title: "Registrar Trazabilidad", headerShown: true }} />
