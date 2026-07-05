@@ -1,3 +1,12 @@
+/**
+ * ============================================================
+ * PANTALLA DE REGISTRO DE VENTAS DEL MÓDULO DE VENTAS
+ * ============================================================
+ *
+ * Contiene la interfaz para registrar ventas de producto y
+ * enviar la información a la lógica de negocio del módulo.
+ */
+
 import { ScrollView, View } from "react-native";
 import { useRouter } from "expo-router";
 
