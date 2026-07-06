@@ -12,18 +12,6 @@ import { COLORS } from "../../../theme/colors.js";
 import { TYPOGRAPHY } from "../../../theme/typography.js";
 
 export const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: COLORS.white,
-  },
-
-  contentWrapper: {
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
-  },
-
   headerRow: {
     flexDirection: "row",
     alignItems: "center",
