@@ -1,6 +1,5 @@
 import { Drawer } from "expo-router/drawer";
 import React from "react";
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { ICONS } from "../../theme/icons";
 import Icon from "../../shared/components/Icons";
 import { COLORS } from "../../theme/colors.js";
@@ -14,7 +13,7 @@ export default function DrawerLayout() {
         backgroundColor: COLORS.primary,
         borderBottomWidth: 0,
       },
-      headerTintColor: "#ffffff",
+      headerTintColor: COLORS.white,
     }}
   >
       <Drawer.Screen
@@ -23,7 +22,7 @@ export default function DrawerLayout() {
           drawerLabel: "Panel Principal",
           title: "Caprocam",
           drawerIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="view-dashboard" color={color} size={size} />
+            <Icon icon={ICONS.dashboard} size={22} />
           )
         }}
       />
@@ -34,7 +33,7 @@ export default function DrawerLayout() {
           drawerLabel: "Configuración",
           title: "Ajustes de la Aplicación",
           drawerIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="cog" color={color} size={size} />
+            <Icon icon={ICONS.gear} />
           )
         }}
       />
@@ -45,7 +44,7 @@ export default function DrawerLayout() {
           drawerLabel: "Inventario",
           title: "Inventario",
           drawerIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="package-variant-closed" color={color} size={size} />
+            <Icon icon={ICONS.dropbox} size={22} />
           ),
         }}
       />
@@ -56,11 +55,7 @@ export default function DrawerLayout() {
           drawerLabel: "Proveedores",
           title: "Proveedores",
           drawerIcon: ({ color, size }) => (
-            <MaterialCommunityIcons
-              name="truck-delivery"
-              color={color}
-              size={size}
-            />
+            <Icon icon={ICONS.truck} size={18} />
           ),
         }}
       />
@@ -70,8 +65,8 @@ export default function DrawerLayout() {
         options={{
           drawerLabel: "Compradores",
           title: "Compradores",
-          drawerIcon: ({ color }) => (
-            <MaterialCommunityIcons name="account-group" size={22} color={color} />
+          drawerIcon: ({ color, size }) => (
+            <Icon icon={ICONS.people} size={22} />
           ),
         }}
       />
@@ -82,7 +77,7 @@ export default function DrawerLayout() {
           drawerLabel: "Trazabilidad",
           title: "Trazabilidad",
           drawerIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="map-marker-path" color={color} size={size} />
+            <Icon icon={ICONS.trazabilidad} size={23}/>
           )
         }}
       />
@@ -93,7 +88,7 @@ export default function DrawerLayout() {
           drawerLabel: "Colaboradores",
           title: "Colaboradores",
           drawerIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="account-group" color={color} size={size} />
+            <Icon icon={ICONS.people} size={22}/>
           )
         }}
       />
@@ -104,7 +99,7 @@ export default function DrawerLayout() {
           drawerLabel: "Mantenimiento de Equipos",
           title: "Mantenimiento de Equipos",
           drawerIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="wrench" color={color} size={size} />
+            <Icon icon={ICONS.tools} size={23} />
           )
         }}
       />
@@ -115,7 +110,7 @@ export default function DrawerLayout() {
           drawerLabel: "Registrar Equipo",
           title: "Registrar Equipo",
           drawerIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="plus" color={color} size={size} />
+            <Icon icon={ICONS.engine} size={24} />
           )
         }}
       />
@@ -126,7 +121,7 @@ export default function DrawerLayout() {
           drawerLabel: "Venta",
           title: "Venta",
           drawerIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="currency-usd" color={color} size={size} />
+            <Icon icon={ICONS.money} size={25} />
           )
         }}
       />
@@ -137,7 +132,7 @@ export default function DrawerLayout() {
           drawerLabel: "Links de Prueba",
           title: "Links de Prueba",
           drawerIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="link" color={color} size={size} />
+            <Icon icon={ICONS.link} size={24} />
           )
         }}
       />

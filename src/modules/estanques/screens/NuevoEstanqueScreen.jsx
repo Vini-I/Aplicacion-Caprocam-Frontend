@@ -322,12 +322,13 @@ export default function NuevoEstanqueScreen({ navigation }) {
   }
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <NavbarRegistro
+    <>
+    <NavbarRegistro
         Titulo="Nuevo Estanque"
         Subtitulo="Finca: Finca La Reina"
         Icono="water"
       />
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.content}>
         {mensaje !== "" && (
           <Alert
@@ -563,6 +564,7 @@ export default function NuevoEstanqueScreen({ navigation }) {
         </Button>
       </View>
     </ScrollView>
+    </>
   );
 }
 
