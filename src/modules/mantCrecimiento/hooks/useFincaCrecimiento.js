@@ -19,6 +19,7 @@ export function useFincaCrecimiento() {
   const [submitted, setSubmitted] = useState(false);
   const [errors, setErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   const estanque = useMemo(() => {
     if (parsedId !== null) {
@@ -61,6 +62,22 @@ export function useFincaCrecimiento() {
       }));
   }, [fincaSeleccionada]);
 
+  const pesoAnteriorLabel = useMemo(() => {
+    if (
+      estanqueSeleccionadoObj?.pesoSemanaAnterior !== undefined &&
+      estanqueSeleccionadoObj?.pesoSemanaAnterior !== null
+    ) {
+      return `Peso anterior: ${estanqueSeleccionadoObj.pesoSemanaAnterior} g`;
+    }
+
+    return "Peso anterior: -";
+  }, [estanqueSeleccionadoObj]);
+
+  const estanqueDeshabilitado = useMemo(
+    () => estanqueSeleccionado !== "" && estanquesFiltrados.length === 0,
+    [estanqueSeleccionado, estanquesFiltrados.length],
+  );
+
   const validarCampos = useCallback(() => {
     const nextErrors = {};
 
@@ -85,12 +102,14 @@ export function useFincaCrecimiento() {
     setEstanqueSeleccionado("");
     setErrors((prev) => ({ ...prev, finca: undefined, estanque: undefined }));
     setSuccessMessage("");
+    setErrorMessage("");
   }, []);
 
   const handleEstanqueChange = useCallback(
     (value) => {
       setEstanqueSeleccionado(value);
       setSuccessMessage("");
+      setErrorMessage("");
       if (submitted) {
         setErrors((prev) => ({ ...prev, estanque: undefined }));
       }
@@ -102,6 +121,7 @@ export function useFincaCrecimiento() {
     (value) => {
       setPesoActual(value);
       setSuccessMessage("");
+      setErrorMessage("");
       if (submitted) {
         setErrors((prev) => ({ ...prev, peso: undefined }));
       }
@@ -112,8 +132,10 @@ export function useFincaCrecimiento() {
   const guardarDatos = useCallback(() => {
     setSubmitted(true);
     setSuccessMessage("");
+    setErrorMessage("");
 
     if (!validarCampos()) {
+      setErrorMessage("Complete los campos obligatorios.");
       return;
     }
 
@@ -129,6 +151,8 @@ export function useFincaCrecimiento() {
     estanquesFiltrados,
     estanqueSeleccionadoObj,
     estanque,
+    pesoAnteriorLabel,
+    estanqueDeshabilitado,
     setEstanqueSeleccionado: handleEstanqueChange,
     setPesoActual: handlePesoActualChange,
     handleFincaChange,
@@ -136,5 +160,6 @@ export function useFincaCrecimiento() {
     submitted,
     errors,
     successMessage,
+    errorMessage,
   };
 }
