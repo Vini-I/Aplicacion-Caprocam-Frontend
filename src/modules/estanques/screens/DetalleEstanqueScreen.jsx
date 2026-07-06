@@ -8,6 +8,9 @@ import Card from "../../../shared/components/Card";
 import Icon from "../../../shared/components/Icons";
 import CustomText from "../../../shared/components/Text";
 import Title from "../../../shared/components/Title";
+import NavbarRegistro from "../../../shared/components/NavbarRegistro";
+
+import useDetalleEstanque from "../hooks/useDetalleEstanque";
 
 import { styles } from "../styles/EstanqueStyle";
 import {
@@ -23,35 +26,12 @@ export default function DetalleEstanqueScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
 
+  const { estanque } = useDetalleEstanque();
+
   const tieneAireadores = obtenerTieneAireadoresInicial(
     params.tieneAireadores,
     params.numeroAireadores,
   );
-
-  const estanque = {
-    id: params.id,
-    finca: params.finca,
-    codigo: params.codigo,
-    estado: params.estado,
-    tipoEstanque: params.tipoEstanque,
-    largo: params.largo,
-    ancho: params.ancho,
-    profundidad: params.profundidad,
-    fuenteAgua: params.fuenteAgua,
-    especie: params.especie,
-    fechaSiembra: params.fechaSiembra,
-    fechaInicioEngorde: params.fechaInicioEngorde,
-    fechaMantenimiento: params.fechaMantenimiento,
-    densidadSiembra: params.densidadSiembra,
-    precria: params.precria,
-    metodoAlimentacion: params.metodoAlimentacion,
-    proveedorAlimento: params.proveedorAlimento,
-    numeroAireadores: params.numeroAireadores,
-    tieneAireadores: tieneAireadores,
-    codigoAireador: params.codigoAireador,
-    estanqueAireador: params.estanqueAireador,
-    tieneAlimentadorAutomatico: params.tieneAlimentadorAutomatico,
-  };
 
   function volver() {
     router.back();
@@ -107,46 +87,13 @@ export default function DetalleEstanqueScreen() {
   }
 
   return (
+    <>
+    <NavbarRegistro
+        Titulo="Detalle de Estanque"
+        Subtitulo={`${estanque.finca} ${estanque.codigo}`}
+        Icono="document"
+      />
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <View style={styles.header}>
-        <Button variant="outline" onPress={volver} style={styles.cancelButton}>
-          <View style={styles.inlineButtonContent}>
-            <Icon icon={ICONS.exit} size={18} color={COLORS.white} />
-
-            <CustomText
-              size={16}
-              color={COLORS.white}
-              style={styles.cancelText}
-            >
-              Volver
-            </CustomText>
-          </View>
-        </Button>
-
-        <View style={styles.headerRow}>
-          <View style={styles.headerIcon}>
-            <Icon icon={ICONS.water} size={28} color={COLORS.white} />
-          </View>
-
-          <View style={styles.headerTextBox}>
-            <Title
-              level={3}
-              color={COLORS.white}
-              fuente={TYPOGRAPHY.fontFamily.bold}
-            >
-              Detalle Estanque
-            </Title>
-
-            <CustomText
-              size={14}
-              color={COLORS.white}
-              style={styles.headerSubtitle}
-            >
-              {estanque.codigo} - {estanque.finca}
-            </CustomText>
-          </View>
-        </View>
-      </View>
 
       <View style={styles.content}>
         <Card>
@@ -239,6 +186,7 @@ export default function DetalleEstanqueScreen() {
         </Button>
       </View>
     </ScrollView>
+    </>
   );
 }
 
