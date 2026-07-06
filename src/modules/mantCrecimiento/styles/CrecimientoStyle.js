@@ -16,24 +16,9 @@ export const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     position: "relative",
   },
-  container: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: COLORS.white,
-  },
   contentScroll: {
     flexGrow: 1,
     paddingBottom: 24,
-  },
-  contentWrapper: {
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
-    padding: 4,
-  },
-  cardContent: {
-    flexDirection: "row",
-    alignSelf: "flex-start",
   },
   cardTitle: {
     fontSize: 14,
@@ -150,12 +135,13 @@ export const styles = StyleSheet.create({
   submitButton: {
     marginTop: 12,
   },
-  successAlert: {
-    position: "absolute",
-    left: 16,
-    right: 16,
-    bottom: 24,
-    zIndex: 10,
-    elevation: 10,
+  feedbackAlert: {
+    marginTop: 12,
+  },
+  errorSelect: {
+    borderColor: COLORS.error,
+  },
+  errorInput: {
+    borderColor: COLORS.error,
   },
 });

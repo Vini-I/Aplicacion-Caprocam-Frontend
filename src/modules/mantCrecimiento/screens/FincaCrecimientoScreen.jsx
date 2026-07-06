@@ -28,6 +28,7 @@ import Title from "../../../shared/components/Title.jsx";
 import { COLORS } from "../../../theme/colors.js";
 import { ICONS } from "../../../theme/icons.js";
 import { useFincaCrecimiento } from "../hooks/useFincaCrecimiento.js";
+import { STYLE} from "../../../theme/style.js";
 
 export default function FincaCrecimientoScreen() {
   const {
@@ -38,6 +39,8 @@ export default function FincaCrecimientoScreen() {
     estanquesFiltrados,
     estanqueSeleccionadoObj,
     estanque,
+    pesoAnteriorLabel,
+    estanqueDeshabilitado,
     setEstanqueSeleccionado,
     setPesoActual,
     handleFincaChange,
@@ -45,29 +48,24 @@ export default function FincaCrecimientoScreen() {
     submitted,
     errors,
     successMessage,
+    errorMessage,
   } = useFincaCrecimiento();
 
   if (!estanque) {
     return (
-      <ScrollView style={styles.container} contentContainerStyle={styles.contentScroll}>
-        <Card style={styles.contentWrapper}>
+      <ScrollView style={STYLE.container} contentContainerStyle={styles.contentScroll}>
+        <Card style={STYLE.contentWrapper}>
           <Text>No se encontró un estanque válido.</Text>
         </Card>
       </ScrollView>
     );
   }
 
-  const pesoAnteriorLabel =
-    estanqueSeleccionadoObj?.pesoSemanaAnterior !== undefined &&
-    estanqueSeleccionadoObj?.pesoSemanaAnterior !== null
-      ? `Peso anterior: ${estanqueSeleccionadoObj.pesoSemanaAnterior} g`
-      : "Peso anterior: -";
-
   return (
     <View style={styles.screenContainer}>
       <NavbarRegistro Titulo="Crecimiento" Subtitulo="Registro de peso" Icono="growth" />
-      <ScrollView style={styles.container} contentContainerStyle={styles.contentScroll}>
-        <Card style={styles.contentWrapper}>
+      <ScrollView style={STYLE.container} contentContainerStyle={styles.contentScroll}>
+        <Card style={STYLE.contentWrapper}>
           <View style={styles.headerRow}>
             <Icon
               icon={ICONS.growth}
@@ -84,6 +82,7 @@ export default function FincaCrecimientoScreen() {
             options={opcionesFincas}
             value={fincaSeleccionada}
             onChange={handleFincaChange}
+            selectStyle={submitted && errors.finca ? styles.errorSelect : null}
           />
           {submitted && errors.finca ? <Text style={styles.errorText}>{errors.finca}</Text> : null}
 
@@ -93,7 +92,8 @@ export default function FincaCrecimientoScreen() {
             options={estanquesFiltrados}
             value={estanqueSeleccionado}
             onChange={setEstanqueSeleccionado}
-            disabled={estanqueSeleccionado !== "" && estanquesFiltrados.length === 0}
+            disabled={estanqueDeshabilitado}
+            selectStyle={submitted && errors.estanque ? styles.errorSelect : null}
           />
           {submitted && errors.estanque ? <Text style={styles.errorText}>{errors.estanque}</Text> : null}
 
@@ -116,6 +116,7 @@ export default function FincaCrecimientoScreen() {
                 step={0.5}
                 min={0}
                 max={1000}
+                style={[styles.sameInput, submitted && errors.peso ? styles.errorInput : null]}
               />
               {submitted && errors.peso ? <Text style={styles.errorText}>{errors.peso}</Text> : null}
             </View>
@@ -124,12 +125,14 @@ export default function FincaCrecimientoScreen() {
           <Button variant="outline" onPress={guardarDatos} style={styles.submitButton}>
             Guardar
           </Button>
+          {errorMessage ? (
+            <Alert variant="danger" message={errorMessage} style={styles.feedbackAlert} />
+          ) : null}
+          {successMessage ? (
+            <Alert variant="success" message={successMessage} style={styles.feedbackAlert} />
+          ) : null}
         </Card>
       </ScrollView>
-
-      {successMessage ? (
-        <Alert variant="success" message={successMessage} style={styles.successAlert} />
-      ) : null}
     </View>
   );
 }
