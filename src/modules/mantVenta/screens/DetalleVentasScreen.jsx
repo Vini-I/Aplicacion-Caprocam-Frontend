@@ -85,7 +85,6 @@ export default function DetalleVentasScreen() {
     <ScrollView style={STYLE.container} showsVerticalScrollIndicator={false}>
       <Card style={STYLE.contentWrapper}>
         <View style={styles.headerRow}>
-          <Icon icon={ICONS.report} size={22} color={COLORS.primary} style={styles.headerIcon} />
           <Text style={styles.cardTitle}>Detalle de ventas</Text>
         </View>
 
