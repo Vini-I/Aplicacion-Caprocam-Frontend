@@ -32,7 +32,14 @@ export const styles = StyleSheet.create({
     marginBottom: 8,
   },
   closeBtn: {
-    padding: 6,
+    width: 36,
+    height: 36,
+    padding: 0,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: COLORS.textTertiary,
+    alignItems: "center",
+    justifyContent: "center",
   },
   filterBtn: {
     flexDirection: "row",
@@ -90,13 +97,17 @@ export const sectionStyles = StyleSheet.create({
 export const chipStyles = StyleSheet.create({
   chip: {
     paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderRadius: 20,
+    paddingHorizontal: 14,
+    borderRadius: 99,
+    borderWidth: 1,
+    borderColor: COLORS.textTertiary,
+    backgroundColor: COLORS.white,
     marginRight: 8,
     marginBottom: 8,
   },
   chipSelected: {
-    backgroundColor: COLORS.primary + "1A", // slight overlay if needed
+    borderColor: COLORS.primary,
+    backgroundColor: COLORS.white,
   },
 });
 
