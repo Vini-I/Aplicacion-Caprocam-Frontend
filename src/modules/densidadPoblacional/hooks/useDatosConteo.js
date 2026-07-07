@@ -1,3 +1,35 @@
+/**
+ * ============================================================
+ * HOOK USEDATOSCONTEO
+ * ============================================================
+ *
+ * Maneja el estado de los datos de conteo con atarraya (número
+ * de camarones, tiros, área de la atarraya, promedio por tiro,
+ * sobrevivencia y notas) y de los datos base del estanque
+ * usados para calcular la densidad poblacional (siembra por m²
+ * y área del estanque). No muestra ni renderiza nada en
+ * pantalla: la interfaz decide cuándo mostrar los errores
+ * devueltos por validar().
+ *
+ * Estado que maneja:
+ * - numeroCamarones, tirosAtarraya, areaAtarraya: datos
+ *   obligatorios del conteo con atarraya.
+ * - promedioPorTiro, sobrevivencia, notasConteo: datos opcionales.
+ * - siembraPorM2, areaEstanque: datos del estanque, obligatorios
+ *   para calcular la densidad.
+ *
+ * Retorna:
+ * - todos los valores anteriores junto con sus setters.
+ * - validar(): retorna { valido, errores } verificando como
+ *   obligatorios numeroCamarones (no vacío y numérico),
+ *   tirosAtarraya (mayor a 0), areaAtarraya, siembraPorM2 y
+ *   areaEstanque (seleccionados/no vacíos), sin mostrar nada en
+ *   pantalla.
+ *
+ * Ejemplo:
+ * const { numeroCamarones, setNumeroCamarones, validar } = useDatosConteo();
+ */
+
 import { useState } from "react";
 
 export const useDatosConteo = () => {
@@ -7,6 +39,30 @@ export const useDatosConteo = () => {
   const [promedioPorTiro, setPromedioPorTiro] = useState("");
   const [sobrevivencia, setSobrevivencia] = useState("");
   const [notasConteo, setNotasConteo] = useState("");
+  const [siembraPorM2, setSiembraPorM2] = useState("");
+  const [areaEstanque, setAreaEstanque] = useState("");
+
+  const validar = () => {
+    const errores = {};
+
+    if (!numeroCamarones || Number.isNaN(Number(numeroCamarones))) {
+      errores.numeroCamarones = "El número de camarones contados es obligatorio y debe ser numérico";
+    }
+    if (!(Number(tirosAtarraya) > 0)) {
+      errores.tirosAtarraya = "Los tiros de atarraya deben ser mayor a 0";
+    }
+    if (!areaAtarraya) {
+      errores.areaAtarraya = "El área de la atarraya es obligatoria";
+    }
+    if (!siembraPorM2) {
+      errores.siembraPorM2 = "La cantidad de siembra por m² es obligatoria";
+    }
+    if (!areaEstanque) {
+      errores.areaEstanque = "El área del estanque es obligatoria";
+    }
+
+    return { valido: Object.keys(errores).length === 0, errores };
+  };
 
   return {
     numeroCamarones,
@@ -15,6 +71,8 @@ export const useDatosConteo = () => {
     promedioPorTiro,
     sobrevivencia,
     notasConteo,
+    siembraPorM2,
+    areaEstanque,
 
     setNumeroCamarones,
     setTirosAtarraya,
@@ -22,5 +80,9 @@ export const useDatosConteo = () => {
     setPromedioPorTiro,
     setSobrevivencia,
     setNotasConteo,
+    setSiembraPorM2,
+    setAreaEstanque,
+
+    validar,
   };
 };
