@@ -1,28 +1,44 @@
-import { StyleSheet, Platform, StatusBar } from "react-native";
-import { COLORS } from "../../../theme/colors";
+/**
+ * ============================================================
+ * ESTILOS DENSIDADPOBLACIONALSTYLES
+ * ============================================================
+ *
+ * Agrupa los estilos del módulo de Densidad Poblacional: fondo
+ * de pantalla, wrapper de contenido centrado, subtítulos de
+ * sección, etiquetas de campo y el botón de guardar.
+ *
+ * Funcionalidad:
+ * - container usa COLORS.surface (antes COLORS.white) para ser
+ *   visualmente consistente con Alimentación y Raleo.
+ * - content y addButton reutilizan STYLE.contentWrapper de
+ *   theme/style.js en vez de redefinir manualmente
+ *   maxWidth/alignSelf/width en cada uno.
+ * - Se eliminaron los estilos que ningún archivo de este módulo
+ *   usa (verificado con búsqueda antes de eliminar): backBtn,
+ *   headerTitle, headerTitleText, header, title, buttonText,
+ *   fechaContainer, fechaInput, calendarButton, row, half.
+ *
+ * Ejemplo:
+ * import { styles } from '../styles/densidadPoblacionalStyles';
+ * <View style={styles.container}>
+ */
 
+import { StyleSheet } from "react-native";
+import { COLORS } from "../../../theme/colors";
+import { STYLE } from "../../../theme/style";
 
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.surface,
   },
-  content:{
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: COLORS.primary,
-    textAlign: "center",
+
+  content: {
+    ...STYLE.contentWrapper,
   },
 
   subTitle: {
     color: COLORS.textSecondary,
-
-
     fontSize: 16,
     fontWeight: "600",
   },
@@ -35,61 +51,7 @@ export const styles = StyleSheet.create({
     marginBottom: 4,
   },
 
-  buttonText: {
-    color: COLORS.white,
-    fontSize: 16,
-    fontWeight: "600",
-  },
-
-  fechaContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-
-  fechaInput: {
-    flex: 1,
-  },
-
-  calendarButton: {
-    marginLeft: 10,
-    padding: 8,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: COLORS.secondary,
-    borderRadius: 8,
-  },
-
-  row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-
-  half: {
-    width: "48%",
-  },
-
-  backBtn: { 
-    flexDirection: "row", alignItems: "center", gap: 4 
-  },
-
-  headerTitle: { 
-    flexDirection: "row", alignItems: "center", gap: 10 
-  },
-
-  headerTitleText: { 
-    fontSize: 22, fontWeight: "700" 
-  },
-
-  header: {
-    backgroundColor: COLORS.primary,
-    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight + 8 : 56,
-    paddingBottom: 20,
-    paddingHorizontal: 20,
-  },
-
-  addButton:{
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
+  addButton: {
+    ...STYLE.contentWrapper,
   },
 });
