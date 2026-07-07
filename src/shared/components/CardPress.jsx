@@ -24,7 +24,7 @@
 
 import React from "react";
 import { Pressable, Text, StyleSheet } from "react-native";
-import { COLORS } from "../../../theme/colors";
+import { COLORS } from "../../theme/colors.js";
 
 export default function Card({ 
     title = "", 
