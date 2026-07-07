@@ -62,8 +62,8 @@ export const styles = StyleSheet.create({
         paddingVertical: 12,
         borderRadius: 12,
     },
-    botonEditar: { backgroundColor: COLORS.primary },
-    botonEliminar: { backgroundColor: COLORS.error },
+    botonEditar: { borderColor: COLORS.primary },
+    botonEliminar: { borderColor: COLORS.error },
     // estilos del modal de confirmación
     modalTitulo: { color: COLORS.textSecondary, marginBottom: 8 },
     modalTexto: { marginBottom: 16 },

@@ -33,7 +33,7 @@ export const styles = StyleSheet.create({
     borderRadius: 18,
     padding: 18,
     backgroundColor: COLORS.white,
-    borderColor: COLORS.header,
+    borderColor: COLORS.secondary,
   },
   cardTitle: {
     fontSize: 19,
@@ -51,20 +51,20 @@ export const styles = StyleSheet.create({
   input: {
     minHeight: 48,
     borderRadius: 12,
-    borderColor: COLORS.header,
+    borderColor: COLORS.secondary,
     backgroundColor: COLORS.white,
     paddingHorizontal: 14,
     fontSize: 15
   },
   numberInput: {
     borderRadius: 12,
-    borderColor: COLORS.header,
+    borderColor: COLORS.secondary,
     backgroundColor: COLORS.white,
   },
   select: {
     minHeight: 48,
     borderRadius: 12,
-    borderColor: COLORS.header,
+    borderColor: COLORS.secondary,
     backgroundColor: COLORS.white,
     paddingHorizontal: 14,
   },
@@ -85,6 +85,6 @@ export const styles = StyleSheet.create({
     marginTop: 8,
     fontSize: 13,
     textAlign: "center",
-    color: COLORS.textTertiary,
+    color: COLORS.warning,
   },
 });

@@ -129,24 +129,14 @@ export default function DetalleProductoScreen() {
                 </Card>
 
                 <View style={styles.botonesSeccion}>
-                    <Button
-                        style={[styles.botonAccion, styles.botonEditar]}
-                        onPress={handleEditar}
-                    >
-                        <Icon icon={ICONS.edit} size={20} color={COLORS.white} />
-                        <Text color={COLORS.white} weight="600" size={14}>
-                            Editar
-                        </Text>
-                    </Button>
-
-                    <Button
-                        style={[styles.botonAccion, styles.botonEliminar]}
-                        onPress={handleEliminar}
-                    >
-                        <Icon icon={ICONS.delete} size={20} color={COLORS.white} />
-                        <Text color={COLORS.white} weight="600" size={14}>
-                            Eliminar
-                        </Text>
+                    <Button variant="outline" style={[styles.botonAccion, styles.botonEditar]} onPress={handleEditar}>
+                        <Icon icon={ICONS.edit} size={20} color={COLORS.primary} />
+                        <Text color={COLORS.primary} weight="600" size={14}>Editar</Text>
+                        </Button>
+                        
+                    <Button variant="outline" style={[styles.botonAccion, styles.botonEliminar]} onPress={handleEliminar}>
+                        <Icon icon={ICONS.delete} size={20} color={COLORS.error} />
+                        <Text color={COLORS.error} weight="600" size={14}>Eliminar</Text>
                     </Button>
                 </View>
             </ScrollView>
