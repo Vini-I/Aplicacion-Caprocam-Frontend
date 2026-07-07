@@ -1,5 +1,28 @@
+/**
+ * ============================================================
+ * ESTILOS ALIMENTACIONSTYLES
+ * ============================================================
+ *
+ * Agrupa los estilos del módulo de Alimentación: fondo de
+ * pantalla, contenedor de scroll, wrapper de contenido
+ * centrado, etiquetas de sección y estilos heredados de header
+ * usados por pantallas más antiguas del módulo.
+ *
+ * Funcionalidad:
+ * - Todos los colores usados vienen de COLORS (COLORS.surface,
+ *   COLORS.primary), sin valores hardcodeados.
+ * - alimentacionContent reutiliza STYLE.contentWrapper de
+ *   theme/style.js en vez de redefinir manualmente
+ *   maxWidth/alignSelf/width.
+ *
+ * Ejemplo:
+ * import { styles } from '../styles/alimentacionStyles';
+ * <View style={styles.screen}>
+ */
+
 import { StyleSheet, Platform, StatusBar } from "react-native";
 import { COLORS } from "../../../theme/colors";
+import { STYLE } from "../../../theme/style";
 
 export const styles = StyleSheet.create({
   screen: {
@@ -14,10 +37,8 @@ export const styles = StyleSheet.create({
   },
 
   alimentacionContent: {
-    marginVertical:20,
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
+    ...STYLE.contentWrapper,
+    marginVertical: 20,
     gap: 12,
   },
 
