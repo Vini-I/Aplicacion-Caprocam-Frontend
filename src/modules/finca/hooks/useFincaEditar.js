@@ -16,7 +16,7 @@
  * - Valida que los teléfonos tengan 8 dígitos numéricos.
  * - Actualiza la finca mediante el contexto global.
  */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Dimensions, View } from "react-native";
 import { styles } from "../styles/StylesFincaNueva.js";
 import { STYLE } from "../../../theme/style.js";
@@ -136,9 +136,11 @@ export function useFincaEditar({ onFinca, codigoInterno }) {
     onFinca();
   };
 
-  const ContentWrapper = ({ children }) => (
-    <View style={STYLE.contentWrapper}>{children}</View>
-  );
+  const ContentWrapper = useMemo(() => {
+    return function ContentWrapper({ children, style }) {
+      return <View style={[STYLE.contentWrapper, style]}>{children}</View>;
+    };
+  }, []);
 
   return {
     ContentWrapper,
