@@ -1,6 +1,31 @@
-import React from "react";
-import { View, ScrollView } from "react-native";
-import { useRouter } from "expo-router";
+/**
+ * ============================================================
+ * SCREEN RALEOSCREEN
+ * ============================================================
+ *
+ * Pantalla principal del módulo de Raleo. Orquesta el estado del
+ * formulario (useRaleo) y el guardado real del registro.
+ *
+ * Funcionalidad:
+ * - BUG FUNCIONAL GRAVE corregido: el botón "Registrar Raleo"
+ *   tenía onPress={() => {}} y no guardaba ni validaba nada.
+ *   Ahora handleGuardar activa `submitted = true`, valida con
+ *   validarForm() de useRaleo, y solo si es válido persiste el
+ *   registro con raleo.service.js, muestra el alert de éxito y
+ *   reinicia el formulario (resetForm + submitted=false).
+ * - Reutiliza el mismo patrón de alertas que Alimentación
+ *   (Platform.OS === 'web' ? window.alert : Alert.alert).
+ * - Usa NavbarRegistro (header celeste con botón volver) en vez
+ *   del Header.jsx compartido, igual que Alimentación y Densidad
+ *   Poblacional: Header.jsx está diseñado para pantallas de
+ *   login, no para navegación con botón volver + ruta contextual.
+ *
+ * Ejemplo:
+ * <RaleoScreen />
+ */
+
+import React, { useState } from "react";
+import { View, ScrollView, Platform, Alert } from "react-native";
 import Button from "../../../shared/components/Button";
 import Icon from "../../../shared/components/Icons";
 import Text from "../../../shared/components/Text";
@@ -11,9 +36,51 @@ import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
 import { styles } from "../styles/raleoStyles";
 import useRaleo from "../hooks/useRaleo";
+import raleoService from "../services/raleo.service";
+
+const showAlert = (title, message, buttons) => {
+  if (Platform.OS === "web") {
+    window.alert(`${title}\n\n${message}`);
+    buttons?.[0]?.onPress?.();
+  } else {
+    Alert.alert(title, message, buttons);
+  }
+};
 
 export default function RaleoScreen() {
-  const { form, updateField } = useRaleo();
+  const { form, updateField, resetForm, validarForm } = useRaleo();
+  const [submitted, setSubmitted] = useState(false);
+  const [errores, setErrores] = useState({});
+
+  const handleGuardar = async () => {
+    setSubmitted(true);
+    const { valido, errores: erroresValidacion } = validarForm();
+    setErrores(erroresValidacion);
+
+    if (!valido) {
+      const lista = Object.values(erroresValidacion)
+        .map((e) => `• ${e}`)
+        .join("\n");
+      showAlert("Campos incompletos", `Por favor complete:\n${lista}`);
+      return;
+    }
+
+    try {
+      await raleoService.create(form);
+      showAlert("Éxito", "Raleo registrado correctamente", [
+        {
+          text: "OK",
+          onPress: () => {
+            resetForm();
+            setSubmitted(false);
+            setErrores({});
+          },
+        },
+      ]);
+    } catch {
+      showAlert("Error", "No se pudo guardar el registro");
+    }
+  };
 
   return (
     <>
@@ -24,12 +91,17 @@ export default function RaleoScreen() {
       />
     <ScrollView style={styles.screen} showsVerticalScrollIndicator={false}>
       <View style={styles.contenido}>
-        <RaleoForm form={form} updateField={updateField} />
+        <RaleoForm
+          form={form}
+          updateField={updateField}
+          submitted={submitted}
+          errores={errores}
+        />
 
-        <Button onPress={() => {}} style={styles.saveButton}>
+        <Button variant="outline" onPress={handleGuardar} style={styles.saveButton}>
           <View style={styles.saveBtnContent}>
-            <Icon icon={ICONS.save} size={18} color={COLORS.white} />
-            <Text size={16} color={COLORS.white} style={styles.saveBtnText}>Registrar Raleo</Text>
+            <Icon icon={ICONS.save} size={18} color={COLORS.primary} />
+            <Text size={16} color={COLORS.primary} style={styles.saveBtnText}>Registrar Raleo</Text>
           </View>
         </Button>
       </View>
