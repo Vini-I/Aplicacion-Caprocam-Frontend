@@ -1,4 +1,32 @@
-import React, { useEffect } from "react";
+/**
+ * ============================================================
+ * SCREEN ALIMENTACIONSCREEN
+ * ============================================================
+ *
+ * Pantalla principal del módulo de Alimentación. Orquesta la
+ * carga de registros (useAlimentacion), el estado del
+ * formulario (useAlimentacionForm) y el guardado del registro.
+ *
+ * Funcionalidad:
+ * - Mantiene el estado `submitted` (booleano): se activa recién
+ *   dentro de handleGuardar, ANTES de validar, para que
+ *   GestionAlimentacion/AlimentacionForm sepan cuándo mostrar
+ *   los bordes rojos y mensajes de error de validarForm().
+ * - Usa NavbarRegistro (header celeste con botón volver) en vez
+ *   del Header.jsx compartido: Header.jsx está diseñado para
+ *   pantallas de login (logo + título + subtítulo centrados),
+ *   no para navegación con botón volver + ruta contextual.
+ *
+ * Props principales:
+ * - navigation: objeto de navegación (opcional, usado para
+ *   recargar datos al enfocar la pantalla).
+ * - onBack: callback opcional para volver atrás.
+ *
+ * Ejemplo:
+ * <AlimentacionScreen navigation={navigation} />
+ */
+
+import React, { useEffect, useState } from "react";
 import { View, Platform, Alert } from "react-native";
 import useAlimentacion from "../hooks/useAlimentacion";
 import useAlimentacionForm from "../hooks/useAlimentacionForm";
@@ -22,6 +50,8 @@ const showAlert = (title, message, buttons) => {
 export default function AlimentacionScreen({ navigation, onBack }) {
   const { alimentaciones, loading, error, recargar } = useAlimentacion();
   const { form, updateField, resetForm, validarForm } = useAlimentacionForm();
+  const [submitted, setSubmitted] = useState(false);
+  const [errores, setErrores] = useState({});
 
   useEffect(() => {
     const unsub = navigation?.addListener("focus", recargar);
@@ -29,10 +59,12 @@ export default function AlimentacionScreen({ navigation, onBack }) {
   }, [navigation, recargar]);
 
   const handleGuardar = async () => {
-    const { valido, errores } = validarForm();
+    setSubmitted(true);
+    const { valido, errores: erroresValidacion } = validarForm();
+    setErrores(erroresValidacion);
 
     if (!valido) {
-      const lista = Object.values(errores)
+      const lista = Object.values(erroresValidacion)
         .map((e) => `• ${e}`)
         .join("\n");
       showAlert("Campos incompletos", `Por favor complete:\n${lista}`);
@@ -46,6 +78,8 @@ export default function AlimentacionScreen({ navigation, onBack }) {
           text: "OK",
           onPress: () => {
             resetForm();
+            setSubmitted(false);
+            setErrores({});
             recargar();
           },
         },
@@ -75,6 +109,8 @@ export default function AlimentacionScreen({ navigation, onBack }) {
         alimentaciones={alimentaciones}
         form={form}
         updateField={updateField}
+        submitted={submitted}
+        errores={errores}
         handleGuardar={handleGuardar}
         onBack={onBack}
       />
