@@ -1,5 +1,30 @@
 /**
- * Estilos para la pantalla de edición de proveedor
+ * ============================================================
+ * ESTILOS EDITAR PROVEEDOR
+ * ============================================================
+ *
+ * Estilos de la pantalla EditarProveedorScreen.
+ *
+ * FUNCIONALIDAD:
+ * 1. Colores y tipografia salen de theme/colors y theme/typography.
+ * 2. El card no define ancho/centrado propio, eso lo resuelve
+ *    STYLE.contentWrapper (theme/style) desde la screen. El padding
+ *    raíz tampoco se define aquí: la screen aplica STYLE.container
+ *    (theme/style) como View raíz, igual que en NuevoProveedorScreen,
+ *    para que ambas pantallas se centren con exactamente las mismas
+ *    medidas. `container` en este archivo solo sobreescribe el
+ *    backgroundColor (surface en vez de white).
+ * 3. input/select/saveButton se mantienen alineados con
+ *    StylesNuevoProveedor (borde redondeado, mismo radio) para que
+ *    Nuevo/Editar proveedor se vean como el mismo formulario.
+ * 4. `inputError` (borde rojo) es el único estilo de estado de campo y
+ *    solo debe aplicarse tras un intento de guardado fallido, nunca
+ *    mientras el usuario escribe. No se pinta mensaje ni icono
+ *    individual debajo del campo.
+ * 5. `alertContainer` vive arriba del boton "Guardar proveedor".
+ *
+ * IMPORTANTE:
+ * - No hardcodear colores fuera de theme/colors.
  */
 import { StyleSheet } from "react-native";
 import { COLORS } from "../../../theme/colors";
@@ -7,53 +32,31 @@ import { TYPOGRAPHY } from "../../../theme/typography";
 
 export const styles = StyleSheet.create({
   container: {
-    flex: 1,
     backgroundColor: COLORS.surface,
   },
 
-  navbar: {
-    backgroundColor: COLORS.primary,
-    borderBottomWidth: 0,
-  },
-
-  navbarTitle: {
-    color: COLORS.white,
-    fontSize: 20,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    fontWeight: undefined,
-    position: "absolute",
-    left: 0,
-    right: 0,
-    textAlign: "left",
-    marginTop: 5,
-  },
-
-  navbarPlaceholder: {
-    width: 32,
-    height: 32,
-  },
-
-  content: {
-    paddingTop: 40,
-    paddingBottom: 40,
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
+  scrollView: {
+    flex: 1,
   },
 
   card: {
     borderRadius: 18,
-    padding: 18,
     backgroundColor: COLORS.white,
     borderColor: COLORS.secondary,
+  },
+
+  cardTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 16,
   },
 
   cardTitle: {
     fontSize: 19,
     fontFamily: TYPOGRAPHY.fontFamily.bold,
     fontWeight: undefined,
-    color: COLORS.textSecondary,
-    marginBottom: 16,
+    color: COLORS.black,
   },
 
   field: {
@@ -70,24 +73,22 @@ export const styles = StyleSheet.create({
 
   input: {
     minHeight: 48,
-    borderRadius: 0,
-    borderWidth: 0,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.secondary,
-    backgroundColor: "transparent",
-    paddingHorizontal: 0,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.secondary,
+    backgroundColor: COLORS.white,
+    paddingHorizontal: 14,
     fontSize: 15,
     fontFamily: TYPOGRAPHY.fontFamily.regular,
   },
 
   inputDisabled: {
     minHeight: 48,
-    borderRadius: 0,
-    borderWidth: 0,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.secondary,
-    backgroundColor: "transparent",
-    paddingHorizontal: 0,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.secondary,
+    backgroundColor: COLORS.surface,
+    paddingHorizontal: 14,
     fontSize: 15,
     fontFamily: TYPOGRAPHY.fontFamily.regular,
     color: COLORS.textSecondary,
@@ -95,26 +96,31 @@ export const styles = StyleSheet.create({
 
   select: {
     minHeight: 48,
-    borderRadius: 0,
-    borderWidth: 0,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.secondary,
-    backgroundColor: "transparent",
-    paddingHorizontal: 0,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.secondary,
+    backgroundColor: COLORS.white,
+    paddingHorizontal: 14,
   },
 
   saveButton: {
     marginTop: 10,
     borderRadius: 14,
     paddingVertical: 14,
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
   },
 
   saveButtonText: {
     fontSize: 16,
     fontFamily: TYPOGRAPHY.fontFamily.bold,
     fontWeight: undefined,
-    color: COLORS.white,
+    color: COLORS.primary,
+  },
+
+  inputError: {
+    borderColor: COLORS.error,
   },
 
   buttonContent: {
@@ -124,25 +130,25 @@ export const styles = StyleSheet.create({
     gap: 8,
   },
 
-  errorText: {
+  alertContainer: {
     marginTop: 4,
-    fontSize: 12,
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
-    color: COLORS.error,
+    marginBottom: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    width: "100%",
   },
 
-  alertContainer: {
-    marginBottom: 16,
+  alertText: {
+    textAlign: "center",
+    width: "100%",
   },
 });
 
 export const ICON_STYLES = {
-  exit: {
-    size: 26,
-    color: COLORS.white,
-  },
   save: {
-    size: 20,
-    color: COLORS.white,
+    color: COLORS.primary,
+  },
+  subtitle: {
+    color: COLORS.primary,
   },
 };

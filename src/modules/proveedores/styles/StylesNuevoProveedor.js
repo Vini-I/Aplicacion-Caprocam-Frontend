@@ -1,65 +1,50 @@
+/**
+ * ============================================================
+ * ESTILOS NUEVO PROVEEDOR
+ * ============================================================
+ *
+ * Estilos de la pantalla NuevoProveedorScreen.
+ *
+ * FUNCIONALIDAD:
+ * 1. Colores y tipografia salen de theme/colors y theme/typography, sin
+ *    valores hardcodeados.
+ * 2. El card no define ancho ni centrado propio: eso lo resuelve
+ *    STYLE.contentWrapper (theme/style) en la screen. El padding raíz
+ *    y el fondo blanco tampoco se definen aquí: la screen aplica
+ *    STYLE.container (theme/style) directamente como View raíz.
+ * 3. `inputError` (borde rojo) es el único estilo de estado de campo y
+ *    solo debe aplicarse tras un intento de guardado fallido, nunca
+ *    mientras el usuario escribe. No se pinta mensaje ni icono
+ *    individual debajo del campo.
+ * 4. `alertBox` vive arriba del boton "Guardar proveedor".
+ *
+ * IMPORTANTE:
+ * - No hardcodear colores fuera de theme/colors.
+ */
 import { StyleSheet } from "react-native";
 import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
 
-export const ICON_SIZES = {
-  back: 27,
-  save: 20,
-};
-
 export const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.white
-  },
-  navbar: {
-    backgroundColor: COLORS.primary,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    paddingTop: 40,
-  },
-  navbarRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 15,
-  },
-  navbarTitle: {
-    color: COLORS.white,
-    fontSize: 20,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    fontWeight: undefined,
-    flex: 1,
-  },
-  backBtn: {
-    marginTop: 0,
-    paddingVertical: 0,
-    paddingHorizontal: 0,
-    backgroundColor: "transparent",
-    borderWidth: 0,
-  },
-  navbarPlaceholder: {
-    width: 32, height: 32
-  },
   scrollView: {
     flex: 1,
-  },
-  content: {
-    padding: 16, paddingBottom: 32
   },
   card: {
     borderRadius: 18,
     backgroundColor: COLORS.white,
     borderColor: COLORS.secondary,
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
+  },
+  cardTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 16,
   },
   cardTitle: {
     fontSize: 19,
     fontFamily: TYPOGRAPHY.fontFamily.bold,
     fontWeight: undefined,
-    color: COLORS.textSecondary,
-    marginBottom: 16,
+    color: COLORS.black,
   },
   field: {
     marginBottom: 14
@@ -97,13 +82,18 @@ export const styles = StyleSheet.create({
     marginTop: 10,
     borderRadius: 14,
     paddingVertical: 14,
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
   },
   saveButtonText: {
     fontSize: 16,
-    color: COLORS.white,
+    color: COLORS.primary,
     fontWeight: "700",
     fontFamily: TYPOGRAPHY.fontFamily.bold,
+  },
+  inputError: {
+    borderColor: COLORS.error,
   },
   buttonContent: {
     flexDirection: "row",
@@ -112,7 +102,8 @@ export const styles = StyleSheet.create({
     gap: 8,
   },
   alertBox: {
-    marginTop: 10,
+    marginTop: 4,
+    marginBottom: 10,
     alignItems: "center",
     justifyContent: "center",
     width: "100%",

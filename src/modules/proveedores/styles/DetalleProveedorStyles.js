@@ -1,3 +1,34 @@
+/**
+ * ============================================================
+ * ESTILOS DETALLE PROVEEDOR
+ * ============================================================
+ *
+ * Estilos de la pantalla DetalleProveedorScreen, incluyendo el estado
+ * "proveedor no encontrado" y el modal de confirmación de eliminar.
+ *
+ * FUNCIONALIDAD:
+ * 1. Colores y tipografia salen de theme/colors y theme/typography.
+ * 2. El card y los botones no definen ancho/centrado propio: eso lo
+ *    resuelve STYLE.contentWrapper (theme/style) desde la screen. El
+ *    padding raíz tampoco se define aquí: la screen aplica
+ *    STYLE.container (theme/style) como View raíz, igual que en
+ *    NuevoProveedorScreen/EditarProveedorScreen. `container` en este
+ *    archivo solo sobreescribe el backgroundColor (surface).
+ * 3. Todos los botones (Editar, Eliminar, Volver, confirmar eliminar,
+ *    cancelar eliminar) son outline (borde + icono + texto de color,
+ *    sin relleno sólido): azul (COLORS.primary) para acciones
+ *    neutras/editar/volver/cancelar, rojo (COLORS.error) para eliminar.
+ * 4. `seccionNotas` comparte el mismo formato de `seccion` para que la
+ *    seccion de notas (icono + titulo) luzca igual al resto cuando se
+ *    renderiza condicionalmente.
+ *
+ * IMPORTANTE:
+ * - No define header/navbar propio: el header celeste global se
+ *   resuelve fuera de este módulo.
+ * - Excepción documentada: el overlay del modal (`modalOverlay`) usa
+ *   un hex con transparencia porque no hay un token de overlay en
+ *   theme/colors; no es un color de marca.
+ */
 // styles/StylesDetalleProveedor.js
 import { StyleSheet } from "react-native";
 import { COLORS } from "../../../theme/colors";
@@ -5,48 +36,31 @@ import { TYPOGRAPHY } from "../../../theme/typography";
 
 export const styles = StyleSheet.create({
   container: {
-    flex: 1,
     backgroundColor: COLORS.surface,
   },
 
-  navbar: {
-    backgroundColor: COLORS.primary,
-    borderBottomWidth: 0,
+  volverButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    borderRadius: 12,
+    paddingVertical: 12,
+    marginTop: 16,
   },
 
-  navbarTitulo: {
-    color: COLORS.white,
-    fontSize: 18,
+  volverButtonText: {
+    color: COLORS.primary,
+    fontSize: 14,
     fontFamily: TYPOGRAPHY.fontFamily.bold,
     fontWeight: undefined,
-    position: "absolute",
-    left: 0,
-    right: 0,
-    textAlign: "left",
-    marginTop: 8,
-  },
-
-  backButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 12,
-    backgroundColor: "rgba(255,255,255,0.2)",
-    borderWidth: 0,
-    paddingHorizontal: 0,
-    paddingVertical: 0,
-    marginTop: 6,
   },
 
   scroll: { 
     flex: 1 
-  },
-
-  contenido: {
-    paddingTop: 30,
-    paddingBottom: 40,
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
   },
 
   tarjeta: {
@@ -97,12 +111,18 @@ export const styles = StyleSheet.create({
     paddingTop: 12,
   },
 
-  seccionTitulo: {
+  seccionTituloRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
     marginBottom: 12,
+  },
+
+  seccionTitulo: {
     fontSize: 18,
     fontFamily: TYPOGRAPHY.fontFamily.bold,
     fontWeight: undefined,
-    color: COLORS.textSecondary,
+    color: COLORS.black,
   },
 
   seccionNotas: {
@@ -149,36 +169,48 @@ export const styles = StyleSheet.create({
     gap: 8,
     paddingVertical: 12,
     borderRadius: 12,
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
   },
 
-  botonEditar: { 
-    backgroundColor: COLORS.primary 
+  botonEditar: {
+    borderColor: COLORS.primary,
   },
 
-  botonEliminar: { 
-    backgroundColor: COLORS.error 
+  botonEliminar: {
+    borderColor: COLORS.error,
   },
 
   botonTexto: {
     fontSize: 14,
     fontFamily: TYPOGRAPHY.fontFamily.bold,
     fontWeight: undefined,
-    color: COLORS.white,
   },
 
-  modalCancelButton: { 
-    backgroundColor: COLORS.textTertiary 
+  botonTextoEditar: {
+    color: COLORS.primary,
   },
 
-  modalOverlay: { 
-    backgroundColor: "#00000066" 
+  botonTextoEliminar: {
+    color: COLORS.error,
   },
 
-  modalContainer: {
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
+  modalCancelButton: {
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    marginTop: 12,
+    flexDirection: "row",
   },
+
+  modalCancelButtonText: {
+    color: COLORS.primary,
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
+    fontWeight: undefined,
+  },
+
+
+  modalContainer: {},
 
   modalTitle: { alignSelf: "center" },
 
@@ -193,20 +225,17 @@ export const styles = StyleSheet.create({
   },
 
   modalConfirmButton: {
-    backgroundColor: COLORS.error,
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.error,
     marginTop: 12,
     flexDirection: "row",
   },
 
   modalConfirmTexto: {
-    color: COLORS.white,
+    color: COLORS.error,
     fontFamily: TYPOGRAPHY.fontFamily.bold,
     fontWeight: undefined,
   },
 });
 
-export const ICON_SIZE = {
-  navbar: 22,
-  boton: 20,
-  modal: 20,
-};
