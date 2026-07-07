@@ -12,7 +12,7 @@
  * - Campos obligatorios: finca, estanques (origen/destino), fecha, colaborador, tamaño, dias, pl.
  * - Origen y destino no pueden coincidir.
  * - Valores numéricos deben ser mayores que 0.
- * - La fecha no puede ser futura.
+ * - La fecha debe tener formato dd/mm/aaaa válido y no puede ser futura.
  *
  * Retorna:
  * - `formData`, `fincas`, `colaboradores`, `estanquesOrigen`, `estanquesDestino`,
@@ -21,7 +21,9 @@
  *
  * Restricciones:
  * - No realizar llamadas a la API directamente; usar los servicios del módulo.
- */
+ * - No implementar parseo/validación de fecha local; usar las utilidades
+ *   compartidas de shared/utils/dateUtils.js.
+ *  */
 
 import { useState } from "react";
 import { useRouter } from "expo-router";
@@ -34,33 +36,9 @@ import {
   obtenerSiembraPorEstanque,
 } from "../services/TrazabilidadServices";
 import { crearRegistroTrazabilidad } from "../services/AgregarTrazabilidadService";
+import { esFechaFutura, esFechaValida } from "../../../shared/utils/dateUtils";
 
-function fechaDesdeTexto(fechaTexto) {
-  const partes = fechaTexto.split("/");
 
-  if (partes.length !== 3) {
-    return null;
-  }
-
-  const dia = Number(partes[0]);
-  const mes = Number(partes[1]) - 1;
-  const anio = Number(partes[2]);
-
-  return new Date(anio, mes, dia);
-}
-
-function esFechaFutura(fechaTexto) {
-  const fecha = fechaDesdeTexto(fechaTexto);
-
-  if (!fecha) {
-    return false;
-  }
-
-  const hoy = new Date();
-  hoy.setHours(23, 59, 59, 999);
-
-  return fecha.getTime() > hoy.getTime();
-}
 
 export function useTrazabilidad() {
   const router = useRouter();
@@ -150,6 +128,11 @@ export function useTrazabilidad() {
 
     if (Number(formData.dias) <= 0) {
       setMensajeError("Los días deben ser un número mayor a 0.");
+      return false;
+    }
+
+    if (!esFechaValida(formData.fecha)) {
+      setMensajeError("La fecha ingresada no es válida.");
       return false;
     }
 

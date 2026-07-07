@@ -32,6 +32,12 @@
  *                              { decrementar, incrementar, handleChangeText, handleFocus, handleBlur }
  *
  * ---
+ * RESTRICCIONES
+ * ---
+ * - No hacer llamadas a servicios/API desde este hook; solo maneja estado local.
+ * - Nunca dejar el arreglo de lecturas vacío; respetar siempre maxLecturas.
+ *
+ * ---
  * EJEMPLO DE USO
  * ---
  * const {

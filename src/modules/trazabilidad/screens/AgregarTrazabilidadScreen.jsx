@@ -6,7 +6,8 @@
  * Pantalla para registrar un nuevo movimiento de trazabilidad.
  *
  * Reglas importantes / restricciones:
- * - No cambiar el header local: el `Navbar` con `leftContent` debe mantenerse.
+ * - El header no es local: lo resuelve el Stack layout de rutas
+ *   (ver src/app/(drawer)/trazabilidad/_layout.jsx). No agregar un Navbar aquí.
  * - Botones normales deben usar `variant="outline"` salvo excepción aprobada.
  * - Colores deben salir de `COLORS`.
  *

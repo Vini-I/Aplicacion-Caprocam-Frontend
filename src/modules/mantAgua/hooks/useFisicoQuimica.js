@@ -22,6 +22,13 @@
  * alEditar              fn     — dispara el alert de edición y navega tras 500ms
  *
  * ---
+ * RESTRICCIONES
+ * ---
+ * - No debe renderizar JSX; solo expone estado y handlers a FisicoQuimicaScreen.
+ * - No debe manejar navegación directa fuera de alGuardar/alEditar.
+ * 
+ * 
+ * ---
  * EJEMPLO DE USO
  * ---
  * const { mostrarAlerta, alGuardar, setLecturasPh } = useFisicoQuimica();

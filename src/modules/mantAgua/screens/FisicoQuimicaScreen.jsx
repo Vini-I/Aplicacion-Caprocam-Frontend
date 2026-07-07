@@ -18,6 +18,14 @@
  * onBack  fn  — se ejecuta al tocar el botón "Módulos" del header
  *
  * ---
+ * RESTRICCIONES
+ * ---
+ * - El estado no se maneja aquí; delegar siempre a useFisicoQuimica().
+ * - Botones normales deben usar variant="outline" salvo excepción aprobada.
+ *
+ * ---
+ * 
+ * ---
  * EJEMPLO DE USO
  * ---
  * <FisicoQuimicaScreen onBack={() => setModuloActivo(null)} />

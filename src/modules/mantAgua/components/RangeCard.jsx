@@ -41,6 +41,12 @@
  * onChange       fn?      — (lecturas) => void, se llama con el arreglo
  *                            completo de lecturas en cada cambio
  *
+ * ---
+ * RESTRICCIONES
+ * ---
+ * - No manejar estado de lecturas aquí; ese estado vive en useRangeCard().
+ * - No hardcodear colores; deben venir de COLORS.
+ * 
  * ============================================================
  * EJEMPLOS DE USO
  * ============================================================

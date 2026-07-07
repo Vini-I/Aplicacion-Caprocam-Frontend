@@ -61,6 +61,25 @@ export const styles = StyleSheet.create({
     zIndex: 2000,
     elevation: 2000,
   },
+  selectContainer: {
+  position: "absolute",
+  top: 0, left: 0, right: 0,
+  zIndex: 9999,
+  elevation: 9999,
+  overflow: "visible",
+  width: "100%",
+},
+selectField: {
+  position: "relative",
+  marginBottom: 0,
+  zIndex: 9999,
+  elevation: 9999,
+  overflow: "visible",
+},
+selectLabel: { position: "relative", zIndex: 1000, elevation: 1000 },
+selectButton: { position: "relative", zIndex: 1000, elevation: 1000 },
+selectPlaceholder: { height: 110 },
+
 
   label: {
     color: COLORS.textPrimary,
