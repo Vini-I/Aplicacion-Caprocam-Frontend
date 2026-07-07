@@ -1,3 +1,20 @@
+/**
+ * ============================================================
+ * PANTALLA DE REGISTRO DE NUEVA FINCA
+ * ============================================================
+ *
+ * Permite al usuario ingresar la información necesaria para
+ * registrar una nueva finca dentro del sistema.
+ *
+ * Funcionalidad:
+ * - Muestra un formulario dividido por secciones de información.
+ * - Permite registrar datos generales de la finca.
+ * - Permite seleccionar ubicación mediante provincia, cantón y distrito.
+ * - Permite agregar múltiples números telefónicos.
+ * - Permite ingresar características como área total y espejo de agua.
+ * - Muestra alertas cuando existen campos obligatorios sin completar.
+ * - Utiliza componentes reutilizables para mantener la estructura visual.
+ */
 import { ScrollView, View } from "react-native";
 
 import Button from "../../../shared/components/Button.jsx";
@@ -14,9 +31,9 @@ import { useFincaNueva} from "../hooks/useFincaNueva.js"
 import { ICONS } from "../../../theme/icons.js";
 import { COLORS } from "../../../theme/colors.js";
 import { styles } from "../styles/StylesFincaNueva.js";
-import { STYLE } from "../../../theme/style";
+import { STYLE } from "../../../theme/style.js";
 
-export default function FincaNuevaScreen() {
+export default function FincaNuevaScreen({onFinca}) {
   const {
     ContentWrapper,
     formulario,
@@ -38,7 +55,7 @@ export default function FincaNuevaScreen() {
     opcionesDistritos,
 
     isLargeScreen,
-  } = useFincaNueva();
+  } = useFincaNueva({onFinca});
 
   return (
     <>
@@ -53,7 +70,7 @@ export default function FincaNuevaScreen() {
       keyboardShouldPersistTaps="handled"
     >
       
-      <ContentWrapper>
+      <ContentWrapper style={STYLE.contentWrapper}>
         <Card>
           <Text style={styles.sectionTitle} size={14} weight="700" color={COLORS.textPrimary}>
             IDENTIFICACIÓN
@@ -65,7 +82,7 @@ export default function FincaNuevaScreen() {
                 value={formulario.codigoInterno}
                 onChangeText={(valor) => actualizarCampo("codigoInterno", valor)}
                 placeholder="Ej: CVO-01"
-                style={errores.codigoInterno ? { borderColor: COLORS.error, backgroundColor: COLORS.surface } : null}
+                style={errores.codigoInterno ? [ styles.errorInput] : null}
               />
             </View>
             <View style={styles.column}>
@@ -74,7 +91,7 @@ export default function FincaNuevaScreen() {
                 value={formulario.nombre}
                 onChangeText={(valor) => actualizarCampo("nombre", valor)}
                 placeholder="Ej: Finca El Pacífico"
-                style={errores.nombre ? { borderColor: COLORS.error, backgroundColor: COLORS.surface } : null}
+                style={errores.nombre ? [ styles.errorInput] : null}
               />
             </View>
           </View>
@@ -96,7 +113,7 @@ export default function FincaNuevaScreen() {
                   actualizarCampo("canton", "");
                   actualizarCampo("distrito", "");
                 }}
-                selectStyle={errores.provincia ? { borderColor: COLORS.error, backgroundColor: COLORS.surface } : null}
+                selectStyle={errores.provincia ? [ styles.errorInput] : null}
               />
             </View>
             <View style={styles.column}>
@@ -110,7 +127,7 @@ export default function FincaNuevaScreen() {
                   actualizarCampo("canton", valor);
                   actualizarCampo("distrito", "");
                 }}
-                selectStyle={errores.canton ? { borderColor: COLORS.error, backgroundColor: COLORS.surface } : null}
+                selectStyle={errores.canton ? [ styles.errorInput] : null}
               />
             </View>
           </View>
@@ -123,20 +140,9 @@ export default function FincaNuevaScreen() {
                 placeholder="Seleccione un distrito"
                 disabled={formulario.canton === ""}
                 onChange={(valor) => actualizarCampo("distrito", valor)}
-                selectStyle={errores.distrito ? { borderColor: COLORS.error, backgroundColor: COLORS.surface } : null}
+                selectStyle={errores.distrito ? [ styles.errorInput] : null}
               />
             </View>
-          </View>
-
-          <View style={styles.fullWidthRow}>
-            <Input
-              label="Otras señas *"
-              value={formulario.otrasSenas}
-              onChangeText={(valor) => actualizarCampo("otrasSenas", valor)}
-              placeholder="Ej: 200m norte de la escuela central, portón negro"
-              multiline={true}
-              style={errores.otrasSenas ? { borderColor: COLORS.error, backgroundColor: COLORS.surface  } : null}
-            />
           </View>
         </Card>
 
@@ -147,10 +153,10 @@ export default function FincaNuevaScreen() {
           <View>
             <Input
               label="Propietario / Responsable *"
-              value={formulario.propietario}
-              onChangeText={(valor) => actualizarCampo("propietario", valor)}
+              value={formulario.responsable}
+              onChangeText={(valor) => actualizarCampo("responsable", valor)}
               placeholder="Nombre completo"
-              style={errores.propietario ? { borderColor: COLORS.error, backgroundColor: COLORS.surface } : null}
+              style={errores.responsable ? [ styles.errorInput] : null}
             />
           </View>
 
@@ -200,7 +206,7 @@ export default function FincaNuevaScreen() {
               keyboardType="numeric"
               onChangeText={(valor) => actualizarCampo("areaTotal", valor)}
               placeholder="0.0"
-              style={errores.areaTotal ? { borderColor: COLORS.error, backgroundColor: COLORS.surface  } : null}
+              style={errores.areaTotal ? [ styles.errorInput] : null}
             />
           </View>
           <View>
@@ -210,7 +216,7 @@ export default function FincaNuevaScreen() {
               keyboardType="numeric"
               onChangeText={(valor) => actualizarCampo("espejoAgua", valor)}
               placeholder="0.0"
-              style={errores.espejoAgua ? { borderColor: COLORS.error, backgroundColor: COLORS.surface  } : null}
+              style={errores.espejoAgua ? [ styles.errorInput] : null}
             />
           </View>
         </Card>
@@ -219,9 +225,9 @@ export default function FincaNuevaScreen() {
         <CustomAlert 
           variant="danger" 
           message="Rellene los espacios importantes para continuar." 
-          containerStyle={{ alignItems: "center", justifyContent: "center", width: "100%" }}
-          textStyle={{ textAlign: "center", width: "100%" }}
-          style={{ textAlign: "center", width: "100%" }}
+          containerStyle={[styles.errorAlertContainer]}
+          textStyle={[styles.errorAlertItems]}
+          style={[styles.errorAlertItems]}
           />
         )}
 

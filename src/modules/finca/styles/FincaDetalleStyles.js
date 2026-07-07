@@ -1,12 +1,28 @@
+/**
+ * ============================================================
+ * ESTILOS DE DETALLE DE FINCA
+ * ============================================================
+ *
+ * Contiene los estilos visuales utilizados en la pantalla de
+ * detalle de una finca y sus elementos relacionados.
+ *
+ * Archivos que afecta:
+ * - FincaDetalleScreen.jsx
+ * - Componentes de información de finca.
+ * - Visualización de estanques asociados.
+ *
+ * Incluye estilos para:
+ * - Distribución de datos generales de la finca.
+ * - Botones de generación de reportes y registro.
+ * - Tarjetas de estanques y sus dimensiones.
+ * - Botones de acciones como editar y eliminar.
+ * - Elementos visuales como iconos, etiquetas y valores.
+ */
 import { StyleSheet } from "react-native";
 
 import { COLORS } from "../../../theme/colors"
 
 export const styles = StyleSheet.create({
-
-  detalleCard: {
-    padding: 16,
-  },
 
   filaDetalle: {
     flexDirection: "row",
