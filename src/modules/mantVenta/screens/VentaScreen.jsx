@@ -7,8 +7,9 @@
  * enviar la información a la lógica de negocio del módulo.
  */
 
+import { useCallback } from "react";
 import { ScrollView, View } from "react-native";
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 
 import Alert from "../../../shared/components/Alert.jsx";
 import Button from "../../../shared/components/Button.jsx";
@@ -23,11 +24,11 @@ import { COLORS } from "../../../theme/colors.js";
 import { ICONS } from "../../../theme/icons.js";
 
 import {
-  COMPRADOR_MANUAL,
   formatearMontoColones,
   useVenta,
 } from "../hooks/useVenta.js";
 import { styles } from "../styles/VentaStyles.js";
+import {STYLE} from "../../../theme/style";
 
 function SectionTitle({ icon, title }) {
   return (
@@ -51,7 +52,6 @@ export default function VentaScreen({ onDetalleVentas }) {
     fechaVenta,
     colaboradorSeleccionado,
     compradorSeleccionado,
-    compradorManual,
     mensaje,
     tipoMensaje,
     errores,
@@ -64,7 +64,6 @@ export default function VentaScreen({ onDetalleVentas }) {
     totalVenta,
     ventas,
     setEstanqueSeleccionado,
-    setCompradorManual,
     handleFincaChange,
     handlePesoPromedioChange,
     handleTamanoPromedioChange,
@@ -73,8 +72,17 @@ export default function VentaScreen({ onDetalleVentas }) {
     handleCompradorChange,
     handleColaboradorChange,
     limpiarError,
+    limpiarMensaje,
     guardarVenta,
   } = useVenta();
+
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        limpiarMensaje();
+      };
+    }, [limpiarMensaje]),
+  );
 
   const gridStyle = isWide ? styles.inputRow : styles.inputGrid;
   const errorInputStyle = {
@@ -83,8 +91,8 @@ export default function VentaScreen({ onDetalleVentas }) {
   };
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <Card style={styles.contentWrapper}>
+    <ScrollView style={STYLE.container} showsVerticalScrollIndicator={false}>
+      <Card style={STYLE.contentWrapper}>
         <View style={styles.headerRow}>
           <Icon
             icon={ICONS.shrimp}
@@ -94,10 +102,6 @@ export default function VentaScreen({ onDetalleVentas }) {
           />
           <Text style={styles.cardTitle}>Registro de venta</Text>
         </View>
-
-        {tipoMensaje === "success" && mensaje !== "" && (
-          <Text style={styles.successText}>{mensaje}</Text>
-        )}
 
         <SectionTitle icon={ICONS.water} title="Finca y estanque" />
 
@@ -216,25 +220,21 @@ export default function VentaScreen({ onDetalleVentas }) {
           </View>
         </View>
 
-        {compradorSeleccionado === COMPRADOR_MANUAL && (
-          <Input
-            label="Nombre del comprador *"
-            placeholder="Escriba el nombre del comprador"
-            value={compradorManual}
-            onChangeText={(value) => {
-              setCompradorManual(value);
-              limpiarError("compradorManual");
-            }}
-            style={errores.compradorManual ? errorInputStyle : null}
-          />
-        )}
-
         {tipoMensaje === "error" && mensaje !== "" && (
           <Alert
             variant="danger"
             message={mensaje}
             style={styles.alert}
             textStyle={styles.alertText}
+          />
+        )}
+
+        {tipoMensaje === "success" && mensaje !== "" && (
+          <Alert
+            variant="success"
+            message={mensaje}
+            style={styles.successAlert}
+            textStyle={styles.successAlertText}
           />
         )}
 
