@@ -51,8 +51,8 @@ export default function FincaCrecimientoScreen() {
 
   if (!estanque) {
     return (
-      <ScrollView style={STYLE.container} contentContainerStyle={styles.contentScroll}>
-        <Card style={STYLE.contentWrapper}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.contentScroll}>
+        <Card style={styles.contentWrapper}>
           <Text>No se encontró un estanque válido.</Text>
         </Card>
       </ScrollView>
@@ -73,8 +73,8 @@ export default function FincaCrecimientoScreen() {
   return (
     <View style={styles.screenContainer}>
       <NavbarRegistro Titulo="Crecimiento" Subtitulo="Registro de peso" Icono="growth" />
-      <ScrollView style={STYLE.container} contentContainerStyle={styles.contentScroll}>
-        <Card style={STYLE.contentWrapper}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.contentScroll}>
+        <Card style={styles.contentWrapper}>
           <View style={styles.headerRow}>
             <Icon
               icon={ICONS.growth}
