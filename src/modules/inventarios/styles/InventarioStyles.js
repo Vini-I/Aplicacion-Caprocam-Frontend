@@ -5,15 +5,6 @@
  *
  * Responsabilidad:
  * Estilos visuales de la pantalla de Inventarios (screens/InventarioScreen.jsx).
- * El header celeste global lo aporta la capa de navegación (fuera de
- * este componente); el layout base lo aporta theme/style.js
- * (STYLE.container / STYLE.contentWrapper).
- *
- * `filterButton` se pasa como buttonStyle al componente compartido
- * components/FilterButton.jsx: usa alignItems "center" (no "stretch")
- * para no romper la alineación interna del botón y evitar que el
- * badge del contador de filtros activos se vea cortado contra el
- * borde. No modifica el componente FilterButton en sí.
  *
  * Datos:
  * No aplica, solo estilos.

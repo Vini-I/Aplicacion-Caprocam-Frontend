@@ -9,37 +9,37 @@
  * 1. Carga un proveedor base (mock) y expone su estado editable:
  *    tipoProducto, telefono, correo, direccion, notas (nombre es de
  *    solo lectura, no se valida ni se marca en rojo).
+ * 
  * 2. Tipo de producto, telefono, correo y direccion son obligatorios
- *    (asterisco visible desde el primer render). Telefono y correo
- *    ademas deben cumplir el validador comun del modulo
- *    (utils/contactValidators). Notas es el unico campo opcional.
+ *    (asterisco visible desde el primer render).
+ * 
  * 3. La validacion se ejecuta unicamente dentro de guardar() (al
- *    presionar "Guardar proveedor"); handleTelefonoChange y
+ *    presionar Guardar proveedor); handleTelefonoChange y
  *    handleCorreoChange (y el resto de los setters) solo actualizan el
  *    valor, nunca disparan el error mientras el usuario escribe. Como
  *    los datos llegan precargados y validos, no hay errores ni bordes
  *    rojos al abrir el formulario.
- * 4. `errores` expone un mensaje de texto por campo (tipoProducto,
- *    telefono, correo, direccion) igual que en useNuevoProveedorScreen;
- *    la screen solo usa ese valor para pintar el borde en rojo, no
- *    muestra el texto debajo del campo.
- * 5. `alerta` expone el mensaje general (variant + message) que la
- *    screen muestra arriba del boton "Guardar proveedor".
+ 
+ * 
+ * 4. alerta expone el mensaje general (variant + message) que la
+ *    screen muestra arriba del boton Guardar proveedor.
+ * 
  * 6. El usuario puede modificar uno, varios o todos los campos; no es
  *    obligatorio tocarlos todos. Al presionar guardar():
  *    - Si ningun campo cambio respecto al proveedor original, no se
  *      guarda y se muestra unicamente la alerta
  *      "No hay cambios para guardar."
+ * 
  *    - Si hay cambios pero algun campo obligatorio quedo vacio o
  *      invalido, no se guarda: se marcan en rojo solo esos campos y se
  *      muestra unicamente la alerta "Revisa los campos obligatorios
  *      marcados con * antes de guardar."
+ * 
  *    - Si hay cambios y todos los campos obligatorios son validos, se
  *      guarda y se muestra la alerta de exito.
  *
  * IMPORTANTE:
- * - No navega; expone `alerta` para que la screen decida donde
- *   mostrarla.
+ * - No navega; expone alerta para que la screen decida donde mostrarla.
  */
 import { useState } from "react";
 import { proveedoresMock } from "../services/ProveedorData";

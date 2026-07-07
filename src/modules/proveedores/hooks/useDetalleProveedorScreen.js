@@ -7,12 +7,14 @@
  *
  * FUNCIONALIDAD:
  * 1. Busca el proveedor por id (parámetro de ruta) en proveedoresMock.
- * 2. Expone `proveedor` (undefined si no existe) para que la screen
+ * 2. Expone proveedor (undefined si no existe) para que la screen
  *    decida si mostrar el EmptyState o el detalle, incluyendo si
  *    muestra o no la sección de notas.
+ * 
  * 3. Controla la visibilidad del modal de confirmación de eliminar
- *    (`modalVisible`, `abrirModal`, `cerrarModal`).
- * 4. `getTipoLabel` traduce el value de tipoProducto a su label legible.
+ *    (modalVisible, abrirModal, cerrarModal).
+ * 
+ * 4. getTipoLabel traduce el value de tipoProducto a su label legible.
  *
  * IMPORTANTE:
  * - Es solo lectura, no aplica validaciones.

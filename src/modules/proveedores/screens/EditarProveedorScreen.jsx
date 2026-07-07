@@ -8,22 +8,23 @@
  * FUNCIONALIDAD:
  * 1. Permite modificar tipo de producto, telefono, correo, direccion y
  *    notas (nombre queda de solo lectura).
+ * 
  * 2. Tipo de producto, telefono, correo y direccion son obligatorios,
  *    con asterisco visible desde el primer render. Notas es el unico
  *    campo opcional.
- * 3. Al presionar "Guardar proveedor" se valida el formulario:
- *    - Cada campo invalido se marca en rojo (solo el borde, sin
- *      mensaje ni icono individual debajo del campo).
+ * 
+ * 3. Al presionar Guardar proveedor se valida el formulario:
+ *    - Cada campo invalido se marca en rojo solo el borde, sin
+ *      mensaje ni icono individual debajo del campo.
  *    - Arriba del boton "Guardar proveedor" aparece la alerta general
- *      (`alerta`), centrada.
+ *      alerta, centrada.
+ * 
  * 4. Si no se modifico ningun campo respecto al proveedor original, no
  *    se guarda: se muestra una alerta de error en su lugar.
  *
  * IMPORTANTE:
  * - Al guardar exitosamente permanece en la pantalla mostrando la
  *   alerta de exito; no redirige automaticamente a otra ruta.
- * - No modifica componentes compartidos (Card, Input, Select, Button,
- *   Icon, CustomText, Alert).
  */
 import React from "react";
 import { View, ScrollView } from "react-native";

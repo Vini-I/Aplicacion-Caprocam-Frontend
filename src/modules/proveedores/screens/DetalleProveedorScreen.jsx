@@ -8,24 +8,19 @@
  *
  * FUNCIONALIDAD:
  * 1. Muestra contacto (telefono, correo, direccion) del proveedor.
+ * 
  * 2. Muestra la seccion "Notas adicionales" con su icono solo si el
  *    proveedor tiene notas guardadas; si no hay notas, la seccion se
  *    quita por completo (no se renderiza vacia).
+ * 
  * 3. Si el proveedor no existe muestra un EmptyState y un botón
  *    outline "Volver al listado".
- * 4. "Editar" navega a /(drawer)/proveedores/editarProveedor?id=.
- * 5. "Eliminar" abre un modal de confirmación con dos botones outline:
- *    "Sí, eliminar" (rojo, icono de basura) y "Cancelar" (azul, icono
- *    de cerrar); al confirmar (o si el proveedor no existe) vuelve a
- *    /(drawer)/proveedores/proveedorScreen.
+ * 
+ * 4. Editar navega a /(drawer)/proveedores/editarProveedor?id=.
+ * 
  *
  * IMPORTANTE:
  * - Es una pantalla de solo lectura, no aplica validacion de formulario.
- * - No define header/navbar propio: el header celeste global se
- *   resuelve fuera de este módulo.
- * - El Modal compartido usa showCloseButton={false} para que no
- *   agregue su boton "Cerrar" por defecto, ya que esta pantalla
- *   define sus propios botones "Sí, eliminar" y "Cancelar".
  */
 import { View, ScrollView } from "react-native";
 import { useRouter } from "expo-router";

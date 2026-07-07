@@ -4,32 +4,25 @@
  * ============================================================
  *
  * Estilos de la pantalla DetalleProveedorScreen, incluyendo el estado
- * "proveedor no encontrado" y el modal de confirmación de eliminar.
+ * proveedor no encontrado y el modal de confirmación de eliminar.
  *
  * FUNCIONALIDAD:
  * 1. Colores y tipografia salen de theme/colors y theme/typography.
+ * 
  * 2. El card y los botones no definen ancho/centrado propio: eso lo
  *    resuelve STYLE.contentWrapper (theme/style) desde la screen. El
- *    padding raíz tampoco se define aquí: la screen aplica
- *    STYLE.container (theme/style) como View raíz, igual que en
- *    NuevoProveedorScreen/EditarProveedorScreen. `container` en este
- *    archivo solo sobreescribe el backgroundColor (surface).
+ *    padding raíz tampoco se define aquí.
+ * 
  * 3. Todos los botones (Editar, Eliminar, Volver, confirmar eliminar,
  *    cancelar eliminar) son outline (borde + icono + texto de color,
  *    sin relleno sólido): azul (COLORS.primary) para acciones
  *    neutras/editar/volver/cancelar, rojo (COLORS.error) para eliminar.
- * 4. `seccionNotas` comparte el mismo formato de `seccion` para que la
+ * 
+ * 4. seccionNotas comparte el mismo formato de seccion para que la
  *    seccion de notas (icono + titulo) luzca igual al resto cuando se
  *    renderiza condicionalmente.
  *
- * IMPORTANTE:
- * - No define header/navbar propio: el header celeste global se
- *   resuelve fuera de este módulo.
- * - Excepción documentada: el overlay del modal (`modalOverlay`) usa
- *   un hex con transparencia porque no hay un token de overlay en
- *   theme/colors; no es un color de marca.
  */
-// styles/StylesDetalleProveedor.js
 import { StyleSheet } from "react-native";
 import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";

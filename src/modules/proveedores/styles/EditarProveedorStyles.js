@@ -7,24 +7,25 @@
  *
  * FUNCIONALIDAD:
  * 1. Colores y tipografia salen de theme/colors y theme/typography.
+ * 
  * 2. El card no define ancho/centrado propio, eso lo resuelve
  *    STYLE.contentWrapper (theme/style) desde la screen. El padding
  *    raíz tampoco se define aquí: la screen aplica STYLE.container
  *    (theme/style) como View raíz, igual que en NuevoProveedorScreen,
  *    para que ambas pantallas se centren con exactamente las mismas
- *    medidas. `container` en este archivo solo sobreescribe el
- *    backgroundColor (surface en vez de white).
+ *    medidas. 
+ * 
  * 3. input/select/saveButton se mantienen alineados con
  *    StylesNuevoProveedor (borde redondeado, mismo radio) para que
  *    Nuevo/Editar proveedor se vean como el mismo formulario.
- * 4. `inputError` (borde rojo) es el único estilo de estado de campo y
+ * 
+ * 4. inputError (borde rojo) es el único estilo de estado de campo y
  *    solo debe aplicarse tras un intento de guardado fallido, nunca
  *    mientras el usuario escribe. No se pinta mensaje ni icono
  *    individual debajo del campo.
- * 5. `alertContainer` vive arriba del boton "Guardar proveedor".
+ * 
+ * 5. alertContaine` vive arriba del boton "Guardar proveedor".
  *
- * IMPORTANTE:
- * - No hardcodear colores fuera de theme/colors.
  */
 import { StyleSheet } from "react-native";
 import { COLORS } from "../../../theme/colors";

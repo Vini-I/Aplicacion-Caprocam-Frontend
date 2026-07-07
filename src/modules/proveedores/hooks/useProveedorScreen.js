@@ -7,9 +7,11 @@
  *
  * FUNCIONALIDAD:
  * 1. Carga el mock de proveedores (proveedoresMock).
+ * 
  * 2. Filtra el listado por texto de búsqueda (nombre, tipo, teléfono,
  *    correo) y por tipo(s) de producto seleccionados.
- * 3. Expone `TIPOS` (todas las categorías del catálogo `tiposProducto`,
+ * 
+ * 3. Expone TIPOS (todas las categorías del catálogo tiposProducto,
  *    no solo las que ya tienen un proveedor cargado) para el
  *    FilterButton, así el filtro siempre muestra todas las
  *    clasificaciones disponibles aunque aún no haya proveedores de ese

@@ -7,9 +7,6 @@
  * Pantalla principal del módulo de Inventarios. Muestra el listado de
  * productos con búsqueda, filtros y alerta de stock bajo, y permite
  * navegar al detalle de un producto o a la creación de uno nuevo.
- * El header global ya se aplica fuera de este componente (layout de
- * navegación); esta pantalla usa únicamente el layout global (STYLE)
- * del theme, sin construir contenedor propio.
  *
  * Datos:
  * Consume useInventario(), que a su vez lee del InventarioService.
@@ -40,8 +37,6 @@
  * el ícono de gráfico en "Ver detalle"; el resto de la tarjeta
  * (badges, filas de detalle) es solo texto, sin íconos.
  * El badge de "Stock bajo" no lleva ícono, solo texto.
- * El bloque "Buscar y filtrar" (título + ícono) se removió; la zona
- * de filtros inicia directamente con la barra de búsqueda.
  * Los íconos de la pantalla (caja, gráfico, notificación de stock
  * bajo y "Agregar producto") usan el tamaño por defecto del
  * componente Icon, sin overrides de size.

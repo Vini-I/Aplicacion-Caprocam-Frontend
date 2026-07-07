@@ -7,23 +7,25 @@
  *
  * FUNCIONALIDAD:
  * 1. Muestra un formulario con nombre, tipo de producto, telefono,
- *    correo, direccion y notas (estado local vía useNuevoProveedorScreen).
+ *    correo, direccion y notas.
+ * 
  * 2. Los campos obligatorios (nombre, tipo de producto, telefono,
  *    correo, direccion) llevan asterisco visible desde el primer
  *    render. Notas es el unico campo opcional.
- * 3. Al presionar "Guardar proveedor" se valida el formulario:
- *    - Cada campo invalido se marca en rojo (solo el borde, sin
- *      mensaje ni icono individual debajo del campo).
- *    - Arriba del boton "Guardar proveedor" aparece el mensaje
+ * 
+ * 3. Al presionar Guardar proveedor se valida el formulario:
+ *    - Cada campo invalido se marca en rojo solo el borde, sin
+ *      mensaje ni icono individual debajo del campo.
+ *    - Arriba del boton Guardar proveedor aparece el mensaje
  *      general, dentro de una alerta.
+ * 
  * 4. Si el guardado es exitoso, se muestra una alerta de confirmacion
  *    tambien arriba del boton "Guardar proveedor".
  *
  * IMPORTANTE:
  * - No navega a otras pantallas; al guardar exitosamente se queda en
  *   la misma vista.
- * - No modifica componentes compartidos (Card, Input, Select, Button,
- *   Icon, Text, Alert).
+
  * - Toda la logica de validacion vive en useNuevoProveedorScreen, la
  *   screen solo pinta el estado.
  */

@@ -8,18 +8,19 @@
  * FUNCIONALIDAD:
  * 1. Colores y tipografia salen de theme/colors y theme/typography, sin
  *    valores hardcodeados.
+ * 
  * 2. El card no define ancho ni centrado propio: eso lo resuelve
  *    STYLE.contentWrapper (theme/style) en la screen. El padding raíz
  *    y el fondo blanco tampoco se definen aquí: la screen aplica
  *    STYLE.container (theme/style) directamente como View raíz.
- * 3. `inputError` (borde rojo) es el único estilo de estado de campo y
+ * 
+ * 3. inputError (borde rojo) es el único estilo de estado de campo y
  *    solo debe aplicarse tras un intento de guardado fallido, nunca
  *    mientras el usuario escribe. No se pinta mensaje ni icono
  *    individual debajo del campo.
- * 4. `alertBox` vive arriba del boton "Guardar proveedor".
+ * 
+ * 4. alertBox vive arriba del boton "Guardar proveedor".
  *
- * IMPORTANTE:
- * - No hardcodear colores fuera de theme/colors.
  */
 import { StyleSheet } from "react-native";
 import { COLORS } from "../../../theme/colors";

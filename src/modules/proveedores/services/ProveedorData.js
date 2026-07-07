@@ -7,17 +7,20 @@
  * conectado todavía).
  *
  * FUNCIONALIDAD:
- * 1. Provee `proveedoresMock`, usado por listado/detalle/edición.
- * 2. Provee `tiposProducto`, catálogo label/value para el Select de
+ * 1. Provee proveedoresMock, usado por listado/detalle/edición.
+ * 
+ * 2. Provee tiposProducto, catálogo label/value para el Select de
  *    tipo de producto.
- * 3. Provee `getProveedoresByCategoria`, que filtra proveedoresMock por
+ * 
+ * 3. Provee getProveedoresByCategoria, que filtra proveedoresMock por
  *    una categoría de inventario, mapeando categoría -> tipoProducto.
  *
  * IMPORTANTE:
- * - `tiposProducto.value` usa el mismo texto capitalizado que
- *   `proveedoresMock.tipoProducto` (ej. "Alimento"), para que el Select
+ * - tiposProducto.value usa el mismo texto capitalizado que
+ *   proveedoresMock.tipoProducto (ej. "Alimento"), para que el Select
  *   pueda preseleccionar correctamente el tipo de un proveedor
  *   existente (EditarProveedorScreen).
+ * 
  * - No usar valores en minúscula aquí sin también migrar
  *   proveedoresMock, o el Select de edición dejará de reconocer el
  *   tipo actual del proveedor.

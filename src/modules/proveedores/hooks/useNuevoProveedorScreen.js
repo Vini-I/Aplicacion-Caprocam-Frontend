@@ -8,28 +8,24 @@
  * FUNCIONALIDAD:
  * 1. Maneja el estado del formulario: nombre, tipoProducto, telefono,
  *    correo, direccion, notas.
+ * 
  * 2. Nombre, tipo de producto, telefono, correo y direccion son
  *    obligatorios (asterisco visible desde el primer render). Notas es
  *    el unico campo opcional.
+ * 
  * 3. El correo debe tener formato valido ademas de ser obligatorio.
+ * 
  * 4. Los errores solo se calculan dentro de handleSubmit (al presionar
- *    "Guardar proveedor"), nunca mientras el usuario escribe.
- * 5. `errores` expone un mensaje de texto por campo (no solo un
- *    booleano); la screen solo usa ese valor para pintar el borde en
- *    rojo, no muestra el texto debajo del campo.
- * 6. `mensajeError` expone el mensaje general que se muestra arriba
+ *    Guardar proveedor), nunca mientras el usuario escribe.
+ * 
+ * 5. mensajeError expone el mensaje general que se muestra arriba
  *    del boton "Guardar proveedor".
- * 7. `guardadoExitoso` habilita la alerta de confirmacion tras un
+ * 
+ * 7. guardadoExitoso habilita la alerta de confirmacion tras un
  *    guardado correcto.
+ * 
  * 8. La validacion de telefono/correo reutiliza el validador comun del
  *    modulo (utils/contactValidators), sin regex propio duplicado.
- *
- * IMPORTANTE:
- * - No modifica rutas ni navegacion.
- * - No depende de servicios ni theme, solo maneja estado y validacion.
- * - Los mensajes de `errores` y `mensajeError` deben mantenerse
- *   equivalentes para respetar el estandar de "mismo mensaje en el
- *   campo y en la alerta general".
  */
 import { useState } from "react";
 import { validarTelefono, validarCorreo } from "../utils/contactValidators";

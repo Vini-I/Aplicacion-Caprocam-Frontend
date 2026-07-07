@@ -19,14 +19,6 @@
  * entrega el DateInput compartido); es un dato real que ya existe en
  * el módulo de Productos, aquí solo se consume para el filtro.
  *
- * Nota técnica:
- * La comparación de fechas de este archivo NO usa regex; solo separa
- * el string dd/mm/aaaa por "/" para construir un Date comparable. Si
- * el proyecto ya tiene un dateUtils compartido (parseDate/compareDates
- * o similar) fuera de este módulo, lo ideal es reemplazar
- * parsearFechaDDMMAAAA por esa utilidad para no tener una segunda
- * fuente de verdad para fechas.
- *
  * Validaciones:
  * No aplica validación de formulario; solo filtra sobre datos ya
  * existentes en memoria.

@@ -8,22 +8,21 @@
  * FUNCIONALIDAD:
  * 1. Muestra el listado de proveedores en cards (avatar, nombre, tipo,
  *    teléfono, correo).
+ * 
  * 2. Permite buscar por texto y filtrar por tipo de producto.
+ * 
  * 3. "Ver Detalle" navega a
  *    /(drawer)/proveedores/detalleProveedor?id=.
+ * 
  * 4. "Agregar proveedor" navega a
  *    /(drawer)/proveedores/nuevoProveedor.
+ * 
  * 5. Muestra un EmptyState cuando no hay resultados para la búsqueda o
  *    los filtros aplicados.
  *
  * IMPORTANTE:
  * - Es una pantalla de solo lectura/listado, sin formulario.
  * - El filtro y la búsqueda no modifican datos.
- * - Estructura idéntica a FincaScreen: un único <ScrollView
- *   style={STYLE.container}> con <View style={STYLE.contentWrapper}>
- *   por dentro, listando los proveedores con .map (no FlatList) y el
- *   botón "Agregar proveedor" al final, dentro del mismo ScrollView,
- *   igual que el botón "REGISTRAR NUEVA FINCA" en FincaScreen.
  */
 import React from "react";
 import { View, ScrollView } from "react-native";

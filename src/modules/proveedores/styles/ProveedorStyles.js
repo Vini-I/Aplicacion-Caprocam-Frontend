@@ -7,12 +7,10 @@
  *
  * FUNCIONALIDAD:
  * 1. Colores y tipografia salen de theme/colors y theme/typography.
+ * 
  * 2. La screen usa STYLE.container + STYLE.contentWrapper (theme/style)
- *    como único wrapper, igual patrón que FincaStyles: no se repite
- *    aquí un container/bodyWrapper propio.
+ *    como único wrapper
  *
- * IMPORTANTE:
- * - No hardcodear colores fuera de theme/colors.
  */
 import { StyleSheet } from "react-native";
 import { COLORS } from "../../../theme/colors";
