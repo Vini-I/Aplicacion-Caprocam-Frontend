@@ -44,11 +44,6 @@ export function useColaboradores(initialFilters = {}) {
   // --------------------------------------------------------
   // FUNCIÓN PRINCIPAL PARA OBTENER DATOS
   // --------------------------------------------------------
-
-  /**
-   * Obtiene colaboradores según los filtros actuales.
-   * @async
-   */
   const fetchColaboradores = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -70,13 +65,6 @@ export function useColaboradores(initialFilters = {}) {
   // --------------------------------------------------------
   // CRUD
   // --------------------------------------------------------
-
-  /**
-   * Crea un nuevo colaborador.
-   * @param {Object} data - Datos del colaborador (nombre, cedula, rol, etc.)
-   * @returns {Promise<Object>} Colaborador creado
-   * @async
-   */
   const crearColaborador = async (data) => {
     setLoading(true);
     try {
@@ -91,13 +79,6 @@ export function useColaboradores(initialFilters = {}) {
     }
   };
 
-  /**
-   * Actualiza un colaborador existente.
-   * @param {string} id - ID del colaborador
-   * @param {Object} data - Campos a actualizar
-   * @returns {Promise<Object>} Colaborador actualizado
-   * @async
-   */
   const actualizarColaborador = async (id, data) => {
     setLoading(true);
     try {
@@ -114,12 +95,6 @@ export function useColaboradores(initialFilters = {}) {
     }
   };
 
-  /**
-   * Elimina un colaborador (borrado lógico o físico según servicio).
-   * @param {string} id - ID del colaborador
-   * @returns {Promise<boolean>} true si se eliminó correctamente
-   * @async
-   */
   const eliminarColaborador = async (id) => {
     setLoading(true);
     try {
