@@ -1,11 +1,28 @@
 /**
+ * ============================================================
  * ESTILOS: tareasStyles
- * Ruta: src/modules/mantEquipo/styles/tareasStyles.js
+ * ============================================================
+ *
+ * Estilos para la pantalla TareasScreen.
+ * Utiliza la paleta de COLORS del tema central.
+ *
+ * Dependencias:
+ * - COLORS desde theme/colors
+ *
+ * Ejemplo de uso:
+ * import { styles } from './tareasStyles';
+ * <View style={styles.screen}>...</View>
  */
 
+// ============================================================
+// IMPORTS
+// ============================================================
 import { StyleSheet } from "react-native";
 import { COLORS } from "../../../theme/colors";
 
+// ============================================================
+// EXPORTACIÓN DE ESTILOS
+// ============================================================
 export const styles = StyleSheet.create({
   screen: {
     flex: 1,
@@ -22,6 +39,13 @@ export const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "700",
     textAlign: "left",
+  },
+
+  navbarSubtitle: {
+    color: COLORS.white,
+    fontSize: 14,
+    fontWeight: "400",
+    marginTop: 2,
   },
 
   backButton: {
@@ -79,11 +103,13 @@ export const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 12,
     height: 42,
-    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
+    borderWidth: 1,
+    backgroundColor: "transparent",
   },
 
   btnLabel: {
-    color: COLORS.white,
+    color: COLORS.primary,
     fontWeight: "700",
     fontSize: 13,
   },
@@ -110,12 +136,12 @@ export const styles = StyleSheet.create({
   },
 
   // Columnas de la tabla
-  colId:         { width: 60 },
-  colNombre:     { flex: 1.5, minWidth: 100 },
-  colDesc:       { flex: 2, minWidth: 140 },
-  colCategoria:  { flex: 1, minWidth: 90 },
-  colDuracion:   { width: 80 },
-  colAcciones:   { width: 90 },
+  colId: { width: 60 },
+  colNombre: { flex: 1.5, minWidth: 100 },
+  colDesc: { flex: 2, minWidth: 140 },
+  colCategoria: { flex: 1, minWidth: 90 },
+  colDuracion: { width: 80 },
+  colAcciones: { width: 90 },
 
   row: {
     flexDirection: "row",
@@ -136,9 +162,9 @@ export const styles = StyleSheet.create({
     paddingVertical: 4,
     paddingHorizontal: 6,
     borderWidth: 1,
-    borderColor: COLORS.primary,
     borderRadius: 6,
     marginRight: 6,
+    backgroundColor: "transparent",
   },
 
   // Modal de tarea
@@ -172,4 +198,26 @@ export const styles = StyleSheet.create({
   btnAccept: {
     flex: 1,
   },
+  btnAdd: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 8,
+  backgroundColor: COLORS.primary,
+  borderRadius: 8,
+  paddingVertical: 8,
+  paddingHorizontal: 14,
+  borderWidth: 0,
+  height: 42,
+},
+addButtonContent: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: 6,
+},
+btnLabel: {
+  color: COLORS.white,
+  fontWeight: '600',
+  fontSize: 13,
+},
 });
