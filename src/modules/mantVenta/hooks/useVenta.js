@@ -1,3 +1,22 @@
+/**
+ * ============================================================
+ * HOOK DE REGISTRO DE VENTAS
+ * ============================================================
+ *
+ * Gestiona la lógica necesaria para registrar ventas de producto,
+ * controlando el formulario, cálculos, catálogos relacionados,
+ * validaciones y almacenamiento temporal de las ventas registradas.
+ *
+ * Funcionalidad:
+ * - Carga colaboradores activos para asociarlos a la venta.
+ * - Obtiene opciones de fincas, estanques y compradores disponibles.
+ * - Filtra estanques según la finca seleccionada.
+ * - Normaliza y valida campos numéricos como peso, tamaño, kilos y precio.
+ * - Calcula el total estimado de la venta según kilos vendidos y precio.
+ * - Permite registrar ventas con compradores existentes o cliente genérico.
+ * - Genera nombres consecutivos para clientes genéricos, como Cliente 001.
+ * - Guarda la venta en el listado local y muestra mensajes de resultado.
+ */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useWindowDimensions } from "react-native";
 
@@ -6,7 +25,7 @@ import { fincas } from "../../finca/screens/FincaData.js";
 import { estanques } from "../../mantCrecimiento/services/EstanqueData.js";
 import { compradores as compradoresData } from "../services/CompradorData.js";
 
-export const COMPRADOR_MANUAL = "comprador-manual";
+export const CLIENTE_GENERICO = "cliente-generico";
 
 export function obtenerFechaActual() {
   const fecha = new Date();
@@ -63,7 +82,6 @@ export function validarVentaFormulario({
   precioKiloNumero,
   colaboradorSeleccionado,
   compradorSeleccionado,
-  compradorManual,
 }) {
   const errores = {};
 
@@ -75,13 +93,6 @@ export function validarVentaFormulario({
   if (precioKiloNumero <= 0) errores.precioKilo = true;
   if (!colaboradorSeleccionado) errores.colaborador = true;
   if (!compradorSeleccionado) errores.comprador = true;
-
-  if (
-    compradorSeleccionado === COMPRADOR_MANUAL &&
-    compradorManual.trim() === ""
-  ) {
-    errores.compradorManual = true;
-  }
 
   return errores;
 }
@@ -99,7 +110,6 @@ export function useVenta() {
   const [fechaVenta, setFechaVenta] = useState(obtenerFechaActual());
   const [colaboradorSeleccionado, setColaboradorSeleccionado] = useState("");
   const [compradorSeleccionado, setCompradorSeleccionado] = useState("");
-  const [compradorManual, setCompradorManual] = useState("");
   const [colaboradores, setColaboradores] = useState([]);
   const [ventas, setVentas] = useState([]);
   const [mensaje, setMensaje] = useState("");
@@ -163,7 +173,7 @@ export function useVenta() {
 
   const opcionesCompradores = useMemo(
     () => [
-      { label: "Comprador manual", value: COMPRADOR_MANUAL },
+      { label: "Cliente genérico", value: CLIENTE_GENERICO },
       ...compradoresData.map((comprador) => ({
         label: comprador.nombre,
         value: comprador.id,
@@ -180,6 +190,11 @@ export function useVenta() {
       if (!actual[campo]) return actual;
       return { ...actual, [campo]: false };
     });
+  }, []);
+
+  const limpiarMensaje = useCallback(() => {
+    setMensaje("");
+    setTipoMensaje("");
   }, []);
 
   const handlePesoPromedioChange = useCallback(
@@ -235,11 +250,6 @@ export function useVenta() {
     (value) => {
       setCompradorSeleccionado(value);
       limpiarError("comprador");
-
-      if (value !== COMPRADOR_MANUAL) {
-        setCompradorManual("");
-        limpiarError("compradorManual");
-      }
     },
     [limpiarError],
   );
@@ -254,7 +264,6 @@ export function useVenta() {
     setFechaVenta(obtenerFechaActual());
     setColaboradorSeleccionado("");
     setCompradorSeleccionado("");
-    setCompradorManual("");
     setErrores({});
   }, []);
 
@@ -268,7 +277,6 @@ export function useVenta() {
       precioKiloNumero,
       colaboradorSeleccionado,
       compradorSeleccionado,
-      compradorManual,
     });
 
     setErrores(nuevosErrores);
@@ -285,7 +293,10 @@ export function useVenta() {
     const estanque = estanques.find((item) => String(item.id) === estanqueSeleccionado);
     const colaborador = colaboradores.find((item) => item.id === colaboradorSeleccionado);
     const comprador = compradoresData.find((item) => item.id === compradorSeleccionado);
-    const esCompradorManual = compradorSeleccionado === COMPRADOR_MANUAL;
+    const esClienteGenerico = compradorSeleccionado === CLIENTE_GENERICO;
+    const numeroClienteGenerico =
+      ventas.filter((venta) => String(venta.compradorId).startsWith(CLIENTE_GENERICO)).length + 1;
+    const nombreClienteGenerico = `Cliente ${String(numeroClienteGenerico).padStart(3, "0")}`;
 
     const nuevaVenta = {
       id: String(Date.now()),
@@ -301,13 +312,15 @@ export function useVenta() {
       fechaVenta,
       colaboradorId: colaboradorSeleccionado,
       colaboradorNombre: colaborador?.nombre ?? "",
-      compradorId: esCompradorManual ? "" : compradorSeleccionado,
-      compradorNombre: esCompradorManual ? compradorManual.trim() : comprador?.nombre || "",
+      compradorId: esClienteGenerico
+        ? `${CLIENTE_GENERICO}-${String(numeroClienteGenerico).padStart(3, "0")}`
+        : compradorSeleccionado,
+      compradorNombre: esClienteGenerico ? nombreClienteGenerico : comprador?.nombre || "",
     };
 
     setVentas((actual) => [nuevaVenta, ...actual]);
     setTipoMensaje("success");
-    setMensaje("Venta guardada correctamente.");
+    setMensaje("Venta guardada exitosamente.");
     limpiarFormulario();
     setGuardando(false);
   }, [
@@ -319,8 +332,8 @@ export function useVenta() {
     precioKiloNumero,
     colaboradorSeleccionado,
     compradorSeleccionado,
-    compradorManual,
     colaboradores,
+    ventas,
     totalVenta,
     fechaVenta,
     limpiarFormulario,
@@ -336,7 +349,6 @@ export function useVenta() {
     fechaVenta,
     colaboradorSeleccionado,
     compradorSeleccionado,
-    compradorManual,
     mensaje,
     tipoMensaje,
     errores,
@@ -351,7 +363,6 @@ export function useVenta() {
     ventas,
     // setters directos
     setEstanqueSeleccionado,
-    setCompradorManual,
     handleFincaChange,
     handlePesoPromedioChange,
     handleTamanoPromedioChange,
@@ -360,6 +371,7 @@ export function useVenta() {
     handleCompradorChange,
     handleColaboradorChange,
     limpiarError,
+    limpiarMensaje,
     guardarVenta,
   };
 }
