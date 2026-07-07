@@ -28,7 +28,6 @@ import Title from "../../../shared/components/Title.jsx";
 import { COLORS } from "../../../theme/colors.js";
 import { ICONS } from "../../../theme/icons.js";
 import { useFincaCrecimiento } from "../hooks/useFincaCrecimiento.js";
-import { STYLE} from "../../../theme/style.js";
 
 export default function FincaCrecimientoScreen() {
   const {
@@ -39,8 +38,6 @@ export default function FincaCrecimientoScreen() {
     estanquesFiltrados,
     estanqueSeleccionadoObj,
     estanque,
-    pesoAnteriorLabel,
-    estanqueDeshabilitado,
     setEstanqueSeleccionado,
     setPesoActual,
     handleFincaChange,
@@ -53,19 +50,30 @@ export default function FincaCrecimientoScreen() {
 
   if (!estanque) {
     return (
-      <ScrollView style={STYLE.container} contentContainerStyle={styles.contentScroll}>
-        <Card style={STYLE.contentWrapper}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.contentScroll}>
+        <Card style={styles.contentWrapper}>
           <Text>No se encontró un estanque válido.</Text>
         </Card>
       </ScrollView>
     );
   }
 
+  const pesoAnteriorLabel =
+    estanqueSeleccionadoObj?.pesoSemanaAnterior !== undefined &&
+    estanqueSeleccionadoObj?.pesoSemanaAnterior !== null
+      ? `Peso anterior: ${estanqueSeleccionadoObj.pesoSemanaAnterior} g`
+      : "Peso anterior: -";
+
+  const errorFieldStyle = { borderColor: COLORS.error };
+  const mostrarErrorFinca = submitted && Boolean(errors.finca);
+  const mostrarErrorEstanque = submitted && Boolean(errors.estanque);
+  const mostrarErrorPeso = submitted && Boolean(errors.peso);
+
   return (
     <View style={styles.screenContainer}>
       <NavbarRegistro Titulo="Crecimiento" Subtitulo="Registro de peso" Icono="growth" />
-      <ScrollView style={STYLE.container} contentContainerStyle={styles.contentScroll}>
-        <Card style={STYLE.contentWrapper}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.contentScroll}>
+        <Card style={styles.contentWrapper}>
           <View style={styles.headerRow}>
             <Icon
               icon={ICONS.growth}
@@ -82,9 +90,8 @@ export default function FincaCrecimientoScreen() {
             options={opcionesFincas}
             value={fincaSeleccionada}
             onChange={handleFincaChange}
-            selectStyle={submitted && errors.finca ? styles.errorSelect : null}
+            selectStyle={mostrarErrorFinca ? errorFieldStyle : null}
           />
-          {submitted && errors.finca ? <Text style={styles.errorText}>{errors.finca}</Text> : null}
 
           <Select
             label="Seleccione el estanque *"
@@ -92,10 +99,9 @@ export default function FincaCrecimientoScreen() {
             options={estanquesFiltrados}
             value={estanqueSeleccionado}
             onChange={setEstanqueSeleccionado}
-            disabled={estanqueDeshabilitado}
-            selectStyle={submitted && errors.estanque ? styles.errorSelect : null}
+            disabled={estanqueSeleccionado !== "" && estanquesFiltrados.length === 0}
+            selectStyle={mostrarErrorEstanque ? errorFieldStyle : null}
           />
-          {submitted && errors.estanque ? <Text style={styles.errorText}>{errors.estanque}</Text> : null}
 
           <View style={styles.badgeRow}>
             <BadgeLabel
@@ -110,27 +116,24 @@ export default function FincaCrecimientoScreen() {
             <View style={styles.inputItem}>
               <Title level={5}>Peso actual (g) *</Title>
               <NumberInput
-                style={styles.sameInput}
+                style={[styles.sameInput, mostrarErrorPeso && errorFieldStyle]}
                 value={pesoActual}
                 onChangeText={setPesoActual}
                 step={0.5}
                 min={0}
                 max={1000}
-                style={[styles.sameInput, submitted && errors.peso ? styles.errorInput : null]}
               />
-              {submitted && errors.peso ? <Text style={styles.errorText}>{errors.peso}</Text> : null}
             </View>
           </View>
+
+          {submitted && errorMessage ? <Alert variant="danger" message={errorMessage} /> : null}
+          {submitted && successMessage ? (
+            <Alert variant="success" message={successMessage} />
+          ) : null}
 
           <Button variant="outline" onPress={guardarDatos} style={styles.submitButton}>
             Guardar
           </Button>
-          {errorMessage ? (
-            <Alert variant="danger" message={errorMessage} style={styles.feedbackAlert} />
-          ) : null}
-          {successMessage ? (
-            <Alert variant="success" message={successMessage} style={styles.feedbackAlert} />
-          ) : null}
         </Card>
       </ScrollView>
     </View>

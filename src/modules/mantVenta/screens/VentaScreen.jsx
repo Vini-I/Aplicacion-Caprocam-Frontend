@@ -86,6 +86,12 @@ export default function VentaScreen({ onDetalleVentas }) {
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <Card style={styles.contentWrapper}>
         <View style={styles.headerRow}>
+          <Icon
+            icon={ICONS.shrimp}
+            size={22}
+            color={COLORS.primary}
+            style={styles.headerIcon}
+          />
           <Text style={styles.cardTitle}>Registro de venta</Text>
         </View>
 
