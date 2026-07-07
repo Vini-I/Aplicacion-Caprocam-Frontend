@@ -1,32 +1,27 @@
 /**
- * Pantalla: AgregarTrazabilidadScreen
+ * ============================================================
+ * AgregarTrazabilidadScreen
+ * ============================================================
  *
- * Permite registrar un nuevo movimiento de pre-cría a engorde
- * mediante el formulario reutilizable de Trazabilidad.
+ * Pantalla para registrar un nuevo movimiento de trazabilidad.
  *
- * Funcionalidades principales:
- * - Administrar los datos ingresados en el formulario mediante useTrazabilidad.
- * - Validar que los campos obligatorios estén completos y sean correctos.
- * - Mostrar un modal cuando la validación falla.
- * - Registrar el movimiento de forma permanente al confirmar.
+ * Reglas importantes / restricciones:
+ * - No cambiar el header local: el `Navbar` con `leftContent` debe mantenerse.
+ * - Botones normales deben usar `variant="outline"` salvo excepción aprobada.
+ * - Colores deben salir de `COLORS`.
  *
- * Componentes utilizados:
- * - Navbar: encabezado de la pantalla.
- * - Alert: aviso de que el registro es histórico e inmutable.
- * - TrazabilidadForm: formulario reutilizable para los datos del movimiento.
- * - Button: acción para registrar el movimiento.
- * - Modal: aviso cuando la validación del formulario falla.
+ * Navegación / dependencias relevantes:
+ * - Navega a listar/detalle mediante `useTrazabilidad`.
  */
 import { View, ScrollView } from "react-native";
 import Text from "../../../shared/components/Text";
-import Title from "../../../shared/components/Title";
 import { styles } from "../styles/AgregarTrazabilidadStyle";
-import Navbar from "../../../shared/components/Navbar";
+import { STYLE } from "../../../theme/style";
 import Button from "../../../shared/components/Button";
-import Modal from "../../../shared/components/Modal";
 import Alert from "../../../shared/components/Alert";
 import Icon from "../../../shared/components/Icons";
 import { ICONS } from "../../../theme/icons";
+import { COLORS } from "../../../theme/colors";
 
 import TrazabilidadForm from "../components/TrazabilidadForm";
 import { useTrazabilidad } from "../hooks/useTrazabilidad";
@@ -38,41 +33,31 @@ export default function AgregarTrazabilidadScreen() {
     colaboradores,
     estanquesOrigen,
     estanquesDestino,
-    modalVisible,
     mensajeError,
+    submitted,
     manejarCambio,
     manejarCambioFinca,
     manejarEnvio,
-    cerrarModal,
     cerrarFormulario,
     plAutocompletado,
   } = useTrazabilidad();
 
   return (
-    <View style={styles.container}>
-      <Navbar
-        title=""
-        leftContent={
-          <View style={styles.headerRowLeft}>
-            <Button onPress={cerrarFormulario} style={styles.backButton}>
-              <Icon icon={ICONS.back} size={20} style={styles.iconColor} />
-            </Button>
-            <Title style={styles.title}>Trazabilidad Biológica</Title>
-          </View>
-        }
-        style={styles.header}
-      />
+    <View style={STYLE.container}>
+
+
+      {/* Header provided by Stack layout (see src/app/(drawer)/trazabilidad/_layout.jsx) */}
 
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        <View style={styles.wrapper}>
+        <View style={STYLE.contentWrapper}>
           <Alert
             variant="info"
             message="Este registro es un hecho histórico: no se puede editar ni borrar una vez guardado."
             style={styles.infoBanner}
-            textStyle={{ color: '#FFFFFF' }}
+            textStyle={{ color: COLORS.white }}
           />
 
           <TrazabilidadForm
@@ -84,30 +69,34 @@ export default function AgregarTrazabilidadScreen() {
             onChange={manejarCambio}
             onChangeFinca={manejarCambioFinca}
             plAutocompletado={plAutocompletado}
+            submitted={submitted}
           />
 
+          {mensajeError !== "" && (
+            <Alert
+              variant="danger"
+              message={
+                mensajeError ||
+                "Revisa los campos obligatorios marcados con * antes de guardar."
+              }
+              style={styles.infoBanner}
+              textStyle={{ color: COLORS.error }}
+            />
+          )}
+
           <Button
+            variant="outline"
             onPress={manejarEnvio}
             style={styles.createButton}
           >
             <View style={styles.createButtonContent}>
-              <Icon icon={ICONS.save} size={20} style={styles.iconColor} />
+              <Icon icon={ICONS.save} size={20} color={COLORS.primary} />
               <Text style={styles.createButtonText}>Registrar movimiento</Text>
             </View>
           </Button>
         </View>
       </ScrollView>
-
-      <Modal
-        visible={modalVisible}
-        onClose={cerrarModal}
-        closeText="Aceptar"
-      >
-        <Title level={4} style={styles.modalTitle}>
-          No se pudo registrar el movimiento
-        </Title>
-        <Text style={styles.modalMessage}>{mensajeError}</Text>
-      </Modal>
+    
     </View>
   );
 }

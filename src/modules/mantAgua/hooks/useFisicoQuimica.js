@@ -1,6 +1,3 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
-import { useRouter } from 'expo-router';
-
 /**
  * ============================================================
  * HOOK useFisicoQuimica
@@ -10,6 +7,7 @@ import { useRouter } from 'expo-router';
  * salinidad, temperatura, pH y oxígeno; las alertas de
  * "guardado"/"actualizado" con su timer; y la navegación de
  * regreso a /registros tras guardar.
+ * Incluye la lógica para mostrar alertas temporales y cerrar la pantalla.
  *
  * ---
  * RETORNA
@@ -31,6 +29,11 @@ import { useRouter } from 'expo-router';
  * <RangeCard title="pH" onChange={setLecturasPh} ... />
  * <Button onPress={alGuardar}>Guardar módulo</Button>
  */
+
+import { useEffect, useRef, useState, useCallback } from 'react';
+import { useRouter } from 'expo-router';
+
+
 
 export default function useFisicoQuimica() {
   const [, setLecturasSalinidad]                         = useState([]);

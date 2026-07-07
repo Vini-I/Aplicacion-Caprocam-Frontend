@@ -1,3 +1,14 @@
+/**
+ * ============================================================
+ * TrazabilidadStyles.js
+ * ============================================================
+ *
+ * Estilos del listado de Trazabilidad.
+ *
+ * Reglas importantes / restricciones:
+ * - Mantener las claves mínimas necesarias; eliminar estilos huérfanos.
+ */
+
 import { StyleSheet } from "react-native";
 
 import { COLORS } from "../../../theme/colors";
@@ -9,56 +20,6 @@ export const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
   },
 
-  header: {
-    backgroundColor: COLORS.primary,
-    paddingTop: 28,
-    paddingHorizontal: 20,
-    paddingBottom: 18,
-    borderBottomLeftRadius: 18,
-    borderBottomRightRadius: 18,
-    borderBottomWidth: 0,
-  },
-
-  title: {
-    color: COLORS.white,
-    fontSize: 18,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    lineHeight: 22,
-  },
-
-  headerRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    width: "100%",
-  },
-
-   headerRowLeft: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    width: "100%",
-    gap: 15,
-  },
-  newButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: "rgba(255,255,255,0.2)",
-    borderWidth: 0,
-    paddingHorizontal: 0,
-    paddingVertical: 0,
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 0,
-  },
-
-  newButtonText: {
-    color: COLORS.white,
-    fontSize: 22,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    lineHeight: 24,
-  },
 
   scrollContent: {
     paddingBottom: 24,
@@ -107,6 +68,97 @@ export const styles = StyleSheet.create({
     width: "100%",
   },
 
+  touchable: {
+    width: "100%",
+    backgroundColor: "transparent",
+    padding: 0,
+    margin: 0,
+    marginTop: 0,
+    borderRadius: 0,
+    alignItems: "stretch",
+  },
+
+  card: {
+    width: "100%",
+    maxWidth: 900,
+    alignSelf: "center",
+    marginBottom: 16,
+  },
+
+  cardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 6,
+  },
+
+  fincaText: {
+    flex: 1,
+    marginRight: 8,
+    color: COLORS.textSecondary,
+    fontSize: 16,
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
+  },
+
+  fechaText: {
+    color: COLORS.textTertiary,
+    fontSize: 13,
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
+  },
+
+  colaboradorText: {
+    color: COLORS.textTertiary,
+    fontSize: 13,
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
+    marginBottom: 14,
+  },
+
+  movimiento: {
+    flexDirection: "row",
+    justifyContent: "flex-start",
+    alignItems: "center",
+    gap: 3,
+    marginBottom: 16,
+  },
+
+  estanqueText: {
+    color: COLORS.textSecondary,
+    fontSize: 14,
+    fontFamily: TYPOGRAPHY.fontFamily.medium,
+    flexShrink: 1,
+  },
+
+  flechaIcon: {
+    marginHorizontal: 28,
+    transform: [{ scaleX: 1.6 }],
+    alignSelf: "center",
+  },
+
+  cardFooter: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    borderTopWidth: 1,
+    borderTopColor: COLORS.secondary,
+    paddingTop: 12,
+  },
+
+  dato: {
+    alignItems: "flex-start",
+  },
+
+  datoLabel: {
+    color: COLORS.textTertiary,
+    fontSize: 12,
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
+    marginBottom: 2,
+  },
+
+  datoValor: {
+    color: COLORS.textSecondary,
+    fontSize: 15,
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
+  },
+
   vacioContainer: {
     paddingVertical: 24,
   },
@@ -129,8 +181,20 @@ export const styles = StyleSheet.create({
     opacity: 0.5,
     marginTop: 12,
   },
-  iconColor: {
-    color: COLORS.white,
-    bold: true,
+  footerContent: {
+    width: "100%",
+    paddingVertical: 12,
+  },
+
+  footerActions: {
+    width: "100%",
+  },
+
+  fullButton: {
+    width: "100%",
+    height: 56,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

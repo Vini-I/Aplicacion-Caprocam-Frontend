@@ -23,17 +23,13 @@
 import { View, ScrollView } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import Text from "../../../shared/components/Text";
-import Title from "../../../shared/components/Title";
-
 import { styles } from "../styles/DetalleTrazabilidadStyles";
-
-import Navbar from "../../../shared/components/Navbar";
 import Button from "../../../shared/components/Button";
+import { STYLE } from "../../../theme/style";
 import Card from "../../../shared/components/Card";
 import Badge from "../../../shared/components/Badge";
 import Input from "../../../shared/components/Input";
 import Select from "../../../shared/components/Select";
-import DateInput from "../../../shared/components/DateInput";
 import Icon from "../../../shared/components/Icons";
 import { ICONS } from "../../../theme/icons";
 
@@ -51,41 +47,19 @@ export default function DetalleTrazabilidadScreen() {
 
   if (!registro) {
     return (
-      <View style={styles.container}>
-        <Navbar
-          title=""
-          leftContent={
-            <View style={styles.headerRow}>
-              <View style={styles.headerRowLeft}>
-                <Button
-                  variant="outline"
-                  onPress={volver}
-                  style={styles.backButton}
-                >
-                  <Icon icon={ICONS.back} size={20} style={styles.iconColor} />
-                </Button>
-
-                <Title style={styles.title}>Detalle de Trazabilidad</Title>
-              </View>
-            </View>
-          }
-          style={styles.header}
-        />
-
-        <Text style={styles.notFoundText}>
-          No se encontró el registro solicitado.
-        </Text>
+      <View style={STYLE.container}>
+        <Text style={styles.notFoundText}>No se encontró el registro solicitado.</Text>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View style={STYLE.container}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        <View style={styles.wrapper}>
+        <View style={STYLE.contentWrapper}>
           <Badge
             label="Registro histórico · no editable"
             variant="info"
@@ -115,11 +89,11 @@ export default function DetalleTrazabilidadScreen() {
           </Card>
 
           <Card title="Información del movimiento" titleStyle={styles.cardTitle}>
-            <DateInput
+            <Input
               label="Fecha del movimiento"
               value={registro.fecha}
-              disabled={true}
-              inputStyle={styles.inputLectura}
+              editable={false}
+              style={styles.inputLectura}
               labelStyle={styles.labelLectura}
             />
 

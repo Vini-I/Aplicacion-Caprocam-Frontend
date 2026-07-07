@@ -1,21 +1,37 @@
 /**
- * Componente: TrazabilidadForm
+ * ============================================================
+ * COMPONENTE TRAZABILIDADFORM
+ * ============================================================
  *
  * Formulario reutilizable para capturar el movimiento de un lote
  * de camarón de pre-cría a engorde (registro de Trazabilidad).
  *
- * Funcionalidades principales:
- * - Capturar finca, estanque de origen y estanque de destino.
- * - Capturar fecha del movimiento y colaborador responsable.
- * - Capturar tamaño (gramos), días de siembra y PL.
- * - El estanque de destino excluye al estanque ya elegido como origen,
- *   y viceversa, para evitar que coincidan.
+ * FUNCIONALIDAD:
+ * 1. Captura finca, estanque de origen y estanque de destino mediante
+ *    Select encadenados (el destino excluye al estanque ya elegido
+ *    como origen, y viceversa, para evitar que coincidan).
+ * 2. Captura fecha del movimiento y colaborador responsable. En
+ *    iOS/Android usa DateInput (calendario nativo); en web usa Input
+ *    de texto con formato dd/mm/aaaa, porque el picker nativo que usa
+ *    DateInput (@react-native-community/datetimepicker) no tiene
+ *    soporte para web.
+ * 3. Captura tamaño (gramos), días de siembra y PL.
+ * 4. Marca en rojo los campos obligatorios solo después de intentar
+ *    guardar (prop `submitted`).
  *
- * Componentes utilizados:
+ * COMPONENTES UTILIZADOS:
  * - Card: agrupación visual de las secciones del formulario.
  * - Select: selección de finca, estanques y colaborador.
  * - NumberInput: campos numéricos de tamaño, días y PL.
- * - DateInput: fecha del movimiento (no permite fechas futuras).
+ * - DateInput: fecha del movimiento en iOS/Android (dd/mm/aaaa).
+ * - Input: fallback de fecha en web (dd/mm/aaaa, sin picker nativo).
+ *
+ * IMPORTANTE:
+ * - No modifica el login.
+ * - No cambia rutas existentes.
+ * - Usa la estructura existente del proyecto.
+ * - No se modificó el código de DateInput.jsx; el fallback de web se
+ *   resuelve aquí con Platform.OS.
  */
 import { View, Platform } from "react-native";
 
@@ -23,46 +39,9 @@ import Text from "../../../shared/components/Text";
 import Card from "../../../shared/components/Card";
 import NumberInput from "../../../shared/components/NumberInput";
 import Select from "../../../shared/components/Select";
+import Input from "../../../shared/components/Input";
 import DateInput from "../../../shared/components/DateInput";
 import { styles } from "../styles/TrazabilidadFormStyles";
-
-function convertDateToWeb(textDate) {
-  const parts = textDate.split("/");
-
-  if (parts.length !== 3) {
-    return "";
-  }
-
-  const day = parts[0];
-  const month = parts[1];
-  const year = parts[2];
-
-  return `${year}-${month}-${day}`;
-}
-
-function convertWebDateToText(webDate) {
-  const parts = webDate.split("-");
-
-  if (parts.length !== 3) {
-    return "";
-  }
-
-  const year = parts[0];
-  const month = parts[1];
-  const day = parts[2];
-
-  return `${day}/${month}/${year}`;
-}
-
-function getTodayWebDate() {
-  const today = new Date();
-
-  const day = String(today.getDate()).padStart(2, "0");
-  const month = String(today.getMonth() + 1).padStart(2, "0");
-  const year = today.getFullYear();
-
-  return `${year}-${month}-${day}`;
-}
 
 export default function TrazabilidadForm({
   formData,
@@ -73,6 +52,7 @@ export default function TrazabilidadForm({
   onChange,
   onChangeFinca,
   plAutocompletado = false,
+  submitted = false,
   style,
 }) {
   const opcionesOrigen = estanquesOrigen.filter(
@@ -83,101 +63,164 @@ export default function TrazabilidadForm({
     (estanque) => estanque.value !== formData.estanqueOrigenId,
   );
 
+  const mostrarErrorFinca = submitted && !formData.fincaId;
+  const mostrarErrorOrigen = submitted && !formData.estanqueOrigenId;
+  const mostrarErrorDestino = submitted && !formData.estanqueDestinoId;
+  const mostrarErrorFecha = submitted && !formData.fecha;
+  const mostrarErrorColaborador = submitted && !formData.colaboradorId;
+  const mostrarErrorTamano = submitted && (!formData.tamaño || Number(formData.tamaño) <= 0);
+  const mostrarErrorDias = submitted && (!formData.dias || Number(formData.dias) <= 0);
+  const mostrarErrorPl = submitted && (!formData.pl || Number(formData.pl) <= 0);
+
   function renderFecha() {
     if (Platform.OS === "web") {
       return (
-        <View style={styles.webDateContainer}>
-          <Text style={styles.webDateLabel}>Fecha del movimiento</Text>
-
-          <input
-            type="date"
-            value={convertDateToWeb(formData.fecha)}
-            max={getTodayWebDate()}
-            onChange={(event) =>
-              onChange("fecha", convertWebDateToText(event.target.value))
-            }
-            style={styles.webDateInput}
-          />
-        </View>
+        <Input
+          label="Fecha del movimiento *"
+          value={formData.fecha}
+          onChangeText={(value) => onChange("fecha", value)}
+          containerStyle={styles.field}
+          style={mostrarErrorFecha ? styles.errorInput : undefined}
+          labelStyle={styles.label}
+          keyboardType="numbers-and-punctuation"
+          placeholder="dd/mm/aaaa"
+        />
       );
     }
 
     return (
       <DateInput
-        label="Fecha del movimiento"
+        label="Fecha del movimiento *"
         value={formData.fecha}
         onChangeText={(value) => onChange("fecha", value)}
+        containerStyle={styles.field}
+        inputStyle={mostrarErrorFecha ? styles.errorInput : undefined}
+        labelStyle={styles.label}
+        placeholder="dd/mm/aaaa"
       />
     );
   }
 
   return (
     <View style={[styles.container, style]}>
-      <Card title="Movimiento" titleStyle={styles.cardTitle}>
-        <Select
-          label="Finca"
-          placeholder="Seleccionar finca"
-          options={fincas}
-          value={formData.fincaId}
-          onChange={onChangeFinca}
-        />
+      <Card title="Movimiento" titleStyle={styles.cardTitle} style={styles.movimientoCard}>
+        <View style={[styles.selectWrapper, styles.selectWrapperFinca]}>
+          <View style={styles.selectContainer}>
+            <Select
+              label="Finca *"
+              placeholder="Seleccionar finca"
+              options={fincas}
+              value={formData.fincaId}
+              onChange={onChangeFinca}
+              containerStyle={styles.selectField}
+              labelStyle={[styles.label, styles.selectLabel]}
+              selectStyle={[
+                styles.selectButton,
+                mostrarErrorFinca ? styles.errorInput : undefined,
+              ]}
+            />
+          </View>
+          <View style={styles.selectPlaceholder} />
+        </View>
 
-        <Select
-          label="Estanque de origen (Pre-cría)"
-          placeholder="Seleccionar estanque de origen"
-          options={opcionesOrigen}
-          value={formData.estanqueOrigenId}
-          onChange={(value) => onChange("estanqueOrigenId", value)}
-          disabled={formData.fincaId === ""}
-        />
+        <View style={[styles.selectWrapper, styles.selectWrapperOrigen]}>
+          <View style={styles.selectContainer}>
+            <Select
+              label="Estanque de origen (Pre-cría) *"
+              placeholder="Seleccionar estanque de origen"
+              options={opcionesOrigen}
+              value={formData.estanqueOrigenId}
+              onChange={(value) => onChange("estanqueOrigenId", value)}
+              disabled={formData.fincaId === ""}
+              containerStyle={styles.selectField}
+              labelStyle={[styles.label, styles.selectLabel]}
+              selectStyle={[
+                styles.selectButton,
+                mostrarErrorOrigen ? styles.errorInput : undefined,
+              ]}
+            />
+          </View>
+          <View style={styles.selectPlaceholder} />
+        </View>
 
-        <Select
-          label="Estanque de destino (Engorde)"
-          placeholder="Seleccionar estanque de destino"
-          options={opcionesDestino}
-          value={formData.estanqueDestinoId}
-          onChange={(value) => onChange("estanqueDestinoId", value)}
-          disabled={formData.fincaId === ""}
-        />
+        <View style={[styles.selectWrapper, styles.selectWrapperDestino]}>
+          <View style={styles.selectContainer}>
+            <Select
+              label="Estanque de destino (Engorde) *"
+              placeholder="Seleccionar estanque de destino"
+              options={opcionesDestino}
+              value={formData.estanqueDestinoId}
+              onChange={(value) => onChange("estanqueDestinoId", value)}
+              disabled={formData.fincaId === ""}
+              containerStyle={styles.selectField}
+              labelStyle={[styles.label, styles.selectLabel]}
+              selectStyle={[
+                styles.selectButton,
+                mostrarErrorDestino ? styles.errorInput : undefined,
+              ]}
+            />
+          </View>
+          <View style={styles.selectPlaceholder} />
+        </View>
 
         {renderFecha()}
 
-        <Select
-          label="Colaborador responsable"
-          placeholder="Seleccionar colaborador"
-          options={colaboradores}
-          value={formData.colaboradorId}
-          onChange={(value) => onChange("colaboradorId", value)}
-        />
+        <View style={[styles.selectWrapper, styles.selectWrapperColaborador]}>
+          <View style={styles.selectAbsoluteWrapper}>
+            <Select
+              label="Colaborador responsable *"
+              placeholder="Seleccionar colaborador"
+              options={colaboradores}
+              value={formData.colaboradorId}
+              onChange={(value) => onChange("colaboradorId", value)}
+              containerStyle={styles.selectField}
+              labelStyle={[styles.label, styles.selectLabel]}
+              selectStyle={[
+                styles.selectButton,
+                mostrarErrorColaborador ? styles.errorInput : undefined,
+              ]}
+            />
+          </View>
+          <View style={styles.selectPlaceholder} />
+        </View>
       </Card>
 
       <Card title="Datos del traslado" titleStyle={styles.cardTitle}>
         <NumberInput
-          label="Tamaño (gramos)"
+          label="Tamaño (gramos) *"
           value={formData.tamaño}
           onChangeText={(value) => onChange("tamaño", value)}
           min={0}
           max={100}
           step={1}
+          containerStyle={styles.field}
+          labelStyle={styles.label}
+          style={mostrarErrorTamano ? styles.errorInput : undefined}
         />
 
         <NumberInput
-          label="Días de siembra"
+          label="Días de siembra *"
           value={formData.dias}
           onChangeText={(value) => onChange("dias", value)}
           min={0}
           max={365}
           step={1}
+          containerStyle={styles.field}
+          labelStyle={styles.label}
+          style={mostrarErrorDias ? styles.errorInput : undefined}
         />
 
         <NumberInput
-          label="PL"
+          label="PL *"
           value={formData.pl}
           onChangeText={(value) => onChange("pl", value)}
           editable={!plAutocompletado}
           min={0}
           max={999999}
           step={1000}
+          containerStyle={styles.field}
+          labelStyle={styles.label}
+          style={mostrarErrorPl ? styles.errorInput : undefined}
         />
         {plAutocompletado && (
           <Text style={styles.plNote}>

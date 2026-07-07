@@ -1,17 +1,26 @@
 /**
- * Hook: useTrazabilidad
+ * ============================================================
+ * HOOK useTrazabilidad
+ * ============================================================
  *
- * Concentra todo el estado del formulario de Trazabilidad, sus
- * validaciones y el handler de envio. La pantalla solo consume
- * este hook y no contiene logica propia.
+ * Descripción:
+ * Centraliza el estado, validaciones y envío del formulario de
+ * trazabilidad. La pantalla consumidora debe delegar la lógica a
+ * este hook y mantener la presentación separada.
  *
- * Validaciones aplicadas (segun especificacion del modulo):
- * - Finca, ambos estanques, fecha y colaborador son obligatorios.
- * - El estanque de origen no puede ser igual al de destino.
- * - Tamaño debe ser un numero mayor a 0.
- * - PL debe ser un numero mayor a 0.
- * - Dias debe ser un numero mayor a 0.
+ * Validaciones principales:
+ * - Campos obligatorios: finca, estanques (origen/destino), fecha, colaborador, tamaño, dias, pl.
+ * - Origen y destino no pueden coincidir.
+ * - Valores numéricos deben ser mayores que 0.
  * - La fecha no puede ser futura.
+ *
+ * Retorna:
+ * - `formData`, `fincas`, `colaboradores`, `estanquesOrigen`, `estanquesDestino`,
+ *   `plAutocompletado`, `mensajeError`, `submitted` y handlers como `manejarCambio`,
+ *   `manejarCambioFinca`, `manejarEnvio`, `cerrarFormulario`.
+ *
+ * Restricciones:
+ * - No realizar llamadas a la API directamente; usar los servicios del módulo.
  */
 
 import { useState } from "react";
@@ -57,9 +66,9 @@ export function useTrazabilidad() {
   const router = useRouter();
 
   const [formData, setFormData] = useState(initialForm);
-  const [modalVisible, setModalVisible] = useState(false);
   const [mensajeError, setMensajeError] = useState("");
   const [plAutocompletado, setPlAutocompletado] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
   const fincas = obtenerFincas();
   const colaboradores = obtenerColaboradores();
@@ -77,6 +86,7 @@ export function useTrazabilidad() {
       }));
 
       setPlAutocompletado(Boolean(siembra));
+      setMensajeError("");
       return;
     }
 
@@ -84,6 +94,7 @@ export function useTrazabilidad() {
       ...previousData,
       [field]: value,
     }));
+    setMensajeError("");
   }
 
   function manejarCambioFinca(value) {
@@ -96,6 +107,7 @@ export function useTrazabilidad() {
     }));
 
     setPlAutocompletado(false);
+    setMensajeError("");
   }
 
   function obtenerCamposVacios() {
@@ -150,24 +162,27 @@ export function useTrazabilidad() {
   }
 
   function manejarEnvio() {
+    setSubmitted(true);
+
     const esValido = validarFormulario();
 
     if (!esValido) {
-      setModalVisible(true);
       return;
     }
 
     crearRegistroTrazabilidad(formData);
     setFormData(initialForm);
+    setSubmitted(false);
+    setMensajeError("");
     router.back();
-  }
-
-  function cerrarModal() {
-    setModalVisible(false);
   }
 
   function cerrarFormulario() {
     router.back();
+  }
+
+  function esFormularioCompleto() {
+    return obtenerCamposVacios().length === 0;
   }
 
   return {
@@ -177,12 +192,12 @@ export function useTrazabilidad() {
     estanquesOrigen,
     estanquesDestino,
     plAutocompletado,
-    modalVisible,
     mensajeError,
+    submitted,
     manejarCambio,
     manejarCambioFinca,
     manejarEnvio,
-    cerrarModal,
     cerrarFormulario,
+    formularioCompleto: esFormularioCompleto(),
   };
 }
