@@ -62,22 +62,6 @@ export function useFincaCrecimiento() {
       }));
   }, [fincaSeleccionada]);
 
-  const pesoAnteriorLabel = useMemo(() => {
-    if (
-      estanqueSeleccionadoObj?.pesoSemanaAnterior !== undefined &&
-      estanqueSeleccionadoObj?.pesoSemanaAnterior !== null
-    ) {
-      return `Peso anterior: ${estanqueSeleccionadoObj.pesoSemanaAnterior} g`;
-    }
-
-    return "Peso anterior: -";
-  }, [estanqueSeleccionadoObj]);
-
-  const estanqueDeshabilitado = useMemo(
-    () => estanqueSeleccionado !== "" && estanquesFiltrados.length === 0,
-    [estanqueSeleccionado, estanquesFiltrados.length],
-  );
-
   const validarCampos = useCallback(() => {
     const nextErrors = {};
 
@@ -135,7 +119,7 @@ export function useFincaCrecimiento() {
     setErrorMessage("");
 
     if (!validarCampos()) {
-      setErrorMessage("Complete los campos obligatorios.");
+      setErrorMessage("Rellenar campos obligatorios.");
       return;
     }
 
@@ -151,8 +135,6 @@ export function useFincaCrecimiento() {
     estanquesFiltrados,
     estanqueSeleccionadoObj,
     estanque,
-    pesoAnteriorLabel,
-    estanqueDeshabilitado,
     setEstanqueSeleccionado: handleEstanqueChange,
     setPesoActual: handlePesoActualChange,
     handleFincaChange,

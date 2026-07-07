@@ -7,9 +7,7 @@
  * opciones de selección para la pantalla de detalle de ventas.
  */
 
-import { useCallback, useMemo, useState } from "react";
-import { useWindowDimensions } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { useMemo } from "react";
 
 import { fincas } from "../../finca/screens/FincaData.js";
 import { estanques } from "../../mantCrecimiento/services/EstanqueData.js";
@@ -66,14 +64,14 @@ export function useDetalleVenta() {
 
   const ventasFiltradas = useMemo(() => {
     return (ventas || []).filter((venta) => {
-      const coincideFinca = !fincaFiltro || venta.fincaId === fincaFiltro;
-      const coincideEstanque = !estanqueFiltro || venta.estanqueId === estanqueFiltro;
+      const coincideFinca = !fincaSeleccionada || venta.fincaId === fincaSeleccionada;
+      const coincideEstanque = !estanqueSeleccionado || venta.estanqueId === estanqueSeleccionado;
 
       return coincideFinca && coincideEstanque;
     });
-  }, [ventas, fincaFiltro, estanqueFiltro]);
+  }, [ventas, fincaSeleccionada, estanqueSeleccionado]);
 
-  const hayFiltro = Boolean(fincaFiltro && estanqueFiltro);
+  const hayFiltro = Boolean(fincaSeleccionada && estanqueSeleccionado);
 
   const mensajeDetalle = hayFiltro
     ? "Mostrando solo las ventas de la finca y estanque seleccionados."
