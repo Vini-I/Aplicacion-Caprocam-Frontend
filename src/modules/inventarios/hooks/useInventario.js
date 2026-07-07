@@ -1,7 +1,65 @@
+/**
+ * ============================================================
+ * HOOK: useInventario
+ * ============================================================
+ *
+ * Responsabilidad:
+ * Maneja el estado de la pantalla de Inventarios: carga de productos,
+ * texto de búsqueda, filtros activos (categoría, proveedor, unidad,
+ * stock bajo, caducidad) y el cálculo de la lista filtrada final.
+ * El filtro de caducidad muestra los productos cuya fechaCaducidad
+ * sea igual o anterior a la fecha elegida en FilterButton (es decir,
+ * "productos que caducan en o antes de esta fecha"), que es el uso
+ * esperado para revisar próximos vencimientos.
+ *
+ * Datos:
+ * Lee los productos desde InventarioService.getProductosInventario(),
+ * que ya devuelve el producto más reciente de primero. Cada producto
+ * incluye fechaCaducidad como string dd/mm/aaaa (mismo formato que
+ * entrega el DateInput compartido); es un dato real que ya existe en
+ * el módulo de Productos, aquí solo se consume para el filtro.
+ *
+ * Nota técnica:
+ * La comparación de fechas de este archivo NO usa regex; solo separa
+ * el string dd/mm/aaaa por "/" para construir un Date comparable. Si
+ * el proyecto ya tiene un dateUtils compartido (parseDate/compareDates
+ * o similar) fuera de este módulo, lo ideal es reemplazar
+ * parsearFechaDDMMAAAA por esa utilidad para no tener una segunda
+ * fuente de verdad para fechas.
+ *
+ * Validaciones:
+ * No aplica validación de formulario; solo filtra sobre datos ya
+ * existentes en memoria.
+ *
+ * Navegación:
+ * Recarga productos y limpia búsqueda/filtros cada vez que la
+ * pantalla recibe foco (useFocusEffect), y hace scroll al inicio del
+ * listado.
+ *
+ * Dependencias:
+ * services/InventarioService.js.
+ */
+
 import { useCallback, useRef, useState } from "react";
 import { useFocusEffect } from "expo-router";
 
 import { getProductosInventario } from "../services/InventarioService.js";
+
+/**
+ * Convierte un string "dd/mm/aaaa" a Date para poder comparar fechas.
+ * No usa regex, solo split. Devuelve null si el string viene vacío o
+ * mal formado (así el filtro simplemente no aplica en vez de romper).
+ */
+function parsearFechaDDMMAAAA(fecha) {
+  if (!fecha) return null;
+  const partes = fecha.split("/");
+  if (partes.length !== 3) return null;
+
+  const [dia, mes, anio] = partes.map(Number);
+  if (!dia || !mes || !anio) return null;
+
+  return new Date(anio, mes - 1, dia);
+}
 
 export function useInventario() {
   const flatListRef = useRef(null);
@@ -67,12 +125,18 @@ export function useInventario() {
       !filtros.lowStock ||
       p.cantidad < p.stockMinimo;
 
+    const fechaFiltro = parsearFechaDDMMAAAA(filtros.expiryDate);
+    const fechaProducto = parsearFechaDDMMAAAA(p.fechaCaducidad);
+    const coincideCaducidad =
+      !fechaFiltro || (fechaProducto && fechaProducto <= fechaFiltro);
+
     return (
       coincideTexto &&
       coincideCategoria &&
       coincideProveedor &&
       coincideUnidad &&
-      coincideStock
+      coincideStock &&
+      coincideCaducidad
     );
   });
 
