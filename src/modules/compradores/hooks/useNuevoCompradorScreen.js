@@ -8,6 +8,16 @@ export const TELEFONO_MAX_LENGTH = 14;
 // Regex básico para validar formato de correo electrónico
 const CORREO_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+function esTelefonoValido(valor) {
+  return valor.trim() !== "" && TELEFONO_REGEX.test(valor.trim());
+}
+
+function esCorreoValido(valor) {
+  return valor.trim() === "" || CORREO_REGEX.test(valor.trim()); // correo no es obligatorio
+}
+
+const MENSAJE_ERROR_GENERAL = "Revisa los campos obligatorios marcados con * antes de guardar.";
+
 export function useNuevoCompradorScreen() {
   const router = useRouter();
 
@@ -20,7 +30,10 @@ export function useNuevoCompradorScreen() {
   const [notas, setNotas] = useState("");
 
   // Estado de validación y alertas
-  const [errores, setErrores] = useState({});
+  const [errorNombre, setErrorNombre] = useState(false);
+  const [errorTipoProducto, setErrorTipoProducto] = useState(false);
+  const [errorTelefono, setErrorTelefono] = useState(false);
+  const [errorCorreo, setErrorCorreo] = useState(false);
   const [mensajeError, setMensajeError] = useState("");
   const [guardadoExitoso, setGuardadoExitoso] = useState(false);
 
@@ -30,39 +43,28 @@ export function useNuevoCompradorScreen() {
   };
 
   // Retorna el mensaje de error según los campos inválidos
-  function obtenerMensajeError(nuevosErrores) {
-    if (nuevosErrores.nombre || nuevosErrores.tipoProducto || nuevosErrores.telefono) {
-      return "Complete los campos obligatorios para guardar.";
-    }
-    if (nuevosErrores.telefono) return "El teléfono debe tener 8 dígitos";
-    if (nuevosErrores.correo) return "Ingrese un correo electrónico válido";
-    return "";
-  }
+ 
 
   // Valida los campos y guarda el comprador si no hay errores
   function handleSubmit() {
-    const nuevosErrores = {};
+   const errNombre = nombre.trim() === "";
+  const errTipo = tipoProducto === "";
+  const errTel = !esTelefonoValido(telefono);
+  const errCorreo = !esCorreoValido(correo);
 
-    if (!nombre.trim()) nuevosErrores.nombre = true;
-    if (!tipoProducto) nuevosErrores.tipoProducto = true;
-    if (!telefono.trim()) nuevosErrores.telefono = true;
-    if (telefono.trim() !== "" && !TELEFONO_REGEX.test(telefono.trim())) {
-      nuevosErrores.telefono = true;
-    }
-    if (correo.trim() !== "" && !CORREO_REGEX.test(correo.trim())) {
-      nuevosErrores.correo = true;
-    }
+  setErrorNombre(errNombre);
+  setErrorTipoProducto(errTipo);
+  setErrorTelefono(errTel);
+  setErrorCorreo(errCorreo);
 
-    if (Object.keys(nuevosErrores).length > 0) {
-      setErrores(nuevosErrores);
-      setMensajeError(obtenerMensajeError(nuevosErrores));
-      setGuardadoExitoso(false);
-      return;
-    }
+  if (errNombre || errTipo || errTel || errCorreo) {
+    setMensajeError(MENSAJE_ERROR_GENERAL);
+    setGuardadoExitoso(false);
+    return;
+  }
 
-    setErrores({});
-    setMensajeError("");
-    setGuardadoExitoso(true);
+  setMensajeError("");
+  setGuardadoExitoso(true);
 
     const comprador = {
       nombre: nombre.trim(),
@@ -92,8 +94,11 @@ export function useNuevoCompradorScreen() {
     setDireccion,
     notas,
     setNotas,
-    errores,
-    mensajeError,
+    errorNombre,
+    errorTipoProducto,
+    errorTelefono,
+    errorCorreo,
+    mensajeError, 
     guardadoExitoso,
     handleTelefonoChange,
     handleSubmit,

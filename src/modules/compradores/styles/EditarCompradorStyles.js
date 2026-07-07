@@ -107,14 +107,13 @@ export const styles = StyleSheet.create({
     marginTop: 10,
     borderRadius: 14,
     paddingVertical: 14,
-    backgroundColor: COLORS.primary,
   },
 
   saveButtonText: {
     fontSize: 16,
     fontFamily: TYPOGRAPHY.fontFamily.bold,
     fontWeight: undefined,
-    color: COLORS.white,
+    color: COLORS.primary,
   },
 
   buttonContent: {

@@ -151,20 +151,17 @@ export const styles = StyleSheet.create({
     borderRadius: 12,
   },
 
-  botonEditar: { 
-    backgroundColor: COLORS.primary 
-  },
+ botonEditar: { borderColor: COLORS.primary },     
 
-  botonEliminar: { 
-    backgroundColor: COLORS.error 
-  },
+ botonEliminar: { borderColor: COLORS.error },
+ botonTexto: {
+  fontSize: 14,
+  fontFamily: TYPOGRAPHY.fontFamily.bold,
+ },
+ 
+ botonTextoEditar: { color: COLORS.primary },
 
-  botonTexto: {
-    fontSize: 14,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    fontWeight: undefined,
-    color: COLORS.white,
-  },
+ botonTextoEliminar: { color: COLORS.error },
 
   modalCancelButton: { 
     backgroundColor: COLORS.textTertiary 

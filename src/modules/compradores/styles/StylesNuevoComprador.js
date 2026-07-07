@@ -80,6 +80,17 @@ export const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: TYPOGRAPHY.fontFamily.regular,
   },
+  inputError: {
+  borderColor: COLORS.error,
+  },
+
+
+  errorText: {
+    marginTop: 4,
+    fontSize: 12,
+    color: COLORS.error,
+  },
+  
   select: {
     minHeight: 48,
     borderRadius: 12,
@@ -97,11 +108,10 @@ export const styles = StyleSheet.create({
     marginTop: 10,
     borderRadius: 14,
     paddingVertical: 14,
-    backgroundColor: COLORS.primary,
   },
   saveButtonText: {
     fontSize: 16,
-    color: COLORS.white,
+    color: COLORS.primary,
     fontWeight: "700",
     fontFamily: TYPOGRAPHY.fontFamily.bold,
   },
@@ -120,5 +130,6 @@ export const styles = StyleSheet.create({
   alertText: {
     textAlign: "center",
     width: "100%",
+    color: COLORS.error,
   },
 });

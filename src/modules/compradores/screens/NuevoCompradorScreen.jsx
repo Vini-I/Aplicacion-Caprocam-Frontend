@@ -30,8 +30,12 @@ export default function NuevoCompradorScreen() {
     direccion,
     setDireccion,
     notas,
-    setNotas,
-    mensajeError,
+    setNotas, 
+    errorNombre,
+    errorTipoProducto,
+    errorTelefono,
+    errorCorreo,
+    mensajeError,  
     guardadoExitoso,
     handleTelefonoChange,
     handleSubmit,
@@ -57,37 +61,37 @@ export default function NuevoCompradorScreen() {
         >
           {/* Campos del formulario */}
           <Input
-            label="Nombre del comprador"
+            label="Nombre del comprador *"
             value={nombre}
             onChangeText={setNombre}
             placeholder="Ej. Biomar S.A."
             containerStyle={styles.field}
-            style={styles.input}
+            style={[styles.input, errorNombre && styles.inputError]}
             labelStyle={styles.label}
           />
 
           <Select
-            label="Tipo de producto"
+            label="Tipo de producto *"
             value={tipoProducto}
             options={TIPOS_PRODUCTO}
             onChange={setTipoProducto}
             placeholder="Seleccione un tipo de producto"
             containerStyle={styles.field}
-            selectStyle={styles.select}
+            selectStyle={[styles.select, errorTipoProducto && styles.inputError]}
             labelStyle={styles.label}
             selectedTextStyle={styles.selectText}
             optionTextStyle={styles.selectOption}
           />
 
           <Input
-            label="Teléfono"
+            label="Teléfono *"
             value={telefono}
             onChangeText={handleTelefonoChange}
             placeholder="+506 7689-9087"
             keyboardType="phone-pad"
             maxLength={TELEFONO_MAX_LENGTH}
             containerStyle={styles.field}
-            style={styles.input}
+            style={[styles.input, errorTelefono && styles.inputError]}
             labelStyle={styles.label}
           />
 
@@ -99,7 +103,7 @@ export default function NuevoCompradorScreen() {
             keyboardType="email-address"
             autoCapitalize="none"
             containerStyle={styles.field}
-            style={styles.input}
+            style={[styles.input, errorCorreo && styles.inputError]}
             labelStyle={styles.label}
           />
 
@@ -125,26 +129,28 @@ export default function NuevoCompradorScreen() {
           />
 
           {/* Botón para guardar, dispara la validación */}
-          <Button onPress={handleSubmit} style={styles.saveButton}>
+          <Button variant="outline" onPress={handleSubmit} style={styles.saveButton}>
             <View style={styles.buttonContent}>
-              <Icon icon={ICONS.save} size={ICON_SIZES.save} color={COLORS.white} />
-              <CustomText style={styles.saveButtonText}>Guardar comprador</CustomText>
+               <Icon icon={ICONS.save} size={ICON_SIZES.save} color={COLORS.primary} />
+               <CustomText style={styles.saveButtonText}>Guardar comprador</CustomText>
             </View>
           </Button>
 
-          {mensajeError !== "" && (
-            <CustomAlert
-              variant="danger"
-              message={mensajeError}
-              style={styles.alertBox}
-              textStyle={styles.alertText}
-            />
-          )}
+         
 
           {guardadoExitoso && (
             <CustomAlert
               variant="success"
               message="Comprador guardado correctamente."
+              style={styles.alertBox}
+              textStyle={styles.alertText}
+            />
+          )}
+
+          {mensajeError !== "" && (
+            <CustomAlert
+              variant="danger"
+              message={mensajeError}
               style={styles.alertBox}
               textStyle={styles.alertText}
             />

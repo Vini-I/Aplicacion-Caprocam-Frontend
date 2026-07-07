@@ -17,6 +17,7 @@ import CustomText from "../../../shared/components/Text";
 import Icon from "../../../shared/components/Icons";
 import Alert from "../../../shared/components/Alert";
 
+import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
 import { styles, ICON_STYLES } from "../styles/EditarCompradorStyles";
 
@@ -70,7 +71,7 @@ export default function EditarCompradorScreen() {
 
           {/* Nombre deshabilitado, no se permite editar */}
           <Input
-            label="Nombre de el comprador"
+            label="Nombre de el comprador *"
             value={nombre}
             editable={false}
             containerStyle={styles.field}
@@ -80,7 +81,7 @@ export default function EditarCompradorScreen() {
 
           {/* Campos editables del comprador */}
           <Select
-            label="Tipo de producto"
+            label="Tipo de producto *"
             value={tipoProducto}
             onChange={setTipoProducto}
             options={tiposProducto}
@@ -90,7 +91,7 @@ export default function EditarCompradorScreen() {
           />
 
           <Input
-            label="Teléfono"
+            label="Teléfono *"
             value={telefono}
             onChangeText={handleTelefonoChange}
             placeholder="+506 2222-3344"
@@ -140,13 +141,9 @@ export default function EditarCompradorScreen() {
           />
 
           {/* Botón para guardar, dispara la validación completa */}
-          <Button
-            onPress={guardar}
-            style={styles.saveButton}
-            textStyle={styles.saveButtonText}
-          >
+          <Button variant="outline" onPress={guardar} style={styles.saveButton} textStyle={styles.saveButtonText}>
             <View style={styles.buttonContent}>
-              <Icon icon={ICONS.save} size={ICON_STYLES.save.size} color={ICON_STYLES.exit.color} />
+              <Icon icon={ICONS.save} size={ICON_STYLES.save.size} color={COLORS.primary} />
               <CustomText style={styles.saveButtonText}>Guardar comprador</CustomText>
             </View>
           </Button>

@@ -108,15 +108,15 @@ export default function DetalleCompradorScreen() {
 
         {/* Botones de acción: editar y eliminar */}
         <View style={styles.botones}>
-          <Button style={[styles.boton, styles.botonEditar]} onPress={irAEditar}>
-            <Icon icon={ICONS.edit} size={ICON_SIZE.boton} color={COLORS.white} />
-            <CustomText style={styles.botonTexto}>Editar</CustomText>
-          </Button>
-
-          <Button style={[styles.boton, styles.botonEliminar]} onPress={() => setModalVisible(true)}>
-            <Icon icon={ICONS.delete} size={ICON_SIZE.boton} color={COLORS.white} />
-            <CustomText style={styles.botonTexto}>Eliminar</CustomText>
-          </Button>
+         <Button variant="outline" style={[styles.boton, styles.botonEditar]} onPress={irAEditar}>
+          <Icon icon={ICONS.edit} size={ICON_SIZE.boton} color={COLORS.primary} />
+          <CustomText style={[styles.botonTexto, styles.botonTextoEditar]}>Editar</CustomText>
+        </Button>
+        
+        <Button variant="outline" style={[styles.boton, styles.botonEliminar]} onPress={() => setModalVisible(true)}>
+          <Icon icon={ICONS.delete} size={ICON_SIZE.boton} color={COLORS.error} />
+          <CustomText style={[styles.botonTexto, styles.botonTextoEliminar]}>Eliminar</CustomText>
+        </Button>
         </View>
       </ScrollView>
 
