@@ -1,11 +1,30 @@
 /**
- * DetalleProveedorScreen
- * Pantalla que muestra la información completa de un proveedor.
+ * ============================================================
+ * PANTALLA DETALLE PROVEEDOR
+ * ============================================================
+ *
+ * Muestra la informacion completa de un proveedor y permite editarlo o
+ * eliminarlo.
+ *
+ * FUNCIONALIDAD:
+ * 1. Muestra contacto (telefono, correo, direccion) del proveedor.
+ * 
+ * 2. Muestra la seccion "Notas adicionales" con su icono solo si el
+ *    proveedor tiene notas guardadas; si no hay notas, la seccion se
+ *    quita por completo (no se renderiza vacia).
+ * 
+ * 3. Si el proveedor no existe muestra un EmptyState y un botón
+ *    outline "Volver al listado".
+ * 
+ * 4. Editar navega a /(drawer)/proveedores/editarProveedor?id=.
+ * 
+ *
+ * IMPORTANTE:
+ * - Es una pantalla de solo lectura, no aplica validacion de formulario.
  */
 import { View, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
 
-import Navbar from "../../../shared/components/Navbar";
 import Icon from "../../../shared/components/Icons";
 import Card from "../../../shared/components/Card";
 import Button from "../../../shared/components/Button";
@@ -17,7 +36,8 @@ import EmptyState from "../../../shared/components/EmptyState";
 
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
-import { styles, ICON_SIZE } from "../styles/DetalleProveedorStyles";
+import { STYLE } from "../../../theme/style";
+import { styles } from "../styles/DetalleProveedorStyles";
 
 import { useDetalleProveedorScreen } from "../hooks/useDetalleProveedorScreen";
 
@@ -33,51 +53,31 @@ export default function DetalleProveedorScreen() {
 
   if (!proveedor) {
     return (
-      <View style={styles.contenedor}>
-        <Navbar
-          title="Proveedor no encontrado"
-          style={styles.navbar}
-          titleStyle={styles.navbarTitulo}
-          leftContent={
-            <Button
-              variant="outline"
-              onPress={() => router.replace("/(drawer)/proveedores/proveedorScreen")}
-              style={styles.backButton}
-            >
-              <Icon icon={ICONS.exit} size={ICON_SIZE.navbar} color={COLORS.white} />
-            </Button>
-          }
-        />
-        <EmptyState
-          title="Proveedor no encontrado"
-          description="El proveedor que buscas no existe."
-        />
+      <View style={[STYLE.container, styles.container]}>
+        <View style={STYLE.contentWrapper}>
+          <EmptyState
+            title="Proveedor no encontrado"
+            description="El proveedor que buscas no existe."
+          />
+          <Button
+            style={styles.volverButton}
+            onPress={() => router.replace("/(drawer)/proveedores/proveedorScreen")}
+          >
+            <Icon icon={ICONS.exit} color={COLORS.primary} />
+            <CustomText style={styles.volverButtonText}>Volver al listado</CustomText>
+          </Button>
+        </View>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <Navbar
-        title="Detalle de proveedor"
-        style={styles.navbar}
-        titleStyle={styles.navbarTitulo}
-        leftContent={
-          <Button
-            variant="outline"
-            onPress={() => router.replace("/(drawer)/proveedores/proveedorScreen")}
-            style={styles.backButton}
-          >
-            <Icon icon={ICONS.exit} size={ICON_SIZE.navbar} color={COLORS.white} />
-          </Button>
-        }
-      />
-
+    <View style={[STYLE.container, styles.container]}>
       <ScrollView
         style={styles.scroll}
-        contentContainerStyle={styles.contenido}
         showsVerticalScrollIndicator={false}
       >
+        <View style={STYLE.contentWrapper}>
         <Card style={styles.tarjeta}>
           <View style={styles.header}>
             <View style={styles.avatar}>
@@ -96,9 +96,12 @@ export default function DetalleProveedorScreen() {
           </View>
 
           <View style={styles.seccion}>
-            <CustomText style={styles.seccionTitulo}>
-              Información de contacto
-            </CustomText>
+            <View style={styles.seccionTituloRow}>
+              <Icon icon={ICONS.phone} color={COLORS.primary} />
+              <CustomText style={styles.seccionTitulo}>
+                Información de contacto
+              </CustomText>
+            </View>
 
             <View style={styles.filaDetalle}>
               <CustomText style={styles.filaEtiqueta}>Teléfono</CustomText>
@@ -118,9 +121,12 @@ export default function DetalleProveedorScreen() {
 
           {!!proveedor.notas && (
             <View style={styles.seccionNotas}>
-              <CustomText style={styles.seccionTitulo}>
-                Notas adicionales
-              </CustomText>
+              <View style={styles.seccionTituloRow}>
+                <Icon icon={ICONS.document} color={COLORS.primary} />
+                <CustomText style={styles.seccionTitulo}>
+                  Notas adicionales
+                </CustomText>
+              </View>
               <CustomText style={styles.notasValor}>
                 {proveedor.notas}
               </CustomText>
@@ -138,27 +144,26 @@ export default function DetalleProveedorScreen() {
               })
             }
           >
-            <Icon icon={ICONS.edit} size={ICON_SIZE.boton} color={COLORS.white} />
-            <CustomText style={styles.botonTexto}>Editar</CustomText>
+            <Icon icon={ICONS.edit} color={COLORS.primary} />
+            <CustomText style={[styles.botonTexto, styles.botonTextoEditar]}>Editar</CustomText>
           </Button>
 
           <Button
             style={[styles.boton, styles.botonEliminar]}
             onPress={abrirModal}
           >
-            <Icon icon={ICONS.delete} size={ICON_SIZE.boton} color={COLORS.white} />
-            <CustomText style={styles.botonTexto}>Eliminar</CustomText>
+            <Icon icon={ICONS.delete} color={COLORS.error} />
+            <CustomText style={[styles.botonTexto, styles.botonTextoEliminar]}>Eliminar</CustomText>
           </Button>
+        </View>
         </View>
       </ScrollView>
 
       <Modal
         visible={modalVisible}
-        onClose={cerrarModal}
-        closeText="Cancelar"
-        buttonStyle={styles.modalCancelButton}
+        showCloseButton={false}
         overlayStyle={styles.modalOverlay}
-        containerStyle={styles.modalContainer}
+        containerStyle={[STYLE.contentWrapper, styles.modalContainer]}
       >
         <Title level={3} style={styles.modalTitle}>
           ¿Eliminar proveedor?
@@ -171,8 +176,12 @@ export default function DetalleProveedorScreen() {
           style={styles.modalConfirmButton}
           onPress={() => router.replace("/(drawer)/proveedores/proveedorScreen")}
         >
-          <Icon icon={ICONS.delete} size={ICON_SIZE.modal} color={COLORS.white} />
+          <Icon icon={ICONS.delete} color={COLORS.error} />
           <CustomText style={styles.modalConfirmTexto}>Sí, eliminar</CustomText>
+        </Button>
+        <Button style={styles.modalCancelButton} onPress={cerrarModal}>
+          <Icon icon={ICONS.close} color={COLORS.primary} />
+          <CustomText style={styles.modalCancelButtonText}>Cancelar</CustomText>
         </Button>
       </Modal>
     </View>

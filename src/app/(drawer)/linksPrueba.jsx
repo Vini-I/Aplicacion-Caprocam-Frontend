@@ -27,12 +27,10 @@ export default function LinksPrueba() {
                     Go to Colaboradores
                 </Link>
 
-                 <Link href="/login" push style={{ marginTop: 10, color: 'blue' }}>
+                 <Link href="/loginWeb" push style={{ marginTop: 10, color: 'blue' }}>
                     Go to Login
                 </Link>
 
             </View>
-
-
     );
 }

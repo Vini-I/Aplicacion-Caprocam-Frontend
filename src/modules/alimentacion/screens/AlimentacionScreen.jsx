@@ -6,6 +6,7 @@ import alimentacionService from "../services/alimentacion.service";
 import Spinner from "../../../shared/components/Spinner";
 import Text from "../../../shared/components/Text";
 import GestionAlimentacion from "./GestionAlimentacion";
+import NavbarRegistro from "../../../shared/components/NavbarRegistro";
 import { COLORS } from "../../../theme/colors";
 import { styles } from "../styles/alimentacionStyles";
 
@@ -65,6 +66,11 @@ export default function AlimentacionScreen({ navigation, onBack }) {
 
   return (
     <View style={styles.screen}>
+      <NavbarRegistro
+        Titulo="Alimentación"
+        Subtitulo="Registro de alimentación"
+        Icono="food"
+      />
       <GestionAlimentacion
         alimentaciones={alimentaciones}
         form={form}

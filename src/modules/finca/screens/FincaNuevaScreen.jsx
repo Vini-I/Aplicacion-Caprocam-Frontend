@@ -1,5 +1,21 @@
-import { useState } from "react";
-import { Dimensions, ScrollView, View } from "react-native";
+/**
+ * ============================================================
+ * PANTALLA DE REGISTRO DE NUEVA FINCA
+ * ============================================================
+ *
+ * Permite al usuario ingresar la información necesaria para
+ * registrar una nueva finca dentro del sistema.
+ *
+ * Funcionalidad:
+ * - Muestra un formulario dividido por secciones de información.
+ * - Permite registrar datos generales de la finca.
+ * - Permite seleccionar ubicación mediante provincia, cantón y distrito.
+ * - Permite agregar múltiples números telefónicos.
+ * - Permite ingresar características como área total y espejo de agua.
+ * - Muestra alertas cuando existen campos obligatorios sin completar.
+ * - Utiliza componentes reutilizables para mantener la estructura visual.
+ */
+import { ScrollView, View } from "react-native";
 
 import Button from "../../../shared/components/Button.jsx";
 import Card from "../../../shared/components/Card.jsx";
@@ -7,95 +23,54 @@ import Input from "../../../shared/components/Input.jsx";
 import Select from "../../../shared/components/Select.jsx";
 import Text from "../../../shared/components/Text.jsx";
 import Icon from "../../../shared/components/Icons.jsx";
-
+import NavbarRegistro from "../../../shared/components/NavbarRegistro.jsx";
 import CustomAlert from "../../../shared/components/Alert.jsx"; 
 
 import { provincias, ubicaciones } from "../screens/FincaNuevaData.js";
-
+import { useFincaNueva} from "../hooks/useFincaNueva.js"
 import { ICONS } from "../../../theme/icons.js";
 import { COLORS } from "../../../theme/colors.js";
 import { styles } from "../styles/StylesFincaNueva.js";
+import { STYLE } from "../../../theme/style.js";
 
-const { width } = Dimensions.get("window");
-const isLargeScreen = width > 700;
+export default function FincaNuevaScreen({onFinca}) {
+  const {
+    ContentWrapper,
+    formulario,
+    setFormulario,
+    telefonos,
+    setTelefonos,
+    errores,
+    setErrores,
 
-export default function FincaNuevaScreen() {
-  const [formulario, setFormulario] = useState({
-    codigoInterno: "",
-    nombre: "",
-    provincia: "",
-    canton: "",
-    distrito: "",
-    otrasSenas: "", 
-    propietario: "",
-    areaTotal: "",
-    largo: "",
-    ancho: "",
-  });
+    actualizarCampo,
+    actualizarTelefono,
+    agregarTelefono,
+    eliminarTelefono,
+    registrarFinca,
 
-  const [telefonos, setTelefonos] = useState([""]);
-  const [errores, setErrores] = useState({});
+    cantones,
+    distritos,
+    opcionesCantones,
+    opcionesDistritos,
 
-  const actualizarCampo = (campo, valor) => {
-    setFormulario((actual) => ({
-      ...actual,
-      [campo]: valor,
-    }));
-    if (errores[campo]) {
-      setErrores((actual) => ({ ...actual, [campo]: false }));
-    }
-  };
-
-  const actualizarTelefono = (index, valor) => {
-    const nuevosTelefonos = [...telefonos];
-    nuevosTelefonos[index] = valor;
-    setTelefonos(nuevosTelefonos);
-  };
-
-  const agregarTelefono = () => {
-    setTelefonos([...telefonos, ""]);
-  };
-
-  const eliminarTelefono = (index) => {
-    const nuevosTelefonos = telefonos.filter((_, i) => i !== index);
-    setTelefonos(nuevosTelefonos);
-  };
-
-  const registrarFinca = () => {
-    const nuevosErrores = {};
-
-    if (!formulario.codigoInterno.trim()) nuevosErrores.codigoInterno = true;
-    if (!formulario.nombre.trim()) nuevosErrores.nombre = true;
-    if (!formulario.provincia) nuevosErrores.provincia = true;
-    if (!formulario.canton) nuevosErrores.canton = true;
-    if (!formulario.distrito) nuevosErrores.distrito = true;
-    if (!formulario.otrasSenas.trim()) nuevosErrores.otrasSenas = true;
-    if (!formulario.propietario.trim()) nuevosErrores.propietario = true;
-    if (!formulario.areaTotal.trim()) nuevosErrores.areaTotal = true;
-
-    if (Object.keys(nuevosErrores).length > 0) {
-      setErrores(nuevosErrores);
-      return;
-    }
-
-    console.log({ ...formulario, telefonos });
-  };
-
-  const cantones = formulario.provincia !== "" ? Object.keys(ubicaciones[formulario.provincia] || {}) : [];
-  const distritos = formulario.provincia !== "" && formulario.canton !== "" ? ubicaciones[formulario.provincia][formulario.canton] || [] : [];
-
-  const opcionesCantones = cantones.map((canton) => ({ label: canton, value: canton }));
-  const opcionesDistritos = distritos.map((distrito) => ({ label: distrito, value: distrito }));
-
-  const ContentWrapper = ({ children }) => <View style={styles.contentWrapper}>{children}</View>;
+    isLargeScreen,
+  } = useFincaNueva({onFinca});
 
   return (
+    <>
+    <NavbarRegistro
+      Titulo="Nueva Finca"
+      Subtitulo="Registro de finca"
+      Icono="add"
+    />
     <ScrollView
-      style={[styles.container, { paddingHorizontal: isLargeScreen ? 40 : 16 }]}
+      style={[STYLE.container, { paddingHorizontal: isLargeScreen ? 40 : 16 }]}
       contentContainerStyle={styles.content}
       keyboardShouldPersistTaps="handled"
     >
-      <ContentWrapper>
+      
+      <ContentWrapper style={STYLE.contentWrapper}>
         <Card>
           <Text style={styles.sectionTitle} size={14} weight="700" color={COLORS.textPrimary}>
             IDENTIFICACIÓN
@@ -103,11 +78,11 @@ export default function FincaNuevaScreen() {
           <View style={styles.row}>
             <View style={styles.column}>
               <Input
-                label="Código interno *"
+                label="Código CVO *"
                 value={formulario.codigoInterno}
                 onChangeText={(valor) => actualizarCampo("codigoInterno", valor)}
-                placeholder="Ej: FP-01"
-                style={errores.codigoInterno ? { borderColor: COLORS.error, backgroundColor: COLORS.surface } : null}
+                placeholder="Ej: CVO-01"
+                style={errores.codigoInterno ? [ styles.errorInput] : null}
               />
             </View>
             <View style={styles.column}>
@@ -116,7 +91,7 @@ export default function FincaNuevaScreen() {
                 value={formulario.nombre}
                 onChangeText={(valor) => actualizarCampo("nombre", valor)}
                 placeholder="Ej: Finca El Pacífico"
-                style={errores.nombre ? { borderColor: COLORS.error, backgroundColor: COLORS.surface } : null}
+                style={errores.nombre ? [ styles.errorInput] : null}
               />
             </View>
           </View>
@@ -138,7 +113,7 @@ export default function FincaNuevaScreen() {
                   actualizarCampo("canton", "");
                   actualizarCampo("distrito", "");
                 }}
-                selectStyle={errores.provincia ? { borderColor: COLORS.error, backgroundColor: COLORS.surface } : null}
+                selectStyle={errores.provincia ? [ styles.errorInput] : null}
               />
             </View>
             <View style={styles.column}>
@@ -152,7 +127,7 @@ export default function FincaNuevaScreen() {
                   actualizarCampo("canton", valor);
                   actualizarCampo("distrito", "");
                 }}
-                selectStyle={errores.canton ? { borderColor: COLORS.error, backgroundColor: COLORS.surface } : null}
+                selectStyle={errores.canton ? [ styles.errorInput] : null}
               />
             </View>
           </View>
@@ -165,20 +140,9 @@ export default function FincaNuevaScreen() {
                 placeholder="Seleccione un distrito"
                 disabled={formulario.canton === ""}
                 onChange={(valor) => actualizarCampo("distrito", valor)}
-                selectStyle={errores.distrito ? { borderColor: COLORS.error, backgroundColor: COLORS.surface } : null}
+                selectStyle={errores.distrito ? [ styles.errorInput] : null}
               />
             </View>
-          </View>
-
-          <View style={styles.fullWidthRow}>
-            <Input
-              label="Otras señas *"
-              value={formulario.otrasSenas}
-              onChangeText={(valor) => actualizarCampo("otrasSenas", valor)}
-              placeholder="Ej: 200m norte de la escuela central, portón negro"
-              multiline={true}
-              style={errores.otrasSenas ? { borderColor: COLORS.error, backgroundColor: COLORS.surface  } : null}
-            />
           </View>
         </Card>
 
@@ -189,10 +153,10 @@ export default function FincaNuevaScreen() {
           <View>
             <Input
               label="Propietario / Responsable *"
-              value={formulario.propietario}
-              onChangeText={(valor) => actualizarCampo("propietario", valor)}
+              value={formulario.responsable}
+              onChangeText={(valor) => actualizarCampo("responsable", valor)}
               placeholder="Nombre completo"
-              style={errores.propietario ? { borderColor: COLORS.error, backgroundColor: COLORS.surface } : null}
+              style={errores.responsable ? [ styles.errorInput] : null}
             />
           </View>
 
@@ -242,40 +206,30 @@ export default function FincaNuevaScreen() {
               keyboardType="numeric"
               onChangeText={(valor) => actualizarCampo("areaTotal", valor)}
               placeholder="0.0"
-              style={errores.areaTotal ? { borderColor: COLORS.error, backgroundColor: COLORS.surface  } : null}
+              style={errores.areaTotal ? [ styles.errorInput] : null}
             />
           </View>
-          <View style={styles.row}>
-            <View style={styles.column}>
-              <Input
-                label="Largo (m)"
-                value={formulario.largo}
-                keyboardType="numeric"
-                onChangeText={(valor) => actualizarCampo("largo", valor)}
-                placeholder="0"
-              />
-            </View>
-            <View style={styles.column}>
-              <Input
-                label="Ancho (m)"
-                value={formulario.ancho}
-                keyboardType="numeric"
-                onChangeText={(valor) => actualizarCampo("ancho", valor)}
-                placeholder="0"
-              />
-            </View>
+          <View>
+            <Input
+              label="Espejo de agua (ha) *"
+              value={formulario.espejoAgua}
+              keyboardType="numeric"
+              onChangeText={(valor) => actualizarCampo("espejoAgua", valor)}
+              placeholder="0.0"
+              style={errores.espejoAgua ? [ styles.errorInput] : null}
+            />
           </View>
         </Card>
 
         {Object.keys(errores).length > 0 && (
-  <CustomAlert 
-    variant="danger" 
-    message="Rellene los espacios importantes para continuar." 
-    containerStyle={{ alignItems: "center", justifyContent: "center", width: "100%" }}
-    textStyle={{ textAlign: "center", width: "100%" }}
-    style={{ textAlign: "center", width: "100%" }}
-  />
-)}
+        <CustomAlert 
+          variant="danger" 
+          message="Rellene los espacios importantes para continuar." 
+          containerStyle={[styles.errorAlertContainer]}
+          textStyle={[styles.errorAlertItems]}
+          style={[styles.errorAlertItems]}
+          />
+        )}
 
         <View style={styles.buttonContainer}>
           <Button onPress={registrarFinca} style={styles.saveButton}>
@@ -289,5 +243,6 @@ export default function FincaNuevaScreen() {
         </View>
       </ContentWrapper>
     </ScrollView>
+    </>
   );
 }

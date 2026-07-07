@@ -1,50 +1,32 @@
+/**
+ * ============================================================
+ * STYLES: InventarioStyles
+ * ============================================================
+ *
+ * Responsabilidad:
+ * Estilos visuales de la pantalla de Inventarios (screens/InventarioScreen.jsx).
+ *
+ * Datos:
+ * No aplica, solo estilos.
+ *
+ * Validaciones:
+ * No aplica.
+ *
+ * Navegación:
+ * No aplica.
+ *
+ * Dependencias:
+ * theme/colors.js, theme/typography.js, theme/style.js.
+ */
+
 import { StyleSheet } from "react-native";
 import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
 
 export const styles = StyleSheet.create({
-  contenedor: {
-    flex: 1,
-    backgroundColor: COLORS.white,
-  },
-
-  navbar: {
-    backgroundColor: COLORS.primary,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    paddingTop: 30,
-    borderBottomWidth: 0,
-  },
-
-  navbarTitulo: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    textAlign: "left",
-    color: COLORS.white,
-    fontSize: 20,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    fontWeight: undefined,
-  },
-
-  backButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 12,
-    borderWidth: 0,
-    backgroundColor: "rgba(255,255,255,0.2)",
-    paddingHorizontal: 0,
-    paddingVertical: 0,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
   zonaFiltros: {
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
-    paddingHorizontal: 16,
     marginTop: 12,
+    gap: 10,
   },
 
   barraBusqueda: {
@@ -58,7 +40,7 @@ export const styles = StyleSheet.create({
   },
 
   filterButton: {
-    alignItems: "stretch",
+    alignItems: "center",
     height: 43,
     marginBottom: 8.5,
     flexShrink: 0,
@@ -68,7 +50,8 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: COLORS.errorLight,
-    marginTop: 8,
+    borderWidth: 1,
+    borderColor: COLORS.error,
     paddingVertical: 10,
     paddingHorizontal: 14,
     borderRadius: 8,
@@ -84,7 +67,6 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginTop: 10,
     marginBottom: 4,
     gap: 8,
   },
@@ -101,8 +83,9 @@ export const styles = StyleSheet.create({
     gap: 6,
     height: 38,
     borderRadius: 8,
-    borderWidth: 0,
-    backgroundColor: COLORS.primary,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    backgroundColor: COLORS.white,
     paddingHorizontal: 14,
     paddingVertical: 0,
     flexShrink: 0,
@@ -110,10 +93,6 @@ export const styles = StyleSheet.create({
 
   lista: {
     paddingBottom: 24,
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
-    paddingHorizontal: 16,
   },
 
   tarjeta: {
@@ -123,11 +102,18 @@ export const styles = StyleSheet.create({
 
   tarjetaStockBajo: {
     backgroundColor: COLORS.errorLight,
-    borderColor: COLORS.errorLight,
+    borderWidth: 1,
+    borderColor: COLORS.error,
+  },
+
+  filaTituloIcono: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginBottom: 8,
   },
 
   nombreProducto: {
-    marginBottom: 2,
     fontFamily: TYPOGRAPHY.fontFamily.bold,
   },
 
@@ -140,6 +126,8 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 99,
+    borderWidth: 1,
+    borderColor: COLORS.error,
     backgroundColor: COLORS.errorLight,
   },
 
@@ -164,13 +152,15 @@ export const styles = StyleSheet.create({
   },
 
   botonDetalle: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
     borderWidth: 1,
     borderColor: COLORS.primary,
     borderRadius: 8,
     paddingVertical: 6,
     paddingHorizontal: 14,
-    alignItems: "center",
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.white,
   },
 
   filasDetalle: {

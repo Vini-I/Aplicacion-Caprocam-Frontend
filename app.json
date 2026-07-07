@@ -37,7 +37,9 @@
       ],
       "expo-status-bar",
       "expo-font",
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      "expo-sharing",
+      "expo-image"
     ],
     "experiments": {
       "typedRoutes": true,

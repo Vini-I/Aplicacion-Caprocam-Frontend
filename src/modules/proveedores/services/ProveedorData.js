@@ -1,7 +1,29 @@
 /**
- * Datos de ejemplo para proveedores.
- * Estos datos se utilizan para mostrar la lista de proveedores y sus detalles en las pantallas correspondientes.
+ * ============================================================
+ * FUENTE DE DATOS DE PROVEEDORES
+ * ============================================================
  *
+ * Fuente de datos mock del módulo de proveedores (no hay backend
+ * conectado todavía).
+ *
+ * FUNCIONALIDAD:
+ * 1. Provee proveedoresMock, usado por listado/detalle/edición.
+ * 
+ * 2. Provee tiposProducto, catálogo label/value para el Select de
+ *    tipo de producto.
+ * 
+ * 3. Provee getProveedoresByCategoria, que filtra proveedoresMock por
+ *    una categoría de inventario, mapeando categoría -> tipoProducto.
+ *
+ * IMPORTANTE:
+ * - tiposProducto.value usa el mismo texto capitalizado que
+ *   proveedoresMock.tipoProducto (ej. "Alimento"), para que el Select
+ *   pueda preseleccionar correctamente el tipo de un proveedor
+ *   existente (EditarProveedorScreen).
+ * 
+ * - No usar valores en minúscula aquí sin también migrar
+ *   proveedoresMock, o el Select de edición dejará de reconocer el
+ *   tipo actual del proveedor.
  */
 export const proveedoresMock = [
   {
@@ -12,7 +34,7 @@ export const proveedoresMock = [
     telefono: "+50622001100",
     correo: "ventas@biomar.cr",
     direccion: "San José, Costa Rica",
-    notas: "",
+    notas: "Proveedor de alimentos para peces",
   },
   
   {
@@ -23,7 +45,7 @@ export const proveedoresMock = [
     telefono: "+50622458800",
     correo: "info@farivet.com",
     direccion: "Alajuela, Costa Rica",
-    notas: "",
+    notas: "Proveedor de antibióticos para camarones y peces",
   },
 
   {
@@ -34,16 +56,16 @@ export const proveedoresMock = [
     telefono: "+50622903300",
     correo: "clientes@trisan.co.cr",
     direccion: "Cartago, Costa Rica",
-    notas: "",
+    notas: "Proveedor de fertilizantes orgánicos",
   },
 ];
 
 export const tiposProducto = [
-  { label: "Alimento", value: "alimento" },
-  { label: "Antibióticos", value: "antibioticos" },
-  { label: "Fertilizantes", value: "fertilizantes" },
-  { label: "Probióticos", value: "probioticos" },
-  { label: "Equipos", value: "equipos" },
+  { label: "Alimento", value: "Alimento" },
+  { label: "Antibióticos", value: "Antibióticos" },
+  { label: "Fertilizantes", value: "Fertilizantes" },
+  { label: "Probióticos", value: "Probióticos" },
+  { label: "Equipos", value: "Equipos" },
 ];
 
 const CATEGORIA_A_TIPO = {

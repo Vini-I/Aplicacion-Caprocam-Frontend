@@ -3,218 +3,324 @@
  * SISTEMA DE ICONOS CENTRALIZADO
  * ============================================================
  *
- * Define todos los colores utilizados en la aplicación.
+ * Define todos los iconos utilizados en la aplicacion.
  * Esto permite mantener consistencia visual y facilita cambios globales.
  *
  * USO:
  * import { ICONS } from "../../../theme/icons";
  * import Icon from "../../../shared/components/Icons";
- * 
- * <Icon icon={ICONS.add} size={15} /> 
- * 
+ *
+ * <Icon icon={ICONS.add} size={15} />
+ *
  */
 
-
 export const ICONS = {
-
-    // Tiempo
-    morningSun: {
+  // Tiempo
+  morningSun: {
     provider: "MaterialIcons",
     name: "sunny",
-    },
-    afternoonSun: {
+  },
+  afternoonSun: {
     provider: "MaterialIcons",
     name: "sunny-snowing",
-    },
-    nightSun: {
+  },
+  nightSun: {
     provider: "Ionicons",
     name: "moon",
-    },
-    calendar: {
+  },
+  calendar: {
     provider: "FontAwesome5",
     name: "calendar-week",
-    },
-    clock: {
+  },
+  clock: {
     provider: "MaterialCommunityIcons",
     name: "clock",
-    },
+  },
 
-    // Navegación
-    enter: {
+  // Navegación
+  enter: {
     provider: "AntDesign",
     name: "arrow-right",
-    },
-    exit: {
+  },
+  exit: {
     provider: "AntDesign",
     name: "arrow-left",
-    },
-    home: {
+  },
+  home: {
     provider: "MaterialIcons",
     name: "home-filled",
-    },
+  },
 
-    // Ubicación
-    location: {
+  // Ubicación
+  location: {
     provider: "FontAwesome6",
     name: "location-dot",
-    },
+  },
 
-    // Registros y documentos
-    document: {
+  // Registros y documentos
+  document: {
     provider: "MaterialCommunityIcons",
     name: "file-document",
-    },
-    certificate: {
+  },
+  certificate: {
     provider: "MaterialCommunityIcons",
     name: "file-document-check",
-    },
-    report: {
+  },
+  report: {
     provider: "Entypo",
     name: "bar-graph",
-    },
-    id: {
+  },
+  id: {
     provider: "FontAwesome",
     name: "id-card",
-    },
-    earth: {
+  },
+  earth: {
     provider: "FontAwesome6",
     name: "earth-americas",
-    },
+  },
 
-    // Reportes y estadísticas
-    chart: {
+  // Reportes y estadísticas
+  chart: {
     provider: "MaterialIcons",
     name: "show-chart",
-    },
-    filter: {
+  },
+  filter: {
     provider: "FontAwesome",
     name: "filter",
-    },
+  },
 
-    // Estanques
-    water: {
+  // Estanques
+  water: {
     provider: "Ionicons",
     name: "water",
-    },
-    waterFlow: {
+  },
+  waterFlow: {
     provider: "FontAwesome5",
     name: "water",
-    },
-     
-    // Acciones
-    add: {
+  },
+
+  // Acciones
+  add: {
     provider: "FontAwesome6",
     name: "add",
-    },
-    save: {
+  },
+  save: {
     provider: "Ionicons",
     name: "save",
-    },
-    check: {
+  },
+  check: {
     provider: "Entypo",
     name: "check",
-    },
-    delete: {
+  },
+  delete: {
     provider: "Entypo",
     name: "trash",
-    },
-    edit: {
+  },
+  edit: {
     provider: "MaterialIcons",
     name: "edit",
-    },
-    update: {
+  },
+  update: {
     provider: "MaterialIcons",
     name: "update",
-    },
-    export: {
+  },
+  export: {
     provider: "MaterialCommunityIcons",
     name: "arrow-collapse-up",
-    },
-    import: {
+  },
+  import: {
     provider: "MaterialCommunityIcons",
     name: "arrow-collapse-down",
-    },
-    info: {
+  },
+  info: {
     provider: "MaterialCommunityIcons",
     name: "information",
-    },
-    favorite: {
+  },
+  favorite: {
     provider: "MaterialCommunityIcons",
     name: "star",
-    },
+  },
+   close: {
+    provider: "MaterialIcons",
+    name: "close",
+  },
 
-    // Usuario
-    user: {
+  // Usuario
+  user: {
     provider: "FontAwesome",
     name: "user",
-    },
-    addUser: {
+  },
+  addUser: {
     provider: "FontAwesome",
     name: "user-plus",
-    },
-    phone: {
+  },
+  phone: {
     provider: "FontAwesome",
     name: "phone",
-    },
-     
-    // Medidas
-    ruler: {
+  },
+
+  // Medidas
+  ruler: {
     provider: "FontAwesome5",
     name: "ruler",
-    },
-    weight: {
+  },
+  weight: {
     provider: "FontAwesome6",
     name: "weight-hanging",
-    },
+  },
 
-    // Alimentación
-    food: {
+  // Alimentación
+  food: {
     provider: "MaterialCommunityIcons",
     name: "silverware-fork-knife",
-    },
-    chemicalContainer: {
+  },
+  chemicalContainer: {
     provider: "Entypo",
     name: "lab-flask",
-    },
-    gift: {
+  },
+  gift: {
     provider: "FontAwesome5",
     name: "gift",
-    },
-     
-    // Crecimiento
-    growth: {
+  },
+
+  // Crecimiento
+  growth: {
     provider: "Feather",
     name: "trending-up",
-    },
-    shrimp: {
+  },
+  shrimp: {
     provider: "FontAwesome6",
     name: "shrimp",
-    },
-     
-    // Sensores
-    temperature: {
+  },
+
+  // Sensores
+  temperature: {
     provider: "FontAwesome6",
     name: "temperature-full",
-    },
-    wind: {
+  },
+  wind: {
     provider: "MaterialCommunityIcons",
     name: "weather-windy",
-    },
-    frequency: {
+  },
+  frequency: {
     provider: "Octicons",
     name: "pulse",
-    },
-     
-    // Alertas
-    notification: {
+  },
+
+  // Alertas
+  notification: {
     provider: "MaterialIcons",
     name: "notifications",
-    },
+  },
 
-    // Navegación adicional
-    back: {
+  // Navegación adicional
+  back: {
     provider: "AntDesign",
     name: "arrow-left",
-    },
-     
+  },
+
+  // Dashboard
+  dashboard: {
+    provider: "MaterialCommunityIcons",
+    name: "view-dashboard",
+  },
+  shieldAlert: {
+    provider: "MaterialCommunityIcons",
+    name: "shield-alert-outline",
+  },
+  mortality: {
+    provider: "MaterialCommunityIcons",
+    name: "skull-outline",
+  },
+  clipboard: {
+    provider: "MaterialCommunityIcons",
+    name: "clipboard-text-outline",
+  },
+  alertTriangle: {
+    provider: "Feather",
+    name: "alert-triangle",
+  },
+  chevronDown: {
+    provider: "MaterialCommunityIcons",
+    name: "chevron-down",
+  },
+  chevronUp: {
+    provider: "MaterialCommunityIcons",
+    name: "chevron-up",
+  },
+
+  // Parasitologia
+    parasite: {
+    provider: "MaterialCommunityIcons",
+    name: "bacteria-outline",
+  },
+  
+   microscope: {
+    provider: "MaterialCommunityIcons",
+    name: "microscope",
+  },
+
+  // Raleo
+  raleo: {
+    provider: "MaterialCommunityIcons",
+    name: "bucket-outline",
+  },
+
+  //Trazabilidad
+    transfer: {
+    provider: "MaterialCommunityIcons",
+    name: "transfer-right",
+  },
+  trazabilidad: {
+    provider: "MaterialCommunityIcons",
+    name: "map-marker-path",
+  },
+  arrowLongRight: {
+    provider: "MaterialCommunityIcons",
+    name: "arrow-right-bold",
+  },
+
+  // Inventarios
+  box: {
+    provider: "MaterialCommunityIcons",
+    name: "package-variant-closed",
+  },
+
+  // Otros
+  money: {
+    provider: "MaterialIcons",
+    name: "attach-money",
+  },
+  gear: {
+    provider: "FontAwesome",
+    name: "gear",
+  }, 
+  dropbox: {
+    provider: "AntDesign",
+    name: "dropbox",
+  }, 
+  truck: {
+    provider: "FontAwesome6",
+    name: "truck-arrow-right",
+  },
+  people: {
+    provider: "MaterialIcons",
+    name: "people",
+  },
+  tools: {
+    provider: "MaterialCommunityIcons",
+    name: "tools",
+  }, 
+  aerator: {
+    provider: "MaterialCommunityIcons",
+    name: "pinwheel",
+  },
+  engine: {
+    provider: "MaterialCommunityIcons",
+    name: "engine",
+  },
+  link: {
+    provider: "Entypo",
+    name: "link",
+  }
 };
