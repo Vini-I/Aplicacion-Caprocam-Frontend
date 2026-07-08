@@ -4,20 +4,25 @@
  * ============================================================
  *
  * Agrupa los estilos del módulo de Alimentación: fondo de
- * pantalla, contenedor de scroll, wrapper de contenido
- * centrado, etiquetas de sección y estilos heredados de header
- * usados por pantallas más antiguas del módulo.
+ * pantalla, wrapper de contenido centrado, etiquetas de sección
+ * y estilos heredados de header usados por pantallas más
+ * antiguas del módulo.
  *
  * Funcionalidad:
  * - Todos los colores usados vienen de COLORS (COLORS.surface,
  *   COLORS.primary), sin valores hardcodeados.
- * - alimentacionContent reutiliza STYLE.contentWrapper de
- *   theme/style.js en vez de redefinir manualmente
- *   maxWidth/alignSelf/width.
+ * - container/content siguen el mismo patrón consistente que ya
+ *   usan Raleo y Densidad Poblacional: container es el fondo de
+ *   pantalla (flex:1 + COLORS.surface) y content es el wrapper
+ *   centrado (...STYLE.contentWrapper de theme/style.js), en vez
+ *   de anidar 2 wrappers distintos (contenido + alimentacionContent)
+ *   como se hacía antes.
+ * - `screen` se conserva porque RegistroAlimentacionScreen.jsx y
+ *   HistorialAlimentacionScreen.jsx todavía lo usan.
  *
  * Ejemplo:
  * import { styles } from '../styles/AlimentacionStyles';
- * <View style={styles.screen}>
+ * <View style={styles.container}>
  */
 
 import { StyleSheet, Platform, StatusBar } from "react-native";
@@ -30,15 +35,13 @@ export const styles = StyleSheet.create({
     backgroundColor: COLORS.surface,
   },
 
-  contenido: {
-    flexGrow: 1,
-    gap: 12,
-    paddingBottom: 100,
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.surface,
   },
 
-  alimentacionContent: {
+  content: {
     ...STYLE.contentWrapper,
-    marginVertical: 20,
     gap: 12,
   },
 

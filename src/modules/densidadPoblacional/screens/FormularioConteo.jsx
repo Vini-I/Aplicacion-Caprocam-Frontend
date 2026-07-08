@@ -4,32 +4,30 @@
  * ============================================================
  *
  * Formulario de datos de conteo (camarones, tiros de atarraya,
- * área de la atarraya, promedio por tiro, sobrevivencia y notas)
+ * área de la atarraya, promedio por tiro, supervivencia y notas)
  * dentro del módulo de Densidad Poblacional.
  *
  * Funcionalidad:
  * - Recibe todo su estado como props (desde useDensidadPoblacional,
  *   vía densidadPoblacionalScreen -> DatosConteo) en vez de crear
- *   su propia instancia de useDatosConteo. Antes existía un
- *   estado local duplicado `tiros` que se usaba en el NumberInput
- *   en vez de tirosAtarraya/setTirosAtarraya del hook, por lo que
- *   el valor real nunca se actualizaba; ahora el NumberInput usa
- *   directamente la prop tirosAtarraya/setTirosAtarraya.
+ *   su propia instancia de useDatosConteo.
  * - Usa la prop nativa `label` de Input/Select/NumberInput en vez
  *   de <Text> manuales, lo que permite agregar el asterisco de
- *   forma consistente. El label de NumberInput recibe un string
- *   simple (antes recibía un elemento <Text>, que NumberInput no
- *   soporta).
+ *   forma consistente.
  * - Aplica el contrato de campos obligatorios (asterisco + borde
  *   rojo + mensaje de error tras submitted) a: numeroCamarones,
- *   tirosAtarraya y areaAtarraya. promedioPorTiro, sobrevivencia
- *   y notasConteo quedan opcionales.
+ *   tirosAtarraya, areaAtarraya, promedioPorTiro y supervivencia.
+ *   notasConteo queda opcional: si el usuario no escribe nada,
+ *   useDensidadPoblacional.js lo completa con "No hay notas"
+ *   antes de guardar, en vez de bloquear el guardado.
+ * - El campo antes se llamaba "Sobrevivencia" (palabra incorrecta
+ *   en español); ahora es "Supervivencia".
  *
  * Props principales:
  * - numeroCamarones, tirosAtarraya, areaAtarraya, promedioPorTiro,
- *   sobrevivencia, notasConteo: valores actuales.
+ *   supervivencia, notasConteo: valores actuales.
  * - setNumeroCamarones, setTirosAtarraya, setAreaAtarraya,
- *   setPromedioPorTiro, setSobrevivencia, setNotasConteo: setters.
+ *   setPromedioPorTiro, setSupervivencia, setNotasConteo: setters.
  * - submitted / errores: estado de validación.
  *
  * Ejemplo:
@@ -64,8 +62,8 @@ export default function FormularioConteo({
   setAreaAtarraya,
   promedioPorTiro,
   setPromedioPorTiro,
-  sobrevivencia,
-  setSobrevivencia,
+  supervivencia,
+  setSupervivencia,
   notasConteo,
   setNotasConteo,
   submitted = false,
@@ -74,6 +72,9 @@ export default function FormularioConteo({
   const invalidoNumeroCamarones = submitted && !!errores.numeroCamarones;
   const invalidoTirosAtarraya = submitted && !!errores.tirosAtarraya;
   const invalidoAreaAtarraya = submitted && !!errores.areaAtarraya;
+  const invalidoPromedioPorTiro = submitted && !!errores.promedioPorTiro;
+  const invalidoSupervivencia = submitted && !!errores.supervivencia;
+  const invalidoNotasConteo = submitted && !!errores.notasConteo;
 
   return (
     <>
@@ -124,25 +125,43 @@ export default function FormularioConteo({
       )}
 
       <Input
-        label="Promedio por tiro"
+        label="Promedio por tiro *"
         placeholder="Promedio por tiro"
         value={promedioPorTiro}
         onChangeText={setPromedioPorTiro}
+        style={invalidoPromedioPorTiro ? bordeError : null}
       />
+      {invalidoPromedioPorTiro && (
+        <Text size={12} color={COLORS.error} style={errorTextStyle}>
+          {errores.promedioPorTiro}
+        </Text>
+      )}
 
       <Input
-        label="Sobrevivencia"
-        placeholder="Sobrevivencia"
-        value={sobrevivencia}
-        onChangeText={setSobrevivencia}
+        label="Supervivencia *"
+        placeholder="Supervivencia"
+        value={supervivencia}
+        onChangeText={setSupervivencia}
+        style={invalidoSupervivencia ? bordeError : null}
       />
+      {invalidoSupervivencia && (
+        <Text size={12} color={COLORS.error} style={errorTextStyle}>
+          {errores.supervivencia}
+        </Text>
+      )}
 
       <Input
-        label="Notas o comentarios del conteo"
+        label="Notas o comentarios del conteo *"
         placeholder="Notas o comentarios del conteo"
         value={notasConteo}
         onChangeText={setNotasConteo}
+        style={invalidoNotasConteo ? bordeError : null}
       />
+      {invalidoNotasConteo && (
+        <Text size={12} color={COLORS.error} style={errorTextStyle}>
+          {errores.notasConteo}
+        </Text>
+      )}
     </>
   );
 }

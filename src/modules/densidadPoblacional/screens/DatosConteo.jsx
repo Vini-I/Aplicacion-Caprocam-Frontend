@@ -10,7 +10,7 @@
  *
  * Props principales:
  * - numeroCamarones, tirosAtarraya, areaAtarraya, promedioPorTiro,
- *   sobrevivencia, notasConteo y sus setters.
+ *   supervivencia, notasConteo y sus setters.
  * - submitted / errores: estado de validación, reenviados tal
  *   cual a FormularioConteo.
  *

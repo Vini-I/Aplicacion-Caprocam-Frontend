@@ -85,6 +85,8 @@ export default function RaleoForm({
   const invalidoPorcentaje = submitted && !!errores.porcentajeRaleo;
   const invalidoObjetivo = submitted && !!errores.objetivo;
   const invalidoMetodo = submitted && !!errores.metodo;
+  const invalidoResponsable = submitted && !!errores.responsable;
+  const invalidoObservaciones = submitted && !!errores.observaciones;
 
   return (
     <View>
@@ -157,7 +159,7 @@ export default function RaleoForm({
           })}
         </View>
         {invalidoPorcentaje && (
-          <Text size={12} color={COLORS.error} style={styles.errorText}>
+          <Text size={12} color={COLORS.error} style={[styles.errorText, { marginTop: 6 }]}>
             {errores.porcentajeRaleo}
           </Text>
         )}
@@ -207,20 +209,32 @@ export default function RaleoForm({
         )}
 
         <Input
-          label="Responsable del raleo"
+          label="Responsable del raleo *"
           placeholder="Nombre del responsable"
           value={form.responsable ?? ""}
           onChangeText={(v) => updateField("responsable", v)}
+          style={invalidoResponsable ? bordeError : null}
         />
+        {invalidoResponsable && (
+          <Text size={12} color={COLORS.error} style={styles.errorText}>
+            {errores.responsable}
+          </Text>
+        )}
       </Card>
 
       <Card title="Observaciones">
         <Input
-          label="Notas adicionales"
+          label="Notas adicionales *"
           placeholder="Ingrese observaciones del raleo"
           value={form.observaciones ?? ""}
           onChangeText={(v) => updateField("observaciones", v)}
+          style={invalidoObservaciones ? bordeError : null}
         />
+        {invalidoObservaciones && (
+          <Text size={12} color={COLORS.error} style={styles.errorText}>
+            {errores.observaciones}
+          </Text>
+        )}
       </Card>
     </View>
   );
