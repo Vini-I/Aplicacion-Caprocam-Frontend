@@ -7,8 +7,9 @@
  * opciones de selección para la pantalla de detalle de ventas.
  */
 
-import { useMemo } from "react";
-
+import { useMemo, useState, useCallback } from "react";
+import { useLocalSearchParams } from "expo-router";
+import { useWindowDimensions } from "react-native";
 import { fincas } from "../../finca/screens/FincaData.js";
 import { estanques } from "../../mantCrecimiento/services/EstanqueData.js";
 import { obtenerIdNumericoFinca } from "./useVenta.js";
@@ -30,8 +31,8 @@ export function useDetalleVenta() {
     return [];
   }, [params.ventas]);
 
-  const fincaInicial = typeof params.fincaSeleccionada === "string" ? params.fincaSeleccionada : "";
-  const estanqueInicial = typeof params.estanqueSeleccionado === "string" ? params.estanqueSeleccionado : "";
+const fincaInicial = typeof params.fincaFiltro === "string" ? params.fincaFiltro : "";
+const estanqueInicial = typeof params.estanqueFiltro === "string" ? params.estanqueFiltro : "";
 
   const [fincaFiltro, setFincaFiltro] = useState(fincaInicial);
   const [estanqueFiltro, setEstanqueFiltro] = useState(estanqueInicial);
@@ -64,14 +65,14 @@ export function useDetalleVenta() {
 
   const ventasFiltradas = useMemo(() => {
     return (ventas || []).filter((venta) => {
-      const coincideFinca = !fincaSeleccionada || venta.fincaId === fincaSeleccionada;
-      const coincideEstanque = !estanqueSeleccionado || venta.estanqueId === estanqueSeleccionado;
+      const coincideFinca = !fincaFiltro || venta.fincaId === fincaFiltro;
+      const coincideEstanque = !estanqueFiltro || venta.estanqueId === estanqueFiltro;
 
       return coincideFinca && coincideEstanque;
     });
-  }, [ventas, fincaSeleccionada, estanqueSeleccionado]);
-
-  const hayFiltro = Boolean(fincaSeleccionada && estanqueSeleccionado);
+  }, [ventas, fincaFiltro, estanqueFiltro]);
+  
+const hayFiltro = Boolean(fincaFiltro  && estanqueFiltro);
 
   const mensajeDetalle = hayFiltro
     ? "Mostrando solo las ventas de la finca y estanque seleccionados."

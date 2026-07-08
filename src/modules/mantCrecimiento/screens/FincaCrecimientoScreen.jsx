@@ -44,37 +44,29 @@ export default function FincaCrecimientoScreen() {
     handleFincaChange,
     guardarDatos,
     submitted,
-    errors,
     successMessage,
     errorMessage,
+    pesoAnteriorLabel,
+    mostrarErrorFinca,
+    mostrarErrorEstanque,
+    mostrarErrorPeso,
   } = useFincaCrecimiento();
 
   if (!estanque) {
     return (
-      <ScrollView style={styles.container} contentContainerStyle={styles.contentScroll}>
-        <Card style={styles.contentWrapper}>
+      <ScrollView style={STYLE.container} contentContainerStyle={styles.contentScroll}>
+        <Card style={STYLE.contentWrapper}>
           <Text>No se encontró un estanque válido.</Text>
         </Card>
       </ScrollView>
     );
   }
 
-  const pesoAnteriorLabel =
-    estanqueSeleccionadoObj?.pesoSemanaAnterior !== undefined &&
-    estanqueSeleccionadoObj?.pesoSemanaAnterior !== null
-      ? `Peso anterior: ${estanqueSeleccionadoObj.pesoSemanaAnterior} g`
-      : "Peso anterior: -";
-
-  const errorFieldStyle = { borderColor: COLORS.error };
-  const mostrarErrorFinca = submitted && Boolean(errors.finca);
-  const mostrarErrorEstanque = submitted && Boolean(errors.estanque);
-  const mostrarErrorPeso = submitted && Boolean(errors.peso);
-
   return (
     <View style={styles.screenContainer}>
       <NavbarRegistro Titulo="Crecimiento" Subtitulo="Registro de peso" Icono="growth" />
-      <ScrollView style={styles.container} contentContainerStyle={styles.contentScroll}>
-        <Card style={styles.contentWrapper}>
+      <ScrollView style={STYLE.container} contentContainerStyle={styles.contentScroll}>
+        <Card style={STYLE.contentWrapper}>
           <View style={styles.headerRow}>
             <Icon
               icon={ICONS.growth}
@@ -91,7 +83,7 @@ export default function FincaCrecimientoScreen() {
             options={opcionesFincas}
             value={fincaSeleccionada}
             onChange={handleFincaChange}
-            selectStyle={mostrarErrorFinca ? errorFieldStyle : null}
+            selectStyle={mostrarErrorFinca ? styles.inputError : null}
           />
 
           <Select
@@ -101,7 +93,7 @@ export default function FincaCrecimientoScreen() {
             value={estanqueSeleccionado}
             onChange={setEstanqueSeleccionado}
             disabled={estanqueSeleccionado !== "" && estanquesFiltrados.length === 0}
-            selectStyle={mostrarErrorEstanque ? errorFieldStyle : null}
+            selectStyle={mostrarErrorEstanque ? styles.inputError : null}
           />
 
           <View style={styles.badgeRow}>
@@ -117,7 +109,7 @@ export default function FincaCrecimientoScreen() {
             <View style={styles.inputItem}>
               <Title level={5}>Peso actual (g) *</Title>
               <NumberInput
-                style={[styles.sameInput, mostrarErrorPeso && errorFieldStyle]}
+                style={[styles.sameInput, mostrarErrorPeso && styles.inputError]}
                 value={pesoActual}
                 onChangeText={setPesoActual}
                 step={0.5}

@@ -96,6 +96,9 @@ export const styles = StyleSheet.create({
     marginTop: 6,
     fontSize: 12,
   },
+  inputError: {
+    borderColor: COLORS.error,
+  },
   iconContainer: {
     width: 45,
     height: 45,
