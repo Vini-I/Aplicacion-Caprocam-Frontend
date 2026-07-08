@@ -1,8 +1,21 @@
 /**
- * Servicio temporal para gestionar las siembras.
- * Posteriormente deberá conectarse con la base de datos o API.
+ * ============================================================
+ * SERVICIO DE SIEMBRA
+ * ============================================================
+ *
+ * Gestiona temporalmente la información utilizada por el módulo
+ * de Siembra mediante datos simulados en memoria.
+ *
+ * FUNCIONALIDAD:
+ * - Proporciona registros de siembras existentes.
+ * - Consulta siembras por identificador.
+ * - Obtiene catálogos de fincas, estanques y datos de larva.
+ * - Proporciona opciones utilizadas en los formularios.
+ *
+ * NOTA:
+ * Actualmente utiliza información local de prueba.
+ * Posteriormente deberá conectarse con la base de datos.
  */
-
 const siembras = [
   {
     siembraId: 25,
@@ -136,6 +149,45 @@ const siembras = [
     produccionEstimada: "2,700 kg",
     estado: "Activa",
   },
+    {
+    siembraId: 29,
+    tipoRegistro: "precria", 
+    finca: "La Reina",
+    fincaId: "laReina",
+    estanque: "B03",
+    fechaInicio: "01/07/2026", 
+    fechaFin: "15/07/2026",    
+    horaIngreso: "06:00",
+    diasCultivo: 7,
+    diasMaduracion: "15",
+    duracionDias: "14",        
+
+    proveedorLarva: "maricultura",
+    laboratorioLarva: "marlarva_guanacaste",
+    procedenciaLarva: "laboratorio_nacional",
+    codigoLoteLarva: "PREC-2026-001",
+    plLarva: "PL8",
+    certificadoLarva: "CERT-PREC-001",
+
+    cantidadInicial: "500000",
+    cantidadFinal: "460000",   
+    plInicial: "PL8",
+    plFinal: "PL12",
+
+    pasoPorPrecria: "no",
+    duracionPrecria: "",
+    fechaSalidaPrecria: "",
+    cantidadSobrevivientePrecria: "",
+    areaHectareas: "2.00",
+    densidadPoblacional: "0",
+    cantidadSembrada: "0",
+    areaEstanque: "2.00 ha",
+    densidad: "0 PL/m²",
+    tecnicaCultivo: "semi",
+    especie: "Litopenaeus vannamei",
+    produccionEstimada: "0 kg",
+    estado: "Activa", 
+  },
 ];
 
 const estanquesPorFinca = {
@@ -160,9 +212,10 @@ const estanquesPorFinca = {
 export function obtenerSiembras() {
   return siembras;
 }
-
 export function obtenerSiembraPorId(siembraId) {
-  return siembras.find((siembra) => siembra.siembraId === siembraId);
+  return siembras.find(
+    (siembra) => siembra.siembraId === Number(siembraId)
+  );
 }
 
 export function obtenerFincas() {
