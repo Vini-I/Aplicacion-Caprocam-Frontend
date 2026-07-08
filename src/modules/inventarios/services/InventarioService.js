@@ -1,9 +1,33 @@
 // modules/inventarios/services/inventarioService.js
 
 /**
- * Store en memoria para el módulo de inventarios.
- * Sirve como capa de datos mientras no hay backend.
- * Exporta funciones para leer, agregar y editar productos.
+ * ============================================================
+ * SERVICE: InventarioService
+ * ============================================================
+ *
+ * Responsabilidad:
+ * Store en memoria para el módulo de inventarios. Sirve como capa de
+ * datos mientras no hay backend. Expone funciones para leer, agregar,
+ * actualizar y eliminar productos del inventario.
+ *
+ * Datos:
+ * Cada producto: { id, codigo, nombre, categoria, cantidad, unidad,
+ * stockMinimo, proveedor, precioUnidad, fechaCaducidad }.
+ * fechaCaducidad ya existe como dato real del producto (se define y
+ * se guarda desde el módulo de Productos); aquí solo se refleja para
+ * que el filtro de "Fecha de caducidad" de FilterButton.jsx pueda
+ * usarlo. Formato dd/mm/aaaa, igual al que entrega el DateInput
+ * compartido.
+ *
+ * Validaciones:
+ * No aplica validación de campos aquí (se realiza en el formulario que
+ * consume este servicio). El id se autogenera de forma incremental.
+ *
+ * Navegación:
+ * No aplica, es una capa de datos sin UI.
+ *
+ * Dependencias:
+ * Ninguna. Es consumido por hooks/useInventario.js.
  */
 
 let productos = [
@@ -17,6 +41,7 @@ let productos = [
     stockMinimo: 50,
     proveedor: "Biomar",
     precioUnidad: 1450,
+    fechaCaducidad: "15/09/2026",
   },
   {
     id: 2,
@@ -28,6 +53,7 @@ let productos = [
     stockMinimo: 50,
     proveedor: "Trisan",
     precioUnidad: 320,
+    fechaCaducidad: "02/08/2026",
   },
   {
     id: 3,
@@ -39,6 +65,7 @@ let productos = [
     stockMinimo: 40,
     proveedor: "Farivet",
     precioUnidad: 850,
+    fechaCaducidad: "20/12/2026",
   },
   {
     id: 4,
@@ -50,6 +77,7 @@ let productos = [
     stockMinimo: 20,
     proveedor: "Farivet",
     precioUnidad: 4200,
+    fechaCaducidad: "10/07/2026",
   },
   {
     id: 5,
@@ -61,6 +89,7 @@ let productos = [
     stockMinimo: 30,
     proveedor: "Trisan",
     precioUnidad: 2100,
+    fechaCaducidad: "05/11/2026",
   },
   {
     id: 6,
@@ -72,6 +101,7 @@ let productos = [
     stockMinimo: 60,
     proveedor: "Trisan",
     precioUnidad: 560,
+    fechaCaducidad: "28/02/2027",
   },
   {
     id: 7,
@@ -83,6 +113,7 @@ let productos = [
     stockMinimo: 25,
     proveedor: "Farivet",
     precioUnidad: 1750,
+    fechaCaducidad: "18/07/2026",
   },
   {
     id: 8,
@@ -94,6 +125,7 @@ let productos = [
     stockMinimo: 10,
     proveedor: "Trisan",
     precioUnidad: 3900,
+    fechaCaducidad: "30/07/2026",
   },
 ];
 
@@ -105,6 +137,8 @@ export function getProductosInventario() {
 /**
  * Agrega un nuevo producto al store.
  * Asigna un id numérico autoincremental.
+ * Se agrega al inicio del arreglo para que el producto recién
+ * creado aparezca primero en el listado de Inventarios.
  */
 export function addProducto(producto) {
   const nuevoId = productos.length > 0
@@ -112,7 +146,7 @@ export function addProducto(producto) {
     : 1;
 
   const nuevo = { ...producto, id: nuevoId };
-  productos = [...productos, nuevo];
+  productos = [nuevo, ...productos];
   return nuevo;
 }
 

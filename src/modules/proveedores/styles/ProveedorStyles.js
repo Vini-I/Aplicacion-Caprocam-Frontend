@@ -1,45 +1,24 @@
 /**
- * ProveedorStyles
- * Estilos para la pantalla de proveedores
+ * ============================================================
+ * ESTILOS LISTADO DE PROVEEDORES
+ * ============================================================
+ *
+ * Estilos de la pantalla ProveedorScreen (listado).
+ *
+ * FUNCIONALIDAD:
+ * 1. Colores y tipografia salen de theme/colors y theme/typography.
+ * 
+ * 2. La screen usa STYLE.container + STYLE.contentWrapper (theme/style)
+ *    como único wrapper
+ *
  */
 import { StyleSheet } from "react-native";
 import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
 
 export const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.white,
-  },
-  navbar: {
-    backgroundColor: COLORS.primary,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    paddingTop: 30,
-  },
-
-  navbarRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    position: "relative",
-  },
-
-  navbarTitle: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    textAlign: "left",
-    color: COLORS.white,
-    fontSize: 20,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    fontWeight: undefined,
-  },
-
   card: {
     marginBottom: 14,
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
   },
 
   cardHeader: {
@@ -75,16 +54,30 @@ export const styles = StyleSheet.create({
   },
 
   providerType: {
-    color: COLORS.textTertiary,
+    color: COLORS.black,
     fontSize: 13,
     fontFamily: TYPOGRAPHY.fontFamily.regular,
     marginTop: 2,
   },
 
+  contactTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginTop: 10,
+    marginBottom: 4,
+  },
+
+  contactTitle: {
+    color: COLORS.black,
+    fontSize: 13,
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
+  },
+
   contactRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 8,
+    marginTop: 4,
     gap: 8,
   },
 
@@ -99,13 +92,15 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 12,
     gap: 8,
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
   },
 
   btnVerDetalle: {
-    backgroundColor: COLORS.primary,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 8,
@@ -114,16 +109,8 @@ export const styles = StyleSheet.create({
 
   btnVerDetalleText: {
     fontSize: 13,
-    color: COLORS.white,
+    color: COLORS.primary,
     fontFamily: TYPOGRAPHY.fontFamily.bold,
-  },
-
-  btnHome: {
-    marginTop: 0,
-    backgroundColor: "transparent",
-    paddingVertical: 0,
-    paddingHorizontal: 0,
-    borderWidth: 0,
   },
 
   searchBarContainer: {
@@ -145,54 +132,37 @@ export const styles = StyleSheet.create({
     fontFamily: TYPOGRAPHY.fontFamily.regular,
   },
 
-  lista: {
-    paddingBottom: 16,
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
-  },
-
-  listaContainer: {
-    flex: 1,
-  },
-
   btnAgregar: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
     paddingVertical: 14,
-
     marginBottom: 16,
     borderRadius: 10,
     gap: 8,
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
   },
 
   btnAgregarText: {
-    color: COLORS.white,
+    color: COLORS.primary,
     fontSize: 14,
     fontFamily: TYPOGRAPHY.fontFamily.bold,
   },
 });
 
 export const ICON_STYLES = {
-  home: {
-    size: 28,
-    color: COLORS.white,
-  },
   add: {
-    size: 18,
-    color: COLORS.white,
+    color: COLORS.primary,
   },
   phone: {
-    size: 14,
-    color: COLORS.textTertiary,
+    color: COLORS.primary,
   },
   user: {
-    size: 14,
-    color: COLORS.textTertiary,
+    color: COLORS.primary,
+  },
+  verDetalle: {
+    color: COLORS.primary,
   },
 };
