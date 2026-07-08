@@ -92,20 +92,6 @@ export default function CompradorScreen() {
   return (
     <View style={styles.container}>
       {/* Navbar con botón de inicio a la izquierda */}
-      <Navbar
-        title="Compradores"
-        style={styles.navbar}
-        titleStyle={styles.navbarTitle}
-        leftContent={
-          <Button variant="ghost" onPress={handleHome} style={styles.btnHome}>
-            <Icon
-              icon={ICONS.home}
-              size={ICON_STYLES.home.size}
-              color={ICON_STYLES.home.color}
-            />
-          </Button>
-        }
-      />
 
       {/* Barra de búsqueda por texto y filtro por tipo de producto */}
       <View style={styles.barraBusqueda}>

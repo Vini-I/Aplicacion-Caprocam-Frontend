@@ -4,15 +4,6 @@
  * ============================================================
  *
  * Permite modificar la informacion de un estanque existente.
- *
- * Ajustes aplicados:
- * - Usa CustomText para textos visibles.
- * - Usa Button para acciones y opciones, sin Pressable directo.
- * - Usa Title para encabezados y títulos de sección.
- * - Usa NumberInput para densidad y aireadores.
- * - Usa DateInput para fechas.
- * - Usa styles desde la carpeta del modulo.
- *-  Al guardar, vuelve a DetalleEstanque con los datos actualizados.
  */
 
 import React, { useState } from "react";
@@ -29,8 +20,17 @@ import NumberInput from "../../../shared/components/NumberInput";
 import Select from "../../../shared/components/Select";
 import CustomText from "../../../shared/components/Text";
 import Title from "../../../shared/components/Title";
+import NavbarRegistro from "../../../shared/components/NavbarRegistro";
 
 import { styles } from "../styles/EstanqueStyle";
+import {
+  obtenerCodigoAireadorDefault,
+  obtenerCodigoAireadorInicial,
+  obtenerEstanqueAireador,
+  obtenerOpcionesAireadores,
+  obtenerOpcionesEstanqueSeleccionado,
+  obtenerTieneAireadoresInicial,
+} from "../services/AireadoresEstanqueService";
 
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
@@ -122,6 +122,17 @@ const METODOS_ALIMENTACION = [
   },
 ];
 
+const OPCIONES_AIREADORES = [
+  {
+    label: "Si",
+    value: "si",
+  },
+  {
+    label: "No",
+    value: "no",
+  },
+];
+
 const OPCIONES_ALIMENTADOR = [
   {
     label: "Si",
@@ -132,6 +143,8 @@ const OPCIONES_ALIMENTADOR = [
     value: "no",
   },
 ];
+
+const AIREADORES_EXISTENTES = obtenerOpcionesAireadores();
 
 const ESTADOS_ESTANQUE = [
   {
@@ -161,15 +174,17 @@ export default function EditarEstanqueScreen({ navigation }) {
   const params = useLocalSearchParams();
   const { width } = useWindowDimensions();
 
+  const tieneAireadoresBase = obtenerTieneAireadoresInicial(
+    params.tieneAireadores,
+    params.numeroAireadores,
+  );
+
   const estanqueBase = {
     id: obtenerParametro(params.id, String(Date.now())),
     finca: obtenerParametro(params.finca, "Finca La Reina"),
     codigo: obtenerParametro(params.codigo, "EST-01"),
     estado: obtenerParametro(params.estado, "engorde"),
-    tipoEstanque: obtenerParametro(
-      params.tipoEstanque,
-      "tierra_semiintensivo"
-    ),
+    tipoEstanque: obtenerParametro(params.tipoEstanque, "tierra_semiintensivo"),
     largo: obtenerParametro(params.largo, "100"),
     ancho: obtenerParametro(params.ancho, "80"),
     profundidad: obtenerParametro(params.profundidad, "0.80"),
@@ -178,23 +193,29 @@ export default function EditarEstanqueScreen({ navigation }) {
     fechaSiembra: obtenerParametro(params.fechaSiembra, obtenerFechaActual()),
     fechaInicioEngorde: obtenerParametro(
       params.fechaInicioEngorde,
-      obtenerFechaActual()
+      obtenerFechaActual(),
     ),
     fechaMantenimiento: obtenerParametro(
       params.fechaMantenimiento,
-      obtenerFechaActual()
+      obtenerFechaActual(),
     ),
     densidadSiembra: obtenerParametro(params.densidadSiembra, "12"),
     precria: obtenerParametro(params.precria, "si"),
     metodoAlimentacion: obtenerParametro(
       params.metodoAlimentacion,
-      "manual_automatico"
+      "manual_automatico",
     ),
     proveedorAlimento: obtenerParametro(params.proveedorAlimento, "Biomar"),
     numeroAireadores: obtenerParametro(params.numeroAireadores, "4"),
+    tieneAireadores: tieneAireadoresBase,
+    codigoAireador: obtenerCodigoAireadorInicial(
+      params.codigoAireador,
+      tieneAireadoresBase,
+    ),
+    estanqueAireador: obtenerParametro(params.estanqueAireador, ""),
     tieneAlimentadorAutomatico: obtenerParametro(
       params.tieneAlimentadorAutomatico,
-      "si"
+      "si",
     ),
   };
 
@@ -219,26 +240,32 @@ export default function EditarEstanqueScreen({ navigation }) {
   const [especie, setEspecie] = useState(estanqueBase.especie);
   const [fechaSiembra, setFechaSiembra] = useState(estanqueBase.fechaSiembra);
   const [fechaInicioEngorde, setFechaInicioEngorde] = useState(
-    estanqueBase.fechaInicioEngorde
+    estanqueBase.fechaInicioEngorde,
   );
   const [fechaMantenimiento, setFechaMantenimiento] = useState(
-    estanqueBase.fechaMantenimiento
+    estanqueBase.fechaMantenimiento,
   );
   const [densidadSiembra, setDensidadSiembra] = useState(
-    estanqueBase.densidadSiembra
+    estanqueBase.densidadSiembra,
   );
   const [precria, setPrecria] = useState(estanqueBase.precria);
   const [metodoAlimentacion, setMetodoAlimentacion] = useState(
-    estanqueBase.metodoAlimentacion
+    estanqueBase.metodoAlimentacion,
   );
   const [proveedorAlimento, setProveedorAlimento] = useState(
-    estanqueBase.proveedorAlimento
+    estanqueBase.proveedorAlimento,
   );
   const [numeroAireadores, setNumeroAireadores] = useState(
-    estanqueBase.numeroAireadores
+    estanqueBase.numeroAireadores,
+  );
+  const [tieneAireadores, setTieneAireadores] = useState(
+    estanqueBase.tieneAireadores,
+  );
+  const [codigoAireador, setCodigoAireador] = useState(
+    estanqueBase.codigoAireador,
   );
   const [tieneAlimentadorAutomatico, setTieneAlimentadorAutomatico] = useState(
-    estanqueBase.tieneAlimentadorAutomatico
+    estanqueBase.tieneAlimentadorAutomatico,
   );
   const [mensaje, setMensaje] = useState("");
   const [tipoMensaje, setTipoMensaje] = useState("info");
@@ -280,6 +307,23 @@ export default function EditarEstanqueScreen({ navigation }) {
     setMensaje(texto);
   }
 
+  function manejarTieneAireadores(valor) {
+    setTieneAireadores(valor);
+
+    if (valor === "si") {
+      setNumeroAireadores("1");
+
+      if (codigoAireador === "") {
+        setCodigoAireador(obtenerCodigoAireadorDefault());
+      }
+    }
+
+    if (valor === "no") {
+      setNumeroAireadores("0");
+      setCodigoAireador("");
+    }
+  }
+
   function validarFormulario() {
     let valido = true;
 
@@ -318,6 +362,11 @@ export default function EditarEstanqueScreen({ navigation }) {
       valido = false;
     }
 
+    if (valido === true && tieneAireadores === "si" && codigoAireador === "") {
+      mostrarAdvertencia("Debe seleccionar el codigo del aireador.");
+      valido = false;
+    }
+
     return valido;
   }
 
@@ -345,6 +394,13 @@ export default function EditarEstanqueScreen({ navigation }) {
       metodoAlimentacion: metodoAlimentacion,
       proveedorAlimento: proveedorAlimento,
       numeroAireadores: numeroAireadores,
+      tieneAireadores: tieneAireadores,
+      codigoAireador: codigoAireador,
+      estanqueAireador: obtenerEstanqueAireador(
+        tieneAireadores,
+        codigo,
+        estanqueBase.finca,
+      ),
       tieneAlimentadorAutomatico: tieneAlimentadorAutomatico,
     };
 
@@ -374,57 +430,23 @@ export default function EditarEstanqueScreen({ navigation }) {
         metodoAlimentacion: estanqueActualizado.metodoAlimentacion,
         proveedorAlimento: estanqueActualizado.proveedorAlimento,
         numeroAireadores: estanqueActualizado.numeroAireadores,
-        tieneAlimentadorAutomatico: estanqueActualizado.tieneAlimentadorAutomatico,
+        tieneAireadores: estanqueActualizado.tieneAireadores,
+        codigoAireador: estanqueActualizado.codigoAireador,
+        estanqueAireador: estanqueActualizado.estanqueAireador,
+        tieneAlimentadorAutomatico:
+          estanqueActualizado.tieneAlimentadorAutomatico,
       },
     });
   }
 
   return (
+    <>
+    <NavbarRegistro
+      Titulo="Editar Estanque"
+      Subtitulo={`${estanqueBase.finca} ${estanqueBase.codigo}`}
+      Icono="edit"
+    />
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <View style={headerStyle}>
-        <Button
-          variant="outline"
-          onPress={cancelar}
-          style={styles.cancelButton}
-        >
-          <View style={styles.inlineButtonContent}>
-            <Icon icon={ICONS.exit} size={18} color={COLORS.white} />
-
-            <CustomText
-              size={16}
-              color={COLORS.white}
-              style={styles.cancelText}
-            >
-              Cancelar
-            </CustomText>
-          </View>
-        </Button>
-
-        <View style={styles.headerRow}>
-          <View style={styles.headerIcon}>
-            <Icon icon={ICONS.edit} size={28} color={COLORS.white} />
-          </View>
-
-          <View style={styles.headerTextBox}>
-            <Title
-              level={3}
-              color={COLORS.white}
-              fuente={TYPOGRAPHY.fontFamily.bold}
-            >
-              Editar Estanque
-            </Title>
-
-            <CustomText
-              size={14}
-              color={COLORS.white}
-              style={styles.headerSubtitle}
-            >
-              {estanqueBase.finca} - {estanqueBase.codigo}
-            </CustomText>
-          </View>
-        </View>
-      </View>
-
       <View style={contentStyle}>
         {mensaje !== "" && (
           <Alert
@@ -621,16 +643,55 @@ export default function EditarEstanqueScreen({ navigation }) {
             </View>
 
             <View style={itemStyle}>
-              <NumberInput
-                label="N° aireadores"
-                value={numeroAireadores}
-                onChangeText={setNumeroAireadores}
-                min={0}
-                max={999}
-                step={1}
+              <Select
+                label="¿Tiene aireadores?"
+                options={OPCIONES_AIREADORES}
+                value={tieneAireadores}
+                onChange={manejarTieneAireadores}
                 labelStyle={styles.label}
               />
             </View>
+
+            {tieneAireadores === "si" && (
+              <View style={itemFullStyle}>
+                <View style={styles.aeratorBox}>
+                  <View style={gridStyle}>
+                    <View style={itemStyle}>
+                      <Select
+                        label="Codigo del aireador"
+                        options={AIREADORES_EXISTENTES}
+                        value={codigoAireador}
+                        onChange={setCodigoAireador}
+                        placeholder="Seleccione el codigo"
+                        labelStyle={styles.label}
+                      />
+                    </View>
+
+                    <View style={itemStyle}>
+                      <Select
+                        label="Estanque seleccionado"
+                        options={obtenerOpcionesEstanqueSeleccionado(
+                          codigo,
+                          estanqueBase.finca,
+                        )}
+                        value={codigo}
+                        disabled={true}
+                        placeholder="Ingrese primero el codigo del estanque"
+                        labelStyle={styles.label}
+                      />
+                    </View>
+                  </View>
+
+                  <CustomText
+                    size={13}
+                    color={COLORS.textTertiary}
+                    style={styles.helperText}
+                  >
+                    El aireador se asigna automaticamente al estanque actual.
+                  </CustomText>
+                </View>
+              </View>
+            )}
 
             <View style={itemStyle}>
               <Select
@@ -669,6 +730,7 @@ export default function EditarEstanqueScreen({ navigation }) {
         </View>
       </View>
     </ScrollView>
+    </>
   );
 }
 

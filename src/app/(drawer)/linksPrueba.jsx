@@ -31,10 +31,6 @@ export default function LinksPrueba() {
                     Go to Login
                 </Link>
 
-                 <Link href="/venta" push style={{ marginTop: 10, color: 'blue' }}>
-                    Go to venta
-                </Link>
-
             </View>
     );
 }

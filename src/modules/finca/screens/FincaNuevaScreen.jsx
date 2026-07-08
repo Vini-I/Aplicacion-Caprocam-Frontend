@@ -6,7 +6,7 @@ import Input from "../../../shared/components/Input.jsx";
 import Select from "../../../shared/components/Select.jsx";
 import Text from "../../../shared/components/Text.jsx";
 import Icon from "../../../shared/components/Icons.jsx";
-
+import NavbarRegistro from "../../../shared/components/NavbarRegistro.jsx";
 import CustomAlert from "../../../shared/components/Alert.jsx"; 
 
 import { provincias, ubicaciones } from "../screens/FincaNuevaData.js";
@@ -14,6 +14,7 @@ import { useFincaNueva} from "../hooks/useFincaNueva.js"
 import { ICONS } from "../../../theme/icons.js";
 import { COLORS } from "../../../theme/colors.js";
 import { styles } from "../styles/StylesFincaNueva.js";
+import { STYLE } from "../../../theme/style";
 
 export default function FincaNuevaScreen() {
   const {
@@ -40,11 +41,18 @@ export default function FincaNuevaScreen() {
   } = useFincaNueva();
 
   return (
+    <>
+    <NavbarRegistro
+      Titulo="Nueva Finca"
+      Subtitulo="Registro de finca"
+      Icono="add"
+    />
     <ScrollView
-      style={[styles.container, { paddingHorizontal: isLargeScreen ? 40 : 16 }]}
+      style={[STYLE.container, { paddingHorizontal: isLargeScreen ? 40 : 16 }]}
       contentContainerStyle={styles.content}
       keyboardShouldPersistTaps="handled"
     >
+      
       <ContentWrapper>
         <Card>
           <Text style={styles.sectionTitle} size={14} weight="700" color={COLORS.textPrimary}>
@@ -229,5 +237,6 @@ export default function FincaNuevaScreen() {
         </View>
       </ContentWrapper>
     </ScrollView>
+    </>
   );
 }

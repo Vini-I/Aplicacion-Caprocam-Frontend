@@ -19,6 +19,7 @@ import { styles } from "../styles/SiembraListStyles";
 import Navbar from "../../../shared/components/Navbar";
 import Button from "../../../shared/components/Button";
 import SiembraCard from "../components/SiembraCard";
+import NavbarRegistro from "../../../shared/components/NavbarRegistro";
 import { obtenerSiembras } from "../services/SiembraService";
 import { useRouter } from "expo-router";
 
@@ -53,12 +54,6 @@ export default function SiembraListScreen() {
 
   return (
     <View style={styles.screen}>
-      <Navbar
-        title=""
-        style={styles.header}
-        leftContent={<Text style={styles.title}>Siembra</Text>}
-      />
-
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}

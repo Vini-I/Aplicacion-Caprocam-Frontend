@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Dimensions, View } from "react-native";
 import { provincias, ubicaciones } from "../screens/FincaNuevaData.js";
 import { styles } from "../styles/StylesFincaNueva.js";
+import { STYLE } from "../../../theme/style.js";
 
 const { width } = Dimensions.get("window");
 const isLargeScreen = width > 700;
@@ -87,7 +88,7 @@ export function useFincaNueva() {
   }));
 
   const ContentWrapper = ({ children }) => (
-    <View style={styles.contentWrapper}>{children}</View>
+    <View style={STYLE.contentWrapper}>{children}</View>
   );
   return {
     ContentWrapper,

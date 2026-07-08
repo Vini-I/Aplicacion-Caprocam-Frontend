@@ -72,28 +72,6 @@ export default function TrazabilidadScreen() {
 
   return (
     <View style={styles.screen}>
-      <Navbar
-        title=""
-        style={styles.header}
-        leftContent={
-          <View style={styles.headerRow}>
-            <View style={styles.headerRowLeft}>
-            <Button onPress={volver} style={styles.newButton}>
-              <Icon icon={ICONS.home} size={20} style={styles.iconColor} />
-            </Button>
-            <Title style={styles.title}>Trazabilidad Biológica</Title>
-            </View>
-          </View>
-        }
-        rightContent={
-          <View style={styles.headerRow}>
-            <Button onPress={nuevoRegistro} style={styles.newButton}>
-              <Icon icon={ICONS.add} size={20} style={styles.iconColor} />
-            </Button>
-          </View>
-        }
-      />
-
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
