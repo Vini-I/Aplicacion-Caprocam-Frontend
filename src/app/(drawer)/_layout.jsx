@@ -1,67 +1,72 @@
 import { Drawer } from "expo-router/drawer";
 import React from "react";
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { ICONS } from "../../theme/icons";
 import Icon from "../../shared/components/Icons";
+import { COLORS } from "../../theme/colors.js";
 
 export default function DrawerLayout() {
   return (
-    <Drawer screenOptions={{ headerShown: true }}>
+    <Drawer
+    screenOptions={{
+      headerShown: true,
+      headerStyle: {
+        backgroundColor: COLORS.primary,
+        borderBottomWidth: 0,
+      },
+      headerTintColor: COLORS.white,
+    }}
+  >
       <Drawer.Screen
         name="(tabs)"
         options={{
           drawerLabel: "Panel Principal",
           title: "Caprocam",
           drawerIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="view-dashboard" color={color} size={size} />
+            <Icon icon={ICONS.dashboard} size={22} />
           )
         }}
       />
+
       <Drawer.Screen
         name="configuracion"
         options={{
           drawerLabel: "Configuración",
           title: "Ajustes de la Aplicación",
           drawerIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="cog" color={color} size={size} />
+            <Icon icon={ICONS.gear} />
           )
         }}
       />
+
       <Drawer.Screen
         name="inventarios"
         options={{
           drawerLabel: "Inventario",
           title: "Inventario",
-          headerShown: false,
           drawerIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="package-variant-closed" color={color} size={size} />
+            <Icon icon={ICONS.dropbox} size={22} />
           ),
         }}
       />
+
       <Drawer.Screen
         name="proveedores"
         options={{
           drawerLabel: "Proveedores",
           title: "Proveedores",
-          headerShown: false,
           drawerIcon: ({ color, size }) => (
-            <MaterialCommunityIcons
-              name="truck-delivery"
-              color={color}
-              size={size}
-            />
+            <Icon icon={ICONS.truck} size={18} />
           ),
         }}
       />
-
-          
+ 
       <Drawer.Screen
         name="compradores"
         options={{
           drawerLabel: "Compradores",
           title: "Compradores",
-          drawerIcon: ({ color }) => (
-            <MaterialCommunityIcons name="account-group" size={22} color={color} />
+          drawerIcon: ({ color, size }) => (
+            <Icon icon={ICONS.people} size={22} />
           ),
         }}
       />
@@ -72,7 +77,7 @@ export default function DrawerLayout() {
           drawerLabel: "Trazabilidad",
           title: "Trazabilidad",
           drawerIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="map-marker-path" color={color} size={size} />
+            <Icon icon={ICONS.trazabilidad} size={23}/>
           )
         }}
       />
@@ -83,7 +88,7 @@ export default function DrawerLayout() {
           drawerLabel: "Colaboradores",
           title: "Colaboradores",
           drawerIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="account-group" color={color} size={size} />
+            <Icon icon={ICONS.people} size={22}/>
           )
         }}
       />
@@ -94,7 +99,7 @@ export default function DrawerLayout() {
           drawerLabel: "Mantenimiento de Equipos",
           title: "Mantenimiento de Equipos",
           drawerIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="wrench" color={color} size={size} />
+            <Icon icon={ICONS.tools} size={23} />
           )
         }}
       />
@@ -105,11 +110,21 @@ export default function DrawerLayout() {
           drawerLabel: "Registrar Equipo",
           title: "Registrar Equipo",
           drawerIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="plus" color={color} size={size} />
+            <Icon icon={ICONS.engine} size={24} />
           )
         }}
       />
 
+      <Drawer.Screen
+        name="venta"
+        options={{
+          drawerLabel: "Venta",
+          title: "Venta",
+          drawerIcon: ({ color, size }) => (
+            <Icon icon={ICONS.money} size={25} />
+          )
+        }}
+      />
 
       <Drawer.Screen
         name="linksPrueba"
@@ -117,7 +132,7 @@ export default function DrawerLayout() {
           drawerLabel: "Links de Prueba",
           title: "Links de Prueba",
           drawerIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="link" color={color} size={size} />
+            <Icon icon={ICONS.link} size={24} />
           )
         }}
       />

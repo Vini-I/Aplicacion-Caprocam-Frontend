@@ -1,19 +1,28 @@
 import { Stack } from "expo-router";
+import { COLORS } from "../../../../theme/colors.js";
+import { FincaProvider } from "../../../../modules/finca/context/FincaContext.js";
 
 export default function RegistrosStackLayout() {
   return (
-    <Stack screenOptions={{ headerShown: true }}>
-        
-      <Stack.Screen name="index" options={{ title: "Sección Finca" }} />
+    <FincaProvider>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          headerStyle: { backgroundColor: COLORS.primary },
+          headerTintColor: COLORS.white,
+        }}
+      >
+        <Stack.Screen name="index" options={{ title: "Sección Finca" }} />
 
-      <Stack.Screen name="nueva" options={{ title: "Nueva Finca" }} />
-      
-      <Stack.Screen name="detalle" options={{ title: "Detalle Finca" }} />
+        <Stack.Screen name="nueva" options={{ title: "Nueva Finca" }} />
 
-      <Stack.Screen name="editarFinca" options={{ title: "Editar Finca" }}/>
+        <Stack.Screen name="editarFinca" options={{ title: "Editar Finca" }} />
 
-      <Stack.Screen name="estanque" options={{ title: "Nuevo Estanque" }}/>
-
-    </Stack>
+        <Stack.Screen
+          name="estanque"
+          options={{ title: "Nuevo Estanque", headerShown: false }}
+        />
+      </Stack>
+    </FincaProvider>
   );
 }

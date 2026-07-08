@@ -1,133 +1,71 @@
 /**
  * ============================================================
- * SERVICE: AIREADORES PARA ESTANQUES
+ * SERVICIO AIREADORES ESTANQUE
  * ============================================================
  *
- * Centraliza los datos necesarios para asignar aireadores
- * existentes a un estanque.
+ * Responsabilidad:
+ * - Centraliza las opciones de aireadores existentes.
+ * - Permite obtener el codigo default de aireador.
+ * - Permite construir la relacion visual entre aireador y estanque.
  *
- * Actualmente usa los equipos mock del modulo de mantenimiento
- * de equipo. Cuando exista backend, este archivo se puede cambiar
- * por una llamada al endpoint real de equipos/aireadores.
+ * Reglas:
+ * - Si el estanque no tiene aireadores, no se asigna codigo.
+ * - Si tiene aireadores, se debe seleccionar un codigo existente.
  */
 
-import { EQUIPOS_MOCK } from "../../mantEquipo/services/mantEquipoService.js";
-
-function esAireador(equipo) {
-  let resultado = false;
-
-  if (equipo.tipo === "Aireación") {
-    resultado = true;
-  }
-
-  if (equipo.tipo === "aireacion") {
-    resultado = true;
-  }
-
-  return resultado;
-}
+export const AIREADORES_EXISTENTES = [
+  {
+    id: "air-001",
+    codigo: "AIR-001",
+    nombre: "Aireador AIR-001",
+    estado: "Disponible",
+  },
+  {
+    id: "air-002",
+    codigo: "AIR-002",
+    nombre: "Aireador AIR-002",
+    estado: "Disponible",
+  },
+  {
+    id: "air-003",
+    codigo: "AIR-003",
+    nombre: "Aireador AIR-003",
+    estado: "Disponible",
+  },
+];
 
 export function obtenerOpcionesAireadores() {
   const opciones = [];
 
-  for (let index = 0; index < EQUIPOS_MOCK.length; index++) {
-    const equipo = EQUIPOS_MOCK[index];
-
-    if (esAireador(equipo) === true) {
-      opciones.push({
-        label: `${equipo.serie} - ${equipo.nombre}`,
-        value: equipo.serie,
-      });
-    }
-  }
+  AIREADORES_EXISTENTES.forEach(function (aireador) {
+    opciones.push({
+      label: `${aireador.codigo} - ${aireador.estado}`,
+      value: aireador.codigo,
+    });
+  });
 
   return opciones;
 }
 
 export function obtenerCodigoAireadorDefault() {
-  const opciones = obtenerOpcionesAireadores();
   let codigo = "";
 
-  if (opciones.length > 0) {
-    codigo = opciones[0].value;
+  if (AIREADORES_EXISTENTES.length > 0) {
+    codigo = AIREADORES_EXISTENTES[0].codigo;
   }
 
   return codigo;
 }
 
-export function obtenerTieneAireadoresInicial(valor, numeroAireadores) {
-  let resultado = "no";
-
-  if (valor === "si") {
-    resultado = "si";
-  }
-
-  if (valor === "no") {
-    resultado = "no";
-  }
-
-  if (
-    (valor === undefined || valor === null || valor === "") &&
-    Number(numeroAireadores) > 0
-  ) {
-    resultado = "si";
-  }
-
-  return resultado;
-}
-
-export function obtenerCodigoAireadorInicial(valor, tieneAireadores) {
-  let codigo = "";
-
-  if (valor !== undefined && valor !== null && valor !== "") {
-    codigo = String(valor);
-  }
-
-  if (codigo === "" && tieneAireadores === "si") {
-    codigo = obtenerCodigoAireadorDefault();
-  }
-
-  return codigo;
-}
-
-export function obtenerDescripcionEstanqueSeleccionado(codigoEstanque, finca) {
-  let descripcion = "";
-
-  if (
-    codigoEstanque !== undefined &&
-    codigoEstanque !== null &&
-    codigoEstanque !== ""
-  ) {
-    descripcion = `${codigoEstanque} - ${finca}`;
-  }
-
-  return descripcion;
-}
-
-export function obtenerEstanqueAireador(
-  tieneAireadores,
+export function obtenerOpcionesEstanqueSeleccionado(
   codigoEstanque,
-  finca,
+  fincaNombre,
 ) {
-  let descripcion = "";
-
-  if (tieneAireadores === "si") {
-    descripcion = obtenerDescripcionEstanqueSeleccionado(codigoEstanque, finca);
-  }
-
-  return descripcion;
-}
-
-export function obtenerOpcionesEstanqueSeleccionado(codigoEstanque, finca) {
   const opciones = [];
-  const descripcion = obtenerDescripcionEstanqueSeleccionado(
-    codigoEstanque,
-    finca,
-  );
 
-  if (descripcion !== "") {
+  if (codigoEstanque !== "") {
     opciones.push({
-      label: descripcion,
+      label: `${codigoEstanque} - ${fincaNombre}`,
       value: codigoEstanque,
     });
   }
@@ -135,11 +73,15 @@ export function obtenerOpcionesEstanqueSeleccionado(codigoEstanque, finca) {
   return opciones;
 }
 
-export function obtenerTextoSiNo(valor) {
-  let texto = "No";
+export function obtenerEstanqueAireador(
+  tieneAireadores,
+  codigoEstanque,
+  fincaNombre,
+) {
+  let texto = "";
 
-  if (valor === "si") {
-    texto = "Si";
+  if (tieneAireadores === "si") {
+    texto = `${codigoEstanque} - ${fincaNombre}`;
   }
 
   return texto;

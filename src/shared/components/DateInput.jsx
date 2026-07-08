@@ -3,31 +3,24 @@
  * COMPONENTE DATEINPUT
  * ============================================================
  *
- * Campo reutilizable para seleccionar fechas en React Native.
+ * Campo reutilizable para seleccionar fechas.
  *
- * Funcionalidad:
- * - Muestra la fecha actual por defecto.
- * - Abre un calendario al presionar el campo.
- * - Permite seleccionar fechas anteriores.
- * - Por defecto no permite seleccionar fechas futuras.
- * - Devuelve la fecha en formato dd/mm/aaaa.
+ * Responsabilidad:
+ * - Despliega un calendario al presionar el campo.
+ * - Usa el formato oficial dd/mm/aaaa.
+ * - Muestra icono de calendario desde theme/icons.js.
+ * - Usa el componente Icon compartido del proyecto.
+ * - Soporta required, submitted, error y helperText.
+ * - Muestra borde rojo cuando el campo requerido esta vacio despues de intentar guardar.
  *
- * Props principales:
- * - label: texto opcional mostrado arriba del campo.
- * - value: fecha recibida desde el formulario.
- * - onChangeText: funcion que recibe la fecha en formato dd/mm/aaaa.
- * - placeholder: texto cuando no hay fecha.
- * - disabled: bloquea el campo.
- * - allowFutureDates: permite seleccionar fechas futuras si se envia true.
- * - containerStyle: estilos extra para el contenedor.
- * - inputStyle: estilos extra para el campo.
- * - labelStyle: estilos extra para el label.
+ * Uso recomendado:
  *
- * Ejemplo:
  * <DateInput
- *     label="Fecha"
- *     value={fecha}
- *     onChangeText={setFecha}
+ *   label="Fecha de siembra"
+ *   required={true}
+ *   submitted={submitted}
+ *   value={fechaSiembra}
+ *   onChangeText={setFechaSiembra}
  * />
  */
 
@@ -35,41 +28,13 @@ import React, { useState } from "react";
 import { View, Text, Pressable, StyleSheet, Platform } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 
+import Icon from "./Icons";
+
 import { COLORS } from "../../theme/colors";
+import { TYPOGRAPHY } from "../../theme/typography";
+import { ICONS } from "../../theme/icons";
 
-function formatDate(date) {
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const year = date.getFullYear();
-
-  return `${day}/${month}/${year}`;
-}
-
-function getCurrentDate() {
-  const today = new Date();
-
-  return formatDate(today);
-}
-
-function convertTextToDate(textDate) {
-  const parts = textDate.split("/");
-
-  if (parts.length !== 3) {
-    return new Date();
-  }
-
-  const day = Number(parts[0]);
-  const month = Number(parts[1]) - 1;
-  const year = Number(parts[2]);
-
-  const date = new Date(year, month, day);
-
-  if (Number.isNaN(date.getTime())) {
-    return new Date();
-  }
-
-  return date;
-}
+import { formatDate, getCurrentDate, parseDate } from "../utils/dateUtils";
 
 export default function DateInput({
   label = "",
@@ -78,6 +43,10 @@ export default function DateInput({
   placeholder = "Seleccione una fecha",
   disabled = false,
   allowFutureDates = false,
+  required = false,
+  submitted = false,
+  error = "",
+  helperText = "",
   containerStyle,
   inputStyle,
   labelStyle,
@@ -88,7 +57,7 @@ export default function DateInput({
   let initialDate = new Date();
 
   if (value !== "") {
-    initialDate = convertTextToDate(value);
+    initialDate = parseDate(value);
   }
 
   const [selectedDate, setSelectedDate] = useState(initialDate);
@@ -99,15 +68,32 @@ export default function DateInput({
     displayedValue = value;
   }
 
+  let showError = false;
+  let finalHelperText = helperText;
+
+  if (error !== "") {
+    showError = true;
+    finalHelperText = error;
+  }
+
+  if (submitted === true && required === true && String(value).trim() === "") {
+    showError = true;
+    finalHelperText = "Este campo es obligatorio.";
+  }
+
   function openCalendar() {
     if (disabled === false) {
       setShowCalendar(true);
     }
   }
 
+  function closeCalendar() {
+    setShowCalendar(false);
+  }
+
   function handleChange(event, date) {
     if (Platform.OS === "android") {
-      setShowCalendar(false);
+      closeCalendar();
     }
 
     if (date) {
@@ -127,6 +113,10 @@ export default function DateInput({
     inputStyles.push(styles.disabledInput);
   }
 
+  if (showError === true) {
+    inputStyles.push(styles.inputError);
+  }
+
   if (inputStyle) {
     inputStyles.push(inputStyle);
   }
@@ -137,9 +127,21 @@ export default function DateInput({
     maximumDate = undefined;
   }
 
+  let textColor = COLORS.textSecondary;
+
+  if (displayedValue === "" && placeholder !== "") {
+    textColor = COLORS.textQuaternary;
+  }
+
   return (
     <View style={[styles.container, containerStyle]}>
-      {label !== "" && <Text style={[styles.label, labelStyle]}>{label}</Text>}
+      {label !== "" && (
+        <Text style={[styles.label, labelStyle]}>
+          {label}
+
+          {required === true && <Text style={styles.requiredMark}> *</Text>}
+        </Text>
+      )}
 
       <Pressable
         style={inputStyles}
@@ -147,10 +149,31 @@ export default function DateInput({
         disabled={disabled}
         accessibilityRole="button"
       >
-        <Text style={[styles.inputText, textStyle]}>
+        <Text
+          style={[
+            styles.inputText,
+            {
+              color: textColor,
+            },
+            textStyle,
+          ]}
+          numberOfLines={1}
+        >
           {displayedValue || placeholder}
         </Text>
+
+        <View style={styles.iconBox}>
+          <Icon icon={ICONS.calendar} size={22} color={COLORS.primary} />
+        </View>
       </Pressable>
+
+      {finalHelperText !== "" && (
+        <Text
+          style={[styles.helperText, showError === true && styles.errorText]}
+        >
+          {finalHelperText}
+        </Text>
+      )}
 
       {showCalendar === true && (
         <DateTimePicker
@@ -169,27 +192,64 @@ const styles = StyleSheet.create({
   container: {
     marginBottom: 12,
   },
+
   label: {
     fontSize: 14,
-    fontWeight: "600",
+    fontFamily: TYPOGRAPHY.fontFamily.medium,
     color: COLORS.textSecondary,
     marginBottom: 6,
   },
+
+  requiredMark: {
+    color: COLORS.error,
+  },
+
   input: {
+    minHeight: 46,
     borderWidth: 1,
-    borderColor: COLORS.textTertiary,
+    borderColor: COLORS.secondary,
     borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 12,
+    paddingVertical: 10,
+    paddingLeft: 12,
+    paddingRight: 10,
     backgroundColor: COLORS.white,
-    justifyContent: "center",
+    flexDirection: "row",
+    alignItems: "center",
   },
+
+  inputError: {
+    borderColor: COLORS.error,
+  },
+
   inputText: {
+    flex: 1,
     fontSize: 16,
-    color: COLORS.textSecondary,
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
   },
+
+  iconBox: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    backgroundColor: COLORS.primaryLight,
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft: 8,
+  },
+
   disabledInput: {
-    backgroundColor: COLORS.secondary,
+    backgroundColor: COLORS.surface,
     opacity: 0.7,
+  },
+
+  helperText: {
+    marginTop: 5,
+    fontSize: 12,
+    color: COLORS.textTertiary,
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
+  },
+
+  errorText: {
+    color: COLORS.error,
   },
 });

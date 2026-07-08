@@ -8,6 +8,9 @@
  * Funcionalidad:
  * - Permite seleccionar finca y estanque.
  * - Permite seleccionar una o varias enfermedades.
+ * - Usa DateInput con calendario e icono.
+ * - Usa required/submitted estandarizado.
+ * - Usa botones outline.
  * - Guarda los registros usando useEnfermedades.
  * - Los registros quedan disponibles para el dashboard.
  *
@@ -31,6 +34,7 @@ import NumberInput from "../../../shared/components/NumberInput";
 import Select from "../../../shared/components/Select";
 import CustomText from "../../../shared/components/Text";
 import Title from "../../../shared/components/Title";
+import NavbarRegistro from "../../../shared/components/NavbarRegistro";
 
 import { FINCAS, ESTANQUES } from "../../registro/screens/RegistroData";
 
@@ -47,15 +51,7 @@ import { styles } from "../styles/EnfermedadesStyle";
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
 import { TYPOGRAPHY } from "../../../theme/typography";
-
-function obtenerFechaActual() {
-  const fecha = new Date();
-  const dia = String(fecha.getDate()).padStart(2, "0");
-  const mes = String(fecha.getMonth() + 1).padStart(2, "0");
-  const anio = fecha.getFullYear();
-
-  return `${dia}/${mes}/${anio}`;
-}
+import { getCurrentDate } from "../../../shared/utils/dateUtils";
 
 function obtenerOpcionesFincas() {
   const opciones = [];
@@ -138,7 +134,7 @@ export default function EnfermedadesScreen({ onBack, navigation }) {
 
   const [finca, setFinca] = useState("");
   const [estanque, setEstanque] = useState("");
-  const [fechaReporte, setFechaReporte] = useState(obtenerFechaActual());
+  const [fechaReporte, setFechaReporte] = useState(getCurrentDate());
   const [responsable, setResponsable] = useState("");
   const [enfermedadesSeleccionadas, setEnfermedadesSeleccionadas] = useState(
     [],
@@ -148,22 +144,20 @@ export default function EnfermedadesScreen({ onBack, navigation }) {
   const [reporte, setReporte] = useState("");
   const [mensaje, setMensaje] = useState("");
   const [tipoMensaje, setTipoMensaje] = useState("info");
+  const [submitted, setSubmitted] = useState(false);
 
-  let headerStyle = [styles.header];
   let contentStyle = [styles.content];
   let gridStyle = [styles.grid];
   let itemStyle = [styles.gridItem];
   let itemFullStyle = [styles.gridItem];
 
   if (esTablet === true) {
-    contentStyle.push(styles.contentTablet);
     gridStyle.push(styles.gridTablet);
     itemStyle.push(styles.gridItemTablet);
     itemFullStyle.push(styles.gridItemFull);
   }
 
   if (esDesktop === true) {
-    headerStyle.push(styles.headerDesktop);
     contentStyle.push(styles.contentDesktop);
     gridStyle.push(styles.gridDesktop);
     itemStyle.push(styles.gridItemDesktop);
@@ -224,15 +218,18 @@ export default function EnfermedadesScreen({ onBack, navigation }) {
   function limpiarFormulario() {
     setFinca("");
     setEstanque("");
-    setFechaReporte(obtenerFechaActual());
+    setFechaReporte(getCurrentDate());
     setResponsable("");
     setEnfermedadesSeleccionadas([]);
     setSeveridad("");
     setMortalidad("0");
     setReporte("");
+    setSubmitted(false);
   }
 
   function validarFormulario() {
+    setSubmitted(true);
+
     let valido = true;
 
     if (finca === "") {
@@ -306,209 +303,191 @@ export default function EnfermedadesScreen({ onBack, navigation }) {
   }
 
   return (
-    <ScrollView style={styles.screen} showsVerticalScrollIndicator={false}>
-      <View style={headerStyle}>
-        <Button variant="outline" onPress={volver} style={styles.cancelButton}>
-          <View style={styles.inlineButtonContent}>
-            <Icon icon={ICONS.exit} size={18} color={COLORS.white} />
+    <>
+      <NavbarRegistro
+        Titulo="Enfermedades"
+        Subtitulo="Registro sanitario"
+        Icono="shieldAlert"
+      />
 
-            <CustomText
-              size={16}
-              color={COLORS.white}
-              style={styles.cancelText}
-            >
-              Volver
-            </CustomText>
-          </View>
-        </Button>
-
-        <View style={styles.headerRow}>
-          <View style={styles.headerIcon}>
-            <Icon
-              icon={ICONS.chemicalContainer}
-              size={26}
-              color={COLORS.primary}
+      <ScrollView style={styles.screen} showsVerticalScrollIndicator={false}>
+        <View style={contentStyle}>
+          {mensaje !== "" && (
+            <Alert
+              variant={tipoMensaje}
+              message={mensaje}
+              style={styles.alert}
+              textStyle={styles.alertText}
             />
-          </View>
-
-          <View style={styles.headerTextBox}>
-            <Title
-              level={3}
-              color={COLORS.white}
-              fuente={TYPOGRAPHY.fontFamily.bold}
-            >
-              Enfermedades
-            </Title>
-
-            <CustomText
-              size={14}
-              color={COLORS.white}
-              style={styles.headerSubtitle}
-            >
-              Registro sanitario por finca y estanque
-            </CustomText>
-          </View>
-        </View>
-      </View>
-
-      <View style={contentStyle}>
-        {mensaje !== "" && (
-          <Alert
-            variant={tipoMensaje}
-            message={mensaje}
-            style={styles.alert}
-            textStyle={styles.alertText}
-          />
-        )}
-
-        {error !== "" && (
-          <Alert
-            variant="danger"
-            message={error}
-            style={styles.alert}
-            textStyle={styles.alertText}
-          />
-        )}
-
-        <Card>
-          <SectionTitle title="Ubicacion del caso" icon={ICONS.document} />
-
-          <View style={gridStyle}>
-            <View style={itemStyle}>
-              <Select
-                label="Finca *"
-                options={opcionesFincas}
-                value={finca}
-                onChange={cambiarFinca}
-                placeholder="Seleccione la finca"
-                labelStyle={styles.label}
-              />
-            </View>
-
-            <View style={itemStyle}>
-              <Select
-                label="Estanque *"
-                options={opcionesEstanques}
-                value={estanque}
-                onChange={setEstanque}
-                placeholder="Seleccione el estanque"
-                labelStyle={styles.label}
-              />
-            </View>
-
-            <View style={itemStyle}>
-              <DateInput
-                label="Fecha del reporte *"
-                value={fechaReporte}
-                onChangeText={setFechaReporte}
-                labelStyle={styles.label}
-              />
-            </View>
-
-            <View style={itemStyle}>
-              <Input
-                label="Responsable"
-                value={responsable}
-                onChangeText={setResponsable}
-                placeholder="Nombre del responsable"
-                labelStyle={styles.label}
-              />
-            </View>
-          </View>
-        </Card>
-
-        <Card>
-          <SectionTitle title="Enfermedades que presenta" icon={ICONS.report} />
-
-          <View style={styles.optionsGrid}>
-            {ENFERMEDADES_CATALOGO.map(function (item) {
-              return (
-                <OptionButton
-                  key={item.value}
-                  label={item.label}
-                  value={item.value}
-                  selectedValues={enfermedadesSeleccionadas}
-                  onPress={cambiarEnfermedad}
-                />
-              );
-            })}
-          </View>
-        </Card>
-
-        <Card>
-          <SectionTitle title="Reporte sanitario" icon={ICONS.info} />
-
-          <View style={gridStyle}>
-            <View style={itemStyle}>
-              <Select
-                label="Severidad *"
-                options={SEVERIDADES_ENFERMEDAD}
-                value={severidad}
-                onChange={setSeveridad}
-                placeholder="Seleccione la severidad"
-                labelStyle={styles.label}
-              />
-            </View>
-
-            <View style={itemStyle}>
-              <NumberInput
-                label="Mortalidad registrada"
-                value={mortalidad}
-                onChangeText={setMortalidad}
-                min={0}
-                max={999999}
-                step={1}
-                labelStyle={styles.label}
-              />
-            </View>
-
-            <View style={itemFullStyle}>
-              <Input
-                label="Reporte *"
-                value={reporte}
-                onChangeText={setReporte}
-                placeholder="Describa sintomas, observaciones o acciones realizadas"
-                multiline={true}
-                labelStyle={styles.label}
-                style={styles.textArea}
-              />
-            </View>
-          </View>
-        </Card>
-
-        <Button
-          onPress={registrarEnfermedad}
-          style={styles.saveButton}
-          disabled={loading}
-        >
-          <View style={styles.inlineButtonContentCentered}>
-            <Icon icon={ICONS.save} size={18} color={COLORS.white} />
-
-            <CustomText size={16} color={COLORS.white} style={styles.saveText}>
-              Registrar enfermedad
-            </CustomText>
-          </View>
-        </Button>
-
-        <Card>
-          <SectionTitle title="Detalles guardados" icon={ICONS.certificate} />
-
-          {enfermedades.length === 0 && (
-            <CustomText
-              size={14}
-              color={COLORS.textTertiary}
-              style={styles.emptyText}
-            >
-              Aun no hay enfermedades registradas.
-            </CustomText>
           )}
 
-          {enfermedades.map(function (caso) {
-            return <CasoRegistrado key={caso.id} caso={caso} />;
-          })}
-        </Card>
-      </View>
-    </ScrollView>
+          {error !== "" && (
+            <Alert
+              variant="danger"
+              message={error}
+              style={styles.alert}
+              textStyle={styles.alertText}
+            />
+          )}
+
+          <Card>
+            <SectionTitle title="Ubicacion del caso" icon={ICONS.document} />
+
+            <View style={gridStyle}>
+              <View style={itemStyle}>
+                <Select
+                  label="Finca"
+                  required={true}
+                  submitted={submitted}
+                  options={opcionesFincas}
+                  value={finca}
+                  onChange={cambiarFinca}
+                  placeholder="Seleccione la finca"
+                  labelStyle={styles.label}
+                />
+              </View>
+
+              <View style={itemStyle}>
+                <Select
+                  label="Estanque"
+                  required={true}
+                  submitted={submitted}
+                  options={opcionesEstanques}
+                  value={estanque}
+                  onChange={setEstanque}
+                  placeholder="Seleccione el estanque"
+                  labelStyle={styles.label}
+                />
+              </View>
+
+              <View style={itemStyle}>
+                <DateInput
+                  label="Fecha del reporte"
+                  required={true}
+                  submitted={submitted}
+                  value={fechaReporte}
+                  onChangeText={setFechaReporte}
+                  labelStyle={styles.label}
+                />
+              </View>
+
+              <View style={itemStyle}>
+                <Input
+                  label="Responsable"
+                  value={responsable}
+                  onChangeText={setResponsable}
+                  placeholder="Nombre del responsable"
+                  labelStyle={styles.label}
+                />
+              </View>
+            </View>
+          </Card>
+
+          <Card>
+            <SectionTitle
+              title="Enfermedades que presenta"
+              icon={ICONS.report}
+            />
+
+            <View style={styles.optionsGrid}>
+              {ENFERMEDADES_CATALOGO.map(function (item) {
+                return (
+                  <OptionButton
+                    key={item.value}
+                    label={item.label}
+                    value={item.value}
+                    selectedValues={enfermedadesSeleccionadas}
+                    onPress={cambiarEnfermedad}
+                  />
+                );
+              })}
+            </View>
+          </Card>
+
+          <Card>
+            <SectionTitle title="Reporte sanitario" icon={ICONS.info} />
+
+            <View style={gridStyle}>
+              <View style={itemStyle}>
+                <Select
+                  label="Severidad"
+                  required={true}
+                  submitted={submitted}
+                  options={SEVERIDADES_ENFERMEDAD}
+                  value={severidad}
+                  onChange={setSeveridad}
+                  placeholder="Seleccione la severidad"
+                  labelStyle={styles.label}
+                />
+              </View>
+
+              <View style={itemStyle}>
+                <NumberInput
+                  label="Mortalidad registrada"
+                  value={mortalidad}
+                  onChangeText={setMortalidad}
+                  min={0}
+                  max={999999}
+                  step={1}
+                  labelStyle={styles.label}
+                />
+              </View>
+
+              <View style={itemFullStyle}>
+                <Input
+                  label="Reporte"
+                  required={true}
+                  submitted={submitted}
+                  value={reporte}
+                  onChangeText={setReporte}
+                  placeholder="Describa sintomas, observaciones o acciones realizadas"
+                  multiline={true}
+                  labelStyle={styles.label}
+                  style={styles.textArea}
+                />
+              </View>
+            </View>
+          </Card>
+
+          <Button
+            variant="outline"
+            onPress={registrarEnfermedad}
+            style={styles.outlinePrimaryButton}
+            disabled={loading}
+          >
+            <View style={styles.inlineButtonContentCentered}>
+              <Icon icon={ICONS.save} size={18} color={COLORS.primary} />
+
+              <CustomText
+                size={16}
+                color={COLORS.primary}
+                style={styles.saveText}
+              >
+                Registrar enfermedad
+              </CustomText>
+            </View>
+          </Button>
+
+          <Card>
+            <SectionTitle title="Detalles guardados" icon={ICONS.certificate} />
+
+            {enfermedades.length === 0 && (
+              <CustomText
+                size={14}
+                color={COLORS.textTertiary}
+                style={styles.emptyText}
+              >
+                Aun no hay enfermedades registradas.
+              </CustomText>
+            )}
+
+            {enfermedades.map(function (caso) {
+              return <CasoRegistrado key={caso.id} caso={caso} />;
+            })}
+          </Card>
+        </View>
+      </ScrollView>
+    </>
   );
 }
 

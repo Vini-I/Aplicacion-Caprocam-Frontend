@@ -29,8 +29,8 @@ export const ICONS = {
     name: "moon",
   },
   calendar: {
-    provider: "FontAwesome5",
-    name: "calendar-week",
+    provider: "MaterialCommunityIcons",
+    name: "calendar-month-outline",
   },
   clock: {
     provider: "MaterialCommunityIcons",
@@ -246,12 +246,12 @@ export const ICONS = {
   },
 
   // Parasitologia
-    parasite: {
+  parasite: {
     provider: "MaterialCommunityIcons",
     name: "bacteria-outline",
   },
-  
-   microscope: {
+
+  microscope: {
     provider: "MaterialCommunityIcons",
     name: "microscope",
   },
@@ -263,7 +263,7 @@ export const ICONS = {
   },
 
   //Trazabilidad
-    transfer: {
+  transfer: {
     provider: "MaterialCommunityIcons",
     name: "transfer-right",
   },
@@ -274,5 +274,43 @@ export const ICONS = {
   arrowLongRight: {
     provider: "MaterialCommunityIcons",
     name: "arrow-right-bold",
+  },
+
+  // Otros
+  money: {
+    provider: "MaterialIcons",
+    name: "attach-money",
+  },
+  gear: {
+    provider: "FontAwesome",
+    name: "gear",
+  },
+  dropbox: {
+    provider: "AntDesign",
+    name: "dropbox",
+  },
+  truck: {
+    provider: "FontAwesome6",
+    name: "truck-arrow-right",
+  },
+  people: {
+    provider: "MaterialIcons",
+    name: "people",
+  },
+  tools: {
+    provider: "MaterialCommunityIcons",
+    name: "tools",
+  },
+  aerator: {
+    provider: "MaterialCommunityIcons",
+    name: "pinwheel",
+  },
+  engine: {
+    provider: "MaterialCommunityIcons",
+    name: "engine",
+  },
+  link: {
+    provider: "Entypo",
+    name: "link",
   },
 };

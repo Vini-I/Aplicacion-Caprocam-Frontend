@@ -3,20 +3,22 @@
  * ESTILOS DEL DASHBOARD GENERAL
  * ============================================================
  *
- * Estilos exclusivos para DashboardScreen.
- *
- * Incluye:
- * - Header celeste.
- * - Cards desplegables.
- * - Alertas.
- * - Gráficas simples.
- * - Gráfico circular de estanques activos/cosechados.
+ * Responsabilidad:
+ * - Define estilos visuales del DashboardScreen.
+ * - Usa tokens del theme cuando estan disponibles.
+ * - Mantiene alertas con fondos suaves.
+ * - Mantiene acceso outline a modulos.
  */
 
 import { StyleSheet } from "react-native";
 
 import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
+
+const PRIMARY_LIGHT = COLORS.primaryLight || "#ECF8FF";
+const BORDER_COLOR = COLORS.border || "#E5E7EB";
+const INPUT_BORDER = COLORS.inputBorder || "#E5E7EB";
+const INFO_LIGHT = COLORS.infoLight || "#ECF8FF";
 
 export const styles = StyleSheet.create({
   container: {
@@ -77,21 +79,41 @@ export const styles = StyleSheet.create({
     fontFamily: TYPOGRAPHY.fontFamily.regular,
   },
 
+  mareasAccessCard: {
+    width: "100%",
+    backgroundColor: COLORS.white,
+    borderRadius: 18,
+    padding: 16,
+    marginTop: 0,
+    marginBottom: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+  },
+
+  mareasAccessIcon: {
+    width: 46,
+    height: 46,
+    borderRadius: 15,
+    backgroundColor: PRIMARY_LIGHT,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 12,
+  },
+
+  mareasAccessText: {
+    flex: 1,
+    minWidth: 0,
+  },
+
   alertsCard: {
     width: "100%",
     borderRadius: 18,
     padding: 16,
     borderWidth: 1,
-    borderColor: "#FDE68A",
+    borderColor: COLORS.warningLight,
     backgroundColor: COLORS.white,
-    shadowColor: COLORS.black,
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.06,
-    shadowRadius: 6,
-    elevation: 2,
     marginBottom: 14,
   },
 
@@ -113,7 +135,7 @@ export const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 12,
-    backgroundColor: "#FFF7D6",
+    backgroundColor: COLORS.warningLight,
     alignItems: "center",
     justifyContent: "center",
     marginRight: 10,
@@ -133,14 +155,14 @@ export const styles = StyleSheet.create({
     minWidth: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: "#FFF7D6",
+    backgroundColor: COLORS.warningLight,
     alignItems: "center",
     justifyContent: "center",
     marginLeft: 10,
   },
 
   emptyAlertBox: {
-    backgroundColor: "#F8FAFC",
+    backgroundColor: COLORS.surface,
     borderRadius: 12,
     paddingVertical: 14,
     paddingHorizontal: 12,
@@ -157,17 +179,17 @@ export const styles = StyleSheet.create({
 
   alertCritical: {
     backgroundColor: COLORS.errorLight,
-    borderColor: "#FCA5A5",
+    borderColor: COLORS.error,
   },
 
   alertWarning: {
     backgroundColor: COLORS.warningLight,
-    borderColor: "#FDBA74",
+    borderColor: COLORS.warning,
   },
 
   alertInfo: {
-    backgroundColor: "#ECF8FF",
-    borderColor: "#BAE6FD",
+    backgroundColor: INFO_LIGHT,
+    borderColor: COLORS.primary,
   },
 
   alertIconContainer: {
@@ -240,7 +262,7 @@ export const styles = StyleSheet.create({
   },
 
   cardBlue: {
-    backgroundColor: "#ECF8FF",
+    backgroundColor: PRIMARY_LIGHT,
   },
 
   cardIndigo: {
@@ -313,7 +335,7 @@ export const styles = StyleSheet.create({
     borderRadius: 18,
     padding: 16,
     borderWidth: 1,
-    borderColor: "#E5E7EB",
+    borderColor: BORDER_COLOR,
     backgroundColor: COLORS.white,
     shadowColor: COLORS.black,
     shadowOffset: {
@@ -339,7 +361,7 @@ export const styles = StyleSheet.create({
 
   divider: {
     height: 1,
-    backgroundColor: "#E5E7EB",
+    backgroundColor: INPUT_BORDER,
     marginTop: 14,
     marginBottom: 16,
   },
@@ -358,7 +380,7 @@ export const styles = StyleSheet.create({
   },
 
   emptyBox: {
-    backgroundColor: "#F8FAFC",
+    backgroundColor: COLORS.surface,
     borderRadius: 12,
     paddingVertical: 14,
     paddingHorizontal: 12,
@@ -546,7 +568,7 @@ export const styles = StyleSheet.create({
   infoRowBlue: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#ECF8FF",
+    backgroundColor: PRIMARY_LIGHT,
     borderRadius: 14,
     padding: 14,
     marginBottom: 10,
@@ -602,13 +624,13 @@ export const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 999,
     marginBottom: 4,
-    backgroundColor: "#EAF7FF",
+    backgroundColor: INFO_LIGHT,
   },
 
   diseaseRow: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#F8FAFC",
+    backgroundColor: COLORS.surface,
     borderRadius: 12,
     paddingVertical: 13,
     paddingHorizontal: 12,
@@ -638,7 +660,7 @@ export const styles = StyleSheet.create({
   caseRow: {
     flexDirection: "row",
     alignItems: "flex-start",
-    backgroundColor: "#FFF9E8",
+    backgroundColor: COLORS.warningLight,
     borderRadius: 14,
     padding: 14,
     marginBottom: 10,
@@ -653,24 +675,24 @@ export const styles = StyleSheet.create({
   },
 
   badgeAlta: {
-    backgroundColor: "#FFE4E6",
-    borderColor: "#FDA4AF",
+    backgroundColor: COLORS.errorLight,
+    borderColor: COLORS.error,
   },
 
   badgeMedia: {
-    backgroundColor: "#FEF3C7",
-    borderColor: "#FCD34D",
+    backgroundColor: COLORS.warningLight,
+    borderColor: COLORS.warning,
   },
 
   badgeBaja: {
-    backgroundColor: "#DCFCE7",
-    borderColor: "#86EFAC",
+    backgroundColor: COLORS.successLight,
+    borderColor: COLORS.success,
   },
 
   mortalityTotalBox: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FFF0F2",
+    backgroundColor: COLORS.errorLight,
     borderRadius: 14,
     padding: 18,
     borderWidth: 1,
@@ -686,7 +708,7 @@ export const styles = StyleSheet.create({
   mortalityRow: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FFF0F2",
+    backgroundColor: COLORS.errorLight,
     borderRadius: 14,
     padding: 14,
     marginBottom: 10,
@@ -698,14 +720,14 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#F1F5F9",
+    borderBottomColor: INPUT_BORDER,
   },
 
   recordIconBox: {
     width: 36,
     height: 36,
     borderRadius: 10,
-    backgroundColor: "#F1F5F9",
+    backgroundColor: COLORS.surface,
     alignItems: "center",
     justifyContent: "center",
     marginRight: 12,

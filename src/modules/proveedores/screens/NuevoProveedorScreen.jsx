@@ -43,19 +43,6 @@ export default function NuevoProveedorScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.navbar}>
-        <View style={styles.navbarRow}>
-          <Button
-            variant="ghost"
-            onPress={() => router.replace("/(drawer)/proveedores/proveedorScreen")}
-            style={styles.backBtn}
-          >
-            <Icon icon={ICONS.exit} size={ICON_SIZES.back} color={COLORS.white} />
-          </Button>
-          <Text style={styles.navbarTitle}>Nuevo proveedor</Text>
-        </View>
-      </View>
-
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.content}

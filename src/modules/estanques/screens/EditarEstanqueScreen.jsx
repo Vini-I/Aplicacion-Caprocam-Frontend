@@ -3,11 +3,18 @@
  * PANTALLA EDITAR ESTANQUE
  * ============================================================
  *
- * Permite modificar la informacion de un estanque existente.
+ * Edita la informacion de un estanque existente.
+ *
+ * Cambios aplicados segun estandar:
+ * - Fechas centralizadas con dateUtils.
+ * - DateInput con calendario e icono global.
+ * - Campos requeridos usando required y submitted.
+ * - Boton principal en variante outline.
+ * - Select de aireador requerido solo si tiene aireadores.
  */
 
 import React, { useState } from "react";
-import { ScrollView, View, useWindowDimensions } from "react-native";
+import { ScrollView, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
 import Alert from "../../../shared/components/Alert";
@@ -20,39 +27,21 @@ import NumberInput from "../../../shared/components/NumberInput";
 import Select from "../../../shared/components/Select";
 import CustomText from "../../../shared/components/Text";
 import Title from "../../../shared/components/Title";
+import NavbarRegistro from "../../../shared/components/NavbarRegistro";
+
+import { getCurrentDate } from "../../../shared/utils/dateUtils";
 
 import { styles } from "../styles/EstanqueStyle";
 import {
   obtenerCodigoAireadorDefault,
-  obtenerCodigoAireadorInicial,
   obtenerEstanqueAireador,
   obtenerOpcionesAireadores,
   obtenerOpcionesEstanqueSeleccionado,
-  obtenerTieneAireadoresInicial,
 } from "../services/AireadoresEstanqueService";
 
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
 import { TYPOGRAPHY } from "../../../theme/typography";
-
-function obtenerFechaActual() {
-  const fecha = new Date();
-  const dia = String(fecha.getDate()).padStart(2, "0");
-  const mes = String(fecha.getMonth() + 1).padStart(2, "0");
-  const anio = fecha.getFullYear();
-
-  return `${dia}/${mes}/${anio}`;
-}
-
-function obtenerParametro(valor, defecto) {
-  let resultado = defecto;
-
-  if (valor !== undefined && valor !== null && valor !== "") {
-    resultado = String(valor);
-  }
-
-  return resultado;
-}
 
 const TIPOS_ESTANQUE = [
   {
@@ -168,129 +157,74 @@ const ESTADOS_ESTANQUE = [
   },
 ];
 
+function obtenerParametro(valor, respaldo) {
+  let resultado = respaldo;
+
+  if (valor !== undefined && valor !== null && valor !== "") {
+    resultado = String(valor);
+  }
+
+  return resultado;
+}
+
 export default function EditarEstanqueScreen({ navigation }) {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const { width } = useWindowDimensions();
 
-  const tieneAireadoresBase = obtenerTieneAireadoresInicial(
-    params.tieneAireadores,
-    params.numeroAireadores,
+  const [codigo, setCodigo] = useState(
+    obtenerParametro(params.codigo, "EST-01"),
   );
-
-  const estanqueBase = {
-    id: obtenerParametro(params.id, String(Date.now())),
-    finca: obtenerParametro(params.finca, "Finca La Reina"),
-    codigo: obtenerParametro(params.codigo, "EST-01"),
-    estado: obtenerParametro(params.estado, "engorde"),
-    tipoEstanque: obtenerParametro(params.tipoEstanque, "tierra_semiintensivo"),
-    largo: obtenerParametro(params.largo, "100"),
-    ancho: obtenerParametro(params.ancho, "80"),
-    profundidad: obtenerParametro(params.profundidad, "0.80"),
-    fuenteAgua: obtenerParametro(params.fuenteAgua, "estero"),
-    especie: obtenerParametro(params.especie, "litopenaeus_vannamei"),
-    fechaSiembra: obtenerParametro(params.fechaSiembra, obtenerFechaActual()),
-    fechaInicioEngorde: obtenerParametro(
-      params.fechaInicioEngorde,
-      obtenerFechaActual(),
-    ),
-    fechaMantenimiento: obtenerParametro(
-      params.fechaMantenimiento,
-      obtenerFechaActual(),
-    ),
-    densidadSiembra: obtenerParametro(params.densidadSiembra, "12"),
-    precria: obtenerParametro(params.precria, "si"),
-    metodoAlimentacion: obtenerParametro(
-      params.metodoAlimentacion,
-      "manual_automatico",
-    ),
-    proveedorAlimento: obtenerParametro(params.proveedorAlimento, "Biomar"),
-    numeroAireadores: obtenerParametro(params.numeroAireadores, "4"),
-    tieneAireadores: tieneAireadoresBase,
-    codigoAireador: obtenerCodigoAireadorInicial(
-      params.codigoAireador,
-      tieneAireadoresBase,
-    ),
-    estanqueAireador: obtenerParametro(params.estanqueAireador, ""),
-    tieneAlimentadorAutomatico: obtenerParametro(
-      params.tieneAlimentadorAutomatico,
-      "si",
-    ),
-  };
-
-  let esTablet = false;
-  let esDesktop = false;
-
-  if (width >= 768) {
-    esTablet = true;
-  }
-
-  if (width >= 1024) {
-    esDesktop = true;
-  }
-
-  const [codigo, setCodigo] = useState(estanqueBase.codigo);
-  const [estado, setEstado] = useState(estanqueBase.estado);
-  const [tipoEstanque, setTipoEstanque] = useState(estanqueBase.tipoEstanque);
-  const [largo, setLargo] = useState(estanqueBase.largo);
-  const [ancho, setAncho] = useState(estanqueBase.ancho);
-  const [profundidad, setProfundidad] = useState(estanqueBase.profundidad);
-  const [fuenteAgua, setFuenteAgua] = useState(estanqueBase.fuenteAgua);
-  const [especie, setEspecie] = useState(estanqueBase.especie);
-  const [fechaSiembra, setFechaSiembra] = useState(estanqueBase.fechaSiembra);
+  const [estado, setEstado] = useState(
+    obtenerParametro(params.estado, "activo"),
+  );
+  const [tipoEstanque, setTipoEstanque] = useState(
+    obtenerParametro(params.tipoEstanque, ""),
+  );
+  const [largo, setLargo] = useState(obtenerParametro(params.largo, ""));
+  const [ancho, setAncho] = useState(obtenerParametro(params.ancho, ""));
+  const [profundidad, setProfundidad] = useState(
+    obtenerParametro(params.profundidad, ""),
+  );
+  const [fuenteAgua, setFuenteAgua] = useState(
+    obtenerParametro(params.fuenteAgua, ""),
+  );
+  const [especie, setEspecie] = useState(
+    obtenerParametro(params.especie, "litopenaeus_vannamei"),
+  );
+  const [fechaSiembra, setFechaSiembra] = useState(
+    obtenerParametro(params.fechaSiembra, getCurrentDate()),
+  );
   const [fechaInicioEngorde, setFechaInicioEngorde] = useState(
-    estanqueBase.fechaInicioEngorde,
+    obtenerParametro(params.fechaInicioEngorde, getCurrentDate()),
   );
   const [fechaMantenimiento, setFechaMantenimiento] = useState(
-    estanqueBase.fechaMantenimiento,
+    obtenerParametro(params.fechaMantenimiento, getCurrentDate()),
   );
   const [densidadSiembra, setDensidadSiembra] = useState(
-    estanqueBase.densidadSiembra,
+    obtenerParametro(params.densidadSiembra, "12"),
   );
-  const [precria, setPrecria] = useState(estanqueBase.precria);
+  const [precria, setPrecria] = useState(obtenerParametro(params.precria, ""));
   const [metodoAlimentacion, setMetodoAlimentacion] = useState(
-    estanqueBase.metodoAlimentacion,
+    obtenerParametro(params.metodoAlimentacion, ""),
   );
   const [proveedorAlimento, setProveedorAlimento] = useState(
-    estanqueBase.proveedorAlimento,
+    obtenerParametro(params.proveedorAlimento, "Biomar"),
   );
   const [numeroAireadores, setNumeroAireadores] = useState(
-    estanqueBase.numeroAireadores,
+    obtenerParametro(params.numeroAireadores, "0"),
   );
   const [tieneAireadores, setTieneAireadores] = useState(
-    estanqueBase.tieneAireadores,
+    obtenerParametro(params.tieneAireadores, "no"),
   );
   const [codigoAireador, setCodigoAireador] = useState(
-    estanqueBase.codigoAireador,
+    obtenerParametro(params.codigoAireador, ""),
   );
   const [tieneAlimentadorAutomatico, setTieneAlimentadorAutomatico] = useState(
-    estanqueBase.tieneAlimentadorAutomatico,
+    obtenerParametro(params.tieneAlimentadorAutomatico, ""),
   );
   const [mensaje, setMensaje] = useState("");
   const [tipoMensaje, setTipoMensaje] = useState("info");
-
-  let headerStyle = [styles.header];
-  let contentStyle = [styles.content];
-  let gridStyle = [styles.grid];
-  let itemStyle = [styles.gridItem];
-  let itemFullStyle = [styles.gridItem];
-  let actionsStyle = [styles.actions];
-
-  if (esTablet === true) {
-    contentStyle.push(styles.contentTablet);
-    gridStyle.push(styles.gridTablet);
-    itemStyle.push(styles.gridItemTablet);
-    itemFullStyle.push(styles.gridItemFull);
-    actionsStyle.push(styles.actionsTablet);
-  }
-
-  if (esDesktop === true) {
-    headerStyle.push(styles.headerDesktop);
-    contentStyle.push(styles.contentDesktop);
-    gridStyle.push(styles.gridDesktop);
-    itemStyle.push(styles.gridItemDesktop);
-    itemFullStyle.push(styles.gridItemFull);
-  }
+  const [submitted, setSubmitted] = useState(false);
 
   function cancelar() {
     if (navigation) {
@@ -301,7 +235,7 @@ export default function EditarEstanqueScreen({ navigation }) {
     router.back();
   }
 
-  function mostrarAdvertencia(texto) {
+  function mostrarError(texto) {
     setTipoMensaje("warning");
     setMensaje(texto);
   }
@@ -324,49 +258,49 @@ export default function EditarEstanqueScreen({ navigation }) {
   }
 
   function validarFormulario() {
-    let valido = true;
+    setSubmitted(true);
 
     if (codigo === "") {
-      mostrarAdvertencia("Debe ingresar el codigo del estanque.");
-      valido = false;
+      mostrarError("Debe ingresar el codigo del estanque.");
+      return false;
     }
 
-    if (valido === true && tipoEstanque === "") {
-      mostrarAdvertencia("Debe seleccionar el tipo de estanque.");
-      valido = false;
+    if (tipoEstanque === "") {
+      mostrarError("Debe seleccionar el tipo de estanque.");
+      return false;
     }
 
-    if (valido === true && largo === "") {
-      mostrarAdvertencia("Debe ingresar el largo del estanque.");
-      valido = false;
+    if (largo === "") {
+      mostrarError("Debe ingresar el largo del estanque.");
+      return false;
     }
 
-    if (valido === true && ancho === "") {
-      mostrarAdvertencia("Debe ingresar el ancho del estanque.");
-      valido = false;
+    if (ancho === "") {
+      mostrarError("Debe ingresar el ancho del estanque.");
+      return false;
     }
 
-    if (valido === true && profundidad === "") {
-      mostrarAdvertencia("Debe ingresar la profundidad del estanque.");
-      valido = false;
+    if (profundidad === "") {
+      mostrarError("Debe ingresar la profundidad del estanque.");
+      return false;
     }
 
-    if (valido === true && fechaSiembra === "") {
-      mostrarAdvertencia("Debe seleccionar la fecha de siembra.");
-      valido = false;
+    if (fechaSiembra === "") {
+      mostrarError("Debe seleccionar la fecha de siembra.");
+      return false;
     }
 
-    if (valido === true && Number(densidadSiembra) <= 0) {
-      mostrarAdvertencia("La densidad de siembra debe ser mayor a 0.");
-      valido = false;
+    if (Number(densidadSiembra) <= 0) {
+      mostrarError("La densidad de siembra debe ser mayor a 0.");
+      return false;
     }
 
-    if (valido === true && tieneAireadores === "si" && codigoAireador === "") {
-      mostrarAdvertencia("Debe seleccionar el codigo del aireador.");
-      valido = false;
+    if (tieneAireadores === "si" && codigoAireador === "") {
+      mostrarError("Debe seleccionar el codigo del aireador.");
+      return false;
     }
 
-    return valido;
+    return true;
   }
 
   function guardarCambios() {
@@ -374,9 +308,9 @@ export default function EditarEstanqueScreen({ navigation }) {
       return;
     }
 
-    const estanqueActualizado = {
-      id: estanqueBase.id,
-      finca: estanqueBase.finca,
+    const estanqueEditado = {
+      id: obtenerParametro(params.id, String(Date.now())),
+      finca: obtenerParametro(params.finca, "Finca La Reina"),
       codigo: codigo,
       estado: estado,
       tipoEstanque: tipoEstanque,
@@ -398,366 +332,282 @@ export default function EditarEstanqueScreen({ navigation }) {
       estanqueAireador: obtenerEstanqueAireador(
         tieneAireadores,
         codigo,
-        estanqueBase.finca,
+        obtenerParametro(params.finca, "Finca La Reina"),
       ),
       tieneAlimentadorAutomatico: tieneAlimentadorAutomatico,
     };
 
-    console.log("Estanque actualizado:", estanqueActualizado);
+    console.log("Estanque editado:", estanqueEditado);
 
     setTipoMensaje("success");
-    setMensaje("Cambios del estanque guardados correctamente.");
+    setMensaje("Cambios guardados correctamente.");
 
     router.push({
       pathname: "/registros/DetalleEstanque",
-      params: {
-        id: estanqueActualizado.id,
-        finca: estanqueActualizado.finca,
-        codigo: estanqueActualizado.codigo,
-        estado: estanqueActualizado.estado,
-        tipoEstanque: estanqueActualizado.tipoEstanque,
-        largo: estanqueActualizado.largo,
-        ancho: estanqueActualizado.ancho,
-        profundidad: estanqueActualizado.profundidad,
-        fuenteAgua: estanqueActualizado.fuenteAgua,
-        especie: estanqueActualizado.especie,
-        fechaSiembra: estanqueActualizado.fechaSiembra,
-        fechaInicioEngorde: estanqueActualizado.fechaInicioEngorde,
-        fechaMantenimiento: estanqueActualizado.fechaMantenimiento,
-        densidadSiembra: estanqueActualizado.densidadSiembra,
-        precria: estanqueActualizado.precria,
-        metodoAlimentacion: estanqueActualizado.metodoAlimentacion,
-        proveedorAlimento: estanqueActualizado.proveedorAlimento,
-        numeroAireadores: estanqueActualizado.numeroAireadores,
-        tieneAireadores: estanqueActualizado.tieneAireadores,
-        codigoAireador: estanqueActualizado.codigoAireador,
-        estanqueAireador: estanqueActualizado.estanqueAireador,
-        tieneAlimentadorAutomatico:
-          estanqueActualizado.tieneAlimentadorAutomatico,
-      },
+      params: estanqueEditado,
     });
   }
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <View style={headerStyle}>
-        <Button
-          variant="outline"
-          onPress={cancelar}
-          style={styles.cancelButton}
-        >
-          <View style={styles.inlineButtonContent}>
-            <Icon icon={ICONS.exit} size={18} color={COLORS.white} />
+    <>
+      <NavbarRegistro
+        Titulo="Editar Estanque"
+        Subtitulo={`Estanque: ${codigo}`}
+        Icono="water"
+      />
 
-            <CustomText
-              size={16}
-              color={COLORS.white}
-              style={styles.cancelText}
-            >
-              Cancelar
-            </CustomText>
-          </View>
-        </Button>
+      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+        <View style={styles.content}>
+          {mensaje !== "" && (
+            <Alert
+              variant={tipoMensaje}
+              message={mensaje}
+              style={styles.alert}
+              textStyle={styles.alertText}
+            />
+          )}
 
-        <View style={styles.headerRow}>
-          <View style={styles.headerIcon}>
-            <Icon icon={ICONS.edit} size={28} color={COLORS.white} />
-          </View>
+          <Card>
+            <SectionTitle title="Identificacion" icon={ICONS.document} />
 
-          <View style={styles.headerTextBox}>
-            <Title
-              level={3}
-              color={COLORS.white}
-              fuente={TYPOGRAPHY.fontFamily.bold}
-            >
-              Editar Estanque
-            </Title>
+            <Input
+              label="Codigo del estanque"
+              required={true}
+              submitted={submitted}
+              value={codigo}
+              onChangeText={setCodigo}
+              placeholder="Ej: EST-01"
+              labelStyle={styles.label}
+            />
+
+            <Select
+              label="Tipo de estanque"
+              required={true}
+              submitted={submitted}
+              options={TIPOS_ESTANQUE}
+              value={tipoEstanque}
+              onChange={setTipoEstanque}
+              placeholder="Seleccione el tipo"
+              labelStyle={styles.label}
+            />
 
             <CustomText
               size={14}
-              color={COLORS.white}
-              style={styles.headerSubtitle}
+              color={COLORS.textPrimary}
+              style={styles.labelText}
             >
-              {estanqueBase.finca} - {estanqueBase.codigo}
+              Estado del estanque
             </CustomText>
-          </View>
-        </View>
-      </View>
 
-      <View style={contentStyle}>
-        {mensaje !== "" && (
-          <Alert
-            variant={tipoMensaje}
-            message={mensaje}
-            style={styles.alert}
-            textStyle={styles.alertText}
-          />
-        )}
-
-        <Card>
-          <SectionTitle title="Identificacion" icon={ICONS.document} />
-
-          <View style={gridStyle}>
-            <View style={itemStyle}>
-              <Input
-                label="Codigo del estanque *"
-                value={codigo}
-                onChangeText={setCodigo}
-                placeholder="Ej: EST-01"
-                labelStyle={styles.label}
-              />
+            <View style={styles.optionsGrid}>
+              {ESTADOS_ESTANQUE.map(function (item) {
+                return (
+                  <OptionButton
+                    key={item.value}
+                    label={item.label}
+                    value={item.value}
+                    selectedValue={estado}
+                    onPress={setEstado}
+                  />
+                );
+              })}
             </View>
+          </Card>
 
-            <View style={itemStyle}>
-              <Select
-                label="Tipo de estanque *"
-                options={TIPOS_ESTANQUE}
-                value={tipoEstanque}
-                onChange={setTipoEstanque}
-                placeholder="Seleccione el tipo"
-                labelStyle={styles.label}
-              />
-            </View>
+          <Card>
+            <SectionTitle title="Dimensiones" icon={ICONS.ruler} />
 
-            <View style={itemFullStyle}>
-              <CustomText
-                size={14}
-                color={COLORS.textPrimary}
-                style={styles.labelText}
-              >
-                Estado del estanque
-              </CustomText>
+            <View style={styles.twoColumns}>
+              <View style={styles.column}>
+                <Input
+                  label="Largo (m)"
+                  required={true}
+                  submitted={submitted}
+                  value={largo}
+                  onChangeText={setLargo}
+                  placeholder="Ej: 100"
+                  keyboardType="numeric"
+                  labelStyle={styles.label}
+                />
+              </View>
 
-              <View style={styles.optionsGrid}>
-                {ESTADOS_ESTANQUE.map(function (item) {
-                  return (
-                    <OptionButton
-                      key={item.value}
-                      label={item.label}
-                      value={item.value}
-                      selectedValue={estado}
-                      onPress={setEstado}
-                    />
-                  );
-                })}
+              <View style={styles.column}>
+                <Input
+                  label="Ancho (m)"
+                  required={true}
+                  submitted={submitted}
+                  value={ancho}
+                  onChangeText={setAncho}
+                  placeholder="Ej: 80"
+                  keyboardType="numeric"
+                  labelStyle={styles.label}
+                />
               </View>
             </View>
-          </View>
-        </Card>
 
-        <Card>
-          <SectionTitle title="Dimensiones" icon={ICONS.ruler} />
+            <Input
+              label="Profundidad (m)"
+              required={true}
+              submitted={submitted}
+              value={profundidad}
+              onChangeText={setProfundidad}
+              placeholder="Ej: 0.80"
+              keyboardType="numeric"
+              labelStyle={styles.label}
+            />
 
-          <View style={gridStyle}>
-            <View style={itemStyle}>
-              <Input
-                label="Largo (m) *"
-                value={largo}
-                onChangeText={setLargo}
-                keyboardType="numeric"
-                labelStyle={styles.label}
-              />
-            </View>
+            <Select
+              label="Fuente de agua"
+              options={FUENTES_AGUA}
+              value={fuenteAgua}
+              onChange={setFuenteAgua}
+              placeholder="Seleccione la fuente"
+              labelStyle={styles.label}
+            />
+          </Card>
 
-            <View style={itemStyle}>
-              <Input
-                label="Ancho (m) *"
-                value={ancho}
-                onChangeText={setAncho}
-                keyboardType="numeric"
-                labelStyle={styles.label}
-              />
-            </View>
+          <Card>
+            <SectionTitle title="Siembra y fechas" icon={ICONS.calendar} />
 
-            <View style={itemStyle}>
-              <Input
-                label="Profundidad (m) *"
-                value={profundidad}
-                onChangeText={setProfundidad}
-                keyboardType="numeric"
-                labelStyle={styles.label}
-              />
-            </View>
+            <Select
+              label="Especie"
+              options={ESPECIES}
+              value={especie}
+              onChange={setEspecie}
+              placeholder="Seleccione la especie"
+              labelStyle={styles.label}
+            />
 
-            <View style={itemStyle}>
-              <Select
-                label="Fuente de agua"
-                options={FUENTES_AGUA}
-                value={fuenteAgua}
-                onChange={setFuenteAgua}
-                labelStyle={styles.label}
-              />
-            </View>
-          </View>
-        </Card>
+            <DateInput
+              label="Fecha de siembra"
+              required={true}
+              submitted={submitted}
+              value={fechaSiembra}
+              onChangeText={setFechaSiembra}
+              labelStyle={styles.label}
+            />
 
-        <Card>
-          <SectionTitle title="Siembra y fechas" icon={ICONS.calendar} />
+            <DateInput
+              label="Fecha inicio de engorde"
+              value={fechaInicioEngorde}
+              onChangeText={setFechaInicioEngorde}
+              labelStyle={styles.label}
+            />
 
-          <View style={gridStyle}>
-            <View style={itemStyle}>
-              <Select
-                label="Especie"
-                options={ESPECIES}
-                value={especie}
-                onChange={setEspecie}
-                labelStyle={styles.label}
-              />
-            </View>
+            <DateInput
+              label="Fecha mantenimiento"
+              value={fechaMantenimiento}
+              onChangeText={setFechaMantenimiento}
+              labelStyle={styles.label}
+            />
 
-            <View style={itemStyle}>
-              <DateInput
-                label="Fecha de siembra *"
-                value={fechaSiembra}
-                onChangeText={setFechaSiembra}
-                labelStyle={styles.label}
-              />
-            </View>
+            <NumberInput
+              label="Densidad de siembra (ind/m2)"
+              required={true}
+              submitted={submitted}
+              value={densidadSiembra}
+              onChangeText={setDensidadSiembra}
+              min={0}
+              max={9999}
+              step={1}
+              labelStyle={styles.label}
+            />
 
-            <View style={itemStyle}>
-              <DateInput
-                label="Fecha inicio engorde"
-                value={fechaInicioEngorde}
-                onChangeText={setFechaInicioEngorde}
-                labelStyle={styles.label}
-              />
-            </View>
+            <Select
+              label="Precria"
+              options={OPCIONES_PRECRIA}
+              value={precria}
+              onChange={setPrecria}
+              placeholder="Seleccione si usa precria"
+              labelStyle={styles.label}
+            />
+          </Card>
 
-            <View style={itemStyle}>
-              <DateInput
-                label="Fecha mantenimiento"
-                value={fechaMantenimiento}
-                onChangeText={setFechaMantenimiento}
-                labelStyle={styles.label}
-              />
-            </View>
+          <Card>
+            <SectionTitle title="Alimentacion y equipos" icon={ICONS.food} />
 
-            <View style={itemStyle}>
-              <NumberInput
-                label="Densidad de siembra (ind/m²) *"
-                value={densidadSiembra}
-                onChangeText={setDensidadSiembra}
-                min={0}
-                max={9999}
-                step={1}
-                labelStyle={styles.label}
-              />
-            </View>
+            <Select
+              label="Metodo de alimentacion"
+              options={METODOS_ALIMENTACION}
+              value={metodoAlimentacion}
+              onChange={setMetodoAlimentacion}
+              placeholder="Seleccione el metodo"
+              labelStyle={styles.label}
+            />
 
-            <View style={itemStyle}>
-              <Select
-                label="Precria"
-                options={OPCIONES_PRECRIA}
-                value={precria}
-                onChange={setPrecria}
-                labelStyle={styles.label}
-              />
-            </View>
-          </View>
-        </Card>
+            <Input
+              label="Proveedor de alimento"
+              value={proveedorAlimento}
+              onChangeText={setProveedorAlimento}
+              placeholder="Ej: Biomar"
+              labelStyle={styles.label}
+            />
 
-        <Card>
-          <SectionTitle title="Alimentacion y equipos" icon={ICONS.food} />
-
-          <View style={gridStyle}>
-            <View style={itemStyle}>
-              <Select
-                label="Metodo de alimentacion"
-                options={METODOS_ALIMENTACION}
-                value={metodoAlimentacion}
-                onChange={setMetodoAlimentacion}
-                labelStyle={styles.label}
-              />
-            </View>
-
-            <View style={itemStyle}>
-              <Input
-                label="Proveedor de alimento"
-                value={proveedorAlimento}
-                onChangeText={setProveedorAlimento}
-                labelStyle={styles.label}
-              />
-            </View>
-
-            <View style={itemStyle}>
-              <Select
-                label="¿Tiene aireadores?"
-                options={OPCIONES_AIREADORES}
-                value={tieneAireadores}
-                onChange={manejarTieneAireadores}
-                labelStyle={styles.label}
-              />
-            </View>
+            <Select
+              label="Tiene aireadores"
+              options={OPCIONES_AIREADORES}
+              value={tieneAireadores}
+              onChange={manejarTieneAireadores}
+              placeholder="Seleccione una opcion"
+              labelStyle={styles.label}
+            />
 
             {tieneAireadores === "si" && (
-              <View style={itemFullStyle}>
-                <View style={styles.aeratorBox}>
-                  <View style={gridStyle}>
-                    <View style={itemStyle}>
-                      <Select
-                        label="Codigo del aireador"
-                        options={AIREADORES_EXISTENTES}
-                        value={codigoAireador}
-                        onChange={setCodigoAireador}
-                        placeholder="Seleccione el codigo"
-                        labelStyle={styles.label}
-                      />
-                    </View>
+              <View style={styles.aeratorBox}>
+                <Select
+                  label="Codigo del aireador"
+                  required={true}
+                  submitted={submitted}
+                  options={AIREADORES_EXISTENTES}
+                  value={codigoAireador}
+                  onChange={setCodigoAireador}
+                  placeholder="Seleccione el codigo"
+                  labelStyle={styles.label}
+                />
 
-                    <View style={itemStyle}>
-                      <Select
-                        label="Estanque seleccionado"
-                        options={obtenerOpcionesEstanqueSeleccionado(
-                          codigo,
-                          estanqueBase.finca,
-                        )}
-                        value={codigo}
-                        disabled={true}
-                        placeholder="Ingrese primero el codigo del estanque"
-                        labelStyle={styles.label}
-                      />
-                    </View>
-                  </View>
+                <Select
+                  label="Estanque seleccionado"
+                  options={obtenerOpcionesEstanqueSeleccionado(
+                    codigo,
+                    obtenerParametro(params.finca, "Finca La Reina"),
+                  )}
+                  value={codigo}
+                  disabled={true}
+                  placeholder="Ingrese primero el codigo del estanque"
+                  labelStyle={styles.label}
+                />
 
-                  <CustomText
-                    size={13}
-                    color={COLORS.textTertiary}
-                    style={styles.helperText}
-                  >
-                    El aireador se asigna automaticamente al estanque actual.
-                  </CustomText>
-                </View>
+                <CustomText
+                  size={13}
+                  color={COLORS.textTertiary}
+                  style={styles.helperText}
+                >
+                  El aireador se asigna automaticamente al estanque actual.
+                </CustomText>
               </View>
             )}
 
-            <View style={itemStyle}>
-              <Select
-                label="¿Tiene alimentador automatico?"
-                options={OPCIONES_ALIMENTADOR}
-                value={tieneAlimentadorAutomatico}
-                onChange={setTieneAlimentadorAutomatico}
-                labelStyle={styles.label}
-              />
-            </View>
-          </View>
-        </Card>
+            <Select
+              label="Tiene alimentador automatico"
+              options={OPCIONES_ALIMENTADOR}
+              value={tieneAlimentadorAutomatico}
+              onChange={setTieneAlimentadorAutomatico}
+              placeholder="Seleccione una opcion"
+              labelStyle={styles.label}
+            />
+          </Card>
 
-        <View style={actionsStyle}>
           <Button
-            variant="secondary"
-            onPress={cancelar}
-            style={styles.actionButton}
+            variant="outline"
+            onPress={guardarCambios}
+            style={styles.outlinePrimaryButton}
           >
-            Cancelar
-          </Button>
-
-          <Button onPress={guardarCambios} style={styles.actionButton}>
             <View style={styles.inlineButtonContentCentered}>
-              <Icon icon={ICONS.save} size={18} color={COLORS.white} />
+              <Icon icon={ICONS.save} size={18} color={COLORS.primary} />
 
               <CustomText
                 size={16}
-                color={COLORS.white}
+                color={COLORS.primary}
                 style={styles.saveText}
               >
                 Guardar cambios
@@ -765,8 +615,8 @@ export default function EditarEstanqueScreen({ navigation }) {
             </View>
           </Button>
         </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </>
   );
 }
 

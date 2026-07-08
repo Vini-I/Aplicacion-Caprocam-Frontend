@@ -3,38 +3,24 @@
  * PANTALLA DASHBOARD GENERAL
  * ============================================================
  *
- * Dashboard principal de Caprocam.
+ * Responsabilidad:
+ * - Muestra resumen operativo del proyecto Caprocam.
+ * - Usa dateUtils para manejo de fechas.
+ * - Muestra acceso outline al modulo de Mareas.
+ * - Muestra cards desplegables para fincas, estanques, casos sanitarios y mortalidad.
+ * - Muestra alertas con tokens suaves del theme.
  *
- * FUNCIONALIDAD:
- * 1. Header celeste usando COLORS.primary.
- * 2. Muestra alertas operativas:
- *    - Inventario bajo o crítico.
- *    - Cosecha cercana o vencida.
- *    - Alimentación pendiente o próxima.
- *    - Horas de bombeo activas o próximas.
- *    - Mantenimiento cercano de aireadores.
- *    - Alertas sanitarias de enfermedades y parasitología.
- *
- * 3. Muestra cards de resumen:
- *    - Fincas registradas.
- *    - Estanques registrados.
- *    - Casos sanitarios.
- *    - Mortalidad total.
- *
- * 4. Al tocar una card se despliega su información.
- * 5. Si se toca de nuevo la misma card, se cierra.
- * 6. Las gráficas se actualizan cada pocos segundos leyendo los datos.
- * 7. El gráfico de estanques muestra activos y cosechados.
- *
- * IMPORTANTE:
- * - No modifica el login.
- * - No cambia rutas.
- * - Usa la estructura existente del proyecto.
+ * Reglas aplicadas:
+ * - No modifica login.
+ * - No modifica rutas existentes.
+ * - No usa helpers locales de fecha.
+ * - Los accesos a modulos usan boton outline si no son icon cards.
  */
 
 import React, { useEffect, useState } from "react";
 import { ScrollView, View, useWindowDimensions } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
 
 import Button from "../../../shared/components/Button";
 import Card from "../../../shared/components/Card";
@@ -59,6 +45,13 @@ import enfermedadesService, {
 import parasitologiaService, {
   obtenerNombreParasito,
 } from "../../parasitologia/services/ParasitologiaService";
+
+import {
+  formatDate,
+  getDayName,
+  isSameDate,
+  parseDate,
+} from "../../../shared/utils/dateUtils";
 
 import { styles } from "../styles/DashboardStyle";
 
@@ -133,91 +126,19 @@ function formatearNumero(valor) {
 }
 
 function convertirFecha(fechaTexto) {
-  let fecha = null;
-
-  if (fechaTexto instanceof Date) {
-    fecha = fechaTexto;
-  }
-
-  if (fecha === null && typeof fechaTexto === "string") {
-    if (fechaTexto.includes("/") === true) {
-      const partes = fechaTexto.split("/");
-
-      if (partes.length === 3) {
-        const dia = Number(partes[0]);
-        const mes = Number(partes[1]) - 1;
-        const anio = Number(partes[2]);
-
-        fecha = new Date(anio, mes, dia);
-      }
-    }
-
-    if (fechaTexto.includes("-") === true) {
-      fecha = new Date(fechaTexto);
-    }
-  }
-
-  if (fecha === null) {
-    fecha = new Date();
-  }
-
-  return fecha;
+  return parseDate(fechaTexto);
 }
 
 function formatearFechaCorta(fechaTexto) {
-  const fecha = convertirFecha(fechaTexto);
-  const dia = String(fecha.getDate()).padStart(2, "0");
-  const mes = String(fecha.getMonth() + 1).padStart(2, "0");
-  const anio = fecha.getFullYear();
-
-  return `${dia}/${mes}/${anio}`;
+  return formatDate(parseDate(fechaTexto));
 }
 
 function obtenerDiaSemana(fechaTexto) {
-  const fecha = convertirFecha(fechaTexto);
-  const dias = ["Dom", "Lun", "Mar", "Mie", "Jue", "Vie", "Sab"];
-
-  return dias[fecha.getDay()];
+  return getDayName(fechaTexto);
 }
 
 function esMismaFecha(fechaUno, fechaDos) {
-  const primeraFecha = convertirFecha(fechaUno);
-  const segundaFecha = convertirFecha(fechaDos);
-  let esIgual = false;
-
-  if (
-    primeraFecha.getDate() === segundaFecha.getDate() &&
-    primeraFecha.getMonth() === segundaFecha.getMonth() &&
-    primeraFecha.getFullYear() === segundaFecha.getFullYear()
-  ) {
-    esIgual = true;
-  }
-
-  return esIgual;
-}
-
-function obtenerHoraNumero(horaTexto) {
-  let hora = -1;
-  const texto = obtenerTextoSeguro(horaTexto, "").toLowerCase();
-
-  if (texto !== "") {
-    const partes = texto.split(":");
-    const posibleHora = Number(partes[0]);
-
-    if (Number.isNaN(posibleHora) === false) {
-      hora = posibleHora;
-    }
-
-    if (texto.includes("pm") === true && hora < 12) {
-      hora = hora + 12;
-    }
-
-    if (texto.includes("am") === true && hora === 12) {
-      hora = 0;
-    }
-  }
-
-  return hora;
+  return isSameDate(fechaUno, fechaDos);
 }
 
 function obtenerMinutosHora(horaTexto) {
@@ -242,6 +163,30 @@ function obtenerMinutosHora(horaTexto) {
   }
 
   return horas * 60 + minutos;
+}
+
+function obtenerHoraNumero(horaTexto) {
+  let hora = -1;
+  const texto = obtenerTextoSeguro(horaTexto, "").toLowerCase();
+
+  if (texto !== "") {
+    const partes = texto.split(":");
+    const posibleHora = Number(partes[0]);
+
+    if (Number.isNaN(posibleHora) === false) {
+      hora = posibleHora;
+    }
+
+    if (texto.includes("pm") === true && hora < 12) {
+      hora = hora + 12;
+    }
+
+    if (texto.includes("am") === true && hora === 12) {
+      hora = 0;
+    }
+  }
+
+  return hora;
 }
 
 function obtenerResumenEnfermedadesVacio() {
@@ -1168,6 +1113,28 @@ function EmptyMessage({ text }) {
   );
 }
 
+function MareasAccessCard({ onPress }) {
+  return (
+    <Button variant="outline" style={styles.mareasAccessCard} onPress={onPress}>
+      <View style={styles.mareasAccessIcon}>
+        <Icon icon={ICONS.waterFlow} size={24} color={COLORS.primary} />
+      </View>
+
+      <View style={styles.mareasAccessText}>
+        <CustomText size={16} weight="800" color={COLORS.primary}>
+          Mareas del Pacífico
+        </CustomText>
+
+        <CustomText size={12} color={COLORS.textTertiary} numberOfLines={1}>
+          Consulta pleamares, bajamares, llenado y drenaje
+        </CustomText>
+      </View>
+
+      <Icon icon={ICONS.enter} size={20} color={COLORS.primary} />
+    </Button>
+  );
+}
+
 function AlertasPanel({ alertas }) {
   return (
     <Card style={styles.alertsCard}>
@@ -1891,6 +1858,8 @@ function UltimosRegistros({ registros }) {
 }
 
 export default function DashboardScreen() {
+  const router = useRouter();
+
   const [selectedCard, setSelectedCard] = useState(null);
   const [fincasData, setFincasData] = useState([]);
   const [estanquesData, setEstanquesData] = useState([]);
@@ -1956,6 +1925,10 @@ export default function DashboardScreen() {
     if (selectedCard !== cardId) {
       setSelectedCard(cardId);
     }
+  }
+
+  function irAMareas() {
+    router.push("/mareas/");
   }
 
   useEffect(function () {
@@ -2025,6 +1998,8 @@ export default function DashboardScreen() {
             </CustomText>
           </View>
         </View>
+
+        <MareasAccessCard onPress={irAMareas} />
 
         <AlertasPanel alertas={alertasDashboard} />
 
