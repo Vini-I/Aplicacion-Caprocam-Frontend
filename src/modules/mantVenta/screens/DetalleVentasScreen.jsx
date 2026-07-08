@@ -1,0 +1,134 @@
+/**
+ * ============================================================
+ * PANTALLA DE DETALLE DE VENTAS DEL MÓDULO DE VENTAS
+ * ============================================================
+ *
+ * Muestra el historial de ventas filtrado por finca y estanque,
+ * permitiendo revisar los registros de forma organizada.
+ */
+
+import { ScrollView, View } from "react-native";
+
+import Card from "../../../shared/components/Card.jsx";
+import Icon from "../../../shared/components/Icons.jsx";
+import Select from "../../../shared/components/Select.jsx";
+import Text from "../../../shared/components/Text.jsx";
+
+import { COLORS } from "../../../theme/colors.js";
+import { ICONS } from "../../../theme/icons.js";
+
+import { formatearMontoColones } from "../hooks/useVenta.js";
+import { useDetalleVenta } from "../hooks/useDetalleVenta.js";
+import { styles } from "../styles/VentaStyles.js";
+import { STYLE } from "../../../theme/style.js";
+
+function SectionTitle({ icon, title }) {
+  return (
+    <View style={styles.sectionTitle}>
+      <Icon icon={icon} size={18} color={COLORS.primary} style={styles.sectionIcon} />
+      <Text style={styles.sectionText}>{title}</Text>
+    </View>
+  );
+}
+
+function FilaDetalle({ etiqueta, valor }) {
+  return (
+    <View style={styles.filaDetalle}>
+      <Text size={12} color={COLORS.textTertiary} style={styles.etiquetaDetalle}>
+        {etiqueta}
+      </Text>
+
+      <Text size={14} weight="600" color={COLORS.textSecondary} style={styles.valorDetalle}>
+        {valor}
+      </Text>
+    </View>
+  );
+}
+
+function TarjetaVenta({ venta }) {
+  return (
+    <Card style={styles.tarjeta}>
+      <View style={styles.tarjetaEncabezado}>
+        <Text style={styles.nombreProducto}>
+          {venta.fincaNombre} • {venta.estanqueNombre}
+        </Text>
+      </View>
+
+      <View style={styles.filasDetalle}>
+        <FilaDetalle etiqueta="Fecha" valor={venta.fechaVenta} />
+        <FilaDetalle etiqueta="Total" valor={formatearMontoColones(venta.totalVenta)} />
+        <FilaDetalle etiqueta="Kilos" valor={`${venta.kilosVendidos} kg`} />
+        <FilaDetalle etiqueta="Precio/kg" valor={`₡ ${Number(venta.precioKilo).toLocaleString("es-CR")}`} />
+        <FilaDetalle etiqueta="Colaborador" valor={venta.colaboradorNombre || "—"} />
+        <FilaDetalle etiqueta="Comprador" valor={venta.compradorNombre || "—"} />
+      </View>
+    </Card>
+  );
+}
+
+export default function DetalleVentasScreen() {
+  const {
+    fincaFiltro,
+    estanqueFiltro,
+    opcionesFincas,
+    opcionesEstanques,
+    ventasFiltradas,
+    mensajeDetalle,
+    isWide,
+    handleFincaChange,
+    handleEstanqueChange,
+  } = useDetalleVenta();
+
+  const gridStyle = isWide ? styles.inputRow : styles.inputGrid;
+
+  return (
+    <ScrollView style={STYLE.container} showsVerticalScrollIndicator={false}>
+      <Card style={STYLE.contentWrapper}>
+        <View style={styles.headerRow}>
+          <Text style={styles.cardTitle}>Detalle de ventas</Text>
+        </View>
+
+        <SectionTitle icon={ICONS.filter} title="Filtrar ventas" />
+        <Text style={styles.detalleHint}>{mensajeDetalle}</Text>
+
+        <View style={gridStyle}>
+          <View style={styles.inputItem}>
+            <Select
+              label="Finca"
+              placeholder="Todas las fincas"
+              options={opcionesFincas}
+              value={fincaFiltro}
+              onChange={handleFincaChange}
+            />
+          </View>
+
+          <View style={styles.inputItem}>
+            <Select
+              label="Estanque"
+              placeholder="Todos los estanques"
+              options={opcionesEstanques}
+              value={estanqueFiltro}
+              onChange={handleEstanqueChange}
+              disabled={!fincaFiltro}
+            />
+          </View>
+        </View>
+
+        {ventasFiltradas.length > 0 ? (
+          <View style={styles.lista}>
+            {ventasFiltradas.map((venta) => (
+              <TarjetaVenta key={venta.id} venta={venta} />
+            ))}
+          </View>
+        ) : (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyTitle}>Sin ventas registradas</Text>
+            <Text style={styles.emptyDescription}>
+              No hay ventas para la finca y estanque seleccionados.
+            </Text>
+          </View>
+        )}
+      </Card>
+    </ScrollView>
+  );
+}

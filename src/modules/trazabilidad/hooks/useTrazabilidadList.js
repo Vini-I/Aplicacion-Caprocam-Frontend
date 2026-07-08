@@ -1,3 +1,18 @@
+/**
+ * ============================================================
+ * HOOK useTrazabilidadList
+ * ============================================================
+ *
+ * Descripción:
+ * Hook responsable de obtener y filtrar el listado de registros
+ * de trazabilidad. Encapsula la lógica de búsqueda y filtros para
+ * mantener las pantallas simples.
+ *
+ * Reglas/Restricciones:
+ * - No exportar funciones que no sean consumidas por las pantallas.
+ * - Mantener la lógica de filtrado pura para facilitar pruebas.
+ */
+
 import { useMemo, useState } from "react";
 import { useRouter } from "expo-router";
 
@@ -46,10 +61,6 @@ export function useTrazabilidadList() {
     router.push(`/trazabilidad/${id}`);
   }
 
-  function volver() {
-    router.replace('/inicio/');
-  }
-
   return {
     busqueda,
     setBusqueda,
@@ -62,6 +73,5 @@ export function useTrazabilidadList() {
     nuevoRegistro,
     limpiarBusqueda,
     abrirDetalle,
-    volver,
   };
 }

@@ -15,77 +15,31 @@
  * - Button: acción para crear la siembra.
  * - Modal: aviso cuando existen campos incompletos.
  */
-import React, { useState } from "react";
+
+import React from "react";
 import { View, Text, ScrollView } from "react-native";
+import { useRouter } from "expo-router";
 
 import { styles } from "../styles/NuevaSiembraStyles";
 import Navbar from "../../../shared/components/Navbar";
 import Button from "../../../shared/components/Button";
 import Modal from "../../../shared/components/Modal";
 import Icon from "../../../shared/components/Icons";
+import NavbarRegistro from "../../../shared/components/NavbarRegistro";
 import { ICONS } from "../../../theme/icons";
 import SiembraForm from "../components/SiembraForm";
-import { useRouter } from "expo-router";
-
-//FUNCION PARA PONER LA FECHA POR DEFECTO
-function getTodayTextDate() {
-  const today = new Date();
-
-  const day = String(today.getDate()).padStart(2, "0");
-  const month = String(today.getMonth() + 1).padStart(2, "0");
-  const year = today.getFullYear();
-
-  return `${day}/${month}/${year}`;
-}
+import useNuevaSiembra from "../hooks/useNuevaSiembra";
 
 export default function NuevaSiembraScreen() {
-  const [modalVisible, setModalVisible] = useState(false);
   const router = useRouter();
-  const [formData, setFormData] = useState({
-    fechaSiembra: getTodayTextDate(),
-    horaIngreso: "",
-    finca: "",
-    estanque: "",
-    proveedorLarva: "",
-    cantidadSembrada: "",
-    certificadoLarva: "",
-    tecnicaCultivo: "",
-    tipoLarva: "vannamei",
-    diasMaduracion: "30",
-  });
 
-  function handleChange(field, value) {
-    setFormData((previousData) => ({
-      ...previousData,
-      [field]: value,
-    }));
-  }
-
-  function handleCrearSiembra() {
-    const camposObligatorios = [
-      "fechaSiembra",
-      "horaIngreso",
-      "finca",
-      "estanque",
-      "proveedorLarva",
-      "cantidadSembrada",
-      "certificadoLarva",
-      "tecnicaCultivo",
-      "diasMaduracion",
-      "tipoLarva",
-    ];
-
-    const hayCamposVacios = camposObligatorios.some(
-      (campo) => formData[campo].trim() === "",
-    );
-
-    if (hayCamposVacios) {
-      setModalVisible(true);
-      return;
-    }
-
-    console.log("Siembra registrada:", formData);
-  }
+  const {
+    formData,
+    modalVisible,
+    setModalVisible,
+    handleChange,
+    handleCrearSiembra,
+  } = useNuevaSiembra();
 
   function handleCerrar() {
     router.back();
@@ -93,20 +47,11 @@ export default function NuevaSiembraScreen() {
 
   return (
     <View style={styles.container}>
-      <Navbar
-        title="Nueva Siembra"
-        leftContent={
-          <Button
-            variant="outline"
-            onPress={handleCerrar}
-            style={styles.backButton}
-          >
-            <Icon icon={ICONS.back} size={22} style={styles.iconColor} />
-          </Button>
-        }
-        style={styles.header}
-        titleStyle={styles.title}
-      ></Navbar>
+      <NavbarRegistro
+        Titulo="Nueva Siembra"
+        Subtitulo="Registrar siembra"
+        Icono="add"
+      />
 
       <ScrollView
         showsVerticalScrollIndicator={false}

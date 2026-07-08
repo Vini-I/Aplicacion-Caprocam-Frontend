@@ -275,4 +275,42 @@ export const ICONS = {
     provider: "MaterialCommunityIcons",
     name: "arrow-right-bold",
   },
+
+  // Otros
+  money: {
+    provider: "MaterialIcons",
+    name: "attach-money",
+  },
+  gear: {
+    provider: "FontAwesome",
+    name: "gear",
+  }, 
+  dropbox: {
+    provider: "AntDesign",
+    name: "dropbox",
+  }, 
+  truck: {
+    provider: "FontAwesome6",
+    name: "truck-arrow-right",
+  },
+  people: {
+    provider: "MaterialIcons",
+    name: "people",
+  },
+  tools: {
+    provider: "MaterialCommunityIcons",
+    name: "tools",
+  }, 
+  aerator: {
+    provider: "MaterialCommunityIcons",
+    name: "pinwheel",
+  },
+  engine: {
+    provider: "MaterialCommunityIcons",
+    name: "engine",
+  },
+  link: {
+    provider: "Entypo",
+    name: "link",
+  }
 };

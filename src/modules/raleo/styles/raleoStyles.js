@@ -16,44 +16,7 @@ export const styles = StyleSheet.create({
     paddingVertical: 20,
     gap: 12,
   },
-  header: {
-    backgroundColor: COLORS.primary,
-    paddingTop: 24,
-    paddingHorizontal: 24,
-    paddingBottom: 28,
-    borderBottomLeftRadius: 22,
-    borderBottomRightRadius: 22,
-  },
-  backBtn: {
-    alignSelf: "flex-start",
-    backgroundColor: "transparent",
-    borderWidth: 0,
-    paddingHorizontal: 0,
-    paddingVertical: 0,
-    marginTop: 0,
-    marginBottom: 20,
-  },
-  backBtnContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  backBtnText: {
-    fontFamily: TYPOGRAPHY.fontFamily.medium,
-  },
-  headerTitle: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 14,
-  },
-  headerIcon: {
-    width: 54,
-    height: 54,
-    borderRadius: 14,
-    backgroundColor: COLORS.white,
-    alignItems: "center",
-    justifyContent: "center",
-  },
+  
   horasContainer: {
     flexDirection: "row",
     gap: 8,

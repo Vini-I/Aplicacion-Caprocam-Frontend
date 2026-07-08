@@ -9,12 +9,22 @@
  *
  * El estado (lecturas, alertas, navegación al guardar) vive en
  * useFisicoQuimica(). Los estilos viven en FisicoQuimicaStyles.js.
+ * Valida que exista al menos una medición antes de guardar y muestra
+ * una alerta de error al final del formulario si falla la validación.
  *
  * ---
  * PROPS
  * ---
  * onBack  fn  — se ejecuta al tocar el botón "Módulos" del header
  *
+ * ---
+ * RESTRICCIONES
+ * ---
+ * - El estado no se maneja aquí; delegar siempre a useFisicoQuimica().
+ * - Botones normales deben usar variant="outline" salvo excepción aprobada.
+ *
+ * ---
+ * 
  * ---
  * EJEMPLO DE USO
  * ---
@@ -23,23 +33,23 @@
  * Se renderiza desde RegistroScreen.jsx cuando moduloActivo === 'fisicoquimica'.
  */
 
-import { View, ScrollView, StatusBar } from 'react-native';
-import { useMemo, useState } from 'react';
+import { View, ScrollView } from 'react-native';
+import { useEffect, useMemo, useState } from 'react';
 import Button from '../../../shared/components/Button';
 import Alert from '../../../shared/components/Alert';
 import Card from '../../../shared/components/Card';
 import Select from '../../../shared/components/Select';
 import Text from '../../../shared/components/Text';
-import Title from '../../../shared/components/Title';
 import Footer from '../../../shared/components/Footer';
 import Icon from '../../../shared/components/Icons';
+import NavbarRegistro from '../../../shared/components/NavbarRegistro';
 import RangeCard from '../components/RangeCard';
 import { COLORS } from '../../../theme/colors';
 import { ICONS } from '../../../theme/icons';
 import useFisicoQuimica from '../hooks/useFisicoQuimica';
 import { obtenerLecturasPorEstanque } from '../services/FisicoQuimicaServices';
 import { styles } from '../styles/FisicoQuimicaStyles';
-import { useRouter } from 'expo-router';
+import { STYLE } from '../../../theme/style';
 
 export default function FisicoQuimicaScreen({ onBack }) {
   const {
@@ -49,7 +59,6 @@ export default function FisicoQuimicaScreen({ onBack }) {
     alGuardar, alEditar,
   } = useFisicoQuimica();
 
-  const router = useRouter();
   const [fincaSeleccionada, setFincaSeleccionada] = useState("");
   const [estanqueSeleccionado, setEstanqueSeleccionado] = useState("");
   const [medicionesPorEstanque, setMedicionesPorEstanque] = useState({
@@ -58,6 +67,30 @@ export default function FisicoQuimicaScreen({ onBack }) {
     temperatura: [],
     ox: [],
   });
+  const [lecturasPhLocal, setLecturasPhLocal] = useState([]);
+  const [lecturasSalinidadLocal, setLecturasSalinidadLocal] = useState([]);
+  const [lecturasTempLocal, setLecturasTempLocal] = useState([]);
+  const [lecturasOxLocal, setLecturasOxLocal] = useState([]);
+  const [submitted, setSubmitted] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  useEffect(() => {
+    setLecturasPhLocal(medicionesPorEstanque.ph ?? []);
+    setLecturasSalinidadLocal(medicionesPorEstanque.salinidad ?? []);
+    setLecturasTempLocal(medicionesPorEstanque.temperatura ?? []);
+    setLecturasOxLocal(medicionesPorEstanque.ox ?? []);
+  }, [medicionesPorEstanque]);
+
+  const tieneAlgunaMedicion = useMemo(
+    () =>
+      [
+        lecturasPhLocal,
+        lecturasSalinidadLocal,
+        lecturasTempLocal,
+        lecturasOxLocal,
+      ].some((arr) => Array.isArray(arr) && arr.length > 0),
+    [lecturasPhLocal, lecturasSalinidadLocal, lecturasTempLocal, lecturasOxLocal],
+  );
 
   const opcionesFincas = useMemo(
     () => [
@@ -104,10 +137,12 @@ export default function FisicoQuimicaScreen({ onBack }) {
     setFincaSeleccionada(value);
     setEstanqueSeleccionado("");
     setMedicionesPorEstanque({ ph: [], salinidad: [], temperatura: [], ox: [] });
+    setErrorMessage("");
   };
 
   const handleEstanqueChange = (value) => {
     setEstanqueSeleccionado(value);
+    setErrorMessage("");
 
     const lecturas = obtenerLecturasPorEstanque(value);
     setMedicionesPorEstanque(
@@ -115,51 +150,80 @@ export default function FisicoQuimicaScreen({ onBack }) {
     );
   };
 
+  const handlePhChange = (values) => {
+    setLecturasPhLocal(values ?? []);
+    setLecturasPh(values ?? []);
+  };
+
+  const handleSalinidadChange = (values) => {
+    setLecturasSalinidadLocal(values ?? []);
+    setLecturasSalinidad(values ?? []);
+  };
+
+  const handleTempChange = (values) => {
+    setLecturasTempLocal(values ?? []);
+    setLecturasTemp(values ?? []);
+  };
+
+  const handleOxChange = (values) => {
+    setLecturasOxLocal(values ?? []);
+    setLecturasOx(values ?? []);
+  };
+
   return (
-    <View style={styles.screen}>
-      <StatusBar barStyle="light-content" backgroundColor={COLORS.primary} />
+    <>
+    <NavbarRegistro
+      Titulo="Físico-Química"
+      Subtitulo="Registro de mediciones"
+      Icono="chemicalContainer"
+    />
 
-      <View style={styles.header}>
-        <Button onPress={() => router.back()} style={styles.backBtn}>
-          <Icon icon={ICONS.exit} size={20} color={COLORS.white} />
-          <Text size={14} color={COLORS.white}>Módulos</Text>
-        </Button>
-
-        <View style={styles.headerTitle}>
-          <Icon icon={ICONS.chemicalContainer} size={20} color={COLORS.white} />
-          <Title level={4} color={COLORS.white} style={styles.headerTitleText}>
-            Físico-Química
-          </Title>
-        </View>
-      </View>
-
+    <View style={STYLE.container}>
+      
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        <View style={STYLE.contentWrapper}>
         <Card style={styles.formCard}>
           <View style={styles.cardHeader}>
             <Icon icon={ICONS.chemicalContainer} color={COLORS.primary} size={22} />
             <Text style={styles.cardTitle}>Finca y estanque</Text>
           </View>
 
-          <Select
-            label="Seleccione la finca"
-            placeholder="Seleccione una finca"
-            options={opcionesFincas}
-            value={fincaSeleccionada}
-            onChange={handleFincaChange}
-          />
+          <View style={[styles.selectWrapper, styles.selectWrapperFinca]}>
+            <View style={styles.selectContainer}>
+              <Select
+                label="Seleccione la finca *"
+                placeholder="Seleccione una finca"
+                options={opcionesFincas}
+                value={fincaSeleccionada}
+                onChange={handleFincaChange}
+                containerStyle={styles.selectField}
+                labelStyle={[styles.label, styles.selectLabel]}
+                selectStyle={submitted && !fincaSeleccionada ? [styles.selectButton, styles.errorInput] :  styles.selectButton}
+              />
+            </View>
+            <View style={styles.selectPlaceholder} />
+          </View>
 
-          <Select
-            label="Seleccione el estanque"
-            placeholder="Seleccione un estanque"
-            options={estanquesFiltrados}
-            value={estanqueSeleccionado}
-            onChange={handleEstanqueChange}
-            disabled={!fincaSeleccionada}
-          />
+          <View style={[styles.selectWrapper, styles.selectWrapperEstanque]}>
+            <View style={styles.selectContainer}>
+              <Select
+                label="Seleccione el estanque *"
+                placeholder="Seleccione un estanque"
+                options={estanquesFiltrados}
+                value={estanqueSeleccionado}
+                onChange={handleEstanqueChange}
+                disabled={!fincaSeleccionada}
+                containerStyle={styles.selectField}
+                labelStyle={[styles.label, styles.selectLabel]}
+                selectStyle={submitted && !estanqueSeleccionado ? [styles.selectButton, styles.errorInput] :  styles.selectButton}
+              />
+            </View>
+            <View style={styles.selectPlaceholder} />
+          </View>
 
           {estanqueSeleccionadoObj && (
             <Text style={styles.estanqueInfo}>
@@ -176,7 +240,7 @@ export default function FisicoQuimicaScreen({ onBack }) {
           step={0.1} decimals={1}
           maxLecturas={2} labelStyle="daynight"
           initialValues={medicionesPorEstanque.ph}
-          onChange={setLecturasPh}
+          onChange={handlePhChange}
         />
 
         <RangeCard
@@ -187,7 +251,7 @@ export default function FisicoQuimicaScreen({ onBack }) {
           step={0.1} decimals={1}
           maxLecturas={2} labelStyle="daynight"
           initialValues={medicionesPorEstanque.salinidad}
-          onChange={setLecturasSalinidad}
+          onChange={handleSalinidadChange}
         />
 
         <RangeCard
@@ -198,7 +262,7 @@ export default function FisicoQuimicaScreen({ onBack }) {
           step={0.5} decimals={1}
           maxLecturas={2} labelStyle="daynight"
           initialValues={medicionesPorEstanque.temperatura}
-          onChange={setLecturasTemp}
+          onChange={handleTempChange}
         />
 
         <RangeCard
@@ -209,10 +273,20 @@ export default function FisicoQuimicaScreen({ onBack }) {
           step={0.1} decimals={1}
           maxLecturas={5} labelStyle="numeric"
           initialValues={medicionesPorEstanque.ox}
-          onChange={setLecturasOx}
+          onChange={handleOxChange}
         />
 
         <View style={{ height: 24 }} />
+
+        {errorMessage !== "" && (
+          <Alert
+            variant="danger"
+            message={errorMessage}
+            style={styles.errorBanner}
+            textStyle={styles.errorText}
+          />
+        )}
+        </View>
       </ScrollView>
 
       <Footer
@@ -230,11 +304,33 @@ export default function FisicoQuimicaScreen({ onBack }) {
 
             <View style={styles.footerActions}>
               <Button variant="outline" onPress={alEditar}>Actualizar módulo</Button>
-              <Button variant="primary" onPress={alGuardar}>Guardar módulo</Button>
+              <Button
+                variant="outline"
+                onPress={() => {
+                  setSubmitted(true);
+
+                  if (!fincaSeleccionada || !estanqueSeleccionado) {
+                    setErrorMessage("Selecciona la finca y el estanque antes de guardar.");
+                    return;
+                  }
+
+                  if (!tieneAlgunaMedicion) {
+                    setErrorMessage("Agrega al menos una medición antes de guardar.");
+                    return;
+                  }
+
+                  setErrorMessage("");
+                  alGuardar();
+                }}
+              >
+                Guardar módulo
+              </Button>
             </View>
           </View>
         }
       />
     </View>
+    </>
+    
   );
 }

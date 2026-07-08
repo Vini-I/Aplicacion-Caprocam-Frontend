@@ -1,18 +1,29 @@
 /**
- * Hook: useTrazabilidad
+ * ============================================================
+ * HOOK useTrazabilidad
+ * ============================================================
  *
- * Concentra todo el estado del formulario de Trazabilidad, sus
- * validaciones y el handler de envio. La pantalla solo consume
- * este hook y no contiene logica propia.
+ * Descripción:
+ * Centraliza el estado, validaciones y envío del formulario de
+ * trazabilidad. La pantalla consumidora debe delegar la lógica a
+ * este hook y mantener la presentación separada.
  *
- * Validaciones aplicadas (segun especificacion del modulo):
- * - Finca, ambos estanques, fecha y colaborador son obligatorios.
- * - El estanque de origen no puede ser igual al de destino.
- * - Tamaño debe ser un numero mayor a 0.
- * - PL debe ser un numero mayor a 0.
- * - Dias debe ser un numero mayor a 0.
- * - La fecha no puede ser futura.
- */
+ * Validaciones principales:
+ * - Campos obligatorios: finca, estanques (origen/destino), fecha, colaborador, tamaño, dias, pl.
+ * - Origen y destino no pueden coincidir.
+ * - Valores numéricos deben ser mayores que 0.
+ * - La fecha debe tener formato dd/mm/aaaa válido y no puede ser futura.
+ *
+ * Retorna:
+ * - `formData`, `fincas`, `colaboradores`, `estanquesOrigen`, `estanquesDestino`,
+ *   `plAutocompletado`, `mensajeError`, `submitted` y handlers como `manejarCambio`,
+ *   `manejarCambioFinca`, `manejarEnvio`, `cerrarFormulario`.
+ *
+ * Restricciones:
+ * - No realizar llamadas a la API directamente; usar los servicios del módulo.
+ * - No implementar parseo/validación de fecha local; usar las utilidades
+ *   compartidas de shared/utils/dateUtils.js.
+ *  */
 
 import { useState } from "react";
 import { useRouter } from "expo-router";
@@ -25,41 +36,17 @@ import {
   obtenerSiembraPorEstanque,
 } from "../services/TrazabilidadServices";
 import { crearRegistroTrazabilidad } from "../services/AgregarTrazabilidadService";
+import { esFechaFutura, esFechaValida } from "../../../shared/utils/dateUtils";
 
-function fechaDesdeTexto(fechaTexto) {
-  const partes = fechaTexto.split("/");
 
-  if (partes.length !== 3) {
-    return null;
-  }
-
-  const dia = Number(partes[0]);
-  const mes = Number(partes[1]) - 1;
-  const anio = Number(partes[2]);
-
-  return new Date(anio, mes, dia);
-}
-
-function esFechaFutura(fechaTexto) {
-  const fecha = fechaDesdeTexto(fechaTexto);
-
-  if (!fecha) {
-    return false;
-  }
-
-  const hoy = new Date();
-  hoy.setHours(23, 59, 59, 999);
-
-  return fecha.getTime() > hoy.getTime();
-}
 
 export function useTrazabilidad() {
   const router = useRouter();
 
   const [formData, setFormData] = useState(initialForm);
-  const [modalVisible, setModalVisible] = useState(false);
   const [mensajeError, setMensajeError] = useState("");
   const [plAutocompletado, setPlAutocompletado] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
   const fincas = obtenerFincas();
   const colaboradores = obtenerColaboradores();
@@ -77,6 +64,7 @@ export function useTrazabilidad() {
       }));
 
       setPlAutocompletado(Boolean(siembra));
+      setMensajeError("");
       return;
     }
 
@@ -84,6 +72,7 @@ export function useTrazabilidad() {
       ...previousData,
       [field]: value,
     }));
+    setMensajeError("");
   }
 
   function manejarCambioFinca(value) {
@@ -96,6 +85,7 @@ export function useTrazabilidad() {
     }));
 
     setPlAutocompletado(false);
+    setMensajeError("");
   }
 
   function obtenerCamposVacios() {
@@ -141,6 +131,11 @@ export function useTrazabilidad() {
       return false;
     }
 
+    if (!esFechaValida(formData.fecha)) {
+      setMensajeError("La fecha ingresada no es válida.");
+      return false;
+    }
+
     if (esFechaFutura(formData.fecha)) {
       setMensajeError("La fecha no puede ser futura.");
       return false;
@@ -150,25 +145,25 @@ export function useTrazabilidad() {
   }
 
   function manejarEnvio() {
+    setSubmitted(true);
+
     const esValido = validarFormulario();
 
     if (!esValido) {
-      setModalVisible(true);
       return;
     }
 
     crearRegistroTrazabilidad(formData);
     setFormData(initialForm);
+    setSubmitted(false);
+    setMensajeError("");
     router.back();
-  }
-
-  function cerrarModal() {
-    setModalVisible(false);
   }
 
   function cerrarFormulario() {
     router.back();
   }
+
 
   return {
     formData,
@@ -177,12 +172,11 @@ export function useTrazabilidad() {
     estanquesOrigen,
     estanquesDestino,
     plAutocompletado,
-    modalVisible,
     mensajeError,
+    submitted,
     manejarCambio,
     manejarCambioFinca,
     manejarEnvio,
-    cerrarModal,
     cerrarFormulario,
   };
 }

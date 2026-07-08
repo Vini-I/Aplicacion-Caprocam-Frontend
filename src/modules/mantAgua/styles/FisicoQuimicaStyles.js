@@ -1,42 +1,30 @@
-import { StyleSheet, Platform, StatusBar } from "react-native";
-import { COLORS } from "../../../theme/colors";
-
 /**
- * screen        → contenedor de toda la pantalla
- * header        → barra superior con botón de volver y título
- * scroll        → ScrollView principal
- * scrollContent → contenido centrado, ancho máximo 700
- * footerContent / footerActions → botones fijos al fondo (Footer)
- * alertBox / alertText → estilos de los mensajes de confirmación
+ * ============================================================
+ * ESTILOS - FÍSICO-QUÍMICA
+ * ============================================================
+ *
+ * Descripción:
+ * Estilos para la pantalla `FisicoQuimicaScreen` y sus
+ * componentes relacionados (RangeCard). Define el layout del
+ * formulario, contenedores y wrappers necesarios para el
+ * comportamiento correcto del UI en web y móvil.
+ *
+ * Funcionalidad / reglas importantes:
+ * - Mantener `overflow: "visible"` en wrappers que deben
+ *   permitir overlays (selects, dropdowns, etc.).
+ * - Evitar valores arbitrarios de `zIndex`; usarlos con criterio.
+ * - Usar `COLORS` y `TYPOGRAPHY` desde `theme`.
+ *
+ * Restricciones del proyecto:
+ * - Este archivo solo contiene definiciones de `StyleSheet`.
+ * - No incluye lógica de presentación ni side-effects.
  */
 
+import { StyleSheet} from "react-native";
+import { COLORS } from "../../../theme/colors";
+import { TYPOGRAPHY } from "../../../theme/typography";
+
 export const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: COLORS.surface },
-
-  header: {
-    backgroundColor: COLORS.primary,
-    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight + 8 : 56,
-    paddingBottom: 20,
-    paddingHorizontal: 20,
-    gap: 12,
-  },
-  backBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    backgroundColor: "transparent",
-    paddingVertical: 0,
-    paddingHorizontal: 0,
-    marginTop: 0,
-    alignSelf: "flex-start",
-  },
-  headerTitle: { 
-    flexDirection: "row",
-    alignItems: "center", 
-    gap: 10 
-  },
-  headerTitleText: { fontSize: 22, fontWeight: "700" },
-
   scroll: { 
     flex: 1, 
     backgroundColor: COLORS.white 
@@ -52,6 +40,55 @@ export const styles = StyleSheet.create({
 
   formCard: {
     marginBottom: 20,
+    position: "relative",
+    zIndex: 100,
+    elevation: 100,
+    overflow: "visible",
+  
+  },
+
+  selectWrapper: {
+    position: "relative",
+    height: 110,
+    marginBottom: 16,
+    overflow: "visible",
+  },
+  selectWrapperFinca: {
+    zIndex: 3000,
+    elevation: 3000,
+  },
+  selectWrapperEstanque: {
+    zIndex: 2000,
+    elevation: 2000,
+  },
+  selectContainer: {
+  position: "absolute",
+  top: 0, left: 0, right: 0,
+  zIndex: 9999,
+  elevation: 9999,
+  overflow: "visible",
+  width: "100%",
+},
+selectField: {
+  position: "relative",
+  marginBottom: 0,
+  zIndex: 9999,
+  elevation: 9999,
+  overflow: "visible",
+},
+selectLabel: { position: "relative", zIndex: 1000, elevation: 1000 },
+selectButton: { position: "relative", zIndex: 1000, elevation: 1000 },
+selectPlaceholder: { height: 110 },
+
+
+  label: {
+    color: COLORS.textPrimary,
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
+    marginBottom: 6,
+  },
+  errorInput: {
+    borderWidth: 1,
+    borderColor: COLORS.error,
   },
   cardHeader: {
     flexDirection: "row",
@@ -63,6 +100,10 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "700",
     color: COLORS.textSecondary,
+  },
+  errorCard: {
+    borderWidth: 1,
+    borderColor: COLORS.error,
   },
   estanqueInfo: {
     marginTop: 8,
@@ -84,4 +125,6 @@ export const styles = StyleSheet.create({
   },
   alertBox: { width: "60%", alignSelf: "center" },
   alertText: { textAlign: "center", fontWeight: "bold" },
+  errorBanner: { marginTop: 12, width: "100%" },
+  errorText: { textAlign: "center", fontFamily: TYPOGRAPHY.fontFamily.bold, color: COLORS.error },
 });

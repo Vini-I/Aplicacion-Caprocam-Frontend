@@ -3,7 +3,7 @@ import { useWindowDimensions } from "react-native";
 
 import { colaboradoresService } from "../../colaboradores/services/colaboradoresService.js";
 import { fincas } from "../../finca/screens/FincaData.js";
-import { estanques } from "../../mantCrecimiento/screens/EstanqueData.js";
+import { estanques } from "../../mantCrecimiento/services/EstanqueData.js";
 import { compradores as compradoresData } from "../services/CompradorData.js";
 
 export const COMPRADOR_MANUAL = "comprador-manual";
@@ -101,6 +101,7 @@ export function useVenta() {
   const [compradorSeleccionado, setCompradorSeleccionado] = useState("");
   const [compradorManual, setCompradorManual] = useState("");
   const [colaboradores, setColaboradores] = useState([]);
+  const [ventas, setVentas] = useState([]);
   const [mensaje, setMensaje] = useState("");
   const [tipoMensaje, setTipoMensaje] = useState("");
   const [errores, setErrores] = useState({});
@@ -304,7 +305,7 @@ export function useVenta() {
       compradorNombre: esCompradorManual ? compradorManual.trim() : comprador?.nombre || "",
     };
 
-    console.log("Venta guardada:", nuevaVenta);
+    setVentas((actual) => [nuevaVenta, ...actual]);
     setTipoMensaje("success");
     setMensaje("Venta guardada correctamente.");
     limpiarFormulario();
@@ -347,6 +348,7 @@ export function useVenta() {
     opcionesCompradores,
     precioKiloNumero,
     totalVenta,
+    ventas,
     // setters directos
     setEstanqueSeleccionado,
     setCompradorManual,

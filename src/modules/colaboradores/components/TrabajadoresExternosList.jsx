@@ -33,7 +33,7 @@ export default function TrabajadoresExternosList({ trabajadores, onSelectTrabaja
   if (!trabajadores || trabajadores.length === 0) {
     return (
       <View style={styles.card}>
-        <CustomText style={styles.cardTitle}>👥 Colaboradores a Cargo</CustomText>
+        <CustomText style={styles.cardTitle}> Colaboradores a Cargo</CustomText>
         <CustomText style={styles.emptyText}>No hay Colaboradores externos registrados</CustomText>
       </View>
     );

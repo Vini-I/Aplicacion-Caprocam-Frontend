@@ -4,6 +4,7 @@ import Title from "../../../shared/components/Title";
 import DatosConteo from "./DatosConteo";
 import InformacionEstanque from "./InformacionEstanque";
 import RegistroConteo from "./RegistroConteo";
+import NavbarRegistro from "../../../shared/components/NavbarRegistro";
 import { styles } from "../styles/densidadPoblacionalStyles";
 import { TYPOGRAPHY } from "../../../theme/typography";
 import Button from "../../../shared/components/Button";
@@ -26,6 +27,12 @@ export default function DensidadPoblacionalScreen({ onBack }) {
   } = useDensidadPoblacional();
 
   return (
+    <>
+    <NavbarRegistro
+        Titulo="Densidad Poblacional"
+        Subtitulo="Registro de conteo"
+        Icono="mortality"
+      />
     <ScrollView style={styles.container}>
       <View style={styles.content}>
         <Title
@@ -83,5 +90,6 @@ export default function DensidadPoblacionalScreen({ onBack }) {
           fixedBottom={true}
         />
     </ScrollView>
+    </>
   );
 }

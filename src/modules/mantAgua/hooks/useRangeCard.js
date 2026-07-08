@@ -1,12 +1,3 @@
-import { useCallback, useEffect, useState } from 'react';
-
-const limitar = (val, min, max) => Math.min(Math.max(val, min), max);
-const formatear = (val, decimals) => val.toFixed(decimals);
-
-function crearLectura(id, value, decimals) {
-  return { id, value, rawInput: formatear(value, decimals), editing: false };
-}
-
 /**
  * ============================================================
  * HOOK useRangeCard
@@ -15,6 +6,7 @@ function crearLectura(id, value, decimals) {
  * Maneja el estado de las lecturas de RangeCard: agregar/quitar
  * lecturas, clamping de valores dentro de sliderMin/sliderMax y
  * formateo de decimales.
+ * Admite iniciar vacío y permite eliminar lecturas hasta quedar en cero.
  *
  * ---
  * PARÁMETROS (objeto único)
@@ -40,6 +32,12 @@ function crearLectura(id, value, decimals) {
  *                              { decrementar, incrementar, handleChangeText, handleFocus, handleBlur }
  *
  * ---
+ * RESTRICCIONES
+ * ---
+ * - No hacer llamadas a servicios/API desde este hook; solo maneja estado local.
+ * - Nunca dejar el arreglo de lecturas vacío; respetar siempre maxLecturas.
+ *
+ * ---
  * EJEMPLO DE USO
  * ---
  * const {
@@ -55,6 +53,17 @@ function crearLectura(id, value, decimals) {
  *
  * const { incrementar, decrementar, handleChangeText, handleBlur } = obtenerManejadores(lecturas[0]);
  */
+
+import { useCallback, useEffect, useState } from 'react';
+
+const limitar = (val, min, max) => Math.min(Math.max(val, min), max);
+const formatear = (val, decimals) => val.toFixed(decimals);
+
+function crearLectura(id, value, decimals) {
+  return { id, value, rawInput: formatear(value, decimals), editing: false };
+}
+
+
 
 export default function useRangeCard({
   idealMin,
@@ -76,7 +85,9 @@ export default function useRangeCard({
       );
     }
 
-    return [crearLectura(1, idealMin, decimals)];
+    // Start empty by default (no measurement created until user adds one
+    // or initialValues are provided).
+    return [];
   });
 
   useEffect(() => {
@@ -84,7 +95,7 @@ export default function useRangeCard({
       ? initialLecturas.map((value, index) =>
           crearLectura(index + 1, Number(value) || idealMin, decimals),
         )
-      : [crearLectura(1, idealMin, decimals)];
+      : [];
 
     setLecturas(next);
     onChange?.(next);
@@ -112,7 +123,6 @@ export default function useRangeCard({
 
   const eliminarLectura = useCallback((id) => {
     setLecturas((prev) => {
-      if (prev.length <= 1) return prev;
       const next = prev.filter((r) => r.id !== id);
       onChange?.(next);
       return next;
