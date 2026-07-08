@@ -15,13 +15,6 @@ import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
 
 export const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.white,
-  },
-
-  
-
   scrollContent: {
     paddingVertical: 28,
     paddingBottom: 40,
@@ -34,6 +27,7 @@ export const styles = StyleSheet.create({
 
   createButton: {
     backgroundColor: COLORS.white,
+    width: "100%",
     height: 56,
     borderRadius: 14,
     borderWidth: 1,
@@ -57,5 +51,13 @@ export const styles = StyleSheet.create({
     fontFamily: TYPOGRAPHY.fontFamily.bold,
     fontWeight: "700",
   },
-  
+
+  alertBox: {
+    marginBottom: 16,
+    alignItems: "center",
+  },
+  alertText: {
+    textAlign: "center",
+    fontWeight: "bold",
+  },
 });

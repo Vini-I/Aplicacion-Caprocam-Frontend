@@ -28,7 +28,7 @@ import Footer from "../../../shared/components/Footer";
 
 import SearchBar from "../../inventarios/components/SearchBar";
 import FilterButton from "../components/FilterButton";
-import { useTrazabilidadList } from "../hooks/useTrazabilidadList";
+import { useTrazabilidadList, formatRegistroForView } from "../hooks/useTrazabilidadList";
 
 export default function TrazabilidadScreen() {
   const {
@@ -43,25 +43,26 @@ export default function TrazabilidadScreen() {
     limpiarBusqueda,
     nuevoRegistro,
     abrirDetalle,
-    
+
   } = useTrazabilidadList();
 
   function renderRegistro(registro) {
+    const r = formatRegistroForView(registro);
     return (
-      <Button onPress={() => abrirDetalle(registro.id)} style={styles.touchable} key={registro.id}>
+      <Button onPress={() => abrirDetalle(r.id)} style={styles.touchable} key={r.id}>
         <Card style={styles.card}>
           <View style={styles.cardHeader}>
-            <Text style={styles.fincaText}>{registro.fincaNombre}</Text>
-            <Text style={styles.fechaText}>{registro.fecha}</Text>
+            <Text style={styles.fincaText}>{r.fincaNombre}</Text>
+            <Text style={styles.fechaText}>{r.fecha}</Text>
           </View>
 
           <Text style={styles.colaboradorText}>
-            Responsable: {registro.colaboradorNombre}
+            Responsable: {r.colaboradorNombre}
           </Text>
 
           <View style={styles.movimiento}>
             <Text style={styles.estanqueText} numberOfLines={1}>
-              {registro.estanqueOrigenLabel}
+              {r.estanqueOrigenLabel}
             </Text>
 
             <Icon
@@ -72,7 +73,7 @@ export default function TrazabilidadScreen() {
             />
 
             <Text style={styles.estanqueText} numberOfLines={1}>
-              {registro.estanqueDestinoLabel}
+              {r.estanqueDestinoLabel}
             </Text>
           </View>
 
@@ -80,13 +81,13 @@ export default function TrazabilidadScreen() {
             <View style={styles.dato}>
               <Text style={styles.datoLabel}>PL</Text>
               <Text style={styles.datoValor}>
-                {Number(registro.pl ?? 0).toLocaleString()}
+                {r.plFormatted}
               </Text>
             </View>
 
             <View style={styles.dato}>
               <Text style={styles.datoLabel}>Tamaño</Text>
-              <Text style={styles.datoValor}>{registro.tamaño}g</Text>
+              <Text style={styles.datoValor}>{r.tamanoFormatted}</Text>
             </View>
 
             <View style={styles.dato}>
@@ -167,22 +168,16 @@ export default function TrazabilidadScreen() {
               registrosFiltrados.map(renderRegistro)
             )}
           </View>
+
         </View>
       </ScrollView>
-
-      <Footer
-        fixedBottom
-        children={
-          <View style={[STYLE.contentWrapper, styles.footerContent]}>
-            <View style={styles.footerActions}>
-              <Button variant="outline" onPress={nuevoRegistro} style={styles.fullButton}>
-                + Agregar movimiento
-              </Button>
-            </View>
-          </View>
-        }
-      />
-
+      <View style={STYLE.contentWrapper}>
+      <View style={styles.stickyButtonContainer}>
+        <Button variant="outline" onPress={nuevoRegistro} style={styles.fullButton}>
+          + Agregar movimiento
+        </Button>
+      </View>
+      </View>
     </View>
   );
 }

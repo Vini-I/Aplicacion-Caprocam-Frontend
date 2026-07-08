@@ -41,7 +41,9 @@ import NumberInput from "../../../shared/components/NumberInput";
 import Select from "../../../shared/components/Select";
 import Input from "../../../shared/components/Input";
 import DateInput from "../../../shared/components/DateInput";
+import { STYLE } from "../../../theme/style";
 import { styles } from "../styles/TrazabilidadFormStyles";
+import { esFechaValida, esFechaFutura } from "../../../shared/utils/dateUtils";
 
 export default function TrazabilidadForm({
   formData,
@@ -53,9 +55,8 @@ export default function TrazabilidadForm({
   onChangeFinca,
   plAutocompletado = false,
   submitted = false,
-  style,
 }) {
-  const opcionesOrigen = estanquesOrigen.filter(
+const opcionesOrigen = estanquesOrigen.filter(
     (estanque) => estanque.value !== formData.estanqueDestinoId,
   );
 
@@ -63,15 +64,24 @@ export default function TrazabilidadForm({
     (estanque) => estanque.value !== formData.estanqueOrigenId,
   );
 
+  const mismoEstanqueOrigenDestino =
+    formData.estanqueOrigenId !== "" &&
+    formData.estanqueOrigenId === formData.estanqueDestinoId;
+
   const mostrarErrorFinca = submitted && !formData.fincaId;
-  const mostrarErrorOrigen = submitted && !formData.estanqueOrigenId;
-  const mostrarErrorDestino = submitted && !formData.estanqueDestinoId;
-  const mostrarErrorFecha = submitted && !formData.fecha;
+  const mostrarErrorOrigen =
+    submitted && (!formData.estanqueOrigenId || mismoEstanqueOrigenDestino);
+  const mostrarErrorDestino =
+    submitted && (!formData.estanqueDestinoId || mismoEstanqueOrigenDestino);
+  const mostrarErrorFecha =
+    submitted &&
+    (!formData.fecha ||
+      !esFechaValida(formData.fecha) ||
+      esFechaFutura(formData.fecha));
   const mostrarErrorColaborador = submitted && !formData.colaboradorId;
   const mostrarErrorTamano = submitted && (!formData.tamaño || Number(formData.tamaño) <= 0);
   const mostrarErrorDias = submitted && (!formData.dias || Number(formData.dias) <= 0);
   const mostrarErrorPl = submitted && (!formData.pl || Number(formData.pl) <= 0);
-
   function renderFecha() {
     if (Platform.OS === "web") {
       return (
@@ -102,7 +112,8 @@ export default function TrazabilidadForm({
   }
 
   return (
-    <View style={[styles.container, style]}>
+    
+    <View style={[STYLE.contentWrapper]}>
       <Card title="Movimiento" titleStyle={styles.cardTitle} style={styles.movimientoCard}>
         <View style={[styles.selectWrapper, styles.selectWrapperFinca]}>
           <View style={styles.selectContainer}>

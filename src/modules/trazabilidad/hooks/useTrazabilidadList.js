@@ -75,3 +75,17 @@ export function useTrazabilidadList() {
     abrirDetalle,
   };
 }
+
+// Helper to prepare a registro for presentation in the UI.
+// Keeps formatting logic out of the screen component.
+export function formatRegistroForView(registro) {
+  const plNumber = Number(registro.pl ?? 0);
+  const plFormatted = plNumber.toLocaleString();
+  const tamanoFormatted = registro.tamaño ? `${registro.tamaño}g` : "";
+
+  return {
+    ...registro,
+    plFormatted,
+    tamanoFormatted,
+  };
+}

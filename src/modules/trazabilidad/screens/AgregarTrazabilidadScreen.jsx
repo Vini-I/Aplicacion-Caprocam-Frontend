@@ -36,10 +36,10 @@ export default function AgregarTrazabilidadScreen() {
     estanquesDestino,
     mensajeError,
     submitted,
+    mostrarAlerta,
     manejarCambio,
     manejarCambioFinca,
     manejarEnvio,
-    cerrarFormulario,
     plAutocompletado,
   } = useTrazabilidad();
 
@@ -82,6 +82,15 @@ export default function AgregarTrazabilidadScreen() {
               }
               style={styles.infoBanner}
               textStyle={{ color: COLORS.error }}
+            />
+          )}
+
+          {mostrarAlerta && (
+            <Alert
+              variant="success"
+              message="¡Movimiento registrado exitosamente!"
+              style={styles.alertBox}
+              textStyle={styles.alertText}
             />
           )}
 

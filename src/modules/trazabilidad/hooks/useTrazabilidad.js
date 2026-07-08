@@ -16,8 +16,8 @@
  *
  * Retorna:
  * - `formData`, `fincas`, `colaboradores`, `estanquesOrigen`, `estanquesDestino`,
- *   `plAutocompletado`, `mensajeError`, `submitted` y handlers como `manejarCambio`,
- *   `manejarCambioFinca`, `manejarEnvio`, `cerrarFormulario`.
+ *   `plAutocompletado`, `mensajeError`, `submitted`, `mostrarAlerta` y handlers como
+ *   `manejarCambio`, `manejarCambioFinca`, `manejarEnvio`.
  *
  * Restricciones:
  * - No realizar llamadas a la API directamente; usar los servicios del módulo.
@@ -25,7 +25,7 @@
  *   compartidas de shared/utils/dateUtils.js.
  *  */
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "expo-router";
 
 import { initialForm } from "../screens/TrazabilidadData";
@@ -47,6 +47,15 @@ export function useTrazabilidad() {
   const [mensajeError, setMensajeError] = useState("");
   const [plAutocompletado, setPlAutocompletado] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [mostrarAlerta, setMostrarAlerta] = useState(false);
+
+  const timerAlertaRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (timerAlertaRef.current) clearTimeout(timerAlertaRef.current);
+    };
+  }, []);
 
   const fincas = obtenerFincas();
   const colaboradores = obtenerColaboradores();
@@ -154,15 +163,19 @@ export function useTrazabilidad() {
     }
 
     crearRegistroTrazabilidad(formData);
-    setFormData(initialForm);
-    setSubmitted(false);
     setMensajeError("");
-    router.back();
+    setMostrarAlerta(true);
+
+    if (timerAlertaRef.current) clearTimeout(timerAlertaRef.current);
+    timerAlertaRef.current = setTimeout(() => {
+      setMostrarAlerta(false);
+      timerAlertaRef.current = null;
+      setFormData(initialForm);
+      setSubmitted(false);
+      router.back();
+    }, 1500);
   }
 
-  function cerrarFormulario() {
-    router.back();
-  }
 
 
   return {
@@ -174,9 +187,9 @@ export function useTrazabilidad() {
     plAutocompletado,
     mensajeError,
     submitted,
+    mostrarAlerta,
     manejarCambio,
     manejarCambioFinca,
     manejarEnvio,
-    cerrarFormulario,
   };
 }
