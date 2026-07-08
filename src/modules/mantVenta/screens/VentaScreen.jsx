@@ -7,9 +7,7 @@
  * enviar la información a la lógica de negocio del módulo.
  */
 
-import { useCallback } from "react";
 import { ScrollView, View } from "react-native";
-import { useFocusEffect, useRouter } from "expo-router";
 
 import Alert from "../../../shared/components/Alert.jsx";
 import Button from "../../../shared/components/Button.jsx";
@@ -23,12 +21,9 @@ import Text from "../../../shared/components/Text.jsx";
 import { COLORS } from "../../../theme/colors.js";
 import { ICONS } from "../../../theme/icons.js";
 
-import {
-  formatearMontoColones,
-  useVenta,
-} from "../hooks/useVenta.js";
+import { formatearMontoColones, useVenta } from "../hooks/useVenta.js";
 import { styles } from "../styles/VentaStyles.js";
-import {STYLE} from "../../../theme/style";
+import { STYLE } from "../../../theme/style";
 
 function SectionTitle({ icon, title }) {
   return (
@@ -40,7 +35,6 @@ function SectionTitle({ icon, title }) {
 }
 
 export default function VentaScreen({ onDetalleVentas }) {
-  const router = useRouter();
 
   const {
     fincaSeleccionada,
@@ -56,7 +50,6 @@ export default function VentaScreen({ onDetalleVentas }) {
     tipoMensaje,
     errores,
     guardando,
-    isWide,
     opcionesFincas,
     estanquesFiltrados,
     opcionesColaboradores,
@@ -72,34 +65,15 @@ export default function VentaScreen({ onDetalleVentas }) {
     handleCompradorChange,
     handleColaboradorChange,
     limpiarError,
-    limpiarMensaje,
     guardarVenta,
+    gridStyle,
+    errorInputStyle,
   } = useVenta();
-
-  useFocusEffect(
-    useCallback(() => {
-      return () => {
-        limpiarMensaje();
-      };
-    }, [limpiarMensaje]),
-  );
-
-  const gridStyle = isWide ? styles.inputRow : styles.inputGrid;
-  const errorInputStyle = {
-    borderColor: COLORS.error,
-    backgroundColor: COLORS.surface,
-  };
 
   return (
     <ScrollView style={STYLE.container} showsVerticalScrollIndicator={false}>
       <Card style={STYLE.contentWrapper}>
         <View style={styles.headerRow}>
-          <Icon
-            icon={ICONS.shrimp}
-            size={22}
-            color={COLORS.primary}
-            style={styles.headerIcon}
-          />
           <Text style={styles.cardTitle}>Registro de venta</Text>
         </View>
 

@@ -19,11 +19,15 @@
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useWindowDimensions } from "react-native";
+import { useFocusEffect } from "expo-router";
 
 import { colaboradoresService } from "../../colaboradores/services/colaboradoresService.js";
 import { fincas } from "../../finca/screens/FincaData.js";
 import { estanques } from "../../mantCrecimiento/services/EstanqueData.js";
 import { compradores as compradoresData } from "../services/CompradorData.js";
+
+import { styles } from "../styles/VentaStyles.js";
+import { COLORS } from "../../../theme/colors.js";
 
 export const CLIENTE_GENERICO = "cliente-generico";
 
@@ -185,6 +189,19 @@ export function useVenta() {
   const precioKiloNumero = Number(precioKilo || 0);
   const totalVenta = Number(kilosVendidos || 0) * precioKiloNumero;
 
+  const gridStyle = useMemo(
+    () => (isWide ? styles.inputRow : styles.inputGrid),
+    [isWide],
+  );
+
+  const errorInputStyle = useMemo(
+    () => ({
+      borderColor: COLORS.error,
+      backgroundColor: COLORS.surface,
+    }),
+    [],
+  );
+
   const limpiarError = useCallback((campo) => {
     setErrores((actual) => {
       if (!actual[campo]) return actual;
@@ -196,6 +213,15 @@ export function useVenta() {
     setMensaje("");
     setTipoMensaje("");
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        limpiarMensaje();
+      };
+    }, [limpiarMensaje]),
+  );
+
 
   const handlePesoPromedioChange = useCallback(
     (value) => {
@@ -353,7 +379,8 @@ export function useVenta() {
     tipoMensaje,
     errores,
     guardando,
-    isWide,
+    gridStyle,
+    errorInputStyle,
     opcionesFincas,
     estanquesFiltrados,
     opcionesColaboradores,
@@ -371,7 +398,6 @@ export function useVenta() {
     handleCompradorChange,
     handleColaboradorChange,
     limpiarError,
-    limpiarMensaje,
     guardarVenta,
   };
 }
