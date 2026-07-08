@@ -39,16 +39,17 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useRouter } from 'expo-router';
+import { guardarLectura } from '../services/FisicoQuimicaServices';
 
 
 
 export default function useFisicoQuimica() {
-  const [, setLecturasSalinidad]                         = useState([]);
-  const [, setLecturasTemp]                              = useState([]);
-  const [, setLecturasPh]                                = useState([]);
-  const [, setLecturasOx]                                = useState([]);
-  const [mostrarAlerta, setMostrarAlerta]                = useState(false);
-  const [mostrarAlertaEdicion, setMostrarAlertaEdicion]  = useState(false);
+  const [lecturasPh, setLecturasPh] = useState([]);
+  const [lecturasSalinidad, setLecturasSalinidad] = useState([]);
+  const [lecturasTemp, setLecturasTemp] = useState([]);
+  const [lecturasOx, setLecturasOx] = useState([]);
+  const [mostrarAlerta, setMostrarAlerta] = useState(false);
+  const [mostrarAlertaEdicion, setMostrarAlertaEdicion] = useState(false);
 
   const timerAlertaRef = useRef(null);
   const router = useRouter();
@@ -60,6 +61,12 @@ export default function useFisicoQuimica() {
   }, []);
 
   const alGuardar = useCallback(() => {
+    guardarLectura({
+      ph: lecturasPh,
+      salinidad: lecturasSalinidad,
+      temperatura: lecturasTemp,
+      oxigeno: lecturasOx,
+    });
     setMostrarAlerta(true);
     if (timerAlertaRef.current) clearTimeout(timerAlertaRef.current);
     timerAlertaRef.current = setTimeout(() => {
@@ -67,7 +74,7 @@ export default function useFisicoQuimica() {
       timerAlertaRef.current = null;
       router.replace('/(drawer)/(tabs)/registros');
     }, 500);
-  }, [router]);
+  }, [router, lecturasPh, lecturasSalinidad, lecturasTemp, lecturasOx]);
 
   const alEditar = useCallback(() => {
     setMostrarAlertaEdicion(true);
