@@ -54,9 +54,6 @@ export const styles = StyleSheet.create({
   content: {
     paddingTop: 40,
     paddingBottom: 40,
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
   },
 
   card: {
@@ -109,16 +106,6 @@ export const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: TYPOGRAPHY.fontFamily.regular,
     color: COLORS.textSecondary,
-  },
-
-  select: {
-    minHeight: 48,
-    borderRadius: 0,
-    borderWidth: 0,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.secondary,
-    backgroundColor: "transparent",
-    paddingHorizontal: 0,
   },
 
   saveButton: {

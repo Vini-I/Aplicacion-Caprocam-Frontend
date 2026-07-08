@@ -8,8 +8,8 @@
  * Formulario de alta de un nuevo comprador.
  *
  * FUNCIONALIDAD:
- * 1. Campos: nombre*, tipo de producto*, teléfono*, correo,
- *   dirección, notas (los marcados con * son obligatorios).
+ * 1. Campos: nombre*, teléfono*, correo, dirección, notas (los
+ *    marcados con * son obligatorios).
  * 2. Valida al presionar "Guardar comprador" (useNuevoCompradorScreen):
  *    pinta de rojo cada campo inválido y muestra un solo mensaje
  *    general debajo del botón.
@@ -22,27 +22,28 @@
  *   useEditarCompradorScreen.js.
  * - El borde rojo nunca aparece antes del primer intento de
  *   guardar.
+ * - El campo "Tipo de producto" se eliminó del formulario: las
+ *   opciones (antibióticos, fertilizantes, equipos, etc.) no
+ *   aplicaban a este flujo.
  * ============================================================
  */
 
 
-import React, { useState } from "react";
-import { View, ScrollView } from "react-native";
-import { useRouter } from "expo-router";
 
-import Navbar from "../../../shared/components/Navbar";
+import React from "react";
+import { View, ScrollView } from "react-native";
+
 import Card from "../../../shared/components/Card";
 import Input from "../../../shared/components/Input";
-import CustomText from "../../../shared/components/Text";
-import Select from "../../../shared/components/Select";
+import Text from "../../../shared/components/Text";
 import Button from "../../../shared/components/Button";
 import Icon from "../../../shared/components/Icons";
-import CustomAlert from "../../../shared/components/Alert";
+import Alert from "../../../shared/components/Alert";
 
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
+import { STYLE } from "../../../theme/style";
 import { styles, ICON_SIZES } from "../styles/StylesNuevoComprador";
-import { TIPOS_PRODUCTO } from "../services/NuevoCompradorData";
 
 import { useNuevoCompradorScreen, TELEFONO_MAX_LENGTH } from "../hooks/useNuevoCompradorScreen";
 
@@ -50,8 +51,6 @@ export default function NuevoCompradorScreen() {
   const {
     nombre,
     setNombre,
-    tipoProducto,
-    setTipoProducto,
     telefono,
     correo,
     setCorreo,
@@ -60,7 +59,6 @@ export default function NuevoCompradorScreen() {
     notas,
     setNotas, 
     errorNombre,
-    errorTipoProducto,
     errorTelefono,
     errorCorreo,
     mensajeError,  
@@ -73,12 +71,10 @@ export default function NuevoCompradorScreen() {
   return (
     <View style={styles.container}>
 
-      {/* Navbar con botón para volver a la lista de compradores */}
-      
       {/* Formulario con scroll para evitar que el teclado tape los campos */}
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, STYLE.contentWrapper]}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
@@ -96,19 +92,6 @@ export default function NuevoCompradorScreen() {
             containerStyle={styles.field}
             style={[styles.input, errorNombre && styles.inputError]}
             labelStyle={styles.label}
-          />
-
-          <Select
-            label="Tipo de producto *"
-            value={tipoProducto}
-            options={TIPOS_PRODUCTO}
-            onChange={setTipoProducto}
-            placeholder="Seleccione un tipo de producto"
-            containerStyle={styles.field}
-            selectStyle={[styles.select, errorTipoProducto && styles.inputError]}
-            labelStyle={styles.label}
-            selectedTextStyle={styles.selectText}
-            optionTextStyle={styles.selectOption}
           />
 
           <Input
@@ -160,14 +143,12 @@ export default function NuevoCompradorScreen() {
           <Button variant="outline" onPress={handleSubmit} style={styles.saveButton}>
             <View style={styles.buttonContent}>
                <Icon icon={ICONS.save} size={ICON_SIZES.save} color={COLORS.primary} />
-               <CustomText style={styles.saveButtonText}>Guardar comprador</CustomText>
+               <Text style={styles.saveButtonText}>Guardar comprador</Text>
             </View>
           </Button>
 
-         
-
           {guardadoExitoso && (
-            <CustomAlert
+            <Alert
               variant="success"
               message="Comprador guardado correctamente."
               style={styles.alertBox}
@@ -176,7 +157,7 @@ export default function NuevoCompradorScreen() {
           )}
 
           {mensajeError !== "" && (
-            <CustomAlert
+            <Alert
               variant="danger"
               message={mensajeError}
               style={styles.alertBox}

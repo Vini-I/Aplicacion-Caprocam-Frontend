@@ -1,3 +1,8 @@
+import { StyleSheet } from "react-native";
+
+import { COLORS } from "../../../theme/colors";
+import { TYPOGRAPHY } from "../../../theme/typography";
+
 export const styles = StyleSheet.create({
   cardTitle: {
     color: COLORS.primary,

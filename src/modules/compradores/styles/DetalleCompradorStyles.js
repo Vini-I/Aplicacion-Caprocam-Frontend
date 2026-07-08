@@ -63,9 +63,6 @@ export const styles = StyleSheet.create({
   contenido: {
     paddingTop: 30,
     paddingBottom: 40,
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
   },
 
   tarjeta: {

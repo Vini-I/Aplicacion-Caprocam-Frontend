@@ -7,17 +7,16 @@
  * Maneja el estado del formulario de alta de un nuevo comprador.
  *
  * FUNCIONALIDAD:
- * 1. Obligatorios: nombre, tipo de producto y teléfono. El
- *    teléfono además debe cumplir el formato +506 XXXX-XXXX; el
- *    correo es opcional pero, si se llena, debe tener formato
- *    válido.
+ * 1. Obligatorios: nombre y teléfono. El teléfono además debe
+ *    cumplir el formato +506 XXXX-XXXX; el correo es opcional
+ *    pero, si se llena, debe tener formato válido.
  * 2. handleTelefonoChange filtra en vivo caracteres no permitidos
  *    (solo dígitos, espacios, guiones y +), pero eso NO es
  *    validación: no marca error mientras se escribe.
  * 3. handleSubmit calcula un booleano de error por campo
- *    (errorNombre, errorTipoProducto, errorTelefono, errorCorreo)
- *    para pintar el borde rojo, y UN SOLO mensaje general
- *    (mensajeError) para mostrar debajo del formulario.
+ *    (errorNombre, errorTelefono, errorCorreo) para pintar el
+ *    borde rojo, y UN SOLO mensaje general (mensajeError) para
+ *    mostrar debajo del formulario.
  *
  * IMPORTANTE:
  * - Los errores solo se calculan dentro de handleSubmit: nunca
@@ -25,6 +24,9 @@
  * - Mismo regex y misma regla de teléfono/correo que
  *   useEditarCompradorScreen.js, para que ambas pantallas validen
  *   igual.
+ * - El campo "Tipo de producto" se eliminó: no tenía sentido en
+ *   este flujo (antibióticos, fertilizantes, equipos, etc. no
+ *   aplican a un comprador).
  * ============================================================
  */
 
@@ -55,7 +57,6 @@ export function useNuevoCompradorScreen() {
 
   // Campos del formulario
   const [nombre, setNombre] = useState("");
-  const [tipoProducto, setTipoProducto] = useState("");
   const [telefono, setTelefono] = useState("");
   const [correo, setCorreo] = useState("");
   const [direccion, setDireccion] = useState("");
@@ -63,7 +64,6 @@ export function useNuevoCompradorScreen() {
 
   // Estado de validación y alertas
   const [errorNombre, setErrorNombre] = useState(false);
-  const [errorTipoProducto, setErrorTipoProducto] = useState(false);
   const [errorTelefono, setErrorTelefono] = useState(false);
   const [errorCorreo, setErrorCorreo] = useState(false);
   const [mensajeError, setMensajeError] = useState("");
@@ -74,33 +74,27 @@ export function useNuevoCompradorScreen() {
     setTelefono(valor.replace(/[^\d\s\-+]/g, ""));
   };
 
-  // Retorna el mensaje de error según los campos inválidos
- 
-
   // Valida los campos y guarda el comprador si no hay errores
   function handleSubmit() {
-   const errNombre = nombre.trim() === "";
-  const errTipo = tipoProducto === "";
-  const errTel = !esTelefonoValido(telefono);
-  const errCorreo = !esCorreoValido(correo);
+    const errNombre = nombre.trim() === "";
+    const errTel = !esTelefonoValido(telefono);
+    const errCorreo = !esCorreoValido(correo);
 
-  setErrorNombre(errNombre);
-  setErrorTipoProducto(errTipo);
-  setErrorTelefono(errTel);
-  setErrorCorreo(errCorreo);
+    setErrorNombre(errNombre);
+    setErrorTelefono(errTel);
+    setErrorCorreo(errCorreo);
 
-  if (errNombre || errTipo || errTel || errCorreo) {
-    setMensajeError(MENSAJE_ERROR_GENERAL);
-    setGuardadoExitoso(false);
-    return;
-  }
+    if (errNombre || errTel || errCorreo) {
+      setMensajeError(MENSAJE_ERROR_GENERAL);
+      setGuardadoExitoso(false);
+      return;
+    }
 
-  setMensajeError("");
-  setGuardadoExitoso(true);
+    setMensajeError("");
+    setGuardadoExitoso(true);
 
     const comprador = {
       nombre: nombre.trim(),
-      tipoProducto,
       telefono: telefono.trim(),
       correo: correo.trim(),
       direccion: direccion.trim(),
@@ -117,8 +111,6 @@ export function useNuevoCompradorScreen() {
   return {
     nombre,
     setNombre,
-    tipoProducto,
-    setTipoProducto,
     telefono,
     correo,
     setCorreo,
@@ -127,7 +119,6 @@ export function useNuevoCompradorScreen() {
     notas,
     setNotas,
     errorNombre,
-    errorTipoProducto,
     errorTelefono,
     errorCorreo,
     mensajeError, 

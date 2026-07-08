@@ -115,4 +115,10 @@ export const styles = StyleSheet.create({
     textAlign: "center",
     color: COLORS.error,
   },
+  alertBox: {
+    marginTop: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    width: "100%",
+  },
 });

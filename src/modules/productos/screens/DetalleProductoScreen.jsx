@@ -40,6 +40,7 @@ import Modal from "../../../shared/components/Modal";
 
 import { ICONS } from "../../../theme/icons";
 import { COLORS } from "../../../theme/colors";
+import { STYLE } from "../../../theme/style";
 
 import { styles,colorCategoria,colorCategoriaDefault } from "../styles/DetalleProductScreenStyles";
 
@@ -104,7 +105,7 @@ export default function DetalleProductoScreen() {
     return (
         <View style={styles.contenedor}>
             <ScrollView
-                contentContainerStyle={styles.contentContainer}
+                contentContainerStyle={[styles.contentContainer, STYLE.contentWrapper]}
                 showsVerticalScrollIndicator={false}
             >
                 <Card style={styles.tarjeta}>

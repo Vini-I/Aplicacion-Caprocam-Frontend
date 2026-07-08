@@ -19,12 +19,16 @@
  *    errorCantidad, errorStockMinimo, errorPrecio).
  * 4. En modo edición, además exige que haya cambios reales
  *    respecto al producto original antes de permitir guardar.
- * 5. Guarda el producto (crear o actualizar) y navega de vuelta.
+ * 5. Guarda el producto (crear o actualizar), muestra una alerta de
+ *    éxito (guardadoExitoso) y navega de vuelta poco después.
  *
  * IMPORTANTE:
  * - En modo creación el botón de guardar NO se bloquea de
  *   entrada: el usuario puede presionar y ver qué campo falta.
  * - En modo edición sí se bloquea mientras no haya cambios.
+ * - La navegación posterior al guardado se retrasa ~900ms para que
+ *   la alerta de éxito alcance a mostrarse antes de salir de la
+ *   pantalla.
  * ============================================================
  */
 
@@ -49,6 +53,7 @@ export function useProductForm() {
   const [intentoGuardar, setIntentoGuardar] = useState(false);
   const [productoId, setProductoId] = useState(null);
   const [opcionesProveedores, setOpcionesProveedores] = useState([]);
+  const [guardadoExitoso, setGuardadoExitoso] = useState(false);
 
   // ── Actualiza proveedores cuando cambia la categoría ──
   useEffect(() => {
@@ -162,14 +167,24 @@ export function useProductForm() {
 
     if (isEditMode) {
       updateProducto({ ...producto, id: productoId });
-      router.replace({
-        pathname: "/(drawer)/inventarios/detalleProducto",
-        params: { id: productoId.toString() },
-      });
     } else {
       addProducto(producto);
-      router.replace("/(drawer)/inventarios");//000000000000000000000000000000000000000000000000000
     }
+
+    // Muestra la alerta de éxito antes de navegar, para que el usuario
+    // tenga retroalimentación visual clara de que el guardado ocurrió.
+    setGuardadoExitoso(true);
+
+    setTimeout(() => {
+      if (isEditMode) {
+        router.replace({
+          pathname: "/(drawer)/inventarios/detalleProducto",
+          params: { id: productoId.toString() },
+        });
+      } else {
+        router.replace("/(drawer)/inventarios");//000000000000000000000000000000000000000000000000000
+      }
+    }, 900);
   }
 
   function handleBack() {
@@ -199,6 +214,7 @@ export function useProductForm() {
     errorCantidad,
     errorStockMinimo,
     errorPrecio,
+    guardadoExitoso,
     handleField,
     handleCategoriaChange,
     handleSubmit,

@@ -61,7 +61,6 @@ export function useEditarCompradorScreen() {
 
   // Campos del formulario
   const [nombre, setNombre] = useState(base.nombre);
-  const [tipoProducto, setTipoProducto] = useState(base.tipoProducto);
   const [telefono, setTelefono] = useState(base.telefono);
   const [correo, setCorreo] = useState(base.correo);
   const [direccion, setDireccion] = useState(base.direccion);
@@ -120,8 +119,6 @@ export function useEditarCompradorScreen() {
 
   return {
     nombre,
-    tipoProducto,
-    setTipoProducto,
     telefono,
     correo,
     direccion,

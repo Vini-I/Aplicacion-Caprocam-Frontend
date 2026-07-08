@@ -52,9 +52,6 @@ export const styles = StyleSheet.create({
 
   card: {
     marginBottom: 14,
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
   },
 
   cardHeader: {
@@ -114,9 +111,6 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 12,
     gap: 8,
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
   },
 
   btnVerDetalle: {
@@ -161,9 +155,6 @@ export const styles = StyleSheet.create({
 
   lista: {
     paddingBottom: 16,
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
   },
 
   listaContainer: {
@@ -179,9 +170,6 @@ export const styles = StyleSheet.create({
     marginBottom: 16,
     borderRadius: 10,
     gap: 8,
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
   },
 
   btnAgregarText: {

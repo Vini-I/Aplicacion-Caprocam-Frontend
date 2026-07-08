@@ -47,7 +47,6 @@ import { View, ScrollView } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 
 
-import Navbar from "../../../shared/components/Navbar";
 import Card from "../../../shared/components/Card";
 import Input from "../../../shared/components/Input";
 import Select from "../../../shared/components/Select";
@@ -56,9 +55,11 @@ import NumberInput from "../../../shared/components/NumberInput";
 import Text from "../../../shared/components/Text";
 import Icon from "../../../shared/components/Icons";
 import DateInput from "../../../shared/components/DateInput";
+import Alert from "../../../shared/components/Alert";
 
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
+import { STYLE } from "../../../theme/style";
 import { useProductForm } from "../hooks/useProductForm";
 import { CATEGORIAS,UNIDADES } from "../services/DataProductForm";
 
@@ -78,6 +79,7 @@ export default function ProductForm() {
     errorCantidad,
     errorStockMinimo,
     errorPrecio,
+    guardadoExitoso,
     handleField,
     handleCategoriaChange,
     handleSubmit,
@@ -87,7 +89,7 @@ export default function ProductForm() {
   return (
     <View style={styles.screen}>
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, STYLE.contentWrapper]}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
@@ -202,12 +204,20 @@ export default function ProductForm() {
           <Button
             variant="outline"
             onPress={handleSubmit}
-            disabled={isEditMode && !canSave}
+            disabled={(isEditMode && !canSave) || guardadoExitoso}
             style={[styles.saveButton, isEditMode && !canSave && styles.saveButtonDisabled]}
             textStyle={styles.saveButtonText}
           >
             {isEditMode ? "Guardar cambios" : "Guardar producto"}
           </Button>
+
+          {guardadoExitoso && (
+            <Alert
+              variant="success"
+              message={isEditMode ? "Producto actualizado correctamente." : "Producto guardado correctamente."}
+              style={styles.alertBox}
+            />
+          )}
 
           {validationMessage !== "" && (
             <Text style={styles.validationText}>
