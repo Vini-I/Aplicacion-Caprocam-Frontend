@@ -36,7 +36,7 @@ import DatosConteo from "./DatosConteo";
 import InformacionEstanque from "./InformacionEstanque";
 import RegistroConteo from "./RegistroConteo";
 import NavbarRegistro from "../../../shared/components/NavbarRegistro";
-import { styles } from "../styles/densidadPoblacionalStyles";
+import { styles } from "../styles/DensidadPoblacionalStyles";
 import { TYPOGRAPHY } from "../../../theme/typography";
 import Button from "../../../shared/components/Button";
 import Footer from "../../../shared/components/Footer";

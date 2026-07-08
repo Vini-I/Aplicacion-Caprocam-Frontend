@@ -15,7 +15,7 @@
  *   valida finca/estanque/fecha aquí mismo y delega la
  *   validación de los datos de conteo en validar() de
  *   useDatosConteo; solo si todo es válido persiste el registro
- *   completo con densidadPoblacional.service.js y navega. Si es
+ *   completo con DensidadPoblacional.service.js y navega. Si es
  *   inválido, no navega ni muestra éxito: deja `submitted=true`
  *   para que la UI muestre los errores.
  * - Reutiliza el mismo patrón de alertas que Alimentación
@@ -39,7 +39,7 @@ import { useState } from "react";
 import { Platform, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { useDatosConteo } from "./useDatosConteo";
-import densidadPoblacionalService from "../services/densidadPoblacional.service";
+import densidadPoblacionalService from "../services/DensidadPoblacional.service";
 
 const showAlert = (title, message, buttons) => {
   if (Platform.OS === "web") {

@@ -19,7 +19,7 @@
  *   fechaContainer, fechaInput, calendarButton, row, half.
  *
  * Ejemplo:
- * import { styles } from '../styles/densidadPoblacionalStyles';
+ * import { styles } from '../styles/DensidadPoblacionalStyles';
  * <View style={styles.container}>
  */
 
