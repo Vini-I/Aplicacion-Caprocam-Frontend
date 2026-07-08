@@ -1,10 +1,28 @@
 /**
- * EditarCompradorScreen
- * Pantalla para editar la información de un comprador existente.
- * Permite modificar el tipo de producto, teléfono, correo, dirección y notas del comprador.
- * Incluye validaciones para teléfono y correo electrónico.
- * Al guardar, redirige a la pantalla de detalle del comprador.
+ * ============================================================
+ * PANTALLA: EDITARCOMPRADORSCREEN
+ * ============================================================
+ * Módulo: Compradores
+ *
+ * Formulario para editar un comprador existente.
+ *
+ * FUNCIONALIDAD:
+ * 1. Nombre no editable (deshabilitado); tipo de producto,
+ *    teléfono, correo, dirección y notas sí se pueden modificar.
+ * 2. Teléfono y correo son obligatorios y se validan con formato,
+ *    solo al presionar "Guardar comprador" (useEditarCompradorScreen).
+ * 3. Muestra una única alerta general arriba del formulario:
+ *    error, advertencia o éxito según corresponda.
+ *
+ * IMPORTANTE:
+ * - El borde rojo de Teléfono/Correo se activa por campo, pero el
+ *   texto de error es un solo mensaje general (la alerta de
+ *   arriba), no uno por campo, según el estándar 1.5.
+ * - guardar() no navega a otra pantalla: solo muestra la alerta de
+ *   resultado en el mismo formulario.
+ * ============================================================
  */
+
 import React, { useState } from "react";
 import { View, ScrollView } from "react-native";
 
@@ -17,6 +35,7 @@ import CustomText from "../../../shared/components/Text";
 import Icon from "../../../shared/components/Icons";
 import Alert from "../../../shared/components/Alert";
 
+import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
 import { styles, ICON_STYLES } from "../styles/EditarCompradorStyles";
 
@@ -70,7 +89,7 @@ export default function EditarCompradorScreen() {
 
           {/* Nombre deshabilitado, no se permite editar */}
           <Input
-            label="Nombre de el comprador"
+            label="Nombre de el comprador *"
             value={nombre}
             editable={false}
             containerStyle={styles.field}
@@ -80,7 +99,7 @@ export default function EditarCompradorScreen() {
 
           {/* Campos editables del comprador */}
           <Select
-            label="Tipo de producto"
+            label="Tipo de producto *"
             value={tipoProducto}
             onChange={setTipoProducto}
             options={tiposProducto}
@@ -90,14 +109,14 @@ export default function EditarCompradorScreen() {
           />
 
           <Input
-            label="Teléfono"
+            label="Teléfono *"
             value={telefono}
             onChangeText={handleTelefonoChange}
             placeholder="+506 2222-3344"
             keyboardType="phone-pad"
             maxLength={TELEFONO_MAX_LENGTH}
             containerStyle={styles.field}
-            style={styles.input}
+            style={[styles.input, errorTelefono !== "" && styles.inputError]}
             labelStyle={styles.label}
           />
           {errorTelefono !== "" && (
@@ -111,7 +130,7 @@ export default function EditarCompradorScreen() {
             placeholder="ventas@empresa.com"
             keyboardType="email-address"
             containerStyle={styles.field}
-            style={styles.input}
+            style={[styles.input, errorCorreo !== "" && styles.inputError]}
             labelStyle={styles.label}
           />
           {errorCorreo !== "" && (
@@ -140,13 +159,9 @@ export default function EditarCompradorScreen() {
           />
 
           {/* Botón para guardar, dispara la validación completa */}
-          <Button
-            onPress={guardar}
-            style={styles.saveButton}
-            textStyle={styles.saveButtonText}
-          >
+          <Button variant="outline" onPress={guardar} style={styles.saveButton} textStyle={styles.saveButtonText}>
             <View style={styles.buttonContent}>
-              <Icon icon={ICONS.save} size={ICON_STYLES.save.size} color={ICON_STYLES.exit.color} />
+              <Icon icon={ICONS.save} size={ICON_STYLES.save.size} color={COLORS.primary} />
               <CustomText style={styles.saveButtonText}>Guardar comprador</CustomText>
             </View>
           </Button>

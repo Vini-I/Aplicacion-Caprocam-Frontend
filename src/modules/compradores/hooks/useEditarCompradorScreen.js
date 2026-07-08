@@ -1,3 +1,31 @@
+
+/**
+ * ============================================================
+ * HOOK: USEEDITARCOMPRADORSCREEN
+ * ============================================================
+ * Módulo: Compradores
+ *
+ * Maneja el estado del formulario de edición de comprador.
+ *
+ * FUNCIONALIDAD:
+ * 1. Carga los datos actuales del comprador (compradoresMock[0])
+ *    como valores iniciales del formulario.
+ * 2. Valida teléfono y correo (obligatorios, con formato) solo al
+ *    presionar "Guardar" (función guardar), nunca mientras se
+ *    escribe.
+ * 3. Muestra una única alerta general: error si teléfono/correo
+ *    son inválidos, advertencia si faltan dirección/notas, éxito
+ *    si todo está correcto.
+ * 4. Expone la navegación de vuelta al detalle del comprador.
+ *
+ * IMPORTANTE:
+ * - handleTelefonoChange/handleCorreoChange solo actualizan el
+ *   valor: no validan en cada tecla, para que el borde/mensaje
+ *   rojo aparezca únicamente después de intentar guardar.
+ * ============================================================
+ */
+
+
 import { useState } from "react";
 import { useRouter } from "expo-router";
 import { compradoresMock } from "../services/CompradorData";
@@ -46,14 +74,12 @@ export function useEditarCompradorScreen() {
 
   // Valida el teléfono en tiempo real mientras el usuario escribe
   function handleTelefonoChange(valor) {
-    setTelefono(valor);
-    setErrorTelefono(validarTelefono(valor));
+   setTelefono(valor);
   }
 
   // Valida el correo en tiempo real mientras el usuario escribe
   function handleCorreoChange(valor) {
-    setCorreo(valor);
-    setErrorCorreo(validarCorreo(valor));
+   setCorreo(valor);
   }
 
   function volverADetalle() {

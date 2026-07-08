@@ -1,3 +1,26 @@
+/**
+ * ============================================================
+ * HOOK: USEDETALLEPRODUCTO
+ * ============================================================
+ * Módulo: Productos
+ *
+ * Maneja la lógica de la pantalla de detalle de un producto.
+ *
+ * FUNCIONALIDAD:
+ * 1. Obtiene el producto por id desde InventarioService.
+ * 2. Calcula si el producto tiene stock bajo (cantidad < stock mínimo).
+ * 3. Resuelve el color de la categoría para pintar el badge.
+ * 4. Formatea precio unitario y valor total en stock en colones (₡).
+ * 5. Controla la apertura/cierre del modal de confirmación de eliminar.
+ * 6. Expone la navegación hacia Editar y hacia atrás (Inventarios).
+ *
+ * IMPORTANTE:
+ * - Si no existe un producto con ese id, "producto" llega null 
+ * - confirmarEliminar() borra el producto de forma inmediata al
+ *   confirmar (no hay deshacer).
+ * ============================================================
+ */
+
 import { useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { getProductoById, deleteProducto } from "../../inventarios/services/InventarioService";

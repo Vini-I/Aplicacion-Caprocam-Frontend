@@ -19,7 +19,7 @@
  * - Input: campos de texto normales.
  * - Select: campos desplegables.
  * - NumberInput: campos numéricos con flechas.
- * - ProductDateInput: calendario propio del módulo de inventarios.
+ * - DateInput: calendario propio del módulo de inventarios.
  * - Button: botón para guardar.
  *
  * CAMPOS DEL PRODUCTO:
@@ -73,6 +73,11 @@ export default function ProductForm() {
     canSave,
     validationMessage,
     showExpirationDate,
+    errorNombre,
+    errorCategoria,
+    errorCantidad,
+    errorStockMinimo,
+    errorPrecio,
     handleField,
     handleCategoriaChange,
     handleSubmit,
@@ -98,19 +103,19 @@ export default function ProductForm() {
             onChangeText={(v) => handleField("nombre", v)}
             placeholder="Ej. Alimento camarón 35%"
             containerStyle={styles.field}
-            style={styles.input}
+            style={[styles.input, errorNombre && styles.inputError]}
             labelStyle={styles.label}
           />
 
           {/* Categoría */}
           <Select
-            label="Categoría *"
-            value={form.categoria}
-            options={CATEGORIAS}
-            onChange={handleCategoriaChange}
-            containerStyle={styles.field}
-            selectStyle={styles.select}
-            labelStyle={styles.label}
+             label="Categoría *"
+             value={form.categoria}
+             options={CATEGORIAS}
+             onChange={handleCategoriaChange}
+             containerStyle={styles.field}
+             selectStyle={[styles.select, errorCategoria && styles.inputError]}
+             labelStyle={styles.label}
           />
 
           {/* Proveedor */}
@@ -134,7 +139,7 @@ export default function ProductForm() {
             step={1}
             containerStyle={styles.field}
             labelStyle={styles.label}
-            style={styles.numberInput}
+            style={[styles.numberInput, errorCantidad && styles.inputError]}
           />
 
           {/* Unidad */}
@@ -158,7 +163,7 @@ export default function ProductForm() {
             step={1}
             containerStyle={styles.field}
             labelStyle={styles.label}
-            style={styles.numberInput}
+            style={[styles.numberInput, errorStockMinimo && styles.inputError]}
           />
 
           {/* Precio por unidad */}
@@ -169,7 +174,7 @@ export default function ProductForm() {
             placeholder="0"
             keyboardType="numeric"
             containerStyle={styles.field}
-            style={styles.input}
+            style={[styles.input, errorPrecio && styles.inputError]}
             labelStyle={styles.label}
           />
 
@@ -195,9 +200,10 @@ export default function ProductForm() {
 
           {/* Botón guardar */}
           <Button
+            variant="outline"
             onPress={handleSubmit}
-            disabled={!canSave}
-            style={[styles.saveButton, !canSave && styles.saveButtonDisabled]}
+            disabled={isEditMode && !canSave}
+            style={[styles.saveButton, isEditMode && !canSave && styles.saveButtonDisabled]}
             textStyle={styles.saveButtonText}
           >
             {isEditMode ? "Guardar cambios" : "Guardar producto"}

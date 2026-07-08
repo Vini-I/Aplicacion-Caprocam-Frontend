@@ -1,8 +1,26 @@
 /**
- * Datos de ejemplo para compradores.
- * Estos datos se utilizan para mostrar la lista de compradores y sus detalles en las pantallas correspondientes.
+ * ============================================================
+ * SERVICE: COMPRADORDATA
+ * ============================================================
+ * Módulo: Compradores
  *
+ * Datos de ejemplo (mock) usados por las pantallas de compradores.
+ *
+ * FUNCIONALIDAD:
+ * 1. compradoresMock: lista de compradores de ejemplo (id, nombre,
+ *    tipo de producto, teléfono, correo, dirección, notas), usada
+ *    en la lista, el detalle y como base para Editar.
+ * 2. tiposProducto: opciones para el Select de tipo de producto en
+ *    la pantalla de editar comprador.
+ *
+ * IMPORTANTE:
+ * - Los value de tiposProducto van en minúscula ("alimento"), pero
+ *   compradoresMock.tipoProducto usa el label capitalizado
+ *   ("Alimento"). Si se usa tiposProducto para hacer match exacto
+ *   contra compradoresMock, revisar ese desfase de formato.
+ * ============================================================
  */
+
 export const compradoresMock = [
   {
     id: 1,
