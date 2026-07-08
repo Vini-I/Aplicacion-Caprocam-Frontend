@@ -63,7 +63,12 @@ function crearLectura(id, value, decimals) {
   return { id, value, rawInput: formatear(value, decimals), editing: false };
 }
 
-
+// Convierte valores iniciales en objetos de lectura reutilizables por RangeCard.
+function crearLecturasDesdeValores(valores, idealMin, decimals) {
+  return (Array.isArray(valores) ? valores : []).map((value, index) =>
+    crearLectura(index + 1, Number(value) || idealMin, decimals),
+  );
+}
 
 export default function useRangeCard({
   idealMin,
@@ -80,9 +85,7 @@ export default function useRangeCard({
 
   const [lecturas, setLecturas] = useState(() => {
     if (initialLecturas.length > 0) {
-      return initialLecturas.map((value, index) =>
-        crearLectura(index + 1, Number(value) || idealMin, decimals),
-      );
+      return crearLecturasDesdeValores(initialLecturas, idealMin, decimals);
     }
 
     // Start empty by default (no measurement created until user adds one
@@ -92,9 +95,7 @@ export default function useRangeCard({
 
   useEffect(() => {
     const next = initialLecturas.length > 0
-      ? initialLecturas.map((value, index) =>
-          crearLectura(index + 1, Number(value) || idealMin, decimals),
-        )
+      ? crearLecturasDesdeValores(initialLecturas, idealMin, decimals)
       : [];
 
     setLecturas(next);

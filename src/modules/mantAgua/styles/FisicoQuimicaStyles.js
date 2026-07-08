@@ -20,14 +20,14 @@
  * - No incluye lógica de presentación ni side-effects.
  */
 
-import { StyleSheet} from "react-native";
+import { StyleSheet } from "react-native";
 import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
 
 export const styles = StyleSheet.create({
-  scroll: { 
-    flex: 1, 
-    backgroundColor: COLORS.white 
+  scroll: {
+    flex: 1,
+    backgroundColor: COLORS.white
   },
 
   scrollContent: {
@@ -44,7 +44,7 @@ export const styles = StyleSheet.create({
     zIndex: 100,
     elevation: 100,
     overflow: "visible",
-  
+
   },
 
   selectWrapper: {
@@ -62,23 +62,23 @@ export const styles = StyleSheet.create({
     elevation: 2000,
   },
   selectContainer: {
-  position: "absolute",
-  top: 0, left: 0, right: 0,
-  zIndex: 9999,
-  elevation: 9999,
-  overflow: "visible",
-  width: "100%",
-},
-selectField: {
-  position: "relative",
-  marginBottom: 0,
-  zIndex: 9999,
-  elevation: 9999,
-  overflow: "visible",
-},
-selectLabel: { position: "relative", zIndex: 1000, elevation: 1000 },
-selectButton: { position: "relative", zIndex: 1000, elevation: 1000 },
-selectPlaceholder: { height: 110 },
+    position: "absolute",
+    top: 0, left: 0, right: 0,
+    zIndex: 9999,
+    elevation: 9999,
+    overflow: "visible",
+    width: "100%",
+  },
+  selectField: {
+    position: "relative",
+    marginBottom: 0,
+    zIndex: 9999,
+    elevation: 9999,
+    overflow: "visible",
+  },
+  selectLabel: { position: "relative", zIndex: 1000, elevation: 1000 },
+  selectButton: { position: "relative", zIndex: 1000, elevation: 1000 },
+  selectPlaceholder: { height: 110 },
 
 
   label: {
@@ -123,7 +123,8 @@ selectPlaceholder: { height: 110 },
     gap: 16,
     alignItems: "center",
   },
-  alertBox: { width: "60%", alignSelf: "center" },
+  alertWrapper: { width: "100%", alignSelf: "stretch" },
+  alertBox: { width: "100%", alignSelf: "stretch" },
   alertText: { textAlign: "center", fontWeight: "bold" },
   errorBanner: { marginTop: 12, width: "100%" },
   errorText: { textAlign: "center", fontFamily: TYPOGRAPHY.fontFamily.bold, color: COLORS.error },

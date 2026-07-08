@@ -15,10 +15,6 @@ import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
 
 export const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: COLORS.white,
-  },
 
 
   scrollContent: {
@@ -29,21 +25,19 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginTop: 16,
-    paddingHorizontal: 16,
-    gap: 8,
+    paddingHorizontal: 0,
+    gap: 2,
+    width: "100%",
   },
 
-  searchBarContainer: {
-    flex: 1,
-  },
-
+  
   filterButton: {
     height: 43,
     marginTop: 0,
   },
 
   contadorResultados: {
-    marginHorizontal: 16,
+    marginHorizontal: 0,
     marginTop: 14,
     marginBottom: 4,
     color: COLORS.textTertiary,
@@ -53,7 +47,7 @@ export const styles = StyleSheet.create({
 
   lista: {
     paddingTop: 8,
-    paddingHorizontal: 16,
+    paddingHorizontal: 0,
     paddingBottom: 24,
   },
 
@@ -64,18 +58,18 @@ export const styles = StyleSheet.create({
   touchable: {
     width: "100%",
     backgroundColor: "transparent",
-    padding: 0,
+    paddingHorizontal: 0,
+    paddingVertical: 0,
     margin: 0,
     marginTop: 0,
     borderRadius: 0,
-    alignItems: "stretch",
+    
   },
 
   card: {
     width: "100%",
-    maxWidth: 900,
     alignSelf: "center",
-    marginBottom: 16,
+    marginBottom: 12,
   },
 
   cardHeader: {
@@ -154,6 +148,11 @@ export const styles = StyleSheet.create({
 
   vacioContainer: {
     paddingVertical: 24,
+    paddingHorizontal: 0,
+  },
+
+  searchBarContainer: {
+    flex: 1,
   },
 
   vacioTitulo: {
@@ -174,13 +173,14 @@ export const styles = StyleSheet.create({
     opacity: 0.5,
     marginTop: 12,
   },
-  footerContent: {
-    width: "100%",
-    paddingVertical: 12,
-  },
 
-  footerActions: {
+  stickyButtonContainer: {
+    position: "relative",
     width: "100%",
+    alignSelf: "stretch",
+    backgroundColor: COLORS.white,
+    paddingHorizontal: 0,
+    paddingVertical: 12,
   },
 
   fullButton: {
@@ -189,5 +189,7 @@ export const styles = StyleSheet.create({
     borderRadius: 14,
     alignItems: "center",
     justifyContent: "center",
+    margin:0,
+    padding:0,
   },
 });
