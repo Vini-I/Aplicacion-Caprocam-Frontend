@@ -49,3 +49,21 @@ export function validarCorreo(
   if (!CORREO_REGEX.test(valorLimpio)) return mensajeInvalido;
   return "";
 }
+
+/**
+ * Da formato visual al teléfono (XXXX-XXXX, con "+506 " adelante si
+ * aplica) para que no se muestre pegado en el listado ni en el
+ * detalle, sin importar si el valor guardado ya trae o no separadores.
+ * Si el valor no calza con 8 dígitos locales, se devuelve tal cual
+ * llegó 
+ */
+export function formatearTelefono(valor) {
+  const limpio = (valor || "").replace(/[^\d+]/g, "");
+  const tienePrefijo = limpio.startsWith("+506");
+  const soloNumero = tienePrefijo ? limpio.slice(4) : limpio.replace(/^\+/, "");
+
+  if (soloNumero.length !== 8) return valor || "";
+
+  const numeroFormateado = `${soloNumero.slice(0, 4)}-${soloNumero.slice(4)}`;
+  return tienePrefijo ? `+506 ${numeroFormateado}` : numeroFormateado;
+}

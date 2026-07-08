@@ -16,7 +16,7 @@
  *    medidas. 
  * 
  * 3. input/select/saveButton se mantienen alineados con
- *    StylesNuevoProveedor (borde redondeado, mismo radio) para que
+ *    NuevoProveedorStyles (borde redondeado, mismo radio) para que
  *    Nuevo/Editar proveedor se vean como el mismo formulario.
  * 
  * 4. inputError (borde rojo) es el único estilo de estado de campo y
@@ -32,10 +32,6 @@ import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
 
 export const styles = StyleSheet.create({
-  container: {
-    backgroundColor: COLORS.surface,
-  },
-
   scrollView: {
     flex: 1,
   },
@@ -142,6 +138,11 @@ export const styles = StyleSheet.create({
   alertText: {
     textAlign: "center",
     width: "100%",
+  },
+  alertSuccess: {
+    backgroundColor: COLORS.successLight,
+    borderWidth: 1,
+    borderColor: COLORS.success,
   },
 });
 

@@ -66,7 +66,7 @@ export default function EditarProveedorScreen() {
   } = useEditarProveedorScreen();
 
   return (
-    <View style={[STYLE.container, styles.container]}>
+    <View style={STYLE.container}>
       <ScrollView
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
@@ -146,7 +146,7 @@ export default function EditarProveedorScreen() {
             <Alert
               variant={alerta.variant}
               message={alerta.message}
-              style={styles.alertContainer}
+              style={[styles.alertContainer, alerta.variant === "success" && styles.alertSuccess]}
               textStyle={styles.alertText}
             />
           )}

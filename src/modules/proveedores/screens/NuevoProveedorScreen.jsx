@@ -20,7 +20,8 @@
  *      general, dentro de una alerta.
  * 
  * 4. Si el guardado es exitoso, se muestra una alerta de confirmacion
- *    tambien arriba del boton "Guardar proveedor".
+ *    tambien arriba del boton "Guardar proveedor", y el proveedor
+ *    queda agregado a proveedoresMock (se refleja en ProveedorScreen).
  *
  * IMPORTANTE:
  * - No navega a otras pantallas; al guardar exitosamente se queda en
@@ -43,7 +44,7 @@ import CustomAlert from "../../../shared/components/Alert";
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
 import { STYLE } from "../../../theme/style";
-import { styles } from "../styles/StylesNuevoProveedor.js";
+import { styles } from "../styles/NuevoProveedorStyles.js";
 import { tiposProducto } from "../services/ProveedorData";
 
 import {
@@ -166,7 +167,7 @@ export default function NuevoProveedorScreen() {
             <CustomAlert
               variant="success"
               message="Proveedor guardado correctamente."
-              style={styles.alertBox}
+              style={[styles.alertBox, styles.alertSuccess]}
               textStyle={styles.alertText}
             />
           )}

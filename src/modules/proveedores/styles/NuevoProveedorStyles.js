@@ -113,4 +113,9 @@ export const styles = StyleSheet.create({
     textAlign: "center",
     width: "100%",
   },
+  alertSuccess: {
+    backgroundColor: COLORS.successLight,
+    borderWidth: 1,
+    borderColor: COLORS.success,
+  },
 });
