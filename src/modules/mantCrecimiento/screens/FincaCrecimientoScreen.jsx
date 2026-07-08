@@ -15,6 +15,7 @@
 
 import { ScrollView, View } from "react-native";
 import { styles } from "../../../modules/mantCrecimiento/styles/CrecimientoStyle.js";
+import {STYLE} from "../../../theme/style.js";
 import Alert from "../../../shared/components/Alert.jsx";
 import BadgeLabel from "../../../shared/components/Badge.jsx";
 import Button from "../../../shared/components/Button.jsx";
@@ -28,7 +29,6 @@ import Title from "../../../shared/components/Title.jsx";
 import { COLORS } from "../../../theme/colors.js";
 import { ICONS } from "../../../theme/icons.js";
 import { useFincaCrecimiento } from "../hooks/useFincaCrecimiento.js";
-import { STYLE} from "../../../theme/style.js";
 
 export default function FincaCrecimientoScreen() {
   const {
@@ -39,16 +39,17 @@ export default function FincaCrecimientoScreen() {
     estanquesFiltrados,
     estanqueSeleccionadoObj,
     estanque,
-    pesoAnteriorLabel,
-    estanqueDeshabilitado,
     setEstanqueSeleccionado,
     setPesoActual,
     handleFincaChange,
     guardarDatos,
     submitted,
-    errors,
     successMessage,
     errorMessage,
+    pesoAnteriorLabel,
+    mostrarErrorFinca,
+    mostrarErrorEstanque,
+    mostrarErrorPeso,
   } = useFincaCrecimiento();
 
   if (!estanque) {
@@ -82,9 +83,8 @@ export default function FincaCrecimientoScreen() {
             options={opcionesFincas}
             value={fincaSeleccionada}
             onChange={handleFincaChange}
-            selectStyle={submitted && errors.finca ? styles.errorSelect : null}
+            selectStyle={mostrarErrorFinca ? styles.inputError : null}
           />
-          {submitted && errors.finca ? <Text style={styles.errorText}>{errors.finca}</Text> : null}
 
           <Select
             label="Seleccione el estanque *"
@@ -92,10 +92,9 @@ export default function FincaCrecimientoScreen() {
             options={estanquesFiltrados}
             value={estanqueSeleccionado}
             onChange={setEstanqueSeleccionado}
-            disabled={estanqueDeshabilitado}
-            selectStyle={submitted && errors.estanque ? styles.errorSelect : null}
+            disabled={estanqueSeleccionado !== "" && estanquesFiltrados.length === 0}
+            selectStyle={mostrarErrorEstanque ? styles.inputError : null}
           />
-          {submitted && errors.estanque ? <Text style={styles.errorText}>{errors.estanque}</Text> : null}
 
           <View style={styles.badgeRow}>
             <BadgeLabel
@@ -110,27 +109,24 @@ export default function FincaCrecimientoScreen() {
             <View style={styles.inputItem}>
               <Title level={5}>Peso actual (g) *</Title>
               <NumberInput
-                style={styles.sameInput}
+                style={[styles.sameInput, mostrarErrorPeso && styles.inputError]}
                 value={pesoActual}
                 onChangeText={setPesoActual}
                 step={0.5}
                 min={0}
                 max={1000}
-                style={[styles.sameInput, submitted && errors.peso ? styles.errorInput : null]}
               />
-              {submitted && errors.peso ? <Text style={styles.errorText}>{errors.peso}</Text> : null}
             </View>
           </View>
+
+          {submitted && errorMessage ? <Alert variant="danger" message={errorMessage} /> : null}
+          {submitted && successMessage ? (
+            <Alert variant="success" message={successMessage} />
+          ) : null}
 
           <Button variant="outline" onPress={guardarDatos} style={styles.submitButton}>
             Guardar
           </Button>
-          {errorMessage ? (
-            <Alert variant="danger" message={errorMessage} style={styles.feedbackAlert} />
-          ) : null}
-          {successMessage ? (
-            <Alert variant="success" message={successMessage} style={styles.feedbackAlert} />
-          ) : null}
         </Card>
       </ScrollView>
     </View>

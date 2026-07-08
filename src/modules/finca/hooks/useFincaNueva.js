@@ -15,7 +15,7 @@
  * - Obtiene las opciones de cantones y distritos según la ubicación.
  * - Registra una nueva finca mediante el contexto global.
  */
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Dimensions, View } from "react-native";
 import { provincias, ubicaciones } from "../screens/FincaNuevaData.js";
 import { styles } from "../styles/StylesFincaNueva.js";
@@ -40,12 +40,26 @@ export function useFincaNueva({ onFinca }) {
   });
 
   const [telefonos, setTelefonos] = useState([""]);
+  const [errorMessage, setErrorMessage] = useState("");
   const [errores, setErrores] = useState({});
 
+  function normalizarNumeroDecimal(valor) {
+    const valorLimpio = String(valor).replace(",", ".").replace(/[^0-9.]/g, "");
+    const partes = valorLimpio.split(".");
+    return partes.length > 1
+      ? `${partes[0]}.${partes.slice(1).join("")}`
+      : valorLimpio;
+  }
+
   const actualizarCampo = (campo, valor) => {
+    const nuevoValor =
+      campo === "areaTotal" || campo === "espejoAgua"
+        ? normalizarNumeroDecimal(valor)
+        : valor;
+
     setFormulario((actual) => ({
       ...actual,
-      [campo]: valor,
+      [campo]: nuevoValor,
     }));
     if (errores[campo]) {
       setErrores((actual) => ({ ...actual, [campo]: false }));
@@ -54,8 +68,15 @@ export function useFincaNueva({ onFinca }) {
 
   const actualizarTelefono = (index, valor) => {
     const nuevosTelefonos = [...telefonos];
-    nuevosTelefonos[index] = valor;
+    nuevosTelefonos[index] = String(valor).replace(/\D/g, "").slice(0, 8);
     setTelefonos(nuevosTelefonos);
+
+    if (errores[`telefono${index}`]) {
+      setErrores((actual) => ({
+        ...actual,
+        [`telefono${index}`]: false,
+      }));
+    }
   };
 
   const agregarTelefono = () => {
@@ -67,8 +88,18 @@ export function useFincaNueva({ onFinca }) {
     setTelefonos(nuevosTelefonos);
   };
 
+  function isTelefonoValido(telefono) {
+    return /^\d{8}$/.test(telefono);
+  }
+
+  function isNumber(valor) {
+    const numero = Number(valor);
+    return !isNaN(numero) && numero >= 0;
+  }
+
   const registrarFinca = () => {
     const nuevosErrores = {};
+    setErrorMessage("");
 
     if (!formulario.codigoInterno.trim()) nuevosErrores.codigoInterno = true;
     if (!formulario.nombre.trim()) nuevosErrores.nombre = true;
@@ -76,8 +107,32 @@ export function useFincaNueva({ onFinca }) {
     if (!formulario.canton) nuevosErrores.canton = true;
     if (!formulario.distrito) nuevosErrores.distrito = true;
     if (!formulario.responsable.trim()) nuevosErrores.responsable = true;
-    if (!formulario.areaTotal.trim()) nuevosErrores.areaTotal = true;
-    if (!formulario.espejoAgua.trim()) nuevosErrores.espejoAgua = true;
+
+    if (
+      !String(formulario.areaTotal).trim() ||
+      !isNumber(formulario.areaTotal)
+    ) {
+      nuevosErrores.areaTotal = true;
+      setErrorMessage("El area total debe ser un numero positivo");
+    }
+
+    if (
+      !String(formulario.espejoAgua).trim() ||
+      !isNumber(formulario.espejoAgua)
+    ) {
+      nuevosErrores.espejoAgua = true;
+      setErrorMessage("El espejo de agua debe ser un numero positivo");
+    }
+
+    for (let i = 0; i < telefonos.length; i++) {
+      if (!isTelefonoValido(telefonos[i])) {
+        nuevosErrores[`telefono${i}`] = true;
+        setErrorMessage(
+          "Cada telefono debe contener exactamente solo 8 digitos numericos."
+        );
+        break;
+      }
+    }
 
     if (Object.keys(nuevosErrores).length > 0) {
       setErrores(nuevosErrores);
@@ -106,15 +161,18 @@ export function useFincaNueva({ onFinca }) {
     value: distrito,
   }));
 
-  const ContentWrapper = ({ children }) => (
-    <View style={STYLE.contentWrapper}>{children}</View>
-  );
+  const ContentWrapper = useMemo(() => {
+    return function ContentWrapper({ children, style }) {
+      return <View style={[STYLE.contentWrapper, style]}>{children}</View>;
+    };
+  }, []);
   return {
     ContentWrapper,
     formulario,
     setFormulario,
     telefonos,
     setTelefonos,
+    errorMessage,
     errores,
     setErrores,
 
