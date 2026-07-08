@@ -58,34 +58,34 @@ export default function GestionAlimentacion({
   });
 
   return (
-    <ScrollView style={styles.contenido}>
-      <View style={styles.alimentacionContent}>
-      <AlimentacionStats {...calcularStats(alimentaciones)} />
+    <ScrollView style={{ flex: 1 }}>
+      <View style={styles.content}>
+        <AlimentacionStats {...calcularStats(alimentaciones)} />
 
-      <AlimentacionForm
-        form={form}
-        updateField={updateField}
-        submitted={submitted}
-        errores={errores}
-      />
+        <AlimentacionForm
+          form={form}
+          updateField={updateField}
+          submitted={submitted}
+          errores={errores}
+        />
 
-      <Text tamano="xs" style={styles.secLabel}>
-        REGISTROS DEL DÍA
-      </Text>
+        <Footer
+          children={
+            <Button variant="outline" onPress={handleGuardar}>
+              Guardar Registro
+            </Button>
+          }
+          fixedBottom={true}
+        />
 
-      <AlimentacionList alimentaciones={alimentaciones} />
+        <Text tamano="xs" style={styles.secLabel}>
+          REGISTROS DEL DÍA
+        </Text>
 
-      <View style={styles.spacer} />
+        <AlimentacionList alimentaciones={alimentaciones} />
 
-      <Footer
-        children={
-          <Button variant="outline" onPress={handleGuardar}>
-            Guardar Registro
-          </Button>
-        }
-        fixedBottom={true}
-      />
-    </View>
+        <View style={styles.spacer} />
+      </View>
     </ScrollView>
   );
 }

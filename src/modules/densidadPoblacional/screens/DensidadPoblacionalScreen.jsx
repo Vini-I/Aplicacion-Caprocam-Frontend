@@ -16,11 +16,12 @@
  * - El ícono del NavbarRegistro ya no es "mortality" (el módulo
  *   dejó de llamarse Mortalidad): se usa ICONS.chart, ya
  *   existente en theme/icons.js, para representar conteo/densidad.
- * - Ya no usa el componente Alert compartido con un estado
- *   booleano local de éxito: la confirmación de guardado se
- *   muestra con el mismo patrón showAlert (Platform.OS === 'web'
- *   ? window.alert : Alert.alert) usado en Alimentación,
- *   encapsulado dentro de useDensidadPoblacional().handleGuardar.
+ * - El feedback de guardado (éxito, campos incompletos, error de
+ *   guardado) se muestra con los componentes globales Modal +
+ *   Alert de shared/components/, en vez de window.alert/
+ *   Alert.alert nativos (mismo patrón de AlimentacionScreen.jsx),
+ *   usando el estado `modal` y la función cerrarModal() que
+ *   retorna useDensidadPoblacional().
  *
  * Props principales:
  * - onBack: callback opcional de navegación hacia atrás.
@@ -36,6 +37,8 @@ import DatosConteo from "./DatosConteo";
 import InformacionEstanque from "./InformacionEstanque";
 import RegistroConteo from "./RegistroConteo";
 import NavbarRegistro from "../../../shared/components/NavbarRegistro";
+import Modal from "../../../shared/components/Modal";
+import Alert from "../../../shared/components/Alert";
 import { styles } from "../styles/DensidadPoblacionalStyles";
 import { TYPOGRAPHY } from "../../../theme/typography";
 import Button from "../../../shared/components/Button";
@@ -54,6 +57,8 @@ export default function DensidadPoblacionalScreen({ onBack }) {
     estanques,
     submitted,
     errores,
+    modal,
+    cerrarModal,
     handleGuardar,
     numeroCamarones,
     setNumeroCamarones,
@@ -63,8 +68,8 @@ export default function DensidadPoblacionalScreen({ onBack }) {
     setAreaAtarraya,
     promedioPorTiro,
     setPromedioPorTiro,
-    sobrevivencia,
-    setSobrevivencia,
+    supervivencia,
+    setSupervivencia,
     notasConteo,
     setNotasConteo,
     siembraPorM2,
@@ -131,8 +136,8 @@ export default function DensidadPoblacionalScreen({ onBack }) {
           setAreaAtarraya={setAreaAtarraya}
           promedioPorTiro={promedioPorTiro}
           setPromedioPorTiro={setPromedioPorTiro}
-          sobrevivencia={sobrevivencia}
-          setSobrevivencia={setSobrevivencia}
+          supervivencia={supervivencia}
+          setSupervivencia={setSupervivencia}
           notasConteo={notasConteo}
           setNotasConteo={setNotasConteo}
           submitted={submitted}
@@ -148,6 +153,14 @@ export default function DensidadPoblacionalScreen({ onBack }) {
           fixedBottom={true}
         />
     </ScrollView>
+
+    <Modal visible={modal.visible} onClose={cerrarModal}>
+      <Alert
+        variant={modal.variant}
+        message={modal.mensaje}
+        textStyle={{ textAlign: "center" }}
+      />
+    </Modal>
     </>
   );
 }

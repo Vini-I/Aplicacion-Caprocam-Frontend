@@ -11,10 +11,15 @@
  *   tenía onPress={() => {}} y no guardaba ni validaba nada.
  *   Ahora handleGuardar activa `submitted = true`, valida con
  *   validarForm() de useRaleo, y solo si es válido persiste el
- *   registro con Raleo.service.js, muestra el alert de éxito y
+ *   registro con Raleo.service.js, muestra el modal de éxito y
  *   reinicia el formulario (resetForm + submitted=false).
- * - Reutiliza el mismo patrón de alertas que Alimentación
- *   (Platform.OS === 'web' ? window.alert : Alert.alert).
+ * - El feedback de guardado (éxito, campos incompletos, error de
+ *   guardado) se muestra con los componentes globales Modal +
+ *   Alert de shared/components/, en vez de window.alert/
+ *   Alert.alert nativos (mismo patrón de AlimentacionScreen.jsx).
+ * - `observaciones` no es obligatorio: si el usuario no escribe
+ *   nada, handleGuardar lo completa con "No se realizan
+ *   observaciones" antes de persistir el registro.
  * - Usa NavbarRegistro (header celeste con botón volver) en vez
  *   del Header.jsx compartido, igual que Alimentación y Densidad
  *   Poblacional: Header.jsx está diseñado para pantallas de
@@ -25,32 +30,26 @@
  */
 
 import React, { useState } from "react";
-import { View, ScrollView, Platform, Alert } from "react-native";
+import { View, ScrollView } from "react-native";
 import Button from "../../../shared/components/Button";
 import Icon from "../../../shared/components/Icons";
 import Text from "../../../shared/components/Text";
 import Title from "../../../shared/components/Title";
 import RaleoForm from "../components/RaleoForm";
 import NavbarRegistro from "../../../shared/components/NavbarRegistro";
+import Modal from "../../../shared/components/Modal";
+import Alert from "../../../shared/components/Alert";
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
 import { styles } from "../styles/RaleoStyles";
 import useRaleo from "../hooks/useRaleo";
 import raleoService from "../services/Raleo.service";
 
-const showAlert = (title, message, buttons) => {
-  if (Platform.OS === "web") {
-    window.alert(`${title}\n\n${message}`);
-    buttons?.[0]?.onPress?.();
-  } else {
-    Alert.alert(title, message, buttons);
-  }
-};
-
 export default function RaleoScreen() {
   const { form, updateField, resetForm, validarForm } = useRaleo();
   const [submitted, setSubmitted] = useState(false);
   const [errores, setErrores] = useState({});
+  const [modal, setModal] = useState({ visible: false, variant: "success", mensaje: "" });
 
   const handleGuardar = async () => {
     setSubmitted(true);
@@ -61,24 +60,30 @@ export default function RaleoScreen() {
       const lista = Object.values(erroresValidacion)
         .map((e) => `• ${e}`)
         .join("\n");
-      showAlert("Campos incompletos", `Por favor complete:\n${lista}`);
+      setModal({ visible: true, variant: "warning", mensaje: `Por favor complete:\n${lista}` });
       return;
     }
 
     try {
-      await raleoService.create(form);
-      showAlert("Éxito", "Raleo registrado correctamente", [
-        {
-          text: "OK",
-          onPress: () => {
-            resetForm();
-            setSubmitted(false);
-            setErrores({});
-          },
-        },
-      ]);
+      const registro = {
+        ...form,
+        observaciones: form.observaciones?.trim()
+          ? form.observaciones
+          : "No se realizan observaciones",
+      };
+      await raleoService.create(registro);
+      setModal({ visible: true, variant: "success", mensaje: "Raleo registrado correctamente" });
     } catch {
-      showAlert("Error", "No se pudo guardar el registro");
+      setModal({ visible: true, variant: "danger", mensaje: "No se pudo guardar el registro" });
+    }
+  };
+
+  const cerrarModal = () => {
+    setModal((prev) => ({ ...prev, visible: false }));
+    if (modal.variant === "success") {
+      resetForm();
+      setSubmitted(false);
+      setErrores({});
     }
   };
 
@@ -106,6 +111,14 @@ export default function RaleoScreen() {
         </Button>
       </View>
     </ScrollView>
+
+    <Modal visible={modal.visible} onClose={cerrarModal}>
+      <Alert
+        variant={modal.variant}
+        message={modal.mensaje}
+        textStyle={{ textAlign: "center" }}
+      />
+    </Modal>
     </>
   );
 }

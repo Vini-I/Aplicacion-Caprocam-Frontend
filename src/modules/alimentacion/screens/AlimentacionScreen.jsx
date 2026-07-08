@@ -12,6 +12,12 @@
  *   dentro de handleGuardar, ANTES de validar, para que
  *   GestionAlimentacion/AlimentacionForm sepan cuándo mostrar
  *   los bordes rojos y mensajes de error de validarForm().
+ * - El feedback de guardado (éxito, campos incompletos, error de
+ *   guardado) se muestra con los componentes globales Modal +
+ *   Alert de shared/components/, en vez de window.alert/
+ *   Alert.alert nativos. cerrarModal() solo dispara el reset del
+ *   formulario (resetForm/submitted/errores/recargar) cuando el
+ *   modal se cierra estando en variant "success".
  * - Usa NavbarRegistro (header celeste con botón volver) en vez
  *   del Header.jsx compartido: Header.jsx está diseñado para
  *   pantallas de login (logo + título + subtítulo centrados),
@@ -27,7 +33,7 @@
  */
 
 import React, { useEffect, useState } from "react";
-import { View, Platform, Alert } from "react-native";
+import { View } from "react-native";
 import useAlimentacion from "../hooks/useAlimentacion";
 import useAlimentacionForm from "../hooks/useAlimentacionForm";
 import alimentacionService from "../services/Alimentacion.service";
@@ -35,23 +41,17 @@ import Spinner from "../../../shared/components/Spinner";
 import Text from "../../../shared/components/Text";
 import GestionAlimentacion from "./GestionAlimentacion";
 import NavbarRegistro from "../../../shared/components/NavbarRegistro";
+import Modal from "../../../shared/components/Modal";
+import Alert from "../../../shared/components/Alert";
 import { COLORS } from "../../../theme/colors";
 import { styles } from "../styles/AlimentacionStyles";
-
-const showAlert = (title, message, buttons) => {
-  if (Platform.OS === "web") {
-    window.alert(`${title}\n\n${message}`);
-    buttons?.[0]?.onPress?.();
-  } else {
-    Alert.alert(title, message, buttons);
-  }
-};
 
 export default function AlimentacionScreen({ navigation, onBack }) {
   const { alimentaciones, loading, error, recargar } = useAlimentacion();
   const { form, updateField, resetForm, validarForm } = useAlimentacionForm();
   const [submitted, setSubmitted] = useState(false);
   const [errores, setErrores] = useState({});
+  const [modal, setModal] = useState({ visible: false, variant: "success", mensaje: "" });
 
   useEffect(() => {
     const unsub = navigation?.addListener("focus", recargar);
@@ -67,25 +67,25 @@ export default function AlimentacionScreen({ navigation, onBack }) {
       const lista = Object.values(erroresValidacion)
         .map((e) => `• ${e}`)
         .join("\n");
-      showAlert("Campos incompletos", `Por favor complete:\n${lista}`);
+      setModal({ visible: true, variant: "warning", mensaje: `Por favor complete:\n${lista}` });
       return;
     }
 
     try {
       await alimentacionService.create(form);
-      showAlert("Éxito", "Alimentación registrada correctamente", [
-        {
-          text: "OK",
-          onPress: () => {
-            resetForm();
-            setSubmitted(false);
-            setErrores({});
-            recargar();
-          },
-        },
-      ]);
+      setModal({ visible: true, variant: "success", mensaje: "Alimentación registrada correctamente" });
     } catch {
-      showAlert("Error", "No se pudo guardar el registro");
+      setModal({ visible: true, variant: "danger", mensaje: "No se pudo guardar el registro" });
+    }
+  };
+
+  const cerrarModal = () => {
+    setModal((prev) => ({ ...prev, visible: false }));
+    if (modal.variant === "success") {
+      resetForm();
+      setSubmitted(false);
+      setErrores({});
+      recargar();
     }
   };
 
@@ -99,7 +99,7 @@ export default function AlimentacionScreen({ navigation, onBack }) {
     );
 
   return (
-    <View style={styles.screen}>
+    <View style={styles.container}>
       <NavbarRegistro
         Titulo="Alimentación"
         Subtitulo="Registro de alimentación"
@@ -114,6 +114,14 @@ export default function AlimentacionScreen({ navigation, onBack }) {
         handleGuardar={handleGuardar}
         onBack={onBack}
       />
+
+      <Modal visible={modal.visible} onClose={cerrarModal}>
+        <Alert
+          variant={modal.variant}
+          message={modal.mensaje}
+          textStyle={{ textAlign: "center" }}
+        />
+      </Modal>
     </View>
   );
 }

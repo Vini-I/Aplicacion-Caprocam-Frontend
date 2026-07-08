@@ -10,10 +10,10 @@
  * Funcionalidad:
  * - Corrige el import de estilos para apuntar al archivo real
  *   AlimentacionStyles.js.
- * - Corrige un ReferenceError en tiempo de ejecución: showAlert()
- *   usa Platform y Alert pero el archivo nunca los importaba de
- *   'react-native'; ahora se importan junto con View/ScrollView/
- *   Pressable.
+ * - El feedback de guardado (éxito, campos incompletos, error de
+ *   guardado) se muestra con los componentes globales Modal +
+ *   Alert de shared/components/, en vez de window.alert/
+ *   Alert.alert nativos (mismo patrón de AlimentacionScreen.jsx).
  *
  * Nota: esta pantalla no está enrutada actualmente desde
  * src/app/ (ninguna ruta la importa), por lo que no se le aplicó
@@ -28,40 +28,40 @@
  * <RegistroAlimentacionScreen navigation={navigation} />
  */
 
-import React from "react";
-import { View, ScrollView, Pressable, Platform, Alert } from "react-native";
+import React, { useState } from "react";
+import { View, ScrollView, Pressable } from "react-native";
 import useAlimentacionForm from "../hooks/useAlimentacionForm";
 import AlimentacionForm from "../components/AlimentacionForm";
 import alimentacionService from "../services/Alimentacion.service";
 import Text from "../../../shared/components/Text";
+import Modal from "../../../shared/components/Modal";
+import Alert from "../../../shared/components/Alert";
 import { styles } from "../styles/AlimentacionStyles";
-const showAlert = (title, message, buttons) => {
-    if (Platform.OS === 'web') {
-        window.alert(`${title}\n\n${message}`);
-        buttons?.[0]?.onPress?.();
-    } else {
-        Alert.alert(title, message, buttons);
-    }
-};
 
 export default function RegistroAlimentacionScreen({ navigation }) {
     const { form, updateField, resetForm, validarForm } = useAlimentacionForm();
+    const [modal, setModal] = useState({ visible: false, variant: "success", mensaje: "" });
 
     const handleGuardar = async () => {
         const { valido, errores } = validarForm();
         if (!valido) {
             const lista = Object.values(errores).map(e => `• ${e}`).join('\n');
-            showAlert('Campos incompletos', `Por favor complete:\n${lista}`);
+            setModal({ visible: true, variant: "warning", mensaje: `Por favor complete:\n${lista}` });
             return;
         }
         try {
-            console.log('Guardando:', form);
             await alimentacionService.create(form);
-            showAlert('Éxito', 'Alimentación registrada correctamente', [
-                { text: 'OK', onPress: () => { resetForm(); navigation?.goBack(); } },
-            ]);
+            setModal({ visible: true, variant: "success", mensaje: "Alimentación registrada correctamente" });
         } catch {
-            showAlert('Error', 'No se pudo guardar el registro');
+            setModal({ visible: true, variant: "danger", mensaje: "No se pudo guardar el registro" });
+        }
+    };
+
+    const cerrarModal = () => {
+        setModal((prev) => ({ ...prev, visible: false }));
+        if (modal.variant === "success") {
+            resetForm();
+            navigation?.goBack();
         }
     };
 
@@ -74,6 +74,14 @@ export default function RegistroAlimentacionScreen({ navigation }) {
       <Pressable onPress={handleGuardar} style={styles.btnGuardar}>
         <Text color="white">Guardar módulo</Text>
       </Pressable>
+
+      <Modal visible={modal.visible} onClose={cerrarModal}>
+        <Alert
+          variant={modal.variant}
+          message={modal.mensaje}
+          textStyle={{ textAlign: "center" }}
+        />
+      </Modal>
     </View>
   );
 }

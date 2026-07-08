@@ -16,6 +16,9 @@
  * - updateField(campo, valor): actualiza un campo del formulario.
  * - resetForm(): restaura el formulario a sus valores iniciales.
  * - validarForm(): retorna { valido, errores } sin mostrar nada.
+ *   Además de finca/estanque/fecha/hora/metodo/cantidadKg, ahora
+ *   también exige tipoAlimento, presentacion, proveedor y
+ *   observaciones.
  *
  * Ejemplo:
  * const { form, updateField, resetForm, validarForm } = useAlimentacionForm();
@@ -40,6 +43,7 @@ const estadoInicial = {
     proveedor:        "",
     observaciones:    "",
     tipoAlimento:     "",
+    presentacion:     "",
     racionesDia:      1,
     totalKg:          0,
     tasaAlimentacion: 0,
@@ -64,6 +68,10 @@ const useAlimentacionForm = () => {
         if (!form.metodo)                 errores.metodo     = "Método es obligatorio";
         if (Number(form.cantidadKg) <= 0) errores.cantidadKg = "La cantidad debe ser mayor a 0";
         if (!Number.isInteger(Number(form.cantidadKg))) errores.cantidadKg = "Solo se permiten números enteros";
+        if (!form.tipoAlimento)           errores.tipoAlimento  = "Tipo de alimento es obligatorio";
+        if (!form.presentacion)           errores.presentacion  = "Presentación es obligatoria";
+        if (!form.proveedor)              errores.proveedor     = "Proveedor es obligatorio";
+        if (!form.observaciones)          errores.observaciones = "Observaciones es obligatorio";
         return { valido: Object.keys(errores).length === 0, errores };
     };
 
