@@ -5,10 +5,9 @@
  * Incluye validaciones para teléfono y correo electrónico.
  * Al guardar, redirige a la pantalla de detalle del proveedor.
  */
-import React, { useState } from "react";
+import React from "react";
 import { View, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
-import { tiposProducto, proveedoresMock } from "../services/ProveedorData";
 
 import Navbar from "../../../shared/components/Navbar";
 import Card from "../../../shared/components/Card";
@@ -21,60 +20,33 @@ import Alert from "../../../shared/components/Alert";
 
 import { styles, ICON_STYLES } from "../styles/EditarProveedorStyles";
 import { ICONS } from "../../../theme/icons";
+import { tiposProducto } from "../services/ProveedorData";
 
-// Regex para validar teléfonos con o sin código de país +506
-const TELEFONO_REGEX = /^(\+?506[\s-]?)?\d{4}[\s-]?\d{4}$/;
-const TELEFONO_MAX_LENGTH = 14;
-
-// Regex básico para validar formato de correo electrónico
-const CORREO_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-// Retorna mensaje de error si el teléfono está vacío o tiene formato inválido
-function validarTelefono(valor) {
-  if (!valor) return "El teléfono es obligatorio.";
-  if (!TELEFONO_REGEX.test(valor))
-    return "Ingrese un teléfono válido. Ej: +506 2222-3344";
-  return "";
-}
-
-// Retorna mensaje de error si el correo está vacío o tiene formato inválido
-function validarCorreo(valor) {
-  if (!valor) return "El correo es obligatorio.";
-  if (!CORREO_REGEX.test(valor))
-    return "Ingrese un correo válido. Ej: ventas@empresa.com";
-  return "";
-}
+import {
+  useEditarProveedorScreen,
+  TELEFONO_MAX_LENGTH,
+} from "../hooks/useEditarProveedorScreen";
 
 export default function EditarProveedorScreen() {
   const router = useRouter();
-
-  // Carga los datos actuales del proveedor como valores iniciales del formulario
-  const base = proveedoresMock[0];
-
-  // Campos del formulario
-  const [nombre, setNombre] = useState(base.nombre);
-  const [tipoProducto, setTipoProducto] = useState(base.tipoProducto);
-  const [telefono, setTelefono] = useState(base.telefono);
-  const [correo, setCorreo] = useState(base.correo);
-  const [direccion, setDireccion] = useState(base.direccion);
-  const [notas, setNotas] = useState(base.notas);
-
-  // Errores por campo y alerta general del formulario
-  const [errorTelefono, setErrorTelefono] = useState("");
-  const [errorCorreo, setErrorCorreo] = useState("");
-  const [alerta, setAlerta] = useState(null);
-
-  // Valida el teléfono en tiempo real mientras el usuario escribe
-  function handleTelefonoChange(valor) {
-    setTelefono(valor);
-    setErrorTelefono(validarTelefono(valor));
-  }
-
-  // Valida el correo en tiempo real mientras el usuario escribe
-  function handleCorreoChange(valor) {
-    setCorreo(valor);
-    setErrorCorreo(validarCorreo(valor));
-  }
+  const {
+    base,
+    nombre,
+    tipoProducto,
+    setTipoProducto,
+    telefono,
+    correo,
+    direccion,
+    setDireccion,
+    notas,
+    setNotas,
+    errorTelefono,
+    errorCorreo,
+    alerta,
+    handleTelefonoChange,
+    handleCorreoChange,
+    guardar,
+  } = useEditarProveedorScreen();
 
   function volverADetalle() {
     router.replace({
@@ -83,55 +55,8 @@ export default function EditarProveedorScreen() {
     });
   }
 
-  // Valida todos los campos y guarda si no hay errores
-  function guardar() {
-    const errorTel = validarTelefono(telefono);
-    const errorCorr = validarCorreo(correo);
-    setErrorTelefono(errorTel);
-    setErrorCorreo(errorCorr);
-
-    if (errorTel !== "" || errorCorr !== "") {
-      setAlerta({
-        variant: "danger",
-        message: "Por favor corrige los datos antes de guardar.",
-      });
-      return;
-    }
-
-    if (!direccion || !notas) {
-      setAlerta({
-        variant: "warning",
-        message: "Hay campos sin completar. Revisa la información antes de continuar.",
-      });
-      return;
-    }
-
-    setAlerta({
-      variant: "success",
-      message: "Proveedor actualizado correctamente.",
-    });
-  }
-
   return (
     <View style={styles.container}>
-
-      <Navbar
-        title="Editar proveedor"
-        style={styles.navbar}
-        titleStyle={styles.navbarTitle}
-        leftContent={
-          <Button variant="ghost" onPress={volverADetalle}>
-            <Icon
-              icon={ICONS.exit}
-              size={ICON_STYLES.exit.size}
-              color={ICON_STYLES.exit.color}
-            />
-          </Button>
-        }
-        rightContent={<View style={styles.navbarPlaceholder} />}
-      />
-
-      {/* Formulario con scroll para evitar que el teclado tape los campos */}
       <ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
@@ -142,7 +67,6 @@ export default function EditarProveedorScreen() {
           style={styles.card}
           titleStyle={styles.cardTitle}
         >
-          {/* Alerta general: error, advertencia o confirmación de guardado */}
           {alerta && (
             <Alert
               variant={alerta.variant}
@@ -151,7 +75,6 @@ export default function EditarProveedorScreen() {
             />
           )}
 
-          {/* Nombre deshabilitado, no se permite editar */}
           <Input
             label="Nombre de la empresa"
             value={nombre}
@@ -161,7 +84,6 @@ export default function EditarProveedorScreen() {
             labelStyle={styles.label}
           />
 
-          {/* Campos editables del proveedor */}
           <Select
             label="Tipo de producto"
             value={tipoProducto}
@@ -222,7 +144,6 @@ export default function EditarProveedorScreen() {
             labelStyle={styles.label}
           />
 
-          {/* Botón para guardar, dispara la validación completa */}
           <Button
             onPress={guardar}
             style={styles.saveButton}

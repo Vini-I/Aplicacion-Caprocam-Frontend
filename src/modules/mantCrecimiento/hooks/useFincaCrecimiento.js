@@ -2,7 +2,7 @@ import { useLocalSearchParams } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 
 import { fincas } from "../../finca/screens/FincaData.js";
-import { estanques, searchEstanqueById } from "../screens/EstanqueData.js";
+import { estanques, searchEstanqueById } from "../services/EstanqueData.js";
 
 export function useFincaCrecimiento() {
   const { id } = useLocalSearchParams();
@@ -15,6 +15,10 @@ export function useFincaCrecimiento() {
   const [fincaSeleccionada, setFincaSeleccionada] = useState("");
   const [estanqueSeleccionado, setEstanqueSeleccionado] = useState("");
   const [pesoActual, setPesoActual] = useState("");
+
+  const [submitted, setSubmitted] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [successMessage, setSuccessMessage] = useState("");
 
   const estanque = useMemo(() => {
     if (parsedId !== null) {
@@ -57,14 +61,65 @@ export function useFincaCrecimiento() {
       }));
   }, [fincaSeleccionada]);
 
+  const validarCampos = useCallback(() => {
+    const nextErrors = {};
+
+    if (!fincaSeleccionada) {
+      nextErrors.finca = "Seleccione una finca.";
+    }
+
+    if (!estanqueSeleccionado) {
+      nextErrors.estanque = "Seleccione un estanque.";
+    }
+
+    if (!pesoActual || Number(pesoActual) <= 0) {
+      nextErrors.peso = "Ingrese un peso actual válido.";
+    }
+
+    setErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  }, [fincaSeleccionada, estanqueSeleccionado, pesoActual]);
+
   const handleFincaChange = useCallback((value) => {
     setFincaSeleccionada(value);
     setEstanqueSeleccionado("");
+    setErrors((prev) => ({ ...prev, finca: undefined, estanque: undefined }));
+    setSuccessMessage("");
   }, []);
 
+  const handleEstanqueChange = useCallback(
+    (value) => {
+      setEstanqueSeleccionado(value);
+      setSuccessMessage("");
+      if (submitted) {
+        setErrors((prev) => ({ ...prev, estanque: undefined }));
+      }
+    },
+    [submitted],
+  );
+
+  const handlePesoActualChange = useCallback(
+    (value) => {
+      setPesoActual(value);
+      setSuccessMessage("");
+      if (submitted) {
+        setErrors((prev) => ({ ...prev, peso: undefined }));
+      }
+    },
+    [submitted],
+  );
+
   const guardarDatos = useCallback(() => {
-    // TODO: agregar lógica de guardado aquí
-  }, []);
+    setSubmitted(true);
+    setSuccessMessage("");
+
+    if (!validarCampos()) {
+      return;
+    }
+
+    setErrors({});
+    setSuccessMessage("Guardado exitoso.");
+  }, [validarCampos]);
 
   return {
     fincaSeleccionada,
@@ -74,9 +129,12 @@ export function useFincaCrecimiento() {
     estanquesFiltrados,
     estanqueSeleccionadoObj,
     estanque,
-    setEstanqueSeleccionado,
-    setPesoActual,
+    setEstanqueSeleccionado: handleEstanqueChange,
+    setPesoActual: handlePesoActualChange,
     handleFincaChange,
     guardarDatos,
+    submitted,
+    errors,
+    successMessage,
   };
 }

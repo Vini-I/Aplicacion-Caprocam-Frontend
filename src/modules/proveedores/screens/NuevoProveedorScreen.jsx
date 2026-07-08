@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { View, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
 
@@ -13,104 +13,36 @@ import CustomAlert from "../../../shared/components/Alert";
 
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
-
 import { styles, ICON_SIZES } from "../styles/StylesNuevoProveedor.js";
 import { TIPOS_PRODUCTO } from "../screens/NuevoProveedorData.js";
 
-// Regex para validar teléfonos con o sin código de país +506
-const TELEFONO_REGEX = /^(\+?506[\s-]?)?\d{4}[\s-]?\d{4}$/;
-const TELEFONO_MAX_LENGTH = 14;
-
-// Regex básico para validar formato de correo electrónico
-const CORREO_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+import {
+  useNuevoProveedorScreen,
+  TELEFONO_MAX_LENGTH,
+} from "../hooks/useNuevoProveedorScreen";
 
 export default function NuevoProveedorScreen() {
-
-  // Campos del formulario
-  const [nombre, setNombre] = useState("");
-  const [tipoProducto, setTipoProducto] = useState("");
-  const [telefono, setTelefono] = useState("");
-  const [correo, setCorreo] = useState("");
-  const [direccion, setDireccion] = useState("");
-  const [notas, setNotas] = useState("");
-
-  // Estado de validación y alertas
-  const [errores, setErrores] = useState({});
-  const [mensajeError, setMensajeError] = useState("");
-  const [guardadoExitoso, setGuardadoExitoso] = useState(false);
-
   const router = useRouter();
-
-  // Permite solo dígitos, espacios, guiones y el símbolo + en el teléfono
-  const handleTelefonoChange = (valor) => {
-    setTelefono(valor.replace(/[^\d\s\-+]/g, ""));
-  };
-
-  // Retorna el mensaje de error según los campos inválidos
-  function obtenerMensajeError(nuevosErrores) {
-    if (nuevosErrores.nombre || nuevosErrores.tipoProducto || nuevosErrores.telefono) {
-      return "Complete los campos obligatorios para guardar.";
-    }
-    if (nuevosErrores.telefono) return "El teléfono debe tener 8 dígitos";
-    if (nuevosErrores.correo) return "Ingrese un correo electrónico válido";
-    return "";
-  }
-
-  // Valida los campos y guarda el proveedor si no hay errores
-  function handleSubmit() {
-    const nuevosErrores = {};
-
-    if (!nombre.trim()) nuevosErrores.nombre = true;
-    if (!tipoProducto) nuevosErrores.tipoProducto = true;
-    if (!telefono.trim()) nuevosErrores.telefono = true;
-    if (telefono.trim() !== "" && !TELEFONO_REGEX.test(telefono.trim())) {
-      nuevosErrores.telefono = true;
-    }
-    if (correo.trim() !== "" && !CORREO_REGEX.test(correo.trim())) {
-      nuevosErrores.correo = true;
-    }
-
-    if (Object.keys(nuevosErrores).length > 0) {
-      setErrores(nuevosErrores);
-      setMensajeError(obtenerMensajeError(nuevosErrores));
-      setGuardadoExitoso(false);
-      return;
-    }
-
-    setErrores({});
-    setMensajeError("");
-    setGuardadoExitoso(true);
-
-    const proveedor = {
-      nombre: nombre.trim(),
-      tipoProducto,
-      telefono: telefono.trim(),
-      correo: correo.trim(),
-      direccion: direccion.trim(),
-      notas: notas.trim(),
-    };
-
-    console.log("Proveedor guardado:", proveedor);
-  }
+  const {
+    nombre,
+    setNombre,
+    tipoProducto,
+    setTipoProducto,
+    telefono,
+    correo,
+    setCorreo,
+    direccion,
+    setDireccion,
+    notas,
+    setNotas,
+    mensajeError,
+    guardadoExitoso,
+    handleTelefonoChange,
+    handleSubmit,
+  } = useNuevoProveedorScreen();
 
   return (
     <View style={styles.container}>
-
-      {/* Navbar con botón para volver a la lista de proveedores */}
-      <View style={styles.navbar}>
-        <View style={styles.navbarRow}>
-          <Button
-            variant="ghost"
-            onPress={() => router.replace("/(drawer)/proveedores/proveedorScreen")}
-            style={styles.backBtn}
-          >
-            <Icon icon={ICONS.exit} size={ICON_SIZES.back} color={COLORS.white} />
-          </Button>
-          <Text style={styles.navbarTitle}>Nuevo proveedor</Text>
-        </View>
-      </View>
-
-      {/* Formulario con scroll para evitar que el teclado tape los campos */}
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.content}
@@ -122,7 +54,6 @@ export default function NuevoProveedorScreen() {
           style={styles.card}
           titleStyle={styles.cardTitle}
         >
-          {/* Campos del formulario */}
           <Input
             label="Nombre de la empresa "
             value={nombre}
@@ -191,7 +122,6 @@ export default function NuevoProveedorScreen() {
             labelStyle={styles.label}
           />
 
-          {/* Botón para guardar, dispara la validación */}
           <Button onPress={handleSubmit} style={styles.saveButton}>
             <View style={styles.buttonContent}>
               <Icon icon={ICONS.save} size={ICON_SIZES.save} color={COLORS.white} />

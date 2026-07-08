@@ -1,3 +1,26 @@
+/**
+ * ============================================================
+ * HOOK USEALIMENTACIONFORM
+ * ============================================================
+ *
+ * Maneja el estado local del formulario de alimentación y su
+ * validación. No muestra ni renderiza nada en pantalla: la
+ * interfaz (la screen) decide cuándo mostrar los errores
+ * devueltos, usando su propio estado `submitted`.
+ *
+ * Estado que maneja:
+ * - form: objeto con los valores actuales de todos los campos.
+ *
+ * Retorna:
+ * - form: valores actuales del formulario.
+ * - updateField(campo, valor): actualiza un campo del formulario.
+ * - resetForm(): restaura el formulario a sus valores iniciales.
+ * - validarForm(): retorna { valido, errores } sin mostrar nada.
+ *
+ * Ejemplo:
+ * const { form, updateField, resetForm, validarForm } = useAlimentacionForm();
+ */
+
 import { useState } from "react";
 
 function hoy() {

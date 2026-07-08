@@ -1,4 +1,14 @@
+/**
+ * ============================================================
+ * PANTALLA DE REGISTRO DE VENTAS DEL MÓDULO DE VENTAS
+ * ============================================================
+ *
+ * Contiene la interfaz para registrar ventas de producto y
+ * enviar la información a la lógica de negocio del módulo.
+ */
+
 import { ScrollView, View } from "react-native";
+import { useRouter } from "expo-router";
 
 import Alert from "../../../shared/components/Alert.jsx";
 import Button from "../../../shared/components/Button.jsx";
@@ -28,7 +38,9 @@ function SectionTitle({ icon, title }) {
   );
 }
 
-export default function VentaScreen() {
+export default function VentaScreen({ onDetalleVentas }) {
+  const router = useRouter();
+
   const {
     fincaSeleccionada,
     estanqueSeleccionado,
@@ -50,6 +62,7 @@ export default function VentaScreen() {
     opcionesColaboradores,
     opcionesCompradores,
     totalVenta,
+    ventas,
     setEstanqueSeleccionado,
     setCompradorManual,
     handleFincaChange,
@@ -239,7 +252,17 @@ export default function VentaScreen() {
             </View>
           </Button>
         </View>
+
+        <View style={styles.buttonRow}>
+          <Button onPress={() => onDetalleVentas(ventas, fincaSeleccionada)} style={styles.saveButton}>
+            <View style={styles.buttonContent}>
+              <Icon icon={ICONS.report} size={20} color={COLORS.white} />
+              <Text style={styles.buttonText}>Mostrar detalles</Text>
+            </View>
+          </Button>
+        </View>
       </Card>
+      
     </ScrollView>
   );
 }

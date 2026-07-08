@@ -3,17 +3,6 @@ import { StyleSheet } from "react-native";
 import { COLORS } from "../../../theme/colors"
 
 export const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    padding: 16,
-    backgroundColor: COLORS.white,
-  },
-
-  contentWrapper: {
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
-  },
 
   detalleCard: {
     padding: 16,
@@ -44,10 +33,11 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: COLORS.success,
+    paddingVertical: 8,
   },
 
   iconDocument: {
-    marginRight: 5
+    marginRight: 3
   },
 
   addButton: {

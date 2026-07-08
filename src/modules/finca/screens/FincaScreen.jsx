@@ -1,5 +1,4 @@
-import { ScrollView, View, useWindowDimensions } from "react-native";
-import { useState } from "react";
+import { ScrollView, View } from "react-native";
 import { fincas } from "./FincaData.js";
 import { styles } from "../../finca/styles/FincaStyles.js";
 import { ICONS } from "../../../theme/icons.js";
@@ -10,33 +9,25 @@ import Text from "../../../shared/components/Text.jsx";
 import Icon from "../../../shared/components/Icons.jsx";
 import Badge from "../../../shared/components/Badge.jsx";
 import ModalEliminarFinca from "./ModalEliminarFinca.jsx";
+import { useFincaScreen } from "../hooks/useFincaScreen.js";
 
 export default function FincasScreen({ onDetail, onNew, onEdit }) {
-  const { width } = useWindowDimensions();
-  const isCompact = width < 380;
-  const [ModalVisible, setModalVisible] = useState(false);
-  const [FincaNombreSeleccionada, setFincaNombreSeleccionada] = useState(null);
-
-  function abrirModalEliminar(Finca) {
-    setFincaNombreSeleccionada(Finca.nombre);
-    setModalVisible(true);
-  }
-
-  function cancelarEliminar() {
-    setModalVisible(false);
-    setFincaNombreSeleccionada(null);
-  }
-
-  function confirmarEliminar() {
-    console.log("Eliminando finca:", FincaNombreSeleccionada);
-    setModalVisible(false);
-    setFincaNombreSeleccionada(null);
-  }
+  const {
+    width,
+    isCompact,
+    ModalVisible,
+    FincaNombreSeleccionada,
+    setModalVisible,
+    setFincaNombreSeleccionada,
+    abrirModalEliminar,
+    cancelarEliminar,
+    confirmarEliminar,
+  } = useFincaScreen();
 
   return (
     <ScrollView style={styles.Container}>
       {fincas.map((Finca) => (
-        <View key={Finca.codigoInterno}  style={styles.Card}>
+        <View key={Finca.codigoInterno} style={styles.Card}>
           <Button
             style={styles.ContentWrapper}
             onPress={() => onDetail(Finca.codigoInterno)}
@@ -60,41 +51,41 @@ export default function FincasScreen({ onDetail, onNew, onEdit }) {
                   style={[styles.Detalles, isCompact && styles.DetallesColumn]}
                 >
                   <Badge
-                  label={`${Finca.estanques}  estanques`} textStyle={styles.Detalle}
-                  >
-                  </Badge>
+                    label={`${Finca.estanques}  estanques`}
+                    textStyle={styles.Detalle}
+                  ></Badge>
                   <Badge
-                  label={`${Finca.areaTotal}  ha`} textStyle={styles.Detalle}
-                  >
-                  </Badge>
+                    label={`${Finca.areaTotal}  ha`}
+                    textStyle={styles.Detalle}
+                  ></Badge>
                 </View>
               </View>
             </View>
           </Button>
           <View style={styles.Buttons}>
-          <Button
-            style={styles.Eliminar}
-            onPress={() => abrirModalEliminar(Finca)}
-          >
-            <Icon
-              icon={ICONS.delete}
-              style={{ color: COLORS.error }}
-              size={20}
-            />
-            <Text size={12} style={{ color: COLORS.error }}>
-              Eliminar
-            </Text>
-          </Button>
-          <Button style={styles.Editar} onPress={() => onEdit()}>
-            <Icon
-              icon={ICONS.edit}
-              style={{ color: COLORS.primary }}
-              size={20}
-            />
-            <Text size={12} style={{ color: COLORS.primary }}>
-              Editar
-            </Text>
-          </Button>
+            <Button
+              style={styles.Eliminar}
+              onPress={() => abrirModalEliminar(Finca)}
+            >
+              <Icon
+                icon={ICONS.delete}
+                style={{ color: COLORS.error }}
+                size={20}
+              />
+              <Text size={12} style={{ color: COLORS.error }}>
+                Eliminar
+              </Text>
+            </Button>
+            <Button style={styles.Editar} onPress={() => onEdit()}>
+              <Icon
+                icon={ICONS.edit}
+                style={{ color: COLORS.primary }}
+                size={20}
+              />
+              <Text size={12} style={{ color: COLORS.primary }}>
+                Editar
+              </Text>
+            </Button>
           </View>
         </View>
       ))}

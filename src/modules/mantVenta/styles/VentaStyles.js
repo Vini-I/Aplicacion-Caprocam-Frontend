@@ -1,9 +1,15 @@
-import { Dimensions, StyleSheet } from "react-native";
+/**
+ * ============================================================
+ * ESTILOS DEL MÓDULO DE VENTAS
+ * ============================================================
+ *
+ * Centraliza los estilos visuales utilizados por las pantallas
+ * y componentes del módulo de ventas.
+ */
+
+import { StyleSheet } from "react-native";
 import { COLORS } from "../../../theme/colors.js";
 import { TYPOGRAPHY } from "../../../theme/typography.js";
-
-const { width } = Dimensions.get("window");
-const isLargeScreen = width >= 700;
 
 export const styles = StyleSheet.create({
   container: {
@@ -134,5 +140,94 @@ export const styles = StyleSheet.create({
   errorText: {
     color: COLORS.error,
     marginTop: 12,
+  },
+
+  detalleSection: {
+    marginTop: 16,
+    width: "100%",
+    alignItems: "center",
+  },
+
+  detalleHint: {
+    color: COLORS.textTertiary,
+    fontSize: 13,
+    textAlign: "left",
+    marginBottom: 8,
+    width: "100%",
+    maxWidth: 700,
+  },
+
+  lista: {
+    width: "100%",
+    maxWidth: 900,
+    alignSelf: "center",
+  },
+
+  tarjeta: {
+    width: "100%",
+    maxWidth: 900,
+    alignSelf: "center",
+    marginTop: 10,
+  },
+
+  tarjetaEncabezado: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    marginBottom: 8,
+  },
+
+  nombreProducto: {
+    flex: 1,
+    marginRight: 8,
+    fontSize: 15,
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
+    fontWeight: "700",
+    color: COLORS.textSecondary,
+  },
+
+  filasDetalle: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
+  },
+
+  filaDetalle: {
+    width: "45%",
+    minWidth: 140,
+    gap: 2,
+  },
+
+  etiquetaDetalle: {
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
+  },
+
+  valorDetalle: {
+    fontFamily: TYPOGRAPHY.fontFamily.medium,
+  },
+
+  emptyState: {
+    width: "100%",
+    paddingVertical: 24,
+    paddingHorizontal: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: COLORS.secondary,
+    borderRadius: 10,
+    backgroundColor: COLORS.surface,
+  },
+
+  emptyTitle: {
+    fontSize: 16,
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
+    color: COLORS.textSecondary,
+    marginBottom: 6,
+  },
+
+  emptyDescription: {
+    fontSize: 13,
+    color: COLORS.textTertiary,
+    textAlign: "center",
   },
 });

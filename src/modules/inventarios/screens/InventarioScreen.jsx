@@ -1,6 +1,4 @@
-import { useCallback, useRef, useState } from "react";
 import { View, FlatList } from "react-native";
-import { useRouter, useFocusEffect } from "expo-router";
 
 import Navbar from "../../../shared/components/Navbar";
 import Card from "../../../shared/components/Card";
@@ -17,19 +15,14 @@ import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
 import { styles } from "../styles/InventarioStyles";
 
-import { getProductosInventario } from "../services/InventarioService.js";
+import { useInventario } from "../hooks/useInventario";
 
 function FilaDetalle({ etiqueta, valor, resaltado = false }) {
   return (
     <View style={styles.filaDetalle}>
-      <CustomText
-        size={12}
-        color={COLORS.textTertiary}
-        style={styles.etiquetaDetalle}
-      >
+      <CustomText size={12} color={COLORS.textTertiary} style={styles.etiquetaDetalle}>
         {etiqueta}
       </CustomText>
-
       <CustomText
         size={14}
         weight="600"
@@ -42,221 +35,114 @@ function FilaDetalle({ etiqueta, valor, resaltado = false }) {
   );
 }
 
-function TarjetaProducto({ producto }) {
+function TarjetaProducto({ producto, onVerDetalle }) {
   const tieneStockBajo = producto.cantidad < producto.stockMinimo;
   const precioFormateado = `₡${producto.precioUnidad.toLocaleString("es-CR")}`;
 
   return (
-    <Card
-      style={[
-        styles.tarjeta,
-        tieneStockBajo && styles.tarjetaStockBajo,
-      ]}
-    >
-      <View style={styles.tarjetaEncabezado}>
-        <Title level={5} style={styles.nombreProducto}>
-          {producto.nombre}
-        </Title>
-      </View>
+    <Card style={[styles.tarjeta, tieneStockBajo && styles.tarjetaStockBajo]}>
+      <Title level={5} style={styles.nombreProducto}>
+        {producto.nombre}
+      </Title>
 
       {tieneStockBajo && (
-        <Badge
-          label="▲ Stock bajo"
-          variant="danger"
-          textStyle={styles.badgeTexto}
-        />
+        <View style={styles.badgeStockBajo}>
+          <Icon icon={ICONS.notification} size={13} color={COLORS.error} />
+          <CustomText size={12} weight="600" color={COLORS.error} style={styles.badgeStockBajoTexto}>
+            Stock bajo
+          </CustomText>
+        </View>
       )}
 
-      <Badge
-        label={producto.categoria}
-        style={styles.badgeCategoria}
-        textStyle={styles.badgeTexto}
-      />
+      <View style={styles.filaCategoriaBoton}>
+        <Badge
+          label={producto.categoria}
+          style={styles.badgeCategoria}
+          textStyle={styles.badgeTexto}
+        />
+        <Button variant="outline" onPress={onVerDetalle} style={styles.botonDetalle}>
+          <CustomText size={13} weight="600" color={COLORS.white}>
+            Ver detalle
+          </CustomText>
+        </Button>
+      </View>
 
       <View style={styles.filasDetalle}>
+        <FilaDetalle etiqueta="Código" valor={producto.codigo || "—"} />
         <FilaDetalle
           etiqueta="Cantidad"
           valor={`${producto.cantidad} ${producto.unidad}`}
           resaltado={tieneStockBajo}
         />
-
         <FilaDetalle
           etiqueta="Stock mínimo"
           valor={`${producto.stockMinimo} ${producto.unidad}`}
         />
-
-        <FilaDetalle
-          etiqueta="Proveedor"
-          valor={producto.proveedor}
-        />
-
-        <FilaDetalle
-          etiqueta="Precio/unidad"
-          valor={precioFormateado}
-        />
+        <FilaDetalle etiqueta="Proveedor" valor={producto.proveedor} />
+        <FilaDetalle etiqueta="Precio/unidad" valor={precioFormateado} />
       </View>
     </Card>
   );
 }
 
-export default function InventarioScreen() {
-  const router = useRouter();
-  const flatListRef = useRef(null);
-
-  const [productos, setProductos] = useState([]);
-  const [busqueda, setBusqueda] = useState("");
-
-  const [filtros, setFiltros] = useState({
-    categories: [],
-    suppliers: [],
-    units: [],
-    lowStock: false,
-    expiryDate: "",
-  });
-
-  function handleRegresarInicio() {
-    router.replace("/inicio");
-  }
-
-  useFocusEffect(
-    useCallback(() => {
-      setProductos(getProductosInventario());
-
-      setBusqueda("");
-
-      setFiltros({
-        categories: [],
-        suppliers: [],
-        units: [],
-        lowStock: false,
-        expiryDate: "",
-      });
-
-      flatListRef.current?.scrollToOffset({
-        offset: 0,
-        animated: false,
-      });
-    }, [])
-  );
-
-  const categorias = [...new Set(productos.map((p) => p.categoria))];
-  const proveedores = [...new Set(productos.map((p) => p.proveedor))];
-  const unidades = [...new Set(productos.map((p) => p.unidad))];
-
-  const productosFiltrados = productos.filter((p) => {
-    const texto = busqueda.toLowerCase();
-
-    const coincideTexto =
-      p.nombre.toLowerCase().includes(texto) ||
-      p.proveedor.toLowerCase().includes(texto) ||
-      p.categoria.toLowerCase().includes(texto);
-
-    const coincideCategoria =
-      filtros.categories.length === 0 ||
-      filtros.categories.includes(p.categoria);
-
-    const coincideProveedor =
-      filtros.suppliers.length === 0 ||
-      filtros.suppliers.includes(p.proveedor);
-
-    const coincideUnidad =
-      filtros.units.length === 0 ||
-      filtros.units.includes(p.unidad);
-
-    const coincideStock =
-      !filtros.lowStock ||
-      p.cantidad < p.stockMinimo;
-
-    return (
-      coincideTexto &&
-      coincideCategoria &&
-      coincideProveedor &&
-      coincideUnidad &&
-      coincideStock
-    );
-  });
-
-  const cantidadStockBajo = productos.filter(
-    (p) => p.cantidad < p.stockMinimo
-  ).length;
-
-  const renderHeader = () => (
-    <View>
-      {cantidadStockBajo > 0 && (
-        <View style={styles.alertaBanner}>
-          <Icon
-            icon={ICONS.notification}
-            size={16}
-            color={COLORS.error}
-          />
-
-          <CustomText
-            size={13}
-            weight="600"
-            color={COLORS.error}
-            style={styles.alertaTexto}
-          >
-            {cantidadStockBajo}{" "}
-            {cantidadStockBajo === 1
-              ? "producto"
-              : "productos"}{" "}
-            con stock bajo
-          </CustomText>
-        </View>
-      )}
-
-      <CustomText
-        size={13}
-        color={COLORS.textTertiary}
-        style={styles.contadorResultados}
-      >
-        {productosFiltrados.length}{" "}
-        {productosFiltrados.length === 1
-          ? "producto encontrado"
-          : "productos encontrados"}
-      </CustomText>
-    </View>
-  );
+export default function InventarioScreen({ onDetail, onNew, onBack }) {
+  const {
+    flatListRef,
+    busqueda,
+    setBusqueda,
+    filtros,
+    setFiltros,
+    categorias,
+    proveedores,
+    unidades,
+    productosFiltrados,
+    cantidadStockBajo,
+  } = useInventario();
 
   return (
     <View style={styles.contenedor}>
-      <Navbar
-        title="Inventario"
-        style={styles.navbar}
-        titleStyle={styles.navbarTitulo}
-        leftContent={
-          <Button
-            variant="outline"
-            onPress={handleRegresarInicio}
-            style={styles.backButton}
-          >
-            <Icon
-              icon={ICONS.home}
-              size={22}
-              color={COLORS.white}
-            />
+      <View style={styles.zonaFiltros}>
+        <View style={styles.barraBusqueda}>
+          <SearchBar
+            value={busqueda}
+            onChangeText={setBusqueda}
+            placeholder="Buscar producto, código, categoría, proveedor..."
+            containerStyle={styles.searchBarContainer}
+          />
+          <FilterButton
+            categories={categorias}
+            suppliers={proveedores}
+            units={unidades}
+            activeFilters={filtros}
+            onApply={setFiltros}
+            showLowStock
+            showExpiryDate
+            buttonStyle={styles.filterButton}
+          />
+        </View>
+
+        {cantidadStockBajo > 0 && (
+          <View style={styles.alertaBanner}>
+            <Icon icon={ICONS.notification} size={16} color={COLORS.error} />
+            <CustomText size={13} weight="600" color={COLORS.error} style={styles.alertaTexto}>
+              {cantidadStockBajo}{" "}
+              {cantidadStockBajo === 1 ? "producto" : "productos"} con stock bajo
+            </CustomText>
+          </View>
+        )}
+
+        <View style={styles.filaContadorBoton}>
+          <CustomText size={13} color={COLORS.textTertiary} style={styles.contadorResultados}>
+            {productosFiltrados.length}{" "}
+            {productosFiltrados.length === 1 ? "producto encontrado" : "productos encontrados"}
+          </CustomText>
+          <Button variant="outline" onPress={onNew} style={styles.botonAgregar}>
+            <Icon icon={ICONS.add} size={16} color={COLORS.white} />
+            <CustomText size={13} weight="600" color={COLORS.white}>
+              Agregar producto
+            </CustomText>
           </Button>
-        }
-      />
-
-      <View style={styles.barraBusqueda}>
-        <SearchBar
-          value={busqueda}
-          onChangeText={setBusqueda}
-          placeholder="Buscar producto, categoría, proveedor..."
-          containerStyle={styles.searchBarContainer}
-        />
-
-        <FilterButton
-          categories={categorias}
-          suppliers={proveedores}
-          units={unidades}
-          activeFilters={filtros}
-          onApply={setFiltros}
-          showLowStock
-          showExpiryDate
-          buttonStyle={styles.filterButton}
-        />
+        </View>
       </View>
 
       <FlatList
@@ -264,9 +150,11 @@ export default function InventarioScreen() {
         data={productosFiltrados}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
-          <TarjetaProducto producto={item} />
+          <TarjetaProducto
+            producto={item}
+            onVerDetalle={() => onDetail(item.id)}
+          />
         )}
-        ListHeaderComponent={renderHeader}
         ListEmptyComponent={
           <EmptyState
             title="Sin productos"

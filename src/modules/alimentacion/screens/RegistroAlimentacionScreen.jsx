@@ -1,8 +1,38 @@
+/**
+ * ============================================================
+ * SCREEN REGISTROALIMENTACIONSCREEN
+ * ============================================================
+ *
+ * Pantalla alterna de registro de alimentación (sin listado ni
+ * estadísticas): valida el formulario y lo persiste mediante
+ * Alimentacion.service.js.
+ *
+ * Funcionalidad:
+ * - Corrige el import de estilos para apuntar al archivo real
+ *   AlimentacionStyles.js.
+ * - Corrige un ReferenceError en tiempo de ejecución: showAlert()
+ *   usa Platform y Alert pero el archivo nunca los importaba de
+ *   'react-native'; ahora se importan junto con View/ScrollView/
+ *   Pressable.
+ *
+ * Nota: esta pantalla no está enrutada actualmente desde
+ * src/app/ (ninguna ruta la importa), por lo que no se le aplicó
+ * el contrato completo de submitted/asterisco/borde rojo de
+ * AlimentacionForm (queda con sus valores por defecto
+ * submitted=false); ver resumen final para más detalle.
+ *
+ * Props principales:
+ * - navigation: objeto de navegación (usa navigation.goBack()).
+ *
+ * Ejemplo:
+ * <RegistroAlimentacionScreen navigation={navigation} />
+ */
+
 import React from "react";
-import { View, ScrollView, Pressable } from "react-native";
+import { View, ScrollView, Pressable, Platform, Alert } from "react-native";
 import useAlimentacionForm from "../hooks/useAlimentacionForm";
 import AlimentacionForm from "../components/AlimentacionForm";
-import alimentacionService from "../services/alimentacion.service";
+import alimentacionService from "../services/Alimentacion.service";
 import Text from "../../../shared/components/Text";
 import { styles } from "../styles/AlimentacionStyles";
 const showAlert = (title, message, buttons) => {

@@ -17,7 +17,7 @@ import { COLORS } from "../../../theme/colors";
 
 import { styles,colorCategoria,colorCategoriaDefault } from "../styles/DetalleProductScreenStyles";
 
-import { useDetalleProducto } from "../services/DetalleProductoScreen";
+import { useDetalleProducto } from "../hooks/useDetalleProductoScreen.js";
 
 function FilaDetalle({ etiqueta, valor, resaltado = false }) {
   return (
@@ -77,21 +77,6 @@ export default function DetalleProductoScreen() {
 
     return (
         <View style={styles.contenedor}>
-            <Navbar
-                title="Detalle de Producto"
-                style={styles.navbar}
-                titleStyle={styles.navbarTitulo}
-                leftContent={
-                    <Button
-                        variant="outline"
-                        onPress={handleBack}
-                        style={styles.backButton}
-                    >
-                        <Icon icon={ICONS.back} size={22} color={COLORS.white} />
-                    </Button>
-                }
-            />
-
             <ScrollView
                 contentContainerStyle={styles.contentContainer}
                 showsVerticalScrollIndicator={false}
@@ -168,7 +153,7 @@ export default function DetalleProductoScreen() {
 
             <Modal
                 visible={modalEliminarVisible}
-                onClose={() => setModalEliminarVisible(false)}
+                onClose={handleCerrarModal}
                 closeText="Cancelar"
             >
                 <Title level={5} style={styles.modalTitulo}>

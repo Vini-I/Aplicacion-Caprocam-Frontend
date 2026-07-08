@@ -1,3 +1,26 @@
+/**
+ * ============================================================
+ * SCREEN HISTORIALALIMENTACIONSCREEN
+ * ============================================================
+ *
+ * Pantalla de solo lectura que lista el historial completo de
+ * registros de alimentación ya guardados.
+ *
+ * Funcionalidad:
+ * - Corrige el import de estilos para apuntar al archivo real
+ *   AlimentacionStyles.js.
+ *
+ * Nota: esta pantalla no está enrutada actualmente desde
+ * src/app/ (ninguna ruta la importa) y no tiene filtros ni
+ * búsqueda; ver resumen final para más detalle.
+ *
+ * Props principales:
+ * - navigation: objeto de navegación (usa navigation.goBack()).
+ *
+ * Ejemplo:
+ * <HistorialAlimentacionScreen navigation={navigation} />
+ */
+
 import React from "react";
 import { View, ScrollView, Pressable } from "react-native";
 

@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useRouter } from "expo-router";
+import React from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   View,
   ScrollView,
@@ -19,25 +19,20 @@ import ProgressBar from "../../../shared/components/ProgressBar";
 import Alert from "../../../shared/components/Alert";
 import NumberInput from "../../../shared/components/NumberInput";
 import Icon from "../../../shared/components/Icons";
+import NavbarRegistro from "../../../shared/components/NavbarRegistro";
 
 import { ICONS } from "../../../theme/icons";
 import { styles } from "../styles/DetalleSiembraStyles";
+import useDetalleSiembra from "../hooks/useDetalleSiembra";
 
 import {
-  obtenerSiembraPorId,
   obtenerProveedoresLarva,
   obtenerTecnicasCultivo,
-  obtenerTiposLarva,
+  obtenerLaboratoriosLarva,
+  obtenerProcedenciasLarva,
+  obtenerPLLarva,
+  obtenerOpcionesPrecria,
 } from "../services/SiembraService";
-
-const diaActual = 2;
-const totalDias = 90;
-
-function calcularEtapa(dia, diasTotales) {
-  if (dia > 60) return 3;
-  if (dia > 30) return 2;
-  return 1;
-}
 
 function obtenerFechaActual() {
   const fecha = new Date();
@@ -51,9 +46,7 @@ function obtenerFechaActual() {
 function convertirADdMmAaaa(fechaIso) {
   const partes = fechaIso.split("-");
 
-  if (partes.length !== 3) {
-    return "";
-  }
+  if (partes.length !== 3) return "";
 
   const anio = partes[0];
   const mes = partes[1];
@@ -65,9 +58,7 @@ function convertirADdMmAaaa(fechaIso) {
 function convertirAAaaaMmDd(fechaTexto) {
   const partes = fechaTexto.split("/");
 
-  if (partes.length !== 3) {
-    return "";
-  }
+  if (partes.length !== 3) return "";
 
   const dia = partes[0];
   const mes = partes[1];
@@ -78,141 +69,50 @@ function convertirAAaaaMmDd(fechaTexto) {
 
 export default function DetalleSiembraScreen() {
   const router = useRouter();
+  const { id } = useLocalSearchParams();
 
-  const siembra = obtenerSiembraPorId(25);
+  const {
+    siembra,
+    formData,
+    isEditing,
+    mensaje,
+    mensajeVariant,
+    diaActual,
+    totalDias,
+    etapa,
+    progreso,
+    handleChange,
+    iniciarEdicion,
+    cancelarEdicion,
+    guardar,
+  } = useDetalleSiembra(id);
 
-  const tiposLarva = obtenerTiposLarva();
-  const tiposProveedor = obtenerProveedoresLarva();
-  const tiposTecnica = obtenerTecnicasCultivo();
-
-  const [isEditing, setIsEditing] = useState(false);
-
-  const [mensaje, setMensaje] = useState("");
-  const [mensajeVariant, setMensajeVariant] = useState("info");
-
-  const [fechaSiembra, setFechaSiembra] = useState(
-    siembra?.fechaSiembra ?? obtenerFechaActual(),
-  );
-  const [cantidad, setCantidad] = useState(
-    String(siembra?.cantidadSembrada ?? "1000"),
-  );
-  const [area, setArea] = useState(siembra?.areaEstanque ?? "0.5");
-  const [densidad, setDensidad] = useState(siembra?.densidad ?? "12");
-  const [tipoLarva, setTipoLarva] = useState(
-    siembra?.tipoLarva ?? siembra?.especie ?? "vannamei",
-  );
-  const [proveedor, setProveedor] = useState(
-    siembra?.proveedorLarva ?? "pacifico",
-  );
-  const [fechaIngreso, setFechaIngreso] = useState(
-    siembra?.fechaIngreso ?? siembra?.fechaSiembra ?? obtenerFechaActual(),
-  );
-  const [horaIngreso, setHoraIngreso] = useState(
-    siembra?.horaIngreso ?? "08:30",
-  );
-  const [certificado, setCertificado] = useState(
-    siembra?.certificadoLarva ?? "CERT-2026-001",
-  );
-  const [tecnica, setTecnica] = useState(siembra?.tecnicaCultivo ?? "semi");
-  const [diasCiclo, setDiasCiclo] = useState(
-    String(siembra?.diasMaduracion ?? "90"),
-  );
-
-  const [valoresGuardados, setValoresGuardados] = useState({
-    fechaSiembra: siembra?.fechaSiembra ?? obtenerFechaActual(),
-    cantidad: String(siembra?.cantidadSembrada ?? "1000"),
-    area: siembra?.areaEstanque ?? "0.5",
-    densidad: siembra?.densidad ?? "12",
-    tipoLarva: siembra?.tipoLarva ?? siembra?.especie ?? "vannamei",
-    proveedor: siembra?.proveedorLarva ?? "pacifico",
-    fechaIngreso:
-      siembra?.fechaIngreso ?? siembra?.fechaSiembra ?? obtenerFechaActual(),
-    horaIngreso: siembra?.horaIngreso ?? "08:30",
-    certificado: siembra?.certificadoLarva ?? "CERT-2026-001",
-    tecnica: siembra?.tecnicaCultivo ?? "semi",
-    diasCiclo: String(siembra?.diasMaduracion ?? "90"),
-  });
+  const proveedoresLarva = obtenerProveedoresLarva();
+  const tecnicasCultivo = obtenerTecnicasCultivo();
+  const laboratoriosLarva = obtenerLaboratoriosLarva();
+  const procedenciasLarva = obtenerProcedenciasLarva();
+  const plLarva = obtenerPLLarva();
+  const opcionesPrecria = obtenerOpcionesPrecria();
 
   const { width } = useWindowDimensions();
   const isWeb = width > 768;
-
-  const etapa = calcularEtapa(diaActual, totalDias);
-
-  function obtenerValoresActuales() {
-    return {
-      fechaSiembra,
-      cantidad,
-      area,
-      densidad,
-      tipoLarva,
-      proveedor,
-      fechaIngreso,
-      horaIngreso,
-      certificado,
-      tecnica,
-      diasCiclo,
-    };
-  }
-
-  function hayCamposVacios() {
-    const actuales = obtenerValoresActuales();
-
-    return Object.values(actuales).some(
-      (valor) => String(valor ?? "").trim() === "",
-    );
-  }
-
-  function iniciarEdicion() {
-    setMensaje("");
-    setIsEditing(true);
-  }
-
-  function cancelarEdicion() {
-    setFechaSiembra(valoresGuardados.fechaSiembra);
-    setCantidad(valoresGuardados.cantidad);
-    setArea(valoresGuardados.area);
-    setDensidad(valoresGuardados.densidad);
-    setTipoLarva(valoresGuardados.tipoLarva);
-    setProveedor(valoresGuardados.proveedor);
-    setFechaIngreso(valoresGuardados.fechaIngreso);
-    setHoraIngreso(valoresGuardados.horaIngreso);
-    setCertificado(valoresGuardados.certificado);
-    setTecnica(valoresGuardados.tecnica);
-    setDiasCiclo(valoresGuardados.diasCiclo);
-
-    setMensaje("");
-    setIsEditing(false);
-  }
-
-  function guardar() {
-    if (hayCamposVacios()) {
-      setMensaje("Ningún campo puede quedar en blanco.");
-      setMensajeVariant("danger");
-      return;
-    }
-
-    setValoresGuardados(obtenerValoresActuales());
-    setMensaje("Siembra guardada correctamente.");
-    setMensajeVariant("success");
-    setIsEditing(false);
-  }
 
   function regresarASiembra() {
     router.push("/siembra");
   }
 
-  function renderFechaSiembraEditable() {
+  function renderDateField(label, field) {
     if (Platform.OS === "web") {
       return (
         <View style={styles.webDateContainer}>
-          <Text style={styles.webDateLabel}>Fecha de siembra</Text>
+          <Text style={styles.webDateLabel}>{label}</Text>
 
           <input
             type="date"
-            value={convertirAAaaaMmDd(fechaSiembra)}
+            value={convertirAAaaaMmDd(formData[field])}
             max={convertirAAaaaMmDd(obtenerFechaActual())}
             onChange={(event) =>
-              setFechaSiembra(convertirADdMmAaaa(event.target.value))
+              handleChange(field, convertirADdMmAaaa(event.target.value))
             }
             style={styles.webDateInput}
           />
@@ -222,61 +122,53 @@ export default function DetalleSiembraScreen() {
 
     return (
       <DateInput
-        label="Fecha de siembra"
-        value={fechaSiembra}
-        onChangeText={setFechaSiembra}
+        label={label}
+        value={formData[field]}
+        onChangeText={(value) => handleChange(field, value)}
         inputStyle={styles.inputEditing}
         labelStyle={styles.labelNombre}
       />
     );
   }
 
-  function renderFechaIngresoEditable() {
-    if (Platform.OS === "web") {
-      return (
-        <View style={styles.webDateContainer}>
-          <Text style={styles.webDateLabel}>Fecha ingreso de larva</Text>
-
-          <input
-            type="date"
-            value={convertirAAaaaMmDd(fechaIngreso)}
-            max={convertirAAaaaMmDd(obtenerFechaActual())}
-            onChange={(event) =>
-              setFechaIngreso(convertirADdMmAaaa(event.target.value))
-            }
-            style={styles.webDateInput}
-          />
-        </View>
-      );
-    }
-
+  function renderReadInput(label, value) {
     return (
-      <DateInput
-        label="Fecha ingreso de larva"
-        value={fechaIngreso}
-        onChangeText={setFechaIngreso}
-        inputStyle={styles.inputEditing}
+      <Input
+        label={label}
+        value={String(value ?? "")}
+        editable={false}
+        style={styles.inputNombre}
         labelStyle={styles.labelNombre}
       />
+    );
+  }
+
+  if (!siembra || !formData) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <View style={styles.headerTop}>
+            <Pressable onPress={regresarASiembra} style={styles.backButton}>
+              <Icon icon={ICONS.exit} size={22} style={styles.headerIcon} />
+            </Pressable>
+
+            <View>
+              <Text style={styles.headerSubtitle}>Detalle de Siembra</Text>
+              <Text style={styles.headerTitle}>Siembra no encontrada</Text>
+            </View>
+          </View>
+        </View>
+      </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.headerTop}>
-          <Pressable onPress={regresarASiembra} style={styles.backButton}>
-            <Icon icon={ICONS.exit} size={22} style={styles.headerIcon} />
-          </Pressable>
-
-          <View>
-            <Text style={styles.headerSubtitle}>Detalle de Siembra</Text>
-            <Text style={styles.headerTitle}>
-              {siembra?.estanque ?? "A01"} – {siembra?.finca ?? "Finca"}
-            </Text>
-          </View>
-        </View>
-      </View>
+      <NavbarRegistro
+        Titulo="Detalle de Siembra"
+        Subtitulo={`${formData.estanque} – ${formData.finca}`}
+        Icono="back"
+      />
 
       <ScrollView
         contentContainerStyle={styles.content}
@@ -304,13 +196,13 @@ export default function DetalleSiembraScreen() {
               />
 
               <Text style={styles.siembraTitle}>
-                Siembra #{siembra?.siembraId ?? 25}
+                Siembra #{siembra.siembraId}
               </Text>
             </View>
           </View>
 
           <Text style={styles.subtitle}>Avance del ciclo</Text>
-          <ProgressBar progress={Math.round((diaActual / totalDias) * 100)} />
+          <ProgressBar progress={progreso} />
 
           <Text style={styles.subtitle}>Estado de Etapa</Text>
 
@@ -336,95 +228,26 @@ export default function DetalleSiembraScreen() {
           </View>
         </Card>
 
-        <Card title="Información de la Siembra" titleStyle={styles.cardTitle}>
+        <Card title="Información general" titleStyle={styles.cardTitle}>
           {!isEditing ? (
             <>
               <DateInput
                 label="Fecha de siembra"
-                value={fechaSiembra}
+                value={formData.fechaSiembra}
                 disabled={true}
                 inputStyle={styles.dateInputLectura}
                 textStyle={styles.dateInputTexto}
                 labelStyle={styles.labelNombre}
               />
 
-              <NumberInput
-                label="Camarones sembrados"
-                value={cantidad}
-                editable={false}
-                style={styles.inputNombre}
-                labelStyle={styles.labelNombre}
-                min={0}
-                max={1000000}
-              />
-
-              <Input
-                label="Área (ha)"
-                value={area}
-                editable={false}
-                style={styles.inputNombre}
-                labelStyle={styles.labelNombre}
-              />
-
-              <Input
-                label="Densidad"
-                value={densidad}
-                editable={false}
-                style={styles.inputNombre}
-                labelStyle={styles.labelNombre}
-              />
-
-              <Select
-                label="Tipo de larva"
-                options={tiposLarva}
-                value={tipoLarva}
-                disabled={true}
-                selectStyle={styles.selectVista}
-                labelStyle={styles.labelSelect}
-                selectedTextStyle={styles.textoSeleccionado}
-                optionTextStyle={styles.textoOpciones}
-              />
-
-              <Select
-                label="Proveedor"
-                options={tiposProveedor}
-                value={proveedor}
-                disabled={true}
-                selectStyle={styles.selectVista}
-                labelStyle={styles.labelSelect}
-                selectedTextStyle={styles.textoSeleccionado}
-                optionTextStyle={styles.textoOpciones}
-              />
-
-              <DateInput
-                label="Fecha ingreso de larva"
-                value={fechaIngreso}
-                disabled={true}
-                inputStyle={styles.dateInputLectura}
-                textStyle={styles.dateInputTexto}
-                labelStyle={styles.labelNombre}
-              />
-
-              <Input
-                label="Hora ingreso"
-                value={horaIngreso}
-                editable={false}
-                style={styles.inputNombre}
-                labelStyle={styles.labelNombre}
-              />
-
-              <Input
-                label="Certificado de larva"
-                value={certificado}
-                editable={false}
-                style={styles.inputNombre}
-                labelStyle={styles.labelNombre}
-              />
+              {renderReadInput("Hora de ingreso", formData.horaIngreso)}
+              {renderReadInput("Finca", formData.finca)}
+              {renderReadInput("Estanque", formData.estanque)}
 
               <Select
                 label="Técnica de cultivo"
-                options={tiposTecnica}
-                value={tecnica}
+                options={tecnicasCultivo}
+                value={formData.tecnicaCultivo}
                 disabled={true}
                 selectStyle={styles.selectVista}
                 labelStyle={styles.labelSelect}
@@ -434,86 +257,292 @@ export default function DetalleSiembraScreen() {
 
               <NumberInput
                 label="Duración estimada del ciclo"
-                value={diasCiclo}
+                value={formData.diasMaduracion}
                 editable={false}
                 style={styles.inputNombre}
                 labelStyle={styles.labelNombre}
                 min={0}
-                max={100}
+                max={120}
               />
             </>
           ) : (
             <>
-              {renderFechaSiembraEditable()}
-
-              <NumberInput
-                label="Camarones sembrados"
-                value={cantidad}
-                onChangeText={setCantidad}
-                style={styles.inputEditing}
-                labelStyle={styles.labelNombre}
-                min={1000}
-                max={100000}
-                step={1000}
-              />
-
-              <Select
-                label="Tipo de larva"
-                options={tiposLarva}
-                value={tipoLarva}
-                onChange={setTipoLarva}
-                labelStyle={styles.labelSelect}
-                selectedTextStyle={styles.textoSeleccionado}
-                optionTextStyle={styles.textoOpciones}
-              />
-
-              <Select
-                label="Proveedor"
-                options={tiposProveedor}
-                value={proveedor}
-                onChange={setProveedor}
-                labelStyle={styles.labelSelect}
-                selectedTextStyle={styles.textoSeleccionado}
-                optionTextStyle={styles.textoOpciones}
-              />
-
-              {renderFechaIngresoEditable()}
+              {renderDateField("Fecha de siembra", "fechaSiembra")}
 
               <Input
-                label="Hora ingreso"
-                value={horaIngreso}
-                onChangeText={setHoraIngreso}
+                label="Hora de ingreso"
+                value={formData.horaIngreso}
+                onChangeText={(value) => handleChange("horaIngreso", value)}
                 style={styles.inputEditing}
                 labelStyle={styles.labelNombre}
+              />
+
+              {renderReadInput("Finca", formData.finca)}
+              {renderReadInput("Estanque", formData.estanque)}
+
+              <Select
+                label="Técnica de cultivo"
+                options={tecnicasCultivo}
+                value={formData.tecnicaCultivo}
+                onChange={(value) => handleChange("tecnicaCultivo", value)}
+                labelStyle={styles.labelSelect}
+                selectedTextStyle={styles.textoSeleccionado}
+                optionTextStyle={styles.textoOpciones}
+              />
+
+              <NumberInput
+                label="Duración estimada del ciclo"
+                value={formData.diasMaduracion}
+                onChangeText={(value) => handleChange("diasMaduracion", value)}
+                style={styles.inputEditing}
+                labelStyle={styles.labelNombre}
+                min={1}
+                max={120}
+              />
+            </>
+          )}
+        </Card>
+
+        <Card title="Pre-cría previa" titleStyle={styles.cardTitle}>
+          {!isEditing ? (
+            <>
+              <Select
+                label="¿La larva proviene de una pre-cría?"
+                options={opcionesPrecria}
+                value={formData.pasoPorPrecria}
+                disabled={true}
+                selectStyle={styles.selectVista}
+                labelStyle={styles.labelSelect}
+                selectedTextStyle={styles.textoSeleccionado}
+                optionTextStyle={styles.textoOpciones}
+              />
+
+              {formData.pasoPorPrecria === "si" && (
+                <>
+                  {renderReadInput(
+                    "Duración de pre-cría",
+                    `${formData.duracionPrecria} días`,
+                  )}
+
+                  <DateInput
+                    label="Fecha de salida de pre-cría"
+                    value={formData.fechaSalidaPrecria}
+                    disabled={true}
+                    inputStyle={styles.dateInputLectura}
+                    textStyle={styles.dateInputTexto}
+                    labelStyle={styles.labelNombre}
+                  />
+
+                  {formData.cantidadSobrevivientePrecria !== "" &&
+                    renderReadInput(
+                      "Cantidad sobreviviente",
+                      `${Number(
+                        formData.cantidadSobrevivientePrecria,
+                      ).toLocaleString()} camarones`,
+                    )}
+                </>
+              )}
+            </>
+          ) : (
+            <>
+              <Select
+                label="¿La larva proviene de una pre-cría?"
+                options={opcionesPrecria}
+                value={formData.pasoPorPrecria}
+                onChange={(value) => handleChange("pasoPorPrecria", value)}
+                labelStyle={styles.labelSelect}
+                selectedTextStyle={styles.textoSeleccionado}
+                optionTextStyle={styles.textoOpciones}
+              />
+
+              {formData.pasoPorPrecria === "si" && (
+                <>
+                  <NumberInput
+                    label="Duración de pre-cría"
+                    value={formData.duracionPrecria}
+                    onChangeText={(value) =>
+                      handleChange("duracionPrecria", value)
+                    }
+                    style={styles.inputEditing}
+                    labelStyle={styles.labelNombre}
+                    min={1}
+                    max={60}
+                  />
+
+                  {renderDateField(
+                    "Fecha de salida de pre-cría",
+                    "fechaSalidaPrecria",
+                  )}
+
+                  <NumberInput
+                    label="Cantidad sobreviviente (opcional)"
+                    value={formData.cantidadSobrevivientePrecria}
+                    onChangeText={(value) =>
+                      handleChange("cantidadSobrevivientePrecria", value)
+                    }
+                    style={styles.inputEditing}
+                    labelStyle={styles.labelNombre}
+                    min={0}
+                    max={9999999}
+                    step={1000}
+                  />
+                </>
+              )}
+            </>
+          )}
+        </Card>
+
+        <Card title="Datos de larva" titleStyle={styles.cardTitle}>
+          {!isEditing ? (
+            <>
+              <Select
+                label="Proveedor de larva"
+                options={proveedoresLarva}
+                value={formData.proveedorLarva}
+                disabled={true}
+                selectStyle={styles.selectVista}
+                labelStyle={styles.labelSelect}
+                selectedTextStyle={styles.textoSeleccionado}
+                optionTextStyle={styles.textoOpciones}
+              />
+
+              <Select
+                label="Laboratorio"
+                options={laboratoriosLarva}
+                value={formData.laboratorioLarva}
+                disabled={true}
+                selectStyle={styles.selectVista}
+                labelStyle={styles.labelSelect}
+                selectedTextStyle={styles.textoSeleccionado}
+                optionTextStyle={styles.textoOpciones}
+              />
+
+              <Select
+                label="Procedencia de larva"
+                options={procedenciasLarva}
+                value={formData.procedenciaLarva}
+                disabled={true}
+                selectStyle={styles.selectVista}
+                labelStyle={styles.labelSelect}
+                selectedTextStyle={styles.textoSeleccionado}
+                optionTextStyle={styles.textoOpciones}
+              />
+
+              {renderReadInput("Código de lote", formData.codigoLoteLarva)}
+
+              <Select
+                label="PL de larva"
+                options={plLarva}
+                value={formData.plLarva}
+                disabled={true}
+                selectStyle={styles.selectVista}
+                labelStyle={styles.labelSelect}
+                selectedTextStyle={styles.textoSeleccionado}
+                optionTextStyle={styles.textoOpciones}
+              />
+
+              {renderReadInput(
+                "Certificado de larva",
+                formData.certificadoLarva,
+              )}
+            </>
+          ) : (
+            <>
+              <Select
+                label="Proveedor de larva"
+                options={proveedoresLarva}
+                value={formData.proveedorLarva}
+                onChange={(value) => handleChange("proveedorLarva", value)}
+                labelStyle={styles.labelSelect}
+                selectedTextStyle={styles.textoSeleccionado}
+                optionTextStyle={styles.textoOpciones}
+              />
+
+              <Select
+                label="Laboratorio"
+                options={laboratoriosLarva}
+                value={formData.laboratorioLarva}
+                onChange={(value) => handleChange("laboratorioLarva", value)}
+                labelStyle={styles.labelSelect}
+                selectedTextStyle={styles.textoSeleccionado}
+                optionTextStyle={styles.textoOpciones}
+              />
+
+              <Select
+                label="Procedencia de larva"
+                options={procedenciasLarva}
+                value={formData.procedenciaLarva}
+                onChange={(value) => handleChange("procedenciaLarva", value)}
+                labelStyle={styles.labelSelect}
+                selectedTextStyle={styles.textoSeleccionado}
+                optionTextStyle={styles.textoOpciones}
+              />
+
+              <Input
+                label="Código de lote"
+                value={formData.codigoLoteLarva}
+                onChangeText={(value) => handleChange("codigoLoteLarva", value)}
+                style={styles.inputEditing}
+                labelStyle={styles.labelNombre}
+              />
+
+              <Select
+                label="PL de larva"
+                options={plLarva}
+                value={formData.plLarva}
+                onChange={(value) => handleChange("plLarva", value)}
+                labelStyle={styles.labelSelect}
+                selectedTextStyle={styles.textoSeleccionado}
+                optionTextStyle={styles.textoOpciones}
               />
 
               <Input
                 label="Certificado de larva"
-                value={certificado}
-                onChangeText={setCertificado}
+                value={formData.certificadoLarva}
+                onChangeText={(value) =>
+                  handleChange("certificadoLarva", value)
+                }
                 style={styles.inputEditing}
                 labelStyle={styles.labelNombre}
               />
+            </>
+          )}
+        </Card>
 
-              <Select
-                label="Técnica de cultivo"
-                options={tiposTecnica}
-                value={tecnica}
-                onChange={setTecnica}
-                labelStyle={styles.labelSelect}
-                selectedTextStyle={styles.textoSeleccionado}
-                optionTextStyle={styles.textoOpciones}
-              />
+        <Card title="Cálculo de población" titleStyle={styles.cardTitle}>
+          {renderReadInput("Área del estanque", `${formData.areaHectareas} ha`)}
 
+          {!isEditing ? (
+            <>
+              {renderReadInput(
+                "Densidad poblacional",
+                `${formData.densidadPoblacional} PL/m²`,
+              )}
+
+              {renderReadInput(
+                "Cantidad sembrada calculada",
+                `${Number(formData.cantidadSembrada).toLocaleString()} camarones`,
+              )}
+            </>
+          ) : (
+            <>
               <NumberInput
-                label="Días estimados del ciclo"
-                value={diasCiclo}
-                onChangeText={setDiasCiclo}
+                label={`Densidad poblacional (${formData.densidadPoblacional} PL/m²)`}
+                value={formData.densidadPoblacional}
+                onChangeText={(value) =>
+                  handleChange("densidadPoblacional", value)
+                }
                 style={styles.inputEditing}
                 labelStyle={styles.labelNombre}
-                min={0}
-                max={100}
+                min={1}
+                max={30}
+                step={1}
               />
+
+              {renderReadInput(
+                "Cantidad sembrada calculada",
+                `${Number(formData.cantidadSembrada).toLocaleString()} camarones`,
+              )}
             </>
           )}
         </Card>

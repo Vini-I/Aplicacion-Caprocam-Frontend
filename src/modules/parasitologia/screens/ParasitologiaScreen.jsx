@@ -32,6 +32,7 @@ import NumberInput from "../../../shared/components/NumberInput";
 import Select from "../../../shared/components/Select";
 import CustomText from "../../../shared/components/Text";
 import Title from "../../../shared/components/Title";
+import NavbarRegistro from "../../../shared/components/NavbarRegistro";
 
 import { FINCAS, ESTANQUES } from "../../registro/screens/RegistroData";
 
@@ -292,47 +293,13 @@ export default function ParasitologiaScreen({ onBack, navigation }) {
   }
 
   return (
+    <>
+    <NavbarRegistro
+        Titulo="Parasitologia"
+        Subtitulo="Registro por grados de infeccion"
+        Icono="parasite"
+      />
     <ScrollView style={styles.screen} showsVerticalScrollIndicator={false}>
-      <View style={headerStyle}>
-        <Button variant="outline" onPress={volver} style={styles.cancelButton}>
-          <View style={styles.inlineButtonContent}>
-            <Icon icon={ICONS.exit} size={18} color={COLORS.white} />
-
-            <CustomText
-              size={16}
-              color={COLORS.white}
-              style={styles.cancelText}
-            >
-              Volver
-            </CustomText>
-          </View>
-        </Button>
-
-        <View style={styles.headerRow}>
-          <View style={styles.headerIcon}>
-            <Icon icon={ICONS.parasite} size={28} color={COLORS.primary} />
-          </View>
-
-          <View style={styles.headerTextBox}>
-            <Title
-              level={3}
-              color={COLORS.white}
-              fuente={TYPOGRAPHY.fontFamily.bold}
-            >
-              Parasitologia
-            </Title>
-
-            <CustomText
-              size={14}
-              color={COLORS.white}
-              style={styles.headerSubtitle}
-            >
-              Registro por grados de infeccion
-            </CustomText>
-          </View>
-        </View>
-      </View>
-
       <View style={contentStyle}>
         {mensaje !== "" && (
           <Alert
@@ -581,6 +548,7 @@ export default function ParasitologiaScreen({ onBack, navigation }) {
         </Card>
       </View>
     </ScrollView>
+    </>
   );
 }
 

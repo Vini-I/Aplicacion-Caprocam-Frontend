@@ -18,7 +18,7 @@
 // IMPORTS
 // ============================================================
 import React, { useState, useEffect } from "react";
-import { View, ScrollView, Modal as RNModal, Alert } from "react-native";
+import { View, ScrollView, Alert } from "react-native";
 import { useColaboradores } from "../hooks/useColaboradores";
 import ColaboradorCard from "../components/ColaboradorCard";
 import ColaboradorForm from "../components/ColaboradorForm";
@@ -197,7 +197,7 @@ export default function MiPersonalScreen() {
       </ScrollView>
 
       {/* Modal para crear/editar */}
-      <Modal visible={modalVisible} onClose={() => setModalVisible(false)} style={styles.modalContent}>
+      <Modal visible={modalVisible} onClose={() => setModalVisible(false)} containerStyle={styles.modalContainer}>
         <Title level={4}>{editingColaborador ? "Editar" : "Nuevo"} Colaborador</Title>
         <ColaboradorForm
           initialData={editingColaborador || {}}
@@ -208,57 +208,70 @@ export default function MiPersonalScreen() {
         />
       </Modal>
 
-      {/* Modal de confirmación con validación de cédula */}
-      <RNModal
+      {/* Modal de confirmación con validación de cédula - AHORA USA EL MODAL REUTILIZABLE */}
+      <Modal
         visible={showConfirmModal}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => setShowConfirmModal(false)}
-        style={styles.modalContent}
+        onClose={() => {
+          setShowConfirmModal(false);
+          setCedulaConfirmacion("");
+          setDeleteTarget(null);
+        }}
+        closeText="Cancelar"
+        containerStyle={styles.modalConfirmContainer}
+        buttonStyle={styles.modalConfirmCancelButton}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <CustomText style={styles.modalTitle}>Confirmar eliminación</CustomText>
+        <CustomText style={styles.modalTitle}>Confirmar eliminación</CustomText>
 
-            {deleteTarget && (
-              <>
-                <CustomText style={styles.modalText}>
-                  ¿Está seguro que desea eliminar a:
-                </CustomText>
-                <CustomText style={styles.modalName}>{deleteTarget.nombre}</CustomText>
-                <CustomText style={styles.modalSubText}>
-                  Para confirmar, ingrese la cédula del colaborador:
-                <CustomText style={styles.modalCedula}>{deleteTarget.cedula}</CustomText>
-                </CustomText>
-              </>
-            )}
+        {deleteTarget && (
+          <>
+            <CustomText style={styles.modalText}>
+              ¿Está seguro que desea eliminar a:
+            </CustomText>
+            <CustomText style={styles.modalName}>{deleteTarget.nombre}</CustomText>
+            <CustomText style={styles.modalSubText}>
+              Para confirmar, ingrese la cédula del colaborador:
+            </CustomText>
+            <CustomText style={styles.modalCedula}>{deleteTarget.cedula}</CustomText>
+          </>
+        )}
 
-            <Input
-              placeholder="Ingrese la cédula para confirmar"
-              value={cedulaConfirmacion}
-              onChangeText={setCedulaConfirmacion}
-              keyboardType="numeric"
-              containerStyle={styles.modalInput}
-            />
+        <Input
+          placeholder="Ingrese la cédula para confirmar"
+          value={cedulaConfirmacion}
+          onChangeText={setCedulaConfirmacion}
+          keyboardType="numeric"
+          containerStyle={styles.modalInput}
+        />
 
-            <View style={styles.modalButtons}>
-              <Button onPress={() => setShowConfirmModal(false)} variant="outline">
-                Cancelar
-              </Button>
-              <Button onPress={confirmDelete} variant="danger">
-                Eliminar
-              </Button>
-            </View>
-          </View>
+        <View style={styles.modalButtons}>
+          <Button 
+            onPress={() => {
+              setShowConfirmModal(false);
+              setCedulaConfirmacion("");
+              setDeleteTarget(null);
+            }} 
+            variant="outline"
+            style={styles.modalCancelBtn}
+          >
+            Cancelar
+          </Button>
+          <Button 
+            onPress={confirmDelete} 
+            variant="danger"
+            style={styles.modalDeleteBtn}
+          >
+            Eliminar
+          </Button>
         </View>
-      </RNModal>
+      </Modal>
 
       {/* Modal para ver detalles */}
-      <RNModal
+      <Modal
         visible={!!selectedColaboradorId}
-        animationType="slide"
-        transparent={false}
-        onRequestClose={() => setSelectedColaboradorId(null)}
+        onClose={() => setSelectedColaboradorId(null)}
+        showCloseButton={false}
+        containerStyle={styles.modalDetalleContainer}
+        overlayStyle={styles.modalDetalleOverlay}
       >
         <ColaboradorDetalleScreen 
           colaboradorId={selectedColaboradorId}
@@ -267,7 +280,7 @@ export default function MiPersonalScreen() {
             setSelectedColaboradorId(id);
           }}
         />
-      </RNModal>
+      </Modal>
     </View>
   );
 }

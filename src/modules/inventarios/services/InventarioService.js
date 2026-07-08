@@ -9,6 +9,7 @@
 let productos = [
   {
     id: 1,
+    codigo: "ALI-001",
     nombre: "Alimento Biomar 35%",
     categoria: "Alimentación",
     cantidad: 250,
@@ -19,6 +20,7 @@ let productos = [
   },
   {
     id: 2,
+    codigo: "ALI-002",
     nombre: "Melaza de caña",
     categoria: "Alimentación",
     cantidad: 30,
@@ -29,6 +31,7 @@ let productos = [
   },
   {
     id: 3,
+    codigo: "TRA-001",
     nombre: "Cal agrícola",
     categoria: "Tratamiento",
     cantidad: 120,
@@ -39,6 +42,7 @@ let productos = [
   },
   {
     id: 4,
+    codigo: "TRA-002",
     nombre: "Probiótico EM-1",
     categoria: "Tratamiento",
     cantidad: 15,
@@ -49,6 +53,7 @@ let productos = [
   },
   {
     id: 5,
+    codigo: "QUI-001",
     nombre: "Oxígeno granulado",
     categoria: "Químico",
     cantidad: 80,
@@ -59,6 +64,7 @@ let productos = [
   },
   {
     id: 6,
+    codigo: "ALI-003",
     nombre: "Sal mineral",
     categoria: "Alimentación",
     cantidad: 200,
@@ -69,6 +75,7 @@ let productos = [
   },
   {
     id: 7,
+    codigo: "FER-001",
     nombre: "Fertilizante NPK",
     categoria: "Fertilizante",
     cantidad: 10,
@@ -79,6 +86,7 @@ let productos = [
   },
   {
     id: 8,
+    codigo: "QUI-002",
     nombre: "Yodo povidona",
     categoria: "Químico",
     cantidad: 5,

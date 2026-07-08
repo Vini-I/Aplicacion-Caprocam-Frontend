@@ -1,3 +1,35 @@
+/**
+ * ============================================================
+ * COMPONENTE RALEOFORM
+ * ============================================================
+ *
+ * Formulario de registro de raleo. Agrupa los campos de
+ * finca/estanque, parámetros del raleo y método de extracción, y
+ * aplica el contrato visual de campos obligatorios: asterisco
+ * visible desde el primer render, y borde rojo + mensaje de
+ * error solo después de que la screen marque `submitted = true`
+ * y el campo resulte inválido.
+ *
+ * Funcionalidad:
+ * - Todos los colores usados vienen de COLORS (COLORS.textPrimary,
+ *   COLORS.textTertiary, COLORS.primary, COLORS.white,
+ *   COLORS.secondary), sin valores hardcodeados.
+ *
+ * Props principales:
+ * - form: objeto con los valores actuales del formulario.
+ * - updateField: función (campo, valor) para actualizar el form.
+ * - submitted: boolean, true cuando el usuario ya intentó guardar.
+ * - errores: objeto { campo: mensaje } devuelto por validarForm().
+ *
+ * Ejemplo:
+ * <RaleoForm
+ *   form={form}
+ *   updateField={updateField}
+ *   submitted={submitted}
+ *   errores={errores}
+ * />
+ */
+
 import React from "react";
 import { View, Pressable } from "react-native";
 import Card from "../../../shared/components/Card";
@@ -7,7 +39,7 @@ import DateInput from "../../../shared/components/DateInput";
 import Text from "../../../shared/components/Text";
 import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
-import { styles } from "../styles/raleoStyles";
+import { styles } from "../styles/RaleoStyles";
 
 const FINCAS = [
   { label: "Finca La Reina", value: "laReina" },
@@ -39,37 +71,76 @@ const METODOS = [
   { label: "Trampa selectiva", value: "trampa" },
 ];
 
-export default function RaleoForm({ form = {}, updateField = () => {} }) {
+const bordeError = { borderColor: COLORS.error, borderWidth: 1.5 };
+
+export default function RaleoForm({
+  form = {},
+  updateField = () => {},
+  submitted = false,
+  errores = {},
+}) {
+  const invalidoFinca = submitted && !!errores.finca;
+  const invalidoEstanque = submitted && !!errores.estanque;
+  const invalidoFecha = submitted && !!errores.fecha;
+  const invalidoPorcentaje = submitted && !!errores.porcentajeRaleo;
+  const invalidoObjetivo = submitted && !!errores.objetivo;
+  const invalidoMetodo = submitted && !!errores.metodo;
+
   return (
     <View>
       <Card title="Información General">
         <DateInput
-          label="Fecha del Raleo"
+          label="Fecha del Raleo *"
           value={form.fecha ?? ""}
           onChangeText={(v) => updateField("fecha", v)}
           labelStyle={{ fontFamily: TYPOGRAPHY.fontFamily.medium }}
+          inputStyle={invalidoFecha ? bordeError : null}
         />
+        {invalidoFecha && (
+          <Text size={12} color={COLORS.error} style={styles.errorText}>
+            {errores.fecha}
+          </Text>
+        )}
+
         <Select
-          label="Finca"
+          label="Finca *"
           value={form.finca}
           onChange={(v) => updateField("finca", v)}
           options={FINCAS}
           placeholder="Seleccionar finca"
+          selectStyle={invalidoFinca ? bordeError : null}
         />
+        {invalidoFinca && (
+          <Text size={12} color={COLORS.error} style={styles.errorText}>
+            {errores.finca}
+          </Text>
+        )}
+
         <Select
-          label="Estanque"
+          label="Estanque *"
           value={form.estanque}
           onChange={(v) => updateField("estanque", v)}
           options={ESTANQUES}
           placeholder="Seleccionar estanque"
+          selectStyle={invalidoEstanque ? bordeError : null}
         />
+        {invalidoEstanque && (
+          <Text size={12} color={COLORS.error} style={styles.errorText}>
+            {errores.estanque}
+          </Text>
+        )}
       </Card>
 
       <Card title="Parámetros del Raleo">
         <Text size={14} weight="600" color={COLORS.textPrimary} style={{ marginBottom: 6 }}>
-          Porcentaje de raleo
+          Porcentaje de raleo *
         </Text>
-        <View style={styles.horasContainer}>
+        <View
+          style={[
+            styles.horasContainer,
+            invalidoPorcentaje && styles.horasContainerInvalid,
+          ]}
+        >
           {PORCENTAJES.map((p) => {
             const sel = form.porcentajeRaleo === p;
             return (
@@ -85,6 +156,12 @@ export default function RaleoForm({ form = {}, updateField = () => {} }) {
             );
           })}
         </View>
+        {invalidoPorcentaje && (
+          <Text size={12} color={COLORS.error} style={styles.errorText}>
+            {errores.porcentajeRaleo}
+          </Text>
+        )}
+
         <Input
           label="Peso promedio estimado (g)"
           placeholder="Ej: 10.5"
@@ -100,22 +177,35 @@ export default function RaleoForm({ form = {}, updateField = () => {} }) {
           onChangeText={(v) => updateField("biomasaTotal", v)}
         />
         <Select
-          label="Objetivo del raleo"
+          label="Objetivo del raleo *"
           value={form.objetivo}
           onChange={(v) => updateField("objetivo", v)}
           options={OBJETIVOS}
           placeholder="Seleccionar objetivo"
+          selectStyle={invalidoObjetivo ? bordeError : null}
         />
+        {invalidoObjetivo && (
+          <Text size={12} color={COLORS.error} style={styles.errorText}>
+            {errores.objetivo}
+          </Text>
+        )}
       </Card>
 
       <Card title="Método de Extracción">
         <Select
-          label="Método"
+          label="Método *"
           value={form.metodo}
           onChange={(v) => updateField("metodo", v)}
           options={METODOS}
           placeholder="Seleccionar método"
+          selectStyle={invalidoMetodo ? bordeError : null}
         />
+        {invalidoMetodo && (
+          <Text size={12} color={COLORS.error} style={styles.errorText}>
+            {errores.metodo}
+          </Text>
+        )}
+
         <Input
           label="Responsable del raleo"
           placeholder="Nombre del responsable"

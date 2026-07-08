@@ -1,51 +1,111 @@
-import React from "react";
-import { View, ScrollView } from "react-native";
-import { useRouter } from "expo-router";
+/**
+ * ============================================================
+ * SCREEN RALEOSCREEN
+ * ============================================================
+ *
+ * Pantalla principal del módulo de Raleo. Orquesta el estado del
+ * formulario (useRaleo) y el guardado real del registro.
+ *
+ * Funcionalidad:
+ * - BUG FUNCIONAL GRAVE corregido: el botón "Registrar Raleo"
+ *   tenía onPress={() => {}} y no guardaba ni validaba nada.
+ *   Ahora handleGuardar activa `submitted = true`, valida con
+ *   validarForm() de useRaleo, y solo si es válido persiste el
+ *   registro con Raleo.service.js, muestra el alert de éxito y
+ *   reinicia el formulario (resetForm + submitted=false).
+ * - Reutiliza el mismo patrón de alertas que Alimentación
+ *   (Platform.OS === 'web' ? window.alert : Alert.alert).
+ * - Usa NavbarRegistro (header celeste con botón volver) en vez
+ *   del Header.jsx compartido, igual que Alimentación y Densidad
+ *   Poblacional: Header.jsx está diseñado para pantallas de
+ *   login, no para navegación con botón volver + ruta contextual.
+ *
+ * Ejemplo:
+ * <RaleoScreen />
+ */
+
+import React, { useState } from "react";
+import { View, ScrollView, Platform, Alert } from "react-native";
 import Button from "../../../shared/components/Button";
 import Icon from "../../../shared/components/Icons";
 import Text from "../../../shared/components/Text";
 import Title from "../../../shared/components/Title";
 import RaleoForm from "../components/RaleoForm";
+import NavbarRegistro from "../../../shared/components/NavbarRegistro";
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
-import { styles } from "../styles/raleoStyles";
+import { styles } from "../styles/RaleoStyles";
 import useRaleo from "../hooks/useRaleo";
+import raleoService from "../services/Raleo.service";
+
+const showAlert = (title, message, buttons) => {
+  if (Platform.OS === "web") {
+    window.alert(`${title}\n\n${message}`);
+    buttons?.[0]?.onPress?.();
+  } else {
+    Alert.alert(title, message, buttons);
+  }
+};
 
 export default function RaleoScreen() {
-  const router = useRouter();
-  const { form, updateField } = useRaleo();
+  const { form, updateField, resetForm, validarForm } = useRaleo();
+  const [submitted, setSubmitted] = useState(false);
+  const [errores, setErrores] = useState({});
+
+  const handleGuardar = async () => {
+    setSubmitted(true);
+    const { valido, errores: erroresValidacion } = validarForm();
+    setErrores(erroresValidacion);
+
+    if (!valido) {
+      const lista = Object.values(erroresValidacion)
+        .map((e) => `• ${e}`)
+        .join("\n");
+      showAlert("Campos incompletos", `Por favor complete:\n${lista}`);
+      return;
+    }
+
+    try {
+      await raleoService.create(form);
+      showAlert("Éxito", "Raleo registrado correctamente", [
+        {
+          text: "OK",
+          onPress: () => {
+            resetForm();
+            setSubmitted(false);
+            setErrores({});
+          },
+        },
+      ]);
+    } catch {
+      showAlert("Error", "No se pudo guardar el registro");
+    }
+  };
 
   return (
+    <>
+    <NavbarRegistro
+        Titulo="Raleo"
+        Subtitulo="Cosecha parcial y densidad"
+        Icono="raleo"
+      />
     <ScrollView style={styles.screen} showsVerticalScrollIndicator={false}>
-      <View style={styles.header}>
-        <Button variant="outline" onPress={() => router.back()} style={styles.backBtn}>
-          <View style={styles.backBtnContent}>
-            <Icon icon={ICONS.exit} size={18} color={COLORS.white} />
-            <Text size={16} color={COLORS.white} style={styles.backBtnText}>Volver</Text>
-          </View>
-        </Button>
-
-        <View style={styles.headerTitle}>
-          <View style={styles.headerIcon}>
-            <Icon icon={ICONS.raleo} size={28} color={COLORS.primary} />
-          </View>
-          <View>
-            <Title level={3} color={COLORS.white}>Raleo</Title>
-            <Text size={14} color={COLORS.white}>Cosecha parcial y densidad</Text>
-          </View>
-        </View>
-      </View>
-
       <View style={styles.contenido}>
-        <RaleoForm form={form} updateField={updateField} />
+        <RaleoForm
+          form={form}
+          updateField={updateField}
+          submitted={submitted}
+          errores={errores}
+        />
 
-        <Button onPress={() => {}} style={styles.saveButton}>
+        <Button variant="outline" onPress={handleGuardar} style={styles.saveButton}>
           <View style={styles.saveBtnContent}>
-            <Icon icon={ICONS.save} size={18} color={COLORS.white} />
-            <Text size={16} color={COLORS.white} style={styles.saveBtnText}>Registrar Raleo</Text>
+            <Icon icon={ICONS.save} size={18} color={COLORS.primary} />
+            <Text size={16} color={COLORS.primary} style={styles.saveBtnText}>Registrar Raleo</Text>
           </View>
         </Button>
       </View>
     </ScrollView>
+    </>
   );
 }

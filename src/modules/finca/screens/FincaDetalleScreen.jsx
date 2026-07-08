@@ -1,37 +1,34 @@
 import { ScrollView, View, TouchableOpacity } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { fincas } from "./FincaData";
+import { useRouter } from "expo-router";
+
 import { styles } from "../styles/FincaDetalleStyles";
 import { ICONS } from "../../../theme/icons";
 import { COLORS } from "../../../theme/colors";
+import { STYLE } from "../../../theme/style";
+
+import useFincaDetalle from "../hooks/useFincaDetalle";
 
 import Card from "../../../shared/components/Card";
 import Text from "../../../shared/components/Text";
 import Icon from "../../../shared/components/Icons";
 import Button from "../../../shared/components/Button";
+import NavbarRegistro from "../../../shared/components/NavbarRegistro";
 
 
 export default function FincaDetalleScreen({ onEstanque }) {
   const router = useRouter();
 
-  const { id } = useLocalSearchParams();
-
-  const finca = fincas.find((f) => f.codigoInterno === id);
-
-  if (!finca) {
-    return (
-      <ScrollView contentContainerStyle={styles.container}>
-        <Text>Finca no encontrada</Text>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Text style={{ color: COLORS.textPrimary, marginTop: 20 }}>← Volver</Text>
-        </TouchableOpacity>
-      </ScrollView>
-    );
-  }
-
+  const { finca, haldleGenerar, loading } = useFincaDetalle();
+  
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.contentWrapper}>
+    <>
+    <NavbarRegistro
+        Titulo="Detalle de Finca"
+        Subtitulo={finca.nombre}
+        Icono="document"
+    />
+    <ScrollView contentContainerStyle={STYLE.container}>
+      <View style={STYLE.contentWrapper}>
         <Card>
           <View style={styles.detalleCard}>
             <View>
@@ -46,7 +43,7 @@ export default function FincaDetalleScreen({ onEstanque }) {
             </View>
 
             <View style={styles.filaDetalle}>
-              <Text style={styles.etiqueta}>ID:</Text>
+              <Text style={styles.etiqueta}>CBO:</Text>
               <Text style={styles.valor}>{finca.codigoInterno}</Text>
             </View>
 
@@ -88,10 +85,10 @@ export default function FincaDetalleScreen({ onEstanque }) {
             </View>
 
 
-            <Button style={styles.buttonExport}>
-              <Icon icon={ICONS.document} style={styles.iconDocument} />
+            <Button style={styles.buttonExport} onPress={haldleGenerar} disabled={loading}>
+              <Icon icon={ICONS.document} style={styles.iconDocument} size={18}/>
               <Text size={15}>
-                GENERAR REPORTE FINCA
+                {loading ? "GENERANDO..." : "GENERAR REPORTE FINCA"}
               </Text>
             </Button>
 
@@ -108,5 +105,6 @@ export default function FincaDetalleScreen({ onEstanque }) {
         </Button>
       </View>
     </ScrollView>
+    </>
   );
 }

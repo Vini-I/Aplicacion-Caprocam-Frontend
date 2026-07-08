@@ -1,3 +1,30 @@
+/**
+ * ============================================================
+ * COMPONENTE ALIMENTACIONFORM
+ * ============================================================
+ *
+ * Formulario de registro de alimentación. Agrupa los campos de
+ * finca/estanque, fecha/hora, tipo de alimentación y consumo, y
+ * aplica el contrato visual de campos obligatorios: asterisco
+ * visible desde el primer render, y borde rojo + mensaje de
+ * error solo después de que la screen marque `submitted = true`
+ * y el campo resulte inválido.
+ *
+ * Props principales:
+ * - form: objeto con los valores actuales del formulario.
+ * - updateField: función (campo, valor) para actualizar el form.
+ * - submitted: boolean, true cuando el usuario ya intentó guardar.
+ * - errores: objeto { campo: mensaje } devuelto por validarForm().
+ *
+ * Ejemplo:
+ * <AlimentacionForm
+ *   form={form}
+ *   updateField={updateField}
+ *   submitted={submitted}
+ *   errores={errores}
+ * />
+ */
+
 import React from "react";
 import { View, Pressable, StyleSheet } from "react-native";
 import Card from "../../../shared/components/Card";
@@ -43,22 +70,53 @@ const TIPOS = [
   { label: "Antibiótico", value: "Antibiótico" },
 ];
 
+const bordeError = { borderColor: COLORS.error, borderWidth: 1.5 };
+
 export default function AlimentacionForm({
   form = {},
   updateField = () => {},
+  submitted = false,
+  errores = {},
 }) {
+  const invalidoFinca = submitted && !!errores.finca;
+  const invalidoEstanque = submitted && !!errores.estanque;
+  const invalidoFecha = submitted && !!errores.fecha;
+  const invalidoHora = submitted && !!errores.hora;
+  const invalidoMetodo = submitted && !!errores.metodo;
+  const invalidoCantidadKg = submitted && !!errores.cantidadKg;
+
   return (
     <View>
       <Card title="Información General">
         <DateInput
-          label="Fecha de Registro"
+          label="Fecha de Registro *"
           value={form.fecha ?? ""}
           onChangeText={(v) => updateField("fecha", v)}
           labelStyle={{
             fontFamily: TYPOGRAPHY.fontFamily.medium,
           }}
+          inputStyle={invalidoFecha ? bordeError : null}
         />
-        <View style={styles.horasContainer}>
+        {invalidoFecha && (
+          <Text size={12} color={COLORS.error} style={styles.errorText}>
+            {errores.fecha}
+          </Text>
+        )}
+
+        <Text
+          size={14}
+          weight="600"
+          color={COLORS.textSecondary}
+          style={styles.horaLabel}
+        >
+          Hora *
+        </Text>
+        <View
+          style={[
+            styles.horasContainer,
+            invalidoHora && styles.horasContainerInvalid,
+          ]}
+        >
           {HORAS.map((h) => {
             const selected = form.hora === h;
 
@@ -82,21 +140,39 @@ export default function AlimentacionForm({
             );
           })}
         </View>
+        {invalidoHora && (
+          <Text size={12} color={COLORS.error} style={styles.errorText}>
+            {errores.hora}
+          </Text>
+        )}
 
         <Select
-          label="Finca"
+          label="Finca *"
           value={form.finca}
           onChange={(v) => updateField("finca", v)}
           options={FINCAS}
           placeholder="Seleccionar finca"
+          selectStyle={invalidoFinca ? bordeError : null}
         />
+        {invalidoFinca && (
+          <Text size={12} color={COLORS.error} style={styles.errorText}>
+            {errores.finca}
+          </Text>
+        )}
+
         <Select
-          label="Estanque"
+          label="Estanque *"
           value={form.estanque}
           onChange={(v) => updateField("estanque", v)}
           options={ESTANQUES}
           placeholder="Seleccionar estanque"
+          selectStyle={invalidoEstanque ? bordeError : null}
         />
+        {invalidoEstanque && (
+          <Text size={12} color={COLORS.error} style={styles.errorText}>
+            {errores.estanque}
+          </Text>
+        )}
       </Card>
 
       <Card title="Tipo de Alimentación">
@@ -117,17 +193,23 @@ export default function AlimentacionForm({
         />
 
         <Select
-          label="Método"
+          label="Método *"
           value={form.metodo}
           onChange={(v) => updateField("metodo", v)}
           options={METODOS}
           placeholder="Seleccionar método"
+          selectStyle={invalidoMetodo ? bordeError : null}
         />
+        {invalidoMetodo && (
+          <Text size={12} color={COLORS.error} style={styles.errorText}>
+            {errores.metodo}
+          </Text>
+        )}
       </Card>
 
       <Card title="Consumo">
         <Input
-          label="Cantidad (Kg)"
+          label="Cantidad (Kg) *"
           placeholder="0"
           value={String(form.cantidadKg ?? "")}
           keyboardType="numeric"
@@ -135,7 +217,13 @@ export default function AlimentacionForm({
             const soloNumeros = v.replace(/[^0-9]/g, "");
             updateField("cantidadKg", soloNumeros);
           }}
+          style={invalidoCantidadKg ? bordeError : null}
         />
+        {invalidoCantidadKg && (
+          <Text size={12} color={COLORS.error} style={styles.errorText}>
+            {errores.cantidadKg}
+          </Text>
+        )}
 
         <Select
           label="Proveedor"
@@ -159,10 +247,21 @@ export default function AlimentacionForm({
 }
 
 const styles = StyleSheet.create({
+  horaLabel: {
+    marginBottom: 6,
+  },
+
   horasContainer: {
     flexDirection: "row",
     gap: 8,
     marginTop: 4,
+  },
+
+  horasContainerInvalid: {
+    borderWidth: 1.5,
+    borderColor: COLORS.error,
+    borderRadius: 8,
+    padding: 4,
   },
 
   horaButton: {
@@ -178,5 +277,11 @@ const styles = StyleSheet.create({
   horaButtonSelected: {
     backgroundColor: COLORS.secondary,
     borderColor: COLORS.primary,
+  },
+
+  errorText: {
+    marginTop: -6,
+    marginBottom: 8,
+    marginLeft: 2,
   },
 });
