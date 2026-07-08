@@ -27,12 +27,6 @@ export const styles = StyleSheet.create({
     paddingBottom: 40,
   },
 
-  wrapper: {
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
-  },
-
   infoBanner: {
     marginBottom: 16,
     alignItems: "center",

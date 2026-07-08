@@ -164,9 +164,6 @@ export function useTrazabilidad() {
     router.back();
   }
 
-  function esFormularioCompleto() {
-    return obtenerCamposVacios().length === 0;
-  }
 
   return {
     formData,
@@ -181,6 +178,5 @@ export function useTrazabilidad() {
     manejarCambioFinca,
     manejarEnvio,
     cerrarFormulario,
-    formularioCompleto: esFormularioCompleto(),
   };
 }

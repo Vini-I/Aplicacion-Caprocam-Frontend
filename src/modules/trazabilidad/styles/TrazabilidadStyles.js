@@ -25,13 +25,6 @@ export const styles = StyleSheet.create({
     paddingBottom: 24,
   },
 
-  wrapper: {
-    flex: 1,
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
-  },
-
   busquedaRow: {
     flexDirection: "row",
     alignItems: "center",
