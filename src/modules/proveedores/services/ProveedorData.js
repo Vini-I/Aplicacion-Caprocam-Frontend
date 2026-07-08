@@ -15,6 +15,11 @@
  * 3. Provee getProveedoresByCategoria, que filtra proveedoresMock por
  *    una categoría de inventario, mapeando categoría -> tipoProducto.
  *
+ * 4. Provee eliminarProveedor(id), que saca un proveedor del mock.
+ *
+ * 5. Provee agregarProveedor(proveedor), que agrega uno nuevo al mock
+ *    generando su id e iniciales.
+ *
  * IMPORTANTE:
  * - tiposProducto.value usa el mismo texto capitalizado que
  *   proveedoresMock.tipoProducto (ej. "Alimento"), para que el Select
@@ -84,4 +89,45 @@ export function getProveedoresByCategoria(categoria) {
   if (!tipo) return proveedoresMock;
 
   return proveedoresMock.filter((p) => p.tipoProducto === tipo);
+}
+
+export function eliminarProveedor(id) {
+  const index = proveedoresMock.findIndex((p) => p.id === Number(id));
+  if (index !== -1) {
+    proveedoresMock.splice(index, 1);
+  }
+}
+
+export function actualizarProveedor(id, cambios) {
+  const index = proveedoresMock.findIndex((p) => p.id === Number(id));
+  if (index === -1) return null;
+
+  const actualizado = { ...proveedoresMock[index], ...cambios };
+  proveedoresMock[index] = actualizado;
+  return actualizado;
+}
+
+function generarIniciales(nombre) {
+  return nombre
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((palabra) => palabra[0]?.toUpperCase() ?? "")
+    .join("");
+}
+
+export function agregarProveedor(proveedor) {
+  const nuevoId =
+    proveedoresMock.length > 0
+      ? Math.max(...proveedoresMock.map((p) => p.id)) + 1
+      : 1;
+
+  const nuevoProveedor = {
+    id: nuevoId,
+    iniciales: generarIniciales(proveedor.nombre),
+    ...proveedor,
+  };
+
+  proveedoresMock.push(nuevoProveedor);
+  return nuevoProveedor;
 }

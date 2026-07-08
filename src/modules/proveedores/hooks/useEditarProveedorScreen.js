@@ -42,7 +42,8 @@
  * - No navega; expone alerta para que la screen decida donde mostrarla.
  */
 import { useState } from "react";
-import { proveedoresMock } from "../services/ProveedorData";
+import { useLocalSearchParams } from "expo-router";
+import { proveedoresMock, actualizarProveedor } from "../services/ProveedorData";
 import { validarTelefono, validarCorreo } from "../utils/contactValidators";
 
 export const TELEFONO_MAX_LENGTH = 14;
@@ -58,7 +59,9 @@ function validarTipoProducto(valor) {
 }
 
 export function useEditarProveedorScreen() {
-  const base = proveedoresMock[0];
+  const { id } = useLocalSearchParams();
+  const base =
+    proveedoresMock.find((p) => p.id === Number(id)) ?? proveedoresMock[0];
 
   const [nombre] = useState(base.nombre);
   const [tipoProducto, setTipoProducto] = useState(base.tipoProducto);
@@ -126,6 +129,14 @@ export function useEditarProveedorScreen() {
       });
       return;
     }
+
+    actualizarProveedor(base.id, {
+      tipoProducto,
+      telefono,
+      correo,
+      direccion,
+      notas,
+    });
 
     setAlerta({
       variant: "success",

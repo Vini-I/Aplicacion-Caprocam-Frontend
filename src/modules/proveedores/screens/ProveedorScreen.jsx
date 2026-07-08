@@ -40,6 +40,7 @@ import { ICONS } from "../../../theme/icons";
 import { STYLE } from "../../../theme/style";
 import { styles, ICON_STYLES } from "../styles/ProveedorStyles";
 import { useProveedorScreen } from "../hooks/useProveedorScreen";
+import { formatearTelefono } from "../utils/contactValidators";
 
 export default function ProveedorScreen() {
   const router = useRouter();
@@ -131,7 +132,7 @@ export default function ProveedorScreen() {
 
             <View style={styles.contactRow}>
               <CustomText style={styles.contactText}>
-                {proveedor.telefono.replace(/^\+506\s?(\d{4})(\d{4})$/, "+506 $1-$2")}
+                {formatearTelefono(proveedor.telefono)}
               </CustomText>
             </View>
 

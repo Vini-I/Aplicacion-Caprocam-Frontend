@@ -21,6 +21,10 @@
  * 5. mensajeError expone el mensaje general que se muestra arriba
  *    del boton "Guardar proveedor".
  * 
+ * 6. Al guardar correctamente, el proveedor se agrega a proveedoresMock
+ *    (agregarProveedor), para que el listado (ProveedorScreen) lo vea
+ *    reflejado al volver a esa pantalla.
+ * 
  * 7. guardadoExitoso habilita la alerta de confirmacion tras un
  *    guardado correcto.
  * 
@@ -29,6 +33,7 @@
  */
 import { useState } from "react";
 import { validarTelefono, validarCorreo } from "../utils/contactValidators";
+import { agregarProveedor } from "../services/ProveedorData";
 
 export const TELEFONO_MAX_LENGTH = 14;
 
@@ -113,7 +118,7 @@ export function useNuevoProveedorScreen() {
       notas: notas.trim(),
     };
 
-    console.log("Proveedor guardado:", proveedor);
+    agregarProveedor(proveedor);
   }
 
   return {

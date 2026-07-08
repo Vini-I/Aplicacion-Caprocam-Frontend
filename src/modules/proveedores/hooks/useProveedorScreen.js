@@ -6,7 +6,8 @@
  * Logica de la pantalla de listado de proveedores.
  *
  * FUNCIONALIDAD:
- * 1. Carga el mock de proveedores (proveedoresMock).
+ * 1. Carga el mock de proveedores (proveedoresMock) y lo refresca cada
+ *    vez que la pantalla recibe foco.
  * 
  * 2. Filtra el listado por texto de búsqueda (nombre, tipo, teléfono,
  *    correo) y por tipo(s) de producto seleccionados.
@@ -21,13 +22,22 @@
  * - No aplica validaciones, no hay formulario ni guardado.
  * - No navega; expone datos para que la screen decida.
  */
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigation } from "expo-router";
 import { proveedoresMock, tiposProducto } from "../services/ProveedorData";
 
 export function useProveedorScreen() {
-  const [proveedores] = useState(proveedoresMock);
+  const navigation = useNavigation();
+  const [proveedores, setProveedores] = useState(proveedoresMock);
   const [busqueda, setBusqueda] = useState("");
   const [filtros, setFiltros] = useState({ tipos: [] });
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("focus", () => {
+      setProveedores([...proveedoresMock]);
+    });
+    return unsubscribe;
+  }, [navigation]);
 
   const TIPOS = tiposProducto.map((t) => t.value);
 

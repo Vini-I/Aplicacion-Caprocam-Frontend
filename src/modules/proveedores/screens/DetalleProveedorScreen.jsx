@@ -40,6 +40,7 @@ import { STYLE } from "../../../theme/style";
 import { styles } from "../styles/DetalleProveedorStyles";
 
 import { useDetalleProveedorScreen } from "../hooks/useDetalleProveedorScreen";
+import { formatearTelefono } from "../utils/contactValidators";
 
 export default function DetalleProveedorScreen() {
   const router = useRouter();
@@ -48,12 +49,13 @@ export default function DetalleProveedorScreen() {
     modalVisible,
     abrirModal,
     cerrarModal,
+    confirmarEliminar,
     getTipoLabel,
   } = useDetalleProveedorScreen();
 
   if (!proveedor) {
     return (
-      <View style={[STYLE.container, styles.container]}>
+      <View style={STYLE.container}>
         <View style={STYLE.contentWrapper}>
           <EmptyState
             title="Proveedor no encontrado"
@@ -72,7 +74,7 @@ export default function DetalleProveedorScreen() {
   }
 
   return (
-    <View style={[STYLE.container, styles.container]}>
+    <View style={STYLE.container}>
       <ScrollView
         style={styles.scroll}
         showsVerticalScrollIndicator={false}
@@ -105,7 +107,7 @@ export default function DetalleProveedorScreen() {
 
             <View style={styles.filaDetalle}>
               <CustomText style={styles.filaEtiqueta}>Teléfono</CustomText>
-              <CustomText style={styles.filaValor}>{proveedor.telefono}</CustomText>
+              <CustomText style={styles.filaValor}>{formatearTelefono(proveedor.telefono)}</CustomText>
             </View>
 
             <View style={styles.filaDetalle}>
@@ -174,7 +176,10 @@ export default function DetalleProveedorScreen() {
         </CustomText>
         <Button
           style={styles.modalConfirmButton}
-          onPress={() => router.replace("/(drawer)/proveedores/proveedorScreen")}
+          onPress={() => {
+            confirmarEliminar();
+            router.replace("/(drawer)/proveedores/proveedorScreen");
+          }}
         >
           <Icon icon={ICONS.delete} color={COLORS.error} />
           <CustomText style={styles.modalConfirmTexto}>Sí, eliminar</CustomText>

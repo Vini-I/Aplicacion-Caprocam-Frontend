@@ -40,6 +40,7 @@
  * Los íconos de la pantalla (caja, gráfico, notificación de stock
  * bajo y "Agregar producto") usan el tamaño por defecto del
  * componente Icon, sin overrides de size.
+ *
  */
 
 import { View, FlatList } from "react-native";
@@ -147,52 +148,54 @@ export default function InventarioScreen({ onDetail, onNew, onBack }) {
     cantidadStockBajo,
   } = useInventario();
 
-  return (
-    <View style={STYLE.container}>
-      <View style={[STYLE.contentWrapper, styles.zonaFiltros]}>
-        <View style={styles.barraBusqueda}>
-          <SearchBar
-            value={busqueda}
-            onChangeText={setBusqueda}
-            placeholder="Buscar producto, código, categoría, proveedor..."
-            containerStyle={styles.searchBarContainer}
-          />
-          <FilterButton
-            categories={categorias}
-            suppliers={proveedores}
-            units={unidades}
-            activeFilters={filtros}
-            onApply={setFiltros}
-            showLowStock
-            showExpiryDate
-            buttonStyle={styles.filterButton}
-          />
-        </View>
-
-        {cantidadStockBajo > 0 && (
-          <View style={styles.alertaBanner}>
-            <Icon icon={ICONS.notification} color={COLORS.error} />
-            <CustomText size={13} weight="600" color={COLORS.error} style={styles.alertaTexto}>
-              {cantidadStockBajo}{" "}
-              {cantidadStockBajo === 1 ? "producto" : "productos"} con stock bajo
-            </CustomText>
-          </View>
-        )}
-
-        <View style={styles.filaContadorBoton}>
-          <CustomText size={13} color={COLORS.textTertiary} style={styles.contadorResultados}>
-            {productosFiltrados.length}{" "}
-            {productosFiltrados.length === 1 ? "producto encontrado" : "productos encontrados"}
-          </CustomText>
-          <Button variant="outline" onPress={onNew} style={styles.botonAgregar}>
-            <Icon icon={ICONS.add} color={COLORS.primary} />
-            <CustomText size={13} weight="600" color={COLORS.primary}>
-              Agregar producto
-            </CustomText>
-          </Button>
-        </View>
+  const renderZonaFiltros = () => (
+    <View style={styles.zonaFiltros}>
+      <View style={styles.barraBusqueda}>
+        <SearchBar
+          value={busqueda}
+          onChangeText={setBusqueda}
+          placeholder="Buscar producto, código, categoría, proveedor..."
+          containerStyle={styles.searchBarContainer}
+        />
+        <FilterButton
+          categories={categorias}
+          suppliers={proveedores}
+          units={unidades}
+          activeFilters={filtros}
+          onApply={setFiltros}
+          showLowStock
+          showExpiryDate
+          buttonStyle={styles.filterButton}
+        />
       </View>
 
+      {cantidadStockBajo > 0 && (
+        <View style={styles.alertaBanner}>
+          <Icon icon={ICONS.notification} color={COLORS.error} />
+          <CustomText size={13} weight="600" color={COLORS.error} style={styles.alertaTexto}>
+            {cantidadStockBajo}{" "}
+            {cantidadStockBajo === 1 ? "producto" : "productos"} con stock bajo
+          </CustomText>
+        </View>
+      )}
+
+      <View style={styles.filaContadorBoton}>
+        <CustomText size={13} color={COLORS.textTertiary} style={styles.contadorResultados}>
+          {productosFiltrados.length}{" "}
+          {productosFiltrados.length === 1 ? "producto encontrado" : "productos encontrados"}
+        </CustomText>
+        <Button variant="outline" onPress={onNew} style={styles.botonAgregar}>
+          <Icon icon={ICONS.add} color={COLORS.primary} />
+          <CustomText size={13} weight="600" color={COLORS.primary}>
+            Agregar producto
+          </CustomText>
+        </Button>
+      </View>
+    </View>
+  );
+
+  return (
+    <View style={STYLE.container}>
       <FlatList
         ref={flatListRef}
         data={productosFiltrados}
@@ -203,13 +206,14 @@ export default function InventarioScreen({ onDetail, onNew, onBack }) {
             onVerDetalle={() => onDetail(item.id)}
           />
         )}
+        ListHeaderComponent={renderZonaFiltros}
         ListEmptyComponent={
           <EmptyState
             title="Sin productos"
             description="No se encontraron productos con esa búsqueda."
           />
         }
-        contentContainerStyle={[STYLE.contentWrapper, styles.lista]}
+        contentContainerStyle={styles.lista}
       />
     </View>
   );

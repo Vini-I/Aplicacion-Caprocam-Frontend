@@ -28,10 +28,6 @@ import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
 
 export const styles = StyleSheet.create({
-  container: {
-    backgroundColor: COLORS.surface,
-  },
-
   volverButton: {
     flexDirection: "row",
     alignItems: "center",
@@ -202,6 +198,13 @@ export const styles = StyleSheet.create({
     fontWeight: undefined,
   },
 
+
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
 
   modalContainer: {},
 

@@ -22,6 +22,7 @@
 import { StyleSheet } from "react-native";
 import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
+import { STYLE } from "../../../theme/style";
 
 export const styles = StyleSheet.create({
   zonaFiltros: {
@@ -92,12 +93,14 @@ export const styles = StyleSheet.create({
   },
 
   lista: {
+    ...STYLE.contentWrapper,
     paddingBottom: 24,
   },
 
   tarjeta: {
     marginTop: 12,
-    alignSelf: "stretch",
+    width: "100%",
+    overflow: "hidden",
   },
 
   tarjetaStockBajo: {
@@ -115,6 +118,7 @@ export const styles = StyleSheet.create({
 
   nombreProducto: {
     fontFamily: TYPOGRAPHY.fontFamily.bold,
+    flexShrink: 1,
   },
 
   badgeStockBajo: {
@@ -141,10 +145,13 @@ export const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: 12,
     marginTop: 2,
+    flexWrap: "wrap",
+    gap: 8,
   },
 
   badgeCategoria: {
     fontFamily: TYPOGRAPHY.fontFamily.medium,
+    flexShrink: 1,
   },
 
   badgeTexto: {
@@ -161,6 +168,7 @@ export const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 14,
     backgroundColor: COLORS.white,
+    flexShrink: 0,
   },
 
   filasDetalle: {
