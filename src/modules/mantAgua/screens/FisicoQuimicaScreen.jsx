@@ -34,16 +34,17 @@
  */
 
 import { View, ScrollView } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import Button from '../../../shared/components/Button';
 import Alert from '../../../shared/components/Alert';
 import Card from '../../../shared/components/Card';
 import Select from '../../../shared/components/Select';
 import Text from '../../../shared/components/Text';
+import Title from '../../../shared/components/Title';
 import Footer from '../../../shared/components/Footer';
 import Icon from '../../../shared/components/Icons';
 import RangeCard from '../components/RangeCard';
-import NavbarRegistro from '../../../shared/components/NavbarRegistro';
 import { COLORS } from '../../../theme/colors';
 import { ICONS } from '../../../theme/icons';
 import useFisicoQuimica from '../hooks/useFisicoQuimica';
@@ -52,6 +53,8 @@ import { styles } from '../styles/FisicoQuimicaStyles';
 import { STYLE } from '../../../theme/style';
 
 export default function FisicoQuimicaScreen({ onBack }) {
+  const router = useRouter();
+
   const {
     setLecturasSalinidad,
     setLecturasTemp, setLecturasPh, setLecturasOx,
@@ -170,13 +173,58 @@ export default function FisicoQuimicaScreen({ onBack }) {
     setLecturasOx(values ?? []);
   };
 
+  const handleBack = () => {
+    if (onBack) {
+      onBack();
+      return;
+    }
+
+    router.replace('/(drawer)/(tabs)/registros');
+  };
+
   return (
     <>
-    <NavbarRegistro
-          Titulo="Físico-Química"
-          Subtitulo="Registro de mediciones"
-          Icono="chemicalContainer"
-        />
+    <View style={{
+      backgroundColor: COLORS.primary,
+      paddingTop: 24,
+      paddingHorizontal: 24,
+      paddingBottom: 28,
+      borderBottomLeftRadius: 22,
+      borderBottomRightRadius: 22,
+    }}>
+      <Button variant="outline" onPress={handleBack} style={{
+        alignSelf: 'flex-start',
+        backgroundColor: 'transparent',
+        borderWidth: 0,
+        paddingHorizontal: 0,
+        paddingVertical: 0,
+        marginBottom: 20,
+      }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <Icon icon={ICONS.exit} size={18} color={COLORS.white} />
+          <Text size={16} color={COLORS.white}>Volver</Text>
+        </View>
+      </Button>
+
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+        <View style={{
+          width: 54,
+          height: 54,
+          borderRadius: 14,
+          backgroundColor: COLORS.white,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+          <Icon icon={ICONS.chemicalContainer} size={28} color={COLORS.primary} />
+        </View>
+
+        <View>
+          <Title level={3} color={COLORS.white}>Físico-Química</Title>
+          <Text size={14} color={COLORS.white}>Registro de mediciones</Text>
+        </View>
+      </View>
+    </View>
+
     <View style={STYLE.container}>
       
       <ScrollView

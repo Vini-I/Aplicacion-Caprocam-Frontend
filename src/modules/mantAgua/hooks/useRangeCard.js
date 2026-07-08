@@ -132,12 +132,6 @@ export default function useRangeCard({
   const normalizar = (v) => (v - sliderMin) / (sliderMax - sliderMin);
   const tieneMaxIdeal = Number.isFinite(idealMax);
 
-  // True si existe al menos una lectura con valor numérico dentro del arreglo
-  const hasMeasurements = lecturas.length > 0 && lecturas.some((r) => {
-    const parsed = parseFloat(r.rawInput);
-    return !isNaN(parsed);
-  });
-
   // Devuelve los manejadores de una lectura puntual (botones +/-, input, blur)
   const obtenerManejadores = useCallback(
     (r) => ({
@@ -180,7 +174,6 @@ export default function useRangeCard({
     eliminarLectura,
     normalizar,
     tieneMaxIdeal,
-    hasMeasurements,
     obtenerManejadores,
   };
 }

@@ -44,14 +44,6 @@ export const cardStyles = StyleSheet.create({
 });
 
 export const innerStyles = StyleSheet.create({
-  idealMarker: {
-    position: 'absolute',
-    top: 2,
-    width: 1,
-    height: 6,
-    backgroundColor: COLORS.success,
-    opacity: 0.7,
-  },
   readingRow: {
     flexDirection: 'row',
     alignItems: 'center',

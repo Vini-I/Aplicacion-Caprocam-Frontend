@@ -11,7 +11,6 @@
  * Funcionalidad / reglas importantes:
  * - `guardarLectura(datos)`: guarda una lectura (pendiente implementar
  *   almacenamiento real).
- * - `obtenerLecturas()`: devuelve historial (placeholder).
  * - `obtenerLecturasPorEstanque(estanqueId)`: devuelve lecturas por estanque.
  *
  * Restricciones del proyecto:
@@ -44,11 +43,6 @@ const historialLecturasPorEstanque = {
 export const guardarLectura = async (datos) => {
   // TODO: AsyncStorage, API call, etc.
   console.log('guardarLectura - pendiente de implementar', datos);
-};
-
-export const obtenerLecturas = async () => {
-  // TODO
-  return [];
 };
 
 export function obtenerLecturasPorEstanque(estanqueId) {

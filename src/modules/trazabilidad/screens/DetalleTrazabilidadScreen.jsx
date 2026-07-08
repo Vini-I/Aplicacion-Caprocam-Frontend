@@ -14,36 +14,28 @@
  * - Mostrar el resto de los datos del registro en modo solo lectura.
  *
  * Componentes utilizados:
- * - Navbar: encabezado de la pantalla.
  * - Badge: etiqueta de "Registro histórico".
  * - Card: agrupación visual de las secciones del detalle.
  * - Input, Select, DateInput: campos en modo solo lectura.
- * - Button: acción para volver al listado (sin Pressable directo).
  */
 import { View, ScrollView } from "react-native";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import {useLocalSearchParams } from "expo-router";
 import Text from "../../../shared/components/Text";
 import { styles } from "../styles/DetalleTrazabilidadStyles";
-import Button from "../../../shared/components/Button";
 import { STYLE } from "../../../theme/style";
 import Card from "../../../shared/components/Card";
 import Badge from "../../../shared/components/Badge";
 import Input from "../../../shared/components/Input";
 import Select from "../../../shared/components/Select";
-import Icon from "../../../shared/components/Icons";
-import { ICONS } from "../../../theme/icons";
+
 
 import { obtenerRegistroTrazabilidadPorId } from "../services/TrazabilidadServices";
 
 export default function DetalleTrazabilidadScreen() {
-  const router = useRouter();
   const { id } = useLocalSearchParams();
 
   const registro = obtenerRegistroTrazabilidadPorId(Number(id));
 
-  function volver() {
-    router.back();
-  }
 
   if (!registro) {
     return (
