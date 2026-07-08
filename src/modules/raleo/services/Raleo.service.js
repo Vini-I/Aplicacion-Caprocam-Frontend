@@ -5,7 +5,7 @@
  *
  * Persiste los registros de raleo en AsyncStorage bajo la clave
  * "raleos_v1". Sigue exactamente el mismo patrón que
- * alimentacion.service.js.
+ * Alimentacion.service.js.
  *
  * Funcionalidad:
  * - getAll(): retorna todos los registros guardados.

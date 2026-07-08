@@ -7,10 +7,8 @@
  * registros de alimentación ya guardados.
  *
  * Funcionalidad:
- * - Corrige el import de estilos: el archivo real en disco es
- *   alimentacionStyles.js (a minúscula); el import anterior
- *   decía "../styles/AlimentacionStyles" (A mayúscula), lo cual
- *   falla en sistemas sensibles a mayúsculas (Linux/EAS Build).
+ * - Corrige el import de estilos para apuntar al archivo real
+ *   AlimentacionStyles.js.
  *
  * Nota: esta pantalla no está enrutada actualmente desde
  * src/app/ (ninguna ruta la importa) y no tiene filtros ni
@@ -33,7 +31,7 @@ import Spinner from "../../../shared/components/Spinner";
 
 import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
-import { styles } from "../styles/alimentacionStyles";
+import { styles } from "../styles/AlimentacionStyles";
 export default function HistorialAlimentacionScreen({ navigation }) {
   const { alimentaciones, loading, error } = useAlimentacion();
 

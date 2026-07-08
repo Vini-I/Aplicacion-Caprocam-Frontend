@@ -5,7 +5,7 @@
  *
  * Persiste los registros de densidad poblacional (conteo) en
  * AsyncStorage bajo la clave "densidad_poblacional_v1". Sigue
- * exactamente el mismo patrón que alimentacion.service.js.
+ * exactamente el mismo patrón que Alimentacion.service.js.
  *
  * Funcionalidad:
  * - getAll(): retorna todos los registros guardados.

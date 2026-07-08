@@ -30,13 +30,13 @@ import React, { useEffect, useState } from "react";
 import { View, Platform, Alert } from "react-native";
 import useAlimentacion from "../hooks/useAlimentacion";
 import useAlimentacionForm from "../hooks/useAlimentacionForm";
-import alimentacionService from "../services/alimentacion.service";
+import alimentacionService from "../services/Alimentacion.service";
 import Spinner from "../../../shared/components/Spinner";
 import Text from "../../../shared/components/Text";
 import GestionAlimentacion from "./GestionAlimentacion";
 import NavbarRegistro from "../../../shared/components/NavbarRegistro";
 import { COLORS } from "../../../theme/colors";
-import { styles } from "../styles/alimentacionStyles";
+import { styles } from "../styles/AlimentacionStyles";
 
 const showAlert = (title, message, buttons) => {
   if (Platform.OS === "web") {

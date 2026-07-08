@@ -16,7 +16,7 @@
  *   maxWidth/alignSelf/width.
  *
  * Ejemplo:
- * import { styles } from '../styles/alimentacionStyles';
+ * import { styles } from '../styles/AlimentacionStyles';
  * <View style={styles.screen}>
  */
 

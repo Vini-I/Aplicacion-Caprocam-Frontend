@@ -34,7 +34,7 @@ import AlimentacionStats from "../components/AlimentacionStats";
 import AlimentacionList from "../components/AlimentacionList";
 import AlimentacionForm from "../components/AlimentacionForm";
 import Text from "../../../shared/components/Text";
-import { styles } from "../styles/alimentacionStyles";
+import { styles } from "../styles/AlimentacionStyles";
 import { COLORS } from "../../../theme/colors";
 import Footer from "../../../shared/components/Footer";
 import Button from "../../../shared/components/Button";

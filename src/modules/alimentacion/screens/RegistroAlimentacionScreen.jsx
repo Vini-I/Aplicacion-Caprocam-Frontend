@@ -5,11 +5,11 @@
  *
  * Pantalla alterna de registro de alimentación (sin listado ni
  * estadísticas): valida el formulario y lo persiste mediante
- * alimentacion.service.js.
+ * Alimentacion.service.js.
  *
  * Funcionalidad:
- * - Corrige el import de estilos: el archivo real en disco es
- *   alimentacionStyles.js (a minúscula), no AlimentacionStyles.
+ * - Corrige el import de estilos para apuntar al archivo real
+ *   AlimentacionStyles.js.
  * - Corrige un ReferenceError en tiempo de ejecución: showAlert()
  *   usa Platform y Alert pero el archivo nunca los importaba de
  *   'react-native'; ahora se importan junto con View/ScrollView/
@@ -32,9 +32,9 @@ import React from "react";
 import { View, ScrollView, Pressable, Platform, Alert } from "react-native";
 import useAlimentacionForm from "../hooks/useAlimentacionForm";
 import AlimentacionForm from "../components/AlimentacionForm";
-import alimentacionService from "../services/alimentacion.service";
+import alimentacionService from "../services/Alimentacion.service";
 import Text from "../../../shared/components/Text";
-import { styles } from "../styles/alimentacionStyles";
+import { styles } from "../styles/AlimentacionStyles";
 const showAlert = (title, message, buttons) => {
     if (Platform.OS === 'web') {
         window.alert(`${title}\n\n${message}`);

@@ -15,7 +15,7 @@
  *   vez de redefinir manualmente maxWidth/alignSelf/width.
  *
  * Ejemplo:
- * import { styles } from '../styles/raleoStyles';
+ * import { styles } from '../styles/RaleoStyles';
  * <View style={styles.screen}>
  */
 

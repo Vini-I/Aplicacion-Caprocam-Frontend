@@ -39,7 +39,7 @@ import DateInput from "../../../shared/components/DateInput";
 import Text from "../../../shared/components/Text";
 import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
-import { styles } from "../styles/raleoStyles";
+import { styles } from "../styles/RaleoStyles";
 
 const FINCAS = [
   { label: "Finca La Reina", value: "laReina" },

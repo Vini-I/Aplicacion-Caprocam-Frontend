@@ -11,7 +11,7 @@
  *   tenía onPress={() => {}} y no guardaba ni validaba nada.
  *   Ahora handleGuardar activa `submitted = true`, valida con
  *   validarForm() de useRaleo, y solo si es válido persiste el
- *   registro con raleo.service.js, muestra el alert de éxito y
+ *   registro con Raleo.service.js, muestra el alert de éxito y
  *   reinicia el formulario (resetForm + submitted=false).
  * - Reutiliza el mismo patrón de alertas que Alimentación
  *   (Platform.OS === 'web' ? window.alert : Alert.alert).
@@ -34,9 +34,9 @@ import RaleoForm from "../components/RaleoForm";
 import NavbarRegistro from "../../../shared/components/NavbarRegistro";
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
-import { styles } from "../styles/raleoStyles";
+import { styles } from "../styles/RaleoStyles";
 import useRaleo from "../hooks/useRaleo";
-import raleoService from "../services/raleo.service";
+import raleoService from "../services/Raleo.service";
 
 const showAlert = (title, message, buttons) => {
   if (Platform.OS === "web") {

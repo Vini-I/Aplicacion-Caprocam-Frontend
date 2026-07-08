@@ -20,7 +20,7 @@
  */
 
 import { useState, useEffect } from "react";
-import alimentacionService from "../services/alimentacion.service";
+import alimentacionService from "../services/Alimentacion.service";
 
 const useAlimentacion = () => {
     const [alimentaciones, setAlimentaciones] = useState([]);
