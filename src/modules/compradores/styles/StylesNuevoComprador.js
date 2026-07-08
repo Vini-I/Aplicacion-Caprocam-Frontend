@@ -1,3 +1,27 @@
+/**
+ * ============================================================
+ * STYLES: STYLESNUEVOCOMPRADOR
+ * ============================================================
+ * Módulo: Compradores
+ *
+ * Estilos de NuevoCompradorScreen.jsx.
+ *
+ * FUNCIONALIDAD:
+ * 1. ICON_SIZES: tamaños de íconos usados en la pantalla (volver,
+ *    guardar).
+ * 2. styles: layout del formulario, inputError (borde rojo por
+ *    campo) y saveButton.
+ *
+ * IMPORTANTE:
+ * - inputError solo se activa vía errorX && styles.inputError,
+ *   nunca antes del primer intento de guardar.
+ * - saveButton no debe llevar backgroundColor: el fondo blanco y
+ *   el borde celeste los pone Button variant="outline".
+ * ============================================================
+ */
+
+
+
 import { StyleSheet } from "react-native";
 import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
@@ -80,6 +104,17 @@ export const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: TYPOGRAPHY.fontFamily.regular,
   },
+  inputError: {
+  borderColor: COLORS.error,
+  },
+
+
+  errorText: {
+    marginTop: 4,
+    fontSize: 12,
+    color: COLORS.error,
+  },
+  
   select: {
     minHeight: 48,
     borderRadius: 12,
@@ -97,11 +132,10 @@ export const styles = StyleSheet.create({
     marginTop: 10,
     borderRadius: 14,
     paddingVertical: 14,
-    backgroundColor: COLORS.primary,
   },
   saveButtonText: {
     fontSize: 16,
-    color: COLORS.white,
+    color: COLORS.primary,
     fontWeight: "700",
     fontFamily: TYPOGRAPHY.fontFamily.bold,
   },
@@ -120,5 +154,6 @@ export const styles = StyleSheet.create({
   alertText: {
     textAlign: "center",
     width: "100%",
+    color: COLORS.error,
   },
 });

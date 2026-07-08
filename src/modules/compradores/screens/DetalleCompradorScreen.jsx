@@ -1,8 +1,27 @@
 /**
- * DetalleCompradorScreen
- * Pantalla que muestra la información completa de un comprador.
- * Permite navegar a la edición o eliminar el comprador mediante un modal de confirmación.
+ * ============================================================
+ * PANTALLA: DETALLECOMPRADORSCREEN
+ * ============================================================
+ * Módulo: Compradores
+ *
+ * Muestra la información completa de un comprador.
+ *
+ * FUNCIONALIDAD:
+ * 1. Busca el comprador por id (useDetalleCompradorScreen).
+ * 2. Muestra nombre, tipo de producto, teléfono, correo, dirección
+ *    y notas.
+ * 3. Botón "Editar" navega al formulario de edición.
+ * 4. Botón "Eliminar" abre un modal de confirmación antes de
+ *    volver a la lista.
+ *
+ * IMPORTANTE:
+ * - Botones Editar/Eliminar usan Button variant="outline"; el de
+ *   Eliminar además suma styles.botonEliminar (solo borderColor)
+ *   para verse en rojo, sin depender de una variante roja del
+ *   Button global.
+ * ============================================================
  */
+
 import { useState } from "react";
 import { View, ScrollView } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
@@ -108,15 +127,15 @@ export default function DetalleCompradorScreen() {
 
         {/* Botones de acción: editar y eliminar */}
         <View style={styles.botones}>
-          <Button style={[styles.boton, styles.botonEditar]} onPress={irAEditar}>
-            <Icon icon={ICONS.edit} size={ICON_SIZE.boton} color={COLORS.white} />
-            <CustomText style={styles.botonTexto}>Editar</CustomText>
-          </Button>
-
-          <Button style={[styles.boton, styles.botonEliminar]} onPress={() => setModalVisible(true)}>
-            <Icon icon={ICONS.delete} size={ICON_SIZE.boton} color={COLORS.white} />
-            <CustomText style={styles.botonTexto}>Eliminar</CustomText>
-          </Button>
+         <Button variant="outline" style={[styles.boton, styles.botonEditar]} onPress={irAEditar}>
+          <Icon icon={ICONS.edit} size={ICON_SIZE.boton} color={COLORS.primary} />
+          <CustomText style={[styles.botonTexto, styles.botonTextoEditar]}>Editar</CustomText>
+        </Button>
+        
+        <Button variant="outline" style={[styles.boton, styles.botonEliminar]} onPress={() => setModalVisible(true)}>
+          <Icon icon={ICONS.delete} size={ICON_SIZE.boton} color={COLORS.error} />
+          <CustomText style={[styles.botonTexto, styles.botonTextoEliminar]}>Eliminar</CustomText>
+        </Button>
         </View>
       </ScrollView>
 
@@ -136,9 +155,9 @@ export default function DetalleCompradorScreen() {
           ¿Estás seguro que deseas eliminar{" "}
           <CustomText style={styles.modalNombreNegrita}>{comprador.nombre}</CustomText>?
         </CustomText>
-        <Button style={styles.modalConfirmButton} onPress={irAtras}>
-          <Icon icon={ICONS.delete} size={ICON_SIZE.modal} color={COLORS.white} />
-          <CustomText style={styles.modalConfirmTexto}>Sí, eliminar</CustomText>
+        <Button variant="outline"style={styles.modalConfirmButton, styles.botonEliminar} onPress={irAtras}>
+          <Icon icon={ICONS.delete} size={ICON_SIZE.modal} color={COLORS.error} />
+          <CustomText style={styles.modalConfirmTexto, { color: COLORS.error }}>Sí, eliminar</CustomText>
         </Button>
       </Modal>
 

@@ -1,3 +1,34 @@
+/**
+ * ============================================================
+ * HOOK: USEPRODUCTFORM
+ * ============================================================
+ * Módulo: Productos
+ *
+ * Maneja el estado y la lógica del formulario de alta/edición
+ * de producto.
+ *
+ * FUNCIONALIDAD:
+ * 1. Carga los datos del producto cuando llega productoParam
+ *    (modo edición); si no llega, arranca en modo creación.
+ * 2. Recalcula la lista de proveedores disponibles cada vez que
+ *    cambia la categoría, y limpia el proveedor si ya no aplica.
+ * 3. Valida los campos obligatorios (nombre, categoría, cantidad,
+ *    stock mínimo, precio) solo después de presionar Guardar
+ *    (intentoGuardar), mostrando un mensaje general y marcando
+ *    cada campo inválido por separado (errorNombre, errorCategoria,
+ *    errorCantidad, errorStockMinimo, errorPrecio).
+ * 4. En modo edición, además exige que haya cambios reales
+ *    respecto al producto original antes de permitir guardar.
+ * 5. Guarda el producto (crear o actualizar) y navega de vuelta.
+ *
+ * IMPORTANTE:
+ * - En modo creación el botón de guardar NO se bloquea de
+ *   entrada: el usuario puede presionar y ver qué campo falta.
+ * - En modo edición sí se bloquea mientras no haya cambios.
+ * ============================================================
+ */
+
+
 import { useState, useEffect } from "react";
 import { useRouter, useLocalSearchParams } from "expo-router";
 
@@ -15,6 +46,7 @@ export function useProductForm() {
 
   const [form, setForm] = useState(initialForm);
   const [originalForm, setOriginalForm] = useState(initialForm);
+  const [intentoGuardar, setIntentoGuardar] = useState(false);
   const [productoId, setProductoId] = useState(null);
   const [opcionesProveedores, setOpcionesProveedores] = useState([]);
 
@@ -82,12 +114,14 @@ export function useProductForm() {
 
   const canSave = isEditMode ? hasRequiredData && hasChanges : hasRequiredData;
 
-  const validationMessage = !hasRequiredData
-    ? "Complete los campos obligatorios para guardar."
-    : isEditMode && !hasChanges
-      ? "Realice algún cambio para guardar la actualización."
-      : "";
-
+  const validationMessage = !intentoGuardar ? "" : !hasRequiredData ? "Revisa los campos obligatorios marcados con * antes de guardar."
+     : isEditMode && !hasChanges ? "Realice algún cambio para guardar la actualización." : "";
+ 
+  const errorNombre = intentoGuardar && form.nombre.trim() === "";
+  const errorCategoria = intentoGuardar && form.categoria === "";
+  const errorCantidad = intentoGuardar && form.cantidad === "";
+  const errorStockMinimo = intentoGuardar && form.stockMinimo === "";
+  const errorPrecio = intentoGuardar && form.precioUnidad === "";
   const showExpirationDate =
     form.categoria === "Alimentación" || form.categoria === "Tratamiento";
 
@@ -110,7 +144,9 @@ export function useProductForm() {
   }
 
   function handleSubmit() {
-    if (!canSave) return;
+    setIntentoGuardar(true);
+
+   if (!canSave) return;
 
     const producto = {
       nombre: form.nombre.trim(),
@@ -158,6 +194,11 @@ export function useProductForm() {
     canSave,
     validationMessage,
     showExpirationDate,
+    errorNombre,
+    errorCategoria,
+    errorCantidad,
+    errorStockMinimo,
+    errorPrecio,
     handleField,
     handleCategoriaChange,
     handleSubmit,

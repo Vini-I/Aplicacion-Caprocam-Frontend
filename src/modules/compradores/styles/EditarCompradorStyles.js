@@ -1,6 +1,24 @@
 /**
- * Estilos para la pantalla de edición de compradores
+ * ============================================================
+ * STYLES: EDITARCOMPRADORSTYLES
+ * ============================================================
+ * Módulo: Compradores
+ *
+ * Estilos de EditarCompradorScreen.jsx.
+ *
+ * FUNCIONALIDAD:
+ * 1. Layout del formulario, el campo de nombre deshabilitado, los
+ *    inputs editables y el botón de guardar.
+ * 2. inputError: borde rojo que se combina con "input" cuando
+ *    teléfono o correo son inválidos, solo después de intentar
+ *    guardar.
+ *
+ * IMPORTANTE:
+ * - saveButton no debe llevar backgroundColor: el fondo blanco y
+ *   el borde celeste los pone Button variant="outline".
+ * ============================================================
  */
+
 import { StyleSheet } from "react-native";
 import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
@@ -107,14 +125,13 @@ export const styles = StyleSheet.create({
     marginTop: 10,
     borderRadius: 14,
     paddingVertical: 14,
-    backgroundColor: COLORS.primary,
   },
 
   saveButtonText: {
     fontSize: 16,
     fontFamily: TYPOGRAPHY.fontFamily.bold,
     fontWeight: undefined,
-    color: COLORS.white,
+    color: COLORS.primary,
   },
 
   buttonContent: {
@@ -122,6 +139,9 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
+  },
+  inputError: {
+   borderColor: COLORS.error,
   },
 
   errorText: {

@@ -1,8 +1,28 @@
 /**
- * CompradorScreen
+ * ============================================================
+ * PANTALLA: COMPRADORSCREEN
+ * ============================================================
+ * Módulo: Compradores
+ *
  * Pantalla principal del módulo de compradores.
- * Muestra la lista de compradores con búsqueda, filtros y acceso al detalle.
+ *
+ * FUNCIONALIDAD:
+ * 1. Muestra la lista de compradores (compradoresMock) en tarjetas.
+ * 2. Permite buscar por nombre, tipo de producto, teléfono o correo.
+ * 3. Permite filtrar por tipo de producto.
+ * 4. Botón "Ver Detalle" en cada tarjeta navega al detalle del
+ *    comprador.
+ * 5. Botón flotante "Agregar comprador" navega al formulario de
+ *    alta.
+ *
+ * IMPORTANTE:
+ * - SearchBar y FilterButton se importan desde el módulo de
+ *   Inventarios (../../inventarios/components/...): es una
+ *   dependencia cruzada pendiente de migrar a un componente
+ *   realmente global en shared/, coordinado con ese equipo.
+ * ============================================================
  */
+
 import React from "react";
 import { View, FlatList } from "react-native";
 import { useState } from "react";
@@ -57,6 +77,7 @@ export default function CompradorScreen() {
           </View>
 
           <Button
+            variant="outline"
             onPress={() => handleVerDetalle(comprador.id)}
             style={styles.btnVerDetalle}
           >
@@ -144,7 +165,7 @@ export default function CompradorScreen() {
 
       {/* Botón de agregar fijo en la parte inferior */}
       <Button
-        variant="ghost"
+        variant="outline"
         onPress={handleAgregar}
         style={styles.btnAgregar}
       >
