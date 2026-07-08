@@ -1,13 +1,13 @@
-import * as Print from "expo-print";
-import * as Sharing from "expo-sharing";
-import * as FileSystem from "expo-file-system/legacy";
-
 // Esta versión SOLO se carga cuando la app corre en iOS/Android.
 // En vez de dejar que expo-print guarde el PDF en su propia carpeta
 // de caché interna (que Expo Go en Android a veces no deja leer ni
 // copiar para compartir), le pedimos el PDF en base64 y lo escribimos
 // nosotros mismos en el directorio de documentos de la app, que sí
 // es accesible para expo-sharing.
+
+import * as Print from "expo-print";
+import * as Sharing from "expo-sharing";
+import * as FileSystem from "expo-file-system/legacy";
 
 export const generarRegistroPDF = async (finca, estanquesFinca = []) => {
   try {
