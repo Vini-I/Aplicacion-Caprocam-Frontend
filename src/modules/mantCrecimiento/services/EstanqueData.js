@@ -1,3 +1,12 @@
+/**
+ * ============================================================
+ * DATOS DE ESTANQUES DEL MÓDULO DE CRECIMIENTO
+ * ============================================================
+ *
+ * Contiene la información de referencia para los estanques usados
+ * en la pantalla de peso y crecimiento.
+ */
+
 export const estanques = [
   {
     id: 1,
@@ -8,6 +17,7 @@ export const estanques = [
     area: 1.25,
     diasCultivo: 94,
     estado: "activo",
+    pesoSemanaAnterior: 268,
   },
   {
     id: 2,
@@ -18,6 +28,7 @@ export const estanques = [
     area: 1.4,
     diasCultivo: 80,
     estado: "activo",
+    pesoSemanaAnterior: 240,
   },
   {
     id: 3,
@@ -28,6 +39,7 @@ export const estanques = [
     area: 1.1,
     diasCultivo: 0,
     estado: "preparación",
+    pesoSemanaAnterior: 0,
   },
   {
     id: 4,
@@ -38,6 +50,7 @@ export const estanques = [
     area: 1.35,
     diasCultivo: 120,
     estado: "cosechado",
+    pesoSemanaAnterior: 150,
   },
 ];
 

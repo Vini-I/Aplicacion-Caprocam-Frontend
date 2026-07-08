@@ -109,7 +109,6 @@ export const styles = StyleSheet.create({
     width: "100%",
   },
 
-
   gridDesktop: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -120,9 +119,12 @@ export const styles = StyleSheet.create({
     width: "100%",
   },
 
-
   gridItemDesktop: {
     width: "32%",
+  },
+
+  gridItemFull: {
+    width: "100%",
   },
 
   optionsGrid: {
@@ -149,12 +151,6 @@ export const styles = StyleSheet.create({
   textArea: {
     minHeight: 100,
     textAlignVertical: "top",
-  },
-
-  saveButton: {
-    minHeight: 50,
-    borderRadius: 14,
-    marginBottom: 18,
   },
 
   inlineButtonContent: {
@@ -202,5 +198,14 @@ export const styles = StyleSheet.create({
 
   infoValue: {
     fontFamily: TYPOGRAPHY.fontFamily.regular,
+  },
+
+  outlinePrimaryButton: {
+    minHeight: 50,
+    borderRadius: 14,
+    marginBottom: 18,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    backgroundColor: COLORS.white,
   },
 });

@@ -42,19 +42,7 @@ export default function NuevoCompradorScreen() {
     <View style={styles.container}>
 
       {/* Navbar con botón para volver a la lista de compradores */}
-      <View style={styles.navbar}>
-        <View style={styles.navbarRow}>
-          <Button
-            variant="ghost"
-            onPress={handleVolver}
-            style={styles.backBtn}
-          >
-            <Icon icon={ICONS.exit} size={ICON_SIZES.back} color={COLORS.white} />
-          </Button>
-          <CustomText style={styles.navbarTitle}>Nuevo comprador</CustomText>
-        </View>
-      </View>
-
+      
       {/* Formulario con scroll para evitar que el teclado tape los campos */}
       <ScrollView
         style={styles.scrollView}

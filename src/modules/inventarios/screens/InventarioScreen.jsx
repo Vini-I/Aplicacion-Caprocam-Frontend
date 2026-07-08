@@ -101,17 +101,6 @@ export default function InventarioScreen({ onDetail, onNew, onBack }) {
 
   return (
     <View style={styles.contenedor}>
-      <Navbar
-        title="Inventario"
-        titleStyle={styles.navbarTitulo}
-        style={styles.navbar}
-        leftContent={
-          <Button variant="outline" onPress={onBack} style={styles.backButton}>
-            <Icon icon={ICONS.home} size={22} color={COLORS.white} />
-          </Button>
-        }
-      />
-
       <View style={styles.zonaFiltros}>
         <View style={styles.barraBusqueda}>
           <SearchBar

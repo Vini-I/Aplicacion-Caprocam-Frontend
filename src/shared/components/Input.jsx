@@ -3,23 +3,20 @@
  * COMPONENTE INPUT
  * ============================================================
  *
- * Campo de entrada reutilizable para React Native.
+ * Campo de entrada reutilizable.
  *
- * Funcionalidad:
- * - Permite campos de texto normales.
- * - Permite campos multilinea.
- * - Permite bloquear o habilitar la edicion.
- * - Permite configurar el teclado.
- *
- * Importante:
- * - Este componente ya no maneja fechas.
- * - Para fechas se debe usar DateInput.jsx por separado.
+ * Responsabilidad:
+ * - Renderiza campos de texto normales y multilinea.
+ * - Soporta campos requeridos de forma global.
+ * - Muestra asterisco cuando required es true.
+ * - Muestra borde rojo cuando submitted es true o llega error.
  */
 
 import React from "react";
 import { TextInput, StyleSheet, View, Text } from "react-native";
 
 import { COLORS } from "../../theme/colors";
+import { TYPOGRAPHY } from "../../theme/typography";
 
 export default function Input({
   label = "",
@@ -29,12 +26,30 @@ export default function Input({
   multiline = false,
   editable = true,
   keyboardType = "default",
+  required = false,
+  submitted = false,
+  error = "",
+  helperText = "",
   style,
   containerStyle,
   labelStyle,
   ...props
 }) {
   const inputStyles = [styles.input];
+  const containerStyles = [styles.container];
+
+  let showError = false;
+  let finalHelperText = helperText;
+
+  if (error !== "") {
+    showError = true;
+    finalHelperText = error;
+  }
+
+  if (submitted === true && required === true && String(value).trim() === "") {
+    showError = true;
+    finalHelperText = "Este campo es obligatorio.";
+  }
 
   if (multiline === true) {
     inputStyles.push(styles.multiline);
@@ -44,13 +59,27 @@ export default function Input({
     inputStyles.push(styles.disabledInput);
   }
 
+  if (showError === true) {
+    inputStyles.push(styles.inputError);
+  }
+
   if (style) {
     inputStyles.push(style);
   }
 
+  if (containerStyle) {
+    containerStyles.push(containerStyle);
+  }
+
   return (
-    <View style={[styles.container, containerStyle]}>
-      {label !== "" && <Text style={[styles.label, labelStyle]}>{label}</Text>}
+    <View style={containerStyles}>
+      {label !== "" && (
+        <Text style={[styles.label, labelStyle]}>
+          {label}
+
+          {required === true && <Text style={styles.requiredMark}> *</Text>}
+        </Text>
+      )}
 
       <TextInput
         style={inputStyles}
@@ -63,6 +92,14 @@ export default function Input({
         keyboardType={keyboardType}
         {...props}
       />
+
+      {finalHelperText !== "" && (
+        <Text
+          style={[styles.helperText, showError === true && styles.errorText]}
+        >
+          {finalHelperText}
+        </Text>
+      )}
     </View>
   );
 }
@@ -74,9 +111,13 @@ const styles = StyleSheet.create({
 
   label: {
     fontSize: 14,
-    fontWeight: "600",
+    fontFamily: TYPOGRAPHY.fontFamily.medium,
     color: COLORS.textSecondary,
     marginBottom: 6,
+  },
+
+  requiredMark: {
+    color: COLORS.error,
   },
 
   input: {
@@ -88,6 +129,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: COLORS.textSecondary,
     backgroundColor: COLORS.white,
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
+  },
+
+  inputError: {
+    borderColor: COLORS.error,
   },
 
   multiline: {
@@ -98,5 +144,16 @@ const styles = StyleSheet.create({
   disabledInput: {
     backgroundColor: COLORS.surface,
     color: COLORS.textQuaternary,
+  },
+
+  helperText: {
+    marginTop: 5,
+    fontSize: 12,
+    color: COLORS.textTertiary,
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
+  },
+
+  errorText: {
+    color: COLORS.error,
   },
 });

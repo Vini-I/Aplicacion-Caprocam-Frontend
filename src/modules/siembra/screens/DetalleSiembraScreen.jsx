@@ -19,6 +19,7 @@ import ProgressBar from "../../../shared/components/ProgressBar";
 import Alert from "../../../shared/components/Alert";
 import NumberInput from "../../../shared/components/NumberInput";
 import Icon from "../../../shared/components/Icons";
+import NavbarRegistro from "../../../shared/components/NavbarRegistro";
 
 import { ICONS } from "../../../theme/icons";
 import { styles } from "../styles/DetalleSiembraStyles";
@@ -163,20 +164,11 @@ export default function DetalleSiembraScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.headerTop}>
-          <Pressable onPress={regresarASiembra} style={styles.backButton}>
-            <Icon icon={ICONS.exit} size={22} style={styles.headerIcon} />
-          </Pressable>
-
-          <View>
-            <Text style={styles.headerSubtitle}>Detalle de Siembra</Text>
-            <Text style={styles.headerTitle}>
-              {formData.estanque} – {formData.finca}
-            </Text>
-          </View>
-        </View>
-      </View>
+      <NavbarRegistro
+        Titulo="Detalle de Siembra"
+        Subtitulo={`${formData.estanque} – ${formData.finca}`}
+        Icono="back"
+      />
 
       <ScrollView
         contentContainerStyle={styles.content}

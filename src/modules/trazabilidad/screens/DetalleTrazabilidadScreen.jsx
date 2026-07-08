@@ -81,26 +81,6 @@ export default function DetalleTrazabilidadScreen() {
 
   return (
     <View style={styles.container}>
-      <Navbar
-        title=""
-        leftContent={
-          <View style={styles.headerRow}>
-            <View style={styles.headerRowLeft}>
-              <Button
-                variant="outline"
-                onPress={volver}
-                style={styles.backButton}
-              >
-                <Icon icon={ICONS.back} size={20} style={styles.iconColor} />
-              </Button>
-
-              <Title style={styles.title}>{registro.fincaNombre}</Title>
-            </View>
-          </View>
-        }
-        style={styles.header}
-      />
-
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}

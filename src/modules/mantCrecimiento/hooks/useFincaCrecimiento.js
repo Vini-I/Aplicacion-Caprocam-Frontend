@@ -2,7 +2,7 @@ import { useLocalSearchParams } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 
 import { fincas } from "../../finca/screens/FincaData.js";
-import { estanques, searchEstanqueById } from "../screens/EstanqueData.js";
+import { estanques, searchEstanqueById } from "../services/EstanqueData.js";
 
 export function useFincaCrecimiento() {
   const { id } = useLocalSearchParams();
@@ -15,6 +15,11 @@ export function useFincaCrecimiento() {
   const [fincaSeleccionada, setFincaSeleccionada] = useState("");
   const [estanqueSeleccionado, setEstanqueSeleccionado] = useState("");
   const [pesoActual, setPesoActual] = useState("");
+
+  const [submitted, setSubmitted] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   const estanque = useMemo(() => {
     if (parsedId !== null) {
@@ -57,14 +62,86 @@ export function useFincaCrecimiento() {
       }));
   }, [fincaSeleccionada]);
 
+  const pesoAnteriorLabel = useMemo(() => {
+    if (
+      estanqueSeleccionadoObj?.pesoSemanaAnterior !== undefined &&
+      estanqueSeleccionadoObj?.pesoSemanaAnterior !== null
+    ) {
+      return `Peso anterior: ${estanqueSeleccionadoObj.pesoSemanaAnterior} g`;
+    }
+
+    return "Peso anterior: -";
+  }, [estanqueSeleccionadoObj]);
+
+  const estanqueDeshabilitado = useMemo(
+    () => estanqueSeleccionado !== "" && estanquesFiltrados.length === 0,
+    [estanqueSeleccionado, estanquesFiltrados.length],
+  );
+
+  const validarCampos = useCallback(() => {
+    const nextErrors = {};
+
+    if (!fincaSeleccionada) {
+      nextErrors.finca = "Seleccione una finca.";
+    }
+
+    if (!estanqueSeleccionado) {
+      nextErrors.estanque = "Seleccione un estanque.";
+    }
+
+    if (!pesoActual || Number(pesoActual) <= 0) {
+      nextErrors.peso = "Ingrese un peso actual válido.";
+    }
+
+    setErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  }, [fincaSeleccionada, estanqueSeleccionado, pesoActual]);
+
   const handleFincaChange = useCallback((value) => {
     setFincaSeleccionada(value);
     setEstanqueSeleccionado("");
+    setErrors((prev) => ({ ...prev, finca: undefined, estanque: undefined }));
+    setSuccessMessage("");
+    setErrorMessage("");
   }, []);
 
+  const handleEstanqueChange = useCallback(
+    (value) => {
+      setEstanqueSeleccionado(value);
+      setSuccessMessage("");
+      setErrorMessage("");
+      if (submitted) {
+        setErrors((prev) => ({ ...prev, estanque: undefined }));
+      }
+    },
+    [submitted],
+  );
+
+  const handlePesoActualChange = useCallback(
+    (value) => {
+      setPesoActual(value);
+      setSuccessMessage("");
+      setErrorMessage("");
+      if (submitted) {
+        setErrors((prev) => ({ ...prev, peso: undefined }));
+      }
+    },
+    [submitted],
+  );
+
   const guardarDatos = useCallback(() => {
-    // TODO: agregar lógica de guardado aquí
-  }, []);
+    setSubmitted(true);
+    setSuccessMessage("");
+    setErrorMessage("");
+
+    if (!validarCampos()) {
+      setErrorMessage("Complete los campos obligatorios.");
+      return;
+    }
+
+    setErrors({});
+    setSuccessMessage("Guardado exitoso.");
+  }, [validarCampos]);
 
   return {
     fincaSeleccionada,
@@ -74,9 +151,15 @@ export function useFincaCrecimiento() {
     estanquesFiltrados,
     estanqueSeleccionadoObj,
     estanque,
-    setEstanqueSeleccionado,
-    setPesoActual,
+    pesoAnteriorLabel,
+    estanqueDeshabilitado,
+    setEstanqueSeleccionado: handleEstanqueChange,
+    setPesoActual: handlePesoActualChange,
     handleFincaChange,
     guardarDatos,
+    submitted,
+    errors,
+    successMessage,
+    errorMessage,
   };
 }

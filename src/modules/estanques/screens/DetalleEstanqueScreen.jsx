@@ -1,5 +1,19 @@
-import React from "react";
-import { ScrollView, View } from "react-native";
+/**
+ * ============================================================
+ * PANTALLA DETALLE ESTANQUE
+ * ============================================================
+ *
+ * Muestra la informacion registrada de un estanque.
+ *
+ * Cambios aplicados:
+ * - El boton eliminar abre confirmacion.
+ * - La confirmacion tiene boton Si y boton No.
+ * - Si confirma, elimina el estanque del mock en la sesion local.
+ * - Mantiene botones outline.
+ */
+
+import React, { useState } from "react";
+import { Modal, ScrollView, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
 import Alert from "../../../shared/components/Alert";
@@ -8,37 +22,180 @@ import Card from "../../../shared/components/Card";
 import Icon from "../../../shared/components/Icons";
 import CustomText from "../../../shared/components/Text";
 import Title from "../../../shared/components/Title";
+import NavbarRegistro from "../../../shared/components/NavbarRegistro";
+
+import useDetalleEstanque from "../hooks/useDetalleEstanque";
+import { estanques } from "../../finca/screens/EstanqueData";
 
 import { styles } from "../styles/EstanqueStyle";
+import {
+  obtenerTextoSiNo,
+  obtenerTieneAireadoresInicial,
+} from "../services/AireadoresEstanqueService";
 
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
 import { TYPOGRAPHY } from "../../../theme/typography";
 
+function obtenerParametro(valor, respaldo) {
+  let resultado = respaldo;
+
+  if (valor !== undefined && valor !== null && valor !== "") {
+    resultado = String(valor);
+  }
+
+  return resultado;
+}
+
+function obtenerValor(estanque, params, campo, respaldo) {
+  let resultado = respaldo;
+
+  if (
+    estanque &&
+    estanque[campo] !== undefined &&
+    estanque[campo] !== null &&
+    estanque[campo] !== ""
+  ) {
+    resultado = String(estanque[campo]);
+  }
+
+  if (
+    params[campo] !== undefined &&
+    params[campo] !== null &&
+    params[campo] !== ""
+  ) {
+    resultado = String(params[campo]);
+  }
+
+  return resultado;
+}
+
+function eliminarEstanqueMock(codigo) {
+  let eliminado = false;
+
+  for (let index = 0; index < estanques.length; index++) {
+    if (estanques[index].codigo === codigo) {
+      estanques.splice(index, 1);
+      eliminado = true;
+      break;
+    }
+  }
+
+  return eliminado;
+}
+
 export default function DetalleEstanqueScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
 
+  const { estanque: estanqueEncontrado } = useDetalleEstanque();
+  const [modalEliminarVisible, setModalEliminarVisible] = useState(false);
+
+  const numeroAireadores = obtenerValor(
+    estanqueEncontrado,
+    params,
+    "numeroAireadores",
+    "0",
+  );
+
+  const tieneAireadores = obtenerTieneAireadoresInicial(
+    obtenerValor(estanqueEncontrado, params, "tieneAireadores", ""),
+    numeroAireadores,
+  );
+
   const estanque = {
-    id: params.id,
-    finca: params.finca,
-    codigo: params.codigo,
-    estado: params.estado,
-    tipoEstanque: params.tipoEstanque,
-    largo: params.largo,
-    ancho: params.ancho,
-    profundidad: params.profundidad,
-    fuenteAgua: params.fuenteAgua,
-    especie: params.especie,
-    fechaSiembra: params.fechaSiembra,
-    fechaInicioEngorde: params.fechaInicioEngorde,
-    fechaMantenimiento: params.fechaMantenimiento,
-    densidadSiembra: params.densidadSiembra,
-    precria: params.precria,
-    metodoAlimentacion: params.metodoAlimentacion,
-    proveedorAlimento: params.proveedorAlimento,
-    numeroAireadores: params.numeroAireadores,
-    tieneAlimentadorAutomatico: params.tieneAlimentadorAutomatico,
+    id: obtenerValor(estanqueEncontrado, params, "id", ""),
+    finca: obtenerValor(estanqueEncontrado, params, "finca", "Finca La Reina"),
+    codigo: obtenerValor(estanqueEncontrado, params, "codigo", ""),
+    estado: obtenerValor(estanqueEncontrado, params, "estado", "Activo"),
+    tipoEstanque: obtenerValor(
+      estanqueEncontrado,
+      params,
+      "tipoEstanque",
+      "No registrado",
+    ),
+    largo: obtenerValor(estanqueEncontrado, params, "largo", "0"),
+    ancho: obtenerValor(estanqueEncontrado, params, "ancho", "0"),
+    profundidad: obtenerValor(
+      estanqueEncontrado,
+      params,
+      "profundidad",
+      "0",
+    ),
+    fuenteAgua: obtenerValor(
+      estanqueEncontrado,
+      params,
+      "fuenteAgua",
+      "No registrado",
+    ),
+    especie: obtenerValor(
+      estanqueEncontrado,
+      params,
+      "especie",
+      "litopenaeus_vannamei",
+    ),
+    fechaSiembra: obtenerValor(
+      estanqueEncontrado,
+      params,
+      "fechaSiembra",
+      "No registrada",
+    ),
+    fechaInicioEngorde: obtenerValor(
+      estanqueEncontrado,
+      params,
+      "fechaInicioEngorde",
+      "No registrada",
+    ),
+    fechaMantenimiento: obtenerValor(
+      estanqueEncontrado,
+      params,
+      "fechaMantenimiento",
+      "No registrada",
+    ),
+    densidadSiembra: obtenerValor(
+      estanqueEncontrado,
+      params,
+      "densidadSiembra",
+      "0",
+    ),
+    precria: obtenerValor(
+      estanqueEncontrado,
+      params,
+      "precria",
+      "No registrado",
+    ),
+    metodoAlimentacion: obtenerValor(
+      estanqueEncontrado,
+      params,
+      "metodoAlimentacion",
+      "No registrado",
+    ),
+    proveedorAlimento: obtenerValor(
+      estanqueEncontrado,
+      params,
+      "proveedorAlimento",
+      "No registrado",
+    ),
+    numeroAireadores: numeroAireadores,
+    tieneAireadores: tieneAireadores,
+    codigoAireador: obtenerValor(
+      estanqueEncontrado,
+      params,
+      "codigoAireador",
+      "No asignado",
+    ),
+    estanqueAireador: obtenerValor(
+      estanqueEncontrado,
+      params,
+      "estanqueAireador",
+      "No asignado",
+    ),
+    tieneAlimentadorAutomatico: obtenerValor(
+      estanqueEncontrado,
+      params,
+      "tieneAlimentadorAutomatico",
+      "No registrado",
+    ),
   };
 
   function volver() {
@@ -48,33 +205,30 @@ export default function DetalleEstanqueScreen() {
   function editarEstanque() {
     router.push({
       pathname: "/registros/EditarEstanque",
-      params: {
-        id: estanque.id,
-        finca: estanque.finca,
-        codigo: estanque.codigo,
-        estado: estanque.estado,
-        tipoEstanque: estanque.tipoEstanque,
-        largo: estanque.largo,
-        ancho: estanque.ancho,
-        profundidad: estanque.profundidad,
-        fuenteAgua: estanque.fuenteAgua,
-        especie: estanque.especie,
-        fechaSiembra: estanque.fechaSiembra,
-        fechaInicioEngorde: estanque.fechaInicioEngorde,
-        fechaMantenimiento: estanque.fechaMantenimiento,
-        densidadSiembra: estanque.densidadSiembra,
-        precria: estanque.precria,
-        metodoAlimentacion: estanque.metodoAlimentacion,
-        proveedorAlimento: estanque.proveedorAlimento,
-        numeroAireadores: estanque.numeroAireadores,
-        tieneAlimentadorAutomatico: estanque.tieneAlimentadorAutomatico,
-      },
+      params: estanque,
     });
   }
 
-  if (!estanque.codigo) {
+  function abrirConfirmacionEliminar() {
+    setModalEliminarVisible(true);
+  }
+
+  function cerrarConfirmacionEliminar() {
+    setModalEliminarVisible(false);
+  }
+
+  function confirmarEliminarEstanque() {
+    eliminarEstanqueMock(estanque.codigo);
+
+    console.log("Estanque eliminado:", estanque.codigo);
+
+    setModalEliminarVisible(false);
+    router.back();
+  }
+
+  if (estanque.codigo === "") {
     return (
-      <ScrollView style={styles.screen} showsVerticalScrollIndicator={false}>
+      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
           <Alert
             variant="warning"
@@ -83,8 +237,10 @@ export default function DetalleEstanqueScreen() {
             textStyle={styles.alertText}
           />
 
-          <Button onPress={volver} style={styles.saveButton}>
-            Volver
+          <Button variant="outline" onPress={volver} style={styles.outlinePrimaryButton}>
+            <CustomText size={15} color={COLORS.primary}>
+              Volver
+            </CustomText>
           </Button>
         </View>
       </ScrollView>
@@ -92,118 +248,197 @@ export default function DetalleEstanqueScreen() {
   }
 
   return (
-    <ScrollView style={styles.screen} showsVerticalScrollIndicator={false}>
-      <View style={styles.header}>
-        <Button variant="outline" onPress={volver} style={styles.cancelButton}>
-          <View style={styles.inlineButtonContent}>
-            <Icon icon={ICONS.exit} size={18} color={COLORS.white} />
+    <>
+      <NavbarRegistro
+        Titulo="Detalle de Estanque"
+        Subtitulo={`${estanque.finca} ${estanque.codigo}`}
+        Icono="document"
+      />
 
-            <CustomText
-              size={16}
-              color={COLORS.white}
-              style={styles.cancelText}
+      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+        <View style={styles.content}>
+          <Card>
+            <SectionTitle title="Informacion general" icon={ICONS.document} />
+
+            <Info label="Codigo" value={estanque.codigo} />
+            <Info label="Finca" value={estanque.finca} />
+            <Info label="Estado" value={estanque.estado} />
+            <Info label="Tipo de estanque" value={estanque.tipoEstanque} />
+            <Info label="Fuente de agua" value={estanque.fuenteAgua} />
+          </Card>
+
+          <Card>
+            <SectionTitle title="Dimensiones" icon={ICONS.ruler} />
+
+            <Info label="Largo" value={`${estanque.largo} m`} />
+            <Info label="Ancho" value={`${estanque.ancho} m`} />
+            <Info label="Profundidad" value={`${estanque.profundidad} m`} />
+          </Card>
+
+          <Card>
+            <SectionTitle title="Siembra y fechas" icon={ICONS.calendar} />
+
+            <Info label="Especie" value={estanque.especie} />
+            <Info label="Fecha de siembra" value={estanque.fechaSiembra} />
+            <Info
+              label="Fecha inicio de engorde"
+              value={estanque.fechaInicioEngorde}
+            />
+            <Info
+              label="Fecha de mantenimiento"
+              value={estanque.fechaMantenimiento}
+            />
+            <Info
+              label="Densidad de siembra"
+              value={`${estanque.densidadSiembra} ind/m2`}
+            />
+            <Info label="Precria" value={estanque.precria} />
+          </Card>
+
+          <Card>
+            <SectionTitle title="Alimentacion y equipos" icon={ICONS.food} />
+
+            <Info
+              label="Metodo de alimentacion"
+              value={estanque.metodoAlimentacion}
+            />
+            <Info
+              label="Proveedor de alimento"
+              value={estanque.proveedorAlimento}
+            />
+            <Info
+              label="Tiene aireadores"
+              value={obtenerTextoSiNo(estanque.tieneAireadores)}
+            />
+
+            {estanque.tieneAireadores === "si" && (
+              <View>
+                <Info
+                  label="Codigo del aireador"
+                  value={estanque.codigoAireador}
+                />
+
+                <Info
+                  label="Estanque seleccionado"
+                  value={estanque.estanqueAireador}
+                />
+
+                <Info
+                  label="Numero de aireadores"
+                  value={estanque.numeroAireadores}
+                />
+              </View>
+            )}
+
+            <Info
+              label="Alimentador automatico"
+              value={estanque.tieneAlimentadorAutomatico}
+            />
+          </Card>
+
+          <View style={styles.detailActionsRow}>
+            <Button
+              variant="outline"
+              onPress={abrirConfirmacionEliminar}
+              style={styles.outlineDangerButton}
             >
-              Volver
-            </CustomText>
-          </View>
-        </Button>
+              <View style={styles.inlineButtonContentCentered}>
+                <Icon icon={ICONS.delete} size={16} color={COLORS.error} />
 
-        <View style={styles.headerRow}>
-          <View style={styles.headerIcon}>
-            <Icon icon={ICONS.water} size={28} color={COLORS.white} />
-          </View>
+                <CustomText
+                  size={13}
+                  color={COLORS.error}
+                  style={styles.outlineActionText}
+                >
+                  Eliminar
+                </CustomText>
+              </View>
+            </Button>
 
-          <View style={styles.headerTextBox}>
+            <Button
+              variant="outline"
+              onPress={editarEstanque}
+              style={styles.outlineEditButton}
+            >
+              <View style={styles.inlineButtonContentCentered}>
+                <Icon icon={ICONS.edit} size={16} color={COLORS.primary} />
+
+                <CustomText
+                  size={13}
+                  color={COLORS.primary}
+                  style={styles.outlineActionText}
+                >
+                  Editar
+                </CustomText>
+              </View>
+            </Button>
+          </View>
+        </View>
+      </ScrollView>
+
+      <Modal
+        transparent={true}
+        visible={modalEliminarVisible}
+        animationType="fade"
+        onRequestClose={cerrarConfirmacionEliminar}
+      >
+        <View style={styles.confirmOverlay}>
+          <View style={styles.confirmBox}>
+            <View style={styles.confirmIconBox}>
+              <Icon icon={ICONS.delete} size={28} color={COLORS.error} />
+            </View>
+
             <Title
-              level={3}
-              color={COLORS.white}
+              level={5}
+              color={COLORS.textPrimary}
               fuente={TYPOGRAPHY.fontFamily.bold}
+              style={styles.confirmTitle}
             >
-              Detalle Estanque
+              Eliminar estanque
             </Title>
 
             <CustomText
               size={14}
-              color={COLORS.white}
-              style={styles.headerSubtitle}
+              color={COLORS.textTertiary}
+              align="center"
+              style={styles.confirmMessage}
             >
-              {estanque.codigo} - {estanque.finca}
+              ¿Esta seguro que desea eliminar el estanque {estanque.codigo}?
             </CustomText>
+
+            <View style={styles.confirmActions}>
+              <Button
+                variant="outline"
+                onPress={cerrarConfirmacionEliminar}
+                style={styles.confirmNoButton}
+              >
+                <CustomText
+                  size={14}
+                  color={COLORS.textSecondary}
+                  style={styles.confirmButtonText}
+                >
+                  No
+                </CustomText>
+              </Button>
+
+              <Button
+                variant="outline"
+                onPress={confirmarEliminarEstanque}
+                style={styles.confirmYesButton}
+              >
+                <CustomText
+                  size={14}
+                  color={COLORS.error}
+                  style={styles.confirmButtonText}
+                >
+                  Si
+                </CustomText>
+              </Button>
+            </View>
           </View>
         </View>
-      </View>
-
-      <View style={styles.content}>
-        <Card>
-          <SectionTitle title="Informacion general" icon={ICONS.document} />
-
-          <Info label="Codigo" value={estanque.codigo} />
-          <Info label="Finca" value={estanque.finca} />
-          <Info label="Estado" value={estanque.estado} />
-          <Info label="Tipo de estanque" value={estanque.tipoEstanque} />
-          <Info label="Fuente de agua" value={estanque.fuenteAgua} />
-        </Card>
-
-        <Card>
-          <SectionTitle title="Dimensiones" icon={ICONS.ruler} />
-
-          <Info label="Largo" value={`${estanque.largo} m`} />
-          <Info label="Ancho" value={`${estanque.ancho} m`} />
-          <Info label="Profundidad" value={`${estanque.profundidad} m`} />
-        </Card>
-
-        <Card>
-          <SectionTitle title="Siembra y fechas" icon={ICONS.calendar} />
-
-          <Info label="Especie" value={estanque.especie} />
-          <Info label="Fecha de siembra" value={estanque.fechaSiembra} />
-          <Info
-            label="Fecha inicio de engorde"
-            value={estanque.fechaInicioEngorde}
-          />
-          <Info
-            label="Fecha de mantenimiento"
-            value={estanque.fechaMantenimiento}
-          />
-          <Info
-            label="Densidad de siembra"
-            value={`${estanque.densidadSiembra} ind/m²`}
-          />
-          <Info label="Precria" value={estanque.precria} />
-        </Card>
-
-        <Card>
-          <SectionTitle title="Alimentacion y equipos" icon={ICONS.food} />
-
-          <Info
-            label="Metodo de alimentacion"
-            value={estanque.metodoAlimentacion}
-          />
-          <Info
-            label="Proveedor de alimento"
-            value={estanque.proveedorAlimento}
-          />
-          <Info
-            label="Numero de aireadores"
-            value={estanque.numeroAireadores}
-          />
-          <Info
-            label="Alimentador automatico"
-            value={estanque.tieneAlimentadorAutomatico}
-          />
-        </Card>
-
-        <Button onPress={editarEstanque} style={styles.saveButton}>
-          <View style={styles.inlineButtonContentCentered}>
-            <Icon icon={ICONS.edit} size={18} color={COLORS.white} />
-
-            <CustomText size={16} color={COLORS.white} style={styles.saveText}>
-              Editar estanque
-            </CustomText>
-          </View>
-        </Button>
-      </View>
-    </ScrollView>
+      </Modal>
+    </>
   );
 }
 
@@ -232,11 +467,11 @@ function Info({ label, value }) {
   }
 
   return (
-    <View style={{ marginBottom: 10 }}>
+    <View style={styles.infoRow}>
       <CustomText
         size={13}
         color={COLORS.textTertiary}
-        style={{ fontFamily: TYPOGRAPHY.fontFamily.medium }}
+        style={styles.infoLabel}
       >
         {label}
       </CustomText>
@@ -244,7 +479,7 @@ function Info({ label, value }) {
       <CustomText
         size={15}
         color={COLORS.textSecondary}
-        style={{ fontFamily: TYPOGRAPHY.fontFamily.regular }}
+        style={styles.infoValue}
       >
         {valorFinal}
       </CustomText>
