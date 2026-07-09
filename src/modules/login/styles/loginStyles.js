@@ -1,3 +1,11 @@
+/**
+ * ============================================================
+ * ESTILOS: LoginScreen
+ * ============================================================
+ *
+ * Centraliza el layout y la apariencia de la pantalla de login.
+ */
+
 import { StyleSheet } from 'react-native';
 
 import { COLORS } from '../../../theme/colors';
@@ -15,21 +23,7 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: 20,
     paddingTop: 20,
-    paddingBottom: 12,
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
-  },
-  safeActionArea: {
-    backgroundColor: COLORS.white,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.secondary,
-    paddingHorizontal: 20,
-    paddingTop: 10,
-  },
-  footerContent: {
-    paddingHorizontal: 20,
-    paddingBottom: 6,
+    paddingBottom: 24,
     width: "100%",
     maxWidth: 900,
     alignSelf: "center",
@@ -60,10 +54,28 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderColor: COLORS.secondary,
   },
-  sectionSubtitle: {
-    marginTop: 4,
-    marginBottom: 14,
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
+  syncButton: {
+    width: "100%",
+    maxWidth: 450,
+    alignSelf: "center",
+    marginBottom: 12,
+  },
+  searchContainer: {
+    marginBottom: 12,
+  },
+  searchInputContainer: {
+    marginBottom: 0,
+  },
+  searchInput: {
+    borderWidth: 0,
+    paddingHorizontal: 0,
+    backgroundColor: 'transparent',
+    outlineStyle: 'none',
+  },
+  continueButton: {
+    width: "100%",
+    maxWidth: 450,
+    alignSelf: "center",
   },
   workersList: {
     marginTop: 6,
@@ -105,10 +117,8 @@ const styles = StyleSheet.create({
     marginVertical: 14,
     fontFamily: TYPOGRAPHY.fontFamily.regular,
   },
-  validationContainer: {
-    alignItems: 'center',
-    paddingTop: 8,
-    paddingBottom: 2,
+  actionSection: {
+    marginTop: 4,
   },
   modalOverlay: {
     backgroundColor: 'rgba(0,0,0,0.4)',
