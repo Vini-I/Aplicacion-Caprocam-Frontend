@@ -1,6 +1,15 @@
+import { useRouter } from "expo-router";
 import FincaNuevaScreen from "../../../../modules/finca/screens/FincaNuevaScreen";
 
-export default function Nueva(){
+export default function Nueva() {
 
-    return <FincaNuevaScreen/>;
+  const router = useRouter();
+
+  const handleFinca = () => {
+    router.push("/finca");
+  };
+
+  return <FincaNuevaScreen 
+  onFinca={handleFinca}
+  />;
 }

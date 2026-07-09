@@ -16,20 +16,9 @@ export const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     position: "relative",
   },
-  container: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: COLORS.white,
-  },
   contentScroll: {
     flexGrow: 1,
     paddingBottom: 24,
-  },
-  contentWrapper: {
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
-    padding: 4,
   },
   cardContent: {
     flexDirection: "row",
@@ -106,6 +95,9 @@ export const styles = StyleSheet.create({
     color: COLORS.error,
     marginTop: 6,
     fontSize: 12,
+  },
+  inputError: {
+    borderColor: COLORS.error,
   },
   iconContainer: {
     width: 45,

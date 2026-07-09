@@ -12,18 +12,6 @@ import { COLORS } from "../../../theme/colors.js";
 import { TYPOGRAPHY } from "../../../theme/typography.js";
 
 export const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: COLORS.white,
-  },
-
-  contentWrapper: {
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
-  },
-
   headerRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -94,11 +82,6 @@ export const styles = StyleSheet.create({
     color: COLORS.textSecondary,
   },
 
-  successText: {
-    color: COLORS.success,
-    marginBottom: 12,
-  },
-
   currencyPreview: {
     color: COLORS.textTertiary,
     marginTop: -4,
@@ -114,6 +97,20 @@ export const styles = StyleSheet.create({
   alertText: {
     textAlign: "center",
     color: COLORS.error,
+  },
+
+  successAlert: {
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 14,
+    backgroundColor: COLORS.successLight,
+    borderColor: COLORS.success,
+  },
+
+  successAlertText: {
+    textAlign: "center",
+    color: COLORS.textSecondary,
+    fontWeight: "600",
   },
 
   buttonRow: {

@@ -1,3 +1,12 @@
+/**
+ * ============================================================
+ * HOOK DE FINCA DE CRECIMIENTO
+ * ============================================================
+ *
+ * Centraliza la lógica de carga de parámetros, filtros y
+ * opciones de selección para la pantalla de finca de crecimiento.
+ */
+
 import { useLocalSearchParams } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 
@@ -19,6 +28,7 @@ export function useFincaCrecimiento() {
   const [submitted, setSubmitted] = useState(false);
   const [errors, setErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   const estanque = useMemo(() => {
     if (parsedId !== null) {
@@ -85,12 +95,14 @@ export function useFincaCrecimiento() {
     setEstanqueSeleccionado("");
     setErrors((prev) => ({ ...prev, finca: undefined, estanque: undefined }));
     setSuccessMessage("");
+    setErrorMessage("");
   }, []);
 
   const handleEstanqueChange = useCallback(
     (value) => {
       setEstanqueSeleccionado(value);
       setSuccessMessage("");
+      setErrorMessage("");
       if (submitted) {
         setErrors((prev) => ({ ...prev, estanque: undefined }));
       }
@@ -102,6 +114,7 @@ export function useFincaCrecimiento() {
     (value) => {
       setPesoActual(value);
       setSuccessMessage("");
+      setErrorMessage("");
       if (submitted) {
         setErrors((prev) => ({ ...prev, peso: undefined }));
       }
@@ -112,14 +125,28 @@ export function useFincaCrecimiento() {
   const guardarDatos = useCallback(() => {
     setSubmitted(true);
     setSuccessMessage("");
+    setErrorMessage("");
 
     if (!validarCampos()) {
+      setErrorMessage("Rellenar campos obligatorios.");
       return;
     }
 
     setErrors({});
     setSuccessMessage("Guardado exitoso.");
   }, [validarCampos]);
+
+  const pesoAnteriorLabel = useMemo(() => {
+    const pesoSemanaAnterior = estanqueSeleccionadoObj?.pesoSemanaAnterior;
+
+    return pesoSemanaAnterior !== undefined && pesoSemanaAnterior !== null
+      ? `Peso anterior: ${pesoSemanaAnterior} g`
+      : "Peso anterior: -";
+  }, [estanqueSeleccionadoObj]);
+
+  const mostrarErrorFinca = submitted && Boolean(errors.finca);
+  const mostrarErrorEstanque = submitted && Boolean(errors.estanque);
+  const mostrarErrorPeso = submitted && Boolean(errors.peso);
 
   return {
     fincaSeleccionada,
@@ -136,5 +163,10 @@ export function useFincaCrecimiento() {
     submitted,
     errors,
     successMessage,
+    errorMessage,
+    pesoAnteriorLabel,
+    mostrarErrorFinca,
+    mostrarErrorEstanque,
+    mostrarErrorPeso,
   };
 }

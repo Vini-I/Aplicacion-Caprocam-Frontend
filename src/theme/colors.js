@@ -35,9 +35,15 @@ export const COLORS = {
 
   //Estados
   success: '#22C55E',
+  successLight: '#CDEDD5',
+
   warning: '#F59E0B',
+
   error: '#EF4444',
+
   errorLight: '#FEE2E2',
+
+  primaryLight: "#EAF7FF",
   
   //Colores modulos registro
   violet: '#8B5CF6',

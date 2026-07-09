@@ -1,32 +1,65 @@
-import { useState } from "react";
+/**
+ * ============================================================
+ * HOOK DE REGISTRO DE NUEVA FINCA
+ * ============================================================
+ *
+ * Gestiona la lógica necesaria para registrar una nueva finca,
+ * controlando los datos del formulario, teléfonos, ubicaciones
+ * disponibles y validaciones antes de guardar la información.
+ *
+ * Funcionalidad:
+ * - Maneja el estado del formulario de creación de fincas.
+ * - Permite actualizar los datos ingresados por el usuario.
+ * - Administra múltiples números de teléfono.
+ * - Valida que los campos obligatorios estén completos.
+ * - Obtiene las opciones de cantones y distritos según la ubicación.
+ * - Registra una nueva finca mediante el contexto global.
+ */
+import { useMemo, useState } from "react";
 import { Dimensions, View } from "react-native";
 import { provincias, ubicaciones } from "../screens/FincaNuevaData.js";
 import { styles } from "../styles/StylesFincaNueva.js";
 import { STYLE } from "../../../theme/style.js";
+import { useFinca } from "../context/FincaContext";
 
 const { width } = Dimensions.get("window");
 const isLargeScreen = width > 700;
 
-export function useFincaNueva() {
+export function useFincaNueva({ onFinca }) {
+  const { crearFinca } = useFinca();
+
   const [formulario, setFormulario] = useState({
     codigoInterno: "",
     nombre: "",
     provincia: "",
     canton: "",
     distrito: "",
-    otrasSenas: "",
-    propietario: "",
+    responsable: "",
     areaTotal: "",
     espejoAgua: "",
   });
 
   const [telefonos, setTelefonos] = useState([""]);
+  const [errorMessage, setErrorMessage] = useState("");
   const [errores, setErrores] = useState({});
 
+  function normalizarNumeroDecimal(valor) {
+    const valorLimpio = String(valor).replace(",", ".").replace(/[^0-9.]/g, "");
+    const partes = valorLimpio.split(".");
+    return partes.length > 1
+      ? `${partes[0]}.${partes.slice(1).join("")}`
+      : valorLimpio;
+  }
+
   const actualizarCampo = (campo, valor) => {
+    const nuevoValor =
+      campo === "areaTotal" || campo === "espejoAgua"
+        ? normalizarNumeroDecimal(valor)
+        : valor;
+
     setFormulario((actual) => ({
       ...actual,
-      [campo]: valor,
+      [campo]: nuevoValor,
     }));
     if (errores[campo]) {
       setErrores((actual) => ({ ...actual, [campo]: false }));
@@ -35,8 +68,15 @@ export function useFincaNueva() {
 
   const actualizarTelefono = (index, valor) => {
     const nuevosTelefonos = [...telefonos];
-    nuevosTelefonos[index] = valor;
+    nuevosTelefonos[index] = String(valor).replace(/\D/g, "").slice(0, 8);
     setTelefonos(nuevosTelefonos);
+
+    if (errores[`telefono${index}`]) {
+      setErrores((actual) => ({
+        ...actual,
+        [`telefono${index}`]: false,
+      }));
+    }
   };
 
   const agregarTelefono = () => {
@@ -48,25 +88,59 @@ export function useFincaNueva() {
     setTelefonos(nuevosTelefonos);
   };
 
+  function isTelefonoValido(telefono) {
+    return /^\d{8}$/.test(telefono);
+  }
+
+  function isNumber(valor) {
+    const numero = Number(valor);
+    return !isNaN(numero) && numero >= 0;
+  }
+
   const registrarFinca = () => {
     const nuevosErrores = {};
+    setErrorMessage("");
 
     if (!formulario.codigoInterno.trim()) nuevosErrores.codigoInterno = true;
     if (!formulario.nombre.trim()) nuevosErrores.nombre = true;
     if (!formulario.provincia) nuevosErrores.provincia = true;
     if (!formulario.canton) nuevosErrores.canton = true;
     if (!formulario.distrito) nuevosErrores.distrito = true;
-    if (!formulario.otrasSenas.trim()) nuevosErrores.otrasSenas = true;
-    if (!formulario.propietario.trim()) nuevosErrores.propietario = true;
-    if (!formulario.areaTotal.trim()) nuevosErrores.areaTotal = true;
-    if (!formulario.espejoAgua.trim()) nuevosErrores.espejoAgua = true;
+    if (!formulario.responsable.trim()) nuevosErrores.responsable = true;
+
+    if (
+      !String(formulario.areaTotal).trim() ||
+      !isNumber(formulario.areaTotal)
+    ) {
+      nuevosErrores.areaTotal = true;
+      setErrorMessage("El area total debe ser un numero positivo");
+    }
+
+    if (
+      !String(formulario.espejoAgua).trim() ||
+      !isNumber(formulario.espejoAgua)
+    ) {
+      nuevosErrores.espejoAgua = true;
+      setErrorMessage("El espejo de agua debe ser un numero positivo");
+    }
+
+    for (let i = 0; i < telefonos.length; i++) {
+      if (!isTelefonoValido(telefonos[i])) {
+        nuevosErrores[`telefono${i}`] = true;
+        setErrorMessage(
+          "Cada telefono debe contener exactamente solo 8 digitos numericos."
+        );
+        break;
+      }
+    }
 
     if (Object.keys(nuevosErrores).length > 0) {
       setErrores(nuevosErrores);
       return;
     }
 
-    console.log({ ...formulario, telefonos });
+    crearFinca({ ...formulario, telefonos });
+    onFinca();
   };
 
   const cantones =
@@ -87,15 +161,18 @@ export function useFincaNueva() {
     value: distrito,
   }));
 
-  const ContentWrapper = ({ children }) => (
-    <View style={STYLE.contentWrapper}>{children}</View>
-  );
+  const ContentWrapper = useMemo(() => {
+    return function ContentWrapper({ children, style }) {
+      return <View style={[STYLE.contentWrapper, style]}>{children}</View>;
+    };
+  }, []);
   return {
     ContentWrapper,
     formulario,
     setFormulario,
     telefonos,
     setTelefonos,
+    errorMessage,
     errores,
     setErrores,
 
