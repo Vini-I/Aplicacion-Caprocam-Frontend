@@ -47,6 +47,34 @@ export const styles = StyleSheet.create({
     marginBottom: 0,
   },
 
+  btnMant: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+    borderWidth: 1,
+    backgroundColor: "transparent",
+    height: 42, // misma altura que el botón agregar
+    marginTop: 0,
+  },
+
+    btnAction: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+    borderWidth: 1,
+    backgroundColor: "transparent",
+    height: 42,
+    marginTop: 0,
+  },
+
   filterButton: {
     height: 43,
     marginTop: 0,
@@ -59,6 +87,8 @@ export const styles = StyleSheet.create({
     borderRadius: 8,
     backgroundColor: COLORS.primary,
     borderWidth: 0,
+    height: 42, // fijar altura para alinear
+    justifyContent: "center",
   },
 
   addButtonContent: {

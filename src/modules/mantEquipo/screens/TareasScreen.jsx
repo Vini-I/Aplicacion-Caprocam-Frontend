@@ -307,16 +307,14 @@ export default function TareasScreen() {
             containerStyle={{ flex: 1 }}
           />
 <Button
+  variant="outline"
   onPress={handleAgregar}
-  variant="primary"
-  style={styles.btnAdd}
+  style={[styles.btnAction, { borderColor: COLORS.primary }]}
 >
-  <View style={styles.addButtonContent}>
-    <Icon icon={ICONS.add} size={16} color={COLORS.white} />
-    <CustomText style={styles.btnLabel}>
-      {TEXTOS_PANTALLA.btnAgregarTarea}
-    </CustomText>
-  </View>
+  <Icon icon={ICONS.add} size={16} color={COLORS.primary} />
+  <CustomText style={{ color: COLORS.primary, fontWeight: "600", fontSize: 13 }}>
+    {TEXTOS_PANTALLA.btnAgregarTarea}
+  </CustomText>
 </Button>
         </View>
 

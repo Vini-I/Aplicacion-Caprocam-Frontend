@@ -157,15 +157,22 @@ export const styles = StyleSheet.create({
     color: COLORS.textSecondary,
   },
 
-  btnAccion: {
-    marginTop: 0,
-    paddingVertical: 4,
-    paddingHorizontal: 6,
-    borderWidth: 1,
-    borderRadius: 6,
-    marginRight: 6,
-    backgroundColor: "transparent",
-  },
+// ============================================================
+// ESTILOS DE BOTONES DE ACCIÓN (outline)
+// ============================================================
+btnAction: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 6,
+  paddingVertical: 8,
+  paddingHorizontal: 14,
+  borderRadius: 8,
+  borderWidth: 1,
+  backgroundColor: "transparent",
+  height: 42,
+  marginTop: 0,
+},
 
   // Modal de tarea
   modalContainer: {

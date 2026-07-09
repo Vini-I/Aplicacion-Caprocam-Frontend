@@ -3,9 +3,10 @@
  * COMPONENTE: EquiposListScreen
  * ============================================================
  *
- * Pantalla principal de administración de equipos.
- * Permite buscar, agregar, editar, eliminar y encender/apagar equipos.
- * Muestra también alertas de equipos próximos a mantenimiento.
+ * Pantalla principal del módulo de equipos.
+ * Muestra el listado de equipos registrados, permite buscar, agregar,
+ * editar y eliminar equipos, y ofrece acceso al módulo de mantenimiento
+ * de equipos (tickets).
  *
  * Dependencias:
  * - useEquipos hook para manejar datos y operaciones CRUD
@@ -35,7 +36,6 @@ import Input from "../../../shared/components/Input";
 import CustomText from "../../../shared/components/Text";
 import Icon from "../../../shared/components/Icons";
 import SearchBar from "../../inventarios/components/SearchBar";
-import Navbar from "../../../shared/components/Navbar";
 import { STYLE } from "../../../theme/style";
 import { ICONS } from "../../../theme/icons";
 import { COLORS } from "../../../theme/colors";
@@ -168,9 +168,12 @@ export default function EquiposListScreen() {
 
   /** Abre pantalla de detalle */
   const openDetail = (equipoId) => {
-      console.log('openDetail llamado con:', equipoId); // ← agrega esto
-
     setSelectedEquipoId(equipoId);
+  };
+
+  /** Navega al módulo de mantenimiento de equipos (tickets) */
+  const navigateToMantEquipo = () => {
+    router.push("/mantEquipo/mantEquipo");
   };
 
   // --------------------------------------------------------
@@ -184,24 +187,8 @@ export default function EquiposListScreen() {
   // --------------------------------------------------------
   return (
     <View style={styles.container}>
-      {/* NAVBAR PERSONALIZADO (CCORRREGIIRRR SEGUN EL ESTANDARRRR) */}
-<Navbar
-  title="Equipos"
-  leftContent={
-<Button
-  variant="outline"
-  onPress={() => router.replace("/mantEquipo/mantEquipo")} // ← antes era router.back()
-  style={styles.backButton}
->
-      <Icon icon={ICONS.exit} size={22} color={COLORS.white} />
-    </Button>
-  }
-        style={styles.navbar}
-        titleStyle={styles.navbarTitle}
-      />
-
       <View style={[STYLE.contentWrapper, { flex: 1 }]}>
-        {/* Barra de búsqueda y botón agregar */}
+        {/* Barra de búsqueda y botones de acción */}
         <View style={styles.searchRow}>
           <SearchBar
             value={searchText}
@@ -209,15 +196,27 @@ export default function EquiposListScreen() {
             placeholder="🔍 Buscar por nombre, código, marca o modelo"
             containerStyle={styles.searchInput}
           />
+          {/* Botón "Ver Mantenimiento" - outline con borde warning */}
           <Button
-            onPress={handleAdd}
-            variant="primary"
-            style={styles.addButtonContainer}
+            variant="outline"
+            onPress={navigateToMantEquipo}
+            style={[styles.btnAction, { borderColor: COLORS.warning }]}
           >
-            <View style={styles.addButtonContent}>
-              <Icon icon={ICONS.add} size={18} color={COLORS.white} />
-              <CustomText style={styles.addButtonText}>Agregar equipo</CustomText>
-            </View>
+            <Icon icon={ICONS.clipboard} size={16} color={COLORS.warning} />
+            <CustomText style={{ color: COLORS.warning, fontWeight: "600", fontSize: 13 }}>
+              Ver Mantenimiento
+            </CustomText>
+          </Button>
+          {/* Botón "Agregar equipo" - outline con borde primary (igual estilo que el anterior) */}
+          <Button
+            variant="outline"
+            onPress={handleAdd}
+            style={[styles.btnAction, { borderColor: COLORS.primary }]}
+          >
+            <Icon icon={ICONS.add} size={16} color={COLORS.primary} />
+            <CustomText style={{ color: COLORS.primary, fontWeight: "600", fontSize: 13 }}>
+              Agregar equipo
+            </CustomText>
           </Button>
         </View>
 
