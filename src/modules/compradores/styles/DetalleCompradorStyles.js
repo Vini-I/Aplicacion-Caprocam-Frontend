@@ -211,9 +211,9 @@ export const styles = StyleSheet.create({
   backgroundColor: COLORS.error,
  },
 
-  modalSuccessAlert: {
-  marginTop: 4,
- },
+  alertEliminado: {
+    marginTop: 16,
+  },
 
   modalConfirmTexto: {
     color: COLORS.white,

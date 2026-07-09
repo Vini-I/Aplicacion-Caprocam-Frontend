@@ -50,6 +50,7 @@ export function useDetalleCompradorScreen() {
   const comprador = getCompradorMockById(id);
 
   function irAtras() {
+    setModalVisible(false);
     setEliminado(true);
     setTimeout(() => {
       router.replace("/(drawer)/compradores/compradorScreen");

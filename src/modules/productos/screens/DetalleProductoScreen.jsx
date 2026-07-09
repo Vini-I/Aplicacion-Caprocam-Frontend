@@ -37,6 +37,7 @@ import Text from "../../../shared/components/Text";
 import Title from "../../../shared/components/Title";
 import Badge from "../../../shared/components/Badge";
 import Modal from "../../../shared/components/Modal";
+import Alert from "../../../shared/components/Alert";
 
 import { ICONS } from "../../../theme/icons";
 import { COLORS } from "../../../theme/colors";
@@ -76,11 +77,12 @@ export default function DetalleProductoScreen() {
     confirmarEliminar,
     handleBack,
     handleCerrarModal,
+    eliminado,
   } = useDetalleProducto();
 
   if (!producto) {
     return (
-      <View style={styles.contenedor}>
+      <View style={STYLE.container}>
         <Navbar
           title="Producto no encontrado"
           style={styles.navbar}
@@ -103,7 +105,7 @@ export default function DetalleProductoScreen() {
 
 
     return (
-        <View style={styles.contenedor}>
+        <View style={STYLE.container}>
             <ScrollView
                 contentContainerStyle={[styles.contentContainer, STYLE.contentWrapper]}
                 showsVerticalScrollIndicator={false}
@@ -155,7 +157,7 @@ export default function DetalleProductoScreen() {
                     </View>
                 </Card>
 
-                <View style={styles.botonesSeccion}>
+        <View style={styles.botonesSeccion}>
                     <Button variant="outline" style={[styles.botonAccion, styles.botonEditar]} onPress={handleEditar}>
                         <Icon icon={ICONS.edit} size={20} color={COLORS.primary} />
                         <Text color={COLORS.primary} weight="600" size={14}>Editar</Text>
@@ -166,6 +168,15 @@ export default function DetalleProductoScreen() {
                         <Text color={COLORS.error} weight="600" size={14}>Eliminar</Text>
                     </Button>
                 </View>
+
+                {/* Alert de éxito al pie de la pantalla, igual que al guardar un producto */}
+                {eliminado && (
+                    <Alert
+                        variant="danger"
+                        message="Producto eliminado correctamente."
+                        style={styles.alertEliminado}
+                    />
+                )}
             </ScrollView>
 
             <Modal
@@ -189,7 +200,7 @@ export default function DetalleProductoScreen() {
                     </Text>
                 </Button>
             </Modal>
-        </View>
+        </View>        
     );
 }
 

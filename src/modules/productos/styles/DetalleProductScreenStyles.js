@@ -101,6 +101,9 @@ export const styles = StyleSheet.create({
         borderRadius: 12,
         backgroundColor: COLORS.error,
     },
+    alertEliminado: {
+        marginTop: 16,
+    },
     modalCancelButton: {
         backgroundColor: COLORS.textTertiary,
     },

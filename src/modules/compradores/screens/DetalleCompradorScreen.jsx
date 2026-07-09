@@ -141,40 +141,40 @@ export default function DetalleCompradorScreen() {
           <Text style={[styles.botonTexto, styles.botonTextoEliminar]}>Eliminar</Text>
         </Button>
         </View>
+
+          {/* Alert de éxito al pie de la pantalla, igual que al guardar un producto */}
+      {eliminado && (
+        <Alert
+          variant="danger"
+          message="Comprador eliminado correctamente."
+          style={styles.alertEliminado}
+        />
+      )}
+
       </ScrollView>
 
-      {/* Modal de confirmación antes de eliminar el comprador */}
       <Modal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
         closeText="Cancelar"
-        showCloseButton={!eliminado}
         buttonStyle={styles.modalCancelButton}
         overlayStyle={styles.modalOverlay}
         containerStyle={styles.modalContainer}
       >
-        {eliminado ? (
-          <Alert
-            variant="success"
-            message="Comprador eliminado correctamente."
-            style={styles.modalSuccessAlert}
-          />
-        ) : (
-          <>
-            <Title level={3} style={styles.modalTitle}>
-              ¿Eliminar comprador?
-            </Title>
-            <Text style={styles.modalMessage}>
-              ¿Estás seguro que deseas eliminar{" "}
-              <Text style={styles.modalNombreNegrita}>{comprador.nombre}</Text>?
-            </Text>
-            <Button style={styles.modalConfirmButton} onPress={irAtras}>
-              <Icon icon={ICONS.delete} size={ICON_SIZE.modal} color={COLORS.white} />
-              <Text style={styles.modalConfirmTexto}>Sí, eliminar</Text>
-            </Button>
-          </>
-        )}
+        <Title level={3} style={styles.modalTitle}>
+          ¿Eliminar comprador?
+        </Title>
+        <Text style={styles.modalMessage}>
+          ¿Estás seguro que deseas eliminar{" "}
+          <Text style={styles.modalNombreNegrita}>{comprador.nombre}</Text>?
+        </Text>
+        <Button style={styles.modalConfirmButton} onPress={irAtras}>
+          <Icon icon={ICONS.delete} size={ICON_SIZE.modal} color={COLORS.white} />
+          <Text style={styles.modalConfirmTexto}>Sí, eliminar</Text>
+        </Button>
       </Modal>
+
+      
 
     </View>
   );

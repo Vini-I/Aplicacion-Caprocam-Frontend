@@ -87,7 +87,7 @@ export default function ProductForm() {
   } = useProductForm();
 
   return (
-    <View style={styles.screen}>
+    <View style={STYLE.container}>
       <ScrollView
         contentContainerStyle={[styles.content, STYLE.contentWrapper]}
         showsVerticalScrollIndicator={false}
