@@ -37,6 +37,7 @@ import Text from "../../../shared/components/Text";
 import Modal from "../../../shared/components/Modal";
 import Alert from "../../../shared/components/Alert";
 import { styles } from "../styles/AlimentacionStyles";
+import { STYLE } from "../../../theme/style";
 
 export default function RegistroAlimentacionScreen({ navigation }) {
     const { form, updateField, resetForm, validarForm } = useAlimentacionForm();
@@ -67,7 +68,7 @@ export default function RegistroAlimentacionScreen({ navigation }) {
 
   return (
     <View style={styles.screen}>
-      <ScrollView style={styles.container}>
+      <ScrollView contentContainerStyle={STYLE.contentWrapper}>
         <AlimentacionForm form={form} updateField={updateField} />
       </ScrollView>
 

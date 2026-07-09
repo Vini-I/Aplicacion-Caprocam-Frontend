@@ -41,22 +41,40 @@ import Spinner from "../../../shared/components/Spinner";
 import Text from "../../../shared/components/Text";
 import GestionAlimentacion from "./GestionAlimentacion";
 import NavbarRegistro from "../../../shared/components/NavbarRegistro";
-import Modal from "../../../shared/components/Modal";
 import Alert from "../../../shared/components/Alert";
 import { COLORS } from "../../../theme/colors";
 import { styles } from "../styles/AlimentacionStyles";
+import { STYLE } from "../../../theme/style"
 
 export default function AlimentacionScreen({ navigation, onBack }) {
   const { alimentaciones, loading, error, recargar } = useAlimentacion();
   const { form, updateField, resetForm, validarForm } = useAlimentacionForm();
   const [submitted, setSubmitted] = useState(false);
   const [errores, setErrores] = useState({});
-  const [modal, setModal] = useState({ visible: false, variant: "success", mensaje: "" });
+  const [alerta, setAlerta] = useState({ visible: false, variant: "success", mensaje: "" });
 
   useEffect(() => {
     const unsub = navigation?.addListener("focus", recargar);
     return unsub;
   }, [navigation, recargar]);
+
+  useEffect(() => {
+  if (!alerta.visible) return;
+
+  const timer = setTimeout(() => {
+    if (alerta.variant === "success") {
+      resetForm();
+      setSubmitted(false);
+      setErrores({});
+      recargar();
+    }
+    setAlerta((prev) => ({
+      ...prev,
+      visible: false,
+    }));
+  }, 3000);
+  return () => clearTimeout(timer);
+}, [alerta.visible]);
 
   const handleGuardar = async () => {
     setSubmitted(true);
@@ -64,28 +82,15 @@ export default function AlimentacionScreen({ navigation, onBack }) {
     setErrores(erroresValidacion);
 
     if (!valido) {
-      const lista = Object.values(erroresValidacion)
-        .map((e) => `• ${e}`)
-        .join("\n");
-      setModal({ visible: true, variant: "warning", mensaje: `Por favor complete:\n${lista}` });
+      setAlerta({ visible: true, variant: "warning", mensaje: "Por favor complete todos los campos obligatorios." });
       return;
     }
 
     try {
       await alimentacionService.create(form);
-      setModal({ visible: true, variant: "success", mensaje: "Alimentación registrada correctamente" });
+      setAlerta({ visible: true, variant: "success", mensaje: "Alimentación registrada correctamente" });
     } catch {
-      setModal({ visible: true, variant: "danger", mensaje: "No se pudo guardar el registro" });
-    }
-  };
-
-  const cerrarModal = () => {
-    setModal((prev) => ({ ...prev, visible: false }));
-    if (modal.variant === "success") {
-      resetForm();
-      setSubmitted(false);
-      setErrores({});
-      recargar();
+      setAlerta({ visible: true, variant: "danger", mensaje: "No se pudo guardar el registro" });
     }
   };
 
@@ -99,12 +104,24 @@ export default function AlimentacionScreen({ navigation, onBack }) {
     );
 
   return (
-    <View style={styles.container}>
-      <NavbarRegistro
-        Titulo="Alimentación"
-        Subtitulo="Registro de alimentación"
-        Icono="food"
-      />
+  <>
+    <NavbarRegistro
+      Titulo="Alimentación"
+      Subtitulo="Registro de alimentación"
+      Icono="food"
+    />
+
+    <View style={STYLE.container}>
+      <View style={STYLE.contentWrapper}>
+        {alerta.visible && (
+          <Alert
+            variant={alerta.variant}
+            message={alerta.mensaje}
+            style={styles.alert}
+          />
+        )}
+      </View>
+
       <GestionAlimentacion
         alimentaciones={alimentaciones}
         form={form}
@@ -114,14 +131,7 @@ export default function AlimentacionScreen({ navigation, onBack }) {
         handleGuardar={handleGuardar}
         onBack={onBack}
       />
-
-      <Modal visible={modal.visible} onClose={cerrarModal}>
-        <Alert
-          variant={modal.variant}
-          message={modal.mensaje}
-          textStyle={{ textAlign: "center" }}
-        />
-      </Modal>
     </View>
+  </>
   );
 }

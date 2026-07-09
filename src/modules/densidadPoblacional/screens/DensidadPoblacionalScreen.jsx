@@ -30,16 +30,16 @@
  * <DensidadPoblacionalScreen />
  */
 
-import React from "react";
+import React, {useState} from "react";
 import { ScrollView, View } from "react-native";
 import Title from "../../../shared/components/Title";
 import DatosConteo from "./DatosConteo";
 import InformacionEstanque from "./InformacionEstanque";
 import RegistroConteo from "./RegistroConteo";
 import NavbarRegistro from "../../../shared/components/NavbarRegistro";
-import Modal from "../../../shared/components/Modal";
 import Alert from "../../../shared/components/Alert";
 import { styles } from "../styles/DensidadPoblacionalStyles";
+import { STYLE } from "../../../theme/style"
 import { TYPOGRAPHY } from "../../../theme/typography";
 import Button from "../../../shared/components/Button";
 import Footer from "../../../shared/components/Footer";
@@ -57,8 +57,7 @@ export default function DensidadPoblacionalScreen({ onBack }) {
     estanques,
     submitted,
     errores,
-    modal,
-    cerrarModal,
+    alerta,
     handleGuardar,
     numeroCamarones,
     setNumeroCamarones,
@@ -79,14 +78,31 @@ export default function DensidadPoblacionalScreen({ onBack }) {
   } = useDensidadPoblacional();
 
   return (
-    <>
+<>
     <NavbarRegistro
-        Titulo="Densidad Poblacional"
-        Subtitulo="Registro de conteo"
-        Icono="chart"
-      />
-    <ScrollView style={styles.container}>
+      Titulo="Densidad Poblacional"
+      Subtitulo="Registro de conteo"
+      Icono="chart"
+    />
+
+<View style={STYLE.container}>
+    <View style={STYLE.contentWrapper}>
+      {alerta.visible && (
+        <Alert
+          variant={alerta.variant}
+          message={alerta.mensaje}
+          style={styles.alert}
+        />
+      )}
+    </View>
+
+    <ScrollView
+      contentContainerStyle={STYLE.contentWrapper}
+    >
+
       <View style={styles.content}>
+        {/* Todo tu contenido actual */}
+
         <Title
           style={[
             styles.subTitle,
@@ -143,24 +159,22 @@ export default function DensidadPoblacionalScreen({ onBack }) {
           submitted={submitted}
           errores={errores}
         />
-        </View>
+
         <Footer
+          fixedBottom
           children={
-            <Button variant="outline" onPress={handleGuardar} style={styles.addButton}>
+            <Button
+              variant="outline"
+              onPress={handleGuardar}
+              style={styles.addButton}
+            >
               Guardar módulo
             </Button>
           }
-          fixedBottom={true}
         />
+      </View>
     </ScrollView>
-
-    <Modal visible={modal.visible} onClose={cerrarModal}>
-      <Alert
-        variant={modal.variant}
-        message={modal.mensaje}
-        textStyle={{ textAlign: "center" }}
-      />
-    </Modal>
-    </>
+  </View>
+  </>
   );
 }

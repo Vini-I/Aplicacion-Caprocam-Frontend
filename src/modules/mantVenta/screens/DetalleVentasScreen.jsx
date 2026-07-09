@@ -7,9 +7,7 @@
  * permitiendo revisar los registros de forma organizada.
  */
 
-import { useMemo, useState } from "react";
-import { ScrollView, View, useWindowDimensions } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { ScrollView, View } from "react-native";
 
 import Card from "../../../shared/components/Card.jsx";
 import Icon from "../../../shared/components/Icons.jsx";
@@ -19,12 +17,10 @@ import Text from "../../../shared/components/Text.jsx";
 import { COLORS } from "../../../theme/colors.js";
 import { ICONS } from "../../../theme/icons.js";
 
-import { fincas } from "../../finca/screens/FincaData.js";
-import { estanques } from "../../mantCrecimiento/services/EstanqueData.js";
 import { formatearMontoColones } from "../hooks/useVenta.js";
-import { obtenerIdNumericoFinca } from "../hooks/useVenta.js";
-import { useVentaDetalle } from "../hooks/useVentaDetalle.js";
+import { useDetalleVenta } from "../hooks/useDetalleVenta.js";
 import { styles } from "../styles/VentaStyles.js";
+import { STYLE } from "../../../theme/style.js";
 
 function SectionTitle({ icon, title }) {
   return (
@@ -71,67 +67,24 @@ function TarjetaVenta({ venta }) {
 }
 
 export default function DetalleVentasScreen() {
-  const params = useLocalSearchParams();
-  const { width } = useWindowDimensions();
-  const isWide = width >= 700;
+  const {
+    fincaFiltro,
+    estanqueFiltro,
+    opcionesFincas,
+    opcionesEstanques,
+    ventasFiltradas,
+    mensajeDetalle,
+    isWide,
+    handleFincaChange,
+    handleEstanqueChange,
+  } = useDetalleVenta();
+
   const gridStyle = isWide ? styles.inputRow : styles.inputGrid;
 
-  const ventas = useMemo(() => {
-    if (typeof params.ventas === "string") {
-      try {
-        return JSON.parse(params.ventas);
-      } catch {
-        return [];
-      }
-    }
-
-    return [];
-  }, [params.ventas]);
-
-  const fincaInicial = typeof params.fincaSeleccionada === "string" ? params.fincaSeleccionada : "";
-  const estanqueInicial = typeof params.estanqueSeleccionado === "string" ? params.estanqueSeleccionado : "";
-
-  const [fincaFiltro, setFincaFiltro] = useState(fincaInicial);
-  const [estanqueFiltro, setEstanqueFiltro] = useState(estanqueInicial);
-
-  const opcionesFincas = useMemo(
-    () =>
-      fincas.map((finca) => ({
-        label: finca.nombre,
-        value: finca.codigoInterno,
-      })),
-    [],
-  );
-
-  const opcionesEstanques = useMemo(() => {
-    const finca = fincas.find((item) => item.codigoInterno === fincaFiltro);
-
-    if (!finca) return [];
-
-    const fincaId = obtenerIdNumericoFinca(finca.codigoInterno);
-
-    return estanques
-      .filter(
-        (estanque) =>
-          estanque.fincaNombre === finca.nombre || estanque.fincaId === fincaId,
-      )
-      .map((estanque) => ({
-        label: `${estanque.codigo} - ${estanque.nombre}`,
-        value: String(estanque.id),
-      }));
-  }, [fincaFiltro]);
-
-  const { ventasFiltradas, mensajeDetalle } = useVentaDetalle({
-    ventas,
-    fincaSeleccionada: fincaFiltro,
-    estanqueSeleccionado: estanqueFiltro,
-  });
-
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <Card style={styles.contentWrapper}>
+    <ScrollView style={STYLE.container} showsVerticalScrollIndicator={false}>
+      <Card style={STYLE.contentWrapper}>
         <View style={styles.headerRow}>
-          <Icon icon={ICONS.report} size={22} color={COLORS.primary} style={styles.headerIcon} />
           <Text style={styles.cardTitle}>Detalle de ventas</Text>
         </View>
 
@@ -145,10 +98,7 @@ export default function DetalleVentasScreen() {
               placeholder="Todas las fincas"
               options={opcionesFincas}
               value={fincaFiltro}
-              onChange={(value) => {
-                setFincaFiltro(value);
-                setEstanqueFiltro("");
-              }}
+              onChange={handleFincaChange}
             />
           </View>
 
@@ -158,7 +108,7 @@ export default function DetalleVentasScreen() {
               placeholder="Todos los estanques"
               options={opcionesEstanques}
               value={estanqueFiltro}
-              onChange={setEstanqueFiltro}
+              onChange={handleEstanqueChange}
               disabled={!fincaFiltro}
             />
           </View>

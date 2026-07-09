@@ -8,10 +8,20 @@ export default function Detalle() {
   const handleNuevoEstanque = () => {
     router.push("/finca/estanque");
   };
+   
+  const handleDetalleEstanque = (codigo) => {
+    router.push(`/finca/detalleEstanque?id=${codigo}`);
+  };
+
+  const handleEditarEstanque = () => {
+    router.push("/finca/editarEstanque");
+  }
 
   return (
     <FincaDetalleScreen 
       onEstanque={handleNuevoEstanque}
+      onEstanqueDetalle={handleDetalleEstanque}
+      onEstanqueEditar={handleEditarEstanque}
     />
   );
 }

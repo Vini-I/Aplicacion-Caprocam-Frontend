@@ -52,7 +52,7 @@
  * const { finca, estanque, fecha, handleGuardar } = useDensidadPoblacional();
  */
 
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import { useRouter } from "expo-router";
 import { useDatosConteo } from "./useDatosConteo";
 import densidadPoblacionalService from "../services/DensidadPoblacional.service";
@@ -70,7 +70,7 @@ export default function useDensidadPoblacional() {
   const [fecha, setFecha] = useState(hoy());
   const [submitted, setSubmitted] = useState(false);
   const [errores, setErrores] = useState({});
-  const [modal, setModal] = useState({ visible: false, variant: "success", mensaje: "" });
+  const [alerta, setAlerta] = useState({ visible: false, variant: "success", mensaje: "" });
 
   const router = useRouter();
   const datosConteo = useDatosConteo();
@@ -113,10 +113,7 @@ export default function useDensidadPoblacional() {
     setErrores(erroresCombinados);
 
     if (!valido) {
-      const lista = Object.values(erroresCombinados)
-        .map((e) => `• ${e}`)
-        .join("\n");
-      setModal({ visible: true, variant: "warning", mensaje: `Por favor complete:\n${lista}` });
+      setAlerta({ visible: true, variant: "warning", mensaje: "Por favor complete todos los campos obligatorios." });
       return;
     }
 
@@ -138,20 +135,30 @@ export default function useDensidadPoblacional() {
 
     try {
       await densidadPoblacionalService.create(registro);
-      setModal({ visible: true, variant: "success", mensaje: "Módulo guardado exitosamente" });
+      setAlerta({ visible: true, variant: "success", mensaje: "Módulo guardado exitosamente" });
     } catch {
-      setModal({ visible: true, variant: "danger", mensaje: "No se pudo guardar el registro" });
+      setAlerta({ visible: true, variant: "danger", mensaje: "No se pudo guardar el registro" });
     }
   };
 
-  const cerrarModal = () => {
-    setModal((prev) => ({ ...prev, visible: false }));
-    if (modal.variant === "success") {
+  useEffect(() => {
+  if (!alerta.visible) return;
+
+  const timer = setTimeout(() => {
+    if (alerta.variant === "success") {
       setSubmitted(false);
       setErrores({});
       router.replace("/(drawer)/(tabs)/registros");
     }
-  };
+
+    setAlerta((prev) => ({
+      ...prev,
+      visible: false,
+    }));
+  }, 3000);
+
+  return () => clearTimeout(timer);
+}, [alerta.visible]);
 
   return {
     finca,
@@ -164,8 +171,7 @@ export default function useDensidadPoblacional() {
     estanques,
     submitted,
     errores,
-    modal,
-    cerrarModal,
+    alerta,
     handleGuardar,
     ...datosConteo,
   };

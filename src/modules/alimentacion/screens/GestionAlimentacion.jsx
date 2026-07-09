@@ -38,6 +38,7 @@ import { styles } from "../styles/AlimentacionStyles";
 import { COLORS } from "../../../theme/colors";
 import Footer from "../../../shared/components/Footer";
 import Button from "../../../shared/components/Button";
+import { STYLE } from "../../../theme/style";
 
 export default function GestionAlimentacion({
   alimentaciones,
@@ -58,8 +59,8 @@ export default function GestionAlimentacion({
   });
 
   return (
-    <ScrollView style={{ flex: 1 }}>
-      <View style={styles.content}>
+    <ScrollView style={STYLE.container} showsVerticalScrollIndicator={false}>
+      <View style={STYLE.contentWrapper}>
         <AlimentacionStats {...calcularStats(alimentaciones)} />
 
         <AlimentacionForm
@@ -78,7 +79,7 @@ export default function GestionAlimentacion({
           fixedBottom={true}
         />
 
-        <Text tamano="xs" style={styles.secLabel}>
+        <Text style={styles.secLabel}>
           REGISTROS DEL DÍA
         </Text>
 
