@@ -29,7 +29,7 @@
  * <RaleoScreen />
  */
 
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import { View, ScrollView } from "react-native";
 import Button from "../../../shared/components/Button";
 import Icon from "../../../shared/components/Icons";
@@ -37,11 +37,11 @@ import Text from "../../../shared/components/Text";
 import Title from "../../../shared/components/Title";
 import RaleoForm from "../components/RaleoForm";
 import NavbarRegistro from "../../../shared/components/NavbarRegistro";
-import Modal from "../../../shared/components/Modal";
 import Alert from "../../../shared/components/Alert";
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
 import { styles } from "../styles/RaleoStyles";
+import { STYLE } from "../../../theme/style";
 import useRaleo from "../hooks/useRaleo";
 import raleoService from "../services/Raleo.service";
 
@@ -49,7 +49,26 @@ export default function RaleoScreen() {
   const { form, updateField, resetForm, validarForm } = useRaleo();
   const [submitted, setSubmitted] = useState(false);
   const [errores, setErrores] = useState({});
-  const [modal, setModal] = useState({ visible: false, variant: "success", mensaje: "" });
+  const [alerta, setAlerta] = useState({ visible: false, variant: "success", mensaje: "" });
+
+useEffect(() => {
+  if (!alerta.visible) return;
+
+  const timer = setTimeout(() => {
+    if (alerta.variant === "success") {
+      resetForm();
+      setSubmitted(false);
+      setErrores({});
+    }
+
+    setAlerta((prev) => ({
+      ...prev,
+      visible: false,
+    }));
+  }, 3000);
+
+  return () => clearTimeout(timer);
+}, [alerta.visible]);
 
   const handleGuardar = async () => {
     setSubmitted(true);
@@ -60,7 +79,7 @@ export default function RaleoScreen() {
       const lista = Object.values(erroresValidacion)
         .map((e) => `• ${e}`)
         .join("\n");
-      setModal({ visible: true, variant: "warning", mensaje: `Por favor complete:\n${lista}` });
+      setAlerta({ visible: true, variant: "warning", mensaje: `Por favor complete:\n${lista}` });
       return;
     }
 
@@ -72,30 +91,28 @@ export default function RaleoScreen() {
           : "No se realizan observaciones",
       };
       await raleoService.create(registro);
-      setModal({ visible: true, variant: "success", mensaje: "Raleo registrado correctamente" });
+      setAlerta({ visible: true, variant: "success", mensaje: "Raleo registrado correctamente" });
     } catch {
-      setModal({ visible: true, variant: "danger", mensaje: "No se pudo guardar el registro" });
-    }
-  };
-
-  const cerrarModal = () => {
-    setModal((prev) => ({ ...prev, visible: false }));
-    if (modal.variant === "success") {
-      resetForm();
-      setSubmitted(false);
-      setErrores({});
+      setAlerta({ visible: true, variant: "danger", mensaje: "No se pudo guardar el registro" });
     }
   };
 
   return (
     <>
     <NavbarRegistro
-        Titulo="Raleo"
-        Subtitulo="Cosecha parcial y densidad"
-        Icono="raleo"
-      />
-    <ScrollView style={styles.screen} showsVerticalScrollIndicator={false}>
-      <View style={styles.contenido}>
+      Titulo="Raleo"
+      Subtitulo="Cosecha parcial y densidad"
+      Icono="raleo"
+    />
+
+    <View style={STYLE.container}>
+    <ScrollView
+      style={{ flex: 1 }}
+      contentContainerStyle={STYLE.contentWrapper}
+      showsVerticalScrollIndicator={false}
+    >
+
+
         <RaleoForm
           form={form}
           updateField={updateField}
@@ -103,22 +120,39 @@ export default function RaleoScreen() {
           errores={errores}
         />
 
-        <Button variant="outline" onPress={handleGuardar} style={styles.saveButton}>
+        <View style={styles.contenido}>
+        {alerta.visible && (
+          <Alert
+            variant={alerta.variant}
+            message={alerta.mensaje}
+            style={styles.alert}
+          />
+        )}
+
+        <Button
+          variant="outline"
+          onPress={handleGuardar}
+          style={styles.saveButton}
+        >
           <View style={styles.saveBtnContent}>
-            <Icon icon={ICONS.save} size={18} color={COLORS.primary} />
-            <Text size={16} color={COLORS.primary} style={styles.saveBtnText}>Registrar Raleo</Text>
+            <Icon
+              icon={ICONS.save}
+              size={18}
+              color={COLORS.primary}
+            />
+
+            <Text
+              size={16}
+              color={COLORS.primary}
+              style={styles.saveBtnText}
+            >
+              Registrar Raleo
+            </Text>
           </View>
         </Button>
       </View>
     </ScrollView>
-
-    <Modal visible={modal.visible} onClose={cerrarModal}>
-      <Alert
-        variant={modal.variant}
-        message={modal.mensaje}
-        textStyle={{ textAlign: "center" }}
-      />
-    </Modal>
-    </>
+  </View>
+  </>
   );
 }

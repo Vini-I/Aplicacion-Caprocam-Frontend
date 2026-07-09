@@ -32,6 +32,7 @@ import Spinner from "../../../shared/components/Spinner";
 import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
 import { styles } from "../styles/AlimentacionStyles";
+import { STYLE } from "../../../theme/style";
 export default function HistorialAlimentacionScreen({ navigation }) {
   const { alimentaciones, loading, error } = useAlimentacion();
 
@@ -40,7 +41,7 @@ export default function HistorialAlimentacionScreen({ navigation }) {
 
   return (
     <View style={styles.screen}>
-      <ScrollView style={styles.container}>
+      <ScrollView contentContainerStyle={STYLE.contentWrapper}>
         <Text style={styles.total}>
           {alimentaciones.length} registros en total
         </Text>
