@@ -25,7 +25,10 @@
  *      - useNuevaSiembra.
  *
  * 4. Muestra mensajes de validación cuando existen campos obligatorios
- *    incompletos antes de crear la siembra.
+ *    incompletos antes de crear la siembra, y de confirmación cuando el
+ *    registro se guarda correctamente. Ambos casos usan el componente
+ *    global Alert (no un Modal), centrado y ubicado arriba del botón
+ *    de guardar, tal como lo define el estándar de interfaz del proyecto.
  *
  *
  * DEPENDENCIAS PRINCIPALES:
@@ -37,7 +40,7 @@
  * - CalculoPoblacionSection.
  * - Componentes compartidos:
  *      - Button.
- *      - Modal.
+ *      - Alert.
  *      - NavbarRegistro.
  *
  * IMPORTANTE:
@@ -50,22 +53,26 @@
  * =========================================================================
  */
 import React from "react";
-import { View, ScrollView } from "react-native";
+import { View, ScrollView, Text } from "react-native";
 
 import { STYLE } from "../../../theme/style";
 import { styles } from "../styles/NuevaSiembraStyles";
 
+import Alert from "../../../shared/components/Alert";
 import Button from "../../../shared/components/Button";
-import Modal from "../../../shared/components/Modal";
+import Card from "../../../shared/components/Card";
+import Icon from "../../../shared/components/Icons";
 import NavbarRegistro from "../../../shared/components/NavbarRegistro";
 import Select from "../../../shared/components/Select";
-import Text from "../../../shared/components/Text";
-import Title from "../../../shared/components/Title";
 
 import InformacionGeneralSection from "../components/InformacionGeneralSection";
 import DatosLarvaSection from "../components/DatosLarvaSection";
 import CalculoPoblacionSection from "../components/CalculoPoblacionSection";
 import PreCriaSection from "../components/PreCriaSection";
+import SectionTitle from "../components/SectionTitle";
+
+import { ICONS } from "../../../theme/icons";
+import { COLORS } from "../../../theme/colors";
 
 import useNuevaSiembra from "../hooks/useNuevaSiembra";
 
@@ -84,9 +91,9 @@ export default function NuevaSiembraScreen() {
 
     estanques,
 
-    modalVisible,
+    mensaje,
 
-    setModalVisible,
+    mensajeVariant,
 
     handleChange,
 
@@ -99,11 +106,6 @@ export default function NuevaSiembraScreen() {
     fieldHelpers,
   } = useNuevaSiembra();
 
-  /**
-   * ==========================================
-   * Catálogos
-   * ==========================================
-   */
 
   const fincas = obtenerFincas();
 
@@ -118,7 +120,7 @@ export default function NuevaSiembraScreen() {
   const plLarva = obtenerPLLarva();
 
   return (
-    <View style={STYLE.container}>
+    <>
       <NavbarRegistro
         Titulo={
           formData.tipoRegistro === "precria"
@@ -130,34 +132,46 @@ export default function NuevaSiembraScreen() {
       />
 
       <ScrollView
+        style={STYLE.container}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
         <View style={STYLE.contentWrapper}>
-          <View style={styles.fieldContainer}>
-            <Select
-              label={fieldHelpers.requiredLabel("Tipo de registro")}
-              placeholder="Seleccione una opción"
-              options={[
-                { label: "Siembra", value: "siembra" },
-                { label: "Pre-Cría", value: "precria" },
-              ]}
-              value={formData.tipoRegistro}
-              onChange={(value) => handleChange("tipoRegistro", value)}
-              labelStyle={styles.requiredLabel}
-              selectStyle={
-                fieldHelpers.hasError("tipoRegistro") ? styles.inputError : null
-              }
-             
-            />
-            </View>
+
+          {!formData.precriaId && (
+            <Card>
+              <SectionTitle icon={ICONS.clipboard} title="Tipo de registro" />
+
+              <Select
+                label={fieldHelpers.requiredLabel(
+                  "¿Qué desea registrar?",
+                )}
+                placeholder="Seleccione una opción"
+                options={[
+                  { label: "Siembra", value: "siembra" },
+                  { label: "Pre-Cría", value: "precria" },
+                ]}
+                value={formData.tipoRegistro}
+                onChange={(value) => handleChange("tipoRegistro", value)}
+                labelStyle={styles.requiredLabel}
+                selectStyle={
+                  fieldHelpers.hasError("tipoRegistro") ? styles.inputError : null
+                }
+              />
+            </Card>
+          )}
           {formData.tipoRegistro === "precria" ? (
             <>
               <PreCriaSection
                 formData={formData}
                 onChange={handleChange}
+                onChangeFinca={handleChangeFinca}
+                onChangeEstanque={handleChangeEstanque}
+                fincas={fincas}
+                estanques={estanques}
                 fieldHelpers={fieldHelpers}
                 isAutonomous={true}
+                isCreating={true}
                 plOptions={plLarva}
               />
               <DatosLarvaSection
@@ -182,20 +196,6 @@ export default function NuevaSiembraScreen() {
                 tecnicasCultivo={tecnicasCultivo}
                 fieldHelpers={fieldHelpers}
               />
-
-              <View style={styles.fieldContainer}>
-                <Select
-                  label="¿Esta siembra pasó por un ciclo previo de Pre-Cría? *"
-                  placeholder="Seleccione una opción"
-                  options={[
-                    { label: "No, siembra directa", value: "no" },
-                    { label: "Sí, proviene de Pre-Cría", value: "si" },
-                  ]}
-                  value={formData.pasoPorPrecria}
-                  onChange={(value) => handleChange("pasoPorPrecria", value)}
-                  labelStyle={styles.requiredLabel}
-                />
-              </View>
 
               {formData.pasoPorPrecria === "si" && (
                 <PreCriaSection
@@ -223,29 +223,35 @@ export default function NuevaSiembraScreen() {
               />
             </>
           )}
+          {mensaje !== "" && (
+            <Alert
+              message={mensaje}
+              variant={mensajeVariant}
+              style={[
+                styles.alert,
+                mensajeVariant === "success" && styles.alertSuccess,
+              ]}
+              textStyle={{ textAlign: "center" }}
+            />
+          )}
+
           <Button
             onPress={handleCrearSiembra}
             style={styles.createButton}
             textStyle={styles.createButtonText}
             variant="outline"
           >
-            {formData.tipoRegistro === "precria" ? "Guardar Pre-Cría" : "Guardar Siembra"}
+            <View style={styles.createButtonContent}>
+              <Icon icon={ICONS.save} color={COLORS.primary} />
+              <Text style={styles.createButtonText}>
+                {formData.tipoRegistro === "precria"
+                  ? "Guardar Pre-Cría"
+                  : "Guardar Siembra"}
+              </Text>
+            </View>
           </Button>
         </View>
       </ScrollView>
-
-      <Modal
-        visible={modalVisible}
-        onClose={() => setModalVisible(false)}
-        closeText="Aceptar"
-      >
-        <Title style={styles.modalTitle}>Campos incompletos</Title>
-
-        <Text style={styles.modalMessage}>
-          Debe completar todos los campos para registrar esta{" "}
-          {formData.tipoRegistro === "precria" ? "PreCría" : "Siembra"}.
-        </Text>
-      </Modal>
-    </View>
+    </>
   );
 }

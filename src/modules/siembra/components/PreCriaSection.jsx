@@ -9,6 +9,20 @@
  * FUNCIONALIDAD:
  * - Se integra dinámicamente en el formulario principal de siembra.
  * - Sigue estrictamente la gestión de estados de error de Caprocam.
+ * - Distingue modo vista/edición y modo autónomo/creación.
+ *
+ * DATOS:
+ * - Recibe formData, catálogos (fincas, estanques, plOptions) y
+ *   handlers (onChange, onChangeFinca, onChangeEstanque) desde el
+ *   hook padre. No mantiene estado propio.
+ *
+ * VALIDACIONES:
+ * - Usa fieldHelpers (hasError, requiredLabel) inyectado por el
+ *   padre; ver useFieldValidation.js para el contrato.
+ *
+ * DEPENDENCIAS:
+ * - Card, Input, NumberInput, DateInput, Select (shared/components).
+ * - SectionTitle.
  */
 import React from "react";
 import Card from "../../../shared/components/Card";
@@ -24,9 +38,14 @@ import SectionTitle from "./SectionTitle";
 export default function PreCriaSection({
   formData,
   onChange,
+  onChangeFinca,
+  onChangeEstanque,
+  fincas = [],
+  estanques = [],
   mode = "edit",
   fieldHelpers,
   isAutonomous = false,
+  isCreating = false,
   plOptions = [],
 }) {
   const isViewMode = mode === "view";
@@ -35,71 +54,65 @@ export default function PreCriaSection({
   return (
     <Card>
       <SectionTitle
-        icon={ICONS.calendar}
+        icon={ICONS.growth}
         title={
-          isAutonomous ? "Datos de Clico Pre-Cría" : "Información de Pre-Cría"
+          isAutonomous ? "Datos de Ciclo Pre-Cría" : "Información de Pre-Cría"
         }
       />
       {isAutonomous ? (
         <>
+          <Select
+            label={requiredLabel("Finca")}
+            placeholder="Seleccionar finca"
+            options={fincas}
+            value={formData.finca}
+            onChange={onChangeFinca}
+            labelStyle={styles.requiredLabel}
+            selectStyle={hasError("finca") ? styles.inputError : null}
+            disabled={isViewMode}
+          />
+
+          <Select
+            label={requiredLabel("Estanque")}
+            placeholder="Seleccionar estanque"
+            options={estanques}
+            value={formData.estanque}
+            onChange={onChangeEstanque}
+            labelStyle={styles.requiredLabel}
+            selectStyle={hasError("estanque") ? styles.inputError : null}
+            disabled={isViewMode || formData.finca === ""}
+          />
+
           <DateInput
             label={requiredLabel("Fecha de inicio a Pre-Cría")}
             value={formData.fechaInicio}
-            onChangeText={(value) => onChange("fechaIngresoPrecria", value)}
+            onChangeText={(value) => onChange("fechaInicio", value)}
             labelStyle={styles.requiredLabel}
-            inputStyle={
-              hasError("fechaIngresoPrecria") ? styles.inputError : null
-            }
-            disabled={isViewMode}
-          />
-          <DateInput
-            label={requiredLabel("Fecha de salida de Pre-Cría")}
-            value={formData.fechaFin}
-            onChangeText={(value) => onChange("fechaSalidaPrecria", value)}
-            labelStyle={styles.requiredLabel}
-            inputStyle={
-              hasError("fechaSalidaPrecria") ? styles.inputError : null
-            }
+            inputStyle={hasError("fechaInicio") ? styles.inputError : null}
             disabled={isViewMode}
           />
 
           <NumberInput
             label={requiredLabel("Duración en Pre-Cría (Días)")}
             value={formData.duracionDias}
-            onChangeText={(value) => onChange("duracionPrecria", value)}
+            onChangeText={(value) => onChange("duracionDias", value)}
             min={1}
-            max={45}
+            max={30}
             step={1}
             labelStyle={styles.requiredLabel}
-            style={hasError("duracionPrecria") ? styles.inputError : null}
+            style={hasError("duracionDias") ? styles.inputError : null}
             editable={!isViewMode}
           />
 
-          <Input
-            label={requiredLabel("Cantidad de inicial ingresada a Pre-Cría")}
-            placeholder="Ej: 500000"
-            keyboardType="numeric"
-            value={formData.cantidadInicialPrecria}
-            onChangeText={(value) => onChange("cantidadInicialPrecria", value)}
+          <NumberInput
+            label={requiredLabel("Cantidad inicial ingresada a Pre-Cría")}
+            value={formData.cantidadInicial}
+            onChangeText={(value) => onChange("cantidadInicial", value)}
+            min={0}
+            max={10000000}
+            step={1000}
             labelStyle={styles.requiredLabel}
-            style={
-              hasError("cantidadInicialPrecria") ? styles.inputError : null
-            }
-          />
-          <Input
-            label={requiredLabel("Cantidad sobreviviente de Pre-Cría")}
-            placeholder="Ej: 450000"
-            keyboardType="numeric"
-            value={formData.cantidadSobrevivientePrecria}
-            onChangeText={(value) =>
-              onChange("cantidadSobrevivientePrecria", value)
-            }
-            labelStyle={styles.requiredLabel}
-            style={
-              hasError("cantidadSobrevivientePrecria")
-                ? styles.inputError
-                : null
-            }
+            style={hasError("cantidadInicial") ? styles.inputError : null}
             editable={!isViewMode}
           />
 
@@ -107,25 +120,55 @@ export default function PreCriaSection({
             label={requiredLabel("PL Inicial de Pre-Cría")}
             placeholder="Seleccionar PL"
             options={plOptions}
-            value={formData.plInicialPrecria}
-            onChange={(value) => onChange("plInicialPrecria", value)}
+            value={formData.plInicial}
+            onChange={(value) => onChange("plInicial", value)}
             labelStyle={styles.requiredLabel}
-            selectStyle={
-              hasError("plInicialPrecria") ? styles.inputError : null
-            }
+            selectStyle={hasError("plInicial") ? styles.inputError : null}
             disabled={isViewMode}
           />
 
-          <Select
-            label={requiredLabel("PL Final de Pre-Cría")}
-            placeholder="Seleccionar PL"
-            options={plOptions}
-            value={formData.plFinalPrecria}
-            onChange={(value) => onChange("plFinalPrecria", value)}
-            labelStyle={styles.requiredLabel}
-            selectStyle={hasError("plFinalPrecria") ? styles.inputError : null}
-            disabled={isViewMode}
-          />
+          {/*
+            Datos de cierre del ciclo: solo tienen sentido cuando la
+            Pre-Cría ya existe y se está editando/finalizando (pantalla
+            de Detalle). Al crearla por primera vez todavía no se
+            conocen (no ha terminado el ciclo), así que ni siquiera
+            se muestran.
+          */}
+          {!isCreating && (
+            <>
+              <DateInput
+                label={requiredLabel("Fecha de salida de Pre-Cría")}
+                value={formData.fechaFin}
+                onChangeText={(value) => onChange("fechaFin", value)}
+                inputStyle={hasError("fechaFin") ? styles.inputError : null}
+                labelStyle={styles.requiredLabel}
+                disabled={isViewMode}
+              />
+
+              <NumberInput
+                label={requiredLabel("Cantidad final / sobreviviente de Pre-Cría")}
+                value={formData.cantidadFinal}
+                onChangeText={(value) => onChange("cantidadFinal", value)}
+                min={0}
+                max={10000000}
+                step={1000}
+                style={hasError("cantidadFinal") ? styles.inputError : null}
+                labelStyle={styles.requiredLabel}
+                editable={!isViewMode}
+              />
+
+              <Select
+                label={requiredLabel("PL Final de Pre-Cría")}
+                placeholder="Seleccionar PL"
+                options={plOptions}
+                value={formData.plFinal}
+                onChange={(value) => onChange("plFinal", value)}
+                selectStyle={hasError("plFinal") ? styles.inputError : null}
+                labelStyle={styles.requiredLabel}
+                disabled={isViewMode}
+              />
+            </>
+          )}
         </>
       ) : (
         <>
@@ -134,7 +177,7 @@ export default function PreCriaSection({
             value={formData.duracionPrecria}
             onChangeText={(value) => onChange("duracionPrecria", value)}
             min={1}
-            max={45}
+            max={30}
             step={1}
             labelStyle={styles.requiredLabel}
             style={hasError("duracionPrecria") ? styles.inputError : null}

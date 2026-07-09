@@ -10,7 +10,19 @@
  * - Permite modificar la densidad poblacional.
  * - Muestra la cantidad sembrada calculada.
  *
- * El cálculo matemático pertenece a las utilidades del módulo.
+ * DATOS:
+ * - Recibe formData y onChange desde la screen/hook padre.
+ * - No mantiene estado propio.
+ *
+ * VALIDACIONES:
+ * - No calcula errores propios; refleja los que le pasa el padre.
+ *
+ * DEPENDENCIAS:
+ * - Card, NumberInput (shared/components).
+ * - SectionTitle.
+ *
+ * El cálculo matemático pertenece a las utilidades del módulo
+ * (siembraCalculos.js).
  */
 import { View, Text } from "react-native";
 
@@ -46,8 +58,13 @@ export default function CalculoPoblacionSection({
     <Card>
       <SectionTitle icon={ICONS.weight} title="Cálculo de población" />
 
-      <View style={styles.calculationBox}>
-        <Text style={styles.calculationLabel}>Área del estanque</Text>
+      <View
+        style={[
+          styles.calculationBox,
+          hasError("areaHectareas") && styles.calculationBoxError,
+        ]}
+      >
+        <Text style={styles.calculationLabel}>Área del estanque *</Text>
         <Text style={styles.calculationValue}>{areaMostrada}</Text>
       </View>
 

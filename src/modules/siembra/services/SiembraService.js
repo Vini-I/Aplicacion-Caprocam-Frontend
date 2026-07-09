@@ -18,39 +18,6 @@
  */
 const siembras = [
   {
-    siembraId: 25,
-    finca: "La Reina",
-    fincaId: "laReina",
-    estanque: "A01",
-    fechaSiembra: "03/06/2026",
-    horaIngreso: "08:30",
-    diasCultivo: 2,
-    diasMaduracion: "90",
-
-    proveedorLarva: "pacifico",
-    laboratorioLarva: "pacifico_norte",
-    procedenciaLarva: "puntarenas",
-    codigoLoteLarva: "LARV-2026-001",
-    plLarva: "PL12",
-    certificadoLarva: "CERT-2026-001",
-
-    pasoPorPrecria: "si",
-    duracionPrecria: "15",
-    fechaSalidaPrecria: "20/06/2026",
-    cantidadSobrevivientePrecria: "210000",
-
-    areaHectareas: "1.87",
-    densidadPoblacional: "12",
-    cantidadSembrada: "224400",
-
-    areaEstanque: "1.87 ha",
-    densidad: "12 PL/m²",
-    tecnicaCultivo: "semi",
-    especie: "Litopenaeus vannamei",
-    produccionEstimada: "4,050 kg",
-    estado: "Activa",
-  },
-  {
     siembraId: 26,
     finca: "La Reina",
     fincaId: "laReina",
@@ -61,8 +28,8 @@ const siembras = [
     diasMaduracion: "90",
 
     proveedorLarva: "aqua",
-    laboratorioLarva: "aqualab_cr",
-    procedenciaLarva: "golfo_nicoya",
+    laboratorioLarva: "aqualabCr",
+    procedenciaLarva: "golfoNicoya",
     codigoLoteLarva: "LARV-2026-002",
     plLarva: "PL10",
     certificadoLarva: "CERT-2026-002",
@@ -84,109 +51,29 @@ const siembras = [
     estado: "Activa",
   },
   {
-    siembraId: 27,
-    finca: "La Reina",
-    fincaId: "laReina",
-    estanque: "B01",
-    fechaSiembra: "01/07/2026",
-    horaIngreso: "06:30",
-    diasCultivo: 10,
-    diasMaduracion: "90",
-
-    proveedorLarva: "maricultura",
-    laboratorioLarva: "marlarva_guanacaste",
-    procedenciaLarva: "laboratorio_nacional",
-    codigoLoteLarva: "LARV-2026-003",
-    plLarva: "PL8",
-    certificadoLarva: "CERT-2026-003",
-
-    pasoPorPrecria: "si",
-    duracionPrecria: "12",
-    fechaSalidaPrecria: "30/06/2026",
-    cantidadSobrevivientePrecria: "140000",
-
-    areaHectareas: "1.20",
-    densidadPoblacional: "12",
-    cantidadSembrada: "144000",
-
-    areaEstanque: "1.20 ha",
-    densidad: "12 PL/m²",
-    tecnicaCultivo: "semi",
-    especie: "Litopenaeus vannamei",
-    produccionEstimada: "2,600 kg",
-    estado: "Activa",
-  },
-  {
-    siembraId: 28,
-    finca: "La Reina",
-    fincaId: "laReina",
-    estanque: "B02",
-    fechaSiembra: "12/07/2026",
-    horaIngreso: "09:00",
-    diasCultivo: 5,
-    diasMaduracion: "90",
-
-    proveedorLarva: "pacifico",
-    laboratorioLarva: "pacifico_norte",
-    procedenciaLarva: "puntarenas",
-    codigoLoteLarva: "LARV-2026-004",
-    plLarva: "PL9",
-    certificadoLarva: "CERT-2026-004",
-
-    pasoPorPrecria: "no",
-    duracionPrecria: "",
-    fechaSalidaPrecria: "",
-    cantidadSobrevivientePrecria: "",
-
-    areaHectareas: "1.25",
-    densidadPoblacional: "8",
-    cantidadSembrada: "100000",
-
-    areaEstanque: "1.25 ha",
-    densidad: "8 PL/m²",
-    tecnicaCultivo: "semi",
-    especie: "Litopenaeus vannamei",
-    produccionEstimada: "2,700 kg",
-    estado: "Activa",
-  },
-    {
-    siembraId: 29,
-    tipoRegistro: "precria", 
-    finca: "La Reina",
-    fincaId: "laReina",
-    estanque: "B03",
-    fechaInicio: "01/07/2026", 
-    fechaFin: "15/07/2026",    
-    horaIngreso: "06:00",
-    diasCultivo: 7,
+    siembraId: 30,
+    tipoRegistro: "precria",
+    finca: "La Esperanza",
+    fincaId: "laEsperanza",
+    estanque: "E01",
+    fechaInicio: "05/07/2026",
+    fechaFin: "",
+    diasCultivo: 3,
     diasMaduracion: "15",
-    duracionDias: "14",        
+    duracionDias: "15",
 
-    proveedorLarva: "maricultura",
-    laboratorioLarva: "marlarva_guanacaste",
-    procedenciaLarva: "laboratorio_nacional",
-    codigoLoteLarva: "PREC-2026-001",
-    plLarva: "PL8",
-    certificadoLarva: "CERT-PREC-001",
+    proveedorLarva: "aqua",
+    laboratorioLarva: "aqualabCr",
+    procedenciaLarva: "golfoNicoya",
+    codigoLoteLarva: "PREC-2026-002",
+    certificadoLarva: "CERT-PREC-002",
 
-    cantidadInicial: "500000",
-    cantidadFinal: "460000",   
-    plInicial: "PL8",
-    plFinal: "PL12",
+    cantidadInicial: "300000",
+    cantidadFinal: "",
+    plInicial: "PL6",
+    plFinal: "",
 
-    pasoPorPrecria: "no",
-    duracionPrecria: "",
-    fechaSalidaPrecria: "",
-    cantidadSobrevivientePrecria: "",
-    areaHectareas: "2.00",
-    densidadPoblacional: "0",
-    cantidadSembrada: "0",
-    areaEstanque: "2.00 ha",
-    densidad: "0 PL/m²",
-    tecnicaCultivo: "semi",
-    especie: "Litopenaeus vannamei",
-    produccionEstimada: "0 kg",
-    estado: "Activa", 
+    estado: "Activa",
   },
 ];
 
@@ -218,6 +105,53 @@ export function obtenerSiembraPorId(siembraId) {
   );
 }
 
+function obtenerSiguienteId() {
+  const ids = siembras.map((registro) => registro.siembraId || 0);
+  const maximo = ids.length ? Math.max(...ids) : 0;
+  return maximo + 1;
+}
+
+export function crearRegistro(formData) {
+  const nuevoRegistro = {
+    ...formData,
+    siembraId: obtenerSiguienteId(),
+    diasCultivo: 0,
+    estado: formData.estado || "Activa",
+  };
+
+  siembras.push(nuevoRegistro);
+
+  return nuevoRegistro;
+}
+
+export function actualizarSiembra(siembraId, formData) {
+  const indice = siembras.findIndex(
+    (registro) => registro.siembraId === Number(siembraId),
+  );
+
+  if (indice === -1) {
+    return null;
+  }
+
+  const registroActualizado = {
+    ...siembras[indice],
+    ...formData,
+    siembraId: siembras[indice].siembraId,
+  };
+
+  siembras[indice] = registroActualizado;
+
+  return registroActualizado;
+}
+
+/**
+ * Finaliza una Pre-Cría: persiste los datos editados y fuerza
+ * el estado a "Finalizada".
+ */
+export function finalizarPreCria(siembraId, formData) {
+  return actualizarSiembra(siembraId, { ...formData, estado: "Finalizada" });
+}
+
 export function obtenerFincas() {
   return [
     { label: "Finca La Reina", value: "laReina" },
@@ -246,17 +180,17 @@ export function obtenerProveedoresLarva() {
 
 export function obtenerLaboratoriosLarva() {
   return [
-    { label: "Laboratorio Pacífico Norte", value: "pacifico_norte" },
-    { label: "AquaLab Costa Rica", value: "aqualab_cr" },
-    { label: "MarLarva Guanacaste", value: "marlarva_guanacaste" },
+    { label: "Laboratorio Pacífico Norte", value: "pacificoNorte" },
+    { label: "AquaLab Costa Rica", value: "aqualabCr" },
+    { label: "MarLarva Guanacaste", value: "marlarvaGuanacaste" },
   ];
 }
 
 export function obtenerProcedenciasLarva() {
   return [
     { label: "Puntarenas", value: "puntarenas" },
-    { label: "Golfo de Nicoya", value: "golfo_nicoya" },
-    { label: "Laboratorio nacional", value: "laboratorio_nacional" },
+    { label: "Golfo de Nicoya", value: "golfoNicoya" },
+    { label: "Laboratorio nacional", value: "laboratorioNacional" },
     { label: "Importada", value: "importada" },
   ];
 }
