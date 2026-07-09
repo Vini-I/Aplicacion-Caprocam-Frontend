@@ -63,7 +63,7 @@ export default function FincaEditarScreen({ onFinca, codigoInterno }) {
           STYLE.container,
           { paddingHorizontal: isLargeScreen ? 40 : 16 },
         ]}
-        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
         <ContentWrapper>
@@ -113,19 +113,7 @@ export default function FincaEditarScreen({ onFinca, codigoInterno }) {
                 Teléfonos
               </Text>
               <Button style={styles.addPhoneButton} onPress={agregarTelefono}>
-                {ICONS && ICONS.add ? (
-                  <Icon icon={ICONS.add} size={18} color={COLORS.black} />
-                ) : (
-                  <Text
-                    style={{
-                      fontSize: 18,
-                      color: COLORS.black,
-                      fontWeight: "bold",
-                    }}
-                  >
-                    +
-                  </Text>
-                )}
+                <Icon icon={ICONS.add} size={18} color={COLORS.black} />
               </Button>
             </View>
 
@@ -143,29 +131,9 @@ export default function FincaEditarScreen({ onFinca, codigoInterno }) {
                     }
                   />
                 </View>
-                {index > 0 && (
-                  <Button
-                    style={styles.removePhoneButton}
-                    onPress={() => eliminarTelefono(index)}
-                  >
-                    {ICONS && ICONS.delete ? (
-                      <Icon
-                        icon={ICONS.delete}
-                        size={20}
-                        color={COLORS.error}
-                      />
-                    ) : (
-                      <Text
-                        style={{
-                          fontSize: 16,
-                          color: COLORS.error,
-                          fontWeight: "bold",
-                        }}
-                      >
-                      </Text>
-                    )}
-                  </Button>
-                )}
+                <Button style={styles.removePhoneButton} onPress={() => eliminarTelefono(index)}>
+                  <Icon icon={ICONS.delete} size={20} color={COLORS.error}/>
+                </Button>
               </View>
             ))}
           </Card>
@@ -217,9 +185,7 @@ export default function FincaEditarScreen({ onFinca, codigoInterno }) {
           <View style={styles.buttonContainer}>
             <Button onPress={registrarFinca} style={styles.saveButton}>
               <View style={styles.buttonContent}>
-                {ICONS && ICONS.save ? (
-                  <Icon icon={ICONS.edit} size={24} color={COLORS.primary} />
-                ) : null}
+                <Icon icon={ICONS.edit} size={24} color={COLORS.primary} />
                 <Text style={styles.buttonText}>Editar Finca</Text>
               </View>
             </Button>

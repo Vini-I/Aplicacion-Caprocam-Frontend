@@ -124,20 +124,9 @@ export default function FincaCrecimientoScreen() {
             <Alert variant="success" message={successMessage} />
           ) : null}
 
-          <Button
-            variant="outline"
-            onPress={guardarDatos}
-            style={styles.submitButton}
-          >
+          <Button variant="outline" onPress={guardarDatos} style={styles.submitButton}>
             <View style={styles.buttonContent}>
-              {ICONS && ICONS.save ? (
-                <Icon
-                  icon={ICONS.save}
-                  size={24}
-                  color={COLORS.primary}
-                />
-              ) : null}
-
+              <Icon icon={ICONS.save} size={24} color={COLORS.primary}/>
               <Text style={styles.buttonText}>
                 Guardar
               </Text>
