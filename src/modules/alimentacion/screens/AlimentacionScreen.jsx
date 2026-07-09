@@ -82,10 +82,7 @@ export default function AlimentacionScreen({ navigation, onBack }) {
     setErrores(erroresValidacion);
 
     if (!valido) {
-      const lista = Object.values(erroresValidacion)
-        .map((e) => `• ${e}`)
-        .join("\n");
-      setAlerta({ visible: true, variant: "warning", mensaje: `Por favor complete:\n${lista}` });
+      setAlerta({ visible: true, variant: "warning", mensaje: "Por favor complete todos los campos obligatorios." });
       return;
     }
 

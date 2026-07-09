@@ -76,10 +76,7 @@ useEffect(() => {
     setErrores(erroresValidacion);
 
     if (!valido) {
-      const lista = Object.values(erroresValidacion)
-        .map((e) => `• ${e}`)
-        .join("\n");
-      setAlerta({ visible: true, variant: "warning", mensaje: `Por favor complete:\n${lista}` });
+      setAlerta({ visible: true, variant: "warning", mensaje: "Por favor complete todos los campos obligatorios." });
       return;
     }
 
@@ -106,13 +103,20 @@ useEffect(() => {
     />
 
     <View style={STYLE.container}>
+      <View style={STYLE.contentWrapper}>
+        {alerta.visible && (
+          <Alert
+            variant={alerta.variant}
+            message={alerta.mensaje}
+            style={styles.alert}
+          />
+        )}
+      </View>
+
     <ScrollView
-      style={{ flex: 1 }}
       contentContainerStyle={STYLE.contentWrapper}
       showsVerticalScrollIndicator={false}
     >
-
-
         <RaleoForm
           form={form}
           updateField={updateField}
@@ -121,14 +125,6 @@ useEffect(() => {
         />
 
         <View style={styles.contenido}>
-        {alerta.visible && (
-          <Alert
-            variant={alerta.variant}
-            message={alerta.mensaje}
-            style={styles.alert}
-          />
-        )}
-
         <Button
           variant="outline"
           onPress={handleGuardar}

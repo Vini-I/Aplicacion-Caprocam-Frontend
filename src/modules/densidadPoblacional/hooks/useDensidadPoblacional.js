@@ -113,10 +113,7 @@ export default function useDensidadPoblacional() {
     setErrores(erroresCombinados);
 
     if (!valido) {
-      const lista = Object.values(erroresCombinados)
-        .map((e) => `• ${e}`)
-        .join("\n");
-      setAlerta({ visible: true, variant: "warning", mensaje: `Por favor complete:\n${lista}` });
+      setAlerta({ visible: true, variant: "warning", mensaje: "Por favor complete todos los campos obligatorios." });
       return;
     }
 

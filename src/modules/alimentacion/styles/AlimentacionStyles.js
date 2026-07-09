@@ -27,7 +27,6 @@
 
 import { StyleSheet, Platform, StatusBar } from "react-native";
 import { COLORS } from "../../../theme/colors";
-import { STYLE } from "../../../theme/style";
 
 export const styles = StyleSheet.create({
   screen: {
@@ -38,11 +37,6 @@ export const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.surface,
-  },
-
-  content: {
-    ...STYLE.contentWrapper,
-    gap: 12,
   },
 
   secLabel: {

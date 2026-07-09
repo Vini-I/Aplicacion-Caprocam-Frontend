@@ -97,10 +97,9 @@ export default function DensidadPoblacionalScreen({ onBack }) {
     </View>
 
     <ScrollView
-      style={{ flex: 1 }}
       contentContainerStyle={STYLE.contentWrapper}
     >
-      
+
       <View style={styles.content}>
         {/* Todo tu contenido actual */}
 

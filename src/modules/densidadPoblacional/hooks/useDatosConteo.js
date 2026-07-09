@@ -26,10 +26,10 @@
  * Retorna:
  * - todos los valores anteriores junto con sus setters.
  * - validar(): retorna { valido, errores } verificando como
- *   obligatorios numeroCamarones (no vacío y numérico),
- *   tirosAtarraya (mayor a 0), areaAtarraya, promedioPorTiro,
- *   supervivencia, siembraPorM2 y areaEstanque (no vacíos), sin
- *   mostrar nada en pantalla.
+ *   obligatorios y numéricos numeroCamarones, promedioPorTiro,
+ *   supervivencia, siembraPorM2 y areaEstanque; tirosAtarraya
+ *   (mayor a 0) y areaAtarraya (no vacío), sin mostrar nada en
+ *   pantalla.
  *
  * Ejemplo:
  * const { numeroCamarones, setNumeroCamarones, validar } = useDatosConteo();
@@ -59,17 +59,17 @@ export const useDatosConteo = () => {
     if (!areaAtarraya) {
       errores.areaAtarraya = "El área de la atarraya es obligatoria";
     }
-    if (!promedioPorTiro) {
-      errores.promedioPorTiro = "El promedio por tiro es obligatorio";
+    if (!promedioPorTiro || Number.isNaN(Number(promedioPorTiro))) {
+      errores.promedioPorTiro = "El promedio por tiro es obligatorio y debe ser numérico";
     }
-    if (!supervivencia) {
-      errores.supervivencia = "La supervivencia es obligatoria";
+    if (!supervivencia || Number.isNaN(Number(supervivencia))) {
+      errores.supervivencia = "La supervivencia es obligatoria y debe ser numérica";
     }
-    if (!siembraPorM2) {
-      errores.siembraPorM2 = "La cantidad de siembra por m² es obligatoria";
+    if (!siembraPorM2 || Number.isNaN(Number(siembraPorM2))) {
+      errores.siembraPorM2 = "La cantidad de siembra por m² es obligatoria y debe ser numérica";
     }
-    if (!areaEstanque) {
-      errores.areaEstanque = "El área del estanque es obligatoria";
+    if (!areaEstanque || Number.isNaN(Number(areaEstanque))) {
+      errores.areaEstanque = "El área del estanque es obligatoria y debe ser numérica";
     }
     if (!notasConteo) {
       errores.notasConteo = "Las notas o comentarios del conteo son obligatorios";
