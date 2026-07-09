@@ -58,7 +58,7 @@
  *
  * =========================================================================
  */
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { View, Text, ScrollView } from "react-native";
 import { styles } from "../styles/SiembraListStyles";
 
@@ -72,12 +72,39 @@ import FilterButton from "../../inventarios/components/FilterButton";
 import { ICONS } from "../../../theme/icons";
 import { COLORS } from "../../../theme/colors";
 import { STYLE } from "../../../theme/style";
-import { obtenerProveedoresLarva, obtenerSiembras } from "../services/SiembraService";
-import { useRouter } from "expo-router";
+import {
+  obtenerFincas,
+  obtenerProveedoresLarva,
+  obtenerSiembras,
+  subscribeToSiembras,
+} from "../services/SiembraService";
+import { useFocusEffect, useRouter } from "expo-router";
 
 export default function SiembraListScreen() {
-  const siembras = obtenerSiembras();
+  const [siembras, setSiembras] = useState(() => obtenerSiembras());
+  const [fincaLabels, setFincaLabels] = useState({});
   const router = useRouter();
+
+  useEffect(() => {
+    const unsubscribe = subscribeToSiembras(setSiembras);
+
+    setSiembras(obtenerSiembras());
+    const fincas = obtenerFincas();
+    setFincaLabels(
+      fincas.reduce((acc, finca) => {
+        acc[finca.value] = finca.label;
+        return acc;
+      }, {}),
+    );
+
+    return () => unsubscribe();
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      setSiembras(obtenerSiembras());
+    }, []),
+  );
 
   const [busqueda, setBusqueda] = useState("");
   const [filtros, setFiltros] = useState({
@@ -150,7 +177,7 @@ export default function SiembraListScreen() {
               <Text style={styles.cardTitle}>Estanque {registro.estanque}</Text>
             </View>
             <View style={styles.cardSubtitleRow}>
-              <Text style={styles.cardSubtitle}>{registro.finca}</Text>
+              <Text style={styles.cardSubtitle}>{fincaLabels[registro.finca] || registro.finca}</Text>
             </View>
           </View>
 
@@ -261,7 +288,7 @@ export default function SiembraListScreen() {
             <Text style={styles.infoValue}>
               {esPreCria
                 ? registro.plFinal || registro.plInicial
-                : registro.plLarva || registro.plSiembra}
+                : registro.plSiembra || registro.plLarva}
             </Text>
           </View>
         </View>

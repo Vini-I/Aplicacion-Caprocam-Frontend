@@ -94,7 +94,7 @@ export default function DatosLarvaSection({
 
       {!esPreCria && (
         <Select
-          label={requiredLabel("PL de Siembra")}
+          label={requiredLabel("PL larva")}
           placeholder="Seleccionar PL"
           options={plLarva}
           value={formData.plSiembra}
