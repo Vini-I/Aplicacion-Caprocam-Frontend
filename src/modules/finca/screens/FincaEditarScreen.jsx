@@ -162,7 +162,6 @@ export default function FincaEditarScreen({ onFinca, codigoInterno }) {
                           fontWeight: "bold",
                         }}
                       >
-                        ✕
                       </Text>
                     )}
                   </Button>
@@ -219,7 +218,7 @@ export default function FincaEditarScreen({ onFinca, codigoInterno }) {
             <Button onPress={registrarFinca} style={styles.saveButton}>
               <View style={styles.buttonContent}>
                 {ICONS && ICONS.save ? (
-                  <Icon icon={ICONS.edit} size={24} color={COLORS.white} />
+                  <Icon icon={ICONS.edit} size={24} color={COLORS.primary} />
                 ) : null}
                 <Text style={styles.buttonText}>Editar Finca</Text>
               </View>

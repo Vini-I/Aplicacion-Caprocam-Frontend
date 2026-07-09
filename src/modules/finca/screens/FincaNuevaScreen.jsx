@@ -178,7 +178,7 @@ export default function FincaNuevaScreen({onFinca}) {
               {ICONS && ICONS.add ? (
                 <Icon icon={ICONS.add} size={18} color={COLORS.black} />
               ) : (
-                <Text style={styles.addPhoneFallbackText}>+</Text>
+                <Text style={styles.addPhoneFallbackText}></Text>
               )}
             </Button>
           </View>
@@ -246,7 +246,7 @@ export default function FincaNuevaScreen({onFinca}) {
           <Button onPress={registrarFinca} style={styles.saveButton}>
             <View style={styles.buttonContent}>
               {ICONS && ICONS.save ? (
-                <Icon icon={ICONS.save} size={24} color={COLORS.white} />
+                <Icon icon={ICONS.save} size={24} color={COLORS.primary} />
               ) : null}
               <Text style={styles.buttonText}>Registrar finca</Text>
             </View>

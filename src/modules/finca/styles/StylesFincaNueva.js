@@ -72,7 +72,9 @@ export const styles = StyleSheet.create({
     minHeight: 56,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: COLORS.primary,
+    borderWidth: 2,
+    borderColor: COLORS.primary,
+    backgroundColor: COLORS.white,
   },
   buttonContent: {
     flexDirection: "row",
@@ -81,7 +83,7 @@ export const styles = StyleSheet.create({
     gap: 10,
   },
   buttonText: {
-    color: COLORS.white,
+    color: COLORS.primary,
     fontWeight: "600",
     fontSize: 16,
   },
