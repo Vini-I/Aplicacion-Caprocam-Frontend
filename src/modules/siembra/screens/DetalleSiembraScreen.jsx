@@ -35,6 +35,29 @@
  * - Alert.
  * - Componentes de sección del módulo Siembra.
  *
+ * NAVEGACIÓN:
+ * - /(drawer)/siembra/nueva
+ *      Se navega hacia aquí al finalizar una Pre-Cría o al crear una
+ *      siembra a partir de una Pre-Cría, enviando los datos ya
+ *      completados como parámetros.
+ *
+ * DEPENDENCIAS PRINCIPALES:
+ *
+ * - useDetalleSiembra.
+ * - SiembraService.
+ * - InformacionGeneralSection.
+ * - DatosLarvaSection.
+ * - CalculoPoblacionSection.
+ * - PreCriaSection.
+ * - Componentes compartidos:
+ *      - Card, Badge, Button, ProgressBar, Alert, Icon, NavbarRegistro.
+ *
+ * IMPORTANTE:
+ *
+ * - No contiene reglas de negocio.
+ * - No realiza cálculos directamente.
+ * - Mantiene la separación entre presentación y lógica.
+ *
  * =========================================================================
  */
 
@@ -65,6 +88,7 @@ import PreCriaSection from "../components/PreCriaSection";
 // Tema y estilos
 
 import { ICONS } from "../../../theme/icons";
+import { COLORS } from "../../../theme/colors";
 import { styles } from "../styles/DetalleSiembraStyles";
 import { STYLE } from "../../../theme/style";
 
@@ -119,15 +143,72 @@ export default function DetalleSiembraScreen() {
 
     guardar,
 
+    finalizarPreCria,
+
+    datosCierrePreCriaCompletos,
+
     fieldHelpers,
   } = useDetalleSiembra(id);
 
-  /*
-   * Opciones de los Select.
-   *
-   * Antes estas opciones eran responsabilidad de SiembraForm.
-   * Ahora cada pantalla obtiene únicamente lo que necesita.
+  /**
+   * Construye los parámetros que se envían a "Nueva Siembra"
+   * para prellenar el formulario con los datos de la Pre-Cría
+   * que se acaba de finalizar.
    */
+  function construirParamsSiembraDesdePrecria(datosPrecria) {
+    return {
+      provieneDePrecriaId: id,
+      finca: datosPrecria.fincaId || datosPrecria.finca || "",
+      estanque: datosPrecria.estanque || "",
+      cantidadFinal:
+        datosPrecria.cantidadFinal ||
+        datosPrecria.cantidadSobrevivientePrecria ||
+        "",
+      cantidadSobrevivientePrecria:
+        datosPrecria.cantidadSobrevivientePrecria ||
+        datosPrecria.cantidadFinal ||
+        "",
+      duracionDias:
+        datosPrecria.duracionDias || datosPrecria.duracionPrecria || "",
+      duracionPrecria:
+        datosPrecria.duracionPrecria || datosPrecria.duracionDias || "",
+      fechaFin: datosPrecria.fechaFin || datosPrecria.fechaSalidaPrecria || "",
+      fechaSalidaPrecria:
+        datosPrecria.fechaSalidaPrecria || datosPrecria.fechaFin || "",
+      proveedorLarva: datosPrecria.proveedorLarva || "",
+      laboratorioLarva:
+        datosPrecria.laboratorioLarva || datosPrecria.laboratoriosLarva || "",
+      procedenciaLarva: datosPrecria.procedenciaLarva || "",
+      codigoLoteLarva: datosPrecria.codigoLoteLarva || "",
+      certificadoLarva: datosPrecria.certificadoLarva || "",
+      plLarva:
+        datosPrecria.plLarva ||
+        datosPrecria.plFinal ||
+        datosPrecria.plInicial ||
+        "",
+    };
+  }
+
+  function handleFinalizarPreCria() {
+    const registroFinalizado = finalizarPreCria();
+
+    if (!registroFinalizado) {
+
+      return;
+    }
+
+    router.push({
+      pathname: "/(drawer)/siembra/nueva",
+      params: construirParamsSiembraDesdePrecria(registroFinalizado),
+    });
+  }
+
+  function handleCrearSiembraDesdePrecria() {
+    router.push({
+      pathname: "/(drawer)/siembra/nueva",
+      params: construirParamsSiembraDesdePrecria(formData),
+    });
+  }
 
   const fincas = obtenerFincas();
 
@@ -143,18 +224,18 @@ export default function DetalleSiembraScreen() {
 
   if (!siembra || !formData) {
     return (
-      <View style={STYLE.container}>
+      <>
         <NavbarRegistro
           Titulo="Detalle de Siembra"
           Subtitulo="Cargando información..."
           Icono="shrimp"
         />
-      </View>
+      </>
     );
   }
 
   return (
-    <View style={STYLE.container}>
+    <>
       <NavbarRegistro
         Titulo={
           formData.tipoRegistro === "precria"
@@ -165,25 +246,17 @@ export default function DetalleSiembraScreen() {
         Icono="shrimp"
       />
       <ScrollView
+        style={STYLE.container}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
         <View style={STYLE.contentWrapper}>
-          {mensaje !== "" && (
-            <Alert
-              message={mensaje}
-              variant={mensajeVariant}
-              style={styles.alert}
-            />
-          )}
-
           {/* Resumen del ciclo de siembra */}
           <Card>
             <View style={styles.resumenHeader}>
               <View style={styles.iconContainer}>
                 <Icon
                   icon={ICONS.shrimp}
-                  size={28}
                   style={styles.summaryIcon}
                 />
               </View>
@@ -202,33 +275,39 @@ export default function DetalleSiembraScreen() {
               </View>
             </View>
 
-            <Text style={styles.subtitle}>Avance del ciclo</Text>
+            <View style={styles.subtitleRow}>
+              <Icon icon={ICONS.growth} color={COLORS.textTertiary} />
+              <Text style={styles.subtitle}>Avance del ciclo</Text>
+            </View>
 
             <ProgressBar progress={progreso} />
 
-            <Text style={styles.subtitle}>Estado de Etapa</Text>
+            <View style={styles.subtitleRow}>
+              <Icon icon={ICONS.clipboard} color={COLORS.textTertiary} />
+              <Text style={styles.subtitle}>Estado de Etapa</Text>
+            </View>
 
             <View style={styles.etapas}>
-              <Badge
-                label="Siembra"
-                variant={etapa >= 1 ? "success" : undefined}
-                style={styles.badgeEtapa}
-                textStyle={styles.badgeText}
-              />
-
-              <Badge
-                label="Maduración"
-                variant={etapa >= 2 ? "warning" : undefined}
-                style={styles.badgeEtapa}
-                textStyle={styles.badgeText}
-              />
-
-              <Badge
-                label="Cosecha"
-                variant={etapa >= 3 ? "success" : undefined}
-                style={styles.badgeEtapa}
-                textStyle={styles.badgeText}
-              />
+              {(formData.tipoRegistro === "precria"
+                ? [
+                    { label: "Siembra", variant: "success" },
+                    { label: "Desarrollo", variant: "warning" },
+                    { label: "Finalización", variant: "success" },
+                  ]
+                : [
+                    { label: "Siembra", variant: "success" },
+                    { label: "Maduración", variant: "warning" },
+                    { label: "Cosecha", variant: "success" },
+                  ]
+              ).map((etapaInfo, index) => (
+                <Badge
+                  key={etapaInfo.label}
+                  label={etapaInfo.label}
+                  variant={etapa >= index + 1 ? etapaInfo.variant : undefined}
+                  style={styles.badgeEtapa}
+                  textStyle={styles.badgeText}
+                />
+              ))}
             </View>
           </Card>
 
@@ -237,6 +316,10 @@ export default function DetalleSiembraScreen() {
               <PreCriaSection
                 formData={formData}
                 onChange={handleChange}
+                onChangeFinca={handleChangeFinca}
+                onChangeEstanque={handleChangeEstanque}
+                fincas={fincas}
+                estanques={estanques}
                 mode={isEditing ? "edit" : "view"}
                 fieldHelpers={fieldHelpers}
                 isAutonomous={true}
@@ -269,8 +352,7 @@ export default function DetalleSiembraScreen() {
                 fieldHelpers={fieldHelpers}
               />
 
-              {/* Datos de Pre-Cría */}
-              {formData.pasoPorPrecria === "si" && (
+              {formData.pasoPorPrecria === "si" && formData.precriaId && (
                 <PreCriaSection
                   formData={formData}
                   onChange={handleChange}
@@ -303,72 +385,80 @@ export default function DetalleSiembraScreen() {
             </>
           )}
 
+          {mensaje !== "" && (
+            <Alert
+              message={mensaje}
+              variant={mensajeVariant}
+              style={[
+                styles.alert,
+                mensajeVariant === "success" && styles.alertSuccess,
+              ]}
+              textStyle={{ textAlign: "center" }}
+            />
+          )}
+
           {!isEditing ? (
             <View style={styles.actions}>
-              {/* 🚀 EL BOTÓN DE TRANSICIÓN SE MUESTRA ÚNICAMENTE EN MODO LECTURA */}
-              {formData.tipoRegistro === "precria" && (
-                <Button
-                  style={styles.button}
-                  onPress={() => {
-                    router.push({
-                      pathname: "/(drawer)/siembra/nueva",
-                      params: {
-                        provieneDePrecriaId: id,
-                        finca: formData.fincaId || formData.finca || "",
-                        estanque: formData.estanque || "",
-                        cantidadFinal:
-                          formData.cantidadFinal ||
-                          formData.cantidadSobrevivientePrecria ||
-                          "",
-                        duracionDias:
-                          formData.duracionDias ||
-                          formData.duracionPrecria ||
-                          "",
-                        fechaFin:
-                          formData.fechaFin ||
-                          formData.fechaSalidaPrecria ||
-                          "",
-                        proveedorLarva: formData.proveedorLarva || "",
-                        laboratorioLarva:
-                          formData.laboratorioLarva ||
-                          formData.laboratoriosLarva ||
-                          "",
-                        procedenciaLarva: formData.procedenciaLarva || "",
-                        codigoLoteLarva: formData.codigoLoteLarva || "",
-                        certificadoLarva: formData.certificadoLarva || "",
-                        plLarva:
-                          formData.plLarva ||
-                          formData.plFinal ||
-                          formData.plInicial ||
-                          "",
-                      },
-                    });
-                  }}
-                  textStyle={styles.textoBoton}
-                  variant="outline"
-                >
-                  Finalizar y Crear Siembra
-                </Button>
-              )}
+              {/*
+                Si la Pre-Cría ya fue finalizada previamente, se ofrece
+                un acceso directo para registrar la Siembra sin tener
+                que volver a entrar en modo edición.
+              */}
+              {formData.tipoRegistro === "precria" &&
+                formData.estado === "Finalizada" && (
+                  <Button
+                    style={styles.button}
+                    onPress={handleCrearSiembraDesdePrecria}
+                    textStyle={styles.textoBoton}
+                    variant="outline"
+                  >
+                    <View style={styles.buttonContent}>
+                      <Icon icon={ICONS.add} color={COLORS.primary} />
+                      <Text style={styles.textoBoton}>Registrar Siembra</Text>
+                    </View>
+                  </Button>
+                )}
 
               <Button
+                style={styles.button}
                 onPress={iniciarEdicion}
                 textStyle={styles.textoBoton}
                 variant="outline"
               >
-                Editar
+                <View style={styles.buttonContent}>
+                  <Icon icon={ICONS.edit} color={COLORS.primary} />
+                  <Text style={styles.textoBoton}>Editar</Text>
+                </View>
               </Button>
+
+              {formData.tipoRegistro === "precria" &&
+                formData.estado !== "Finalizada" && (
+                  <Button
+                    style={styles.button}
+                    onPress={handleFinalizarPreCria}
+                    textStyle={styles.textoBoton}
+                    variant="outline"
+                  >
+                    <View style={styles.buttonContent}>
+                      <Icon icon={ICONS.check} color={COLORS.primary} />
+                      <Text style={styles.textoBoton}>Finalizar Pre-Cría</Text>
+                    </View>
+                  </Button>
+                )}
             </View>
           ) : (
             <View style={styles.actions}>
-              {/* EN MODO EDICIÓN SÓLO QUEDAN ACCIONES DE PERSISTENCIA */}
+              {/* EN MODO EDICIÓN QUEDAN LAS ACCIONES DE PERSISTENCIA */}
               <Button
                 style={styles.button}
                 onPress={guardar}
                 textStyle={styles.textoBoton}
                 variant="outline"
               >
-                Guardar
+                <View style={styles.buttonContent}>
+                  <Icon icon={ICONS.save} color={COLORS.primary} />
+                  <Text style={styles.textoBoton}>Guardar</Text>
+                </View>
               </Button>
 
               <Button
@@ -377,12 +467,15 @@ export default function DetalleSiembraScreen() {
                 onPress={cancelarEdicion}
                 textStyle={styles.textoBoton}
               >
-                Cancelar
+                <View style={styles.buttonContent}>
+                  <Icon icon={ICONS.close} color={COLORS.primary} />
+                  <Text style={styles.textoBoton}>Cancelar</Text>
+                </View>
               </Button>
             </View>
           )}
         </View>
       </ScrollView>
-    </View>
+    </>
   );
 }

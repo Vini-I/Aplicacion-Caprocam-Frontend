@@ -12,6 +12,10 @@
  * - Obtiene estanques disponibles.
  * - Calcula automáticamente la cantidad sembrada.
  * - Valida campos obligatorios antes de guardar.
+ * - Expone "mensaje"/"mensajeVariant" para el Alert global del estándar
+ *   (ya no se usa un Modal): la screen lo muestra centrado y arriba del
+ *   botón de guardar. Usa "danger" (no "error") como variant porque es
+ *   el nombre que reconoce shared/components/Alert.jsx.
  *
  * La pantalla únicamente consume este hook para renderizar
  * la interfaz y ejecutar acciones.
@@ -21,53 +25,26 @@ import { useState, useEffect } from "react";
 import { useRouter, useLocalSearchParams } from "expo-router";
 
 import {
-  useSiembraFieldValidation,
+  useFieldValidation,
   validarCamposObligatorios,
-} from "./useSiembraFieldValidation";
+} from "./useFieldValidation";
+
+import { obtenerCamposObligatorios as obtenerCamposObligatoriosPorTipo } from "./siembraValidationRules";
 
 import { calcularCantidadSembrada } from "./siembraCalculos";
+
+import { obtenerFechaHoy } from "./dateUtils";
 
 import {
   obtenerEstanquePorCodigo,
   obtenerEstanquesPorFinca,
+  crearRegistro,
 } from "../services/SiembraService";
-
-const CAMPOS_SIEMBRA_OBLIGATORIOS = [
-  "tipoRegistro",
-  "fechaSiembra",
-  "finca",
-  "estanque",
-  "tecnicaCultivo",
-  "diasMaduracion",
-  "proveedorLarva",
-  "laboratorioLarva",
-  "procedenciaLarva",
-  "codigoLoteLarva",
-  "plSiembra",
-  "certificadoLarva",
-  "areaHectareas",
-  "densidadPoblacional",
-  "cantidadSembrada",
-];
-
-const CAMPOS_PRECRIA_INDEPENDIENTE_OBLIGATORIOS = [
-  "tipoRegistro",
-  "finca",
-  "estanque",
-  "fechaInicio",
-  "duracionDias",
-  "cantidadInicial",
-  "plInicial",
-  "proveedorLarva",
-  "laboratorioLarva",
-  "procedenciaLarva",
-  "codigoLoteLarva",
-  "certificadoLarva",
-];
 
 const initialFormData = {
   tipoRegistro: "siembra",
   pasoPorPrecria: "no",
+  precriaId: "",
 
   finca: "",
   estanque: "",
@@ -92,7 +69,7 @@ const initialFormData = {
   plFinal: "",
 
   proveedorLarva: "",
-  laboratoriosLarva: "",
+  laboratorioLarva: "",
   procedenciaLarva: "",
   certificadoLarva: "",
 
@@ -103,42 +80,63 @@ const initialFormData = {
 
 export default function useNuevaSiembra() {
   const router = useRouter();
-  const [modalVisible, setModalVisible] = useState(false);
+
+  const [mensaje, setMensaje] = useState("");
+  const [mensajeVariant, setMensajeVariant] = useState("info");
 
   const [formData, setFormData] = useState(initialFormData);
   const params = useLocalSearchParams();
 
   useEffect(() => {
-    if (params.provieneDePrecriaId) {
-      const estanqueInfo = obtenerEstanquePorCodigo(params.finca, params.estanque);
-      const area = estanqueInfo?.areaHectareas ?? "";
-      const densidadDefault = "8";
-      const cantidadCalculada = calcularCantidadSembrada(area, densidadDefault);
-      setFormData((prev) => ({
-        ...prev,
-        tipoRegistro: "siembra",
-        pasoPorPrecria: "si",
-        finca: params.finca || "",
-        estanque: params.estanque || "",
-        cantidadSobrevivientePrecria: params.cantidadFinal || "",
-        duracionPrecria: params.duracionDias || "",
-        fechaSalidaPrecria: params.fechaFin || "",
-
-        areaHectareas: area,
-        densidadPoblacional: densidadDefault,
-        cantidadSembrada: cantidadCalculada,
-
-        proveedorLarva: params.proveedorLarva || "",
-        laboratorioLarva: params.laboratorioLarva || "", 
-        laboratoriosLarva: params.laboratorioLarva || "", 
-        procedenciaLarva: params.procedenciaLarva || "",
-        codigoLoteLarva: params.codigoLoteLarva || "",
-        certificadoLarva: params.certificadoLarva || "",
-        plSiembra: params.plLarva || "",
-      }));
+    if (!params.provieneDePrecriaId) {
+      return;
     }
-     
-  }, [params]);
+
+    const estanqueInfo = obtenerEstanquePorCodigo(params.finca, params.estanque);
+    const area = estanqueInfo?.areaHectareas ?? "";
+    const densidadDefault = "8";
+    const cantidadCalculada = calcularCantidadSembrada(area, densidadDefault);
+
+    setFormData((prev) => ({
+      ...prev,
+      tipoRegistro: "siembra",
+      pasoPorPrecria: "si",
+      precriaId: params.provieneDePrecriaId,
+      finca: params.finca || "",
+      estanque: params.estanque || "",
+      cantidadSobrevivientePrecria:
+        params.cantidadSobrevivientePrecria || params.cantidadFinal || "",
+      duracionPrecria: params.duracionPrecria || params.duracionDias || "",
+      fechaSalidaPrecria:
+        params.fechaSalidaPrecria || params.fechaFin || "",
+
+      areaHectareas: area,
+      densidadPoblacional: densidadDefault,
+      cantidadSembrada: cantidadCalculada,
+
+      proveedorLarva: params.proveedorLarva || "",
+      laboratorioLarva: params.laboratorioLarva || "",
+      procedenciaLarva: params.procedenciaLarva || "",
+      codigoLoteLarva: params.codigoLoteLarva || "",
+      certificadoLarva: params.certificadoLarva || "",
+      plSiembra: params.plLarva || "",
+    }));
+
+  }, [params.provieneDePrecriaId]);
+
+  useEffect(() => {
+    const formatted = obtenerFechaHoy();
+
+    setFormData((prev) => ({
+      ...prev,
+
+      fechaSiembra: prev.fechaSiembra || formatted,
+
+      fechaInicio: prev.fechaInicio || formatted,
+      fechaSalidaPrecria: prev.fechaSalidaPrecria || formatted,
+    }));
+
+  }, []);
 
   const {
     submitted,
@@ -147,13 +145,7 @@ export default function useNuevaSiembra() {
     setErrors,
     hasError,
     requiredLabel,
-  } = useSiembraFieldValidation();
-
-  /**
-   * ==========================================
-   * Cambios genéricos
-   * ==========================================
-   */
+  } = useFieldValidation();
 
   function handleChange(field, value) {
     setFormData((previousData) => {
@@ -176,12 +168,6 @@ export default function useNuevaSiembra() {
     });
   }
 
-  /**
-   * ==========================================
-   * Cambio de finca
-   * ==========================================
-   */
-
   function handleChangeFinca(value) {
     setFormData((previousData) => ({
       ...previousData,
@@ -195,12 +181,6 @@ export default function useNuevaSiembra() {
       cantidadSembrada: "",
     }));
   }
-
-  /**
-   * ==========================================
-   * Cambio de estanque
-   * ==========================================
-   */
 
   function handleChangeEstanque(value) {
     const estanque = obtenerEstanquePorCodigo(formData.finca, value);
@@ -224,33 +204,14 @@ export default function useNuevaSiembra() {
     });
   }
 
-  /**
-   * ==========================================
-   * Estanques disponibles
-   * ==========================================
-   */
-
   const estanques = obtenerEstanquesPorFinca(formData.finca);
 
-  /**
-   * ==========================================
-   * Campos obligatorios
-   * ==========================================
-   */
-
   function obtenerCamposObligatorios() {
-    if (formData.tipoRegistro === "precria") {
-      return CAMPOS_PRECRIA_INDEPENDIENTE_OBLIGATORIOS;
+
+    if (!formData.tipoRegistro) {
+      return ["tipoRegistro"];
     }
-    let campos = [...CAMPOS_SIEMBRA_OBLIGATORIOS];
-    if (formData.pasoPorPrecria === "si") {
-      campos.push(
-        "duracionPrecria",
-        "fechaSalidaPrecria",
-        "cantidadSobrevivientePrecria",
-      );
-    }
-    return campos;
+    return ["tipoRegistro", ...obtenerCamposObligatoriosPorTipo(formData)];
   }
 
   /**
@@ -267,14 +228,22 @@ export default function useNuevaSiembra() {
     setErrors(nuevosErrores);
 
     if (Object.keys(nuevosErrores).length > 0) {
-      setModalVisible(true);
+      const tipo = formData.tipoRegistro === "precria" ? "Pre-Cría" : "Siembra";
+      setMensaje(`Debe completar todos los campos obligatorios para registrar esta ${tipo}.`);
+      setMensajeVariant("danger");
       return;
     }
 
-    console.log("Siembra registrada:", formData);
+    crearRegistro(formData);
+
+    setMensaje(
+      formData.tipoRegistro === "precria"
+        ? "Pre-Cría registrada correctamente."
+        : "Siembra registrada correctamente.",
+    );
+    setMensajeVariant("success");
+
     setSubmitted(false);
-    setFormData(initialFormData);
-    router.back();
   }
 
   return {
@@ -282,9 +251,9 @@ export default function useNuevaSiembra() {
 
     estanques,
 
-    modalVisible,
+    mensaje,
 
-    setModalVisible,
+    mensajeVariant,
 
     handleChange,
 

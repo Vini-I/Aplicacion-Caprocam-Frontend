@@ -9,6 +9,13 @@
  * FUNCIONALIDAD:
  * - Muestra icono y título.
  * - Mantiene un formato visual consistente.
+ *
+ * DATOS:
+ * - Recibe icon y title como props. No mantiene estado propio.
+ *
+ * DEPENDENCIAS:
+ * - Icon (shared/components).
+ * - COLORS (theme).
  */
 import { View, Text } from "react-native";
 

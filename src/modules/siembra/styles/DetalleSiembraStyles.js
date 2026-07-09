@@ -19,7 +19,12 @@ import { TYPOGRAPHY } from "../../../theme/typography";
 
 export const styles = StyleSheet.create({
   alert: {
+    width: "100%",
     marginBottom: 16,
+  },
+  alertSuccess: {
+    backgroundColor: COLORS.successLight,
+    borderColor: COLORS.success,
   },
   resumenHeader: {
     flexDirection: "row",
@@ -55,6 +60,11 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: TYPOGRAPHY.fontFamily.medium,
     color: COLORS.textTertiary,
+  },
+  subtitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
     marginTop: 4,
     marginBottom: 16,
   },
@@ -83,6 +93,12 @@ export const styles = StyleSheet.create({
   },
   button: {
     flex: 1,
+  },
+  buttonContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
   },
   textoBoton: {
     fontFamily: TYPOGRAPHY.fontFamily.medium,

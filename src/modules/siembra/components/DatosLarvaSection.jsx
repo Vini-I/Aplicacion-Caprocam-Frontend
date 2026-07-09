@@ -10,6 +10,18 @@
  * - Muestra proveedor, laboratorio, procedencia y lote.
  * - Permite edición según el modo recibido.
  * - Utiliza validaciones visuales del formulario.
+ *
+ * DATOS:
+ * - Recibe formData, onChange y los catálogos (proveedoresLarva, etc.)
+ *   desde la screen/hook padre.
+ * - No mantiene estado propio.
+ *
+ * VALIDACIONES:
+ * - No calcula errores propios; refleja los que le pasa el padre.
+ *
+ * DEPENDENCIAS:
+ * - Card, Input, Select (shared/components).
+ * - SectionTitle.
  */
 import Card from "../../../shared/components/Card";
 import Input from "../../../shared/components/Input";
@@ -80,16 +92,18 @@ export default function DatosLarvaSection({
         editable={!isViewMode}
       />
 
-      <Select
-        label={requiredLabel("PL de Siembra")}
-        placeholder="Seleccionar PL"
-        options={plLarva}
-        value={formData.plSiembra}
-        onChange={(value) => onChange("plSiembra", value)}
-        labelStyle={styles.requiredLabel}
-        selectStyle={hasError("plSiembra") ? styles.inputError : null}
-        disabled={isViewMode}
-      />
+      {!esPreCria && (
+        <Select
+          label={requiredLabel("PL de Siembra")}
+          placeholder="Seleccionar PL"
+          options={plLarva}
+          value={formData.plSiembra}
+          onChange={(value) => onChange("plSiembra", value)}
+          labelStyle={styles.requiredLabel}
+          selectStyle={hasError("plSiembra") ? styles.inputError : null}
+          disabled={isViewMode}
+        />
+      )}
 
       <Input
         label={requiredLabel("Certificado de larva")}

@@ -10,6 +10,18 @@
  * - Permite editar campos según el modo recibido.
  * - Utiliza validaciones visuales del formulario.
  *
+ * DATOS:
+ * - Recibe formData y onChange desde la screen/hook padre.
+ * - No mantiene estado propio ni persiste información.
+ *
+ * VALIDACIONES:
+ * - No calcula errores; solo pinta requiredLabel/hasError según
+ *   los valores que le pasa el formulario padre.
+ *
+ * DEPENDENCIAS:
+ * - Card, Input, NumberInput, Select, DateInput (shared/components).
+ * - SectionTitle.
+ *
  * La lógica de negocio permanece en el hook correspondiente.
  */
 import Card from "../../../shared/components/Card";

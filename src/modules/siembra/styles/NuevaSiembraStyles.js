@@ -9,7 +9,8 @@
  * Incluye:
  * - Contenedor del formulario.
  * - Botón de creación.
- * - Mensajes del modal de validación.
+ * - Alert de validación/confirmación (centrado, arriba del botón guardar).
+ 
  *
  * Mantiene la identidad visual mediante estilos globales.
  */
@@ -24,26 +25,39 @@ export const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   fieldContainer: {
-  marginBottom: 14,
-},
+    marginBottom: 14,
+  },
+  requiredLabel: {
+    color: COLORS.textSecondary,
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
+  },
+  inputError: {
+    borderWidth: 1.5,
+    borderColor: COLORS.error,
+    borderRadius: 8,
+  },
   createButton: {
+    width: "100%",
     height: 56,
     borderRadius: 14,
     marginTop: 24,
     marginBottom: 20,
   },
+  createButtonContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
+  },
   createButtonText: {
     fontFamily: TYPOGRAPHY.fontFamily.medium,
   },
-  modalTitle: {
-    color: COLORS.textSecondary,
-    fontSize: 18,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    marginBottom: 8,
+  alert: {
+    width: "100%",
+    marginBottom: 16,
   },
-  modalMessage: {
-    color: COLORS.textTertiary,
-    fontSize: 14,
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
+  alertSuccess: {
+    backgroundColor: COLORS.successLight,
+    borderColor: COLORS.success,
   },
 });

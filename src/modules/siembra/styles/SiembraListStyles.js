@@ -24,8 +24,8 @@ export const styles = StyleSheet.create({
     paddingBottom: 24,
   },
   contentHeader: {
-    paddingTop: 22,
-    paddingBottom: 14,
+    paddingTop: 18,
+    paddingBottom: 8,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -38,15 +38,19 @@ export const styles = StyleSheet.create({
     flex: 1,
   },
   newButton: {
-    borderRadius: 16,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    width: "100%",
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
     marginTop: 0,
+    alignSelf: "stretch",
   },
   newButtonText: {
     color: COLORS.primary,
     fontSize: 14,
     fontFamily: TYPOGRAPHY.fontFamily.bold,
+    textAlign: "center",
+    flexShrink: 0,
   },
   newButtonContent: {
     flexDirection: "row",
@@ -54,10 +58,50 @@ export const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 8,
   },
+  newButtonCompact: {
+    minHeight: 36,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+  },
+  barraBusqueda: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 8,
+    marginBottom: 12,
+    width: "100%",
+  },
+  searchBarContainer: {
+    flex: 1,
+    minHeight: 44,
+  },
+  filterColumn: {
+    width: 160,
+    flexDirection: "column",
+    alignItems: "stretch",
+    justifyContent: "flex-start",
+    marginTop: 0,
+    gap: 8,
+  },
+  filterButton: {
+    alignSelf: "stretch",
+    minHeight: 44,
+    marginTop: 0,
+  },
+  buttonRow: {
+    width: "100%",
+    alignItems: "flex-end",
+    marginBottom: 12,
+  },
+  contadorResultados: {
+    marginBottom: 12,
+    color: COLORS.textTertiary,
+    fontSize: 13,
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
+  },
   card: {
     marginBottom: 14,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: COLORS.secondary,
     backgroundColor: COLORS.surface,
   },
   cardHeader: {
@@ -67,16 +111,36 @@ export const styles = StyleSheet.create({
     gap: 12,
     marginBottom: 12,
   },
+  cardTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
   cardTitle: {
     color: COLORS.textPrimary,
     fontSize: 18,
     fontFamily: TYPOGRAPHY.fontFamily.bold,
   },
-  cardSubtitle: {
+  cardSubtitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
     marginTop: 2,
+  },
+  cardSubtitle: {
     color: COLORS.textTertiary,
     fontSize: 14,
     fontFamily: TYPOGRAPHY.fontFamily.regular,
+  },
+  infoRowLabel: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  cardBadges: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
   },
   statusBadge: {
     backgroundColor: COLORS.successLight,

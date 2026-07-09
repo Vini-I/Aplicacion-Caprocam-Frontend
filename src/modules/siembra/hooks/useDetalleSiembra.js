@@ -19,39 +19,27 @@
 import { useCallback, useEffect, useState } from "react";
 
 import {
-  useSiembraFieldValidation,
+  useFieldValidation,
   validarCamposObligatorios,
-} from "./useSiembraFieldValidation";
+} from "./useFieldValidation";
+
+import { obtenerCamposObligatorios as obtenerCamposObligatoriosPorTipo } from "./siembraValidationRules";
 
 import { calcularCantidadSembrada } from "./siembraCalculos";
+
+import { obtenerFechaHoy } from "./dateUtils";
 
 import {
   obtenerSiembraPorId,
   obtenerEstanquePorCodigo,
   obtenerEstanquesPorFinca,
+  actualizarSiembra,
+  finalizarPreCria as finalizarPreCriaEnServicio,
 } from "../services/SiembraService";
 
-const CAMPOS_BASE_OBLIGATORIOS = [
-  "fechaSiembra",
-  "horaIngreso",
-  "finca",
-  "estanque",
-  "tecnicaCultivo",
-  "diasMaduracion",
-  "proveedorLarva",
-  "laboratorioLarva",
-  "procedenciaLarva",
-  "codigoLoteLarva",
-  "plLarva",
-  "certificadoLarva",
-  "areaHectareas",
-  "densidadPoblacional",
-  "cantidadSembrada",
-];
-
-function calcularEtapa(diaActual) {
-  if (diaActual > 60) return 3;
-  if (diaActual > 30) return 2;
+function calcularEtapa(progreso) {
+  if (progreso >= 66) return 3;
+  if (progreso >= 33) return 2;
 
   return 1;
 }
@@ -72,7 +60,7 @@ export default function useDetalleSiembra(id) {
     setErrors,
     hasError,
     requiredLabel,
-  } = useSiembraFieldValidation();
+  } = useFieldValidation();
 
   useEffect(() => {
     const siembraEncontrada = obtenerSiembraPorId(id);
@@ -81,11 +69,23 @@ export default function useDetalleSiembra(id) {
     setFormData(siembraEncontrada ?? null);
   }, [id]);
 
-  /**
-   * ==========================================
-   * Cambios genéricos
-   * ==========================================
-   */
+  useEffect(() => {
+    if (!isEditing || !formData || formData.tipoRegistro !== "precria") {
+      return;
+    }
+
+    if (formData.fechaFin && formData.fechaFin.trim() !== "") {
+      return;
+    }
+
+    const formattedToday = obtenerFechaHoy();
+
+    setFormData((prev) => ({
+      ...prev,
+      fechaFin: formattedToday,
+    }));
+  }, [formData, isEditing]);
+
 
   const handleChange = useCallback((field, value) => {
     setFormData((previousData) => {
@@ -104,15 +104,39 @@ export default function useDetalleSiembra(id) {
         );
       }
 
+      if (submitted) {
+
+        const camposAValidar = Object.keys(errors).length
+          ? Array.from(
+              new Set([
+                ...Object.keys(errors),
+                ...obtenerCamposObligatoriosPorTipo(updatedData),
+              ]),
+            )
+          : obtenerCamposObligatoriosPorTipo(updatedData);
+
+        const erroresActualizados = validarCamposObligatorios(
+          updatedData,
+          camposAValidar,
+        );
+
+        setErrors((prev) => {
+          const filtrados = {};
+
+          Object.keys(prev).forEach((k) => {
+            if (erroresActualizados[k]) {
+              filtrados[k] = erroresActualizados[k];
+            }
+          });
+
+          return filtrados;
+        });
+      }
+
       return updatedData;
     });
-  }, []);
+  }, [submitted, setErrors]);
 
-  /**
-   * ==========================================
-   * Cambio de finca
-   * ==========================================
-   */
 
   const handleChangeFinca = useCallback((value) => {
     setFormData((previousData) => ({
@@ -128,11 +152,6 @@ export default function useDetalleSiembra(id) {
     }));
   }, []);
 
-  /**
-   * ==========================================
-   * Cambio de estanque
-   * ==========================================
-   */
 
   const handleChangeEstanque = useCallback(
     (value) => {
@@ -159,49 +178,36 @@ export default function useDetalleSiembra(id) {
     [formData],
   );
 
-  /**
-   * ==========================================
-   * Estanques disponibles
-   * ==========================================
-   */
-
   const estanques = formData
     ? obtenerEstanquesPorFinca(formData.finca)
     : [];
 
-  /**
-   * ==========================================
-   * Campos obligatorios
-   * ==========================================
-   */
-
-  const obtenerCamposObligatorios = useCallback(() => {
-    if (!formData) {
-      return CAMPOS_BASE_OBLIGATORIOS;
-    }
-
-    const campos = [...CAMPOS_BASE_OBLIGATORIOS];
-
-    if (formData.pasoPorPrecria === "si") {
-      campos.push(
-        "duracionPrecria",
-        "fechaSalidaPrecria",
-      );
-    }
-
-    return campos;
-  }, [formData]);
-
-  /**
-   * ==========================================
-   * Acciones
-   * ==========================================
-   */
+  const obtenerCamposObligatorios = useCallback(
+    (opciones) => obtenerCamposObligatoriosPorTipo(formData, opciones),
+    [formData],
+  );
 
   const iniciarEdicion = useCallback(() => {
     setIsEditing(true);
     setMensaje("");
-  }, []);
+
+    setFormData((prev) => {
+      if (!prev) return prev;
+
+      const formattedToday = obtenerFechaHoy();
+
+      return {
+        ...prev,
+        fechaSiembra: prev.fechaSiembra || formattedToday,
+        fechaInicio: prev.fechaInicio || formattedToday,
+        fechaFin: prev.fechaFin || formattedToday,
+        fechaSalidaPrecria: prev.fechaSalidaPrecria || formattedToday,
+      };
+    });
+
+    setSubmitted(false);
+    setErrors({});
+  }, [setSubmitted, setErrors]);
 
   const cancelarEdicion = useCallback(() => {
     setFormData(siembra);
@@ -215,8 +221,47 @@ export default function useDetalleSiembra(id) {
     setMensaje("");
   }, [siembra, setSubmitted, setErrors]);
 
+  const huboCambios = useCallback(() => {
+    if (!siembra || !formData) return false;
+
+    try {
+      const fechaCampos = [
+        "fechaSiembra",
+        "fechaInicio",
+        "fechaFin",
+        "fechaSalidaPrecria",
+      ];
+
+      const siembraNorm = { ...siembra };
+      const formNorm = { ...formData };
+
+      try {
+        const hoy = obtenerFechaHoy();
+
+        fechaCampos.forEach((f) => {
+          if ((siembraNorm[f] === undefined || siembraNorm[f] === "" || siembraNorm[f] === null) && formNorm[f] === hoy) {
+            formNorm[f] = siembraNorm[f];
+          }
+        });
+      } catch (e) {
+
+      }
+
+      return JSON.stringify(siembraNorm) !== JSON.stringify(formNorm);
+    } catch (e) {
+      return true;
+    }
+  }, [siembra, formData]);
+
   const guardar = useCallback(() => {
     setSubmitted(true);
+
+    if (!huboCambios()) {
+      setErrors({});
+      setMensaje("No hay cambios para guardar.");
+      setMensajeVariant("danger");
+      return;
+    }
 
     const nuevosErrores = validarCamposObligatorios(
       formData,
@@ -226,41 +271,141 @@ export default function useDetalleSiembra(id) {
     setErrors(nuevosErrores);
 
     if (Object.keys(nuevosErrores).length > 0) {
-      setMensaje("Debe completar todos los campos obligatorios.");
-      setMensajeVariant("error");
+      setMensaje(
+        "Revisa los campos obligatorios marcados con * antes de guardar.",
+      );
+      setMensajeVariant("danger");
       return;
     }
 
-    console.log("Siembra actualizada:", formData);
+    const registroActualizado = actualizarSiembra(id, formData);
 
-    setSiembra(formData);
+    setSiembra(registroActualizado);
+    setFormData(registroActualizado);
 
     setIsEditing(false);
+    setSubmitted(false);
+    setErrors({});
 
-    setMensaje("Siembra actualizada correctamente.");
+    setMensaje(
+      formData && formData.tipoRegistro === "siembra"
+        ? "Proveedor actualizado correctamente."
+        : "Registro actualizado correctamente.",
+    );
 
     setMensajeVariant("success");
   }, [
     formData,
+    id,
+    obtenerCamposObligatorios,
+    setSubmitted,
+    setErrors,
+    huboCambios,
+  ]);
+
+  /**
+   * ==========================================
+   * Finalizar Pre-Cría
+   * ==========================================
+   *
+   * Valida los campos de cierre del ciclo (fecha de salida,
+   * cantidad final y PL final), guarda esos cambios y marca
+   * la Pre-Cría como "Finalizada".
+   *
+   * Devuelve el registro actualizado si todo salió bien, o
+   * `null` si faltan campos obligatorios (en cuyo caso la
+   * pantalla no debe navegar a crear la siembra).
+   */
+  const finalizarPreCria = useCallback(() => {
+    setSubmitted(true);
+
+    const camposCierre = ["fechaFin", "cantidadFinal", "plFinal"];
+
+    const nuevosErrores = validarCamposObligatorios(
+      formData,
+      camposCierre,
+    );
+
+    setErrors(nuevosErrores);
+
+    if (Object.keys(nuevosErrores).length > 0) {
+      setIsEditing(true);
+
+      setMensaje(
+        "Debes llenar los tres datos finales de Pre-Cría para poder finalizar.",
+      );
+      setMensajeVariant("danger");
+      return null;
+    }
+
+    const registroFinalizado = finalizarPreCriaEnServicio(id, formData);
+
+    setSiembra(registroFinalizado);
+    setFormData(registroFinalizado);
+
+    setIsEditing(false);
+
+    setSubmitted(false);
+    setErrors({});
+
+    setMensaje("Pre-Cría finalizada correctamente.");
+    setMensajeVariant("success");
+
+    return registroFinalizado;
+  }, [
+    formData,
+    id,
     obtenerCamposObligatorios,
     setSubmitted,
     setErrors,
   ]);
 
   const totalDias = formData
-  ? Number(formData.diasMaduracion) || 0
-  : 0;
+    ? Number(
+        formData.tipoRegistro === "precria"
+          ? formData.duracionDias
+          : formData.diasMaduracion,
+      ) || 0
+    : 0;
 
 const diaActual = formData
   ? Number(formData.diasCultivo) || 0
   : 0;
 
-  const etapa = calcularEtapa(diaActual);
-
  const progreso =
   totalDias > 0
     ? Math.round((diaActual / totalDias) * 100)
     : 0;
+
+  const etapa = calcularEtapa(progreso);
+
+  /**
+   * ==========================================
+   * Datos de cierre de Pre-Cría completos
+   * ==========================================
+   *
+   * El botón "Finalizar Pre-Cría" solo debe poder presionarse
+   * cuando los tres datos de cierre del ciclo ya fueron
+   * ingresados Y GUARDADOS previamente (fecha de salida, PL
+   * final/tamaño y cantidad final/sobreviviente). Por eso se
+   * valida contra "siembra" (el último registro persistido) y
+   * no contra "formData" (que puede tener cambios sin guardar).
+   *
+   * Se usa una comprobación explícita de "vacío" (no un simple
+   * Boolean) porque "cantidadFinal" puede legítimamente ser 0
+   * (ej. mortalidad total en el ciclo) y Boolean(0) daría false,
+   * dejando el botón deshabilitado aunque el dato sí esté guardado.
+   */
+  const tieneValor = (valor) =>
+    valor !== undefined && valor !== null && valor !== "";
+
+  const datosCierrePreCriaCompletos = Boolean(
+    siembra &&
+      siembra.tipoRegistro === "precria" &&
+      tieneValor(siembra.fechaFin) &&
+      tieneValor(siembra.plFinal) &&
+      tieneValor(siembra.cantidadFinal),
+  );
 
   return {
     siembra,
@@ -294,6 +439,10 @@ const diaActual = formData
     cancelarEdicion,
 
     guardar,
+
+    finalizarPreCria,
+
+    datosCierrePreCriaCompletos,
 
     fieldHelpers: {
       hasError,

@@ -53,7 +53,9 @@ export const styles = StyleSheet.create({
     fontFamily: TYPOGRAPHY.fontFamily.bold,
   },
   inputError: {
+    borderWidth: 1.5,
     borderColor: COLORS.error,
+    borderRadius: 8,
   },
   calculationBoxError: {
     borderWidth: 1,
