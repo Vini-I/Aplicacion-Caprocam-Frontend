@@ -34,6 +34,7 @@ import Title from '../../../shared/components/Title';
 import Footer from '../../../shared/components/Footer';
 import Icon from '../../../shared/components/Icons';
 import RangeCard from '../components/RangeCard';
+import NavbarRegistro from '../../../shared/components/NavbarRegistro';
 import { COLORS } from '../../../theme/colors';
 import { ICONS } from '../../../theme/icons';
 import useFisicoQuimica from '../hooks/useFisicoQuimica';
@@ -117,27 +118,17 @@ export default function FisicoQuimicaScreen({ onBack }) {
 
   return (
     <View style={styles.screen}>
-      <StatusBar barStyle="light-content" backgroundColor={COLORS.primary} />
-
-      <View style={styles.header}>
-        <Button onPress={() => router.back()} style={styles.backBtn}>
-          <Icon icon={ICONS.exit} size={20} color={COLORS.white} />
-          <Text size={14} color={COLORS.white}>Módulos</Text>
-        </Button>
-
-        <View style={styles.headerTitle}>
-          <Icon icon={ICONS.chemicalContainer} size={20} color={COLORS.white} />
-          <Title level={4} color={COLORS.white} style={styles.headerTitleText}>
-            Físico-Química
-          </Title>
-        </View>
-      </View>
-
+      <NavbarRegistro
+          Titulo="Físico-Química"
+          Subtitulo="Registro de mediciones"
+          Icono="chemicalContainer"
+        />
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        
         <Card style={styles.formCard}>
           <View style={styles.cardHeader}>
             <Icon icon={ICONS.chemicalContainer} color={COLORS.primary} size={22} />

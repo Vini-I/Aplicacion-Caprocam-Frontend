@@ -20,6 +20,7 @@ import NumberInput from "../../../shared/components/NumberInput";
 import Select from "../../../shared/components/Select";
 import CustomText from "../../../shared/components/Text";
 import Title from "../../../shared/components/Title";
+import NavbarRegistro from "../../../shared/components/NavbarRegistro";
 
 import { styles } from "../styles/EstanqueStyle";
 import {
@@ -439,51 +440,13 @@ export default function EditarEstanqueScreen({ navigation }) {
   }
 
   return (
+    <>
+    <NavbarRegistro
+      Titulo="Editar Estanque"
+      Subtitulo={`${estanqueBase.finca} ${estanqueBase.codigo}`}
+      Icono="edit"
+    />
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <View style={headerStyle}>
-        <Button
-          variant="outline"
-          onPress={cancelar}
-          style={styles.cancelButton}
-        >
-          <View style={styles.inlineButtonContent}>
-            <Icon icon={ICONS.exit} size={18} color={COLORS.white} />
-
-            <CustomText
-              size={16}
-              color={COLORS.white}
-              style={styles.cancelText}
-            >
-              Cancelar
-            </CustomText>
-          </View>
-        </Button>
-
-        <View style={styles.headerRow}>
-          <View style={styles.headerIcon}>
-            <Icon icon={ICONS.edit} size={28} color={COLORS.white} />
-          </View>
-
-          <View style={styles.headerTextBox}>
-            <Title
-              level={3}
-              color={COLORS.white}
-              fuente={TYPOGRAPHY.fontFamily.bold}
-            >
-              Editar Estanque
-            </Title>
-
-            <CustomText
-              size={14}
-              color={COLORS.white}
-              style={styles.headerSubtitle}
-            >
-              {estanqueBase.finca} - {estanqueBase.codigo}
-            </CustomText>
-          </View>
-        </View>
-      </View>
-
       <View style={contentStyle}>
         {mensaje !== "" && (
           <Alert
@@ -767,6 +730,7 @@ export default function EditarEstanqueScreen({ navigation }) {
         </View>
       </View>
     </ScrollView>
+    </>
   );
 }
 

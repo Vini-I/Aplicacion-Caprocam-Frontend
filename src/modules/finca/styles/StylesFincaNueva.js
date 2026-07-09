@@ -2,19 +2,10 @@ import { StyleSheet } from "react-native";
 import { COLORS } from "../../../theme/colors";
 
 export const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: COLORS.surface,
-        paddingTop: 10,
-    },
+    
     content: {
         padding: 12,
         paddingBottom: 28,
-    },
-    contentWrapper: {
-        width: "100%",
-        maxWidth: 900,
-        alignSelf: "center",
     },
     sectionTitle: {
         fontWeight: "700",

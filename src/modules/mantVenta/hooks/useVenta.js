@@ -3,7 +3,7 @@ import { useWindowDimensions } from "react-native";
 
 import { colaboradoresService } from "../../colaboradores/services/colaboradoresService.js";
 import { fincas } from "../../finca/screens/FincaData.js";
-import { estanques } from "../../mantCrecimiento/screens/EstanqueData.js";
+import { estanques } from "../../mantCrecimiento/services/EstanqueData.js";
 import { compradores as compradoresData } from "../services/CompradorData.js";
 
 export const COMPRADOR_MANUAL = "comprador-manual";

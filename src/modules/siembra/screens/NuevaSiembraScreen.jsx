@@ -25,6 +25,7 @@ import Navbar from "../../../shared/components/Navbar";
 import Button from "../../../shared/components/Button";
 import Modal from "../../../shared/components/Modal";
 import Icon from "../../../shared/components/Icons";
+import NavbarRegistro from "../../../shared/components/NavbarRegistro";
 import { ICONS } from "../../../theme/icons";
 import SiembraForm from "../components/SiembraForm";
 import useNuevaSiembra from "../hooks/useNuevaSiembra";
@@ -46,19 +47,10 @@ export default function NuevaSiembraScreen() {
 
   return (
     <View style={styles.container}>
-      <Navbar
-        title="Nueva Siembra"
-        leftContent={
-          <Button
-            variant="outline"
-            onPress={handleCerrar}
-            style={styles.backButton}
-          >
-            <Icon icon={ICONS.back} size={22} style={styles.iconColor} />
-          </Button>
-        }
-        style={styles.header}
-        titleStyle={styles.title}
+      <NavbarRegistro
+        Titulo="Nueva Siembra"
+        Subtitulo="Registrar siembra"
+        Icono="add"
       />
 
       <ScrollView

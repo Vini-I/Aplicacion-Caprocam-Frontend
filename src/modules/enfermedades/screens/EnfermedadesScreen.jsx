@@ -31,6 +31,7 @@ import NumberInput from "../../../shared/components/NumberInput";
 import Select from "../../../shared/components/Select";
 import CustomText from "../../../shared/components/Text";
 import Title from "../../../shared/components/Title";
+import NavbarRegistro from "../../../shared/components/NavbarRegistro";
 
 import { FINCAS, ESTANQUES } from "../../registro/screens/RegistroData";
 
@@ -306,51 +307,13 @@ export default function EnfermedadesScreen({ onBack, navigation }) {
   }
 
   return (
+    <>
+    <NavbarRegistro
+        Titulo="Enfermedades"
+        Subtitulo="Registro sanitario"
+        Icono="shieldAlert"
+      />
     <ScrollView style={styles.screen} showsVerticalScrollIndicator={false}>
-      <View style={headerStyle}>
-        <Button variant="outline" onPress={volver} style={styles.cancelButton}>
-          <View style={styles.inlineButtonContent}>
-            <Icon icon={ICONS.exit} size={18} color={COLORS.white} />
-
-            <CustomText
-              size={16}
-              color={COLORS.white}
-              style={styles.cancelText}
-            >
-              Volver
-            </CustomText>
-          </View>
-        </Button>
-
-        <View style={styles.headerRow}>
-          <View style={styles.headerIcon}>
-            <Icon
-              icon={ICONS.chemicalContainer}
-              size={26}
-              color={COLORS.primary}
-            />
-          </View>
-
-          <View style={styles.headerTextBox}>
-            <Title
-              level={3}
-              color={COLORS.white}
-              fuente={TYPOGRAPHY.fontFamily.bold}
-            >
-              Enfermedades
-            </Title>
-
-            <CustomText
-              size={14}
-              color={COLORS.white}
-              style={styles.headerSubtitle}
-            >
-              Registro sanitario por finca y estanque
-            </CustomText>
-          </View>
-        </View>
-      </View>
-
       <View style={contentStyle}>
         {mensaje !== "" && (
           <Alert
@@ -509,6 +472,7 @@ export default function EnfermedadesScreen({ onBack, navigation }) {
         </Card>
       </View>
     </ScrollView>
+    </>
   );
 }
 

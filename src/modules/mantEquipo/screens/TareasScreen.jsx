@@ -1,24 +1,26 @@
 /**
+ * ============================================================
  * PANTALLA: TareasScreen
- * Ruta: src/modules/mantEquipo/screens/TareasScreen.jsx
+ * ============================================================
  *
  * Vista principal del módulo de gestión de tareas.
  * Permite listar, buscar, crear, editar y eliminar tareas de mantenimiento.
  *
  * Dependencias:
  * - useTareas hook para manejar datos y operaciones CRUD
+ * - SearchBar compartido desde inventarios
+ * - Layout global STYLE
  * - Componentes compartidos de la aplicación
+ *
+ * Ejemplo:
+ * <TareasScreen />
  */
 
+// ============================================================
+// IMPORTS
+// ============================================================
 import React, { useState } from "react";
-import {
-  View,
-  FlatList,
-  TextInput,
-  Pressable,
-  Text,
-  ScrollView,
-} from "react-native";
+import { View, FlatList, TextInput, Pressable, Text, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
 
 import Navbar from "../../../shared/components/Navbar";
@@ -31,9 +33,11 @@ import Spinner from "../../../shared/components/Spinner";
 import EmptyState from "../../../shared/components/EmptyState";
 import Icon from "../../../shared/components/Icons";
 import CustomText from "../../../shared/components/Text";
+import SearchBar from "../../inventarios/components/SearchBar";
 
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
+import { STYLE } from "../../../theme/style";
 
 import { useTareas } from "../hooks/useTareas";
 import {
@@ -66,7 +70,6 @@ function ModalTarea({
   const [duracion, setDuracion] = useState("");
   const [errores, setErrores] = useState({});
 
-  // Cuando el modal se abre con una tarea para editar, cargar sus datos.
   React.useEffect(() => {
     if (visible && modoEdicion && tareaEditando) {
       setNombre(tareaEditando.nombre || "");
@@ -75,7 +78,6 @@ function ModalTarea({
       setDuracion(String(tareaEditando.duracionEstimada || ""));
       setErrores({});
     } else if (visible && !modoEdicion) {
-      // Limpiar formulario en modo creación.
       setNombre("");
       setDescripcion("");
       setCategoria("");
@@ -116,7 +118,6 @@ function ModalTarea({
       <CustomText style={styles.modalTitle}>
         {modoEdicion ? T.tituloEditar : T.tituloCrear}
       </CustomText>
-
       <ScrollView style={styles.modalScroll} keyboardShouldPersistTaps="handled">
         <Input
           label={T.labelNombre}
@@ -125,7 +126,6 @@ function ModalTarea({
           placeholder={T.placeholderNombre}
           style={errores.nombre && { borderColor: COLORS.error }}
         />
-
         <Input
           label={T.labelDescripcion}
           value={descripcion}
@@ -134,7 +134,6 @@ function ModalTarea({
           multiline
           style={[errores.descripcion && { borderColor: COLORS.error }, { minHeight: 80 }]}
         />
-
         <Select
           label={T.labelCategoria}
           options={OPCIONES_CATEGORIA}
@@ -143,7 +142,6 @@ function ModalTarea({
           placeholder="Seleccionar categoría"
           selectStyle={errores.categoria && { borderColor: COLORS.error }}
         />
-
         <Input
           label={T.labelDuracion}
           value={duracion}
@@ -153,12 +151,11 @@ function ModalTarea({
           style={errores.duracion && { borderColor: COLORS.error }}
         />
       </ScrollView>
-
       <View style={styles.modalFooter}>
         <Button variant="outline" onPress={onClose} style={styles.btnCancel}>
           {T.btnCancelar}
         </Button>
-        <Button onPress={handleGuardar} style={styles.btnAccept}>
+        <Button variant="outline" onPress={handleGuardar} style={styles.btnAccept}>
           {T.btnGuardar}
         </Button>
       </View>
@@ -199,7 +196,8 @@ function FilaTarea({ tarea, onEditar, onEliminar }) {
         <Button
           variant="outline"
           onPress={() => onEditar(tarea)}
-          style={styles.btnAccion}
+          style={[styles.btnAccion, { borderColor: COLORS.primary }]}
+          textStyle={{ color: COLORS.primary }}
         >
           <Icon icon={ICONS.edit} size={16} color={COLORS.primary} />
         </Button>
@@ -207,6 +205,7 @@ function FilaTarea({ tarea, onEditar, onEliminar }) {
           variant="outline"
           onPress={() => onEliminar(tarea.id)}
           style={[styles.btnAccion, { borderColor: COLORS.error }]}
+          textStyle={{ color: COLORS.error }}
         >
           <Icon icon={ICONS.delete} size={16} color={COLORS.error} />
         </Button>
@@ -261,13 +260,12 @@ export default function TareasScreen() {
       }
       setModalVisible(false);
     } catch (err) {
-      // El error ya se maneja en el hook, pero mostramos alerta opcional.
+      // El error ya se maneja en el hook.
     }
   };
 
   // Eliminar con confirmación simple.
   const handleEliminar = (id) => {
-    // Podríamos agregar un modal de confirmación, pero por simplicidad usamos confirm nativo.
     if (window.confirm("¿Está seguro de eliminar esta tarea?")) {
       eliminarTarea(id);
     }
@@ -280,7 +278,7 @@ export default function TareasScreen() {
 
   if (loading && tareasFiltradas.length === 0) {
     return (
-      <View style={[styles.screen, { justifyContent: "center", alignItems: "center" }]}>
+      <View style={[STYLE.container, { justifyContent: "center", alignItems: "center" }]}>
         <Spinner />
       </View>
     );
@@ -288,58 +286,56 @@ export default function TareasScreen() {
 
   if (error) {
     return (
-      <View style={[styles.screen, { justifyContent: "center", alignItems: "center" }]}>
+      <View style={[STYLE.container, { justifyContent: "center", alignItems: "center" }]}>
         <CustomText style={{ color: COLORS.error }}>Error: {error}</CustomText>
       </View>
     );
   }
 
   return (
-    <View style={styles.screen}>
-      <Navbar
-        title={TEXTOS_PANTALLA.titulo}
-        style={styles.navbar}
-        titleStyle={styles.navbarTitle}
-        leftContent={
-          <Button
-            variant="ghost"
-            onPress={handleBack}
-            style={styles.backButton}
-          >
-            <Icon icon={ICONS.exit} size={22} color={COLORS.white} />
-          </Button>
-        }
-      />
+    <View style={STYLE.container}>
+      <View style={STYLE.contentWrapper}>
+        {/* Navbar personalizado con título y subtítulo */}
 
-      <View style={styles.content}>
+
         {/* Toolbar: búsqueda y botón agregar */}
         <View style={styles.toolbar}>
-          <View style={styles.searchBox}>
-            <Text style={{ color: COLORS.textTertiary, fontSize: 14 }}>🔍</Text>
-            <TextInput
-              style={styles.searchInput}
-              value={busqueda}
-              onChangeText={setBusqueda}
-              placeholder={TEXTOS_PANTALLA.placeholderBuscar}
-              placeholderTextColor={COLORS.textQuaternary}
-            />
-          </View>
-          <Pressable style={styles.btnAdd} onPress={handleAgregar}>
-            <Text style={styles.btnLabel}>{TEXTOS_PANTALLA.btnAgregarTarea}</Text>
-          </Pressable>
+          <SearchBar
+            value={busqueda}
+            onChangeText={setBusqueda}
+            placeholder={TEXTOS_PANTALLA.placeholderBuscar}
+            containerStyle={{ flex: 1 }}
+          />
+<Button
+  onPress={handleAgregar}
+  variant="primary"
+  style={styles.btnAdd}
+>
+  <View style={styles.addButtonContent}>
+    <Icon icon={ICONS.add} size={16} color={COLORS.white} />
+    <CustomText style={styles.btnLabel}>
+      {TEXTOS_PANTALLA.btnAgregarTarea}
+    </CustomText>
+  </View>
+</Button>
         </View>
 
         {/* Tabla de tareas */}
         <View style={styles.tableWrapper}>
           {/* Encabezado */}
           <View style={styles.tableHeader}>
-            {[styles.colId, styles.colNombre, styles.colDesc, styles.colCategoria, styles.colDuracion, styles.colAcciones].map(
-              (col, i) => (
-                <View key={i} style={col}>
-                  <Text style={styles.headerCell}>{HEADERS_TABLA[i]}</Text>
-                </View>
-              )
-            )}
+            {[
+              styles.colId,
+              styles.colNombre,
+              styles.colDesc,
+              styles.colCategoria,
+              styles.colDuracion,
+              styles.colAcciones,
+            ].map((col, i) => (
+              <View key={i} style={col}>
+                <Text style={styles.headerCell}>{HEADERS_TABLA[i]}</Text>
+              </View>
+            ))}
           </View>
 
           {/* Filas */}
@@ -363,16 +359,16 @@ export default function TareasScreen() {
             }
           />
         </View>
-      </View>
 
-      {/* Modal de creación/edición */}
-      <ModalTarea
-        visible={modalVisible}
-        onClose={() => setModalVisible(false)}
-        modoEdicion={modoEdicion}
-        tareaEditando={tareaEditando}
-        onGuardar={handleGuardarTarea}
-      />
+        {/* Modal de creación/edición */}
+        <ModalTarea
+          visible={modalVisible}
+          onClose={() => setModalVisible(false)}
+          modoEdicion={modoEdicion}
+          tareaEditando={tareaEditando}
+          onGuardar={handleGuardarTarea}
+        />
+      </View>
     </View>
   );
 }

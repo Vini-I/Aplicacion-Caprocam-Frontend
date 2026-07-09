@@ -5,6 +5,7 @@ import Card from "../../../shared/components/Card.jsx";
 import Input from "../../../shared/components/Input.jsx";
 import Text from "../../../shared/components/Text.jsx";
 import Icon from "../../../shared/components/Icons.jsx";
+import NavbarRegistro from "../../../shared/components/NavbarRegistro.jsx";
 
 import CustomAlert from "../../../shared/components/Alert.jsx"; 
 
@@ -33,6 +34,12 @@ export default function FincaEditarScreen() {
   } = useFincaEditar();
 
   return (
+    <>
+    <NavbarRegistro
+      Titulo="Editar Finca"
+      Subtitulo="Finca: Finca La Reina"
+      Icono="edit"
+    />
     <ScrollView
       style={[styles.container, { paddingHorizontal: isLargeScreen ? 40 : 16 }]}
       contentContainerStyle={styles.content}
@@ -175,5 +182,6 @@ export default function FincaEditarScreen() {
         </View>
       </ContentWrapper>
     </ScrollView>
+    </>
   );
 }

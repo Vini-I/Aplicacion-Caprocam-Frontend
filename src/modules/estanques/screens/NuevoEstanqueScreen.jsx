@@ -21,6 +21,7 @@ import NumberInput from "../../../shared/components/NumberInput";
 import Select from "../../../shared/components/Select";
 import CustomText from "../../../shared/components/Text";
 import Title from "../../../shared/components/Title";
+import NavbarRegistro from "../../../shared/components/NavbarRegistro";
 
 import { styles } from "../styles/EstanqueStyle";
 import {
@@ -321,51 +322,13 @@ export default function NuevoEstanqueScreen({ navigation }) {
   }
 
   return (
+    <>
+    <NavbarRegistro
+        Titulo="Nuevo Estanque"
+        Subtitulo="Finca: Finca La Reina"
+        Icono="water"
+      />
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <View style={styles.header}>
-        <Button
-          variant="outline"
-          onPress={cancelar}
-          style={styles.cancelButton}
-        >
-          <View style={styles.inlineButtonContent}>
-            <Icon icon={ICONS.exit} size={18} color={COLORS.white} />
-
-            <CustomText
-              size={16}
-              color={COLORS.white}
-              style={styles.cancelText}
-            >
-              Cancelar
-            </CustomText>
-          </View>
-        </Button>
-
-        <View style={styles.headerRow}>
-          <View style={styles.headerIcon}>
-            <Icon icon={ICONS.water} size={30} color={COLORS.white} />
-          </View>
-
-          <View style={styles.headerTextBox}>
-            <Title
-              level={3}
-              color={COLORS.white}
-              fuente={TYPOGRAPHY.fontFamily.bold}
-            >
-              Nuevo Estanque
-            </Title>
-
-            <CustomText
-              size={14}
-              color={COLORS.white}
-              style={styles.headerSubtitle}
-            >
-              Finca: Finca La Reina
-            </CustomText>
-          </View>
-        </View>
-      </View>
-
       <View style={styles.content}>
         {mensaje !== "" && (
           <Alert
@@ -601,6 +564,7 @@ export default function NuevoEstanqueScreen({ navigation }) {
         </Button>
       </View>
     </ScrollView>
+    </>
   );
 }
 

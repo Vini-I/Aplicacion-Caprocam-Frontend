@@ -1,68 +1,59 @@
-import { Dimensions, StyleSheet } from "react-native";
+/**
+ * ============================================================
+ * ESTILOS DEL MÓDULO DE CRECIMIENTO
+ * ============================================================
+ *
+ * Define la apariencia visual de la pantalla de registro de peso
+ * y crecimiento para mantener un layout consistente dentro del módulo.
+ */
+
+import { StyleSheet } from "react-native";
 import { COLORS } from "../../../theme/colors.js";
 
-const { width } = Dimensions.get("window");
-const isLargeScreen = width > 700;
-
 export const styles = StyleSheet.create({
-  container: {
+  screenContainer: {
     flex: 1,
-    padding: 16,
     backgroundColor: COLORS.white,
+    position: "relative",
   },
-
-contentWrapper: {
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
+  contentScroll: {
+    flexGrow: 1,
+    paddingBottom: 24,
   },
-
-  cardContent: {
-    flexDirection: "row",
-    alignSelf: "flex-start",
-  },
-
   cardTitle: {
     fontSize: 14,
     fontWeight: "700",
     color: COLORS.textSecondary,
   },
-
   headerRow: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 10,
   },
-
   headerIcon: {
     marginRight: 8,
   },
-
   inputRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     marginTop: 14,
   },
-
   inputColumn: {
     flexDirection: "column",
     marginTop: 14,
   },
-
   inputWrapper: {
     flex: 1,
   },
-
   inputItem: {
-    height: 80,
+    minHeight: 90,
     flex: 1,
     marginBottom: 12,
   },
-
   sameInput: {
-    height: 50,
+    minHeight: 50,
+    justifyContent: "center",
   },
-
   badgeRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -70,12 +61,17 @@ contentWrapper: {
     marginTop: 12,
     marginBottom: 14,
   },
-
   badgeItem: {
     marginRight: 8,
     marginBottom: 6,
   },
-
+  badgeContainer: {
+    backgroundColor: COLORS.secondary,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+  },
   buttonRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -83,7 +79,6 @@ contentWrapper: {
     gap: 12,
     marginTop: 16,
   },
-
   resultCard: {
     marginTop: 18,
     padding: 14,
@@ -92,12 +87,11 @@ contentWrapper: {
     borderWidth: 1,
     borderColor: COLORS.success,
   },
-
   errorText: {
     color: COLORS.error,
-    marginTop: 12,
+    marginTop: 6,
+    fontSize: 12,
   },
-
   iconContainer: {
     width: 45,
     height: 45,
@@ -107,13 +101,11 @@ contentWrapper: {
     justifyContent: "center",
     alignItems: "center",
   },
-
   detalles: {
     flexDirection: "row",
     gap: 12,
     marginTop: 8,
   },
-
   detalle: {
     color: COLORS.secondary,
     backgroundColor: COLORS.primary,
@@ -121,18 +113,15 @@ contentWrapper: {
     paddingVertical: 5,
     borderRadius: 12,
   },
-
   IconoDetalle: {
     justifyContent: "center",
     alignItems: "flex-end",
     paddingLeft: 12,
   },
-
   iconoDetalleText: {
     fontSize: 22,
     color: "#6c757d",
   },
-
   addButton: {
     maxWidth: 700,
     borderWidth: 2,
@@ -142,5 +131,17 @@ contentWrapper: {
     borderRadius: 12,
     paddingVertical: 18,
     flexDirection: "row",
+  },
+  submitButton: {
+    marginTop: 12,
+  },
+  feedbackAlert: {
+    marginTop: 12,
+  },
+  errorSelect: {
+    borderColor: COLORS.error,
+  },
+  errorInput: {
+    borderColor: COLORS.error,
   },
 });
