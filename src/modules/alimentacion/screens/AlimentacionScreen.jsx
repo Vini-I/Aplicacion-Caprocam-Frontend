@@ -123,17 +123,17 @@ export default function AlimentacionScreen({ navigation, onBack }) {
             style={styles.alert}
           />
         )}
-
-        <GestionAlimentacion
-          alimentaciones={alimentaciones}
-          form={form}
-          updateField={updateField}
-          submitted={submitted}
-          errores={errores}
-          handleGuardar={handleGuardar}
-          onBack={onBack}
-        />
       </View>
+
+      <GestionAlimentacion
+        alimentaciones={alimentaciones}
+        form={form}
+        updateField={updateField}
+        submitted={submitted}
+        errores={errores}
+        handleGuardar={handleGuardar}
+        onBack={onBack}
+      />
     </View>
   </>
   );
