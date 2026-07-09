@@ -12,8 +12,13 @@ export default function Finca() {
     router.push("/finca/nueva");
   };
 
-  const handleEditarFinca = () => {
-    router.push("/finca/editarFinca")
+  const handleEditarFinca = (codigoInterno) => {
+    router.push({
+        pathname:"/finca/editarFinca",
+        params:{
+            codigoInterno
+        }
+    });
   }
 
   return (

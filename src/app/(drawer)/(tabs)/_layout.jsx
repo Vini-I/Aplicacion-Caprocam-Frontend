@@ -15,7 +15,7 @@ export default function TabsLayout() {
         name="inicio"
         options={{
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="home" color={color} size={size} />
+            <Icon icon={ICONS.dashboard} color={color} size={20} />
           ),
           tabBarLabel: "Inicio",
           title: "Home",
@@ -26,7 +26,7 @@ export default function TabsLayout() {
         name="finca"
         options={{
           tabBarIcon: ({ color, size }) => (
-            <Icon icon={ICONS.location} size={15} color={COLORS.textTertiary} />
+            <Icon icon={ICONS.location} size={17} color={color} />
           ),
           tabBarActiveTintColor: "teal",
           tabBarLabel: "Finca",
@@ -38,7 +38,7 @@ export default function TabsLayout() {
         name="registros"
         options={{
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="file-document" color={color} size={size} />
+            <Icon icon={ICONS.document} color={color} size={20} />
           ),
           tabBarActiveTintColor: "teal",
           tabBarLabel: "Registros",
@@ -50,7 +50,7 @@ export default function TabsLayout() {
         name="reportes"
         options={{
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="chart-bar" color={color} size={size} />
+            <Icon icon={ICONS.report} color={color} size={18} />
           ),
           tabBarActiveTintColor: "teal",
           tabBarLabel: "Reportes",
@@ -62,19 +62,14 @@ export default function TabsLayout() {
         name="siembra"
         options={{
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons
-              name="sprout"
-              color={color}
-              size={size}
+            <Icon icon={ICONS.shrimp} color={color} size={20}
             />
           ),
           tabBarLabel: "Siembra",
           title: "Siembra",
         }}
       />   
-            <Tabs.Screen name="colaboradores" options={{ drawerItemStyle: { display: "none" } }} />
-            
-      
+      <Tabs.Screen name="colaboradores" options={{ drawerItemStyle: { display: "none" } }} />
     </Tabs>
 
   );

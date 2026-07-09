@@ -1,6 +1,50 @@
+/**
+ * ============================================================
+ * SCREEN: InventarioScreen
+ * ============================================================
+ *
+ * Responsabilidad:
+ * Pantalla principal del módulo de Inventarios. Muestra el listado de
+ * productos con búsqueda, filtros y alerta de stock bajo, y permite
+ * navegar al detalle de un producto o a la creación de uno nuevo.
+ *
+ * Datos:
+ * Consume useInventario(), que a su vez lee del InventarioService.
+ * Cada producto muestra: nombre, código, categoría, cantidad, unidad,
+ * stock mínimo, proveedor, precio por unidad y fecha de caducidad
+ * (dd/mm/aaaa, dato real que llega por la llave foránea con
+ * Productos).
+ *
+ * Validaciones:
+ * No aplica formularios en esta pantalla. El único estado visual
+ * condicional es el resaltado de stock bajo (cantidad < stockMinimo).
+ *
+ * Navegación:
+ * onDetail(id): navega al detalle de un producto.
+ * onNew(): navega a la creación de un nuevo producto (el producto
+ * creado se antepone al listado, ver InventarioService.addProducto).
+ * onBack: se recibe como prop por consistencia con la navegación del
+ * módulo; el botón de regreso lo resuelve el header global, no esta
+ * pantalla.
+ *
+ * Dependencias:
+ * shared/components (Card, Badge, Button, Text, Title, EmptyState,
+ * Icons), components/SearchBar.jsx, components/FilterButton.jsx,
+ * hooks/useInventario.js, theme (colors, icons, style).
+ *
+ * Notas de diseño:
+ * La tarjeta de producto conserva el ícono de caja junto al nombre y
+ * el ícono de gráfico en "Ver detalle"; el resto de la tarjeta
+ * (badges, filas de detalle) es solo texto, sin íconos.
+ * El badge de "Stock bajo" no lleva ícono, solo texto.
+ * Los íconos de la pantalla (caja, gráfico, notificación de stock
+ * bajo y "Agregar producto") usan el tamaño por defecto del
+ * componente Icon, sin overrides de size.
+ *
+ */
+
 import { View, FlatList } from "react-native";
 
-import Navbar from "../../../shared/components/Navbar";
 import Card from "../../../shared/components/Card";
 import Badge from "../../../shared/components/Badge";
 import Button from "../../../shared/components/Button";
@@ -13,6 +57,7 @@ import FilterButton from "../components/FilterButton";
 
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
+import { STYLE } from "../../../theme/style";
 import { styles } from "../styles/InventarioStyles";
 
 import { useInventario } from "../hooks/useInventario";
@@ -41,13 +86,15 @@ function TarjetaProducto({ producto, onVerDetalle }) {
 
   return (
     <Card style={[styles.tarjeta, tieneStockBajo && styles.tarjetaStockBajo]}>
-      <Title level={5} style={styles.nombreProducto}>
-        {producto.nombre}
-      </Title>
+      <View style={styles.filaTituloIcono}>
+        <Icon icon={ICONS.box} color={COLORS.primary} />
+        <Title level={5} style={styles.nombreProducto}>
+          {producto.nombre}
+        </Title>
+      </View>
 
       {tieneStockBajo && (
         <View style={styles.badgeStockBajo}>
-          <Icon icon={ICONS.notification} size={13} color={COLORS.error} />
           <CustomText size={12} weight="600" color={COLORS.error} style={styles.badgeStockBajoTexto}>
             Stock bajo
           </CustomText>
@@ -61,7 +108,8 @@ function TarjetaProducto({ producto, onVerDetalle }) {
           textStyle={styles.badgeTexto}
         />
         <Button variant="outline" onPress={onVerDetalle} style={styles.botonDetalle}>
-          <CustomText size={13} weight="600" color={COLORS.white}>
+          <Icon icon={ICONS.chart} color={COLORS.primary} />
+          <CustomText size={13} weight="600" color={COLORS.primary}>
             Ver detalle
           </CustomText>
         </Button>
@@ -80,6 +128,7 @@ function TarjetaProducto({ producto, onVerDetalle }) {
         />
         <FilaDetalle etiqueta="Proveedor" valor={producto.proveedor} />
         <FilaDetalle etiqueta="Precio/unidad" valor={precioFormateado} />
+        <FilaDetalle etiqueta="Fecha de caducidad" valor={producto.fechaCaducidad || "—"} />
       </View>
     </Card>
   );
@@ -99,52 +148,54 @@ export default function InventarioScreen({ onDetail, onNew, onBack }) {
     cantidadStockBajo,
   } = useInventario();
 
-  return (
-    <View style={styles.contenedor}>
-      <View style={styles.zonaFiltros}>
-        <View style={styles.barraBusqueda}>
-          <SearchBar
-            value={busqueda}
-            onChangeText={setBusqueda}
-            placeholder="Buscar producto, código, categoría, proveedor..."
-            containerStyle={styles.searchBarContainer}
-          />
-          <FilterButton
-            categories={categorias}
-            suppliers={proveedores}
-            units={unidades}
-            activeFilters={filtros}
-            onApply={setFiltros}
-            showLowStock
-            showExpiryDate
-            buttonStyle={styles.filterButton}
-          />
-        </View>
-
-        {cantidadStockBajo > 0 && (
-          <View style={styles.alertaBanner}>
-            <Icon icon={ICONS.notification} size={16} color={COLORS.error} />
-            <CustomText size={13} weight="600" color={COLORS.error} style={styles.alertaTexto}>
-              {cantidadStockBajo}{" "}
-              {cantidadStockBajo === 1 ? "producto" : "productos"} con stock bajo
-            </CustomText>
-          </View>
-        )}
-
-        <View style={styles.filaContadorBoton}>
-          <CustomText size={13} color={COLORS.textTertiary} style={styles.contadorResultados}>
-            {productosFiltrados.length}{" "}
-            {productosFiltrados.length === 1 ? "producto encontrado" : "productos encontrados"}
-          </CustomText>
-          <Button variant="outline" onPress={onNew} style={styles.botonAgregar}>
-            <Icon icon={ICONS.add} size={16} color={COLORS.white} />
-            <CustomText size={13} weight="600" color={COLORS.white}>
-              Agregar producto
-            </CustomText>
-          </Button>
-        </View>
+  const renderZonaFiltros = () => (
+    <View style={styles.zonaFiltros}>
+      <View style={styles.barraBusqueda}>
+        <SearchBar
+          value={busqueda}
+          onChangeText={setBusqueda}
+          placeholder="Buscar producto, código, categoría, proveedor..."
+          containerStyle={styles.searchBarContainer}
+        />
+        <FilterButton
+          categories={categorias}
+          suppliers={proveedores}
+          units={unidades}
+          activeFilters={filtros}
+          onApply={setFiltros}
+          showLowStock
+          showExpiryDate
+          buttonStyle={styles.filterButton}
+        />
       </View>
 
+      {cantidadStockBajo > 0 && (
+        <View style={styles.alertaBanner}>
+          <Icon icon={ICONS.notification} color={COLORS.error} />
+          <CustomText size={13} weight="600" color={COLORS.error} style={styles.alertaTexto}>
+            {cantidadStockBajo}{" "}
+            {cantidadStockBajo === 1 ? "producto" : "productos"} con stock bajo
+          </CustomText>
+        </View>
+      )}
+
+      <View style={styles.filaContadorBoton}>
+        <CustomText size={13} color={COLORS.textTertiary} style={styles.contadorResultados}>
+          {productosFiltrados.length}{" "}
+          {productosFiltrados.length === 1 ? "producto encontrado" : "productos encontrados"}
+        </CustomText>
+        <Button variant="outline" onPress={onNew} style={styles.botonAgregar}>
+          <Icon icon={ICONS.add} color={COLORS.primary} />
+          <CustomText size={13} weight="600" color={COLORS.primary}>
+            Agregar producto
+          </CustomText>
+        </Button>
+      </View>
+    </View>
+  );
+
+  return (
+    <View style={STYLE.container}>
       <FlatList
         ref={flatListRef}
         data={productosFiltrados}
@@ -155,6 +206,7 @@ export default function InventarioScreen({ onDetail, onNew, onBack }) {
             onVerDetalle={() => onDetail(item.id)}
           />
         )}
+        ListHeaderComponent={renderZonaFiltros}
         ListEmptyComponent={
           <EmptyState
             title="Sin productos"
