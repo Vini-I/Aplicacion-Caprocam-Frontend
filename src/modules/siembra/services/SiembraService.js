@@ -96,13 +96,30 @@ const estanquesPorFinca = {
   ],
 };
 
-export function obtenerSiembras() {
-  return siembras;
+const listeners = new Set();
+
+function notificarCambios() {
+  listeners.forEach((listener) => listener(obtenerSiembras()));
 }
+
+export function subscribeToSiembras(callback) {
+  listeners.add(callback);
+
+  return () => {
+    listeners.delete(callback);
+  };
+}
+
+export function obtenerSiembras() {
+  return siembras.map((siembra) => ({ ...siembra }));
+}
+
 export function obtenerSiembraPorId(siembraId) {
-  return siembras.find(
-    (siembra) => siembra.siembraId === Number(siembraId)
+  const siembra = siembras.find(
+    (registro) => registro.siembraId === Number(siembraId),
   );
+
+  return siembra ? { ...siembra } : undefined;
 }
 
 function obtenerSiguienteId() {
@@ -120,6 +137,7 @@ export function crearRegistro(formData) {
   };
 
   siembras.push(nuevoRegistro);
+  notificarCambios();
 
   return nuevoRegistro;
 }
@@ -140,6 +158,7 @@ export function actualizarSiembra(siembraId, formData) {
   };
 
   siembras[indice] = registroActualizado;
+  notificarCambios();
 
   return registroActualizado;
 }
