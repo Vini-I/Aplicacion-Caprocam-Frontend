@@ -74,8 +74,8 @@ const styles = StyleSheet.create({
     borderColor: COLORS.secondary,
   },
   success: {
-    backgroundColor: COLORS.success,
-    borderColor: COLORS.secondary,
+    backgroundColor: COLORS.successLight,
+    borderColor: COLORS.success,
   },
   warning: {
     backgroundColor: COLORS.warningLight,
@@ -89,5 +89,6 @@ const styles = StyleSheet.create({
     color: COLORS.textPrimary,
     fontSize: 14,
     fontWeight: "500",
+    textAlign: "center"
   },
 });

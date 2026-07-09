@@ -266,15 +266,15 @@ export const styles = StyleSheet.create({
   },
 
   cardIndigo: {
-    backgroundColor: "#EEF6FF",
+    backgroundColor: INFO_LIGHT,
   },
 
   cardYellow: {
-    backgroundColor: "#FFF9E8",
+    backgroundColor: COLORS.warningLight,
   },
 
   cardRed: {
-    backgroundColor: "#FFF0F2",
+    backgroundColor: COLORS.errorLight,
   },
 
   statTopRow: {
@@ -297,19 +297,19 @@ export const styles = StyleSheet.create({
   },
 
   iconBlue: {
-    backgroundColor: "#D7F0FF",
+    backgroundColor: COLORS.primaryLight,
   },
 
   iconIndigo: {
-    backgroundColor: "#DDEBFF",
+    backgroundColor: COLORS.secondary,
   },
 
   iconYellow: {
-    backgroundColor: "#FFF0BA",
+    backgroundColor: COLORS.warningLight,
   },
 
   iconRed: {
-    backgroundColor: "#FFDDE2",
+    backgroundColor: COLORS.errorLight,
   },
 
   statValue: {
@@ -322,7 +322,7 @@ export const styles = StyleSheet.create({
   },
 
   statValueDanger: {
-    color: "#FF002A",
+    color: COLORS.error,
   },
 
   statLabel: {
@@ -412,7 +412,7 @@ export const styles = StyleSheet.create({
     width: "100%",
     borderStyle: "dashed",
     borderWidth: 1,
-    borderColor: "#E5EAF2",
+    borderColor: COLORS.border,
   },
 
   barChartContent: {
@@ -438,7 +438,7 @@ export const styles = StyleSheet.create({
 
   barFill: {
     width: "100%",
-    backgroundColor: "#38BDF8",
+    backgroundColor: COLORS.primary,
     borderTopLeftRadius: 8,
     borderTopRightRadius: 8,
     maxHeight: 115,
@@ -476,18 +476,18 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "stretch",
     justifyContent: "center",
-    backgroundColor: "#94A3B8",
+    backgroundColor: COLORS.textQuaternary,
     position: "relative",
   },
 
   donutActiveSegment: {
     height: "100%",
-    backgroundColor: "#38BDF8",
+    backgroundColor: COLORS.primary,
   },
 
   donutHarvestSegment: {
     height: "100%",
-    backgroundColor: "#94A3B8",
+    backgroundColor: COLORS.textQuaternary,
   },
 
   donutInner: {
@@ -520,14 +520,14 @@ export const styles = StyleSheet.create({
   legendBlue: {
     width: 10,
     height: 10,
-    backgroundColor: "#38BDF8",
+    backgroundColor: COLORS.primary,
     marginRight: 4,
   },
 
   legendGray: {
     width: 10,
     height: 10,
-    backgroundColor: "#94A3B8",
+    backgroundColor: COLORS.textQuaternary,
     marginRight: 4,
   },
 
@@ -559,7 +559,7 @@ export const styles = StyleSheet.create({
 
   lineBar: {
     width: 8,
-    backgroundColor: "#38BDF8",
+    backgroundColor: COLORS.primary,
     borderRadius: 8,
     marginBottom: 4,
     maxHeight: 105,
@@ -577,7 +577,7 @@ export const styles = StyleSheet.create({
   infoRowIndigo: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#EEF6FF",
+    backgroundColor: INFO_LIGHT,
     borderRadius: 14,
     padding: 14,
     marginBottom: 10,
@@ -587,7 +587,7 @@ export const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 12,
-    backgroundColor: "#BDE8FF",
+    backgroundColor: COLORS.primaryLight,
     alignItems: "center",
     justifyContent: "center",
     marginRight: 12,
@@ -597,7 +597,7 @@ export const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 12,
-    backgroundColor: "#BFDBFE",
+    backgroundColor: COLORS.secondary,
     alignItems: "center",
     justifyContent: "center",
     marginRight: 12,
@@ -696,7 +696,7 @@ export const styles = StyleSheet.create({
     borderRadius: 14,
     padding: 18,
     borderWidth: 1,
-    borderColor: "#FFCCD5",
+    borderColor: COLORS.errorLight,
   },
 
   totalBoxText: {

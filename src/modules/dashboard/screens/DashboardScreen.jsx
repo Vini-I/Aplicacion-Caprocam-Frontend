@@ -32,7 +32,7 @@ import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
 
 import { fincas as fincasModulo } from "../../finca/screens/FincaData";
-import { estanques as estanquesModulo } from "../../mantCrecimiento/screens/EstanqueData";
+import { estanques as estanquesModulo } from "../../mantCrecimiento/services/EstanqueData";
 import { obtenerSiembras } from "../../siembra/services/SiembraService";
 import useAlimentacion from "../../alimentacion/hooks/useAlimentacion";
 import { getProductosInventario } from "../../inventarios/services/InventarioService";
@@ -1403,7 +1403,7 @@ function EstanquesPanel({ estanques, alimentacionSemanal }) {
       <SectionHeader
         icon={ICONS.waterFlow}
         title="Estanques registrados"
-        color="#2563EB"
+        color={COLORS.primary}
       />
 
       <View style={styles.divider} />
@@ -1522,7 +1522,7 @@ function EstanquesPanel({ estanques, alimentacionSemanal }) {
         return (
           <View key={estanque.id} style={styles.infoRowIndigo}>
             <View style={styles.rowIconBoxIndigo}>
-              <Icon icon={ICONS.waterFlow} size={20} color="#2563EB" />
+              <Icon icon={ICONS.waterFlow} size={20} color={COLORS.primary} />
             </View>
 
             <View style={styles.rowContent}>
@@ -1729,20 +1729,20 @@ function MortalidadPanel({ resumenEnfermedades, registrosEnfermedades }) {
       <SectionHeader
         icon={ICONS.mortality}
         title="Mortalidad registrada"
-        color="#FF002A"
+        color={COLORS.error}
       />
 
       <View style={styles.divider} />
 
       <View style={styles.mortalityTotalBox}>
-        <Icon icon={ICONS.report} size={34} color="#FF5A6D" />
+        <Icon icon={ICONS.report} size={34} color={COLORS.error} />
 
         <View style={styles.totalBoxText}>
-          <CustomText size={32} weight="900" color="#FF002A">
+          <CustomText size={32} weight="900" color={COLORS.error}>
             {formatearNumero(totalMortalidad)}
           </CustomText>
 
-          <CustomText size={13} color="#FF5A6D">
+          <CustomText size={13} color={COLORS.error}>
             individuos totales registrados
           </CustomText>
         </View>
@@ -1763,7 +1763,7 @@ function MortalidadPanel({ resumenEnfermedades, registrosEnfermedades }) {
       {registrosMortalidad.map(function (item) {
         return (
           <View key={item.id} style={styles.mortalityRow}>
-            <Icon icon={ICONS.shrimp} size={18} color="#FF5A6D" />
+            <Icon icon={ICONS.shrimp} size={18} color={COLORS.error} />
 
             <View style={styles.rowContent}>
               <CustomText
@@ -1786,7 +1786,7 @@ function MortalidadPanel({ resumenEnfermedades, registrosEnfermedades }) {
             </View>
 
             <View style={styles.rowRight}>
-              <CustomText size={17} weight="900" color="#FF002A">
+              <CustomText size={17} weight="900" color={COLORS.error}>
                 {formatearNumero(item.mortalidad)}
               </CustomText>
 
@@ -2030,7 +2030,7 @@ export default function DashboardScreen() {
             label="Estanques registrados"
             cardStyle={styles.cardIndigo}
             iconStyle={styles.iconIndigo}
-            iconColor="#2563EB"
+            iconColor={COLORS.primary}
             isTablet={isTablet}
           />
 
@@ -2060,7 +2060,7 @@ export default function DashboardScreen() {
             label="Mortalidad total"
             cardStyle={styles.cardRed}
             iconStyle={styles.iconRed}
-            iconColor="#FF002A"
+            iconColor={COLORS.error}
             danger={true}
             isTablet={isTablet}
           />

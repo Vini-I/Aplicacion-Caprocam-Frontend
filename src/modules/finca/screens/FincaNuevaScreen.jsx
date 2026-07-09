@@ -33,6 +33,17 @@ import { COLORS } from "../../../theme/colors.js";
 import { styles } from "../styles/StylesFincaNueva.js";
 import { STYLE } from "../../../theme/style.js";
 
+function SectionTitle({ icon, title }) {
+  return (
+    <View style={styles.sectionTitleRow}>
+      <Icon icon={icon} size={18} color={COLORS.primary} style={styles.sectionIcon} />
+      <Text style={styles.sectionTitleText} size={14} weight="700" color={COLORS.textPrimary}>
+        {title}
+      </Text>
+    </View>
+  );
+}
+
 export default function FincaNuevaScreen({onFinca}) {
   const {
     ContentWrapper,
@@ -40,6 +51,7 @@ export default function FincaNuevaScreen({onFinca}) {
     setFormulario,
     telefonos,
     setTelefonos,
+    errorMessage,
     errores,
     setErrores,
 
@@ -65,16 +77,17 @@ export default function FincaNuevaScreen({onFinca}) {
       Icono="add"
     />
     <ScrollView
-      style={[STYLE.container, { paddingHorizontal: isLargeScreen ? 40 : 16 }]}
+      style={[
+        STYLE.container,
+        isLargeScreen ? styles.containerLarge : styles.containerSmall,
+      ]}
       contentContainerStyle={styles.content}
       keyboardShouldPersistTaps="handled"
     >
       
       <ContentWrapper style={STYLE.contentWrapper}>
         <Card>
-          <Text style={styles.sectionTitle} size={14} weight="700" color={COLORS.textPrimary}>
-            IDENTIFICACIÓN
-          </Text>
+          <SectionTitle icon={ICONS.id} title="IDENTIFICACIÓN" />
           <View style={styles.row}>
             <View style={styles.column}>
               <Input
@@ -98,9 +111,7 @@ export default function FincaNuevaScreen({onFinca}) {
         </Card>
 
         <Card>
-          <Text style={styles.sectionTitle} size={14} weight="700" color={COLORS.textPrimary}>
-            UBICACIÓN
-          </Text>
+          <SectionTitle icon={ICONS.location} title="UBICACIÓN" />
           <View style={styles.row}>
             <View style={styles.column}>
               <Select
@@ -147,9 +158,7 @@ export default function FincaNuevaScreen({onFinca}) {
         </Card>
 
         <Card>
-          <Text style={styles.sectionTitle} size={14} weight="700" color={COLORS.textPrimary}>
-            CONTACTO
-          </Text>
+          <SectionTitle icon={ICONS.user} title="CONTACTO" />
           <View>
             <Input
               label="Propietario / Responsable *"
@@ -161,25 +170,29 @@ export default function FincaNuevaScreen({onFinca}) {
           </View>
 
           <View style={styles.phoneHeader}>
-            <Text size={14} weight="600" color={COLORS.textPrimary}>Teléfonos</Text>
+            <View style={styles.phoneTitle}>
+              <Icon icon={ICONS.phone} size={18} color={COLORS.primary} style={styles.sectionIcon} />
+              <Text size={14} weight="600" color={COLORS.textPrimary}>Teléfonos</Text>
+            </View>
             <Button style={styles.addPhoneButton} onPress={agregarTelefono}>
               {ICONS && ICONS.add ? (
                 <Icon icon={ICONS.add} size={18} color={COLORS.black} />
               ) : (
-                <Text style={{ fontSize: 18, color: COLORS.black, fontWeight: "bold" }}>+</Text>
+                <Text style={styles.addPhoneFallbackText}>+</Text>
               )}
             </Button>
           </View>
 
           {(telefonos || []).map((telefono, index) => (
             <View key={index} style={styles.phoneRowWrapper}>
-              <View style={{ flex: 1 }}>
+              <View style={styles.phoneInputContainer}>
                 <Input
                   label={`Teléfono ${index + 1}`}
                   value={telefono}
                   keyboardType="phone-pad"
                   onChangeText={(valor) => actualizarTelefono(index, valor)}
                   placeholder="8888 8888"
+                  style={errores[`telefono${index}`] ? styles.errorInput : null}
                 />
               </View>
               {index > 0 && (
@@ -187,7 +200,7 @@ export default function FincaNuevaScreen({onFinca}) {
                   {ICONS && ICONS.delete ? (
                     <Icon icon={ICONS.delete} size={20} color={COLORS.error} />
                   ) : (
-                    <Text style={{ fontSize: 16, color: COLORS.error, fontWeight: "bold" }}>✕</Text>
+                    <Text style={styles.removePhoneFallbackText}>✕</Text>
                   )}
                 </Button>
               )}
@@ -196,9 +209,7 @@ export default function FincaNuevaScreen({onFinca}) {
         </Card>
 
         <Card>
-          <Text style={styles.sectionTitle} size={14} weight="700" color={COLORS.textPrimary}>
-            CARACTERÍSTICAS
-          </Text>
+          <SectionTitle icon={ICONS.document} title="CARACTERÍSTICAS" />
           <View>
             <Input
               label="Área total (ha) *"
@@ -224,7 +235,7 @@ export default function FincaNuevaScreen({onFinca}) {
         {Object.keys(errores).length > 0 && (
         <CustomAlert 
           variant="danger" 
-          message="Rellene los espacios importantes para continuar." 
+          message={errorMessage || "Rellene los espacios importantes para continuar."} 
           containerStyle={[styles.errorAlertContainer]}
           textStyle={[styles.errorAlertItems]}
           style={[styles.errorAlertItems]}
