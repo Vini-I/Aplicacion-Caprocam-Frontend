@@ -36,6 +36,7 @@ import Title from "../../../shared/components/Title";
 import Badge from "../../../shared/components/Badge";
 import Modal from "../../../shared/components/Modal";
 import EmptyState from "../../../shared/components/EmptyState";
+import Alert from "../../../shared/components/Alert";
 
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
@@ -50,6 +51,7 @@ export default function DetalleCompradorScreen() {
     comprador,
     modalVisible,
     setModalVisible,
+    eliminado,
     irAtras,
     irAEditar,
     getTipoProductoSelect,
@@ -146,21 +148,32 @@ export default function DetalleCompradorScreen() {
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
         closeText="Cancelar"
+        showCloseButton={!eliminado}
         buttonStyle={styles.modalCancelButton}
         overlayStyle={styles.modalOverlay}
         containerStyle={styles.modalContainer}
       >
-        <Title level={3} style={styles.modalTitle}>
-          ¿Eliminar comprador?
-        </Title>
-        <Text style={styles.modalMessage}>
-          ¿Estás seguro que deseas eliminar{" "}
-          <Text style={styles.modalNombreNegrita}>{comprador.nombre}</Text>?
-        </Text>
-        <Button variant="outline" style={[styles.modalConfirmButton, styles.botonEliminar]} onPress={irAtras}>
-          <Icon icon={ICONS.delete} size={ICON_SIZE.modal} color={COLORS.error} />
-          <Text style={[styles.modalConfirmTexto, { color: COLORS.error }]}>Sí, eliminar</Text>
-        </Button>
+        {eliminado ? (
+          <Alert
+            variant="success"
+            message="Comprador eliminado correctamente."
+            style={styles.modalSuccessAlert}
+          />
+        ) : (
+          <>
+            <Title level={3} style={styles.modalTitle}>
+              ¿Eliminar comprador?
+            </Title>
+            <Text style={styles.modalMessage}>
+              ¿Estás seguro que deseas eliminar{" "}
+              <Text style={styles.modalNombreNegrita}>{comprador.nombre}</Text>?
+            </Text>
+            <Button style={styles.modalConfirmButton} onPress={irAtras}>
+              <Icon icon={ICONS.delete} size={ICON_SIZE.modal} color={COLORS.white} />
+              <Text style={styles.modalConfirmTexto}>Sí, eliminar</Text>
+            </Button>
+          </>
+        )}
       </Modal>
 
     </View>

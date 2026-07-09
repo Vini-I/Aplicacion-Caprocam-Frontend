@@ -44,11 +44,16 @@ export function useDetalleCompradorScreen() {
 
   // Controla la visibilidad del modal de confirmación de eliminación
   const [modalVisible, setModalVisible] = useState(false);
+  // Controla si ya se confirmó la eliminación, para mostrar el alert de éxito
+  const [eliminado, setEliminado] = useState(false);
 
   const comprador = getCompradorMockById(id);
 
   function irAtras() {
-    router.replace("/(drawer)/compradores/compradorScreen");
+    setEliminado(true);
+    setTimeout(() => {
+      router.replace("/(drawer)/compradores/compradorScreen");
+    }, 900);
   }
 
   function irAEditar() {
@@ -62,6 +67,7 @@ export function useDetalleCompradorScreen() {
     comprador,
     modalVisible,
     setModalVisible,
+    eliminado,
     irAtras,
     irAEditar,
     getTipoProductoSelect,

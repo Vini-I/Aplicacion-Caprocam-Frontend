@@ -7,8 +7,9 @@
  * (pH, salinidad, temperatura, oxígeno disuelto) usando el
  * componente RangeCard.
  *
- * El estado (lecturas, alertas, navegación al guardar) vive en
- * useFisicoQuimica(). Los estilos viven en FisicoQuimicaStyles.js.
+ * TODO el estado (selección de finca/estanque, lecturas, validación,
+ * alertas, navegación al guardar) vive en useFisicoQuimica(). Los
+ * estilos viven en FisicoQuimicaStyles.js.
  * Valida que exista al menos una medición antes de guardar y muestra
  * una alerta de error al final del formulario si falla la validación.
  *
@@ -24,8 +25,6 @@
  * - Botones normales deben usar variant="outline" salvo excepción aprobada.
  *
  * ---
- * 
- * ---
  * EJEMPLO DE USO
  * ---
  * <FisicoQuimicaScreen onBack={() => setModuloActivo(null)} />
@@ -34,7 +33,6 @@
  */
 
 import { View, ScrollView } from 'react-native';
-import { useEffect, useMemo, useState } from 'react';
 import Button from '../../../shared/components/Button';
 import Alert from '../../../shared/components/Alert';
 import Card from '../../../shared/components/Card';
@@ -47,132 +45,30 @@ import RangeCard from '../components/RangeCard';
 import { COLORS } from '../../../theme/colors';
 import { ICONS } from '../../../theme/icons';
 import useFisicoQuimica from '../hooks/useFisicoQuimica';
-import {
-  manejarCambioEstanque,
-  manejarCambioFinca,
-  manejarCambioOxigeno,
-  manejarCambioPh,
-  manejarCambioSalinidad,
-  manejarCambioTemperatura,
-  hayMedicionesRegistradas,
-  obtenerEstanquesPorFinca,
-  obtenerLecturasPorEstanque,
-  obtenerOpcionesFincas,
-  sincronizarLecturasLocales,
-  validarFormularioFisicoQuimica,
-} from '../services/FisicoQuimicaServices';
 import { styles } from '../styles/FisicoQuimicaStyles';
 import { STYLE } from '../../../theme/style';
 
 export default function FisicoQuimicaScreen({ onBack }) {
   const {
-    setLecturasSalinidad,
-    setLecturasTemp, setLecturasPh, setLecturasOx,
+    fincaSeleccionada,
+    estanqueSeleccionado,
+    medicionesPorEstanque,
+    submitted,
+    errorMessage,
+    tieneMedicionesExistentes,
+    opcionesFincas,
+    estanquesFiltrados,
+    estanqueSeleccionadoObj,
     mostrarAlerta, mostrarAlertaEdicion,
-    alGuardar, alEditar,
+    handleFincaChange,
+    handleEstanqueChange,
+    handlePhChange,
+    handleSalinidadChange,
+    handleTempChange,
+    handleOxChange,
+    handleGuardarClick,
+    alEditar,
   } = useFisicoQuimica();
-
-  const [fincaSeleccionada, setFincaSeleccionada] = useState("");
-  const [estanqueSeleccionado, setEstanqueSeleccionado] = useState("");
-  const [medicionesPorEstanque, setMedicionesPorEstanque] = useState({
-    ph: [],
-    salinidad: [],
-    temperatura: [],
-    ox: [],
-  });
-  const [lecturasPhLocal, setLecturasPhLocal] = useState([]);
-  const [lecturasSalinidadLocal, setLecturasSalinidadLocal] = useState([]);
-  const [lecturasTempLocal, setLecturasTempLocal] = useState([]);
-  const [lecturasOxLocal, setLecturasOxLocal] = useState([]);
-  const [submitted, setSubmitted] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [tieneMedicionesExistentes, setTieneMedicionesExistentes] = useState(false);
-
-  useEffect(() => {
-    sincronizarLecturasLocales({
-      medicionesPorEstanque,
-      setters: {
-        ph: setLecturasPhLocal,
-        salinidad: setLecturasSalinidadLocal,
-        temperatura: setLecturasTempLocal,
-        ox: setLecturasOxLocal,
-      },
-    });
-  }, [medicionesPorEstanque]);
-
-  const tieneAlgunaMedicion = useMemo(
-    () => hayMedicionesRegistradas([
-      lecturasPhLocal,
-      lecturasSalinidadLocal,
-      lecturasTempLocal,
-      lecturasOxLocal,
-    ]),
-    [lecturasPhLocal, lecturasSalinidadLocal, lecturasTempLocal, lecturasOxLocal],
-  );
-
-  const opcionesFincas = useMemo(() => obtenerOpcionesFincas(), []);
-
-  const estanquesFiltrados = useMemo(
-    () => obtenerEstanquesPorFinca(fincaSeleccionada),
-    [fincaSeleccionada],
-  );
-
-  const estanqueSeleccionadoObj = useMemo(
-    () =>
-      estanquesFiltrados.find((item) => item.value === estanqueSeleccionado) || null,
-    [estanqueSeleccionado, estanquesFiltrados],
-  );
-
-  const handleFincaChange = (value) => {
-    manejarCambioFinca({
-      value,
-      setters: {
-        finca: setFincaSeleccionada,
-        estanque: setEstanqueSeleccionado,
-        mediciones: setMedicionesPorEstanque,
-        error: setErrorMessage,
-      },
-    });
-    setTieneMedicionesExistentes(false);
-  };
-
-  const handleEstanqueChange = (value) => {
-    manejarCambioEstanque({
-      value,
-      setters: {
-        estanque: setEstanqueSeleccionado,
-        mediciones: setMedicionesPorEstanque,
-        error: setErrorMessage,
-      },
-      obtenerLecturas: obtenerLecturasPorEstanque,
-    });
-
-    const lecturasExistentes = obtenerLecturasPorEstanque(value);
-    setTieneMedicionesExistentes(
-      hayMedicionesRegistradas([
-        lecturasExistentes?.ph,
-        lecturasExistentes?.salinidad,
-        lecturasExistentes?.temperatura,
-        lecturasExistentes?.ox,
-      ]),
-    );
-  };
-
-  const handlePhChange = (values) => {
-    manejarCambioPh({ values, setters: { ph: setLecturasPh }, localSetters: { ph: setLecturasPhLocal } });
-  };
-
-  const handleSalinidadChange = (values) => {
-    manejarCambioSalinidad({ values, setters: { salinidad: setLecturasSalinidad }, localSetters: { salinidad: setLecturasSalinidadLocal } });
-  };
-
-  const handleTempChange = (values) => {
-    manejarCambioTemperatura({ values, setters: { temperatura: setLecturasTemp }, localSetters: { temperatura: setLecturasTempLocal } });
-  };
-
-  const handleOxChange = (values) => {
-    manejarCambioOxigeno({ values, setters: { ox: setLecturasOx }, localSetters: { ox: setLecturasOxLocal } });
-  };
 
   return (
     <>
@@ -313,23 +209,7 @@ export default function FisicoQuimicaScreen({ onBack }) {
                     Actualizar módulo
                   </Button>
                 ) : (
-                  <Button
-                    variant="outline"
-                    onPress={() => {
-                      setSubmitted(true);
-
-                      const error = validarFormularioFisicoQuimica({
-                        fincaSeleccionada,
-                        estanqueSeleccionado,
-                        tieneAlgunaMedicion,
-                      });
-
-                      setErrorMessage(error);
-                      if (error) return;
-
-                      alGuardar();
-                    }}
-                  >
+                  <Button variant="outline" onPress={handleGuardarClick}>
                     Guardar módulo
                   </Button>
                 )}

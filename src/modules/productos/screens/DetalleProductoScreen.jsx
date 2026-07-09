@@ -172,6 +172,9 @@ export default function DetalleProductoScreen() {
                 visible={modalEliminarVisible}
                 onClose={handleCerrarModal}
                 closeText="Cancelar"
+                buttonStyle={styles.modalCancelButton}
+                overlayStyle={styles.modalOverlay}
+                containerStyle={styles.modalContainer}
             >
                 <Title level={5} style={styles.modalTitulo}>
                     Eliminar producto

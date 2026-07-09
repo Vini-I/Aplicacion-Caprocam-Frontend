@@ -141,6 +141,17 @@ export const styles = StyleSheet.create({
   alertContainer: {
     marginBottom: 16,
   },
+
+  // Solo para esta pantalla: cuando la alerta general es "warning" (campos
+  // sin completar), se pinta en rojo en vez del amarillo por defecto de
+  // Alert.jsx, sin tocar el componente compartido.
+  alertWarningComoError: {
+    backgroundColor: COLORS.errorLight,
+    borderColor: COLORS.error,
+  },
+  alertWarningComoErrorTexto: {
+    color: COLORS.error,
+  },
 });
 
 export const ICON_STYLES = {

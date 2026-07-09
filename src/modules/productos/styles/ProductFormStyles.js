@@ -53,7 +53,7 @@ export const styles = StyleSheet.create({
     width: 32,
     height: 32,
   },
-  content: { padding: 16, paddingBottom: 32 },
+  content: { paddingBottom: 32 },
   card: {
     borderRadius: 18,
     padding: 18,

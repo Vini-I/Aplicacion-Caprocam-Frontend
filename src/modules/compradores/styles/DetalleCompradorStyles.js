@@ -205,9 +205,14 @@ export const styles = StyleSheet.create({
     fontWeight: undefined,
   },
 
- modalConfirmButton: {
+  modalConfirmButton: {
   marginTop: 12,
   flexDirection: "row",
+  backgroundColor: COLORS.error,
+ },
+
+  modalSuccessAlert: {
+  marginTop: 4,
  },
 
   modalConfirmTexto: {

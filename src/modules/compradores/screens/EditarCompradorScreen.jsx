@@ -81,7 +81,11 @@ export default function EditarCompradorScreen() {
             <Alert
               variant={alerta.variant}
               message={alerta.message}
-              style={styles.alertContainer}
+              style={[
+                styles.alertContainer,
+                alerta.variant === "warning" && styles.alertWarningComoError,
+              ]}
+              textStyle={alerta.variant === "warning" && styles.alertWarningComoErrorTexto}
             />
           )}
 
