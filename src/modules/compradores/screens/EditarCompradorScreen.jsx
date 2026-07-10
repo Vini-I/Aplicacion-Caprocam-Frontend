@@ -85,7 +85,6 @@ export default function EditarCompradorScreen() {
                 styles.alertContainer,
                 alerta.variant === "warning" && styles.alertWarningComoError,
               ]}
-              textStyle={alerta.variant === "warning" && styles.alertWarningComoErrorTexto}
             />
           )}
 

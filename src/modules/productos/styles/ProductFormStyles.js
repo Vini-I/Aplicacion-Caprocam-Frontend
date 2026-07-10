@@ -109,12 +109,6 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     color: COLORS.primary,
   },
-  validationText: {
-    marginTop: 8,
-    fontSize: 13,
-    textAlign: "center",
-    color: COLORS.error,
-  },
   alertBox: {
     marginTop: 10,
     alignItems: "center",

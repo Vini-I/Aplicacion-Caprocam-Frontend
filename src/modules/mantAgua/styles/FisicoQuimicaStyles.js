@@ -127,5 +127,6 @@ export const styles = StyleSheet.create({
   alertBox: { width: "100%", alignSelf: "stretch" },
   alertText: { textAlign: "center", fontWeight: "bold" },
   errorBanner: { marginTop: 12, width: "100%" },
-  errorText: { textAlign: "center", fontFamily: TYPOGRAPHY.fontFamily.bold, color: COLORS.error },
+  errorText: { textAlign: "center", fontFamily: TYPOGRAPHY.fontFamily.bold },
 });
+

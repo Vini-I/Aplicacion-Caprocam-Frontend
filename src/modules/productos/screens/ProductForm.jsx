@@ -169,15 +169,16 @@ export default function ProductForm() {
           />
 
           {/* Precio por unidad */}
-          <Input
+          <NumberInput
             label="Precio por unidad *"
             value={form.precioUnidad}
             onChangeText={(v) => handleField("precioUnidad", v)}
-            placeholder="0"
-            keyboardType="numeric"
+            min={0}
+            max={999999}
+            step={1}
             containerStyle={styles.field}
-            style={[styles.input, errorPrecio && styles.inputError]}
             labelStyle={styles.label}
+            style={[styles.numberInput, errorPrecio && styles.inputError]}
           />
 
           <DateInput
@@ -220,9 +221,11 @@ export default function ProductForm() {
           )}
 
           {validationMessage !== "" && (
-            <Text style={styles.validationText}>
-              {validationMessage}
-            </Text>
+            <Alert
+              variant="danger"
+              message={validationMessage}
+              style={styles.alertBox}
+            />
           )}
         </Card>
       </ScrollView>
