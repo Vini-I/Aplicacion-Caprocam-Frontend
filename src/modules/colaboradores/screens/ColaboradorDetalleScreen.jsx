@@ -35,6 +35,10 @@ import Input from "../../../shared/components/Input";
 import CustomText from "../../../shared/components/Text";
 import { styles } from "../styles/colaboradorDetalleStyles";
 import { COLORS } from "../../../theme/colors";
+import { ICONS } from "../../../theme/icons";
+import Button from "../../../shared/components/Button";
+import Icon from "../../../shared/components/Icons";
+
 
 // ============================================================
 // COMPONENTE PRINCIPAL
@@ -130,13 +134,13 @@ export default function ColaboradorDetalleScreen({ colaboradorId, onClose, onSel
   // RENDER PRINCIPAL
   // --------------------------------------------------------
   return (
-    <ScrollView style={styles.container}>
-      {onClose && (
-        <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-          <CustomText style={styles.closeButtonText}>✕ Cerrar</CustomText>
-        </TouchableOpacity>
-      )}
-
+  <View style={{ flex: 1 }}>
+    {/* Contenido scrolleable */}
+    <ScrollView 
+      style={styles.container}
+      contentContainerStyle={{ paddingBottom: 16 }}
+      showsVerticalScrollIndicator={true}
+    >
       <Card style={styles.card}>
         <View style={styles.header}>
           <CustomText style={styles.name}>{colaborador.nombre}</CustomText>
@@ -160,7 +164,6 @@ export default function ColaboradorDetalleScreen({ colaboradorId, onClose, onSel
           <CustomText style={styles.value}>{colaborador.fincaId}</CustomText>
         </View>
 
-        {/* Solo mostrar dueño asociado para trabajadores externos */}
         {externalOwner && colaborador.rol === "external_worker" && (
           <TouchableOpacity onPress={() => onSelectTrabajador?.(externalOwner.id)}>
             <View style={styles.infoRow}>
@@ -171,7 +174,6 @@ export default function ColaboradorDetalleScreen({ colaboradorId, onClose, onSel
         )}
       </Card>
 
-      {/* Estadísticas simples */}
       {estadisticas && (
         <View style={styles.statsCard}>
           <CustomText style={styles.statsTitle}>Actividad del colaborador</CustomText>
@@ -195,31 +197,49 @@ export default function ColaboradorDetalleScreen({ colaboradorId, onClose, onSel
         </View>
       )}
 
-      {/* Trabajadores a cargo con barra de búsqueda */}
-      {colaborador.rol === "external_owner" && trabajadores.length > 0 && (
+      {colaborador.rol === "external_owner" && (
         <View style={styles.trabajadoresSection}>
-          <View style={styles.searchContainer}>
-            <Input
-              placeholder="🔍 Buscar trabajador por nombre, teléfono, email o cédula"
-              value={searchText}
-              onChangeText={setSearchText}
-              containerStyle={styles.searchInput}
+          {trabajadores.length > 0 && (
+            <>
+              <View style={styles.searchContainer}>
+                <Input
+                  placeholder="Buscar trabajador por nombre, teléfono, email o cédula"
+                  value={searchText}
+                  onChangeText={setSearchText}
+                  containerStyle={styles.searchInput}
+                />
+              </View>
+              <TrabajadoresExternosList 
+                trabajadores={trabajadoresFiltrados} 
+                onSelectTrabajador={onSelectTrabajador}
+              />
+            </>
+          )}
+          {trabajadores.length === 0 && (
+            <TrabajadoresExternosList 
+              trabajadores={[]} 
+              onSelectTrabajador={onSelectTrabajador}
             />
-          </View>
-          <TrabajadoresExternosList 
-            trabajadores={trabajadoresFiltrados} 
-            onSelectTrabajador={onSelectTrabajador}
-          />
+          )}
         </View>
       )}
-
-      {/* Si no hay trabajadores, mostrar mensaje */}
-      {colaborador.rol === "external_owner" && trabajadores.length === 0 && (
-        <TrabajadoresExternosList 
-          trabajadores={[]} 
-          onSelectTrabajador={onSelectTrabajador}
-        />
-      )}
     </ScrollView>
-  );
+
+    {/* Botón fijo en la parte inferior */}
+    {onClose && (
+      <View style={{ padding: 16, borderTopWidth: 1, borderTopColor: COLORS.secondary, backgroundColor: COLORS.white }}>
+        <Button
+          variant="outline"
+          onPress={onClose}
+          style={{ borderColor: COLORS.primary }}
+        >
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+            <Icon icon={ICONS.exit} size={16} color={COLORS.primary} />
+            <CustomText style={{ color: COLORS.primary, fontWeight: '600' }}>Cerrar</CustomText>
+          </View>
+        </Button>
+      </View>
+    )}
+  </View>
+);
 }

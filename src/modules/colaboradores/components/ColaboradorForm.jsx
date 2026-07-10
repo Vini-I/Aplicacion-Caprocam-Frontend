@@ -31,7 +31,10 @@ import Input from "../../../shared/components/Input";
 import Select from "../../../shared/components/Select";
 import Button from "../../../shared/components/Button";
 import { styles } from "../styles/colaboradorFormStyles";
-
+import Icon from "../../../shared/components/Icons";
+import { ICONS } from "../../../theme/icons";
+import Text from "../../../shared/components/Text";
+import { COLORS } from "../../../theme/colors";
 // ============================================================
 // CONSTANTES Y VALIDADORES
 // ============================================================
@@ -105,6 +108,7 @@ export default function ColaboradorForm({
   isEditing = false,
   userRole,
   fincaId,
+  onCancel,
 }) {
   // --------------------------------------------------------
   // ESTADOS
@@ -293,9 +297,27 @@ export default function ColaboradorForm({
         />
       )}
 
-      <Button onPress={handleSubmit}>
-        {isEditing ? "Actualizar" : "Registrar"}
-      </Button>
+      {/* Botones */}
+
+              <View style={styles.buttonContainer}>
+          <Button variant="outline" onPress={onCancel} style={styles.cancelButton}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <Icon icon={ICONS.exit} size={18} color={COLORS.primary} />
+              <Text style={{ color: COLORS.primary, fontWeight: '600' }}>Cancelar</Text>
+            </View>
+          </Button>
+        {onCancel && (
+        <Button onPress={handleSubmit} style={styles.submitButton}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <Icon icon={ICONS.save} size={18} color={COLORS.white} />
+            <Text style={{ color: COLORS.white, fontWeight: '600' }}>
+              {isEditing ? "Actualizar" : "Registrar"}
+            </Text>
+          </View>
+        </Button>
+        )}
+
+      </View>
     </View>
   );
 }

@@ -174,7 +174,7 @@ export default function MiPersonalScreen() {
     <View style={styles.container}>
       <View style={styles.searchContainer}>
         <Input
-          placeholder="🔍 Buscar por nombre, teléfono, email o cédula"
+          placeholder="Buscar por nombre, teléfono, email o cédula"
           value={searchText}
           onChangeText={setSearchText}
           containerStyle={styles.searchInput}

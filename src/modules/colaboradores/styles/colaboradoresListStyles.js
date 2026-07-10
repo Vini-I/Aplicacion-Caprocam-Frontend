@@ -58,24 +58,30 @@ export const styles = StyleSheet.create({
     flex: 1,
     marginBottom: 0,
   },
-  addButtonContainer: {
-    alignSelf: "center",
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 8,
-    backgroundColor: COLORS.primary,
-    borderWidth: 0,
-  },
+addButtonContainer: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 6,
+  paddingVertical: 8,
+  paddingHorizontal: 14,
+  borderRadius: 8,
+  borderWidth: 1,
+  borderColor: COLORS.primary,   // se sobrescribe en la prop style
+  backgroundColor: "transparent",
+  height: 42,
+  marginTop: 0,
+},
   addButtonContent: {
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
   },
-  addButtonText: {
-    color: COLORS.white,
-    fontWeight: "600",
-    fontSize: 14,
-  },
+addButtonText: {
+  color: COLORS.primary,
+  fontWeight: "600",
+  fontSize: 14,
+},
   list: {
     padding: 16,
     paddingBottom: 80,
@@ -160,12 +166,20 @@ export const styles = StyleSheet.create({
     marginTop: 0,
     flex: 1,
   },
-  modalDetalleContainer: {
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
-  },
-  modalDetalleOverlay: {
-    backgroundColor: "rgba(0,0,0,0.6)",
-  },
+modalDetalleContainer: {
+  width: "100%",
+  maxWidth: 900,
+  maxHeight: "85%",           // ← Limita la altura para que no ocupe toda la pantalla
+  alignSelf: "center",
+  padding: 16,                // ← Márgenes internos estándar
+  borderRadius: 16,
+  overflow: "hidden",
+  backgroundColor: COLORS.surface,
+},
+
+modalDetalleOverlay: {
+  backgroundColor: "rgba(0,0,0,0.6)",
+  justifyContent: "center",   // ← Centra verticalmente el modal
+  padding: 16,                // ← Márgenes externos en pantallas pequeñas
+},
 });
