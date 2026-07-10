@@ -216,15 +216,6 @@ export default function useNuevaSiembra() {
 
   const estanques = obtenerEstanquesPorFinca(formData.finca);
 
-  /**
-   * ==========================================
-   * Catálogos del formulario
-   * ==========================================
-   * Se obtienen aquí (y no en la screen) para que la pantalla
-   * no acceda directamente a SiembraService, tal como lo indica
-   * el estándar del módulo ("no accede directamente a datos
-   * persistentes"). Se memorizan porque son listas estáticas.
-   */
   const fincas = useMemo(() => obtenerFincas(), []);
   const tecnicasCultivo = useMemo(() => obtenerTecnicasCultivo(), []);
   const proveedoresLarva = useMemo(() => obtenerProveedoresLarva(), []);
@@ -239,12 +230,6 @@ export default function useNuevaSiembra() {
     }
     return ["tipoRegistro", ...obtenerCamposObligatoriosPorTipo(formData)];
   }
-
-  /**
-   * ==========================================
-   * Crear siembra
-   * ==========================================
-   */
 
   function handleCrearSiembra() {
     setSubmitted(true);

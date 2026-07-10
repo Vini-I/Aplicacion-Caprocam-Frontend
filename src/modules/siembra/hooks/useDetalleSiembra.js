@@ -121,11 +121,11 @@ export default function useDetalleSiembra(id) {
 
         const camposAValidar = Object.keys(errors).length
           ? Array.from(
-              new Set([
-                ...Object.keys(errors),
-                ...obtenerCamposObligatoriosPorTipo(updatedData),
-              ]),
-            )
+            new Set([
+              ...Object.keys(errors),
+              ...obtenerCamposObligatoriosPorTipo(updatedData),
+            ]),
+          )
           : obtenerCamposObligatoriosPorTipo(updatedData);
 
         const erroresActualizados = validarCamposObligatorios(
@@ -195,15 +195,7 @@ export default function useDetalleSiembra(id) {
     ? obtenerEstanquesPorFinca(formData.finca)
     : [];
 
-  /**
-   * ==========================================
-   * Catálogos del formulario
-   * ==========================================
-   * Se obtienen aquí (y no en la screen) para que la pantalla
-   * no acceda directamente a SiembraService, tal como lo indica
-   * el estándar del módulo ("no accede directamente a datos
-   * persistentes"). Se memorizan porque son listas estáticas.
-   */
+
   const fincas = useMemo(() => obtenerFincas(), []);
   const tecnicasCultivo = useMemo(() => obtenerTecnicasCultivo(), []);
   const proveedoresLarva = useMemo(() => obtenerProveedoresLarva(), []);
@@ -393,44 +385,17 @@ export default function useDetalleSiembra(id) {
 
   const etapa = calcularEtapa(progreso);
 
-  /**
-   * ==========================================
-   * Datos de cierre de Pre-Cría completos
-   * ==========================================
-   *
-   * El botón "Finalizar Pre-Cría" solo debe poder presionarse
-   * cuando los tres datos de cierre del ciclo ya fueron
-   * ingresados Y GUARDADOS previamente (fecha de salida, PL
-   * final/tamaño y cantidad final/sobreviviente). Por eso se
-   * valida contra "siembra" (el último registro persistido) y
-   * no contra "formData" (que puede tener cambios sin guardar).
-   *
-   * Se usa una comprobación explícita de "vacío" (no un simple
-   * Boolean) porque "cantidadFinal" puede legítimamente ser 0
-   * (ej. mortalidad total en el ciclo) y Boolean(0) daría false,
-   * dejando el botón deshabilitado aunque el dato sí esté guardado.
-   */
   const tieneValor = (valor) =>
     valor !== undefined && valor !== null && valor !== "";
 
   const datosCierrePreCriaCompletos = Boolean(
     siembra &&
-      siembra.tipoRegistro === "precria" &&
-      tieneValor(siembra.fechaFin) &&
-      tieneValor(siembra.plFinal) &&
-      tieneValor(siembra.cantidadFinal),
+    siembra.tipoRegistro === "precria" &&
+    tieneValor(siembra.fechaFin) &&
+    tieneValor(siembra.plFinal) &&
+    tieneValor(siembra.cantidadFinal),
   );
 
-  /**
-   * ==========================================
-   * Parámetros para crear Siembra desde Pre-Cría
-   * ==========================================
-   *
-   * Construye los parámetros que se envían a "Nueva Siembra"
-   * para prellenar el formulario con los datos de la Pre-Cría
-   * (recién finalizada o ya finalizada previamente). Es lógica
-   * pura de datos: la pantalla solo la usa junto con router.push.
-   */
   const construirParamsSiembraDesdePrecria = useCallback(
     (datosPrecria) => ({
       provieneDePrecriaId: id,
@@ -466,16 +431,6 @@ export default function useDetalleSiembra(id) {
     [id],
   );
 
-  /**
-   * ==========================================
-   * Finalizar Pre-Cría y continuar a Siembra
-   * ==========================================
-   *
-   * Finaliza la Pre-Cría y, si quedó guardada correctamente,
-   * navega a "Nueva Siembra" con los datos ya prellenados.
-   * Si faltan campos obligatorios, finalizarPreCria() devuelve
-   * null y aquí simplemente no se navega.
-   */
   const handleFinalizarPreCria = useCallback(() => {
     const registroFinalizado = finalizarPreCria();
 
@@ -489,11 +444,7 @@ export default function useDetalleSiembra(id) {
     });
   }, [finalizarPreCria, construirParamsSiembraDesdePrecria, router]);
 
-  /**
-   * Navega a "Nueva Siembra" con los datos de una Pre-Cría que
-   * ya fue finalizada previamente (accesos directo desde el modo
-   * consulta, sin volver a finalizar nada).
-   */
+
   const handleCrearSiembraDesdePrecria = useCallback(() => {
     router.push({
       pathname: "/(drawer)/siembra/nueva",
