@@ -38,7 +38,6 @@ export function useFincaEditar({ onFinca, codigoInterno }) {
     espejoAgua: "",
   });
 
-  const [errorMessage, setErrorMessage] = useState("");
   const [telefonos, setTelefonos] = useState([""]);
   const [errores, setErrores] = useState({});
   const finca = fincas.find((f) => f.codigoInterno === codigoInterno);
@@ -108,7 +107,6 @@ export function useFincaEditar({ onFinca, codigoInterno }) {
       !isNumber(formulario.areaTotal)
     ) {
       nuevosErrores.areaTotal = true;
-      setErrorMessage("El área total debe ser un numero positivo");
     }
 
     if (
@@ -116,7 +114,6 @@ export function useFincaEditar({ onFinca, codigoInterno }) {
       !isNumber(formulario.espejoAgua)
     ) {
       nuevosErrores.espejoAgua = true;
-      setErrorMessage("El espejo de agua debe ser un numero positivo");
     }
 
     for (let i = 0; i < telefonos.length; i++) {
@@ -125,9 +122,6 @@ export function useFincaEditar({ onFinca, codigoInterno }) {
 
       if (!isTelefonoValido(tel)) {
         nuevosErrores[`telefono${i}`] = true;
-        setErrorMessage(
-          "Cada teléfono debe contener exactamente 8 dígitos numéricos.",
-        );
         break;
       }
     }
@@ -163,7 +157,6 @@ export function useFincaEditar({ onFinca, codigoInterno }) {
     ContentWrapper,
     formulario,
     telefonos,
-    errorMessage,
     errores,
     setErrores,
 

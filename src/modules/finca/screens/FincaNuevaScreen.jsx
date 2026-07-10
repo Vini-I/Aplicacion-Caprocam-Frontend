@@ -42,7 +42,6 @@ export default function FincaNuevaScreen({onFinca}) {
     setFormulario,
     telefonos,
     setTelefonos,
-    errorMessage,
     errores,
     setErrores,
 
@@ -217,7 +216,7 @@ export default function FincaNuevaScreen({onFinca}) {
         {Object.keys(errores).length > 0 && (
         <CustomAlert 
           variant="danger" 
-          message={errorMessage || "Rellene los espacios importantes para continuar."} 
+          message={"Rellene los espacios importantes para continuar"}
           containerStyle={[styles.errorAlertContainer]}
           textStyle={[styles.errorAlertItems]}
           style={[styles.errorAlertItems]}
