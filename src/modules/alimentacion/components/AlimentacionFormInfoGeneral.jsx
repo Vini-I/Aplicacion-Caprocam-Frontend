@@ -22,11 +22,15 @@ import Card from "../../../shared/components/Card";
 import Select from "../../../shared/components/Select";
 import Text from "../../../shared/components/Text";
 import DateInput from "../../../shared/components/DateInput";
+import Icon from "../../../shared/components/Icons";
 import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
+import { ICONS } from "../../../theme/icons";
 import { HORAS, FINCAS, ESTANQUES } from "../constants/alimentacionOpciones";
 
 const bordeError = { borderColor: COLORS.error, borderWidth: 1.5 };
+const sectionTitleRow = { flexDirection: "row", alignItems: "center", marginBottom: 10 };
+const sectionIcon = { marginRight: 8 };
 
 export default function AlimentacionFormInfoGeneral({
   form = {},
@@ -40,7 +44,14 @@ export default function AlimentacionFormInfoGeneral({
   const invalidoHora = submitted && !!errores.hora;
 
   return (
-    <Card title="Información General">
+    <Card>
+      <View style={sectionTitleRow}>
+        <Icon icon={ICONS.calendar} size={18} color={COLORS.primary} style={sectionIcon} />
+        <Text size={18} weight="700" color={COLORS.textSecondary}>
+          Información General
+        </Text>
+      </View>
+
       <DateInput
         label="Fecha de Registro *"
         value={form.fecha ?? ""}

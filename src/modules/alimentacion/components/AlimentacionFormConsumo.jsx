@@ -16,13 +16,19 @@
  */
 
 import React from "react";
+import { View } from "react-native";
 import Card from "../../../shared/components/Card";
 import Input from "../../../shared/components/Input";
 import Select from "../../../shared/components/Select";
+import Text from "../../../shared/components/Text";
+import Icon from "../../../shared/components/Icons";
 import { COLORS } from "../../../theme/colors";
+import { ICONS } from "../../../theme/icons";
 import { PROVEEDORES } from "../constants/alimentacionOpciones";
 
 const bordeError = { borderColor: COLORS.error, borderWidth: 1.5 };
+const sectionTitleRow = { flexDirection: "row", alignItems: "center", marginBottom: 10 };
+const sectionIcon = { marginRight: 8 };
 
 export default function AlimentacionFormConsumo({
   form = {},
@@ -34,7 +40,14 @@ export default function AlimentacionFormConsumo({
   const invalidoProveedor = submitted && !!errores.proveedor;
 
   return (
-    <Card title="Consumo">
+    <Card>
+      <View style={sectionTitleRow}>
+        <Icon icon={ICONS.weight} size={18} color={COLORS.primary} style={sectionIcon} />
+        <Text size={18} weight="700" color={COLORS.textSecondary}>
+          Consumo
+        </Text>
+      </View>
+
       <Input
         label="Cantidad (Kg) *"
         placeholder="Ej: 20"

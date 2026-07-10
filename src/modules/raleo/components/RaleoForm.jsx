@@ -36,8 +36,11 @@ import Card from "../../../shared/components/Card";
 import Select from "../../../shared/components/Select";
 import Input from "../../../shared/components/Input";
 import DateInput from "../../../shared/components/DateInput";
+import Text from "../../../shared/components/Text";
+import Icon from "../../../shared/components/Icons";
 import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
+import { ICONS } from "../../../theme/icons";
 
 const FINCAS = [
   { label: "Finca La Reina", value: "laReina" },
@@ -69,6 +72,8 @@ const METODOS = [
 ];
 
 const bordeError = { borderColor: COLORS.error, borderWidth: 1.5 };
+const sectionTitleRow = { flexDirection: "row", alignItems: "center", marginBottom: 10 };
+const sectionIcon = { marginRight: 8 };
 
 export default function RaleoForm({
   form = {},
@@ -89,7 +94,14 @@ export default function RaleoForm({
 
   return (
     <View>
-      <Card title="Información General">
+      <Card>
+        <View style={sectionTitleRow}>
+          <Icon icon={ICONS.calendar} size={18} color={COLORS.primary} style={sectionIcon} />
+          <Text size={18} weight="700" color={COLORS.textSecondary}>
+            Información General
+          </Text>
+        </View>
+
         <DateInput
           label="Fecha del Raleo *"
           value={form.fecha ?? ""}
@@ -117,7 +129,14 @@ export default function RaleoForm({
         />
       </Card>
 
-      <Card title="Parámetros del Raleo">
+      <Card>
+        <View style={sectionTitleRow}>
+          <Icon icon={ICONS.raleo} size={18} color={COLORS.primary} style={sectionIcon} />
+          <Text size={18} weight="700" color={COLORS.textSecondary}>
+            Parámetros del Raleo
+          </Text>
+        </View>
+
         <Input
           label="Porcentaje de raleo (%) *"
           placeholder="Ej: 30"
@@ -153,7 +172,14 @@ export default function RaleoForm({
         />
       </Card>
 
-      <Card title="Método de Extracción">
+      <Card>
+        <View style={sectionTitleRow}>
+          <Icon icon={ICONS.tools} size={18} color={COLORS.primary} style={sectionIcon} />
+          <Text size={18} weight="700" color={COLORS.textSecondary}>
+            Método de Extracción
+          </Text>
+        </View>
+
         <Select
           label="Método *"
           value={form.metodo}
@@ -172,7 +198,14 @@ export default function RaleoForm({
         />
       </Card>
 
-      <Card title="Observaciones">
+      <Card>
+        <View style={sectionTitleRow}>
+          <Icon icon={ICONS.clipboard} size={18} color={COLORS.primary} style={sectionIcon} />
+          <Text size={18} weight="700" color={COLORS.textSecondary}>
+            Observaciones
+          </Text>
+        </View>
+
         <Input
           label="Notas adicionales *"
           placeholder="Ingrese observaciones del raleo"
