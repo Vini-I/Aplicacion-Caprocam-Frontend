@@ -16,7 +16,7 @@
  * de detalle sin manejar lógica de negocio.
  */
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "expo-router";
 
 import {
@@ -38,6 +38,12 @@ import {
   obtenerEstanquesPorFinca,
   actualizarSiembra,
   finalizarPreCria as finalizarPreCriaEnServicio,
+  obtenerFincas,
+  obtenerTecnicasCultivo,
+  obtenerProveedoresLarva,
+  obtenerLaboratoriosLarva,
+  obtenerProcedenciasLarva,
+  obtenerPLLarva,
 } from "../services/SiembraService";
 
 function calcularEtapa(progreso) {
@@ -188,6 +194,22 @@ export default function useDetalleSiembra(id) {
   const estanques = formData
     ? obtenerEstanquesPorFinca(formData.finca)
     : [];
+
+  /**
+   * ==========================================
+   * Catálogos del formulario
+   * ==========================================
+   * Se obtienen aquí (y no en la screen) para que la pantalla
+   * no acceda directamente a SiembraService, tal como lo indica
+   * el estándar del módulo ("no accede directamente a datos
+   * persistentes"). Se memorizan porque son listas estáticas.
+   */
+  const fincas = useMemo(() => obtenerFincas(), []);
+  const tecnicasCultivo = useMemo(() => obtenerTecnicasCultivo(), []);
+  const proveedoresLarva = useMemo(() => obtenerProveedoresLarva(), []);
+  const laboratoriosLarva = useMemo(() => obtenerLaboratoriosLarva(), []);
+  const procedenciasLarva = useMemo(() => obtenerProcedenciasLarva(), []);
+  const plLarva = useMemo(() => obtenerPLLarva(), []);
 
   const obtenerCamposObligatorios = useCallback(
     (opciones) => obtenerCamposObligatoriosPorTipo(formData, opciones),
@@ -485,6 +507,18 @@ export default function useDetalleSiembra(id) {
     formData,
 
     estanques,
+
+    fincas,
+
+    tecnicasCultivo,
+
+    proveedoresLarva,
+
+    laboratoriosLarva,
+
+    procedenciasLarva,
+
+    plLarva,
 
     isEditing,
 

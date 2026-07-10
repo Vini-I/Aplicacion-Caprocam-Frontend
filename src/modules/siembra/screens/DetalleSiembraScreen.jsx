@@ -95,17 +95,6 @@ import { STYLE } from "../../../theme/style";
 // Hook principal
 import useDetalleSiembra from "../hooks/useDetalleSiembra";
 
-// Servicios
-
-import {
-  obtenerFincas,
-  obtenerTecnicasCultivo,
-  obtenerProveedoresLarva,
-  obtenerLaboratoriosLarva,
-  obtenerProcedenciasLarva,
-  obtenerPLLarva,
-} from "../services/SiembraService";
-
 export default function DetalleSiembraScreen() {
   const { id } = useLocalSearchParams();
 
@@ -115,6 +104,18 @@ export default function DetalleSiembraScreen() {
     formData,
 
     estanques,
+
+    fincas,
+
+    tecnicasCultivo,
+
+    proveedoresLarva,
+
+    laboratoriosLarva,
+
+    procedenciasLarva,
+
+    plLarva,
 
     isEditing,
 
@@ -150,18 +151,6 @@ export default function DetalleSiembraScreen() {
 
     fieldHelpers,
   } = useDetalleSiembra(id);
-
-  const fincas = obtenerFincas();
-
-  const tecnicasCultivo = obtenerTecnicasCultivo();
-
-  const proveedoresLarva = obtenerProveedoresLarva();
-
-  const laboratoriosLarva = obtenerLaboratoriosLarva();
-
-  const procedenciasLarva = obtenerProcedenciasLarva();
-
-  const plLarva = obtenerPLLarva();
 
   if (!siembra || !formData) {
     return (

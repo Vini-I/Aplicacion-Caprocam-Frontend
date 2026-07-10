@@ -21,7 +21,7 @@
  * la interfaz y ejecutar acciones.
  */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter, useLocalSearchParams } from "expo-router";
 
 import {
@@ -41,6 +41,12 @@ import {
   obtenerEstanquePorCodigo,
   obtenerEstanquesPorFinca,
   crearRegistro,
+  obtenerFincas,
+  obtenerTecnicasCultivo,
+  obtenerProveedoresLarva,
+  obtenerLaboratoriosLarva,
+  obtenerProcedenciasLarva,
+  obtenerPLLarva,
 } from "../services/SiembraService";
 
 const initialFormData = {
@@ -210,6 +216,22 @@ export default function useNuevaSiembra() {
 
   const estanques = obtenerEstanquesPorFinca(formData.finca);
 
+  /**
+   * ==========================================
+   * Catálogos del formulario
+   * ==========================================
+   * Se obtienen aquí (y no en la screen) para que la pantalla
+   * no acceda directamente a SiembraService, tal como lo indica
+   * el estándar del módulo ("no accede directamente a datos
+   * persistentes"). Se memorizan porque son listas estáticas.
+   */
+  const fincas = useMemo(() => obtenerFincas(), []);
+  const tecnicasCultivo = useMemo(() => obtenerTecnicasCultivo(), []);
+  const proveedoresLarva = useMemo(() => obtenerProveedoresLarva(), []);
+  const laboratoriosLarva = useMemo(() => obtenerLaboratoriosLarva(), []);
+  const procedenciasLarva = useMemo(() => obtenerProcedenciasLarva(), []);
+  const plLarva = useMemo(() => obtenerPLLarva(), []);
+
   function obtenerCamposObligatorios() {
 
     if (!formData.tipoRegistro) {
@@ -254,6 +276,18 @@ export default function useNuevaSiembra() {
     formData,
 
     estanques,
+
+    fincas,
+
+    tecnicasCultivo,
+
+    proveedoresLarva,
+
+    laboratoriosLarva,
+
+    procedenciasLarva,
+
+    plLarva,
 
     mensaje,
 
