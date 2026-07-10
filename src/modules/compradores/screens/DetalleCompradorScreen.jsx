@@ -33,7 +33,6 @@ import Card from "../../../shared/components/Card";
 import Button from "../../../shared/components/Button";
 import Text from "../../../shared/components/Text";
 import Title from "../../../shared/components/Title";
-import Badge from "../../../shared/components/Badge";
 import Modal from "../../../shared/components/Modal";
 import EmptyState from "../../../shared/components/EmptyState";
 import Alert from "../../../shared/components/Alert";
@@ -86,11 +85,6 @@ export default function DetalleCompradorScreen() {
             </View>
             <View style={styles.compradorInfo}>
               <Title level={4}>{comprador.nombre}</Title>
-              <Badge
-                label={getTipoProductoSelect(comprador.tipoProducto)}
-                style={styles.badge}
-                textStyle={styles.badgeTexto}
-              />
             </View>
           </View>
 

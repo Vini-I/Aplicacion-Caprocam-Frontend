@@ -73,9 +73,6 @@ export default function CompradorScreen() {
             <Text style={styles.providerName}>
               {comprador.nombre}
             </Text>
-            <Text style={styles.providerType}>
-              {comprador.tipoProducto}
-            </Text>
           </View>
 
           <Button
