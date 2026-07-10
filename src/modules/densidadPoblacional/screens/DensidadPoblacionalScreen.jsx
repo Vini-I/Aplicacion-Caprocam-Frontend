@@ -98,6 +98,7 @@ export default function DensidadPoblacionalScreen({ onBack }) {
 
     <ScrollView
       contentContainerStyle={STYLE.contentWrapper}
+      showsVerticalScrollIndicator={false}
     >
 
       <View style={styles.content}>
