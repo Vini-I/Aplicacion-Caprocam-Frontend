@@ -13,13 +13,10 @@
  *      - Datos de larva.
  *      - Cálculo de población.
  *
- * 2. Obtiene los catálogos necesarios para completar los campos:
- *      - Fincas.
- *      - Técnicas de cultivo.
- *      - Proveedores de larva.
- *      - Laboratorios.
- *      - Procedencias.
- *      - PL de larva.
+ * 2. Recibe del hook los catálogos necesarios para completar los
+ *    campos (fincas, técnicas de cultivo, proveedores de larva,
+ *    laboratorios, procedencias y PL de larva). La screen ya no
+ *    los solicita directamente a SiembraService.
  *
  * 3. Administra la interacción del formulario mediante el hook:
  *      - useNuevaSiembra.
@@ -76,20 +73,23 @@ import { COLORS } from "../../../theme/colors";
 
 import useNuevaSiembra from "../hooks/useNuevaSiembra";
 
-import {
-  obtenerFincas,
-  obtenerTecnicasCultivo,
-  obtenerProveedoresLarva,
-  obtenerLaboratoriosLarva,
-  obtenerProcedenciasLarva,
-  obtenerPLLarva,
-} from "../services/SiembraService";
-
 export default function NuevaSiembraScreen() {
   const {
     formData,
 
     estanques,
+
+    fincas,
+
+    tecnicasCultivo,
+
+    proveedoresLarva,
+
+    laboratoriosLarva,
+
+    procedenciasLarva,
+
+    plLarva,
 
     mensaje,
 
@@ -105,19 +105,6 @@ export default function NuevaSiembraScreen() {
 
     fieldHelpers,
   } = useNuevaSiembra();
-
-
-  const fincas = obtenerFincas();
-
-  const tecnicasCultivo = obtenerTecnicasCultivo();
-
-  const proveedoresLarva = obtenerProveedoresLarva();
-
-  const laboratoriosLarva = obtenerLaboratoriosLarva();
-
-  const procedenciasLarva = obtenerProcedenciasLarva();
-
-  const plLarva = obtenerPLLarva();
 
   return (
     <>

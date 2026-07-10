@@ -63,7 +63,7 @@
 
 import React from "react";
 
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import { View, ScrollView } from "react-native";
 
 // Componentes compartidos
@@ -95,20 +95,8 @@ import { STYLE } from "../../../theme/style";
 // Hook principal
 import useDetalleSiembra from "../hooks/useDetalleSiembra";
 
-// Servicios
-
-import {
-  obtenerFincas,
-  obtenerTecnicasCultivo,
-  obtenerProveedoresLarva,
-  obtenerLaboratoriosLarva,
-  obtenerProcedenciasLarva,
-  obtenerPLLarva,
-} from "../services/SiembraService";
-
 export default function DetalleSiembraScreen() {
   const { id } = useLocalSearchParams();
-  const router = useRouter();
 
   const {
     siembra,
@@ -116,6 +104,18 @@ export default function DetalleSiembraScreen() {
     formData,
 
     estanques,
+
+    fincas,
+
+    tecnicasCultivo,
+
+    proveedoresLarva,
+
+    laboratoriosLarva,
+
+    procedenciasLarva,
+
+    plLarva,
 
     isEditing,
 
@@ -143,84 +143,14 @@ export default function DetalleSiembraScreen() {
 
     guardar,
 
-    finalizarPreCria,
+    handleFinalizarPreCria,
+
+    handleCrearSiembraDesdePrecria,
 
     datosCierrePreCriaCompletos,
 
     fieldHelpers,
   } = useDetalleSiembra(id);
-
-  /**
-   * Construye los parámetros que se envían a "Nueva Siembra"
-   * para prellenar el formulario con los datos de la Pre-Cría
-   * que se acaba de finalizar.
-   */
-  function construirParamsSiembraDesdePrecria(datosPrecria) {
-    return {
-      provieneDePrecriaId: id,
-      finca: datosPrecria.fincaId || datosPrecria.finca || "",
-      estanque: datosPrecria.estanque || "",
-      cantidadFinal:
-        datosPrecria.cantidadFinal ||
-        datosPrecria.cantidadSobrevivientePrecria ||
-        "",
-      cantidadSobrevivientePrecria:
-        datosPrecria.cantidadSobrevivientePrecria ||
-        datosPrecria.cantidadFinal ||
-        "",
-      duracionDias:
-        datosPrecria.duracionDias || datosPrecria.duracionPrecria || "",
-      duracionPrecria:
-        datosPrecria.duracionPrecria || datosPrecria.duracionDias || "",
-      fechaFin: datosPrecria.fechaFin || datosPrecria.fechaSalidaPrecria || "",
-      fechaSalidaPrecria:
-        datosPrecria.fechaSalidaPrecria || datosPrecria.fechaFin || "",
-      proveedorLarva: datosPrecria.proveedorLarva || "",
-      laboratorioLarva:
-        datosPrecria.laboratorioLarva || datosPrecria.laboratoriosLarva || "",
-      procedenciaLarva: datosPrecria.procedenciaLarva || "",
-      codigoLoteLarva: datosPrecria.codigoLoteLarva || "",
-      certificadoLarva: datosPrecria.certificadoLarva || "",
-      plLarva:
-        datosPrecria.plLarva ||
-        datosPrecria.plFinal ||
-        datosPrecria.plInicial ||
-        "",
-    };
-  }
-
-  function handleFinalizarPreCria() {
-    const registroFinalizado = finalizarPreCria();
-
-    if (!registroFinalizado) {
-
-      return;
-    }
-
-    router.push({
-      pathname: "/(drawer)/siembra/nueva",
-      params: construirParamsSiembraDesdePrecria(registroFinalizado),
-    });
-  }
-
-  function handleCrearSiembraDesdePrecria() {
-    router.push({
-      pathname: "/(drawer)/siembra/nueva",
-      params: construirParamsSiembraDesdePrecria(formData),
-    });
-  }
-
-  const fincas = obtenerFincas();
-
-  const tecnicasCultivo = obtenerTecnicasCultivo();
-
-  const proveedoresLarva = obtenerProveedoresLarva();
-
-  const laboratoriosLarva = obtenerLaboratoriosLarva();
-
-  const procedenciasLarva = obtenerProcedenciasLarva();
-
-  const plLarva = obtenerPLLarva();
 
   if (!siembra || !formData) {
     return (

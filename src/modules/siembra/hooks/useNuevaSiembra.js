@@ -21,7 +21,7 @@
  * la interfaz y ejecutar acciones.
  */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter, useLocalSearchParams } from "expo-router";
 
 import {
@@ -35,10 +35,18 @@ import { calcularCantidadSembrada } from "./siembraCalculos";
 
 import { obtenerFechaHoy } from "./dateUtils";
 
+import { formatearHoraIngreso } from "./siembraFormatters";
+
 import {
   obtenerEstanquePorCodigo,
   obtenerEstanquesPorFinca,
   crearRegistro,
+  obtenerFincas,
+  obtenerTecnicasCultivo,
+  obtenerProveedoresLarva,
+  obtenerLaboratoriosLarva,
+  obtenerProcedenciasLarva,
+  obtenerPLLarva,
 } from "../services/SiembraService";
 
 const initialFormData = {
@@ -149,9 +157,11 @@ export default function useNuevaSiembra() {
 
   function handleChange(field, value) {
     setFormData((previousData) => {
+      const valorFinal = field === "horaIngreso" ? formatearHoraIngreso(value) : value;
+
       const updatedData = {
         ...previousData,
-        [field]: value,
+        [field]: valorFinal,
       };
 
       if (
@@ -206,6 +216,13 @@ export default function useNuevaSiembra() {
 
   const estanques = obtenerEstanquesPorFinca(formData.finca);
 
+  const fincas = useMemo(() => obtenerFincas(), []);
+  const tecnicasCultivo = useMemo(() => obtenerTecnicasCultivo(), []);
+  const proveedoresLarva = useMemo(() => obtenerProveedoresLarva(), []);
+  const laboratoriosLarva = useMemo(() => obtenerLaboratoriosLarva(), []);
+  const procedenciasLarva = useMemo(() => obtenerProcedenciasLarva(), []);
+  const plLarva = useMemo(() => obtenerPLLarva(), []);
+
   function obtenerCamposObligatorios() {
 
     if (!formData.tipoRegistro) {
@@ -213,12 +230,6 @@ export default function useNuevaSiembra() {
     }
     return ["tipoRegistro", ...obtenerCamposObligatoriosPorTipo(formData)];
   }
-
-  /**
-   * ==========================================
-   * Crear siembra
-   * ==========================================
-   */
 
   function handleCrearSiembra() {
     setSubmitted(true);
@@ -250,6 +261,18 @@ export default function useNuevaSiembra() {
     formData,
 
     estanques,
+
+    fincas,
+
+    tecnicasCultivo,
+
+    proveedoresLarva,
+
+    laboratoriosLarva,
+
+    procedenciasLarva,
+
+    plLarva,
 
     mensaje,
 

@@ -66,7 +66,7 @@ export default function InformacionGeneralSection({
 
       <Input
         label={requiredLabel("Hora de ingreso")}
-        placeholder="Ej: 07:00 a.m."
+        placeholder="Ej: 07:00 AM"
         value={formData.horaIngreso}
         onChangeText={(value) => onChange("horaIngreso", value)}
         labelStyle={styles.requiredLabel}

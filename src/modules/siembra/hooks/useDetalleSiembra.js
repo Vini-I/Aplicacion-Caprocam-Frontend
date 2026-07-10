@@ -16,7 +16,8 @@
  * de detalle sin manejar lógica de negocio.
  */
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "expo-router";
 
 import {
   useFieldValidation,
@@ -25,9 +26,11 @@ import {
 
 import { obtenerCamposObligatorios as obtenerCamposObligatoriosPorTipo } from "./siembraValidationRules";
 
-import { calcularCantidadSembrada } from "./siembraCalculos";
+import { calcularCantidadSembrada, calcularProgresoCiclo } from "./siembraCalculos";
 
 import { obtenerFechaHoy } from "./dateUtils";
+
+import { formatearHoraIngreso } from "./siembraFormatters";
 
 import {
   obtenerSiembraPorId,
@@ -35,6 +38,12 @@ import {
   obtenerEstanquesPorFinca,
   actualizarSiembra,
   finalizarPreCria as finalizarPreCriaEnServicio,
+  obtenerFincas,
+  obtenerTecnicasCultivo,
+  obtenerProveedoresLarva,
+  obtenerLaboratoriosLarva,
+  obtenerProcedenciasLarva,
+  obtenerPLLarva,
 } from "../services/SiembraService";
 
 function calcularEtapa(progreso) {
@@ -45,6 +54,8 @@ function calcularEtapa(progreso) {
 }
 
 export default function useDetalleSiembra(id) {
+  const router = useRouter();
+
   const [siembra, setSiembra] = useState(null);
   const [formData, setFormData] = useState(null);
 
@@ -89,9 +100,11 @@ export default function useDetalleSiembra(id) {
 
   const handleChange = useCallback((field, value) => {
     setFormData((previousData) => {
+      const valorFinal = field === "horaIngreso" ? formatearHoraIngreso(value) : value;
+
       const updatedData = {
         ...previousData,
-        [field]: value,
+        [field]: valorFinal,
       };
 
       if (
@@ -108,11 +121,11 @@ export default function useDetalleSiembra(id) {
 
         const camposAValidar = Object.keys(errors).length
           ? Array.from(
-              new Set([
-                ...Object.keys(errors),
-                ...obtenerCamposObligatoriosPorTipo(updatedData),
-              ]),
-            )
+            new Set([
+              ...Object.keys(errors),
+              ...obtenerCamposObligatoriosPorTipo(updatedData),
+            ]),
+          )
           : obtenerCamposObligatoriosPorTipo(updatedData);
 
         const erroresActualizados = validarCamposObligatorios(
@@ -181,6 +194,14 @@ export default function useDetalleSiembra(id) {
   const estanques = formData
     ? obtenerEstanquesPorFinca(formData.finca)
     : [];
+
+
+  const fincas = useMemo(() => obtenerFincas(), []);
+  const tecnicasCultivo = useMemo(() => obtenerTecnicasCultivo(), []);
+  const proveedoresLarva = useMemo(() => obtenerProveedoresLarva(), []);
+  const laboratoriosLarva = useMemo(() => obtenerLaboratoriosLarva(), []);
+  const procedenciasLarva = useMemo(() => obtenerProcedenciasLarva(), []);
+  const plLarva = useMemo(() => obtenerPLLarva(), []);
 
   const obtenerCamposObligatorios = useCallback(
     (opciones) => obtenerCamposObligatoriosPorTipo(formData, opciones),
@@ -360,52 +381,76 @@ export default function useDetalleSiembra(id) {
     setErrors,
   ]);
 
-  const totalDias = formData
-    ? Number(
-        formData.tipoRegistro === "precria"
-          ? formData.duracionDias
-          : formData.diasMaduracion,
-      ) || 0
-    : 0;
-
-const diaActual = formData
-  ? Number(formData.diasCultivo) || 0
-  : 0;
-
- const progreso =
-  totalDias > 0
-    ? Math.round((diaActual / totalDias) * 100)
-    : 0;
+  const { totalDias, diaActual, progreso } = calcularProgresoCiclo(formData);
 
   const etapa = calcularEtapa(progreso);
 
-  /**
-   * ==========================================
-   * Datos de cierre de Pre-Cría completos
-   * ==========================================
-   *
-   * El botón "Finalizar Pre-Cría" solo debe poder presionarse
-   * cuando los tres datos de cierre del ciclo ya fueron
-   * ingresados Y GUARDADOS previamente (fecha de salida, PL
-   * final/tamaño y cantidad final/sobreviviente). Por eso se
-   * valida contra "siembra" (el último registro persistido) y
-   * no contra "formData" (que puede tener cambios sin guardar).
-   *
-   * Se usa una comprobación explícita de "vacío" (no un simple
-   * Boolean) porque "cantidadFinal" puede legítimamente ser 0
-   * (ej. mortalidad total en el ciclo) y Boolean(0) daría false,
-   * dejando el botón deshabilitado aunque el dato sí esté guardado.
-   */
   const tieneValor = (valor) =>
     valor !== undefined && valor !== null && valor !== "";
 
   const datosCierrePreCriaCompletos = Boolean(
     siembra &&
-      siembra.tipoRegistro === "precria" &&
-      tieneValor(siembra.fechaFin) &&
-      tieneValor(siembra.plFinal) &&
-      tieneValor(siembra.cantidadFinal),
+    siembra.tipoRegistro === "precria" &&
+    tieneValor(siembra.fechaFin) &&
+    tieneValor(siembra.plFinal) &&
+    tieneValor(siembra.cantidadFinal),
   );
+
+  const construirParamsSiembraDesdePrecria = useCallback(
+    (datosPrecria) => ({
+      provieneDePrecriaId: id,
+      finca: datosPrecria.fincaId || datosPrecria.finca || "",
+      estanque: datosPrecria.estanque || "",
+      cantidadFinal:
+        datosPrecria.cantidadFinal ||
+        datosPrecria.cantidadSobrevivientePrecria ||
+        "",
+      cantidadSobrevivientePrecria:
+        datosPrecria.cantidadSobrevivientePrecria ||
+        datosPrecria.cantidadFinal ||
+        "",
+      duracionDias:
+        datosPrecria.duracionDias || datosPrecria.duracionPrecria || "",
+      duracionPrecria:
+        datosPrecria.duracionPrecria || datosPrecria.duracionDias || "",
+      fechaFin: datosPrecria.fechaFin || datosPrecria.fechaSalidaPrecria || "",
+      fechaSalidaPrecria:
+        datosPrecria.fechaSalidaPrecria || datosPrecria.fechaFin || "",
+      proveedorLarva: datosPrecria.proveedorLarva || "",
+      laboratorioLarva:
+        datosPrecria.laboratorioLarva || datosPrecria.laboratoriosLarva || "",
+      procedenciaLarva: datosPrecria.procedenciaLarva || "",
+      codigoLoteLarva: datosPrecria.codigoLoteLarva || "",
+      certificadoLarva: datosPrecria.certificadoLarva || "",
+      plLarva:
+        datosPrecria.plLarva ||
+        datosPrecria.plFinal ||
+        datosPrecria.plInicial ||
+        "",
+    }),
+    [id],
+  );
+
+  const handleFinalizarPreCria = useCallback(() => {
+    const registroFinalizado = finalizarPreCria();
+
+    if (!registroFinalizado) {
+      return;
+    }
+
+    router.push({
+      pathname: "/(drawer)/siembra/nueva",
+      params: construirParamsSiembraDesdePrecria(registroFinalizado),
+    });
+  }, [finalizarPreCria, construirParamsSiembraDesdePrecria, router]);
+
+
+  const handleCrearSiembraDesdePrecria = useCallback(() => {
+    router.push({
+      pathname: "/(drawer)/siembra/nueva",
+      params: construirParamsSiembraDesdePrecria(formData),
+    });
+  }, [construirParamsSiembraDesdePrecria, formData, router]);
 
   return {
     siembra,
@@ -413,6 +458,18 @@ const diaActual = formData
     formData,
 
     estanques,
+
+    fincas,
+
+    tecnicasCultivo,
+
+    proveedoresLarva,
+
+    laboratoriosLarva,
+
+    procedenciasLarva,
+
+    plLarva,
 
     isEditing,
 
@@ -440,7 +497,9 @@ const diaActual = formData
 
     guardar,
 
-    finalizarPreCria,
+    handleFinalizarPreCria,
+
+    handleCrearSiembraDesdePrecria,
 
     datosCierrePreCriaCompletos,
 
