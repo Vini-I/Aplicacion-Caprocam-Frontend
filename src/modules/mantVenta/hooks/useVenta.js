@@ -17,8 +17,11 @@
  * - Genera nombres consecutivos para clientes genéricos, como Cliente 001.
  * - Guarda la venta en el listado local y muestra mensajes de resultado.
  */
+import Text from "../../../shared/components/Text.jsx";
+import Icon from "../../../shared/components/Icons.jsx";
+
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useWindowDimensions } from "react-native";
+import { useWindowDimensions, View } from "react-native";
 import { useFocusEffect } from "expo-router";
 
 import { colaboradoresService } from "../../colaboradores/services/colaboradoresService.js";
@@ -365,7 +368,22 @@ export function useVenta() {
     limpiarFormulario,
   ]);
 
+  function SectionTitle({ icon, title }) {
+    return (
+      <View style={styles.sectionTitle}>
+        <Icon
+         icon={icon}
+         size={18}
+         color={COLORS.primary}
+          style={styles.sectionIcon}
+       />
+        <Text style={styles.sectionText}>{title}</Text>
+      </View>
+    );
+  }
+
   return {
+    SectionTitle,
     fincaSeleccionada,
     estanqueSeleccionado,
     pesoPromedio,

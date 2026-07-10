@@ -150,4 +150,13 @@ export const styles = StyleSheet.create({
     zIndex: 10,
     elevation: 10,
   },
+  buttonContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+  },
+  buttonText: {
+    color: COLORS.primary
+  }
 });
