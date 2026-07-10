@@ -8,19 +8,11 @@
  *
  * FUNCIONALIDAD:
  *
- * 1. Obtiene y muestra las siembras registradas mediante el servicio:
- *      - obtenerSiembras.
+ * 1. Obtiene y muestra las siembras registradas mediante el hook:
+ *      - useSiembraList.
  *
- * 2. Renderiza cada siembra mediante una tarjeta informativa con:
- *      - Estanque asociado.
- *      - Finca correspondiente.
- *      - Estado actual.
- *      - Identificador de siembra.
- *      - Fecha de siembra.
- *      - Día actual del cultivo.
- *      - Cantidad sembrada.
- *      - Código de lote.
- *      - PL de larva.
+ * 2. Renderiza cada siembra mediante la tarjeta informativa:
+ *      - SiembraCard.
  *
  * 3. Permite navegar hacia:
  *      - Registro de una nueva siembra.
@@ -28,20 +20,21 @@
  *
  * 4. Muestra la cantidad total de siembras activas disponibles.
  *
+ * 4.1 El hook useSiembraList oculta automáticamente del listado las
+ *     siembras y pre-crías que ya completaron su ciclo, para que no se
+ *     acumulen tarjetas de registros finalizados en esta pantalla. Esto
+ *     solo las oculta de este listado: el registro no se borra.
+ *
  * 5. Utiliza componentes visuales reutilizables para mantener la
  *    consistencia del diseño:
- *      - Cards.
- *      - Badges.
- *      - Botones.
- *      - Iconos.
+ *      - SiembraCard.
+ *      - Botones, iconos.
  *
  * COMPONENTES UTILIZADOS:
  *
- * - Card: contenedor visual de cada siembra.
- * - Badge: indicador del estado de la siembra.
+ * - SiembraCard: tarjeta de cada siembra/pre-cría.
  * - Button: acciones de navegación.
  * - Icon: representación visual de acciones.
- *
  *
  * NAVEGACIÓN:
  * - /siembra/nueva
@@ -52,19 +45,16 @@
  *
  * IMPORTANTE:
  *
- * - No modifica los datos de una siembra directamente.
- * - No contiene lógica de cálculo del ciclo productivo.
- * - Mantiene la responsabilidad de presentación y navegación.
+ * - No contiene lógica de negocio ni de navegación propia: todo
+ *   proviene de useSiembraList.
+ * - Mantiene únicamente la estructura visual de la pantalla.
  *
  * =========================================================================
  */
-import { useCallback, useEffect, useMemo, useState } from "react";
 import { View, Text, ScrollView } from "react-native";
 import { styles } from "../styles/SiembraListStyles";
 
 import Button from "../../../shared/components/Button";
-import Badge from "../../../shared/components/Badge";
-import Card from "../../../shared/components/Card";
 import Icon from "../../../shared/components/Icons";
 import EmptyState from "../../../shared/components/EmptyState";
 import SearchBar from "../../inventarios/components/SearchBar";
@@ -72,241 +62,29 @@ import FilterButton from "../../inventarios/components/FilterButton";
 import { ICONS } from "../../../theme/icons";
 import { COLORS } from "../../../theme/colors";
 import { STYLE } from "../../../theme/style";
-import {
-  obtenerFincas,
-  obtenerProveedoresLarva,
-  obtenerSiembras,
-  subscribeToSiembras,
-} from "../services/SiembraService";
-import { useFocusEffect, useRouter } from "expo-router";
+
+import SiembraCard from "../components/SiembraCard";
+import useSiembraList from "../hooks/useSiembraList";
 
 export default function SiembraListScreen() {
-  const [siembras, setSiembras] = useState(() => obtenerSiembras());
-  const [fincaLabels, setFincaLabels] = useState({});
-  const router = useRouter();
+  const {
+    fincaLabels,
 
-  useEffect(() => {
-    const unsubscribe = subscribeToSiembras(setSiembras);
+    busqueda,
+    setBusqueda,
 
-    setSiembras(obtenerSiembras());
-    const fincas = obtenerFincas();
-    setFincaLabels(
-      fincas.reduce((acc, finca) => {
-        acc[finca.value] = finca.label;
-        return acc;
-      }, {}),
-    );
+    filtros,
+    setFiltros,
 
-    return () => unsubscribe();
-  }, []);
+    tiposRegistro,
+    proveedoresRegistro,
 
-  useFocusEffect(
-    useCallback(() => {
-      setSiembras(obtenerSiembras());
-    }, []),
-  );
+    siembrasFiltradas,
 
-  const [busqueda, setBusqueda] = useState("");
-  const [filtros, setFiltros] = useState({
-    categories: [],
-    suppliers: [],
-    units: [],
-    lowStock: false,
-    expiryDate: "",
-  });
+    handleNuevaSiembra,
 
-  const tiposRegistro = useMemo(
-    () => [
-      { label: "Siembra", value: "siembra" },
-      { label: "Pre-Cría", value: "precria" },
-    ],
-    [],
-  );
-
-  const estadosRegistro = useMemo(
-    () => [...new Set(siembras.map((registro) => registro.estado || ""))].filter(Boolean),
-    [siembras],
-  );
-
-  const proveedoresRegistro = useMemo(() => {
-    return obtenerProveedoresLarva();
-  }, []);
-
-  const siembrasFiltradas = useMemo(() => {
-    return siembras.filter((registro) => {
-      const texto = busqueda.toLowerCase();
-      const coincideTexto =
-        registro.finca.toLowerCase().includes(texto) ||
-        registro.estanque.toLowerCase().includes(texto) ||
-        registro.codigoLoteLarva.toLowerCase().includes(texto) ||
-        (registro.proveedorLarva || "").toLowerCase().includes(texto);
-
-      const registroTipo = registro.tipoRegistro || "siembra";
-      const coincideTipo =
-        filtros.categories.length === 0 ||
-        filtros.categories.includes(registroTipo);
-
-      const coincideProveedor =
-        filtros.suppliers.length === 0 ||
-        filtros.suppliers.includes(registro.proveedorLarva || "");
-
-      return coincideTexto && coincideTipo && coincideProveedor;
-    });
-  }, [busqueda, filtros, siembras]);
-
-  const handleNuevaSiembra = () => {
-    router.push("/siembra/nueva");
-  };
-
-  const handleDetalleSiembra = (siembraId) => {
-    router.push({
-      pathname: "/siembra/detalle",
-      params: { id: siembraId },
-    });
-  };
-
-  function renderSiembra(registro) {
-    const esPreCria = registro.tipoRegistro === "precria";
-
-    return (
-      <Card key={registro.siembraId} style={styles.card}>
-        <View style={styles.cardHeader}>
-          <View>
-            <View style={styles.cardTitleRow}>
-              <Icon icon={ICONS.water} color={COLORS.primary} />
-              <Text style={styles.cardTitle}>Estanque {registro.estanque}</Text>
-            </View>
-            <View style={styles.cardSubtitleRow}>
-              <Text style={styles.cardSubtitle}>{fincaLabels[registro.finca] || registro.finca}</Text>
-            </View>
-          </View>
-
-          <View style={styles.cardBadges}>
-            <Badge
-              label={esPreCria ? "Pre-Cría" : "Siembra"}
-              variant={esPreCria ? "warning" : undefined}
-              style={styles.statusBadge}
-              textStyle={styles.statusText}
-            />
-            <Badge
-              label={registro.estado}
-              variant="success"
-              style={styles.statusBadge}
-              textStyle={styles.statusText}
-            />
-          </View>
-        </View>
-
-        <View style={styles.cardBody}>
-          <View style={styles.infoRow}>
-            <View style={styles.infoRowLabel}>
-              <Text style={styles.infoLabel}>
-                {esPreCria ? "Pre-Cría:" : "Siembra:"}
-              </Text>
-            </View>
-            <Text style={styles.infoValue}>#{registro.siembraId}</Text>
-          </View>
-
-          {esPreCria ? (
-            <>
-              <View style={styles.infoRow}>
-                <View style={styles.infoRowLabel}>
-                  <Text style={styles.infoLabel}>Fecha de inicio:</Text>
-                </View>
-                <Text style={styles.infoValue}>{registro.fechaInicio}</Text>
-              </View>
-
-              <View style={styles.infoRow}>
-                <View style={styles.infoRowLabel}>
-                  <Text style={styles.infoLabel}>Día de ciclo:</Text>
-                </View>
-                <Text style={styles.infoValue}>
-                  {registro.diasCultivo} de {registro.duracionDias}
-                </Text>
-              </View>
-
-              <View style={styles.infoRow}>
-                <View style={styles.infoRowLabel}>
-                  <Text style={styles.infoLabel}>Cantidad inicial:</Text>
-                </View>
-                <Text style={styles.infoValue}>
-                  {Number(registro.cantidadInicial ?? 0).toLocaleString()} camarones
-                </Text>
-              </View>
-
-              {registro.estado === "Finalizada" && (
-                <View style={styles.infoRow}>
-                  <View style={styles.infoRowLabel}>
-                    <Text style={styles.infoLabel}>Cantidad final:</Text>
-                  </View>
-                  <Text style={styles.infoValue}>
-                    {Number(registro.cantidadFinal ?? 0).toLocaleString()} camarones
-                  </Text>
-                </View>
-              )}
-            </>
-          ) : (
-            <>
-              <View style={styles.infoRow}>
-                <View style={styles.infoRowLabel}>
-                  <Text style={styles.infoLabel}>Fecha:</Text>
-                </View>
-                <Text style={styles.infoValue}>{registro.fechaSiembra}</Text>
-              </View>
-
-              <View style={styles.infoRow}>
-                <View style={styles.infoRowLabel}>
-                  <Text style={styles.infoLabel}>Día de cultivo:</Text>
-                </View>
-                <Text style={styles.infoValue}>
-                  {registro.diasCultivo} de {registro.diasMaduracion}
-                </Text>
-              </View>
-
-              <View style={styles.infoRow}>
-                <View style={styles.infoRowLabel}>
-                  <Text style={styles.infoLabel}>Cantidad sembrada:</Text>
-                </View>
-                <Text style={styles.infoValue}>
-                  {Number(registro.cantidadSembrada ?? 0).toLocaleString()} camarones
-                </Text>
-              </View>
-            </>
-          )}
-
-          <View style={styles.infoRow}>
-            <View style={styles.infoRowLabel}>
-              <Text style={styles.infoLabel}>Lote:</Text>
-            </View>
-            <Text style={styles.infoValue}>{registro.codigoLoteLarva}</Text>
-          </View>
-
-          <View style={styles.infoRow}>
-            <View style={styles.infoRowLabel}>
-              <Text style={styles.infoLabel}>PL:</Text>
-            </View>
-            <Text style={styles.infoValue}>
-              {esPreCria
-                ? registro.plFinal || registro.plInicial
-                : registro.plSiembra || registro.plLarva}
-            </Text>
-          </View>
-        </View>
-
-        <Button
-          variant="outline"
-          onPress={() => handleDetalleSiembra(registro.siembraId)}
-          style={styles.detailButton}
-          textStyle={styles.detailButtonText}
-        >
-          <View style={styles.detailButtonContent}>
-            <Icon icon={ICONS.edit} color={COLORS.primary} />
-            <Text style={styles.detailButtonText}>Ver detalles / Editar</Text>
-          </View>
-        </Button>
-      </Card>
-    );
-  }
+    handleDetalleSiembra,
+  } = useSiembraList();
 
   return (
     <View style={STYLE.container}>
@@ -367,7 +145,14 @@ export default function SiembraListScreen() {
               description="No se encontraron siembras o pre-crías con esta búsqueda o filtros."
             />
           ) : (
-            siembrasFiltradas.map(renderSiembra)
+            siembrasFiltradas.map((registro) => (
+              <SiembraCard
+                key={registro.siembraId}
+                registro={registro}
+                fincaLabel={fincaLabels[registro.finca] || registro.finca}
+                onVerDetalle={() => handleDetalleSiembra(registro.siembraId)}
+              />
+            ))
           )}
         </View>
       </ScrollView>

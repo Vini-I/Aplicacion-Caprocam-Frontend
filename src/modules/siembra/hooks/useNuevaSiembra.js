@@ -35,6 +35,8 @@ import { calcularCantidadSembrada } from "./siembraCalculos";
 
 import { obtenerFechaHoy } from "./dateUtils";
 
+import { formatearHoraIngreso } from "./siembraFormatters";
+
 import {
   obtenerEstanquePorCodigo,
   obtenerEstanquesPorFinca,
@@ -149,9 +151,11 @@ export default function useNuevaSiembra() {
 
   function handleChange(field, value) {
     setFormData((previousData) => {
+      const valorFinal = field === "horaIngreso" ? formatearHoraIngreso(value) : value;
+
       const updatedData = {
         ...previousData,
-        [field]: value,
+        [field]: valorFinal,
       };
 
       if (

@@ -17,6 +17,7 @@
  */
 
 import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "expo-router";
 
 import {
   useFieldValidation,
@@ -25,9 +26,11 @@ import {
 
 import { obtenerCamposObligatorios as obtenerCamposObligatoriosPorTipo } from "./siembraValidationRules";
 
-import { calcularCantidadSembrada } from "./siembraCalculos";
+import { calcularCantidadSembrada, calcularProgresoCiclo } from "./siembraCalculos";
 
 import { obtenerFechaHoy } from "./dateUtils";
+
+import { formatearHoraIngreso } from "./siembraFormatters";
 
 import {
   obtenerSiembraPorId,
@@ -45,6 +48,8 @@ function calcularEtapa(progreso) {
 }
 
 export default function useDetalleSiembra(id) {
+  const router = useRouter();
+
   const [siembra, setSiembra] = useState(null);
   const [formData, setFormData] = useState(null);
 
@@ -89,9 +94,11 @@ export default function useDetalleSiembra(id) {
 
   const handleChange = useCallback((field, value) => {
     setFormData((previousData) => {
+      const valorFinal = field === "horaIngreso" ? formatearHoraIngreso(value) : value;
+
       const updatedData = {
         ...previousData,
-        [field]: value,
+        [field]: valorFinal,
       };
 
       if (
@@ -360,22 +367,7 @@ export default function useDetalleSiembra(id) {
     setErrors,
   ]);
 
-  const totalDias = formData
-    ? Number(
-        formData.tipoRegistro === "precria"
-          ? formData.duracionDias
-          : formData.diasMaduracion,
-      ) || 0
-    : 0;
-
-const diaActual = formData
-  ? Number(formData.diasCultivo) || 0
-  : 0;
-
- const progreso =
-  totalDias > 0
-    ? Math.round((diaActual / totalDias) * 100)
-    : 0;
+  const { totalDias, diaActual, progreso } = calcularProgresoCiclo(formData);
 
   const etapa = calcularEtapa(progreso);
 
@@ -406,6 +398,86 @@ const diaActual = formData
       tieneValor(siembra.plFinal) &&
       tieneValor(siembra.cantidadFinal),
   );
+
+  /**
+   * ==========================================
+   * Parámetros para crear Siembra desde Pre-Cría
+   * ==========================================
+   *
+   * Construye los parámetros que se envían a "Nueva Siembra"
+   * para prellenar el formulario con los datos de la Pre-Cría
+   * (recién finalizada o ya finalizada previamente). Es lógica
+   * pura de datos: la pantalla solo la usa junto con router.push.
+   */
+  const construirParamsSiembraDesdePrecria = useCallback(
+    (datosPrecria) => ({
+      provieneDePrecriaId: id,
+      finca: datosPrecria.fincaId || datosPrecria.finca || "",
+      estanque: datosPrecria.estanque || "",
+      cantidadFinal:
+        datosPrecria.cantidadFinal ||
+        datosPrecria.cantidadSobrevivientePrecria ||
+        "",
+      cantidadSobrevivientePrecria:
+        datosPrecria.cantidadSobrevivientePrecria ||
+        datosPrecria.cantidadFinal ||
+        "",
+      duracionDias:
+        datosPrecria.duracionDias || datosPrecria.duracionPrecria || "",
+      duracionPrecria:
+        datosPrecria.duracionPrecria || datosPrecria.duracionDias || "",
+      fechaFin: datosPrecria.fechaFin || datosPrecria.fechaSalidaPrecria || "",
+      fechaSalidaPrecria:
+        datosPrecria.fechaSalidaPrecria || datosPrecria.fechaFin || "",
+      proveedorLarva: datosPrecria.proveedorLarva || "",
+      laboratorioLarva:
+        datosPrecria.laboratorioLarva || datosPrecria.laboratoriosLarva || "",
+      procedenciaLarva: datosPrecria.procedenciaLarva || "",
+      codigoLoteLarva: datosPrecria.codigoLoteLarva || "",
+      certificadoLarva: datosPrecria.certificadoLarva || "",
+      plLarva:
+        datosPrecria.plLarva ||
+        datosPrecria.plFinal ||
+        datosPrecria.plInicial ||
+        "",
+    }),
+    [id],
+  );
+
+  /**
+   * ==========================================
+   * Finalizar Pre-Cría y continuar a Siembra
+   * ==========================================
+   *
+   * Finaliza la Pre-Cría y, si quedó guardada correctamente,
+   * navega a "Nueva Siembra" con los datos ya prellenados.
+   * Si faltan campos obligatorios, finalizarPreCria() devuelve
+   * null y aquí simplemente no se navega.
+   */
+  const handleFinalizarPreCria = useCallback(() => {
+    const registroFinalizado = finalizarPreCria();
+
+    if (!registroFinalizado) {
+      return;
+    }
+
+    router.push({
+      pathname: "/(drawer)/siembra/nueva",
+      params: construirParamsSiembraDesdePrecria(registroFinalizado),
+    });
+  }, [finalizarPreCria, construirParamsSiembraDesdePrecria, router]);
+
+  /**
+   * Navega a "Nueva Siembra" con los datos de una Pre-Cría que
+   * ya fue finalizada previamente (accesos directo desde el modo
+   * consulta, sin volver a finalizar nada).
+   */
+  const handleCrearSiembraDesdePrecria = useCallback(() => {
+    router.push({
+      pathname: "/(drawer)/siembra/nueva",
+      params: construirParamsSiembraDesdePrecria(formData),
+    });
+  }, [construirParamsSiembraDesdePrecria, formData, router]);
 
   return {
     siembra,
@@ -440,7 +512,9 @@ const diaActual = formData
 
     guardar,
 
-    finalizarPreCria,
+    handleFinalizarPreCria,
+
+    handleCrearSiembraDesdePrecria,
 
     datosCierrePreCriaCompletos,
 
