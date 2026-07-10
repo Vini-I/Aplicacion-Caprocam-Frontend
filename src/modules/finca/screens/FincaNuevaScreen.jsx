@@ -34,19 +34,9 @@ import { COLORS } from "../../../theme/colors.js";
 import { styles } from "../styles/StylesFincaNueva.js";
 import { STYLE } from "../../../theme/style.js";
 
-function SectionTitle({ icon, title }) {
-  return (
-    <View style={styles.sectionTitleRow}>
-      <Icon icon={icon} size={18} color={COLORS.primary} style={styles.sectionIcon} />
-      <Text style={styles.sectionTitleText} size={14} weight="700" color={COLORS.textPrimary}>
-        {title}
-      </Text>
-    </View>
-  );
-}
-
 export default function FincaNuevaScreen({onFinca}) {
   const {
+    SectionTitle,
     ContentWrapper,
     formulario,
     setFormulario,

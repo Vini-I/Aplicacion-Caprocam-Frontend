@@ -34,6 +34,7 @@ import { STYLE } from "../../../theme/style.js";
 
 export default function FincaEditarScreen({ onFinca, codigoInterno }) {
   const {
+    SectionTitle,
     ContentWrapper,
     formulario,
     telefonos,
@@ -68,14 +69,7 @@ export default function FincaEditarScreen({ onFinca, codigoInterno }) {
       >
         <ContentWrapper>
           <Card>
-            <Text
-              style={styles.sectionTitle}
-              size={14}
-              weight="700"
-              color={COLORS.textPrimary}
-            >
-              IDENTIFICACIÓN
-            </Text>
+            <SectionTitle icon={ICONS.id} title="IDENTIFICACIÓN" />
             <View style={styles.row}>
               <View style={styles.column}>
                 <Input
@@ -90,14 +84,7 @@ export default function FincaEditarScreen({ onFinca, codigoInterno }) {
           </Card>
 
           <Card>
-            <Text
-              style={styles.sectionTitle}
-              size={14}
-              weight="700"
-              color={COLORS.textPrimary}
-            >
-              CONTACTO
-            </Text>
+            <SectionTitle icon={ICONS.user} title="CONTACTO" />
             <View>
               <Input
                 label="Propietario / Responsable *"
@@ -109,9 +96,10 @@ export default function FincaEditarScreen({ onFinca, codigoInterno }) {
             </View>
 
             <View style={styles.phoneHeader}>
-              <Text size={14} weight="600" color={COLORS.textPrimary}>
-                Teléfonos
-              </Text>
+              <View style={styles.phoneTitle}>
+                <Icon icon={ICONS.phone} size={18} color={COLORS.primary} style={styles.sectionIcon} />
+                <Text size={14} weight="600" color={COLORS.textPrimary}>Teléfonos</Text>
+              </View>
               <Button style={styles.addPhoneButton} onPress={agregarTelefono}>
                 <Icon icon={ICONS.add} size={18} color={COLORS.black} />
               </Button>
@@ -139,14 +127,7 @@ export default function FincaEditarScreen({ onFinca, codigoInterno }) {
           </Card>
 
           <Card>
-            <Text
-              style={styles.sectionTitle}
-              size={14}
-              weight="700"
-              color={COLORS.textPrimary}
-            >
-              CARACTERÍSTICAS
-            </Text>
+            <SectionTitle icon={ICONS.document} title="CARACTERÍSTICAS" />
             <View>
               <Input
                 label="Área total (ha) *"
