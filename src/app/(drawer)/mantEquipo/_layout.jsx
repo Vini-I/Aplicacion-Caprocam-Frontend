@@ -7,7 +7,7 @@ export default function MantEquipoStackLayout() {
       
       <Stack.Screen name="mantEquipo" options={{ title: "Mantenimiento de Equipos" }} />
 
-      <Stack.Screen name="tareas" options={{ title: "Agregar Tareas", headerShown: true }} />
+      <Stack.Screen name="tareas" options={{ title: "Gestion Tareas", headerShown: true }} />
 
     </Stack>
   );

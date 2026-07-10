@@ -96,7 +96,7 @@ export const styles = StyleSheet.create({
 
   alertText: {
     textAlign: "center",
-    color: COLORS.error,
+    color: COLORS.black,
   },
 
   successAlert: {

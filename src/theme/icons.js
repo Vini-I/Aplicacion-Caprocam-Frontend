@@ -140,6 +140,10 @@ export const ICONS = {
     provider: "MaterialCommunityIcons",
     name: "star",
   },
+   close: {
+    provider: "MaterialIcons",
+    name: "close",
+  },
 
   // Usuario
   user: {
@@ -274,6 +278,12 @@ export const ICONS = {
   arrowLongRight: {
     provider: "MaterialCommunityIcons",
     name: "arrow-right-bold",
+  },
+
+  // Inventarios
+  box: {
+    provider: "MaterialCommunityIcons",
+    name: "package-variant-closed",
   },
 
   // Otros
