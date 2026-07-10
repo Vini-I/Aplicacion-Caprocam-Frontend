@@ -113,12 +113,14 @@ export const styles = StyleSheet.create({
     fontWeight: "600",
   },
 
-  buttonRow: {
-    marginTop: 12,
-  },
 
   saveButton: {
-    width: "100%",
+    minHeight: 56,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: COLORS.primary,
+    backgroundColor: COLORS.white,
   },
 
   buttonContent: {
@@ -129,7 +131,7 @@ export const styles = StyleSheet.create({
   },
 
   buttonText: {
-    color: COLORS.white,
+    color: COLORS.primary,
     fontWeight: "600",
     fontSize: 16,
   },
