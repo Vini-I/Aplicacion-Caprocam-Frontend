@@ -1,7 +1,51 @@
+/**
+ * ============================================================
+ * HOOK USERALEO
+ * ============================================================
+ *
+ * Maneja el estado local del formulario de raleo y su
+ * validación. No muestra ni renderiza nada en pantalla: la
+ * interfaz (la screen) decide cuándo mostrar los errores
+ * devueltos, usando su propio estado `submitted`.
+ *
+ * Estado que maneja:
+ * - form: objeto con los valores actuales de todos los campos.
+ *
+ * Retorna:
+ * - form: valores actuales del formulario.
+ * - updateField(campo, valor): actualiza un campo del formulario.
+ * - resetForm(): restaura el formulario a sus valores iniciales.
+ * - validarForm(): retorna { valido, errores } verificando como
+ *   obligatorios finca, estanque, fecha, porcentajeRaleo,
+ *   objetivo, metodo y responsable, sin mostrar nada en pantalla
+ *   (mismo patrón que useAlimentacionForm.js). `observaciones` no
+ *   se valida aquí: si queda vacío, RaleoScreen.jsx lo completa
+ *   con un texto por defecto antes de guardar.
+ *
+ * Funcionalidad:
+ * - `fecha` inicia en la fecha de hoy (hoy()) y no en "": DateInput
+ *   solo llama a onChangeText cuando el usuario abre el calendario
+ *   y elige una fecha, pero ya muestra "hoy" por defecto sin
+ *   disparar ese evento. Si el estado inicial fuera "", el campo
+ *   se veía lleno mientras form.fecha seguía vacío, y la
+ *   validación mostraba "La fecha es obligatoria" aunque se viera
+ *   una fecha en pantalla.
+ *
+ * Ejemplo:
+ * const { form, updateField, resetForm, validarForm } = useRaleo();
+ */
+
 import { useState } from "react";
 
+function hoy() {
+  const d = new Date();
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  return `${dd}/${mm}/${d.getFullYear()}`;
+}
+
 const FORM_INICIAL = {
-  fecha: "",
+  fecha: hoy(),
   finca: "",
   estanque: "",
   porcentajeRaleo: "",
@@ -24,9 +68,23 @@ export default function useRaleo() {
     setForm(FORM_INICIAL);
   }
 
+  function validarForm() {
+    const errores = {};
+    if (!form.finca) errores.finca = "La finca es obligatoria";
+    if (!form.estanque) errores.estanque = "El estanque es obligatorio";
+    if (!form.fecha) errores.fecha = "La fecha es obligatoria";
+    if (!form.porcentajeRaleo) errores.porcentajeRaleo = "El porcentaje de raleo es obligatorio";
+    if (!form.objetivo) errores.objetivo = "El objetivo del raleo es obligatorio";
+    if (!form.metodo) errores.metodo = "El método es obligatorio";
+    if (!form.responsable) errores.responsable = "El responsable es obligatorio";
+    if (!form.observaciones) errores.observaciones = "Las observaciones son obligatorias";
+    return { valido: Object.keys(errores).length === 0, errores };
+  }
+
   return {
     form,
     updateField,
     resetForm,
+    validarForm,
   };
 }

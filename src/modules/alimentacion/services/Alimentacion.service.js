@@ -1,3 +1,25 @@
+/**
+ * ============================================================
+ * SERVICE ALIMENTACION.SERVICE
+ * ============================================================
+ *
+ * Persiste los registros de alimentación en AsyncStorage bajo
+ * la clave "alimentaciones_v1".
+ *
+ * Funcionalidad:
+ * - getAll(): retorna todos los registros guardados.
+ * - create(registro): agrega un registro nuevo con id y timestamp.
+ * - deleteById(id): elimina un registro por id.
+ * - clearAll(): elimina todos los registros guardados.
+ *
+ * Importante:
+ * - Este archivo NO valida los datos que recibe: la validación
+ *   de campos obligatorios ocurre antes, en useAlimentacionForm.
+ *
+ * Ejemplo:
+ * await alimentacionService.create(form);
+ */
+
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const CLAVE = "alimentaciones_v1";
