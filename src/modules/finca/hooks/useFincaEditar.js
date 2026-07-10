@@ -16,10 +16,13 @@
  * - Valida que los teléfonos tengan 8 dígitos numéricos.
  * - Actualiza la finca mediante el contexto global.
  */
+import Text from "../../../shared/components/Text.jsx";
+import Icon from "../../../shared/components/Icons.jsx";
 import { useState, useEffect, useMemo } from "react";
 import { Dimensions, View } from "react-native";
 import { styles } from "../styles/StylesFincaNueva.js";
 import { STYLE } from "../../../theme/style.js";
+import { COLORS } from "../../../theme/colors.js";
 import { useFinca } from "../context/FincaContext";
 
 const { width } = Dimensions.get("window");
@@ -114,16 +117,18 @@ export function useFincaEditar({ onFinca, codigoInterno }) {
     ) {
       nuevosErrores.espejoAgua = true;
       setErrorMessage("El espejo de agua debe ser un numero positivo");
-
     }
 
     for (let i = 0; i < telefonos.length; i++) {
-      if (!isTelefonoValido(telefonos[i])) {
+      const tel = String(telefonos[i] ?? "").trim();
+      if (tel === "") continue;
+
+      if (!isTelefonoValido(tel)) {
         nuevosErrores[`telefono${i}`] = true;
         setErrorMessage(
-          "Cada teléfono debe contener exactamente solo 8 dígitos numéricos.",
+          "Cada teléfono debe contener exactamente 8 dígitos numéricos.",
         );
-        break; // Detiene la validación en el primer teléfono inválido
+        break;
       }
     }
 
@@ -142,7 +147,19 @@ export function useFincaEditar({ onFinca, codigoInterno }) {
     };
   }, []);
 
+  function SectionTitle({ icon, title }) {
+    return (
+      <View style={styles.sectionTitleRow}>
+        <Icon icon={icon} size={18} color={COLORS.primary} style={styles.sectionIcon} />
+        <Text style={styles.sectionTitleText} size={14} weight="700" color={COLORS.textPrimary}>
+          {title}
+        </Text>
+      </View>
+    );
+  }
+
   return {
+    SectionTitle,
     ContentWrapper,
     formulario,
     telefonos,

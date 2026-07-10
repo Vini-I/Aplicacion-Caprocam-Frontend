@@ -62,13 +62,9 @@ export const styles = StyleSheet.create({
     minWidth: 150,
   },
   buttonContainer: {
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
     marginTop: 12,
   },
   saveButton: {
-    width: "100%",
     minHeight: 56,
     justifyContent: "center",
     alignItems: "center",
