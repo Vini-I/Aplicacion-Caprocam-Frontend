@@ -132,7 +132,7 @@ export default function RaleoForm({
           placeholder="Ej: 10.5"
           value={String(form.pesoPromedio ?? "")}
           keyboardType="decimal-pad"
-          onChangeText={(v) => updateField("pesoPromedio", v)}
+          onChangeText={(v) => updateField("pesoPromedio", v.replace(/[^0-9.]/g, ""))}
           style={invalidoPesoPromedio ? bordeError : null}
         />
         <Input
@@ -140,7 +140,7 @@ export default function RaleoForm({
           placeholder="Ej: 800"
           value={String(form.biomasaTotal ?? "")}
           keyboardType="decimal-pad"
-          onChangeText={(v) => updateField("biomasaTotal", v)}
+          onChangeText={(v) => updateField("biomasaTotal", v.replace(/[^0-9.]/g, ""))}
           style={invalidoBiomasaTotal ? bordeError : null}
         />
         <Select
