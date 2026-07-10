@@ -1,4 +1,23 @@
-// styles/StylesDetalleComprador.js
+/**
+ * ============================================================
+ * STYLES: DETALLECOMPRADORSTYLES
+ * ============================================================
+ * Módulo: Compradores
+ *
+ * Estilos de DetalleCompradorScreen.jsx.
+ *
+ * FUNCIONALIDAD:
+ * 1. Layout del navbar, la tarjeta de datos del comprador, los
+ *    botones de Editar/Eliminar y el modal de confirmación.
+ *
+ * IMPORTANTE:
+ * - botonEliminar solo agrega borderColor: COLORS.error, se
+ *   combina con "boton" en el JSX. No lleva backgroundColor.
+ * - modalConfirmButton tampoco debe llevar backgroundColor: el
+ *   fondo lo pone Button variant="outline".
+ * ============================================================
+ */
+
 import { StyleSheet } from "react-native";
 import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
@@ -44,9 +63,6 @@ export const styles = StyleSheet.create({
   contenido: {
     paddingTop: 30,
     paddingBottom: 40,
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
   },
 
   tarjeta: {
@@ -151,20 +167,17 @@ export const styles = StyleSheet.create({
     borderRadius: 12,
   },
 
-  botonEditar: { 
-    backgroundColor: COLORS.primary 
-  },
+ botonEditar: { borderColor: COLORS.primary },     
 
-  botonEliminar: { 
-    backgroundColor: COLORS.error 
-  },
+ botonEliminar: { borderColor: COLORS.error },
+ botonTexto: {
+  fontSize: 14,
+  fontFamily: TYPOGRAPHY.fontFamily.bold,
+ },
+ 
+ botonTextoEditar: { color: COLORS.primary },
 
-  botonTexto: {
-    fontSize: 14,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    fontWeight: undefined,
-    color: COLORS.white,
-  },
+ botonTextoEliminar: { color: COLORS.error },
 
   modalCancelButton: { 
     backgroundColor: COLORS.textTertiary 
@@ -193,9 +206,13 @@ export const styles = StyleSheet.create({
   },
 
   modalConfirmButton: {
-    backgroundColor: COLORS.error,
-    marginTop: 12,
-    flexDirection: "row",
+  marginTop: 12,
+  flexDirection: "row",
+  backgroundColor: COLORS.error,
+ },
+
+  alertEliminado: {
+    marginTop: 16,
   },
 
   modalConfirmTexto: {
