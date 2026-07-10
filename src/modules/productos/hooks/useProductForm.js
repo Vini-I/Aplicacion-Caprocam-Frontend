@@ -113,6 +113,7 @@ export function useProductForm() {
   const hasRequiredData =
     form.nombre.trim() !== "" &&
     form.categoria !== "" &&
+    form.proveedor !== "" &&
     form.cantidad !== "" &&
     form.stockMinimo !== "" &&
     form.precioUnidad !== "";
@@ -124,6 +125,7 @@ export function useProductForm() {
  
   const errorNombre = intentoGuardar && form.nombre.trim() === "";
   const errorCategoria = intentoGuardar && form.categoria === "";
+  const errorProveedor = intentoGuardar && form.proveedor === "";
   const errorCantidad = intentoGuardar && form.cantidad === "";
   const errorStockMinimo = intentoGuardar && form.stockMinimo === "";
   const errorPrecio = intentoGuardar && form.precioUnidad === "";
@@ -210,6 +212,7 @@ export function useProductForm() {
     validationMessage,
     showExpirationDate,
     errorNombre,
+    errorProveedor,
     errorCategoria,
     errorCantidad,
     errorStockMinimo,

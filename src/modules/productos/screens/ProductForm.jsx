@@ -76,6 +76,7 @@ export default function ProductForm() {
     showExpirationDate,
     errorNombre,
     errorCategoria,
+    errorProveedor,
     errorCantidad,
     errorStockMinimo,
     errorPrecio,
@@ -122,12 +123,12 @@ export default function ProductForm() {
 
           {/* Proveedor */}
           <Select
-            label="Proveedor"
+            label="Proveedor *"
             value={form.proveedor}
             options={opcionesProveedores}
             onChange={(v) => handleField("proveedor", v)}
             containerStyle={styles.field}
-            selectStyle={styles.select}
+            selectStyle={[styles.select, errorProveedor && styles.inputError]}
             labelStyle={styles.label}
           />
 
