@@ -19,12 +19,10 @@ import React from "react";
 import Card from "../../../shared/components/Card";
 import Input from "../../../shared/components/Input";
 import Select from "../../../shared/components/Select";
-import Text from "../../../shared/components/Text";
 import { COLORS } from "../../../theme/colors";
 import { PROVEEDORES } from "../constants/alimentacionOpciones";
 
 const bordeError = { borderColor: COLORS.error, borderWidth: 1.5 };
-const errorText = { marginTop: -6, marginBottom: 8, marginLeft: 2 };
 
 export default function AlimentacionFormConsumo({
   form = {},
@@ -39,7 +37,7 @@ export default function AlimentacionFormConsumo({
     <Card title="Consumo">
       <Input
         label="Cantidad (Kg) *"
-        placeholder="0"
+        placeholder="Ej: 20"
         value={String(form.cantidadKg ?? "")}
         keyboardType="numeric"
         onChangeText={(v) => {
@@ -48,11 +46,6 @@ export default function AlimentacionFormConsumo({
         }}
         style={invalidoCantidadKg ? bordeError : null}
       />
-      {invalidoCantidadKg && (
-        <Text size={12} color={COLORS.error} style={errorText}>
-          {errores.cantidadKg}
-        </Text>
-      )}
 
       <Select
         label="Proveedor *"
@@ -62,11 +55,6 @@ export default function AlimentacionFormConsumo({
         placeholder="Seleccionar proveedor"
         selectStyle={invalidoProveedor ? bordeError : null}
       />
-      {invalidoProveedor && (
-        <Text size={12} color={COLORS.error} style={errorText}>
-          {errores.proveedor}
-        </Text>
-      )}
     </Card>
   );
 }

@@ -46,12 +46,10 @@
 import React from "react";
 import Input from "../../../shared/components/Input";
 import Select from "../../../shared/components/Select";
-import Text from "../../../shared/components/Text";
 import NumberInput from "../../../shared/components/NumberInput";
 import { COLORS } from "../../../theme/colors";
 
 const bordeError = { borderColor: COLORS.error, borderWidth: 1.5 };
-const errorTextStyle = { marginTop: -6, marginBottom: 8, marginLeft: 2 };
 
 export default function FormularioConteo({
   numeroCamarones,
@@ -80,17 +78,12 @@ export default function FormularioConteo({
     <>
       <Input
         label="Total de camarones contados *"
-        placeholder="Total de camarones contados"
+        placeholder="Ej: 150"
         value={numeroCamarones}
         onChangeText={setNumeroCamarones}
         keyboardType="numeric"
         style={invalidoNumeroCamarones ? bordeError : null}
       />
-      {invalidoNumeroCamarones && (
-        <Text size={12} color={COLORS.error} style={errorTextStyle}>
-          {errores.numeroCamarones}
-        </Text>
-      )}
 
       <NumberInput
         label="Tiros de atarraya *"
@@ -100,11 +93,6 @@ export default function FormularioConteo({
         onChangeText={setTirosAtarraya}
         style={invalidoTirosAtarraya ? bordeError : null}
       />
-      {invalidoTirosAtarraya && (
-        <Text size={12} color={COLORS.error} style={errorTextStyle}>
-          {errores.tirosAtarraya}
-        </Text>
-      )}
 
       <Select
         label="Área de la atarraya *"
@@ -118,37 +106,22 @@ export default function FormularioConteo({
         ]}
         selectStyle={invalidoAreaAtarraya ? bordeError : null}
       />
-      {invalidoAreaAtarraya && (
-        <Text size={12} color={COLORS.error} style={errorTextStyle}>
-          {errores.areaAtarraya}
-        </Text>
-      )}
 
       <Input
         label="Promedio por tiro *"
-        placeholder="Promedio por tiro"
+        placeholder="Ej: 12"
         value={promedioPorTiro}
         onChangeText={setPromedioPorTiro}
         style={invalidoPromedioPorTiro ? bordeError : null}
       />
-      {invalidoPromedioPorTiro && (
-        <Text size={12} color={COLORS.error} style={errorTextStyle}>
-          {errores.promedioPorTiro}
-        </Text>
-      )}
 
       <Input
         label="Supervivencia *"
-        placeholder="Supervivencia"
+        placeholder="Ej: 85"
         value={supervivencia}
         onChangeText={setSupervivencia}
         style={invalidoSupervivencia ? bordeError : null}
       />
-      {invalidoSupervivencia && (
-        <Text size={12} color={COLORS.error} style={errorTextStyle}>
-          {errores.supervivencia}
-        </Text>
-      )}
 
       <Input
         label="Notas o comentarios del conteo *"
@@ -157,11 +130,6 @@ export default function FormularioConteo({
         onChangeText={setNotasConteo}
         style={invalidoNotasConteo ? bordeError : null}
       />
-      {invalidoNotasConteo && (
-        <Text size={12} color={COLORS.error} style={errorTextStyle}>
-          {errores.notasConteo}
-        </Text>
-      )}
     </>
   );
 }

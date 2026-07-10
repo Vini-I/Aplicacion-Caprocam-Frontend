@@ -31,15 +31,13 @@
  */
 
 import React from "react";
-import { View, Pressable } from "react-native";
+import { View } from "react-native";
 import Card from "../../../shared/components/Card";
 import Select from "../../../shared/components/Select";
 import Input from "../../../shared/components/Input";
 import DateInput from "../../../shared/components/DateInput";
-import Text from "../../../shared/components/Text";
 import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
-import { styles } from "../styles/RaleoStyles";
 
 const FINCAS = [
   { label: "Finca La Reina", value: "laReina" },
@@ -58,7 +56,6 @@ const ESTANQUES = [
   { label: "V01", value: "V01" },
   { label: "V02", value: "V02" },
 ];
-const PORCENTAJES = ["30%", "35%", "40%"];
 const OBJETIVOS = [
   { label: "Comercialización", value: "comercializacion" },
   { label: "Reducción de densidad", value: "reduccion_densidad" },
@@ -83,6 +80,8 @@ export default function RaleoForm({
   const invalidoEstanque = submitted && !!errores.estanque;
   const invalidoFecha = submitted && !!errores.fecha;
   const invalidoPorcentaje = submitted && !!errores.porcentajeRaleo;
+  const invalidoPesoPromedio = submitted && !!errores.pesoPromedio;
+  const invalidoBiomasaTotal = submitted && !!errores.biomasaTotal;
   const invalidoObjetivo = submitted && !!errores.objetivo;
   const invalidoMetodo = submitted && !!errores.metodo;
   const invalidoResponsable = submitted && !!errores.responsable;
@@ -98,11 +97,6 @@ export default function RaleoForm({
           labelStyle={{ fontFamily: TYPOGRAPHY.fontFamily.medium }}
           inputStyle={invalidoFecha ? bordeError : null}
         />
-        {invalidoFecha && (
-          <Text size={12} color={COLORS.error} style={styles.errorText}>
-            {errores.fecha}
-          </Text>
-        )}
 
         <Select
           label="Finca *"
@@ -112,11 +106,6 @@ export default function RaleoForm({
           placeholder="Seleccionar finca"
           selectStyle={invalidoFinca ? bordeError : null}
         />
-        {invalidoFinca && (
-          <Text size={12} color={COLORS.error} style={styles.errorText}>
-            {errores.finca}
-          </Text>
-        )}
 
         <Select
           label="Estanque *"
@@ -126,57 +115,33 @@ export default function RaleoForm({
           placeholder="Seleccionar estanque"
           selectStyle={invalidoEstanque ? bordeError : null}
         />
-        {invalidoEstanque && (
-          <Text size={12} color={COLORS.error} style={styles.errorText}>
-            {errores.estanque}
-          </Text>
-        )}
       </Card>
 
       <Card title="Parámetros del Raleo">
-        <Text size={14} weight="600" color={COLORS.textPrimary} style={{ marginBottom: 6 }}>
-          Porcentaje de raleo *
-        </Text>
-        <View
-          style={[
-            styles.horasContainer,
-            invalidoPorcentaje && styles.horasContainerInvalid,
-          ]}
-        >
-          {PORCENTAJES.map((p) => {
-            const sel = form.porcentajeRaleo === p;
-            return (
-              <Pressable
-                key={p}
-                onPress={() => updateField("porcentajeRaleo", p)}
-                style={[styles.pctBtn, sel && styles.pctBtnSelected]}
-              >
-                <Text size={14} color={sel ? COLORS.primary : COLORS.textTertiary} weight="500">
-                  {p}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-        {invalidoPorcentaje && (
-          <Text size={12} color={COLORS.error} style={[styles.errorText, { marginTop: 6 }]}>
-            {errores.porcentajeRaleo}
-          </Text>
-        )}
+        <Input
+          label="Porcentaje de raleo (%) *"
+          placeholder="Ej: 30"
+          value={String(form.porcentajeRaleo ?? "")}
+          keyboardType="numeric"
+          onChangeText={(v) => updateField("porcentajeRaleo", v.replace(/[^0-9]/g, ""))}
+          style={invalidoPorcentaje ? bordeError : null}
+        />
 
         <Input
-          label="Peso promedio estimado (g)"
+          label="Peso promedio estimado (g) *"
           placeholder="Ej: 10.5"
           value={String(form.pesoPromedio ?? "")}
           keyboardType="decimal-pad"
           onChangeText={(v) => updateField("pesoPromedio", v)}
+          style={invalidoPesoPromedio ? bordeError : null}
         />
         <Input
-          label="Biomasa total estimada (kg)"
+          label="Biomasa total estimada (kg) *"
           placeholder="Ej: 800"
           value={String(form.biomasaTotal ?? "")}
           keyboardType="decimal-pad"
           onChangeText={(v) => updateField("biomasaTotal", v)}
+          style={invalidoBiomasaTotal ? bordeError : null}
         />
         <Select
           label="Objetivo del raleo *"
@@ -186,11 +151,6 @@ export default function RaleoForm({
           placeholder="Seleccionar objetivo"
           selectStyle={invalidoObjetivo ? bordeError : null}
         />
-        {invalidoObjetivo && (
-          <Text size={12} color={COLORS.error} style={styles.errorText}>
-            {errores.objetivo}
-          </Text>
-        )}
       </Card>
 
       <Card title="Método de Extracción">
@@ -202,11 +162,6 @@ export default function RaleoForm({
           placeholder="Seleccionar método"
           selectStyle={invalidoMetodo ? bordeError : null}
         />
-        {invalidoMetodo && (
-          <Text size={12} color={COLORS.error} style={styles.errorText}>
-            {errores.metodo}
-          </Text>
-        )}
 
         <Input
           label="Responsable del raleo *"
@@ -215,11 +170,6 @@ export default function RaleoForm({
           onChangeText={(v) => updateField("responsable", v)}
           style={invalidoResponsable ? bordeError : null}
         />
-        {invalidoResponsable && (
-          <Text size={12} color={COLORS.error} style={styles.errorText}>
-            {errores.responsable}
-          </Text>
-        )}
       </Card>
 
       <Card title="Observaciones">
@@ -230,11 +180,6 @@ export default function RaleoForm({
           onChangeText={(v) => updateField("observaciones", v)}
           style={invalidoObservaciones ? bordeError : null}
         />
-        {invalidoObservaciones && (
-          <Text size={12} color={COLORS.error} style={styles.errorText}>
-            {errores.observaciones}
-          </Text>
-        )}
       </Card>
     </View>
   );

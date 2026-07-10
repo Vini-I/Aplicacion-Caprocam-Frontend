@@ -18,11 +18,9 @@
 import React from "react";
 import Card from "../../../shared/components/Card";
 import Input from "../../../shared/components/Input";
-import Text from "../../../shared/components/Text";
 import { COLORS } from "../../../theme/colors";
 
 const bordeError = { borderColor: COLORS.error, borderWidth: 1.5 };
-const errorText = { marginTop: -6, marginBottom: 8, marginLeft: 2 };
 
 export default function AlimentacionFormObservaciones({
   form = {},
@@ -41,11 +39,6 @@ export default function AlimentacionFormObservaciones({
         onChangeText={(v) => updateField("observaciones", v)}
         style={invalidoObservaciones ? bordeError : null}
       />
-      {invalidoObservaciones && (
-        <Text size={12} color={COLORS.error} style={errorText}>
-          {errores.observaciones}
-        </Text>
-      )}
     </Card>
   );
 }

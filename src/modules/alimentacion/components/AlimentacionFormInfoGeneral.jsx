@@ -27,14 +27,6 @@ import { TYPOGRAPHY } from "../../../theme/typography";
 import { HORAS, FINCAS, ESTANQUES } from "../constants/alimentacionOpciones";
 
 const bordeError = { borderColor: COLORS.error, borderWidth: 1.5 };
-const errorText = { marginTop: -6, marginBottom: 8, marginLeft: 2 };
-
-const CampoError = ({ mostrar, mensaje, style }) =>
-  mostrar ? (
-    <Text size={12} color={COLORS.error} style={[errorText, style]}>
-      {mensaje}
-    </Text>
-  ) : null;
 
 export default function AlimentacionFormInfoGeneral({
   form = {},
@@ -56,7 +48,6 @@ export default function AlimentacionFormInfoGeneral({
         labelStyle={{ fontFamily: TYPOGRAPHY.fontFamily.medium }}
         inputStyle={invalidoFecha ? bordeError : null}
       />
-      <CampoError mostrar={invalidoFecha} mensaje={errores.fecha} />
 
       <Text size={14} weight="600" color={COLORS.textSecondary} style={styles.horaLabel}>
         Hora *
@@ -77,7 +68,6 @@ export default function AlimentacionFormInfoGeneral({
           );
         })}
       </View>
-      <CampoError mostrar={invalidoHora} mensaje={errores.hora} style={{ marginTop: 6 }} />
 
       <Select
         label="Finca *"
@@ -87,7 +77,6 @@ export default function AlimentacionFormInfoGeneral({
         placeholder="Seleccionar finca"
         selectStyle={invalidoFinca ? bordeError : null}
       />
-      <CampoError mostrar={invalidoFinca} mensaje={errores.finca} />
 
       <Select
         label="Estanque *"
@@ -97,7 +86,6 @@ export default function AlimentacionFormInfoGeneral({
         placeholder="Seleccionar estanque"
         selectStyle={invalidoEstanque ? bordeError : null}
       />
-      <CampoError mostrar={invalidoEstanque} mensaje={errores.estanque} />
     </Card>
   );
 }
