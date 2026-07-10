@@ -1,11 +1,18 @@
 /**
- * ESTILOS: WebLoginScreen
- *
- * Solo contiene lo exclusivo de esta pantalla. Los estilos de
- * encabezado, separador y error de campo viven ahora en sus
- * componentes compartidos (Header, Separator, FormField).
+ * ============================================================
+ * ESTILOS: webLoginStyles
+ * ============================================================
+ * 
+ * Responsabilidad: Definición de estilos para la pantalla de inicio
+ * de sesión Web (WebLoginScreen) en el módulo de Login.
+ * 
+ * FUNCIONALIDAD:
+ * - Define el fondo de la pantalla y la alineación central del formulario.
+ * - Estructura el espaciado para el contenedor de errores del servidor.
+ * 
+ * DEPENDENCIAS:
+ * - COLORS de theme/colors.js.
  */
-
 import { StyleSheet } from 'react-native';
 import { COLORS } from '../../../theme/colors';
 

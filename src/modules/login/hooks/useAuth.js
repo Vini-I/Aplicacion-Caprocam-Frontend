@@ -1,12 +1,32 @@
 /**
+ * ============================================================
  * HOOK: useAuth
- *
- * Lógica de la pantalla de Login Web.
- *
- * COMPORTAMIENTO DE ERRORES:
- * Los errores de validación solo se muestran cuando el usuario
- * presiona "Iniciar Sesión" (submitted = true). Mientras escribe,
- * los campos no muestran error aunque estén vacíos.
+ * ============================================================
+ * 
+ * Responsabilidad: Gestionar el estado, las validaciones y el proceso
+ * de envío para el formulario de inicio de sesión Web.
+ * 
+ * FUNCIONALIDAD:
+ * - Controla los estados de los inputs de usuario y contraseña.
+ * - Calcula las validaciones en tiempo real pero solo expone errores
+ *   tras el envío del formulario.
+ * - Ejecuta la consulta de inicio de sesión contra el servicio de autenticación.
+ * 
+ * DATOS:
+ * - username: Estado del nombre de usuario.
+ * - password: Estado de la contraseña.
+ * - submitted: Booleano que indica si el formulario fue enviado.
+ * 
+ * VALIDACIONES:
+ * - Valida campos vacíos mediante authValidator.js.
+ * 
+ * NAVEGACIÓN:
+ * - Llama a onLoginSuccess si la autenticación es exitosa.
+ * 
+ * DEPENDENCIAS:
+ * - authService.js
+ * - useAuthRequest.js
+ * - authValidator.js
  */
 
 import { useState } from "react";
@@ -25,22 +45,30 @@ export const useAuth = ({ onLoginSuccess = () => {} } = {}) => {
   // Los errores visibles solo aparecen si el usuario ya intentó enviar
   const errors = submitted ? validationErrors : { username: "", password: "" };
 
-  const { loading, serverError, submit } = useAuthRequest({
+  const { loading, serverError, setServerError, submit } = useAuthRequest({
     onSuccess: onLoginSuccess,
   });
 
+  const handleUsernameChange = (val) => {
+    setUsername(val);
+    if (serverError) setServerError(null);
+  };
+
+  const handlePasswordChange = (val) => {
+    setPassword(val);
+    if (serverError) setServerError(null);
+  };
+
   const handleLogin = () => {
-    // TODO: eliminar esta línea una vez que login() funcione con el backend
-    // setSubmitted(true);
+    setSubmitted(true);
     submit(() => login(username, password), isFormValid);
-    onLoginSuccess();
   };
 
   return {
     username,
-    setUsername,
+    setUsername: handleUsernameChange,
     password,
-    setPassword,
+    setPassword: handlePasswordChange,
     errors,
     isFormValid,
     buttonVariant: "primary",

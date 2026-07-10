@@ -1,13 +1,21 @@
 /**
- * UTILIDAD: Validador del Formulario de Login Web
- *
- * Reglas de validación puras para login. Los errores se
- * calculan siempre, pero useAuth.js controla cuándo
- * mostrarlos (solo tras intentar enviar el formulario).
+ * ============================================================
+ * UTILIDAD: authValidator
+ * ============================================================
+ * 
+ * Responsabilidad: Reglas de validación pura para el formulario de Login.
+ * 
+ * FUNCIONALIDAD:
+ * - Valida si el usuario y la contraseña no están vacíos.
+ * 
+ * VALIDACIONES:
+ * - Campo obligatorio (ERROR_REQUIRED) para ambos inputs.
+ * 
+ * DEPENDENCIAS:
+ * - authMessages.js
  */
 
 import { AUTH_MESSAGES } from '../constants/authMessages';
-import { validatePassword as validatePasswordRule } from './passwordValidator';
 
 export const validateUsername = (username) => {
   if (!username || username.trim() === '') return AUTH_MESSAGES.ERROR_REQUIRED;
@@ -15,7 +23,8 @@ export const validateUsername = (username) => {
 };
 
 export const validatePassword = (password) => {
-  return validatePasswordRule(password, AUTH_MESSAGES);
+  if (!password || password.trim() === '') return AUTH_MESSAGES.ERROR_REQUIRED;
+  return '';
 };
 
 export const validateAuthForm = (username, password) => ({
