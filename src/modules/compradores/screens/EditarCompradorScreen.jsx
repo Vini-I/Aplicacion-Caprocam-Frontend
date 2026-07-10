@@ -7,8 +7,8 @@
  * Formulario para editar un comprador existente.
  *
  * FUNCIONALIDAD:
- * 1. Nombre no editable (deshabilitado); teléfono, correo,
- *    dirección y notas sí se pueden modificar.
+ * 1. Nombre y cédula no editables (deshabilitados); teléfono,
+ *    correo, dirección y notas sí se pueden modificar.
  * 2. Teléfono y correo son obligatorios y se validan con formato,
  *    solo al presionar "Guardar comprador" (useEditarCompradorScreen).
  * 3. Muestra una única alerta general arriba del formulario:
@@ -46,6 +46,7 @@ import { useEditarCompradorScreen, TELEFONO_MAX_LENGTH } from "../hooks/useEdita
 export default function EditarCompradorScreen() {
   const {
     nombre,
+    cedula,
     telefono,
     correo,
     direccion,
@@ -85,6 +86,7 @@ export default function EditarCompradorScreen() {
                 styles.alertContainer,
                 alerta.variant === "warning" && styles.alertWarningComoError,
               ]}
+              textStyle={alerta.variant === "warning" && styles.alertWarningComoErrorTexto}
             />
           )}
 
@@ -92,6 +94,16 @@ export default function EditarCompradorScreen() {
           <Input
             label="Nombre de el comprador *"
             value={nombre}
+            editable={false}
+            containerStyle={styles.field}
+            style={styles.inputDisabled}
+            labelStyle={styles.label}
+          />
+
+          {/* Cédula deshabilitada, no se permite editar */}
+          <Input
+            label="Cédula *"
+            value={cedula}
             editable={false}
             containerStyle={styles.field}
             style={styles.inputDisabled}

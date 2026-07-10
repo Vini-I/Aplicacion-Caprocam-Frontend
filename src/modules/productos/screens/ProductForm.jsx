@@ -44,7 +44,7 @@
 
 import React, { useEffect, useState } from "react";
 import { View, ScrollView } from "react-native";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { Stack, useRouter, useLocalSearchParams } from "expo-router";
 
 
 import Card from "../../../shared/components/Card";
@@ -88,7 +88,11 @@ export default function ProductForm() {
   } = useProductForm();
 
   return (
-    <View style={STYLE.container}>
+    <>
+      <Stack.Screen
+        options={{ title: isEditMode ? "Editar Producto" : "Agregar Producto" }}
+      />
+      <View style={STYLE.container}>
       <ScrollView
         contentContainerStyle={[styles.content, STYLE.contentWrapper]}
         showsVerticalScrollIndicator={false}
@@ -230,7 +234,7 @@ export default function ProductForm() {
           )}
         </Card>
       </ScrollView>
-    </View>
+      </View>
+    </>
   );
 }
-

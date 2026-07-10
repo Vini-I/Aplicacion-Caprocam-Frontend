@@ -1,4 +1,3 @@
-
 /**
  * ============================================================
  * HOOK: USEEDITARCOMPRADORSCREEN
@@ -22,6 +21,9 @@
  * - handleTelefonoChange/handleCorreoChange solo actualizan el
  *   valor: no validan en cada tecla, para que el borde/mensaje
  *   rojo aparezca únicamente después de intentar guardar.
+ * - Igual que nombre, cedula se carga desde el comprador base pero
+ *   no se expone ningún setter: no se puede modificar una vez
+ *   creado el comprador (en la pantalla se muestra deshabilitada).
  * ============================================================
  */
 
@@ -61,6 +63,9 @@ export function useEditarCompradorScreen() {
 
   // Campos del formulario
   const [nombre, setNombre] = useState(base.nombre);
+  // La cédula no se puede editar: se carga desde el comprador base y no se
+  // expone ningún setter hacia la pantalla.
+  const [cedula] = useState(base.cedula);
   const [telefono, setTelefono] = useState(base.telefono);
   const [correo, setCorreo] = useState(base.correo);
   const [direccion, setDireccion] = useState(base.direccion);
@@ -115,10 +120,18 @@ export function useEditarCompradorScreen() {
       variant: "success",
       message: "Comprador actualizado correctamente.",
     });
+    
+    setTimeout(() => {
+      router.replace({
+        pathname: "/(drawer)/compradores/detalleComprador",
+        params: { id: base.id.toString() },
+      });
+    }, 900);
   }
 
   return {
     nombre,
+    cedula,
     telefono,
     correo,
     direccion,

@@ -8,8 +8,8 @@
  *
  * FUNCIONALIDAD:
  * 1. Busca el comprador por id (useDetalleCompradorScreen).
- * 2. Muestra nombre, tipo de producto, teléfono, correo, dirección
- *    y notas.
+ * 2. Muestra nombre, cédula, tipo de producto, teléfono, correo,
+ *    dirección y notas.
  * 3. Botón "Editar" navega al formulario de edición.
  * 4. Botón "Eliminar" abre un modal de confirmación antes de
  *    volver a la lista.
@@ -99,6 +99,11 @@ export default function DetalleCompradorScreen() {
             <Text style={styles.seccionTitulo}>
               Información de contacto
             </Text>
+
+            <View style={styles.filaDetalle}>
+              <Text style={styles.filaEtiqueta}>Cédula</Text>
+              <Text style={styles.filaValor}>{comprador.cedula}</Text>
+            </View>
 
             <View style={styles.filaDetalle}>
               <Text style={styles.filaEtiqueta}>Teléfono</Text>

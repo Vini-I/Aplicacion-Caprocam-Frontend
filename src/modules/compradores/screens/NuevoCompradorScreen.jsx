@@ -1,4 +1,3 @@
-
 /**
  * ============================================================
  * PANTALLA: NUEVOCOMPRADORSCREEN
@@ -8,8 +7,10 @@
  * Formulario de alta de un nuevo comprador.
  *
  * FUNCIONALIDAD:
- * 1. Campos: nombre*, teléfono*, correo, dirección, notas (los
- *    marcados con * son obligatorios).
+ * 1. Campos: nombre*, cédula*, teléfono*, correo, dirección, notas
+ *    (los marcados con * son obligatorios). La cédula, una vez
+ *    guardado el comprador, ya no se puede modificar (ver
+ *    EditarCompradorScreen.jsx, donde se muestra deshabilitada).
  * 2. Valida al presionar "Guardar comprador" (useNuevoCompradorScreen):
  *    pinta de rojo cada campo inválido y muestra un solo mensaje
  *    general debajo del botón.
@@ -51,6 +52,7 @@ export default function NuevoCompradorScreen() {
   const {
     nombre,
     setNombre,
+    cedula,
     telefono,
     correo,
     setCorreo,
@@ -59,10 +61,12 @@ export default function NuevoCompradorScreen() {
     notas,
     setNotas, 
     errorNombre,
+    errorCedula,
     errorTelefono,
     errorCorreo,
     mensajeError,  
     guardadoExitoso,
+    handleCedulaChange,
     handleTelefonoChange,
     handleSubmit,
     handleVolver,
@@ -88,9 +92,20 @@ export default function NuevoCompradorScreen() {
             label="Nombre del comprador *"
             value={nombre}
             onChangeText={setNombre}
-            placeholder="Ej. Biomar S.A."
+            placeholder="Ej. María José Solano Vargas"
             containerStyle={styles.field}
             style={[styles.input, errorNombre && styles.inputError]}
+            labelStyle={styles.label}
+          />
+
+          <Input
+            label="Cédula *"
+            value={cedula}
+            onChangeText={handleCedulaChange}
+            placeholder="Ej. 1-0234-0567"
+            keyboardType="numeric"
+            containerStyle={styles.field}
+            style={[styles.input, errorCedula && styles.inputError]}
             labelStyle={styles.label}
           />
 

@@ -46,7 +46,7 @@ export function useDetalleProducto() {
   const stockTotalFormateado = producto ? `₡${(producto.precioUnidad * producto.cantidad).toLocaleString("es-CR")}`  : "";
 
   function handleEditar() {
-    router.push({ pathname: "/(drawer)/inventarios/productForm",params: {productoParam: JSON.stringify(producto)}, });
+    router.replace({ pathname: "/(drawer)/inventarios/productForm", params: {productoParam: JSON.stringify(producto)}, });
   }
 
   function handleEliminar() {
