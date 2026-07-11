@@ -50,10 +50,7 @@ export default function InformacionGeneralSection({
 
   return (
     <Card>
-      <SectionTitle
-        icon={ICONS.calendar}
-        title="Información general"
-      />
+      <SectionTitle icon={ICONS.calendar} title="Información general" />
 
       <DateInput
         label={requiredLabel("Fecha de siembra")}
@@ -66,7 +63,7 @@ export default function InformacionGeneralSection({
 
       <Input
         label={requiredLabel("Hora de ingreso")}
-        placeholder="Ej: 07:00 AM"
+        placeholder="Ej: 07:00 (HH:mm)"
         value={formData.horaIngreso}
         onChangeText={(value) => onChange("horaIngreso", value)}
         labelStyle={styles.requiredLabel}
