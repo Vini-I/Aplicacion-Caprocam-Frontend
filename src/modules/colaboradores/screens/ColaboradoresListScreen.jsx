@@ -35,6 +35,7 @@ import { STYLE } from "../../../theme/style";
 import { ICONS } from "../../../theme/icons";
 import { COLORS } from "../../../theme/colors";
 import { styles } from "../styles/colaboradoresListStyles";
+import Alert from "../../../shared/components/Alert"; 
 
 // ============================================================
 // COMPONENTE PRINCIPAL
@@ -66,6 +67,7 @@ export default function ColaboradoresListScreen() {
     confirmDelete,
     handleSubmit,
     openStats,
+    alert,
   } = useColaboradoresList();
 
   // --------------------------------------------------------
@@ -99,6 +101,13 @@ export default function ColaboradoresListScreen() {
             </View>
           </Button>
         </View>
+
+                {/* Alerta flotante: se muestra debajo de la barra de búsqueda, dentro del flujo */}
+        {alert && (
+          <View style={{ marginBottom: 12 }}>
+            <Alert variant={alert.type} message={alert.message} />
+          </View>
+        )}
 
         {/* Lista scrolleable */}
         <ScrollView

@@ -1,3 +1,5 @@
+// src/modules/colaboradores/hooks/useColaboradoresList.js
+
 /**
  * ============================================================
  * HOOK: useColaboradoresList
@@ -7,22 +9,11 @@
  * (ColaboradoresListScreen): estado de pestañas, modales, búsqueda,
  * confirmación de eliminación y operaciones CRUD.
  *
- * Retorna:
- * - activeTab, setActiveTab
- * - modalVisible, setModalVisible
- * - editingColaborador, setEditingColaborador
- * - selectedColaboradorId, setSelectedColaboradorId
- * - searchText, setSearchText
- * - cedulaConfirmacion, setCedulaConfirmacion
- * - deleteTarget, setDeleteTarget
- * - showConfirmModal, setShowConfirmModal
- * - internos, externos, loading, error (según tab activo)
- * - lista, eliminarActual
- * - handleAdd, handleEdit, handleDeletePress, confirmDelete, handleSubmit, openStats
+ * Ahora incluye un sistema de alertas temporales y fijas para
+ * feedback visual de las acciones.
  */
 
-import { useState } from "react";
-import { Alert } from "react-native";
+import { useState, useRef } from "react";
 import { useColaboradores } from "./useColaboradores";
 
 export function useColaboradoresList() {
@@ -35,6 +26,22 @@ export function useColaboradoresList() {
   const [cedulaConfirmacion, setCedulaConfirmacion] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+
+  // Estado para la alerta flotante
+  const [alert, setAlert] = useState(null);
+  const alertTimeoutRef = useRef(null);
+
+  // Función para mostrar alerta con auto-cierre
+  const showAlert = (type, message) => {
+    // Limpiar timeout anterior
+    if (alertTimeoutRef.current) {
+      clearTimeout(alertTimeoutRef.current);
+    }
+    setAlert({ type, message });
+    alertTimeoutRef.current = setTimeout(() => {
+      setAlert(null);
+    }, 4000);
+  };
 
   // Filtros para cada pestaña
   const filtrosInternos = { rol: "camprocam_worker", activo: true };
@@ -100,43 +107,53 @@ export function useColaboradoresList() {
 
   const confirmDelete = async () => {
     if (!deleteTarget) {
-      Alert.alert("Error", "Colaborador no encontrado");
+      showAlert("danger", "No se encontró el colaborador a eliminar.");
       setShowConfirmModal(false);
       return;
     }
 
     if (cedulaConfirmacion !== deleteTarget.cedula) {
-      Alert.alert("Error", "La cédula ingresada no coincide con la del colaborador");
+      showAlert("danger", "La cédula ingresada no coincide con la del colaborador.");
       return;
     }
 
     try {
       await eliminarActual(deleteTarget.id);
-      Alert.alert("Éxito", `El colaborador ${deleteTarget.nombre} ha sido eliminado correctamente`);
+      // Éxito: alerta de advertencia (acción destructiva)
+      showAlert("warning", `El colaborador ${deleteTarget.nombre} ha sido eliminado correctamente.`);
       setShowConfirmModal(false);
       setDeleteTarget(null);
       setCedulaConfirmacion("");
     } catch (error) {
-      Alert.alert("Error", "No se pudo eliminar el colaborador");
+      showAlert("danger", "No se pudo eliminar el colaborador. Intente nuevamente.");
     }
   };
 
   const handleSubmit = async (formData) => {
-    if (editingColaborador) {
-      if (activeTab === "internos") {
-        await actualizarColaborador(editingColaborador.id, formData);
+    try {
+      if (editingColaborador) {
+        // Actualizar
+        if (activeTab === "internos") {
+          await actualizarColaborador(editingColaborador.id, formData);
+        } else {
+          await actualizarExterno(editingColaborador.id, formData);
+        }
+        showAlert("success", `Colaborador ${formData.nombre} actualizado correctamente.`);
       } else {
-        await actualizarExterno(editingColaborador.id, formData);
+        // Crear
+        if (activeTab === "internos") {
+          await crearColaborador({ ...formData, rol: "camprocam_worker" });
+        } else {
+          await crearExterno({ ...formData, rol: "external_owner" });
+        }
+        showAlert("success", `Colaborador ${formData.nombre} agregado correctamente.`);
       }
-    } else {
-      if (activeTab === "internos") {
-        await crearColaborador({ ...formData, rol: "camprocam_worker" });
-      } else {
-        await crearExterno({ ...formData, rol: "external_owner" });
-      }
+      // Cerrar modal solo si todo salió bien
+      setModalVisible(false);
+      setEditingColaborador(null);
+    } catch (error) {
+      showAlert("danger", "Ocurrió un error al guardar el colaborador. Intente nuevamente.");
     }
-    setModalVisible(false);
-    setEditingColaborador(null);
   };
 
   const openStats = (colaboradorId) => {
@@ -172,5 +189,6 @@ export function useColaboradoresList() {
     confirmDelete,
     handleSubmit,
     openStats,
+    alert,
   };
 }
