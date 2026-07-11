@@ -16,14 +16,18 @@
  */
 
 import React from "react";
+import { View } from "react-native";
 import Card from "../../../shared/components/Card";
 import Select from "../../../shared/components/Select";
 import Text from "../../../shared/components/Text";
+import Icon from "../../../shared/components/Icons";
 import { COLORS } from "../../../theme/colors";
+import { ICONS } from "../../../theme/icons";
 import { TIPOS, PRESENTACION, METODOS } from "../constants/alimentacionOpciones";
 
 const bordeError = { borderColor: COLORS.error, borderWidth: 1.5 };
-const errorText = { marginTop: -6, marginBottom: 8, marginLeft: 2 };
+const sectionTitleRow = { flexDirection: "row", alignItems: "center", marginBottom: 10 };
+const sectionIcon = { marginRight: 8 };
 
 export default function AlimentacionFormTipo({
   form = {},
@@ -36,7 +40,14 @@ export default function AlimentacionFormTipo({
   const invalidoPresentacion = submitted && !!errores.presentacion;
 
   return (
-    <Card title="Tipo de Alimentación">
+    <Card>
+      <View style={sectionTitleRow}>
+        <Icon icon={ICONS.food} size={18} color={COLORS.primary} style={sectionIcon} />
+        <Text size={18} weight="700" color={COLORS.textSecondary}>
+          Tipo de Alimentación
+        </Text>
+      </View>
+
       <Select
         label="Tipo *"
         value={form.tipoAlimento}
@@ -45,11 +56,6 @@ export default function AlimentacionFormTipo({
         placeholder="Seleccionar tipo"
         selectStyle={invalidoTipoAlimento ? bordeError : null}
       />
-      {invalidoTipoAlimento && (
-        <Text size={12} color={COLORS.error} style={errorText}>
-          {errores.tipoAlimento}
-        </Text>
-      )}
 
       <Select
         label="Presentación *"
@@ -59,11 +65,6 @@ export default function AlimentacionFormTipo({
         placeholder="Seleccionar presentación"
         selectStyle={invalidoPresentacion ? bordeError : null}
       />
-      {invalidoPresentacion && (
-        <Text size={12} color={COLORS.error} style={errorText}>
-          {errores.presentacion}
-        </Text>
-      )}
 
       <Select
         label="Método *"
@@ -73,11 +74,6 @@ export default function AlimentacionFormTipo({
         placeholder="Seleccionar método"
         selectStyle={invalidoMetodo ? bordeError : null}
       />
-      {invalidoMetodo && (
-        <Text size={12} color={COLORS.error} style={errorText}>
-          {errores.metodo}
-        </Text>
-      )}
     </Card>
   );
 }

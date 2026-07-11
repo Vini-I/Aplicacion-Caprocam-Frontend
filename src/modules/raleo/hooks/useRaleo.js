@@ -73,7 +73,11 @@ export default function useRaleo() {
     if (!form.finca) errores.finca = "La finca es obligatoria";
     if (!form.estanque) errores.estanque = "El estanque es obligatorio";
     if (!form.fecha) errores.fecha = "La fecha es obligatoria";
-    if (!form.porcentajeRaleo) errores.porcentajeRaleo = "El porcentaje de raleo es obligatorio";
+    if (!form.porcentajeRaleo || Number.isNaN(Number(form.porcentajeRaleo))) {
+      errores.porcentajeRaleo = "El porcentaje de raleo es obligatorio y debe ser numérico";
+    }
+    if (!form.pesoPromedio) errores.pesoPromedio = "El peso promedio estimado es obligatorio";
+    if (!form.biomasaTotal) errores.biomasaTotal = "La biomasa total estimada es obligatoria";
     if (!form.objetivo) errores.objetivo = "El objetivo del raleo es obligatorio";
     if (!form.metodo) errores.metodo = "El método es obligatorio";
     if (!form.responsable) errores.responsable = "El responsable es obligatorio";
