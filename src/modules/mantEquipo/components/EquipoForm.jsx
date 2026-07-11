@@ -270,13 +270,6 @@ export default function EquipoForm({
         error={submitted && errors.funcionEquipo}
       />
 
-      <Input
-        label="Ubicación"
-        value={form.ubicacion}
-        onChangeText={(v) => handleChange("ubicacion", v)}
-        placeholder="Ej: Estanque A01"
-      />
-
       <Select
         label="Estanque asociado"
         options={estanquesDisponibles}
@@ -305,7 +298,12 @@ export default function EquipoForm({
         onChange={(v) => handleChange("estado", v)}
       />
 
-      <Button onPress={handleSubmit} style={styles.submitButton}>
+      <Button
+        variant="outline"
+        onPress={handleSubmit}
+        style={styles.submitButton}
+        textStyle={{ color: COLORS.primary }}
+      >
         {isEditing ? "Actualizar equipo" : "Registrar equipo"}
       </Button>
     </ScrollView>

@@ -74,6 +74,14 @@ const validarHorasMantenimiento = (horas) => {
   return "";
 };
 
+function obtenerFechaActual() {
+  const fecha = new Date();
+  const dia = String(fecha.getDate()).padStart(2, "0");
+  const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+  const anio = fecha.getFullYear();
+  return `${dia}/${mes}/${anio}`;
+}
+
 // ============================================================
 // HOOK
 // ============================================================
@@ -89,7 +97,7 @@ export function useEquipoForm({ initialData = {}, onSubmit, isEditing = false })
     marca: initialData.marca || "",
     modelo: initialData.modelo || "",
     serie: initialData.serie || "",
-    fechaInstalacion: initialData.fechaInstalacion || "",
+    fechaInstalacion: initialData.fechaInstalacion || obtenerFechaActual(),
     funcionEquipo: initialData.funcionEquipo || "",
     ubicacion: initialData.ubicacion || "",
     estanqueId: initialData.estanqueId || "",
