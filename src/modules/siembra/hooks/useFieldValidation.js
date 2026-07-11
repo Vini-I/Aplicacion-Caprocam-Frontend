@@ -55,6 +55,15 @@ export function useFieldValidation() {
  * Valida una lista de campos obligatorios contra un formData.
  * Reutilizable por cualquier módulo, independientemente de cuáles
  * campos exija (esa lista la define cada módulo).
+ *
+ * Además del chequeo genérico de "campo vacío", incluye una
+ * validación específica para "horaIngreso": si el campo viene
+ * dentro de camposObligatorios y tiene un valor cargado, se
+ * exige que cumpla el formato de hora militar HH:mm (00-23
+ * para la hora, 00-59 para los minutos). Esto complementa el
+ * formateo que ya aplica formatearHoraIngreso mientras el
+ * usuario escribe, evitando que llegue a guardarse una hora
+ * con formato inválido (ej: "70:00").
  */
 export function validarCamposObligatorios(formData, camposObligatorios) {
   const errores = {};
@@ -64,6 +73,15 @@ export function validarCamposObligatorios(formData, camposObligatorios) {
       errores[campo] = "Campo obligatorio";
     }
   });
-
+  if (camposObligatorios.includes("horaIngreso")) {
+    const hora24Regex = /^([01]\d|2[0-3]):([0-5]\d)$/;
+    if (
+      formData.horaIngreso &&
+      !hora24Regex.test(formData.horaIngreso)
+    ) {
+      errores.horaIngreso =
+        "La hora debe tener el formato HH:mm.";
+    }
+  }
   return errores;
 }
