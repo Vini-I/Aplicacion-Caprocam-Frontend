@@ -2,73 +2,27 @@
  * ============================================================
  * ESTILOS: tareasStyles
  * ============================================================
+ * Módulo: Mantenimiento de Equipos
  *
  * Estilos para la pantalla TareasScreen.
  * Utiliza la paleta de COLORS del tema central.
  *
  * Dependencias:
  * - COLORS desde theme/colors
- *
- * Ejemplo de uso:
- * import { styles } from './tareasStyles';
- * <View style={styles.screen}>...</View>
+ * ============================================================
  */
 
-// ============================================================
-// IMPORTS
-// ============================================================
 import { StyleSheet } from "react-native";
 import { COLORS } from "../../../theme/colors";
 
-// ============================================================
-// EXPORTACIÓN DE ESTILOS
-// ============================================================
 export const styles = StyleSheet.create({
+  // Contenedor principal de la pantalla
   screen: {
     flex: 1,
     backgroundColor: COLORS.surface,
   },
 
-  navbar: {
-    backgroundColor: COLORS.primary,
-    borderBottomWidth: 0,
-  },
-
-  navbarTitle: {
-    color: COLORS.white,
-    fontSize: 18,
-    fontWeight: "700",
-    textAlign: "left",
-  },
-
-  navbarSubtitle: {
-    color: COLORS.white,
-    fontSize: 14,
-    fontWeight: "400",
-    marginTop: 2,
-  },
-
-  backButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 12,
-    backgroundColor: "rgba(255,255,255,0.2)",
-    borderWidth: 0,
-    paddingHorizontal: 0,
-    paddingVertical: 0,
-    marginTop: 0,
-  },
-
-  content: {
-    flex: 1,
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 24,
-    maxWidth: 960,
-    width: "100%",
-    alignSelf: "center",
-  },
-
+  // Barra de herramientas (búsqueda + botón agregar)
   toolbar: {
     flexDirection: "row",
     alignItems: "center",
@@ -77,44 +31,24 @@ export const styles = StyleSheet.create({
     flexWrap: "wrap",
   },
 
-  searchBox: {
-    flex: 1,
-    minWidth: 180,
+  // Botón de acción (outline)
+  btnAction: {
     flexDirection: "row",
     alignItems: "center",
-    borderWidth: 1,
-    borderColor: COLORS.secondary,
-    borderRadius: 8,
-    backgroundColor: COLORS.white,
-    paddingHorizontal: 10,
-    height: 42,
+    justifyContent: "center",
     gap: 6,
-  },
-
-  searchInput: {
-    flex: 1,
-    fontSize: 14,
-    color: COLORS.textSecondary,
-  },
-
-  btnAdd: {
-    flexDirection: "row",
-    alignItems: "center",
+    paddingVertical: 8,
+    paddingHorizontal: 14,
     borderRadius: 8,
-    paddingHorizontal: 12,
-    height: 42,
-    borderColor: COLORS.primary,
     borderWidth: 1,
     backgroundColor: "transparent",
+    height: 42,
+    marginTop: 0,
   },
 
-  btnLabel: {
-    color: COLORS.primary,
-    fontWeight: "700",
-    fontSize: 13,
-  },
-
+  // Contenedor de la tabla (ocupa todo el espacio restante)
   tableWrapper: {
+    flex: 1,
     borderWidth: 1,
     borderColor: COLORS.secondary,
     borderRadius: 10,
@@ -122,6 +56,7 @@ export const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
   },
 
+  // Cabecera de la tabla (fija)
   tableHeader: {
     flexDirection: "row",
     backgroundColor: COLORS.secondary,
@@ -135,7 +70,7 @@ export const styles = StyleSheet.create({
     color: COLORS.textSecondary,
   },
 
-  // Columnas de la tabla
+  // Columnas
   colId: { width: 60 },
   colNombre: { flex: 1.5, minWidth: 100 },
   colDesc: { flex: 2, minWidth: 140 },
@@ -143,6 +78,7 @@ export const styles = StyleSheet.create({
   colDuracion: { width: 80 },
   colAcciones: { width: 90 },
 
+  // Fila de la tabla
   row: {
     flexDirection: "row",
     alignItems: "center",
@@ -157,24 +93,23 @@ export const styles = StyleSheet.create({
     color: COLORS.textSecondary,
   },
 
-// ============================================================
-// ESTILOS DE BOTONES DE ACCIÓN (outline)
-// ============================================================
-btnAction: {
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: 6,
-  paddingVertical: 8,
-  paddingHorizontal: 14,
-  borderRadius: 8,
-  borderWidth: 1,
-  backgroundColor: "transparent",
-  height: 42,
-  marginTop: 0,
-},
+  // Botones de acción dentro de la fila (editar/eliminar)
+  btnAccion: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 4,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 6,
+    borderWidth: 1,
+    backgroundColor: "transparent",
+    marginTop: 0,
+    minWidth: 36,
+    height: 32,
+  },
 
-  // Modal de tarea
+  // Modal de tarea (creación/edición)
   modalContainer: {
     maxHeight: "92%",
     maxWidth: 600,
@@ -200,31 +135,74 @@ btnAction: {
 
   btnCancel: {
     flex: 1,
+    borderColor: COLORS.primary,
+    borderWidth: 1,
+    backgroundColor: "transparent",
   },
 
   btnAccept: {
     flex: 1,
+    backgroundColor: COLORS.primary,
+    borderWidth: 0,
   },
-  btnAdd: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  justifyContent: 'center',
-  gap: 8,
-  backgroundColor: COLORS.primary,
-  borderRadius: 8,
-  paddingVertical: 8,
-  paddingHorizontal: 14,
-  borderWidth: 0,
-  height: 42,
-},
-addButtonContent: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  gap: 6,
-},
-btnLabel: {
-  color: COLORS.white,
-  fontWeight: '600',
-  fontSize: 13,
-},
+
+  // Modal de confirmación de eliminación
+  modalConfirmContainer: {
+    width: "100%",
+    maxWidth: 900,
+    alignSelf: "center",
+    maxHeight: "80%",
+    padding: 16,
+  },
+
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: COLORS.error,
+    marginBottom: 16,
+    textAlign: "center",
+  },
+
+  modalText: {
+    fontSize: 14,
+    color: COLORS.textTertiary,
+    marginBottom: 8,
+    textAlign: "center",
+  },
+
+  modalName: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: COLORS.textSecondary,
+    marginBottom: 16,
+    textAlign: "center",
+  },
+
+  modalSubText: {
+    fontSize: 14,
+    color: COLORS.textTertiary,
+    marginBottom: 8,
+    textAlign: "center",
+  },
+
+  modalButtons: {
+    flexDirection: "row",
+    gap: 12,
+    justifyContent: "center",
+  },
+
+  modalCancelBtn: {
+    flex: 1,
+    marginTop: 0,
+    borderColor: COLORS.primary,
+    borderWidth: 1,
+    backgroundColor: "transparent",
+  },
+
+  modalDeleteBtn: {
+    flex: 1,
+    marginTop: 0,
+    backgroundColor: COLORS.error,
+    borderWidth: 0,
+  },
 });

@@ -2,6 +2,7 @@
  * ============================================================
  * COMPONENTE: EquipoCard
  * ============================================================
+ * Módulo: Mantenimiento de Equipos
  *
  * Tarjeta que muestra información resumida de un equipo.
  * Permite navegar al detalle (onPress) y encender/apagar (onToggle).
@@ -17,11 +18,9 @@
  *   onPress={(id) => verDetalle(id)}
  *   onToggle={(id) => toggleEquipo(id)}
  * />
+ * ============================================================
  */
 
-// ============================================================
-// IMPORTS
-// ============================================================
 import React from "react";
 import { View, TouchableOpacity } from "react-native";
 import Card from "../../../shared/components/Card";
@@ -33,9 +32,7 @@ import { styles } from "../styles/equiposListStyles";
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
 
-// ============================================================
-// CONSTANTES AUXILIARES
-// ============================================================
+// Constantes de etiquetas e iconos
 const TIPOS_LABELS = {
   aireacion: "Aireación",
   bombeo: "Bombeo",
@@ -66,28 +63,23 @@ const ESTADO_VARIANTS = {
   mantenimiento: "warning",
 };
 
-// ============================================================
-// COMPONENTE
-// ============================================================
-export default function EquipoCard({
-  equipo,
-  onPress,
-  onToggle,
-}) {
+export default function EquipoCard({ equipo, onPress, onToggle }) {
   const tipoLabel = TIPOS_LABELS[equipo.tipo] || equipo.tipo;
   const tipoIcon = TIPOS_ICONS[equipo.tipo] || ICONS.gear;
   const estadoLabel = ESTADO_LABELS[equipo.estado] || equipo.estado;
   const estadoVariant = ESTADO_VARIANTS[equipo.estado] || "info";
 
-  const horasUsoFormateado = equipo.horasUso < 1
-    ? `${Math.round(equipo.horasUso * 60)} min`
-    : `${Math.round(equipo.horasUso)} h`;
+  const horasUsoFormateado =
+    equipo.horasUso < 1
+      ? `${Math.round(equipo.horasUso * 60)} min`
+      : `${Math.round(equipo.horasUso)} h`;
 
   const necesitaMantenimiento = equipo.horasUso >= equipo.horasMantenimiento;
 
   return (
     <TouchableOpacity onPress={() => onPress?.(equipo.id)} activeOpacity={0.7}>
       <Card style={styles.card}>
+        {/* Cabecera: icono + nombre + estado */}
         <View style={styles.header}>
           <View style={styles.iconContainer}>
             <Icon icon={tipoIcon} size={24} color={COLORS.primary} />
@@ -108,26 +100,42 @@ export default function EquipoCard({
                 {tipoLabel} · {equipo.codigo}
               </CustomText>
               <CustomText style={styles.detailText}>
-                 {equipo.ubicacion || "Sin ubicación"}
+                {equipo.ubicacion || "Sin ubicación"}
               </CustomText>
             </View>
           </View>
         </View>
 
+        {/* Información de uso y mantenimiento */}
         <View style={styles.infoRow}>
           <View style={styles.infoItem}>
             <View style={styles.infoLabelContainer}>
-              <Icon icon={ICONS.clock} size={14} color={COLORS.textTertiary} style={styles.infoIcon} />
+              <Icon
+                icon={ICONS.clock}
+                size={14}
+                color={COLORS.textTertiary}
+                style={styles.infoIcon}
+              />
               <CustomText style={styles.infoLabel}>Horas de uso:</CustomText>
             </View>
             <CustomText style={styles.infoValue}>{horasUsoFormateado}</CustomText>
           </View>
           <View style={styles.infoItem}>
             <View style={styles.infoLabelContainer}>
-              <Icon icon={ICONS.tools} size={14} color={COLORS.textTertiary} style={styles.infoIcon} />
+              <Icon
+                icon={ICONS.tools}
+                size={14}
+                color={COLORS.textTertiary}
+                style={styles.infoIcon}
+              />
               <CustomText style={styles.infoLabel}>Mantenimiento:</CustomText>
             </View>
-            <CustomText style={[styles.infoValue, necesitaMantenimiento && styles.infoValueCritico]}>
+            <CustomText
+              style={[
+                styles.infoValue,
+                necesitaMantenimiento && styles.infoValueCritico,
+              ]}
+            >
               {necesitaMantenimiento
                 ? "Requiere mantenimiento"
                 : `${Math.round(equipo.horasMantenimiento - equipo.horasUso)} h restantes`}
@@ -135,13 +143,13 @@ export default function EquipoCard({
           </View>
         </View>
 
-        {/* Botón de encender/apagar con colores verde/rojo */}
+        {/* Botón Encender/Apagar */}
         <View style={styles.actions}>
           <Button
             onPress={() => onToggle?.(equipo.id)}
             style={[
               styles.toggleBtn,
-              equipo.encendido ? styles.toggleBtnOn : styles.toggleBtnOff
+              equipo.encendido ? styles.toggleBtnOn : styles.toggleBtnOff,
             ]}
           >
             <CustomText style={styles.toggleBtnText}>
