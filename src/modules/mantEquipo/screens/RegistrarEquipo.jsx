@@ -120,6 +120,18 @@ export default function RegistrarEquipoScreen() {
     router.replace("/mantEquipo/equipos");
   };
 
+  // Función auxiliar para renderizar mensaje de error solo si hay mensaje
+  const renderError = (mensaje) => {
+    if (mensaje && typeof mensaje === "string" && mensaje.trim().length > 0) {
+      return (
+        <Text size={12} color={COLORS.error} style={styles.fieldErrorText}>
+          {mensaje}
+        </Text>
+      );
+    }
+    return null;
+  };
+
   return (
     <ScrollView
       style={STYLE.container}
@@ -130,6 +142,11 @@ export default function RegistrarEquipoScreen() {
       keyboardShouldPersistTaps="handled"
     >
       <View style={STYLE.contentWrapper}>
+        {/* Encabezado */}
+        <RegistrarEquipoHeader
+          title="Registrar Equipo"
+          subtitle="Complete la información del nuevo equipo"
+        />
 
         <Card style={styles.card}>
           {/* Número de serie / Identificador */}
@@ -192,11 +209,7 @@ export default function RegistrarEquipoScreen() {
             inputStyle={submitted && errores.fechaInstalacion ? styles.invalidField : undefined}
             labelStyle={{ fontFamily: TYPOGRAPHY.fontFamily.medium }}
           />
-          {submitted && errores.fechaInstalacion && (
-            <Text size={12} color={COLORS.error} style={styles.fieldErrorText}>
-              {errores.fechaInstalacion}
-            </Text>
-          )}
+          {renderError(errores.fechaInstalacion)}
 
           {/* Función del equipo */}
           <Input
