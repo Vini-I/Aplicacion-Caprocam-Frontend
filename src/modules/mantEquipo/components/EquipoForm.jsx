@@ -2,9 +2,12 @@
  * ============================================================
  * COMPONENTE: EquipoForm
  * ============================================================
+ * Módulo: Mantenimiento de Equipos
  *
  * Formulario para crear o editar equipos.
  * Incluye validaciones de campos y generación automática de código.
+ * Ahora expone errores específicos por campo y un estado `submitted`
+ * para mostrar alertas de validación en el modal padre.
  *
  * Props:
  * - initialData: objeto con datos iniciales (para edición)
@@ -14,6 +17,7 @@
  * - subcategorias: lista de subcategorías según el tipo seleccionado
  * - estanquesDisponibles: lista de estanques para asociar
  * - hideSubmitButton: booleano para ocultar el botón de envío interno
+ * - onValidationError: función que se llama con el mensaje de error
  *
  * Ejemplo:
  * <EquipoForm
@@ -24,17 +28,15 @@
  *   subcategorias={subcats}
  *   estanquesDisponibles={estanques}
  *   hideSubmitButton={true}
+ *   onValidationError={(msg) => setAlert({ type: 'danger', message: msg })}
  * />
+ * ============================================================
  */
 
-// ============================================================
-// IMPORTS
-// ============================================================
 import React, { forwardRef, useImperativeHandle } from "react";
 import { View, ScrollView } from "react-native";
 import Input from "../../../shared/components/Input";
 import Select from "../../../shared/components/Select";
-import Button from "../../../shared/components/Button";
 import DateInput from "../../../shared/components/DateInput";
 import CustomText from "../../../shared/components/Text";
 import { useEquipoForm } from "../hooks/useEquipoForm";
@@ -42,7 +44,7 @@ import { styles } from "../styles/equiposListStyles";
 import { COLORS } from "../../../theme/colors";
 
 // ============================================================
-// VALIDADORES (se mantienen igual)
+// VALIDADORES
 // ============================================================
 const validarNombre = (nombre) => {
   if (!nombre || !nombre.trim()) return "El nombre del equipo es obligatorio";
@@ -94,12 +96,10 @@ const EquipoForm = forwardRef(function EquipoForm(
     subcategorias = [],
     estanquesDisponibles = [],
     hideSubmitButton = false,
+    onValidationError,
   },
   ref
 ) {
-  // --------------------------------------------------------
-  // HOOK DE FORMULARIO
-  // --------------------------------------------------------
   const {
     form,
     errors,
@@ -108,24 +108,20 @@ const EquipoForm = forwardRef(function EquipoForm(
     handleSubmit,
     resetForm,
     isFormValid,
-  } = useEquipoForm({ initialData, onSubmit, isEditing });
+    getValidationMessage,
+  } = useEquipoForm({ initialData, onSubmit, isEditing, onValidationError });
 
   // Exponer handleSubmit al padre
   useImperativeHandle(ref, () => ({
     submit: handleSubmit,
   }));
 
-  // --------------------------------------------------------
-  // MANEJADORES INTERNOS
-  // --------------------------------------------------------
+  // Manejadores internos
   const handleTipoChange = (value) => {
     handleChange("tipo", value);
     handleChange("subcategoria", "");
   };
 
-  // --------------------------------------------------------
-  // RENDER
-  // --------------------------------------------------------
   const subcategoriasFiltradas = subcategorias[form.tipo] || [];
 
   return (
@@ -136,7 +132,7 @@ const EquipoForm = forwardRef(function EquipoForm(
         value={form.nombre}
         onChangeText={(v) => handleChange("nombre", v)}
         placeholder="Ej: Aireador principal"
-        error={submitted && errors.nombre}
+        style={submitted && errors.nombre ? styles.errorInput : null}
       />
 
       {/* Descripción */}
@@ -146,7 +142,7 @@ const EquipoForm = forwardRef(function EquipoForm(
         onChangeText={(v) => handleChange("descripcion", v)}
         placeholder="Ej: Aireador de paletas para oxigenación"
         multiline
-        error={submitted && errors.descripcion}
+        style={submitted && errors.descripcion ? styles.errorInput : null}
       />
 
       {/* Tipo */}
@@ -176,7 +172,7 @@ const EquipoForm = forwardRef(function EquipoForm(
         value={form.marca}
         onChangeText={(v) => handleChange("marca", v)}
         placeholder="Ej: Makita"
-        error={submitted && errors.marca}
+        style={submitted && errors.marca ? styles.errorInput : null}
       />
 
       {/* Modelo */}
@@ -185,7 +181,7 @@ const EquipoForm = forwardRef(function EquipoForm(
         value={form.modelo}
         onChangeText={(v) => handleChange("modelo", v)}
         placeholder="Ej: MX-2000"
-        error={submitted && errors.modelo}
+        style={submitted && errors.modelo ? styles.errorInput : null}
       />
 
       {/* Serie */}
@@ -194,7 +190,7 @@ const EquipoForm = forwardRef(function EquipoForm(
         value={form.serie}
         onChangeText={(v) => handleChange("serie", v)}
         placeholder="Ej: 9-0050"
-        error={submitted && errors.serie}
+        style={submitted && errors.serie ? styles.errorInput : null}
       />
 
       {/* Fecha de instalación */}
@@ -203,6 +199,7 @@ const EquipoForm = forwardRef(function EquipoForm(
         value={form.fechaInstalacion}
         onChangeText={(v) => handleChange("fechaInstalacion", v)}
         allowFutureDates={false}
+        inputStyle={submitted && errors.fechaInstalacion ? styles.errorInput : null}
       />
 
       {/* Función */}
@@ -212,7 +209,7 @@ const EquipoForm = forwardRef(function EquipoForm(
         onChangeText={(v) => handleChange("funcionEquipo", v)}
         placeholder="Ej: Mantener la oxigenación constante"
         multiline
-        error={submitted && errors.funcionEquipo}
+        style={submitted && errors.funcionEquipo ? styles.errorInput : null}
       />
 
       {/* Estanque asociado */}
@@ -231,7 +228,7 @@ const EquipoForm = forwardRef(function EquipoForm(
         onChangeText={(v) => handleChange("horasMantenimiento", v)}
         placeholder="Ej: 500"
         keyboardType="numeric"
-        error={submitted && errors.horasMantenimiento}
+        style={submitted && errors.horasMantenimiento ? styles.errorInput : null}
       />
 
       {/* Estado */}
@@ -245,18 +242,6 @@ const EquipoForm = forwardRef(function EquipoForm(
         value={form.estado}
         onChange={(v) => handleChange("estado", v)}
       />
-
-      {/* Botón de envío (solo si no se oculta) */}
-      {!hideSubmitButton && (
-        <Button
-          variant="outline"
-          onPress={handleSubmit}
-          style={styles.submitButton}
-          textStyle={{ color: COLORS.primary }}
-        >
-          {isEditing ? "Actualizar equipo" : "Registrar equipo"}
-        </Button>
-      )}
     </ScrollView>
   );
 });

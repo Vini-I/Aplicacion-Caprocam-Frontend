@@ -336,4 +336,12 @@ export const styles = StyleSheet.create({
     maxHeight: "92%",
     padding: 16,
   },
+    formContainer: {
+    paddingBottom: 16,
+  },
+
+  errorInput: {
+    borderColor: COLORS.error,
+    borderWidth: 1.5,
+  },
 });

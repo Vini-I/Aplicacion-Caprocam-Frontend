@@ -2,67 +2,64 @@
  * ============================================================
  * PANTALLA: RegistrarEquipo
  * ============================================================
+ * Módulo: Mantenimiento de Equipos
  *
- * Responsabilidad:
  * Formulario para registrar un nuevo equipo en el sistema.
- * Solicita la misma información que el modal "Agregar Equipo"
- * y aplica validaciones con alertas de campos obligatorios.
+ * Solicita la información necesaria y aplica validaciones
+ * con retroalimentación visual (Alert) al usuario.
  *
- * Datos:
- * - Número de serie/identificador
- * - Nombre
- * - Descripción
- * - Tipo de equipo (Aireación, Bombeo, etc.)
- * - Modelo
- * - Fecha de instalación (defecto: hoy, editable)
- * - Función del equipo
- * - Estanque asociado (opcional, con mocks)
- * - Horas para mantenimiento (opcional, defecto: 500)
- * - Estado (Activo, Inactivo, Mantenimiento)
+ * Funcionalidad:
+ * - Muestra campos para número de serie, nombre, descripción,
+ *   tipo, modelo, fecha de instalación, función, estanque
+ *   asociado (opcional), horas para mantenimiento y estado.
+ * - Valida campos obligatorios al intentar guardar.
+ * - Muestra alerta de éxito al guardar correctamente y redirige
+ *   a la lista de equipos.
+ * - Muestra alerta de error si hay campos incompletos o inválidos,
+ *   con mensajes específicos por campo.
+ * - Botón "Guardar" (relleno azul, con ícono) y "Cancelar"
+ *   (outline azul, con ícono) que navega de vuelta a la lista.
  *
- * Validaciones:
- * - Todos los campos excepto estanque y horas son obligatorios.
- * - El borde rojo y los mensajes de error solo aparecen tras
- *   el primer intento de guardado.
- *
- * Navegación:
- * - Al guardar exitosamente, muestra alerta y limpia el formulario.
- * - Pendiente: redirigir al listado de equipos.
+ * Componentes utilizados:
+ * - Button, Card, Input, NumberInput, Select, Text, Alert
+ * - EquipoFechaInput, RegistrarEquipoHeader
  *
  * Dependencias:
- * - useRegistrarEquipo (hook)
- * - equiposService (para obtener estanques mock)
- * - Componentes compartidos: Button, Card, Input, NumberInput,
- *   Select, EquipoFechaInput, Alert.
+ * - useRegistrarEquipo (hook con lógica y estado)
+ * - equiposService (para obtener estanques disponibles)
+ * - STYLE (estilos globales)
  * ============================================================
  */
 
+import React, { useState, useRef, useEffect } from "react";
 import { Dimensions, ScrollView, View } from "react-native";
 import { useRouter } from "expo-router";
 
-import Button from "../../../shared/components/Button.jsx";
-import Card from "../../../shared/components/Card.jsx";
-import Input from "../../../shared/components/Input.jsx";
-import NumberInput from "../../../shared/components/NumberInput.jsx";
-import Select from "../../../shared/components/Select.jsx";
-import Text from "../../../shared/components/Text.jsx";
+import Button from "../../../shared/components/Button";
+import Card from "../../../shared/components/Card";
+import Input from "../../../shared/components/Input";
+import NumberInput from "../../../shared/components/NumberInput";
+import Select from "../../../shared/components/Select";
+import Text from "../../../shared/components/Text";
+import Alert from "../../../shared/components/Alert";
+import Icon from "../../../shared/components/Icons";
 
-import { COLORS } from "../../../theme/colors.js";
-import { TYPOGRAPHY } from "../../../theme/typography.js";
-import { STYLE } from "../../../theme/style.js";
+import { COLORS } from "../../../theme/colors";
+import { TYPOGRAPHY } from "../../../theme/typography";
+import { STYLE } from "../../../theme/style";
+import { ICONS } from "../../../theme/icons";
 
-import EquipoFechaInput from "../components/EquipoFechaInput.jsx";
-import RegistrarEquipoHeader from "../components/RegistrarEquipoHeader.jsx";
-import { useRegistrarEquipo } from "../hooks/useRegistrarEquipo.js";
-import { equiposService } from "../services/equiposService.js";
-import { styles } from "../styles/RegistrarEquipoStyles.js";
+import EquipoFechaInput from "../components/EquipoFechaInput";
+import RegistrarEquipoHeader from "../components/RegistrarEquipoHeader";
+import { useRegistrarEquipo } from "../hooks/useRegistrarEquipo";
+import { equiposService } from "../services/equiposService";
+import { styles } from "../styles/RegistrarEquipoStyles";
 
 const { width } = Dimensions.get("window");
 const isLargeScreen = width > 700;
 
 export default function RegistrarEquipoScreen() {
   const router = useRouter();
-
   const {
     formulario,
     errores,
@@ -72,10 +69,56 @@ export default function RegistrarEquipoScreen() {
     estadosEquipo,
     actualizarCampo,
     guardarEquipo,
+    resetFormulario,
   } = useRegistrarEquipo();
 
   const estanquesDisponibles = equiposService.getEstanquesDisponibles() || [];
   const hasErrors = Object.values(errores).some((valor) => valor !== "");
+
+  // Estado para alertas
+  const [alert, setAlert] = useState(null);
+  const alertTimeoutRef = useRef(null);
+
+  // Limpiar timeout al desmontar
+  useEffect(() => {
+    return () => {
+      if (alertTimeoutRef.current) {
+        clearTimeout(alertTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Función para mostrar alerta con auto-cierre
+  const showAlert = (type, message) => {
+    if (alertTimeoutRef.current) {
+      clearTimeout(alertTimeoutRef.current);
+    }
+    setAlert({ type, message });
+    alertTimeoutRef.current = setTimeout(() => {
+      setAlert(null);
+    }, 4000);
+  };
+
+  // Manejar guardado
+  const handleGuardar = async () => {
+    try {
+      await guardarEquipo();
+      // Si llegamos aquí, el guardado fue exitoso (el hook no lanzó error)
+      showAlert("success", "Equipo registrado correctamente.");
+      // Redirigir a la lista de equipos después de un breve delay
+      setTimeout(() => {
+        router.replace("/mantEquipo/equipos");
+      }, 1500);
+    } catch (error) {
+      // El hook lanza error con el mensaje detallado
+      showAlert("danger", error.message || "Ocurrió un error al guardar el equipo.");
+    }
+  };
+
+  // Manejar cancelar / cerrar
+  const handleCancelar = () => {
+    router.replace("/mantEquipo/equipos");
+  };
 
   return (
     <ScrollView
@@ -140,7 +183,7 @@ export default function RegistrarEquipoScreen() {
             labelStyle={{ fontFamily: TYPOGRAPHY.fontFamily.medium }}
           />
 
-          {/* Fecha de instalación (editable con calendario) */}
+          {/* Fecha de instalación */}
           <EquipoFechaInput
             label="Fecha de instalación *"
             value={formulario.fechaInstalacion}
@@ -169,7 +212,7 @@ export default function RegistrarEquipoScreen() {
             labelStyle={{ fontFamily: TYPOGRAPHY.fontFamily.medium }}
           />
 
-          {/* Estanque asociado */}
+          {/* Estanque asociado (opcional) */}
           <Select
             label="Estanque asociado"
             value={formulario.estanqueId}
@@ -202,24 +245,37 @@ export default function RegistrarEquipoScreen() {
           />
         </Card>
 
-        {/* Alerta de errores generales */}
-        {submitted && hasErrors && (
-          <View style={styles.errorBox}>
-            <Text size={14} color={COLORS.error} style={styles.errorText}>
-              Revisa los campos obligatorios marcados con * antes de guardar.
-            </Text>
+        {/* Alerta de éxito/error después de la acción */}
+        {alert && (
+          <View style={{ marginBottom: 12 }}>
+            <Alert variant={alert.type} message={alert.message} />
           </View>
         )}
 
-        {/* Botón Guardar (outline) */}
-        <Button
-          variant="outline"
-          onPress={guardarEquipo}
-          disabled={guardando}
-          style={styles.saveButton}
-        >
-          {guardando ? "Guardando..." : "Registrar Equipo"}
-        </Button>
+        {/* Botones: Cancelar (outline) y Guardar (primary) */}
+        <View style={styles.buttonRow}>
+          <Button
+            variant="outline"
+            onPress={handleCancelar}
+            style={[styles.cancelButton, { flexDirection: "row", alignItems: "center", gap: 8 }]}
+            disabled={guardando}
+          >
+            <Icon icon={ICONS.exit} size={18} color={COLORS.primary} />
+            <Text style={{ color: COLORS.primary, fontWeight: "600" }}>Cancelar</Text>
+          </Button>
+
+          <Button
+            variant="primary"
+            onPress={handleGuardar}
+            disabled={guardando}
+            style={[styles.saveButton, { flexDirection: "row", alignItems: "center", gap: 8 }]}
+          >
+            <Icon icon={ICONS.save} size={18} color={COLORS.white} />
+            <Text style={{ color: COLORS.white, fontWeight: "600" }}>
+              {guardando ? "Guardando..." : "Guardar equipo"}
+            </Text>
+          </Button>
+        </View>
       </View>
     </ScrollView>
   );

@@ -2,27 +2,30 @@
  * ============================================================
  * COMPONENTE: EquiposListScreen
  * ============================================================
+ * Módulo: Mantenimiento de Equipos
  *
  * Pantalla principal del módulo de equipos.
  * Muestra el listado de equipos registrados, permite buscar, agregar,
  * editar y eliminar equipos, y ofrece acceso al módulo de mantenimiento
  * de equipos (tickets).
  *
+ * Funcionalidad:
+ * - Lista equipos con búsqueda y filtros.
+ * - Modal para crear/editar equipos con validaciones.
+ * - Modal de detalle de equipo.
+ * - Modal de confirmación para eliminar.
+ * - Alertas de éxito/error al crear, editar o eliminar.
+ *
  * Dependencias:
  * - useEquipos hook para manejar datos y operaciones CRUD
  * - SearchBar compartido desde inventarios
  * - Layout global STYLE
  * - Componentes compartidos de la aplicación
- *
- * Ejemplo:
- * <EquiposListScreen />
+ * ============================================================
  */
 
-// ============================================================
-// IMPORTS
-// ============================================================
-import React, { useState, useRef } from "react";
-import { View, ScrollView, Alert } from "react-native";
+import React, { useState, useRef, useEffect } from "react";
+import { View, ScrollView, Alert as RNAlert } from "react-native";
 import { useRouter } from "expo-router";
 import { useEquipos } from "../hooks/useEquipos";
 import EquipoCard from "../components/EquipoCard";
@@ -35,15 +38,16 @@ import Title from "../../../shared/components/Title";
 import Input from "../../../shared/components/Input";
 import CustomText from "../../../shared/components/Text";
 import Icon from "../../../shared/components/Icons";
+import Alert from "../../../shared/components/Alert";
 import SearchBar from "../../inventarios/components/SearchBar";
 import { STYLE } from "../../../theme/style";
 import { ICONS } from "../../../theme/icons";
 import { COLORS } from "../../../theme/colors";
 import { styles } from "../styles/equiposListStyles";
+import { equiposService } from "../services/equiposService";
+import { useFocusEffect } from "expo-router";
 
-// ============================================================
-// COMPONENTE PRINCIPAL
-// ============================================================
+
 export default function EquiposListScreen() {
   const router = useRouter();
   const formRef = useRef();
@@ -58,6 +62,10 @@ export default function EquiposListScreen() {
   const [codigoConfirmacion, setCodigoConfirmacion] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+
+  // Estado para alertas globales
+  const [alert, setAlert] = useState(null);
+  const alertTimeoutRef = useRef(null);
 
   // --------------------------------------------------------
   // HOOK DE DATOS
@@ -74,6 +82,32 @@ export default function EquiposListScreen() {
     toggleEquipo,
     fetchEquipos,
   } = useEquipos({});
+
+  // Limpiar timeout al desmontar
+  useEffect(() => {
+    return () => {
+      if (alertTimeoutRef.current) {
+        clearTimeout(alertTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  useFocusEffect(
+  useCallback(() => {
+    fetchEquipos();
+  }, [fetchEquipos])
+);
+
+  // Función para mostrar alerta con auto-cierre
+  const showAlert = (type, message) => {
+    if (alertTimeoutRef.current) {
+      clearTimeout(alertTimeoutRef.current);
+    }
+    setAlert({ type, message });
+    alertTimeoutRef.current = setTimeout(() => {
+      setAlert(null);
+    }, 4000);
+  };
 
   // --------------------------------------------------------
   // FILTRADO LOCAL
@@ -93,20 +127,15 @@ export default function EquiposListScreen() {
   // --------------------------------------------------------
   // MANEJADORES
   // --------------------------------------------------------
-
-  /** Abre modal para agregar nuevo equipo */
   const handleAdd = () => {
-    setEditingEquipo(null);
-    setModalVisible(true);
+router.push("/registrarEquipo");
   };
 
-  /** Abre modal para editar un equipo */
   const handleEdit = (equipo) => {
     setEditingEquipo(equipo);
     setModalVisible(true);
   };
 
-  /** Muestra el modal de confirmación de eliminación */
   const handleDeletePress = (id) => {
     const equipo = equipos.find(e => e.id === id);
     if (equipo) {
@@ -116,63 +145,63 @@ export default function EquiposListScreen() {
     }
   };
 
-  /**
-   * Confirma eliminación verificando el código del equipo.
-   * @async
-   */
   const confirmDelete = async () => {
     if (!deleteTarget) {
-      Alert.alert("Error", "Equipo no encontrado");
+      showAlert("danger", "Equipo no encontrado");
       setShowConfirmModal(false);
       return;
     }
 
     if (codigoConfirmacion !== deleteTarget.codigo) {
-      Alert.alert("Error", "El código ingresado no coincide con el del equipo");
+      showAlert("danger", "El código ingresado no coincide con el del equipo");
       return;
     }
 
     try {
       await eliminarEquipo(deleteTarget.id);
-      Alert.alert("Éxito", `El equipo ${deleteTarget.nombre} ha sido eliminado correctamente`);
+      showAlert("warning", `El equipo "${deleteTarget.nombre}" ha sido eliminado correctamente`);
       setShowConfirmModal(false);
       setDeleteTarget(null);
       setCodigoConfirmacion("");
+      // Recargar lista
+      fetchEquipos();
     } catch (error) {
-      Alert.alert("Error", "No se pudo eliminar el equipo");
+      showAlert("danger", "No se pudo eliminar el equipo");
     }
   };
 
-  /**
-   * Envía el formulario para crear o actualizar.
-   * @param {Object} formData - Datos del equipo
-   * @async
-   */
   const handleSubmit = async (formData) => {
-    if (editingEquipo) {
-      await actualizarEquipo(editingEquipo.id, formData);
-    } else {
-      await crearEquipo(formData);
+    try {
+      if (editingEquipo) {
+        await actualizarEquipo(editingEquipo.id, formData);
+        showAlert("success", `Equipo "${formData.nombre}" actualizado correctamente`);
+      } else {
+        await crearEquipo(formData);
+        showAlert("success", `Equipo "${formData.nombre}" creado correctamente`);
+      }
+      setModalVisible(false);
+      setEditingEquipo(null);
+      // Recargar lista
+      fetchEquipos();
+    } catch (error) {
+      showAlert("danger", error.message || "Ocurrió un error al guardar el equipo");
     }
-    setModalVisible(false);
-    setEditingEquipo(null);
   };
 
-  /** Alterna el estado de encendido/apagado del equipo */
   const handleToggle = async (id) => {
     try {
       await toggleEquipo(id);
+      // Recargar lista
+      fetchEquipos();
     } catch (error) {
-      Alert.alert("Error", "No se pudo cambiar el estado del equipo");
+      showAlert("danger", "No se pudo cambiar el estado del equipo");
     }
   };
 
-  /** Abre pantalla de detalle */
   const openDetail = (equipoId) => {
     setSelectedEquipoId(equipoId);
   };
 
-  /** Navega al módulo de mantenimiento de equipos (tickets) */
   const navigateToMantEquipo = () => {
     router.push("/mantEquipo/mantEquipo");
   };
@@ -197,7 +226,6 @@ export default function EquiposListScreen() {
             placeholder="Buscar por nombre, código, marca o modelo"
             containerStyle={styles.searchInput}
           />
-          {/* Botón "Ver Mantenimiento" - outline con borde warning */}
           <Button
             variant="outline"
             onPress={navigateToMantEquipo}
@@ -208,7 +236,6 @@ export default function EquiposListScreen() {
               Ver Mantenimiento
             </CustomText>
           </Button>
-          {/* Botón "Agregar equipo" - outline con borde primary */}
           <Button
             variant="outline"
             onPress={handleAdd}
@@ -221,6 +248,13 @@ export default function EquiposListScreen() {
           </Button>
         </View>
 
+        {/* Alerta global */}
+        {alert && (
+          <View style={{ marginBottom: 12, paddingHorizontal: 16 }}>
+            <Alert variant={alert.type} message={alert.message} />
+          </View>
+        )}
+
         {/* Lista de equipos */}
         <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.list}>
           {equiposFiltrados.map((equipo) => (
@@ -229,8 +263,6 @@ export default function EquiposListScreen() {
               equipo={equipo}
               onPress={openDetail}
               onToggle={handleToggle}
-              onEdit={handleEdit}
-              onDelete={() => handleDeletePress(equipo.id)}
             />
           ))}
         </ScrollView>
@@ -257,6 +289,10 @@ export default function EquiposListScreen() {
                 onSubmit={handleSubmit}
                 isEditing={!!editingEquipo}
                 hideSubmitButton={true}
+                tiposEquipo={equiposService.getTiposEquipo()}
+                subcategorias={equiposService.getSubcategorias}
+                estanquesDisponibles={equiposService.getEstanquesDisponibles()}
+                onValidationError={(msg) => showAlert("danger", msg)}
               />
             </ScrollView>
 
@@ -268,32 +304,45 @@ export default function EquiposListScreen() {
                 borderTopWidth: 1,
                 borderTopColor: COLORS.secondary,
                 backgroundColor: COLORS.white,
+                gap: 12,
               }}
             >
               <Button
                 variant="outline"
                 onPress={() => setModalVisible(false)}
-                style={{ flex: 1, marginRight: 8 }}
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 6,
+                  borderColor: COLORS.primary,
+                  backgroundColor: "transparent",
+                }}
               >
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                  <Icon icon={ICONS.exit} size={18} color={COLORS.primary} />
-                  <CustomText style={{ color: COLORS.primary, fontWeight: "600" }}>
-                    Cancelar
-                  </CustomText>
-                </View>
+                <Icon icon={ICONS.exit} size={18} color={COLORS.primary} />
+                <CustomText style={{ color: COLORS.primary, fontWeight: "600" }}>
+                  Cancelar
+                </CustomText>
               </Button>
 
               <Button
                 variant="primary"
                 onPress={() => formRef.current?.submit()}
-                style={{ flex: 1, marginLeft: 8 }}
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 6,
+                  backgroundColor: COLORS.primary,
+                  borderWidth: 0,
+                }}
               >
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                  <Icon icon={ICONS.save} size={18} color={COLORS.white} />
-                  <CustomText style={{ color: COLORS.white, fontWeight: "600" }}>
-                    {editingEquipo ? "Actualizar" : "Registrar"}
-                  </CustomText>
-                </View>
+                <Icon icon={ICONS.save} size={18} color={COLORS.white} />
+                <CustomText style={{ color: COLORS.white, fontWeight: "600" }}>
+                  {editingEquipo ? "Actualizar" : "Registrar"}
+                </CustomText>
               </Button>
             </View>
           </View>
@@ -338,16 +387,18 @@ export default function EquiposListScreen() {
                 setDeleteTarget(null);
               }}
               variant="outline"
-              style={styles.modalCancelBtn}
+              style={[styles.modalCancelBtn, { flexDirection: "row", alignItems: "center", gap: 6 }]}
             >
-              Cancelar
+              <Icon icon={ICONS.exit} size={16} color={COLORS.primary} />
+              <CustomText style={{ color: COLORS.primary, fontWeight: "600" }}>Cancelar</CustomText>
             </Button>
             <Button
               onPress={confirmDelete}
               variant="danger"
-              style={styles.modalDeleteBtn}
+              style={[styles.modalDeleteBtn, { flexDirection: "row", alignItems: "center", gap: 6 }]}
             >
-              Eliminar
+              <Icon icon={ICONS.delete} size={16} color={COLORS.white} />
+              <CustomText style={{ color: COLORS.white, fontWeight: "600" }}>Eliminar</CustomText>
             </Button>
           </View>
         </Modal>

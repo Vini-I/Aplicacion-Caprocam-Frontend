@@ -2,13 +2,17 @@
  * ============================================================
  * HOOK: useRegistrarEquipo
  * ============================================================
+ * Módulo: Mantenimiento de Equipos
  *
- * Responsabilidad:
  * Encapsula el estado del formulario de registro de equipo,
  * la validación por intento de guardado y el armado del payload.
- * Incluye todos los campos solicitados: identificador, nombre,
- * descripción, tipo, modelo, fechaInstalación, función, estanque,
- * horasMantenimiento y estado.
+ *
+ * Funcionalidad:
+ * - Mantiene el estado del formulario y los errores.
+ * - Valida campos obligatorios al intentar guardar.
+ * - Lanza un error con mensajes específicos por campo para que
+ *   la pantalla muestre una alerta detallada.
+ * - Si la validación es exitosa, envía el payload al servicio.
  *
  * Datos:
  * - formulario: objeto con todos los campos del equipo.
@@ -17,15 +21,9 @@
  * - guardando: booleano de estado de carga.
  *
  * Validaciones:
- * - Campos obligatorios: codigoInterno, nombre, descripcion, tipo,
- *   modelo, fechaInstalacion, funcionEquipo, estado.
- * - Los campos estanqueId y horasMantenimiento son opcionales.
- * - Fecha debe tener formato dd/mm/aaaa válido.
- * - Mensajes de error se muestran solo después del primer intento.
- *
- * Navegación:
- * - Al guardar exitosamente, se muestra alerta y se limpia el formulario.
- * - Pendiente: redirigir al listado de equipos.
+ * - Todos los campos excepto estanqueId y horasMantenimiento son
+ *   obligatorios.
+ * - La fecha debe tener formato dd/mm/aaaa válido.
  *
  * Dependencias:
  * - registrarEquipoService (crearEquipoPayload, agregarEquipo)
@@ -34,13 +32,12 @@
  */
 
 import { useState } from "react";
-import { Alert } from "react-native";
 import {
   agregarEquipo,
   crearEquipoPayload,
   ESTADOS_EQUIPO,
   TIPOS_EQUIPO,
-} from "../services/registrarEquipoService.js";
+} from "../services/registrarEquipoService";
 
 // Obtener fecha actual en formato dd/mm/aaaa
 function obtenerFechaActual() {
@@ -104,7 +101,6 @@ function validarFormulario(formulario) {
     fechaInstalacion: "",
     funcionEquipo: "",
     estado: "",
-    // Los campos opcionales no tienen error
   };
 
   if (!formulario.codigoInterno.trim()) {
@@ -158,15 +154,26 @@ export function useRegistrarEquipo() {
     }
   }
 
+  function resetFormulario() {
+    setFormulario(formularioInicial);
+    setErrores({});
+    setSubmitted(false);
+    setGuardando(false);
+  }
+
   async function guardarEquipo() {
     setSubmitted(true);
 
     const nuevosErrores = validarFormulario(formulario);
-    const tieneErrores = Object.values(nuevosErrores).some((valor) => valor !== "");
+    const mensajes = Object.values(nuevosErrores).filter((msg) => msg !== "");
 
-    if (tieneErrores) {
+    if (mensajes.length > 0) {
       setErrores(nuevosErrores);
-      return;
+      // Construir mensaje detallado como en Colaboradores
+      const mensajeError =
+        "Revisa los campos obligatorios marcados con *:\n" +
+        mensajes.map((m) => `- ${m}`).join("\n");
+      throw new Error(mensajeError);
     }
 
     setGuardando(true);
@@ -174,22 +181,12 @@ export function useRegistrarEquipo() {
     try {
       const payload = crearEquipoPayload(formulario);
       await agregarEquipo(payload);
-
-      Alert.alert(
-        "Equipo registrado",
-        "El equipo se ha registrado correctamente."
-      );
-
-      // Limpiar formulario después del éxito (opcional)
-      setFormulario(formularioInicial);
-      setErrores({});
-      setSubmitted(false);
-      // TODO: redirigir a la lista de equipos si se desea
+      // Éxito: reseteamos el formulario
+      resetFormulario();
+      // No lanzamos error; la pantalla mostrará alerta de éxito
     } catch (error) {
-      Alert.alert(
-        "Error",
-        "No se pudo guardar el equipo. Intente nuevamente."
-      );
+      // Si el servicio falla, lanzamos error para que la pantalla lo maneje
+      throw new Error("No se pudo guardar el equipo. Intente nuevamente.");
     } finally {
       setGuardando(false);
     }
@@ -204,5 +201,6 @@ export function useRegistrarEquipo() {
     estadosEquipo: ESTADOS_EQUIPO,
     actualizarCampo,
     guardarEquipo,
+    resetFormulario,
   };
 }
