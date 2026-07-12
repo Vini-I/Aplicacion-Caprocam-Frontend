@@ -159,12 +159,6 @@ export default function EquipoDetalleScreen({
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={true}
       >
-        {onClose && (
-          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-            <CustomText style={styles.closeButtonText}>✕ Cerrar</CustomText>
-          </TouchableOpacity>
-        )}
-
         <Card style={styles.card}>
           <View style={styles.header}>
             <View style={styles.avatar}>
@@ -188,24 +182,29 @@ export default function EquipoDetalleScreen({
           {/* Horas de uso */}
           <View style={styles.horasContainer}>
             <View style={styles.horasRow}>
-              <CustomText style={styles.horasLabel}>Horas de uso</CustomText>
-              <CustomText style={[
-                styles.horasValor,
-                necesitaMant && styles.horasValorCritico
-              ]}>
+              <View style={styles.horasLabelContainer}>
+                <Icon icon={ICONS.clock} size={16} color={COLORS.textTertiary} style={styles.horasIcon} />
+                <CustomText style={styles.horasLabel}>Horas de uso</CustomText>
+              </View>
+              <CustomText style={[styles.horasValor, necesitaMant && styles.horasValorCritico]}>
                 {horasUsoFormateado}
               </CustomText>
             </View>
             <View style={styles.horasRow}>
-              <CustomText style={styles.horasLabel}>
-                {necesitaMant ? "⚠️ Mantenimiento requerido" : "Horas para mantenimiento"}
-              </CustomText>
-              <CustomText style={[
-                styles.horasValor,
-                necesitaMant && styles.horasValorCritico
-              ]}>
-                {necesitaMant ? "0 h" : `${Math.round(horasRestantes)} h`}
-              </CustomText>
+              <View style={styles.horasLabelContainer}>
+                <Icon icon={ICONS.tools} size={16} color={COLORS.textTertiary} style={styles.horasIcon} />
+                <CustomText style={styles.horasLabel}>
+                  {necesitaMant ? "Mantenimiento requerido" : "Horas para mantenimiento"}
+                </CustomText>
+              </View>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                {necesitaMant && (
+                  <Icon icon={ICONS.alertTriangle} size={18} color={COLORS.error} style={{ marginRight: 6 }} />
+                )}
+                <CustomText style={[styles.horasValor, necesitaMant && styles.horasValorCritico]}>
+                  {necesitaMant ? "0 h" : `${Math.round(horasRestantes)} h`}
+                </CustomText>
+              </View>
             </View>
           </View>
 
@@ -214,12 +213,14 @@ export default function EquipoDetalleScreen({
             <CustomText style={styles.seccionTitulo}>Información del equipo</CustomText>
 
             <View style={styles.filaDetalle}>
+              <Icon icon={ICONS.gear} size={16} color={COLORS.textTertiary} style={styles.detalleIcon} />
               <CustomText style={styles.filaEtiqueta}>Tipo</CustomText>
               <CustomText style={styles.filaValor}>{tipoLabel}</CustomText>
             </View>
 
             {equipo.subcategoria && (
               <View style={styles.filaDetalle}>
+                <Icon icon={ICONS.info} size={16} color={COLORS.textTertiary} style={styles.detalleIcon} />
                 <CustomText style={styles.filaEtiqueta}>Subcategoría</CustomText>
                 <CustomText style={styles.filaValor}>
                   {equipo.subcategoria}
@@ -228,37 +229,44 @@ export default function EquipoDetalleScreen({
             )}
 
             <View style={styles.filaDetalle}>
+              <Icon icon={ICONS.info} size={16} color={COLORS.textTertiary} style={styles.detalleIcon} />
               <CustomText style={styles.filaEtiqueta}>Marca</CustomText>
               <CustomText style={styles.filaValor}>{equipo.marca || "—"}</CustomText>
             </View>
 
             <View style={styles.filaDetalle}>
+              <Icon icon={ICONS.info} size={16} color={COLORS.textTertiary} style={styles.detalleIcon} />
               <CustomText style={styles.filaEtiqueta}>Modelo</CustomText>
               <CustomText style={styles.filaValor}>{equipo.modelo || "—"}</CustomText>
             </View>
 
             <View style={styles.filaDetalle}>
+              <Icon icon={ICONS.info} size={16} color={COLORS.textTertiary} style={styles.detalleIcon} />
               <CustomText style={styles.filaEtiqueta}>Serie</CustomText>
               <CustomText style={styles.filaValor}>{equipo.serie || "—"}</CustomText>
             </View>
 
             <View style={styles.filaDetalle}>
+              <Icon icon={ICONS.calendar} size={16} color={COLORS.textTertiary} style={styles.detalleIcon} />
               <CustomText style={styles.filaEtiqueta}>Fecha de instalación</CustomText>
               <CustomText style={styles.filaValor}>{equipo.fechaInstalacion || "—"}</CustomText>
             </View>
 
             <View style={styles.filaDetalle}>
+              <Icon icon={ICONS.location} size={16} color={COLORS.textTertiary} style={styles.detalleIcon} />
               <CustomText style={styles.filaEtiqueta}>Ubicación</CustomText>
               <CustomText style={styles.filaValor}>{equipo.ubicacion || "—"}</CustomText>
             </View>
 
             <View style={styles.filaDetalle}>
+              <Icon icon={ICONS.engine} size={16} color={COLORS.textTertiary} style={styles.detalleIcon} />
               <CustomText style={styles.filaEtiqueta}>Función</CustomText>
               <CustomText style={styles.filaValor}>{equipo.funcionEquipo || "—"}</CustomText>
             </View>
 
             {/* Estanque asociado con link */}
             <View style={styles.filaDetalle}>
+              <Icon icon={ICONS.water} size={16} color={COLORS.textTertiary} style={styles.detalleIcon} />
               <CustomText style={styles.filaEtiqueta}>Estanque asociado</CustomText>
               {estanque ? (
                 <TouchableOpacity onPress={handleEstanquePress}>
@@ -272,6 +280,7 @@ export default function EquipoDetalleScreen({
             </View>
 
             <View style={styles.filaDetalle}>
+              <Icon icon={ICONS.tools} size={16} color={COLORS.textTertiary} style={styles.detalleIcon} />
               <CustomText style={styles.filaEtiqueta}>Último mantenimiento</CustomText>
               <CustomText style={styles.filaValor}>{equipo.ultimoMantenimiento || "—"}</CustomText>
             </View>
@@ -310,26 +319,39 @@ export default function EquipoDetalleScreen({
           )}
         </Card>
       </ScrollView>
-
-      {/* Footer fijo con botones Editar y Eliminar - SIEMPRE VISIBLES */}
-      <View style={styles.footerContainer}>
+ <View style={styles.footerContainer}>
         <View style={styles.footerButtonsContainer}>
           <Button
             style={[styles.boton, styles.botonEditar]}
             onPress={() => onEdit?.(equipo)}
           >
-            <Icon icon={ICONS.edit} size={ICON_SIZE.boton} color={COLORS.white} />
-            <CustomText style={styles.botonTexto}>Editar</CustomText>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <Icon icon={ICONS.edit} size={ICON_SIZE.boton} color={COLORS.white} />
+              <CustomText style={styles.botonTexto}>Editar</CustomText>
+            </View>
           </Button>
 
           <Button
             style={[styles.boton, styles.botonEliminar]}
             onPress={() => onDelete?.(equipo.id)}
           >
-            <Icon icon={ICONS.delete} size={ICON_SIZE.boton} color={COLORS.white} />
-            <CustomText style={styles.botonTexto}>Eliminar</CustomText>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <Icon icon={ICONS.delete} size={ICON_SIZE.boton} color={COLORS.white} />
+              <CustomText style={styles.botonTexto}>Eliminar</CustomText>
+            </View>
           </Button>
         </View>
+
+        <Button
+          variant="outline"
+          onPress={onClose}
+          style={[styles.botonCerrar, { marginTop: 12, width: '100%' }]}
+        >
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <Icon icon={ICONS.exit} size={ICON_SIZE.boton} color={COLORS.primary} />
+            <CustomText style={[styles.botonTexto, { color: COLORS.primary }]}>Cerrar</CustomText>
+          </View>
+        </Button>
       </View>
     </View>
   );

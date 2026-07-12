@@ -21,7 +21,7 @@
 // ============================================================
 // IMPORTS
 // ============================================================
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { View, ScrollView, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { useEquipos } from "../hooks/useEquipos";
@@ -46,6 +46,7 @@ import { styles } from "../styles/equiposListStyles";
 // ============================================================
 export default function EquiposListScreen() {
   const router = useRouter();
+  const formRef = useRef();
 
   // --------------------------------------------------------
   // ESTADOS
@@ -193,7 +194,7 @@ export default function EquiposListScreen() {
           <SearchBar
             value={searchText}
             onChangeText={setSearchText}
-            placeholder="🔍 Buscar por nombre, código, marca o modelo"
+            placeholder="Buscar por nombre, código, marca o modelo"
             containerStyle={styles.searchInput}
           />
           {/* Botón "Ver Mantenimiento" - outline con borde warning */}
@@ -207,7 +208,7 @@ export default function EquiposListScreen() {
               Ver Mantenimiento
             </CustomText>
           </Button>
-          {/* Botón "Agregar equipo" - outline con borde primary (igual estilo que el anterior) */}
+          {/* Botón "Agregar equipo" - outline con borde primary */}
           <Button
             variant="outline"
             onPress={handleAdd}
@@ -219,61 +220,6 @@ export default function EquiposListScreen() {
             </CustomText>
           </Button>
         </View>
-
-        {/* Alertas de mantenimiento */}
-        {equiposProximosMantenimiento.length > 0 && (
-          <View style={styles.alertasContainer}>
-            <CustomText style={styles.alertasTitle}>
-              ⚠️ Equipos próximos a mantenimiento
-            </CustomText>
-            <CustomText style={styles.alertasTitle}>
-            .
-            </CustomText>
-            {equiposProximosMantenimiento.slice(0, 5).map((equipo) => {
-              const restantes = Math.round(equipo.horasMantenimiento - equipo.horasUso);
-              const esCritico = restantes <= 20;
-              return (
-                <View
-                  key={equipo.id}
-                  style={[
-                    styles.alertaCard,
-                    esCritico && styles.alertaCardCritica
-                  ]}
-                >
-                  <View style={[
-                    styles.alertaIcon,
-                    esCritico && styles.alertaIconCritica
-                  ]}>
-                    <Icon
-                      icon={ICONS.notification}
-                      size={16}
-                      color={COLORS.white}
-                    />
-                  </View>
-                  <View style={styles.alertaContent}>
-                    <CustomText style={styles.alertaTitle}>
-                      {equipo.nombre}
-                    </CustomText>
-                    <CustomText style={styles.alertaDescription}>
-                      {equipo.codigo} · {equipo.ubicacion || "Sin ubicación"}
-                    </CustomText>
-                  </View>
-                  <CustomText style={[
-                    styles.alertaHoras,
-                    esCritico && styles.alertaHorasCritica
-                  ]}>
-                    {restantes} h
-                  </CustomText>
-                </View>
-              );
-            })}
-            {equiposProximosMantenimiento.length > 5 && (
-              <CustomText style={styles.alertasMore}>
-                +{equiposProximosMantenimiento.length - 5} equipos más
-              </CustomText>
-            )}
-          </View>
-        )}
 
         {/* Lista de equipos */}
         <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.list}>
@@ -293,16 +239,64 @@ export default function EquiposListScreen() {
         <Modal
           visible={modalVisible}
           onClose={() => setModalVisible(false)}
+          showCloseButton={false}
           containerStyle={styles.modalContainer}
         >
-          <Title level={4}>
-            {editingEquipo ? "Editar equipo" : "Nuevo equipo"}
-          </Title>
-          <EquipoForm
-            initialData={editingEquipo || {}}
-            onSubmit={handleSubmit}
-            isEditing={!!editingEquipo}
-          />
+          <View style={{ flex: 1, flexDirection: "column" }}>
+            <Title level={4} style={{ padding: 16, paddingBottom: 0 }}>
+              {editingEquipo ? "Editar equipo" : "Nuevo equipo"}
+            </Title>
+
+            <ScrollView
+              style={{ flex: 1, paddingHorizontal: 16, paddingBottom: 16 }}
+              contentContainerStyle={{ paddingBottom: 16 }}
+            >
+              <EquipoForm
+                ref={formRef}
+                initialData={editingEquipo || {}}
+                onSubmit={handleSubmit}
+                isEditing={!!editingEquipo}
+                hideSubmitButton={true}
+              />
+            </ScrollView>
+
+            {/* Botones fijos en la parte inferior */}
+            <View
+              style={{
+                flexDirection: "row",
+                padding: 16,
+                borderTopWidth: 1,
+                borderTopColor: COLORS.secondary,
+                backgroundColor: COLORS.white,
+              }}
+            >
+              <Button
+                variant="outline"
+                onPress={() => setModalVisible(false)}
+                style={{ flex: 1, marginRight: 8 }}
+              >
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                  <Icon icon={ICONS.exit} size={18} color={COLORS.primary} />
+                  <CustomText style={{ color: COLORS.primary, fontWeight: "600" }}>
+                    Cancelar
+                  </CustomText>
+                </View>
+              </Button>
+
+              <Button
+                variant="primary"
+                onPress={() => formRef.current?.submit()}
+                style={{ flex: 1, marginLeft: 8 }}
+              >
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                  <Icon icon={ICONS.save} size={18} color={COLORS.white} />
+                  <CustomText style={{ color: COLORS.white, fontWeight: "600" }}>
+                    {editingEquipo ? "Actualizar" : "Registrar"}
+                  </CustomText>
+                </View>
+              </Button>
+            </View>
+          </View>
         </Modal>
 
         {/* Modal de confirmación con validación de código */}

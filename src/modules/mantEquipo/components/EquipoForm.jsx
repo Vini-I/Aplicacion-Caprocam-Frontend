@@ -13,6 +13,7 @@
  * - tiposEquipo: lista de tipos disponibles
  * - subcategorias: lista de subcategorías según el tipo seleccionado
  * - estanquesDisponibles: lista de estanques para asociar
+ * - hideSubmitButton: booleano para ocultar el botón de envío interno
  *
  * Ejemplo:
  * <EquipoForm
@@ -22,24 +23,26 @@
  *   tiposEquipo={tipos}
  *   subcategorias={subcats}
  *   estanquesDisponibles={estanques}
+ *   hideSubmitButton={true}
  * />
  */
 
 // ============================================================
 // IMPORTS
 // ============================================================
-import React, { useState, useEffect } from "react";
+import React, { forwardRef, useImperativeHandle } from "react";
 import { View, ScrollView } from "react-native";
 import Input from "../../../shared/components/Input";
 import Select from "../../../shared/components/Select";
 import Button from "../../../shared/components/Button";
 import DateInput from "../../../shared/components/DateInput";
 import CustomText from "../../../shared/components/Text";
+import { useEquipoForm } from "../hooks/useEquipoForm";
 import { styles } from "../styles/equiposListStyles";
 import { COLORS } from "../../../theme/colors";
 
 // ============================================================
-// VALIDADORES
+// VALIDADORES (se mantienen igual)
 // ============================================================
 const validarNombre = (nombre) => {
   if (!nombre || !nombre.trim()) return "El nombre del equipo es obligatorio";
@@ -73,108 +76,51 @@ const validarFuncion = (funcion) => {
   return "";
 };
 
+const validarHorasMantenimiento = (horas) => {
+  if (!horas) return "";
+  if (Number(horas) <= 0) return "Las horas de mantenimiento deben ser mayores a 0";
+  return "";
+};
+
 // ============================================================
 // COMPONENTE PRINCIPAL
 // ============================================================
-export default function EquipoForm({
-  initialData = {},
-  onSubmit,
-  isEditing = false,
-  tiposEquipo = [],
-  subcategorias = [],
-  estanquesDisponibles = [],
-}) {
+const EquipoForm = forwardRef(function EquipoForm(
+  {
+    initialData = {},
+    onSubmit,
+    isEditing = false,
+    tiposEquipo = [],
+    subcategorias = [],
+    estanquesDisponibles = [],
+    hideSubmitButton = false,
+  },
+  ref
+) {
   // --------------------------------------------------------
-  // ESTADOS
+  // HOOK DE FORMULARIO
   // --------------------------------------------------------
-  const [form, setForm] = useState({
-    nombre: initialData.nombre || "",
-    descripcion: initialData.descripcion || "",
-    tipo: initialData.tipo || "",
-    subcategoria: initialData.subcategoria || "",
-    marca: initialData.marca || "",
-    modelo: initialData.modelo || "",
-    serie: initialData.serie || "",
-    fechaInstalacion: initialData.fechaInstalacion || "",
-    funcionEquipo: initialData.funcionEquipo || "",
-    ubicacion: initialData.ubicacion || "",
-    estanqueId: initialData.estanqueId || "",
-    estado: initialData.estado || "activo",
-    horasMantenimiento: initialData.horasMantenimiento || "",
-  });
+  const {
+    form,
+    errors,
+    submitted,
+    handleChange,
+    handleSubmit,
+    resetForm,
+    isFormValid,
+  } = useEquipoForm({ initialData, onSubmit, isEditing });
 
-  const [errors, setErrors] = useState({});
-  const [submitted, setSubmitted] = useState(false);
-
-  // Actualizar subcategorías cuando cambia el tipo
-  useEffect(() => {
-    if (form.tipo) {
-      const subcats = subcategorias[form.tipo] || [];
-      if (subcats.length > 0 && !subcats.find(s => s.value === form.subcategoria)) {
-        setForm(prev => ({ ...prev, subcategoria: "" }));
-      }
-    }
-  }, [form.tipo, subcategorias]);
+  // Exponer handleSubmit al padre
+  useImperativeHandle(ref, () => ({
+    submit: handleSubmit,
+  }));
 
   // --------------------------------------------------------
-  // MANEJADORES
+  // MANEJADORES INTERNOS
   // --------------------------------------------------------
-  const handleChange = (field, value) => {
-    setForm(prev => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: null }));
-    }
-  };
-
   const handleTipoChange = (value) => {
-    setForm(prev => ({ ...prev, tipo: value, subcategoria: "" }));
-    if (errors.tipo) {
-      setErrors(prev => ({ ...prev, tipo: null }));
-    }
-  };
-
-  const validateForm = () => {
-    const newErrors = {};
-    
-    const nombreError = validarNombre(form.nombre);
-    if (nombreError) newErrors.nombre = nombreError;
-    
-    const descError = validarDescripcion(form.descripcion);
-    if (descError) newErrors.descripcion = descError;
-    
-    if (!form.tipo) newErrors.tipo = "Debe seleccionar un tipo de equipo";
-    
-    const marcaError = validarMarca(form.marca);
-    if (marcaError) newErrors.marca = marcaError;
-    
-    const modeloError = validarModelo(form.modelo);
-    if (modeloError) newErrors.modelo = modeloError;
-    
-    const serieError = validarSerie(form.serie);
-    if (serieError) newErrors.serie = serieError;
-    
-    if (!form.fechaInstalacion) newErrors.fechaInstalacion = "La fecha de instalación es obligatoria";
-    
-    const funcionError = validarFuncion(form.funcionEquipo);
-    if (funcionError) newErrors.funcionEquipo = funcionError;
-    
-    if (form.horasMantenimiento && Number(form.horasMantenimiento) <= 0) {
-      newErrors.horasMantenimiento = "Las horas de mantenimiento deben ser mayores a 0";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = () => {
-    setSubmitted(true);
-    if (!validateForm()) return;
-    
-    const submitData = {
-      ...form,
-      horasMantenimiento: form.horasMantenimiento ? Number(form.horasMantenimiento) : 500,
-    };
-    onSubmit(submitData);
+    handleChange("tipo", value);
+    handleChange("subcategoria", "");
   };
 
   // --------------------------------------------------------
@@ -184,16 +130,7 @@ export default function EquipoForm({
 
   return (
     <ScrollView style={styles.formContainer} showsVerticalScrollIndicator={false}>
-      {/* Código del equipo - solo lectura */}
-      <View style={styles.codigoContainer}>
-        <CustomText style={styles.codigoLabel}>Código del equipo</CustomText>
-        <View style={styles.codigoValue}>
-          <CustomText style={styles.codigoText}>
-            {isEditing ? initialData.codigo : "Se generará automáticamente"}
-          </CustomText>
-        </View>
-      </View>
-
+      {/* Nombre */}
       <Input
         label="Nombre del equipo *"
         value={form.nombre}
@@ -202,6 +139,7 @@ export default function EquipoForm({
         error={submitted && errors.nombre}
       />
 
+      {/* Descripción */}
       <Input
         label="Descripción *"
         value={form.descripcion}
@@ -211,6 +149,7 @@ export default function EquipoForm({
         error={submitted && errors.descripcion}
       />
 
+      {/* Tipo */}
       <Select
         label="Tipo de equipo *"
         options={tiposEquipo}
@@ -220,6 +159,7 @@ export default function EquipoForm({
         selectStyle={submitted && errors.tipo ? styles.errorInput : null}
       />
 
+      {/* Subcategoría */}
       {subcategoriasFiltradas.length > 0 && (
         <Select
           label="Subcategoría"
@@ -230,6 +170,7 @@ export default function EquipoForm({
         />
       )}
 
+      {/* Marca */}
       <Input
         label="Marca *"
         value={form.marca}
@@ -238,6 +179,7 @@ export default function EquipoForm({
         error={submitted && errors.marca}
       />
 
+      {/* Modelo */}
       <Input
         label="Modelo *"
         value={form.modelo}
@@ -246,6 +188,7 @@ export default function EquipoForm({
         error={submitted && errors.modelo}
       />
 
+      {/* Serie */}
       <Input
         label="Número de serie *"
         value={form.serie}
@@ -254,6 +197,7 @@ export default function EquipoForm({
         error={submitted && errors.serie}
       />
 
+      {/* Fecha de instalación */}
       <DateInput
         label="Fecha de instalación *"
         value={form.fechaInstalacion}
@@ -261,6 +205,7 @@ export default function EquipoForm({
         allowFutureDates={false}
       />
 
+      {/* Función */}
       <Input
         label="Función del equipo *"
         value={form.funcionEquipo}
@@ -270,6 +215,7 @@ export default function EquipoForm({
         error={submitted && errors.funcionEquipo}
       />
 
+      {/* Estanque asociado */}
       <Select
         label="Estanque asociado"
         options={estanquesDisponibles}
@@ -278,6 +224,7 @@ export default function EquipoForm({
         placeholder="Seleccione un estanque"
       />
 
+      {/* Horas para mantenimiento */}
       <Input
         label="Horas para mantenimiento"
         value={String(form.horasMantenimiento)}
@@ -287,6 +234,7 @@ export default function EquipoForm({
         error={submitted && errors.horasMantenimiento}
       />
 
+      {/* Estado */}
       <Select
         label="Estado"
         options={[
@@ -298,14 +246,19 @@ export default function EquipoForm({
         onChange={(v) => handleChange("estado", v)}
       />
 
-      <Button
-        variant="outline"
-        onPress={handleSubmit}
-        style={styles.submitButton}
-        textStyle={{ color: COLORS.primary }}
-      >
-        {isEditing ? "Actualizar equipo" : "Registrar equipo"}
-      </Button>
+      {/* Botón de envío (solo si no se oculta) */}
+      {!hideSubmitButton && (
+        <Button
+          variant="outline"
+          onPress={handleSubmit}
+          style={styles.submitButton}
+          textStyle={{ color: COLORS.primary }}
+        >
+          {isEditing ? "Actualizar equipo" : "Registrar equipo"}
+        </Button>
+      )}
     </ScrollView>
   );
-}
+});
+
+export default EquipoForm;

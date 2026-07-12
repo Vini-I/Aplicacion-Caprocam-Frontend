@@ -116,20 +116,22 @@ export default function EquipoCard({
 
         <View style={styles.infoRow}>
           <View style={styles.infoItem}>
-            <CustomText style={styles.infoLabel}>Horas de uso:</CustomText>
+            <View style={styles.infoLabelContainer}>
+              <Icon icon={ICONS.clock} size={14} color={COLORS.textTertiary} style={styles.infoIcon} />
+              <CustomText style={styles.infoLabel}>Horas de uso:</CustomText>
+            </View>
             <CustomText style={styles.infoValue}>{horasUsoFormateado}</CustomText>
           </View>
           <View style={styles.infoItem}>
-            <CustomText style={styles.infoLabel}>Mantenimiento:</CustomText>
-            <CustomText style={[
-              styles.infoValue,
-              necesitaMantenimiento && styles.infoValueCritico
-            ]}>
+            <View style={styles.infoLabelContainer}>
+              <Icon icon={ICONS.tools} size={14} color={COLORS.textTertiary} style={styles.infoIcon} />
+              <CustomText style={styles.infoLabel}>Mantenimiento:</CustomText>
+            </View>
+            <CustomText style={[styles.infoValue, necesitaMantenimiento && styles.infoValueCritico]}>
               {necesitaMantenimiento
-                ? "⚠️ Requiere mantenimiento"
+                ? "Requiere mantenimiento"
                 : `${Math.round(equipo.horasMantenimiento - equipo.horasUso)} h restantes`}
             </CustomText>
-            <CustomText style={styles.infoLabel}>.</CustomText>
           </View>
         </View>
 
