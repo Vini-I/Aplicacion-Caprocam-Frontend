@@ -23,7 +23,6 @@ const siembras = [
     fincaId: "laReina",
     estanque: "A02",
     fechaSiembra: "20/06/2026",
-    horaIngreso: "07:45",
     diasCultivo: 18,
     diasMaduracion: "90",
 

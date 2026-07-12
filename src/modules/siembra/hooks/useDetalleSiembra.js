@@ -30,7 +30,6 @@ import { calcularCantidadSembrada, calcularProgresoCiclo } from "./siembraCalcul
 
 import { obtenerFechaHoy } from "./dateUtils";
 
-import { formatearHoraIngreso } from "./siembraFormatters";
 
 import {
   obtenerSiembraPorId,
@@ -100,11 +99,10 @@ export default function useDetalleSiembra(id) {
 
   const handleChange = useCallback((field, value) => {
     setFormData((previousData) => {
-      const valorFinal = field === "horaIngreso" ? formatearHoraIngreso(value) : value;
 
       const updatedData = {
         ...previousData,
-        [field]: valorFinal,
+        [field]: value,
       };
 
       if (

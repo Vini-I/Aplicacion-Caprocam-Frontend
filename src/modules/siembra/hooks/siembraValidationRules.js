@@ -21,7 +21,6 @@
 
 export const camposSiembraObligatorios = [
   "fechaSiembra",
-  "horaIngreso",
   "finca",
   "estanque",
   "tecnicaCultivo",

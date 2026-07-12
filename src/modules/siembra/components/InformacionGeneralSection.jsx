@@ -6,7 +6,7 @@
  * Renderiza la sección principal de datos generales de una siembra.
  *
  * FUNCIONALIDAD:
- * - Muestra fecha, hora, finca, estanque y técnica de cultivo.
+ * - Muestra fecha, finca, estanque y técnica de cultivo.
  * - Permite editar campos según el modo recibido.
  * - Utiliza validaciones visuales del formulario.
  *
@@ -25,7 +25,6 @@
  * La lógica de negocio permanece en el hook correspondiente.
  */
 import Card from "../../../shared/components/Card";
-import Input from "../../../shared/components/Input";
 import NumberInput from "../../../shared/components/NumberInput";
 import Select from "../../../shared/components/Select";
 import DateInput from "../../../shared/components/DateInput";
@@ -59,16 +58,6 @@ export default function InformacionGeneralSection({
         labelStyle={styles.requiredLabel}
         inputStyle={hasError("fechaSiembra") ? styles.inputError : null}
         disabled={isViewMode}
-      />
-
-      <Input
-        label={requiredLabel("Hora de ingreso")}
-        placeholder="Ej: 07:00 (HH:mm)"
-        value={formData.horaIngreso}
-        onChangeText={(value) => onChange("horaIngreso", value)}
-        labelStyle={styles.requiredLabel}
-        style={hasError("horaIngreso") ? styles.inputError : null}
-        editable={!isViewMode}
       />
 
       <Select
