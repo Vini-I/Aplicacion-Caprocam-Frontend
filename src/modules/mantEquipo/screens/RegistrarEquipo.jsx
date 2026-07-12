@@ -142,11 +142,6 @@ export default function RegistrarEquipoScreen() {
       keyboardShouldPersistTaps="handled"
     >
       <View style={STYLE.contentWrapper}>
-        {/* Encabezado */}
-        <RegistrarEquipoHeader
-          title="Registrar Equipo"
-          subtitle="Complete la información del nuevo equipo"
-        />
 
         <Card style={styles.card}>
           {/* Número de serie / Identificador */}
