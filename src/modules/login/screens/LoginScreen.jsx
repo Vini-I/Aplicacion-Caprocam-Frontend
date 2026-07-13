@@ -108,7 +108,7 @@ function WorkerSection({
       <Title level={4} color={COLORS.textPrimary} align="center">
         {LOGIN_MESSAGES.WORKER_TITLE}
       </Title>
-      <Button onPress={onSyncData} variant="primary" disabled={isSyncDisabled} style={styles.syncButton}>
+      <Button onPress={onSyncData} variant="outline" disabled={isSyncDisabled} style={styles.syncButton}>
         {LOGIN_MESSAGES.SYNC_BUTTON_TEXT}
       </Button>
       <WorkerSearchBar
@@ -135,7 +135,7 @@ function WorkerSection({
         </View>
       )}
       <View style={styles.actionSection}>
-        <Button onPress={onContinue} variant="primary" disabled={!isFormValid} style={styles.continueButton}>
+        <Button onPress={onContinue} variant="outline" disabled={!isFormValid} style={styles.continueButton}>
           {LOGIN_MESSAGES.BUTTON_TEXT}
         </Button>
       </View>
@@ -197,38 +197,40 @@ function SectionStatus({ message, error = false }) {
  * Modal para ingresar el PIN de 4 dígitos.
  */
 function PinModal({ visible, pinCode, pinError, isAuthenticating, onClose, onPinChange, onSubmit }) {
-  return (
-    <Modal
-      visible={visible}
-      onClose={onClose}
-      showCloseButton
-      closeText="Cancelar"
-      containerStyle={styles.modalContainer}
-      overlayStyle={styles.modalOverlay}
-    >
-      <Title level={5} color={COLORS.textPrimary} align="center" style={styles.modalTitle}>
-        Digite su PIN
-      </Title>
-      <Input
-        value={pinCode}
-        onChangeText={onPinChange}
-        placeholder="0000"
-        keyboardType="number-pad"
-        maxLength={4}
-        secureTextEntry
-        autoFocus={visible}
-        editable={!isAuthenticating}
-        containerStyle={styles.pinInputContainer}
-        style={styles.pinInput}
-      />
-      {pinError !== '' && (
-        <Text size={12} color={COLORS.error} align="center" style={styles.pinErrorText}>
-          {pinError}
-        </Text>
-      )}
-      <Button onPress={onSubmit} disabled={pinCode.length !== 4 || isAuthenticating}>
-        Ingresar
-      </Button>
-    </Modal>
-  );
+    return (
+        <Modal
+            visible={visible}
+            onClose={onClose}
+            showCloseButton
+            closeText="Cancelar"
+            containerStyle={styles.modalContainer}
+            overlayStyle={styles.modalOverlay}
+            buttonStyle={styles.cancelButtonOutline}
+            buttonTextStyle={styles.cancelButtonTextOutline}
+        >
+            <Title level={5} color={COLORS.textPrimary} align="center" style={styles.modalTitle}>
+                Digite su PIN
+            </Title>
+            <Input
+                value={pinCode}
+                onChangeText={onPinChange}
+                placeholder="0000"
+                keyboardType="number-pad"
+                maxLength={4}
+                secureTextEntry
+                autoFocus={visible}
+                editable={!isAuthenticating}
+                containerStyle={styles.pinInputContainer}
+                style={styles.pinInput}
+            />
+            {pinError !== '' && (
+                <Text size={12} color={COLORS.error} align="center" style={styles.pinErrorText}>
+                    {pinError}
+                </Text>
+            )}
+            <Button onPress={onSubmit} variant="outline" disabled={pinCode.length !== 4 || isAuthenticating}>
+                Ingresar
+            </Button>
+        </Modal>
+    );
 }

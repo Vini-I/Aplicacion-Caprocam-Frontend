@@ -1,3 +1,12 @@
+/**
+ * ============================================================
+ * HOOK DE FINCA DE CRECIMIENTO
+ * ============================================================
+ *
+ * Centraliza la lógica de carga de parámetros, filtros y
+ * opciones de selección para la pantalla de finca de crecimiento.
+ */
+
 import { useLocalSearchParams } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 
@@ -62,22 +71,6 @@ export function useFincaCrecimiento() {
       }));
   }, [fincaSeleccionada]);
 
-  const pesoAnteriorLabel = useMemo(() => {
-    if (
-      estanqueSeleccionadoObj?.pesoSemanaAnterior !== undefined &&
-      estanqueSeleccionadoObj?.pesoSemanaAnterior !== null
-    ) {
-      return `Peso anterior: ${estanqueSeleccionadoObj.pesoSemanaAnterior} g`;
-    }
-
-    return "Peso anterior: -";
-  }, [estanqueSeleccionadoObj]);
-
-  const estanqueDeshabilitado = useMemo(
-    () => estanqueSeleccionado !== "" && estanquesFiltrados.length === 0,
-    [estanqueSeleccionado, estanquesFiltrados.length],
-  );
-
   const validarCampos = useCallback(() => {
     const nextErrors = {};
 
@@ -135,13 +128,25 @@ export function useFincaCrecimiento() {
     setErrorMessage("");
 
     if (!validarCampos()) {
-      setErrorMessage("Complete los campos obligatorios.");
+      setErrorMessage("Rellenar campos obligatorios.");
       return;
     }
 
     setErrors({});
     setSuccessMessage("Guardado exitoso.");
   }, [validarCampos]);
+
+  const pesoAnteriorLabel = useMemo(() => {
+    const pesoSemanaAnterior = estanqueSeleccionadoObj?.pesoSemanaAnterior;
+
+    return pesoSemanaAnterior !== undefined && pesoSemanaAnterior !== null
+      ? `Peso anterior: ${pesoSemanaAnterior} g`
+      : "Peso anterior: -";
+  }, [estanqueSeleccionadoObj]);
+
+  const mostrarErrorFinca = submitted && Boolean(errors.finca);
+  const mostrarErrorEstanque = submitted && Boolean(errors.estanque);
+  const mostrarErrorPeso = submitted && Boolean(errors.peso);
 
   return {
     fincaSeleccionada,
@@ -151,8 +156,6 @@ export function useFincaCrecimiento() {
     estanquesFiltrados,
     estanqueSeleccionadoObj,
     estanque,
-    pesoAnteriorLabel,
-    estanqueDeshabilitado,
     setEstanqueSeleccionado: handleEstanqueChange,
     setPesoActual: handlePesoActualChange,
     handleFincaChange,
@@ -161,5 +164,9 @@ export function useFincaCrecimiento() {
     errors,
     successMessage,
     errorMessage,
+    pesoAnteriorLabel,
+    mostrarErrorFinca,
+    mostrarErrorEstanque,
+    mostrarErrorPeso,
   };
 }

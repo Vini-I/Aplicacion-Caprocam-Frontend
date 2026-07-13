@@ -22,52 +22,12 @@ import { useDetalleVenta } from "../hooks/useDetalleVenta.js";
 import { styles } from "../styles/VentaStyles.js";
 import { STYLE } from "../../../theme/style.js";
 
-function SectionTitle({ icon, title }) {
-  return (
-    <View style={styles.sectionTitle}>
-      <Icon icon={icon} size={18} color={COLORS.primary} style={styles.sectionIcon} />
-      <Text style={styles.sectionText}>{title}</Text>
-    </View>
-  );
-}
-
-function FilaDetalle({ etiqueta, valor }) {
-  return (
-    <View style={styles.filaDetalle}>
-      <Text size={12} color={COLORS.textTertiary} style={styles.etiquetaDetalle}>
-        {etiqueta}
-      </Text>
-
-      <Text size={14} weight="600" color={COLORS.textSecondary} style={styles.valorDetalle}>
-        {valor}
-      </Text>
-    </View>
-  );
-}
-
-function TarjetaVenta({ venta }) {
-  return (
-    <Card style={styles.tarjeta}>
-      <View style={styles.tarjetaEncabezado}>
-        <Text style={styles.nombreProducto}>
-          {venta.fincaNombre} • {venta.estanqueNombre}
-        </Text>
-      </View>
-
-      <View style={styles.filasDetalle}>
-        <FilaDetalle etiqueta="Fecha" valor={venta.fechaVenta} />
-        <FilaDetalle etiqueta="Total" valor={formatearMontoColones(venta.totalVenta)} />
-        <FilaDetalle etiqueta="Kilos" valor={`${venta.kilosVendidos} kg`} />
-        <FilaDetalle etiqueta="Precio/kg" valor={`₡ ${Number(venta.precioKilo).toLocaleString("es-CR")}`} />
-        <FilaDetalle etiqueta="Colaborador" valor={venta.colaboradorNombre || "—"} />
-        <FilaDetalle etiqueta="Comprador" valor={venta.compradorNombre || "—"} />
-      </View>
-    </Card>
-  );
-}
 
 export default function DetalleVentasScreen() {
   const {
+    SectionTitle,
+    FilaDetalle,
+    TarjetaVenta,
     fincaFiltro,
     estanqueFiltro,
     opcionesFincas,
