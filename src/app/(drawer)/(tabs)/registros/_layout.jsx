@@ -26,6 +26,8 @@ export default function RegistrosStackLayout() {
 
       <Stack.Screen name="Raleo" options={{ title: "Raleo" }} />
 
+      <Stack.Screen name="Detalle Registro" options={{ title: "Detalle Registro" }}/>
+
     </Stack>
   );
 }

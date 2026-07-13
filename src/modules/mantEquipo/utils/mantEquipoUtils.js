@@ -90,6 +90,8 @@ export function filtrarTickets(tickets, texto, columna) {
   });
 }
 
+
+
 /** Devuelve las etiquetas de las tareas de un ticket para mostrar en la tabla con su descripción y duración. */
 export function etiquetasTareas(tareas) {
   if (!Array.isArray(tareas) || tareas.length === 0) return "—";

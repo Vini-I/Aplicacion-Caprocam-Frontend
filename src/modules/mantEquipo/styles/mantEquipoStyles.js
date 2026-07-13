@@ -24,6 +24,7 @@
 
 import { StyleSheet } from "react-native";
 import { COLORS } from "../../../theme/colors.js";
+import { STYLE } from "../../../theme/style.js";
 
 export const styles = StyleSheet.create({
   // ── Pantalla ───────────────────────────────────────────────
@@ -39,9 +40,9 @@ export const styles = StyleSheet.create({
   toolbar:     { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 14, flexWrap: "wrap", zIndex: 100, overflow: "visible" },
   searchBox:   { flex: 1, minWidth: 180, flexDirection: "row", alignItems: "center", borderWidth: 1, borderColor: COLORS.secondary, borderRadius: 8, backgroundColor: COLORS.white, paddingHorizontal: 10, height: 42, gap: 6 },
   searchInput: { flex: 1, fontSize: 14, color: COLORS.textSecondary },
-  btnAddTask:    { flexDirection: "row", alignItems: "center", borderRadius: 8, paddingHorizontal: 12, height: 42, borderWidth: 1, borderColor: COLORS.warning, backgroundColor: COLORS.white, gap: 6 },
-  btnVerEquipos: { flexDirection: "row", alignItems: "center", borderRadius: 8, paddingHorizontal: 12, height: 42, borderWidth: 1, borderColor: COLORS.warning, backgroundColor: COLORS.white, gap: 6 },
-  btnAddMaint:   { flexDirection: "row", alignItems: "center", borderRadius: 8, paddingHorizontal: 12, height: 42, borderWidth: 1, borderColor: COLORS.primary, backgroundColor: COLORS.white, gap: 6 },
+  btnAddTask:    { flexDirection: "row", alignItems: "center", borderRadius: 8, paddingHorizontal: 12, height: 42, borderWidth: 1, borderColor: COLORS.warning, backgroundColor: COLORS.white, gap: 6, marginTop: 0 },
+  btnVerEquipos: { flexDirection: "row", alignItems: "center", borderRadius: 8, paddingHorizontal: 12, height: 42, borderWidth: 1, borderColor: COLORS.warning, backgroundColor: COLORS.white, gap: 6, marginTop: 0 },
+  btnAddMaint:   { flexDirection: "row", alignItems: "center", borderRadius: 8, paddingHorizontal: 12, height: 42, borderWidth: 1, borderColor: COLORS.primary, backgroundColor: COLORS.white, gap: 6, marginTop: 0 },
   btnLabel:    { fontWeight: "700", fontSize: 13 },
 
   // ── Filtro select (wrapper para dropdown flotante) ─────────
@@ -77,12 +78,18 @@ export const styles = StyleSheet.create({
   badgeTextFuera: { fontSize: 11, fontWeight: "700", color: COLORS.error },
 
   // ── Modales comunes ────────────────────────────────────────
-  modalContainer:    { height: 620, maxHeight: "92%", maxWidth: 600, width: "100%" },
+  modalContainer:    { ...STYLE.contentWrapper, height: 620, maxHeight: "92%" },
   modalTitle:        { fontSize: 18, fontWeight: "700", color: COLORS.textSecondary },
   modalScroll:       { flex: 1 },
   modalFooter:       { flexDirection: "row", gap: 10, marginTop: 16 },
-  btnCancel:         { flex: 1 },
-  btnAccept:         { flex: 1 },
+  btnCancel:         { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6 },
+  btnAccept:         { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, borderColor: COLORS.primary },
+  btnDelete:         { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, borderColor: COLORS.error },
+  btnTextPrimary:    { color: COLORS.primary, fontWeight: "600", fontSize: 13 },
+  btnTextPrimaryBold: { color: COLORS.primary, fontWeight: "700", fontSize: 13 },
+  btnTextError:      { color: COLORS.error, fontWeight: "600", fontSize: 13 },
+  btnTextPrimary14:  { color: COLORS.primary, fontWeight: "600", fontSize: 14 },
+  btnTextError14:    { color: COLORS.error, fontWeight: "600", fontSize: 14 },
 
   // ── Modal Detalle ──────────────────────────────────────────
   detalleEncabezado: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 14 },

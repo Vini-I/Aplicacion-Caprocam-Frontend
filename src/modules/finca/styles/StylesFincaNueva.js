@@ -62,17 +62,15 @@ export const styles = StyleSheet.create({
     minWidth: 150,
   },
   buttonContainer: {
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
     marginTop: 12,
   },
   saveButton: {
-    width: "100%",
     minHeight: 56,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: COLORS.primary,
+    borderWidth: 2,
+    borderColor: COLORS.primary,
+    backgroundColor: COLORS.white,
   },
   buttonContent: {
     flexDirection: "row",
@@ -81,7 +79,7 @@ export const styles = StyleSheet.create({
     gap: 10,
   },
   buttonText: {
-    color: COLORS.white,
+    color: COLORS.primary,
     fontWeight: "600",
     fontSize: 16,
   },

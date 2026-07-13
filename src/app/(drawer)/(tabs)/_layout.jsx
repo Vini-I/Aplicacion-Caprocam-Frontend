@@ -47,18 +47,6 @@ export default function TabsLayout() {
       />
 
       <Tabs.Screen
-        name="reportes"
-        options={{
-          tabBarIcon: ({ color, size }) => (
-            <Icon icon={ICONS.report} color={color} size={18} />
-          ),
-          tabBarActiveTintColor: "teal",
-          tabBarLabel: "Reportes",
-          title: "Reportes",
-        }}
-      />
-
-      <Tabs.Screen
         name="siembra"
         options={{
           tabBarIcon: ({ color, size }) => (

@@ -15,7 +15,7 @@
 
 import { ScrollView, View } from "react-native";
 import { styles } from "../../../modules/mantCrecimiento/styles/CrecimientoStyle.js";
-import {STYLE} from "../../../theme/style.js";
+import { STYLE } from "../../../theme/style.js";
 import Alert from "../../../shared/components/Alert.jsx";
 import BadgeLabel from "../../../shared/components/Badge.jsx";
 import Button from "../../../shared/components/Button.jsx";
@@ -125,7 +125,12 @@ export default function FincaCrecimientoScreen() {
           ) : null}
 
           <Button variant="outline" onPress={guardarDatos} style={styles.submitButton}>
-            Guardar
+            <View style={styles.buttonContent}>
+              <Icon icon={ICONS.save} size={24} color={COLORS.primary}/>
+              <Text style={styles.buttonText}>
+                Guardar
+              </Text>
+            </View>
           </Button>
         </Card>
       </ScrollView>

@@ -16,6 +16,7 @@
  * - Utiliza componentes reutilizables para mantener la estructura visual.
  */
 import { ScrollView, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import Button from "../../../shared/components/Button.jsx";
 import Card from "../../../shared/components/Card.jsx";
@@ -33,25 +34,14 @@ import { COLORS } from "../../../theme/colors.js";
 import { styles } from "../styles/StylesFincaNueva.js";
 import { STYLE } from "../../../theme/style.js";
 
-function SectionTitle({ icon, title }) {
-  return (
-    <View style={styles.sectionTitleRow}>
-      <Icon icon={icon} size={18} color={COLORS.primary} style={styles.sectionIcon} />
-      <Text style={styles.sectionTitleText} size={14} weight="700" color={COLORS.textPrimary}>
-        {title}
-      </Text>
-    </View>
-  );
-}
-
 export default function FincaNuevaScreen({onFinca}) {
   const {
+    SectionTitle,
     ContentWrapper,
     formulario,
     setFormulario,
     telefonos,
     setTelefonos,
-    errorMessage,
     errores,
     setErrores,
 
@@ -81,10 +71,9 @@ export default function FincaNuevaScreen({onFinca}) {
         STYLE.container,
         isLargeScreen ? styles.containerLarge : styles.containerSmall,
       ]}
-      contentContainerStyle={styles.content}
+      showsVerticalScrollIndicator={false}
       keyboardShouldPersistTaps="handled"
     >
-      
       <ContentWrapper style={STYLE.contentWrapper}>
         <Card>
           <SectionTitle icon={ICONS.id} title="IDENTIFICACIÓN" />
@@ -175,11 +164,7 @@ export default function FincaNuevaScreen({onFinca}) {
               <Text size={14} weight="600" color={COLORS.textPrimary}>Teléfonos</Text>
             </View>
             <Button style={styles.addPhoneButton} onPress={agregarTelefono}>
-              {ICONS && ICONS.add ? (
-                <Icon icon={ICONS.add} size={18} color={COLORS.black} />
-              ) : (
-                <Text style={styles.addPhoneFallbackText}>+</Text>
-              )}
+              <Icon icon={ICONS.add} size={18} color={COLORS.black} />
             </Button>
           </View>
 
@@ -195,15 +180,11 @@ export default function FincaNuevaScreen({onFinca}) {
                   style={errores[`telefono${index}`] ? styles.errorInput : null}
                 />
               </View>
-              {index > 0 && (
+              
                 <Button style={styles.removePhoneButton} onPress={() => eliminarTelefono(index)}>
-                  {ICONS && ICONS.delete ? (
-                    <Icon icon={ICONS.delete} size={20} color={COLORS.error} />
-                  ) : (
-                    <Text style={styles.removePhoneFallbackText}>✕</Text>
-                  )}
+                  <Icon icon={ICONS.delete} size={20} color={COLORS.error} />
                 </Button>
-              )}
+              
             </View>
           ))}
         </Card>
@@ -235,7 +216,7 @@ export default function FincaNuevaScreen({onFinca}) {
         {Object.keys(errores).length > 0 && (
         <CustomAlert 
           variant="danger" 
-          message={errorMessage || "Rellene los espacios importantes para continuar."} 
+          message={"Rellene los espacios importantes para continuar"}
           containerStyle={[styles.errorAlertContainer]}
           textStyle={[styles.errorAlertItems]}
           style={[styles.errorAlertItems]}
@@ -245,15 +226,13 @@ export default function FincaNuevaScreen({onFinca}) {
         <View style={styles.buttonContainer}>
           <Button onPress={registrarFinca} style={styles.saveButton}>
             <View style={styles.buttonContent}>
-              {ICONS && ICONS.save ? (
-                <Icon icon={ICONS.save} size={24} color={COLORS.white} />
-              ) : null}
+              <Icon icon={ICONS.save} size={24} color={COLORS.primary} />
               <Text style={styles.buttonText}>Registrar finca</Text>
             </View>
           </Button>
         </View>
       </ContentWrapper>
-    </ScrollView>
+      </ScrollView>
     </>
   );
 }

@@ -25,17 +25,7 @@ import { formatearMontoColones, useVenta } from "../hooks/useVenta.js";
 import { styles } from "../styles/VentaStyles.js";
 import { STYLE } from "../../../theme/style";
 
-function SectionTitle({ icon, title }) {
-  return (
-    <View style={styles.sectionTitle}>
-      <Icon icon={icon} size={18} color={COLORS.primary} style={styles.sectionIcon} />
-      <Text style={styles.sectionText}>{title}</Text>
-    </View>
-  );
-}
-
 export default function VentaScreen({ onDetalleVentas }) {
-
   const {
     fincaSeleccionada,
     estanqueSeleccionado,
@@ -56,6 +46,7 @@ export default function VentaScreen({ onDetalleVentas }) {
     opcionesCompradores,
     totalVenta,
     ventas,
+    SectionTitle,
     setEstanqueSeleccionado,
     handleFincaChange,
     handlePesoPromedioChange,
@@ -160,12 +151,14 @@ export default function VentaScreen({ onDetalleVentas }) {
             />
           </View>
         </View>
-
+              
         <Input label="Fecha *" value={fechaVenta} editable={false} />
 
         <View style={styles.summaryBox}>
           <Text style={styles.summaryLabel}>Total estimado</Text>
-          <Text style={styles.summaryValue}>{formatearMontoColones(totalVenta)}</Text>
+          <Text style={styles.summaryValue}>
+            {formatearMontoColones(totalVenta)}
+          </Text>
         </View>
 
         <SectionTitle icon={ICONS.user} title="Colaborador y comprador" />
@@ -212,31 +205,29 @@ export default function VentaScreen({ onDetalleVentas }) {
           />
         )}
 
-        <View style={styles.buttonRow}>
-          <Button
-            onPress={guardarVenta}
-            disabled={guardando}
-            style={styles.saveButton}
-          >
-            <View style={styles.buttonContent}>
-              <Icon icon={ICONS.save} size={22} color={COLORS.white} />
-              <Text style={styles.buttonText}>
-                {guardando ? "Guardando..." : "Registrar venta"}
-              </Text>
-            </View>
-          </Button>
-        </View>
+        <Button
+          onPress={guardarVenta}
+          disabled={guardando}
+          style={styles.saveButton}
+        >
+          <View style={styles.buttonContent}>
+            <Icon icon={ICONS.save} size={22} color={COLORS.primary} />
+            <Text style={styles.buttonText}>
+              {guardando ? "Guardando..." : "Registrar venta"}
+            </Text>
+          </View>
+        </Button>
 
-        <View style={styles.buttonRow}>
-          <Button onPress={() => onDetalleVentas(ventas, fincaSeleccionada)} style={styles.saveButton}>
-            <View style={styles.buttonContent}>
-              <Icon icon={ICONS.report} size={20} color={COLORS.white} />
-              <Text style={styles.buttonText}>Mostrar detalles</Text>
-            </View>
-          </Button>
-        </View>
+        <Button
+          onPress={() => onDetalleVentas(ventas, fincaSeleccionada)}
+          style={styles.saveButton}
+        >
+          <View style={styles.buttonContent}>
+            <Icon icon={ICONS.report} size={20} color={COLORS.primary} />
+            <Text style={styles.buttonText}>Mostrar detalles</Text>
+          </View>
+        </Button>
       </Card>
-      
     </ScrollView>
   );
 }

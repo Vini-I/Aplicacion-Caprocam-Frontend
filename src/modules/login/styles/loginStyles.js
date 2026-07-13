@@ -132,6 +132,14 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     fontFamily: TYPOGRAPHY.fontFamily.medium,
   },
+  cancelButtonOutline: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+  },
+  cancelButtonTextOutline: {
+    color: COLORS.primary,
+  },
   pinInputContainer: {
     width: '100%',
   },
