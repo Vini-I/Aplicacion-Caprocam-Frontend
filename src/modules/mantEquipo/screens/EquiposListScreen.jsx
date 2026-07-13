@@ -114,17 +114,29 @@ export default function EquiposListScreen() {
   // --------------------------------------------------------
   // FILTRADO LOCAL
   // --------------------------------------------------------
-  const equiposFiltrados = equipos.filter((equipo) => {
-    if (!searchText) return true;
-    const q = searchText.toLowerCase();
-    return (
-      equipo.nombre.toLowerCase().includes(q) ||
-      equipo.codigo.toLowerCase().includes(q) ||
-      equipo.descripcion.toLowerCase().includes(q) ||
-      equipo.marca.toLowerCase().includes(q) ||
-      equipo.modelo.toLowerCase().includes(q)
-    );
-  });
+const equiposFiltrados = equipos.filter((equipo) => {
+  if (!searchText) return true;
+  const q = searchText.toLowerCase().trim();
+
+  // Coincidencia en campos estándar: nombre, código, descripción, marca, modelo, estado
+  const coincideCampos =
+    equipo.nombre.toLowerCase().includes(q) ||
+    equipo.codigo.toLowerCase().includes(q) ||
+    equipo.descripcion.toLowerCase().includes(q) ||
+    equipo.marca.toLowerCase().includes(q) ||
+    equipo.modelo.toLowerCase().includes(q) ||
+    (equipo.estado && equipo.estado.toLowerCase().includes(q));
+
+  // Coincidencia especial: si el texto contiene palabras clave de mantenimiento
+  const palabrasClave = ["mantenimiento", "requiere", "necesita"];
+  const contienePalabraClave = palabrasClave.some((palabra) => q.includes(palabra));
+  const requiereMantenimiento = equipo.horasUso >= equipo.horasMantenimiento;
+
+  // Si el usuario escribe "mantenimiento" (o similar), mostrar equipos que requieren mantenimiento
+  const coincidePorMantenimiento = contienePalabraClave && requiereMantenimiento;
+
+  return coincideCampos || coincidePorMantenimiento;
+});
 
   // --------------------------------------------------------
   // MANEJADORES
