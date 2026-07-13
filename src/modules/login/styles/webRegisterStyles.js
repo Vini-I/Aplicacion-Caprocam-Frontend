@@ -1,8 +1,18 @@
 /**
- * ESTILOS: WebRegisterScreen
- *
- * Solo lo exclusivo de esta pantalla. Header, Separator y
- * error de campo viven en sus componentes compartidos.
+ * ============================================================
+ * ESTILOS: webRegisterStyles
+ * ============================================================
+ * 
+ * Responsabilidad: Definición de estilos para la pantalla de registro
+ * de usuarios Web (WebRegisterScreen) en el módulo de Login.
+ * 
+ * FUNCIONALIDAD:
+ * - Define el fondo de la pantalla y la alineación central del formulario.
+ * - Estructura el espaciado para el contenedor de errores del servidor y
+ *   los elementos de texto dentro del modal de éxito.
+ * 
+ * DEPENDENCIAS:
+ * - COLORS de theme/colors.js.
  */
 
 import { StyleSheet } from 'react-native';
