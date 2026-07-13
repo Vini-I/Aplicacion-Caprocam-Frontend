@@ -35,7 +35,7 @@ import { STYLE } from "../../../theme/style";
 import { ICONS } from "../../../theme/icons";
 import { COLORS } from "../../../theme/colors";
 import { styles } from "../styles/colaboradoresListStyles";
-import Alert from "../../../shared/components/Alert"; 
+import Alert from "../../../shared/components/Alert";
 
 // ============================================================
 // COMPONENTE PRINCIPAL
@@ -68,6 +68,8 @@ export default function ColaboradoresListScreen() {
     handleSubmit,
     openStats,
     alert,
+    cedulaError,          // <-- agregar
+    setCedulaError,       // <-- agregar
   } = useColaboradoresList();
 
   // --------------------------------------------------------
@@ -80,8 +82,7 @@ export default function ColaboradoresListScreen() {
   // RENDER PRINCIPAL
   // --------------------------------------------------------
   return (
-    <View style={[STYLE.container, { flex: 1 }]}>
-      <View style={[STYLE.contentWrapper, { flex: 1 }]}>
+   <View style={{ flex: 1, backgroundColor: COLORS.white }}>
         {/* Barra de búsqueda y botón agregar - fijos arriba */}
         <View style={styles.searchRow}>
           <SearchBar
@@ -102,16 +103,15 @@ export default function ColaboradoresListScreen() {
           </Button>
         </View>
 
-                {/* Alerta flotante: se muestra debajo de la barra de búsqueda, dentro del flujo */}
-        {alert && (
-          <View style={{ marginBottom: 12 }}>
-            <Alert variant={alert.type} message={alert.message} />
-          </View>
-        )}
-
+{/* Alerta flotante: se muestra debajo de la barra de búsqueda, dentro del flujo */}
+{alert && (
+  <View style={styles.alertWrapper}>
+    <Alert variant={alert.type} message={alert.message} />
+  </View>
+)}
         {/* Lista scrolleable */}
         <ScrollView
-          style={{ flex: 1 }}
+          style={styles.scrollView}
           contentContainerStyle={styles.list}
           showsVerticalScrollIndicator={true}
         >
@@ -140,10 +140,9 @@ export default function ColaboradoresListScreen() {
           >
             <CustomText style={styles.tabText}>Dueños Externos</CustomText>
           </TouchableOpacity>
-        </View>
       </View>
 
-      {/* Modales (sin cambios) */}
+      {/* Modal para crear/editar colaborador */}
       <Modal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
@@ -160,12 +159,14 @@ export default function ColaboradoresListScreen() {
         />
       </Modal>
 
+      {/* Modal de confirmación de eliminación con validación de cédula */}
       <Modal
         visible={showConfirmModal}
         onClose={() => {
           setShowConfirmModal(false);
           setCedulaConfirmacion("");
           setDeleteTarget(null);
+          setCedulaError(""); // limpiar error al cerrar
         }}
         showCloseButton={false}
         containerStyle={styles.modalConfirmContainer}
@@ -183,35 +184,57 @@ export default function ColaboradoresListScreen() {
             <CustomText style={styles.modalCedula}>{deleteTarget.cedula}</CustomText>
           </>
         )}
+
+
+
         <Input
           placeholder="Ingrese la cédula para confirmar"
           value={cedulaConfirmacion}
-          onChangeText={setCedulaConfirmacion}
+          onChangeText={(text) => {
+            setCedulaConfirmacion(text);
+            setCedulaError(""); // limpiar error al escribir
+          }}
           keyboardType="numeric"
           containerStyle={styles.modalInput}
         />
+                {/* Mostrar error dentro del modal */}
+        {cedulaError !== "" && (
+          <Alert
+            variant="danger"
+            message={cedulaError}
+            style={{ marginBottom: 12 }}
+          />
+        )}
         <View style={styles.modalButtons}>
           <Button
             onPress={() => {
               setShowConfirmModal(false);
               setCedulaConfirmacion("");
               setDeleteTarget(null);
+              setCedulaError("");
             }}
             variant="outline"
             style={styles.modalCancelBtn}
           >
-            Cancelar
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Icon icon={ICONS.exit} size={16} color={COLORS.primary} />
+              <CustomText style={{ color: COLORS.primary, fontWeight: '600' }}>Cancelar</CustomText>
+            </View>
           </Button>
           <Button
             onPress={confirmDelete}
-            variant="danger"
-            style={styles.modalDeleteBtn}
+            variant="outline"
+            style={[styles.modalDeleteBtn, { borderColor: COLORS.error }]}
           >
-            Eliminar
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Icon icon={ICONS.delete} size={16} color={COLORS.error} />
+              <CustomText style={{ color: COLORS.error, fontWeight: '600' }}>Eliminar</CustomText>
+            </View>
           </Button>
         </View>
       </Modal>
 
+      {/* Modal para ver detalles */}
       <Modal
         visible={!!selectedColaboradorId}
         onClose={() => setSelectedColaboradorId(null)}

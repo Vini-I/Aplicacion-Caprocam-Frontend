@@ -249,10 +249,15 @@ export const styles = StyleSheet.create({
   },
 
   modalDeleteBtn: {
-    flex: 1,
     marginTop: 0,
-    backgroundColor: COLORS.error,
-    borderWidth: 0,
+    flex: 1,
+  },
+  alertWrapper: {
+    marginBottom: 12,
+    paddingHorizontal: 16,
+    width: '100%',
+    maxWidth: 900,
+    alignSelf: 'center',
   },
 
   // ----- Modal de detalle -----

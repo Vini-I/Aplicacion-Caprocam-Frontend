@@ -73,7 +73,7 @@ let colaboradoresMock = [
     externalOwnerId: null,
   },
   {
-    id: "3",
+    id: "6",
     nombre: "Dueño Externo S.A.",
     cedula: "301234567",
     telefono: "88883333",
@@ -84,7 +84,7 @@ let colaboradoresMock = [
     externalOwnerId: null,
   },
   {
-    id: "4",
+    id: "7",
     nombre: "Juan Pérez",
     cedula: "112233445",
     telefono: "88884444",
@@ -95,7 +95,7 @@ let colaboradoresMock = [
     externalOwnerId: "3",
   },
   {
-    id: "5",
+    id: "8",
     nombre: "Ana Solano",
     cedula: "556677889",
     telefono: "88885555",

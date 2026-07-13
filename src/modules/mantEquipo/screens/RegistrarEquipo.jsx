@@ -272,17 +272,28 @@ export default function RegistrarEquipoScreen() {
             <Text style={{ color: COLORS.primary, fontWeight: "600" }}>Cancelar</Text>
           </Button>
 
-          <Button
-            variant="primary"
-            onPress={handleGuardar}
-            disabled={guardando}
-            style={[styles.saveButton, { flexDirection: "row", alignItems: "center", gap: 8 }]}
-          >
-            <Icon icon={ICONS.save} size={18} color={COLORS.white} />
-            <Text style={{ color: COLORS.white, fontWeight: "600" }}>
-              {guardando ? "Guardando..." : "Guardar equipo"}
-            </Text>
-          </Button>
+<Button
+  variant="outline"
+  onPress={handleGuardar}
+  disabled={guardando}
+  style={{
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    borderColor: COLORS.primary,
+    backgroundColor: "transparent",
+    paddingVertical: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+  }}
+>
+  <Icon icon={ICONS.save} size={18} color={COLORS.primary} />
+  <Text style={{ color: COLORS.primary, fontWeight: "600" }}>
+    {guardando ? "Guardando..." : "Guardar equipo"}
+  </Text>
+</Button>
         </View>
       </View>
     </ScrollView>

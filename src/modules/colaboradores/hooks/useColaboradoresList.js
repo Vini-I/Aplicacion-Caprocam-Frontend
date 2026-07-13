@@ -26,6 +26,8 @@ export function useColaboradoresList() {
   const [cedulaConfirmacion, setCedulaConfirmacion] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [cedulaError, setCedulaError] = useState("");
+
 
   // Estado para la alerta flotante
   const [alert, setAlert] = useState(null);
@@ -96,38 +98,39 @@ export function useColaboradoresList() {
     setModalVisible(true);
   };
 
-  const handleDeletePress = (id) => {
-    const colaborador = listaOriginal.find((c) => c.id === id);
-    if (colaborador) {
-      setDeleteTarget(colaborador);
-      setCedulaConfirmacion("");
-      setShowConfirmModal(true);
-    }
-  };
+const handleDeletePress = (id) => {
+  const colaborador = listaOriginal.find((c) => c.id === id);
+  if (colaborador) {
+    setDeleteTarget(colaborador);
+    setCedulaConfirmacion("");
+    setCedulaError("");   // <-- agrega esta línea
+    setShowConfirmModal(true);
+  }
+};
 
-  const confirmDelete = async () => {
-    if (!deleteTarget) {
-      showAlert("danger", "No se encontró el colaborador a eliminar.");
-      setShowConfirmModal(false);
-      return;
-    }
+const confirmDelete = async () => {
+  if (!deleteTarget) {
+    setCedulaError("No se encontró el colaborador a eliminar.");
+    return;
+  }
 
-    if (cedulaConfirmacion !== deleteTarget.cedula) {
-      showAlert("danger", "La cédula ingresada no coincide con la del colaborador.");
-      return;
-    }
+  if (cedulaConfirmacion !== deleteTarget.cedula) {
+    setCedulaError("La cédula ingresada no coincide con la del colaborador.");
+    return;
+  }
 
-    try {
-      await eliminarActual(deleteTarget.id);
-      // Éxito: alerta de advertencia (acción destructiva)
-      showAlert("warning", `El colaborador ${deleteTarget.nombre} ha sido eliminado correctamente.`);
-      setShowConfirmModal(false);
-      setDeleteTarget(null);
-      setCedulaConfirmacion("");
-    } catch (error) {
-      showAlert("danger", "No se pudo eliminar el colaborador. Intente nuevamente.");
-    }
-  };
+  try {
+    await eliminarActual(deleteTarget.id);
+    // Éxito: mantén el showAlert para notificar éxito en la lista
+    showAlert("warning", `El colaborador ${deleteTarget.nombre} ha sido eliminado correctamente.`);
+    setShowConfirmModal(false);
+    setDeleteTarget(null);
+    setCedulaConfirmacion("");
+    setCedulaError("");
+  } catch (error) {
+    setCedulaError("No se pudo eliminar el colaborador. Intente nuevamente.");
+  }
+};
 
   const handleSubmit = async (formData) => {
     try {
@@ -190,5 +193,7 @@ export function useColaboradoresList() {
     handleSubmit,
     openStats,
     alert,
+      cedulaError,
+  setCedulaError,
   };
 }

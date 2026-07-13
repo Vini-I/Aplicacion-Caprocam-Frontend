@@ -56,6 +56,8 @@ export default function EquiposListScreen() {
   // ESTADOS
   // --------------------------------------------------------
   const [modalVisible, setModalVisible] = useState(false);
+  const [codigoError, setCodigoError] = useState("");
+  const [validationError, setValidationError] = useState("");
   const [editingEquipo, setEditingEquipo] = useState(null);
   const [selectedEquipoId, setSelectedEquipoId] = useState(null);
   const [searchText, setSearchText] = useState("");
@@ -134,6 +136,7 @@ router.push("/registrarEquipo");
   const handleEdit = (equipo) => {
     setEditingEquipo(equipo);
     setModalVisible(true);
+      setValidationError(""); 
   };
 
   const handleDeletePress = (id) => {
@@ -145,30 +148,29 @@ router.push("/registrarEquipo");
     }
   };
 
-  const confirmDelete = async () => {
-    if (!deleteTarget) {
-      showAlert("danger", "Equipo no encontrado");
-      setShowConfirmModal(false);
-      return;
-    }
+const confirmDelete = async () => {
+  if (!deleteTarget) {
+    setCodigoError("Equipo no encontrado");
+    return;
+  }
 
-    if (codigoConfirmacion !== deleteTarget.codigo) {
-      showAlert("danger", "El código ingresado no coincide con el del equipo");
-      return;
-    }
+  if (codigoConfirmacion !== deleteTarget.codigo) {
+    setCodigoError("El código ingresado no coincide con el del equipo");
+    return;
+  }
 
-    try {
-      await eliminarEquipo(deleteTarget.id);
-      showAlert("warning", `El equipo "${deleteTarget.nombre}" ha sido eliminado correctamente`);
-      setShowConfirmModal(false);
-      setDeleteTarget(null);
-      setCodigoConfirmacion("");
-      // Recargar lista
-      fetchEquipos();
-    } catch (error) {
-      showAlert("danger", "No se pudo eliminar el equipo");
-    }
-  };
+  try {
+    await eliminarEquipo(deleteTarget.id);
+    showAlert("warning", `El equipo "${deleteTarget.nombre}" ha sido eliminado correctamente`);
+    setShowConfirmModal(false);
+    setDeleteTarget(null);
+    setCodigoConfirmacion("");
+    setCodigoError(""); // limpiar error al éxito
+    fetchEquipos();
+  } catch (error) {
+    setCodigoError("No se pudo eliminar el equipo");
+  }
+};
 
   const handleSubmit = async (formData) => {
     try {
@@ -215,64 +217,70 @@ router.push("/registrarEquipo");
   // --------------------------------------------------------
   // RENDER PRINCIPAL
   // --------------------------------------------------------
-  return (
-    <View style={styles.container}>
-      <View style={[STYLE.contentWrapper, { flex: 1 }]}>
-        {/* Barra de búsqueda y botones de acción */}
-        <View style={styles.searchRow}>
-          <SearchBar
-            value={searchText}
-            onChangeText={setSearchText}
-            placeholder="Buscar por nombre, código, marca o modelo"
-            containerStyle={styles.searchInput}
+return (
+  <View style={styles.container}>
+    {/* Barra de búsqueda y botones de acción - sin wrapper que limite ancho */}
+    <View style={{ flex: 1 }}>
+      <View style={styles.searchRow}>
+        <SearchBar
+          value={searchText}
+          onChangeText={setSearchText}
+          placeholder="Buscar por nombre, código, marca o modelo"
+          containerStyle={styles.searchInput}
+        />
+        <Button
+          variant="outline"
+          onPress={navigateToMantEquipo}
+          style={[styles.btnAction, { borderColor: COLORS.primary }]}
+        >
+          <Icon icon={ICONS.clipboard} size={16} color={COLORS.primary} />
+          <CustomText style={{ color: COLORS.primary, fontWeight: "600", fontSize: 13 }}>
+            Ver Mantenimiento
+          </CustomText>
+        </Button>
+        <Button
+          variant="outline"
+          onPress={handleAdd}
+          style={[styles.btnAction, { borderColor: COLORS.primary }]}
+        >
+          <Icon icon={ICONS.add} size={16} color={COLORS.primary} />
+          <CustomText style={{ color: COLORS.primary, fontWeight: "600", fontSize: 13 }}>
+            Agregar equipo
+          </CustomText>
+        </Button>
+      </View>
+
+{/* Alerta flotante: se muestra debajo de la barra de búsqueda, dentro del flujo */}
+{alert && (
+  <View style={styles.alertWrapper}>
+    <Alert variant={alert.type} message={alert.message} />
+  </View>
+)}
+
+      {/* Lista de equipos - ahora ocupa todo el ancho disponible */}
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.list}>
+        {equiposFiltrados.map((equipo) => (
+          <EquipoCard
+            key={equipo.id}
+            equipo={equipo}
+            onPress={openDetail}
+            onToggle={handleToggle}
           />
-          <Button
-            variant="outline"
-            onPress={navigateToMantEquipo}
-            style={[styles.btnAction, { borderColor: COLORS.warning }]}
-          >
-            <Icon icon={ICONS.clipboard} size={16} color={COLORS.warning} />
-            <CustomText style={{ color: COLORS.warning, fontWeight: "600", fontSize: 13 }}>
-              Ver Mantenimiento
-            </CustomText>
-          </Button>
-          <Button
-            variant="outline"
-            onPress={handleAdd}
-            style={[styles.btnAction, { borderColor: COLORS.primary }]}
-          >
-            <Icon icon={ICONS.add} size={16} color={COLORS.primary} />
-            <CustomText style={{ color: COLORS.primary, fontWeight: "600", fontSize: 13 }}>
-              Agregar equipo
-            </CustomText>
-          </Button>
-        </View>
-
-        {/* Alerta global */}
-        {alert && (
-          <View style={{ marginBottom: 12, paddingHorizontal: 16 }}>
-            <Alert variant={alert.type} message={alert.message} />
-          </View>
-        )}
-
-        {/* Lista de equipos */}
-        <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.list}>
-          {equiposFiltrados.map((equipo) => (
-            <EquipoCard
-              key={equipo.id}
-              equipo={equipo}
-              onPress={openDetail}
-              onToggle={handleToggle}
-            />
-          ))}
-        </ScrollView>
+        ))}
+      </ScrollView>
 
         {/* Modal para crear/editar */}
         <Modal
           visible={modalVisible}
-          onClose={() => setModalVisible(false)}
+            onClose={() => {
+    setModalVisible(false);
+    setValidationError(""); // <-- limpiar error
+  }}
           showCloseButton={false}
-          containerStyle={styles.modalContainer}
+          containerStyle={styles.modalContainer
+            
+          }
+          
         >
           <View style={{ flex: 1, flexDirection: "column" }}>
             <Title level={4} style={{ padding: 16, paddingBottom: 0 }}>
@@ -292,7 +300,7 @@ router.push("/registrarEquipo");
                 tiposEquipo={equiposService.getTiposEquipo()}
                 subcategorias={equiposService.getSubcategorias}
                 estanquesDisponibles={equiposService.getEstanquesDisponibles()}
-                onValidationError={(msg) => showAlert("danger", msg)}
+  onValidationError={(msg) => setValidationError(msg)} // <-- Cambiar aquí
               />
             </ScrollView>
 
@@ -326,36 +334,37 @@ router.push("/registrarEquipo");
                 </CustomText>
               </Button>
 
-              <Button
-                variant="primary"
-                onPress={() => formRef.current?.submit()}
-                style={{
-                  flex: 1,
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 6,
-                  backgroundColor: COLORS.primary,
-                  borderWidth: 0,
-                }}
-              >
-                <Icon icon={ICONS.save} size={18} color={COLORS.white} />
-                <CustomText style={{ color: COLORS.white, fontWeight: "600" }}>
-                  {editingEquipo ? "Actualizar" : "Registrar"}
-                </CustomText>
-              </Button>
+<Button
+  variant="outline"
+  onPress={() => formRef.current?.submit()}
+  style={{
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    borderColor: COLORS.primary,
+    backgroundColor: "transparent",
+  }}
+>
+  <Icon icon={ICONS.save} size={18} color={COLORS.primary} />
+  <CustomText style={{ color: COLORS.primary, fontWeight: "600" }}>
+    {editingEquipo ? "Actualizar" : "Registrar"}
+  </CustomText>
+</Button>
             </View>
           </View>
         </Modal>
 
         {/* Modal de confirmación con validación de código */}
-        <Modal
-          visible={showConfirmModal}
-          onClose={() => {
-            setShowConfirmModal(false);
-            setCodigoConfirmacion("");
-            setDeleteTarget(null);
-          }}
+<Modal
+  visible={showConfirmModal}
+  onClose={() => {
+    setShowConfirmModal(false);
+    setCodigoConfirmacion("");
+    setDeleteTarget(null);
+    setCodigoError(""); // ← agregar esta línea
+  }}
           showCloseButton={false}
           containerStyle={styles.modalConfirmContainer}
         >
@@ -379,27 +388,46 @@ router.push("/registrarEquipo");
             autoCapitalize="characters"
             containerStyle={styles.modalInput}
           />
+          {/* Alerta de error dentro del modal */}
+{codigoError !== "" && (
+  <Alert
+    variant="danger"
+    message={codigoError}
+    style={{ marginBottom: 12 }}
+  />
+)}
+          
           <View style={styles.modalButtons}>
-            <Button
-              onPress={() => {
-                setShowConfirmModal(false);
-                setCodigoConfirmacion("");
-                setDeleteTarget(null);
-              }}
+<Button
+  onPress={() => {
+    setShowConfirmModal(false);
+    setCodigoConfirmacion("");
+    setDeleteTarget(null);
+    setCodigoError(""); // ← agregar
+  }}
               variant="outline"
               style={[styles.modalCancelBtn, { flexDirection: "row", alignItems: "center", gap: 6 }]}
             >
               <Icon icon={ICONS.exit} size={16} color={COLORS.primary} />
               <CustomText style={{ color: COLORS.primary, fontWeight: "600" }}>Cancelar</CustomText>
             </Button>
-            <Button
-              onPress={confirmDelete}
-              variant="danger"
-              style={[styles.modalDeleteBtn, { flexDirection: "row", alignItems: "center", gap: 6 }]}
-            >
-              <Icon icon={ICONS.delete} size={16} color={COLORS.white} />
-              <CustomText style={{ color: COLORS.white, fontWeight: "600" }}>Eliminar</CustomText>
-            </Button>
+    <Button
+      onPress={confirmDelete}
+      variant="outline"
+      style={[
+        styles.modalDeleteBtn,
+        {
+          borderColor: COLORS.error,      
+          flexDirection: "row",
+        },
+      ]}
+      textStyle={{ color: COLORS.error }} // texto rojo
+    >
+      <Icon icon={ICONS.delete} size={16} color={COLORS.error} />
+      <CustomText style={{ color: COLORS.error, fontWeight: "600" }}>
+        Eliminar
+      </CustomText>
+    </Button>
           </View>
         </Modal>
 

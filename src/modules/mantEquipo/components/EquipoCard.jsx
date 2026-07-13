@@ -145,17 +145,34 @@ export default function EquipoCard({ equipo, onPress, onToggle }) {
 
         {/* Botón Encender/Apagar */}
         <View style={styles.actions}>
-          <Button
-            onPress={() => onToggle?.(equipo.id)}
-            style={[
-              styles.toggleBtn,
-              equipo.encendido ? styles.toggleBtnOn : styles.toggleBtnOff,
-            ]}
-          >
-            <CustomText style={styles.toggleBtnText}>
-              {equipo.encendido ? "Apagar" : "Encender"}
-            </CustomText>
-          </Button>
+<Button
+  variant="outline"
+  onPress={() => onToggle?.(equipo.id)}
+  style={[
+    styles.toggleBtn,
+    {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 6,
+      borderColor: COLORS.primary,
+      backgroundColor: "transparent",
+      paddingVertical: 10,
+      borderRadius: 8,
+      marginTop: 0,
+      borderWidth: 1,
+    },
+  ]}
+>
+  <Icon
+    icon={equipo.encendido ? ICONS.check : ICONS.close}
+    size={16}
+    color={COLORS.primary}
+  />
+  <CustomText style={{ color: COLORS.primary, fontWeight: "600", fontSize: 14 }}>
+    {equipo.encendido ? "Encendido" : "Apagado"}
+  </CustomText>
+</Button>
         </View>
       </Card>
     </TouchableOpacity>

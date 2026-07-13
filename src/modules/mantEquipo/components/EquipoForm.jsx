@@ -42,6 +42,7 @@ import CustomText from "../../../shared/components/Text";
 import { useEquipoForm } from "../hooks/useEquipoForm";
 import { styles } from "../styles/equiposListStyles";
 import { COLORS } from "../../../theme/colors";
+import Alert from "../../../shared/components/Alert";
 
 // ============================================================
 // VALIDADORES
@@ -125,7 +126,11 @@ const EquipoForm = forwardRef(function EquipoForm(
   const subcategoriasFiltradas = subcategorias[form.tipo] || [];
 
   return (
-    <ScrollView style={styles.formContainer} showsVerticalScrollIndicator={false}>
+<ScrollView
+  style={{ flex: 1, paddingHorizontal: 16, paddingBottom: 16 }}
+  contentContainerStyle={{ paddingBottom: 16 }}
+>
+      
       {/* Nombre */}
       <Input
         label="Nombre del equipo *"
@@ -242,6 +247,16 @@ const EquipoForm = forwardRef(function EquipoForm(
         value={form.estado}
         onChange={(v) => handleChange("estado", v)}
       />
+  {/* Mensaje de error de validación */}
+  {submitted && getValidationMessage() !== "" && (
+    <Alert
+      variant="danger"
+      message={getValidationMessage()}
+      style={{ marginBottom: 12 }}
+      textStyle={{ textAlign: "left", fontSize: 13 }}
+    />
+  )}
+
     </ScrollView>
   );
 });

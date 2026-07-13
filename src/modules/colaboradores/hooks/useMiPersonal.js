@@ -16,13 +16,15 @@
  * - cedulaConfirmacion, setCedulaConfirmacion
  * - deleteTarget, setDeleteTarget
  * - showConfirmModal, setShowConfirmModal
+ * - cedulaError, setCedulaError
+ * - alert, showAlert (para mensajes en la lista)
  * - colaboradores, loading, error
  * - listaFiltrada
  * - handleAdd, handleEdit, handleDeletePress, confirmDelete, handleSubmit, openStats
  */
 
-import { useState, useEffect } from "react";
-import { Alert } from "react-native";
+import { useState, useEffect, useRef } from "react";
+import { Alert as RNAlert } from "react-native";
 import { useColaboradores } from "./useColaboradores";
 
 export function useMiPersonal() {
@@ -37,6 +39,22 @@ export function useMiPersonal() {
   const [cedulaConfirmacion, setCedulaConfirmacion] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [cedulaError, setCedulaError] = useState("");
+
+  // Estado para alerta flotante (como en ColaboradoresListScreen)
+  const [alert, setAlert] = useState(null);
+  const alertTimeoutRef = useRef(null);
+
+  // Función para mostrar alerta con auto-cierre
+  const showAlert = (type, message) => {
+    if (alertTimeoutRef.current) {
+      clearTimeout(alertTimeoutRef.current);
+    }
+    setAlert({ type, message });
+    alertTimeoutRef.current = setTimeout(() => {
+      setAlert(null);
+    }, 4000);
+  };
 
   // Datos de colaboradores (solo external_worker de esta finca)
   const {
@@ -82,46 +100,57 @@ export function useMiPersonal() {
     if (colaborador) {
       setDeleteTarget(colaborador);
       setCedulaConfirmacion("");
+      setCedulaError(""); // Limpiar error al abrir el modal
       setShowConfirmModal(true);
     }
   };
 
   const confirmDelete = async () => {
     if (!deleteTarget) {
-      Alert.alert("Error", "Colaborador no encontrado");
-      setShowConfirmModal(false);
+      setCedulaError("No se encontró el colaborador a eliminar.");
       return;
     }
 
     if (cedulaConfirmacion !== deleteTarget.cedula) {
-      Alert.alert("Error", "La cédula ingresada no coincide con la del colaborador");
+      setCedulaError("La cédula ingresada no coincide con la del colaborador.");
       return;
     }
 
     try {
       await eliminarColaborador(deleteTarget.id);
-      Alert.alert("Éxito", `El colaborador ${deleteTarget.nombre} ha sido eliminado correctamente`);
+      showAlert("warning", `El colaborador ${deleteTarget.nombre} ha sido eliminado correctamente.`);
       setShowConfirmModal(false);
       setDeleteTarget(null);
       setCedulaConfirmacion("");
+      setCedulaError("");
+      // Recargar lista
+      fetchColaboradores();
     } catch (error) {
-      Alert.alert("Error", "No se pudo eliminar el colaborador");
+      setCedulaError("No se pudo eliminar el colaborador. Intente nuevamente.");
     }
   };
 
   const handleSubmit = async (formData) => {
-    if (editingColaborador) {
-      await actualizarColaborador(editingColaborador.id, formData);
-    } else {
-      await crearColaborador({
-        ...formData,
-        rol: "external_worker",
-        fincaId: user.fincaId,
-        externalOwnerId: user.id,
-      });
+    try {
+      if (editingColaborador) {
+        await actualizarColaborador(editingColaborador.id, formData);
+        showAlert("success", `Colaborador ${formData.nombre} actualizado correctamente.`);
+      } else {
+        await crearColaborador({
+          ...formData,
+          rol: "external_worker",
+          fincaId: user.fincaId,
+          externalOwnerId: user.id,
+        });
+        showAlert("success", `Colaborador ${formData.nombre} agregado correctamente.`);
+      }
+      setModalVisible(false);
+      setEditingColaborador(null);
+      // Recargar lista
+      fetchColaboradores();
+    } catch (error) {
+      showAlert("danger", "Ocurrió un error al guardar el colaborador. Intente nuevamente.");
     }
-    setModalVisible(false);
-    setEditingColaborador(null);
   };
 
   const openStats = (colaboradorId) => {
@@ -144,6 +173,9 @@ export function useMiPersonal() {
     setDeleteTarget,
     showConfirmModal,
     setShowConfirmModal,
+    cedulaError,
+    setCedulaError,
+    alert,
     colaboradores,
     loading,
     error,

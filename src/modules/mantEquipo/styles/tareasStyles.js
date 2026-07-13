@@ -29,6 +29,10 @@ export const styles = StyleSheet.create({
     gap: 8,
     marginBottom: 14,
     flexWrap: "wrap",
+    width: '100%',
+    maxWidth: 900,
+    alignSelf: 'center',
+    paddingHorizontal: 16,
   },
 
   // Botón de acción (outline)
@@ -46,13 +50,45 @@ export const styles = StyleSheet.create({
     marginTop: 0,
   },
 
+  // Alerta global (mismo ancho que la barra de búsqueda)
+  alertWrapper: {
+    marginBottom: 12,
+    paddingHorizontal: 16,
+    width: '100%',
+    maxWidth: 900,
+    alignSelf: 'center',
+  },
+
   // Contenedor de la tabla (ocupa todo el espacio restante)
   tableWrapper: {
     flex: 1,
+    width: '100%',
+  },
+    rowInner: {
+    maxWidth: 900,
+    alignSelf: 'center',
+    width: '100%',
+    paddingHorizontal: 16,
+  },
+
+  // Ajusta tableHeader para que use rowInner
+  tableHeader: {
+    flexDirection: "row",
+    backgroundColor: COLORS.secondary,
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+  },
+
+  // Contenedor interno de la tabla para centrar y limitar ancho
+  tableInner: {
+    flex: 1,
+    maxWidth: 900,
+    alignSelf: 'center',
+    width: '100%',
     borderWidth: 1,
     borderColor: COLORS.secondary,
     borderRadius: 10,
-    overflow: "hidden",
+    overflow: 'hidden',
     backgroundColor: COLORS.white,
   },
 
@@ -79,7 +115,7 @@ export const styles = StyleSheet.create({
   colAcciones: { width: 90 },
 
   // Fila de la tabla
-  row: {
+ row: {
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 12,
@@ -93,7 +129,7 @@ export const styles = StyleSheet.create({
     color: COLORS.textSecondary,
   },
 
-  // Botones de acción dentro de la fila (editar/eliminar)
+  // Botones de acción dentro de la fila (editar/eliminar) - outline
   btnAccion: {
     flexDirection: "row",
     alignItems: "center",
@@ -142,8 +178,9 @@ export const styles = StyleSheet.create({
 
   btnAccept: {
     flex: 1,
-    backgroundColor: COLORS.primary,
-    borderWidth: 0,
+    borderColor: COLORS.primary,
+    borderWidth: 1,
+    backgroundColor: "transparent",
   },
 
   // Modal de confirmación de eliminación
@@ -202,7 +239,8 @@ export const styles = StyleSheet.create({
   modalDeleteBtn: {
     flex: 1,
     marginTop: 0,
-    backgroundColor: COLORS.error,
-    borderWidth: 0,
+    borderColor: COLORS.error,
+    borderWidth: 1,
+    backgroundColor: "transparent",
   },
 });

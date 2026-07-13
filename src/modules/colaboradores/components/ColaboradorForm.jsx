@@ -144,10 +144,14 @@ export default function ColaboradorForm({
           </View>
         </Button>
 
-        <Button onPress={handleSubmit} style={styles.submitButton}>
+        <Button
+          variant="outline"
+          onPress={handleSubmit}
+          style={styles.submitButton}
+        >
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <Icon icon={ICONS.save} size={18} color={COLORS.white} />
-            <Text style={{ color: COLORS.white, fontWeight: '600' }}>
+            <Icon icon={ICONS.save} size={18} color={COLORS.primary} />
+            <Text style={{ color: COLORS.primary, fontWeight: '600' }}>
               {isEditing ? "Actualizar" : "Registrar"}
             </Text>
           </View>

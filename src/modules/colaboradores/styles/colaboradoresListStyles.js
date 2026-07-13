@@ -85,6 +85,9 @@ addButtonText: {
   list: {
     padding: 16,
     paddingBottom: 80,
+   width: '100%',
+   maxWidth: 900,
+   alignSelf: 'center',
   },
   error: {
     color: COLORS.error,
@@ -162,6 +165,14 @@ addButtonText: {
     marginTop: 0,
     flex: 1,
   },
+    alertWrapper: {
+    marginBottom: 12,
+    paddingHorizontal: 16,
+    width: '100%',
+    maxWidth: 900,
+    alignSelf: 'center',
+  },
+
   modalDeleteBtn: {
     marginTop: 0,
     flex: 1,
@@ -176,7 +187,9 @@ modalDetalleContainer: {
   overflow: "hidden",
   backgroundColor: COLORS.surface,
 },
-
+scrollView: {
+  flex: 1,
+},
 modalDetalleOverlay: {
   backgroundColor: "rgba(0,0,0,0.6)",
   justifyContent: "center",   // ← Centra verticalmente el modal
