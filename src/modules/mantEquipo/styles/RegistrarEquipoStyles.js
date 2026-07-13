@@ -2,15 +2,15 @@
  * ============================================================
  * ESTILOS: RegistrarEquipo
  * ============================================================
+ * Módulo: Mantenimiento de Equipos
  *
  * Contiene la maquetación y la jerarquía visual del formulario
  * de registro de equipos.
- * Ruta: src/modules/mantEquipo/styles/RegistrarEquipoStyles.js
+ * ============================================================
  */
 
 import { StyleSheet } from "react-native";
-
-import { COLORS } from "../../../theme/colors.js";
+import { COLORS } from "../../../theme/colors";
 
 export const styles = StyleSheet.create({
   container: {
@@ -95,19 +95,28 @@ export const styles = StyleSheet.create({
     color: COLORS.error,
     fontWeight: "600",
   },
-  saveButton: {
-    marginTop: 4,
-    minHeight: 52,
-  },
-  buttonContent: {
+
+  // Botones
+  buttonRow: {
     flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 10,
+    gap: 12,
+    marginTop: 4,
   },
-  buttonText: {
-    color: COLORS.white,
-    fontSize: 16,
-    fontWeight: "600",
+  saveButton: {
+    flex: 1,
+    minHeight: 52,
+    backgroundColor: COLORS.primary,
+    borderWidth: 0,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  cancelButton: {
+    flex: 1,
+    minHeight: 52,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    backgroundColor: "transparent",
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

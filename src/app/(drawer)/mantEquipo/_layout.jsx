@@ -1,14 +1,30 @@
 import { Stack } from "expo-router";
+import { useRouter } from "expo-router";
+import { Pressable } from "react-native";
 import { COLORS } from "../../../theme/colors.js";
+import Icon from "../../../shared/components/Icons.jsx";
+import { ICONS } from "../../../theme/icons.js";
+
+function BackButton() {
+  const router = useRouter();
+  return (
+    <Pressable onPress={() => router.replace("/mantEquipo/equipos")}>
+      <Icon icon={ICONS.exit} size={22} color={COLORS.white} />
+    </Pressable>
+  );
+}
 
 export default function MantEquipoStackLayout() {
   return (
-    <Stack screenOptions={{ headerShown: false, headerStyle: { backgroundColor: COLORS.primary }, headerTintColor: COLORS.white}}>
+    <Stack screenOptions={{headerShown: false, headerStyle: { backgroundColor: COLORS.primary },
+    headerTintColor: COLORS.white, headerTitleStyle: { fontWeight: "700", fontSize: 18 },
+     headerBackVisible: false,}}>
       
-      <Stack.Screen name="mantEquipo" options={{ title: "Mantenimiento de Equipos" }} />
+      <Stack.Screen name="equipos" options={{ title: "Equipos" }} />
 
-      <Stack.Screen name="tareas" options={{ title: "Gestion Tareas", headerShown: true }} />
+      <Stack.Screen name="mantEquipo" options={{title: "Mantenimiento de Equipos",headerShown: true,}}/>
 
-    </Stack>
+      <Stack.Screen name="tareas" options={{title: "Agregar Tareas",headerShown: true,}}/>
+</Stack>
   );
 }

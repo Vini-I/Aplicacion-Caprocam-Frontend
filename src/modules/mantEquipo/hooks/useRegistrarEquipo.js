@@ -2,67 +2,88 @@
  * ============================================================
  * HOOK: useRegistrarEquipo
  * ============================================================
+ * Módulo: Mantenimiento de Equipos
  *
  * Encapsula el estado del formulario de registro de equipo,
  * la validación por intento de guardado y el armado del payload.
+ *
+ * Funcionalidad:
+ * - Mantiene el estado del formulario y los errores.
+ * - Valida campos obligatorios al intentar guardar.
+ * - Lanza un error con mensajes específicos por campo para que
+ *   la pantalla muestre una alerta detallada.
+ * - Si la validación es exitosa, envía el payload al servicio.
+ *
+ * Datos:
+ * - formulario: objeto con todos los campos del equipo.
+ * - errores: objeto con mensajes de error por campo.
+ * - submitted: booleano que indica si ya se intentó guardar.
+ * - guardando: booleano de estado de carga.
+ *
+ * Validaciones:
+ * - Todos los campos excepto estanqueId y horasMantenimiento son
+ *   obligatorios.
+ * - La fecha debe tener formato dd/mm/aaaa válido.
+ *
+ * Dependencias:
+ * - registrarEquipoService (crearEquipoPayload, agregarEquipo)
+ * - TIPOS_EQUIPO, ESTADOS_EQUIPO desde el servicio
+ * ============================================================
  */
 
 import { useState } from "react";
-import { Alert } from "react-native";
-
 import {
   agregarEquipo,
   crearEquipoPayload,
   ESTADOS_EQUIPO,
   TIPOS_EQUIPO,
-} from "../services/registrarEquipoService.js";
+} from "../services/registrarEquipoService";
+
+// Obtener fecha actual en formato dd/mm/aaaa
+function obtenerFechaActual() {
+  const fecha = new Date();
+  const dia = String(fecha.getDate()).padStart(2, "0");
+  const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+  const anio = fecha.getFullYear();
+  return `${dia}/${mes}/${anio}`;
+}
 
 const formularioInicial = {
   codigoInterno: "",
+  nombre: "",
   descripcion: "",
-  fechaInstalacion: "",
   tipo: "",
-  estado: "",
+  modelo: "",
+  fechaInstalacion: obtenerFechaActual(),
   funcionEquipo: "",
+  estanqueId: "",
+  horasMantenimiento: "500",
+  estado: "",
 };
 
 const MENSAJES_REQUERIDOS = {
-  codigoInterno: "El identificador es obligatorio.",
+  codigoInterno: "El número de serie/identificador es obligatorio.",
+  nombre: "El nombre del equipo es obligatorio.",
   descripcion: "La descripción es obligatoria.",
+  tipo: "Debe seleccionar el tipo de equipo.",
+  modelo: "El modelo es obligatorio.",
   fechaInstalacion: "La fecha de instalación es obligatoria.",
   fechaInstalacionFormato: "La fecha debe tener formato dd/mm/aaaa.",
-  tipo: "Debe seleccionar el tipo de equipo.",
-  estado: "Debe seleccionar el estado del equipo.",
   funcionEquipo: "La función del equipo es obligatoria.",
+  estado: "Debe seleccionar el estado del equipo.",
 };
 
 function esFechaValidaDDMMAAAA(valor) {
   const partes = valor.split("/");
-
-  if (partes.length !== 3) {
-    return false;
-  }
-
+  if (partes.length !== 3) return false;
   const [diaTexto, mesTexto, anioTexto] = partes;
-
-  if (!diaTexto || !mesTexto || !anioTexto) {
-    return false;
-  }
-
+  if (!diaTexto || !mesTexto || !anioTexto) return false;
   const dia = Number(diaTexto);
   const mes = Number(mesTexto);
   const anio = Number(anioTexto);
-
-  if (!Number.isInteger(dia) || !Number.isInteger(mes) || !Number.isInteger(anio)) {
-    return false;
-  }
-
-  if (anioTexto.length !== 4 || dia < 1 || mes < 1 || mes > 12) {
-    return false;
-  }
-
+  if (!Number.isInteger(dia) || !Number.isInteger(mes) || !Number.isInteger(anio)) return false;
+  if (anioTexto.length !== 4 || dia < 1 || mes < 1 || mes > 12) return false;
   const fecha = new Date(anio, mes - 1, dia);
-
   return (
     fecha.getFullYear() === anio &&
     fecha.getMonth() === mes - 1 &&
@@ -73,37 +94,40 @@ function esFechaValidaDDMMAAAA(valor) {
 function validarFormulario(formulario) {
   const nuevosErrores = {
     codigoInterno: "",
+    nombre: "",
     descripcion: "",
-    fechaInstalacion: "",
     tipo: "",
-    estado: "",
+    modelo: "",
+    fechaInstalacion: "",
     funcionEquipo: "",
+    estado: "",
   };
 
   if (!formulario.codigoInterno.trim()) {
     nuevosErrores.codigoInterno = MENSAJES_REQUERIDOS.codigoInterno;
   }
-
+  if (!formulario.nombre.trim()) {
+    nuevosErrores.nombre = MENSAJES_REQUERIDOS.nombre;
+  }
   if (!formulario.descripcion.trim()) {
     nuevosErrores.descripcion = MENSAJES_REQUERIDOS.descripcion;
   }
-
+  if (!formulario.tipo) {
+    nuevosErrores.tipo = MENSAJES_REQUERIDOS.tipo;
+  }
+  if (!formulario.modelo.trim()) {
+    nuevosErrores.modelo = MENSAJES_REQUERIDOS.modelo;
+  }
   if (!formulario.fechaInstalacion.trim()) {
     nuevosErrores.fechaInstalacion = MENSAJES_REQUERIDOS.fechaInstalacion;
   } else if (!esFechaValidaDDMMAAAA(formulario.fechaInstalacion.trim())) {
     nuevosErrores.fechaInstalacion = MENSAJES_REQUERIDOS.fechaInstalacionFormato;
   }
-
-  if (!formulario.tipo) {
-    nuevosErrores.tipo = MENSAJES_REQUERIDOS.tipo;
-  }
-
-  if (!formulario.estado) {
-    nuevosErrores.estado = MENSAJES_REQUERIDOS.estado;
-  }
-
   if (!formulario.funcionEquipo.trim()) {
     nuevosErrores.funcionEquipo = MENSAJES_REQUERIDOS.funcionEquipo;
+  }
+  if (!formulario.estado) {
+    nuevosErrores.estado = MENSAJES_REQUERIDOS.estado;
   }
 
   return nuevosErrores;
@@ -124,48 +148,45 @@ export function useRegistrarEquipo() {
     if (submitted && errores[campo]) {
       setErrores((actual) => {
         const siguientesErrores = { ...actual };
-
         delete siguientesErrores[campo];
-
         return siguientesErrores;
       });
     }
+  }
+
+  function resetFormulario() {
+    setFormulario(formularioInicial);
+    setErrores({});
+    setSubmitted(false);
+    setGuardando(false);
   }
 
   async function guardarEquipo() {
     setSubmitted(true);
 
     const nuevosErrores = validarFormulario(formulario);
+    const mensajes = Object.values(nuevosErrores).filter((msg) => msg !== "");
 
-    const tieneErrores = Object.values(nuevosErrores).some((valor) => valor !== "");
-
-    if (tieneErrores) {
+    if (mensajes.length > 0) {
       setErrores(nuevosErrores);
-      return;
+      // Construir mensaje detallado como en Colaboradores
+      const mensajeError =
+        "Revisa los campos obligatorios marcados con *:\n" +
+        mensajes.map((m) => `- ${m}`).join("\n");
+      throw new Error(mensajeError);
     }
 
     setGuardando(true);
 
     try {
       const payload = crearEquipoPayload(formulario);
-
       await agregarEquipo(payload);
-
-      Alert.alert(
-        "Equipo listo",
-        "La vista ya deja preparado el payload para conectarlo con el backend."
-      );
-
-      // TODO backend: si la API responde con id o confirma el registro,
-      // aquí se puede limpiar el formulario o navegar al detalle/listado.
-      setFormulario(formularioInicial);
-      setErrores({});
-      setSubmitted(false);
+      // Éxito: reseteamos el formulario
+      resetFormulario();
+      // No lanzamos error; la pantalla mostrará alerta de éxito
     } catch (error) {
-      Alert.alert(
-        "No se pudo guardar",
-        "Revisa la conexión con el backend cuando reemplaces el stub del servicio."
-      );
+      // Si el servicio falla, lanzamos error para que la pantalla lo maneje
+      throw new Error("No se pudo guardar el equipo. Intente nuevamente.");
     } finally {
       setGuardando(false);
     }
@@ -180,5 +201,6 @@ export function useRegistrarEquipo() {
     estadosEquipo: ESTADOS_EQUIPO,
     actualizarCampo,
     guardarEquipo,
+    resetFormulario,
   };
 }

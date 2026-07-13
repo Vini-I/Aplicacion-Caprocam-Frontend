@@ -57,6 +57,35 @@ let TAREAS_MOCK = [
     categoria: "emergencia",
     duracionEstimada: 6.0,
   },
+
+  {
+    id: "T002",
+    nombre: "Limpieza de intercambiadores de calor",
+    descripcion: "Limpieza profunda de los intercambiadores de calor de los sistemas de refrigeración.",
+    categoria: "correctivo",
+    duracionEstimada: 4.0,
+  },
+    {
+    id: "T002",
+    nombre: "Limpieza de intercambiadores de calor",
+    descripcion: "Limpieza profunda de los intercambiadores de calor de los sistemas de refrigeración.",
+    categoria: "correctivo",
+    duracionEstimada: 4.0,
+  },
+    {
+    id: "T002",
+    nombre: "Limpieza de intercambiadores de calor",
+    descripcion: "Limpieza profunda de los intercambiadores de calor de los sistemas de refrigeración.",
+    categoria: "correctivo",
+    duracionEstimada: 4.0,
+  },
+    {
+    id: "T002",
+    nombre: "Limpieza de intercambiadores de calor",
+    descripcion: "Limpieza profunda de los intercambiadores de calor de los sistemas de refrigeración.",
+    categoria: "correctivo",
+    duracionEstimada: 4.0,
+  },
 ];
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
