@@ -17,6 +17,7 @@
  *
  * Ejemplo:
  * const equipos = await equiposService.getEquipos({ tipo: 'aireacion' });
+ * ============================================================
  */
 
 // ============================================================
@@ -68,7 +69,8 @@ export const SUBCATEGORIAS = {
   ],
 };
 
-// Estánques disponibles para asociar
+// Estanques disponibles para asociar
+// Cada objeto debe tener { label, value } para que el Select funcione
 const ESTANQUES_DISPONIBLES = [
   { id: "A01", label: "A01 - Estanque A01", finca: "Finca La Esperanza" },
   { id: "A02", label: "A02 - Estanque A02", finca: "Finca La Esperanza" },
@@ -490,9 +492,13 @@ export const equiposService = {
 
   /**
    * Obtiene la lista de estanques disponibles para asociar
+   * Devuelve un array de objetos con { label, value } para que funcione con el componente Select
    */
   getEstanquesDisponibles() {
-    return ESTANQUES_DISPONIBLES;
+    return ESTANQUES_DISPONIBLES.map(e => ({
+      label: e.label,
+      value: e.id,
+    }));
   },
 
   /**

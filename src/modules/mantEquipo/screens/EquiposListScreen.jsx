@@ -2,26 +2,30 @@
  * ============================================================
  * COMPONENTE: EquiposListScreen
  * ============================================================
+ * Módulo: Mantenimiento de Equipos
  *
- * Pantalla principal de administración de equipos.
- * Permite buscar, agregar, editar, eliminar y encender/apagar equipos.
- * Muestra también alertas de equipos próximos a mantenimiento.
+ * Pantalla principal del módulo de equipos.
+ * Muestra el listado de equipos registrados, permite buscar, agregar,
+ * editar y eliminar equipos, y ofrece acceso al módulo de mantenimiento
+ * de equipos (tickets).
+ *
+ * Funcionalidad:
+ * - Lista equipos con búsqueda y filtros.
+ * - Modal para crear/editar equipos con validaciones.
+ * - Modal de detalle de equipo.
+ * - Modal de confirmación para eliminar.
+ * - Alertas de éxito/error al crear, editar o eliminar.
  *
  * Dependencias:
  * - useEquipos hook para manejar datos y operaciones CRUD
  * - SearchBar compartido desde inventarios
  * - Layout global STYLE
  * - Componentes compartidos de la aplicación
- *
- * Ejemplo:
- * <EquiposListScreen />
+ * ============================================================
  */
 
-// ============================================================
-// IMPORTS
-// ============================================================
-import React, { useState } from "react";
-import { View, ScrollView, Alert } from "react-native";
+import React, { useState, useRef, useEffect } from "react";
+import { View, ScrollView, Alert as RNAlert } from "react-native";
 import { useRouter } from "expo-router";
 import { useEquipos } from "../hooks/useEquipos";
 import EquipoCard from "../components/EquipoCard";
@@ -34,29 +38,36 @@ import Title from "../../../shared/components/Title";
 import Input from "../../../shared/components/Input";
 import CustomText from "../../../shared/components/Text";
 import Icon from "../../../shared/components/Icons";
+import Alert from "../../../shared/components/Alert";
 import SearchBar from "../../inventarios/components/SearchBar";
-import Navbar from "../../../shared/components/Navbar";
 import { STYLE } from "../../../theme/style";
 import { ICONS } from "../../../theme/icons";
 import { COLORS } from "../../../theme/colors";
 import { styles } from "../styles/equiposListStyles";
+import { equiposService } from "../services/equiposService";
+import { useFocusEffect } from "expo-router";
 
-// ============================================================
-// COMPONENTE PRINCIPAL
-// ============================================================
+
 export default function EquiposListScreen() {
   const router = useRouter();
+  const formRef = useRef();
 
   // --------------------------------------------------------
   // ESTADOS
   // --------------------------------------------------------
   const [modalVisible, setModalVisible] = useState(false);
+  const [codigoError, setCodigoError] = useState("");
+  const [validationError, setValidationError] = useState("");
   const [editingEquipo, setEditingEquipo] = useState(null);
   const [selectedEquipoId, setSelectedEquipoId] = useState(null);
   const [searchText, setSearchText] = useState("");
   const [codigoConfirmacion, setCodigoConfirmacion] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+
+  // Estado para alertas globales
+  const [alert, setAlert] = useState(null);
+  const alertTimeoutRef = useRef(null);
 
   // --------------------------------------------------------
   // HOOK DE DATOS
@@ -74,38 +85,72 @@ export default function EquiposListScreen() {
     fetchEquipos,
   } = useEquipos({});
 
+  // Limpiar timeout al desmontar
+  useEffect(() => {
+    return () => {
+      if (alertTimeoutRef.current) {
+        clearTimeout(alertTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  useFocusEffect(
+  useCallback(() => {
+    fetchEquipos();
+  }, [fetchEquipos])
+);
+
+  // Función para mostrar alerta con auto-cierre
+  const showAlert = (type, message) => {
+    if (alertTimeoutRef.current) {
+      clearTimeout(alertTimeoutRef.current);
+    }
+    setAlert({ type, message });
+    alertTimeoutRef.current = setTimeout(() => {
+      setAlert(null);
+    }, 4000);
+  };
+
   // --------------------------------------------------------
   // FILTRADO LOCAL
   // --------------------------------------------------------
-  const equiposFiltrados = equipos.filter((equipo) => {
-    if (!searchText) return true;
-    const q = searchText.toLowerCase();
-    return (
-      equipo.nombre.toLowerCase().includes(q) ||
-      equipo.codigo.toLowerCase().includes(q) ||
-      equipo.descripcion.toLowerCase().includes(q) ||
-      equipo.marca.toLowerCase().includes(q) ||
-      equipo.modelo.toLowerCase().includes(q)
-    );
-  });
+const equiposFiltrados = equipos.filter((equipo) => {
+  if (!searchText) return true;
+  const q = searchText.toLowerCase().trim();
+
+  // Coincidencia en campos estándar: nombre, código, descripción, marca, modelo, estado
+  const coincideCampos =
+    equipo.nombre.toLowerCase().includes(q) ||
+    equipo.codigo.toLowerCase().includes(q) ||
+    equipo.descripcion.toLowerCase().includes(q) ||
+    equipo.marca.toLowerCase().includes(q) ||
+    equipo.modelo.toLowerCase().includes(q) ||
+    (equipo.estado && equipo.estado.toLowerCase().includes(q));
+
+  // Coincidencia especial: si el texto contiene palabras clave de mantenimiento
+  const palabrasClave = ["mantenimiento", "requiere", "necesita"];
+  const contienePalabraClave = palabrasClave.some((palabra) => q.includes(palabra));
+  const requiereMantenimiento = equipo.horasUso >= equipo.horasMantenimiento;
+
+  // Si el usuario escribe "mantenimiento" (o similar), mostrar equipos que requieren mantenimiento
+  const coincidePorMantenimiento = contienePalabraClave && requiereMantenimiento;
+
+  return coincideCampos || coincidePorMantenimiento;
+});
 
   // --------------------------------------------------------
   // MANEJADORES
   // --------------------------------------------------------
-
-  /** Abre modal para agregar nuevo equipo */
   const handleAdd = () => {
-    setEditingEquipo(null);
-    setModalVisible(true);
+router.push("/registrarEquipo");
   };
 
-  /** Abre modal para editar un equipo */
   const handleEdit = (equipo) => {
     setEditingEquipo(equipo);
     setModalVisible(true);
+      setValidationError(""); 
   };
 
-  /** Muestra el modal de confirmación de eliminación */
   const handleDeletePress = (id) => {
     const equipo = equipos.find(e => e.id === id);
     if (equipo) {
@@ -115,62 +160,64 @@ export default function EquiposListScreen() {
     }
   };
 
-  /**
-   * Confirma eliminación verificando el código del equipo.
-   * @async
-   */
-  const confirmDelete = async () => {
-    if (!deleteTarget) {
-      Alert.alert("Error", "Equipo no encontrado");
-      setShowConfirmModal(false);
-      return;
-    }
+const confirmDelete = async () => {
+  if (!deleteTarget) {
+    setCodigoError("Equipo no encontrado");
+    return;
+  }
 
-    if (codigoConfirmacion !== deleteTarget.codigo) {
-      Alert.alert("Error", "El código ingresado no coincide con el del equipo");
-      return;
-    }
+  if (codigoConfirmacion !== deleteTarget.codigo) {
+    setCodigoError("El código ingresado no coincide con el del equipo");
+    return;
+  }
 
-    try {
-      await eliminarEquipo(deleteTarget.id);
-      Alert.alert("Éxito", `El equipo ${deleteTarget.nombre} ha sido eliminado correctamente`);
-      setShowConfirmModal(false);
-      setDeleteTarget(null);
-      setCodigoConfirmacion("");
-    } catch (error) {
-      Alert.alert("Error", "No se pudo eliminar el equipo");
-    }
-  };
+  try {
+    await eliminarEquipo(deleteTarget.id);
+    showAlert("warning", `El equipo "${deleteTarget.nombre}" ha sido eliminado correctamente`);
+    setShowConfirmModal(false);
+    setDeleteTarget(null);
+    setCodigoConfirmacion("");
+    setCodigoError(""); // limpiar error al éxito
+    fetchEquipos();
+  } catch (error) {
+    setCodigoError("No se pudo eliminar el equipo");
+  }
+};
 
-  /**
-   * Envía el formulario para crear o actualizar.
-   * @param {Object} formData - Datos del equipo
-   * @async
-   */
   const handleSubmit = async (formData) => {
-    if (editingEquipo) {
-      await actualizarEquipo(editingEquipo.id, formData);
-    } else {
-      await crearEquipo(formData);
+    try {
+      if (editingEquipo) {
+        await actualizarEquipo(editingEquipo.id, formData);
+        showAlert("success", `Equipo "${formData.nombre}" actualizado correctamente`);
+      } else {
+        await crearEquipo(formData);
+        showAlert("success", `Equipo "${formData.nombre}" creado correctamente`);
+      }
+      setModalVisible(false);
+      setEditingEquipo(null);
+      // Recargar lista
+      fetchEquipos();
+    } catch (error) {
+      showAlert("danger", error.message || "Ocurrió un error al guardar el equipo");
     }
-    setModalVisible(false);
-    setEditingEquipo(null);
   };
 
-  /** Alterna el estado de encendido/apagado del equipo */
   const handleToggle = async (id) => {
     try {
       await toggleEquipo(id);
+      // Recargar lista
+      fetchEquipos();
     } catch (error) {
-      Alert.alert("Error", "No se pudo cambiar el estado del equipo");
+      showAlert("danger", "No se pudo cambiar el estado del equipo");
     }
   };
 
-  /** Abre pantalla de detalle */
   const openDetail = (equipoId) => {
-      console.log('openDetail llamado con:', equipoId); // ← agrega esto
-
     setSelectedEquipoId(equipoId);
+  };
+
+  const navigateToMantEquipo = () => {
+    router.push("/mantEquipo/mantEquipo");
   };
 
   // --------------------------------------------------------
@@ -182,138 +229,154 @@ export default function EquiposListScreen() {
   // --------------------------------------------------------
   // RENDER PRINCIPAL
   // --------------------------------------------------------
-  return (
-    <View style={styles.container}>
-      {/* NAVBAR PERSONALIZADO (CCORRREGIIRRR SEGUN EL ESTANDARRRR) */}
-<Navbar
-  title="Equipos"
-  leftContent={
-<Button
-  variant="outline"
-  onPress={() => router.replace("/mantEquipo/mantEquipo")} // ← antes era router.back()
-  style={styles.backButton}
->
-      <Icon icon={ICONS.exit} size={22} color={COLORS.white} />
-    </Button>
-  }
-        style={styles.navbar}
-        titleStyle={styles.navbarTitle}
-      />
+return (
+  <View style={styles.container}>
+    {/* Barra de búsqueda y botones de acción - sin wrapper que limite ancho */}
+    <View style={{ flex: 1 }}>
+      <View style={styles.searchRow}>
+        <SearchBar
+          value={searchText}
+          onChangeText={setSearchText}
+          placeholder="Buscar por nombre, código, marca o modelo"
+          containerStyle={styles.searchInput}
+        />
+        <Button
+          variant="outline"
+          onPress={navigateToMantEquipo}
+          style={[styles.btnAction, { borderColor: COLORS.primary }]}
+        >
+          <Icon icon={ICONS.clipboard} size={16} color={COLORS.primary} />
+          <CustomText style={{ color: COLORS.primary, fontWeight: "600", fontSize: 13 }}>
+            Ver Mantenimiento
+          </CustomText>
+        </Button>
+        <Button
+          variant="outline"
+          onPress={handleAdd}
+          style={[styles.btnAction, { borderColor: COLORS.primary }]}
+        >
+          <Icon icon={ICONS.add} size={16} color={COLORS.primary} />
+          <CustomText style={{ color: COLORS.primary, fontWeight: "600", fontSize: 13 }}>
+            Agregar equipo
+          </CustomText>
+        </Button>
+      </View>
 
-      <View style={[STYLE.contentWrapper, { flex: 1 }]}>
-        {/* Barra de búsqueda y botón agregar */}
-        <View style={styles.searchRow}>
-          <SearchBar
-            value={searchText}
-            onChangeText={setSearchText}
-            placeholder="🔍 Buscar por nombre, código, marca o modelo"
-            containerStyle={styles.searchInput}
+{/* Alerta flotante: se muestra debajo de la barra de búsqueda, dentro del flujo */}
+{alert && (
+  <View style={styles.alertWrapper}>
+    <Alert variant={alert.type} message={alert.message} />
+  </View>
+)}
+
+      {/* Lista de equipos - ahora ocupa todo el ancho disponible */}
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.list}>
+        {equiposFiltrados.map((equipo) => (
+          <EquipoCard
+            key={equipo.id}
+            equipo={equipo}
+            onPress={openDetail}
+            onToggle={handleToggle}
           />
-          <Button
-            onPress={handleAdd}
-            variant="primary"
-            style={styles.addButtonContainer}
-          >
-            <View style={styles.addButtonContent}>
-              <Icon icon={ICONS.add} size={18} color={COLORS.white} />
-              <CustomText style={styles.addButtonText}>Agregar equipo</CustomText>
-            </View>
-          </Button>
-        </View>
-
-        {/* Alertas de mantenimiento */}
-        {equiposProximosMantenimiento.length > 0 && (
-          <View style={styles.alertasContainer}>
-            <CustomText style={styles.alertasTitle}>
-              ⚠️ Equipos próximos a mantenimiento
-            </CustomText>
-            <CustomText style={styles.alertasTitle}>
-            .
-            </CustomText>
-            {equiposProximosMantenimiento.slice(0, 5).map((equipo) => {
-              const restantes = Math.round(equipo.horasMantenimiento - equipo.horasUso);
-              const esCritico = restantes <= 20;
-              return (
-                <View
-                  key={equipo.id}
-                  style={[
-                    styles.alertaCard,
-                    esCritico && styles.alertaCardCritica
-                  ]}
-                >
-                  <View style={[
-                    styles.alertaIcon,
-                    esCritico && styles.alertaIconCritica
-                  ]}>
-                    <Icon
-                      icon={ICONS.notification}
-                      size={16}
-                      color={COLORS.white}
-                    />
-                  </View>
-                  <View style={styles.alertaContent}>
-                    <CustomText style={styles.alertaTitle}>
-                      {equipo.nombre}
-                    </CustomText>
-                    <CustomText style={styles.alertaDescription}>
-                      {equipo.codigo} · {equipo.ubicacion || "Sin ubicación"}
-                    </CustomText>
-                  </View>
-                  <CustomText style={[
-                    styles.alertaHoras,
-                    esCritico && styles.alertaHorasCritica
-                  ]}>
-                    {restantes} h
-                  </CustomText>
-                </View>
-              );
-            })}
-            {equiposProximosMantenimiento.length > 5 && (
-              <CustomText style={styles.alertasMore}>
-                +{equiposProximosMantenimiento.length - 5} equipos más
-              </CustomText>
-            )}
-          </View>
-        )}
-
-        {/* Lista de equipos */}
-        <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.list}>
-          {equiposFiltrados.map((equipo) => (
-            <EquipoCard
-              key={equipo.id}
-              equipo={equipo}
-              onPress={openDetail}
-              onToggle={handleToggle}
-              onEdit={handleEdit}
-              onDelete={() => handleDeletePress(equipo.id)}
-            />
-          ))}
-        </ScrollView>
+        ))}
+      </ScrollView>
 
         {/* Modal para crear/editar */}
         <Modal
           visible={modalVisible}
-          onClose={() => setModalVisible(false)}
-          containerStyle={styles.modalContainer}
+            onClose={() => {
+    setModalVisible(false);
+    setValidationError(""); // <-- limpiar error
+  }}
+          showCloseButton={false}
+          containerStyle={styles.modalContainer
+            
+          }
+          
         >
-          <Title level={4}>
-            {editingEquipo ? "Editar equipo" : "Nuevo equipo"}
-          </Title>
-          <EquipoForm
-            initialData={editingEquipo || {}}
-            onSubmit={handleSubmit}
-            isEditing={!!editingEquipo}
-          />
+          <View style={{ flex: 1, flexDirection: "column" }}>
+            <Title level={4} style={{ padding: 16, paddingBottom: 0 }}>
+              {editingEquipo ? "Editar equipo" : "Nuevo equipo"}
+            </Title>
+
+            <ScrollView
+              style={{ flex: 1, paddingHorizontal: 16, paddingBottom: 16 }}
+              contentContainerStyle={{ paddingBottom: 16 }}
+            >
+              <EquipoForm
+                ref={formRef}
+                initialData={editingEquipo || {}}
+                onSubmit={handleSubmit}
+                isEditing={!!editingEquipo}
+                hideSubmitButton={true}
+                tiposEquipo={equiposService.getTiposEquipo()}
+                subcategorias={equiposService.getSubcategorias}
+                estanquesDisponibles={equiposService.getEstanquesDisponibles()}
+  onValidationError={(msg) => setValidationError(msg)} // <-- Cambiar aquí
+              />
+            </ScrollView>
+
+            {/* Botones fijos en la parte inferior */}
+            <View
+              style={{
+                flexDirection: "row",
+                padding: 16,
+                borderTopWidth: 1,
+                borderTopColor: COLORS.secondary,
+                backgroundColor: COLORS.white,
+                gap: 12,
+              }}
+            >
+              <Button
+                variant="outline"
+                onPress={() => setModalVisible(false)}
+                style={{
+                  flex: 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 6,
+                  borderColor: COLORS.primary,
+                  backgroundColor: "transparent",
+                }}
+              >
+                <Icon icon={ICONS.exit} size={18} color={COLORS.primary} />
+                <CustomText style={{ color: COLORS.primary, fontWeight: "600" }}>
+                  Cancelar
+                </CustomText>
+              </Button>
+
+<Button
+  variant="outline"
+  onPress={() => formRef.current?.submit()}
+  style={{
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    borderColor: COLORS.primary,
+    backgroundColor: "transparent",
+  }}
+>
+  <Icon icon={ICONS.save} size={18} color={COLORS.primary} />
+  <CustomText style={{ color: COLORS.primary, fontWeight: "600" }}>
+    {editingEquipo ? "Actualizar" : "Registrar"}
+  </CustomText>
+</Button>
+            </View>
+          </View>
         </Modal>
 
         {/* Modal de confirmación con validación de código */}
-        <Modal
-          visible={showConfirmModal}
-          onClose={() => {
-            setShowConfirmModal(false);
-            setCodigoConfirmacion("");
-            setDeleteTarget(null);
-          }}
+<Modal
+  visible={showConfirmModal}
+  onClose={() => {
+    setShowConfirmModal(false);
+    setCodigoConfirmacion("");
+    setDeleteTarget(null);
+    setCodigoError(""); // ← agregar esta línea
+  }}
           showCloseButton={false}
           containerStyle={styles.modalConfirmContainer}
         >
@@ -337,25 +400,46 @@ export default function EquiposListScreen() {
             autoCapitalize="characters"
             containerStyle={styles.modalInput}
           />
+          {/* Alerta de error dentro del modal */}
+{codigoError !== "" && (
+  <Alert
+    variant="danger"
+    message={codigoError}
+    style={{ marginBottom: 12 }}
+  />
+)}
+          
           <View style={styles.modalButtons}>
-            <Button
-              onPress={() => {
-                setShowConfirmModal(false);
-                setCodigoConfirmacion("");
-                setDeleteTarget(null);
-              }}
+<Button
+  onPress={() => {
+    setShowConfirmModal(false);
+    setCodigoConfirmacion("");
+    setDeleteTarget(null);
+    setCodigoError(""); // ← agregar
+  }}
               variant="outline"
-              style={styles.modalCancelBtn}
+              style={[styles.modalCancelBtn, { flexDirection: "row", alignItems: "center", gap: 6 }]}
             >
-              Cancelar
+              <Icon icon={ICONS.exit} size={16} color={COLORS.primary} />
+              <CustomText style={{ color: COLORS.primary, fontWeight: "600" }}>Cancelar</CustomText>
             </Button>
-            <Button
-              onPress={confirmDelete}
-              variant="danger"
-              style={styles.modalDeleteBtn}
-            >
-              Eliminar
-            </Button>
+    <Button
+      onPress={confirmDelete}
+      variant="outline"
+      style={[
+        styles.modalDeleteBtn,
+        {
+          borderColor: COLORS.error,      
+          flexDirection: "row",
+        },
+      ]}
+      textStyle={{ color: COLORS.error }} // texto rojo
+    >
+      <Icon icon={ICONS.delete} size={16} color={COLORS.error} />
+      <CustomText style={{ color: COLORS.error, fontWeight: "600" }}>
+        Eliminar
+      </CustomText>
+    </Button>
           </View>
         </Modal>
 

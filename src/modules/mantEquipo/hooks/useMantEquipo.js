@@ -9,7 +9,6 @@
  * 
  * Datos:
  * - tickets: Lista completa de tickets.
- * - ticketsFiltrados: Lista procesada según texto de búsqueda.
  * 
  * Validaciones:
  * - Filtra tickets en base al criterio seleccionado de forma segura.
@@ -22,14 +21,12 @@
  * - mantEquipoUtils.js
  */
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import * as MantService from "../services/mantEquipoService.js";
-import { filtrarTickets } from "../utils/mantEquipoUtils.js";
 
 export function useMantEquipo() {
   const [tickets,  setTickets]  = useState([]);
   const [busqueda, setBusqueda] = useState("");
-  const [filtro,   setFiltro]   = useState("");
   const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
@@ -39,11 +36,7 @@ export function useMantEquipo() {
       .finally(() => setCargando(false));
   }, []);
 
-  // Filtrado real para demo
-  const ticketsFiltrados = useMemo(
-    () => filtrarTickets(tickets, busqueda, filtro),
-    [tickets, busqueda, filtro]
-  );
+
 
   function agregarTicket(t)         { setTickets((prev) => [t, ...prev]); }
   function eliminarTicket(id)       { setTickets((prev) => prev.filter((t) => t.id !== id)); }
@@ -57,9 +50,8 @@ export function useMantEquipo() {
   }
 
   return {
-    tickets, ticketsFiltrados,
+    tickets,
     busqueda, setBusqueda,
-    filtro,   setFiltro,
     cargando,
     agregarTicket, eliminarTicket, actualizarTicket, actualizarEstadoEquipo,
   };

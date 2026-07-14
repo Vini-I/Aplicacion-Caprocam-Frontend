@@ -1,25 +1,31 @@
 /**
+ * ============================================================
  * HOOK: useRegister
- *
- * Lógica de la pantalla de Registro Web.
- *
- * COMPORTAMIENTO DE ERRORES:
- * Los errores de validación solo se muestran cuando el usuario
- * presiona "Registrarme" (submitted = true). Mientras escribe,
- * los campos no muestran error aunque estén vacíos.
- *
- * FLUJO DE ÉXITO Y MODAL:
- * El modal se activa en cuanto el formulario es válido y el
- * usuario presiona "Registrarme", sin esperar respuesta del
- * backend. Esto es intencional: el backend aún no está listo
- * para recibir todos los campos (ver TODO en authService.js),
- * pero el flujo de UI debe funcionar completo.
- * El intento de registro contra la API ocurre en paralelo;
- * si falla por red, no interrumpe el flujo del usuario.
- * Al cerrar el modal se navega a /loginWeb.
- *
- * NOTA BACKEND: nombre, apellidos y email se capturan y validan
- * aquí pero el endpoint aún solo acepta {username, password}.
+ * ============================================================
+ * 
+ * Responsabilidad: Gestionar el estado, las validaciones y el proceso
+ * de envío para el formulario de registro de administradores Web.
+ * 
+ * FUNCIONALIDAD:
+ * - Controla los estados de nombre, apellidos, correo, usuario y contraseña.
+ * - Valida los campos y expone los errores tras intentar enviar el formulario.
+ * - Ejecuta la llamada al servicio de registro (authService.js).
+ * - Muestra un modal de éxito al registrarse exitosamente.
+ * 
+ * DATOS:
+ * - nombre, apellidos, email, username, password: Estados del formulario.
+ * - submitted: Booleano para activar la visualización de errores.
+ * - showSuccessModal: Booleano que controla el modal de éxito.
+ * 
+ * VALIDACIONES:
+ * - Valida obligatoriedad y formatos mediante registerValidator.js.
+ * 
+ * NAVEGACIÓN:
+ * - Llama a onRegisterSuccess al cerrar el modal de éxito.
+ * 
+ * DEPENDENCIAS:
+ * - authService.js
+ * - registerValidator.js
  */
 
 import { useState } from 'react';
@@ -35,6 +41,7 @@ export const useRegister = ({ onRegisterSuccess = () => {} } = {}) => {
   const [submitted, setSubmitted] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [serverError, setServerError] = useState(null);
 
   const validationErrors = validateRegisterForm({ nombre, apellidos, email, username, password });
   const isFormValid = isRegisterFormValid(validationErrors);
@@ -52,21 +59,17 @@ export const useRegister = ({ onRegisterSuccess = () => {} } = {}) => {
 
   const handleRegister = async () => {
     setSubmitted(true);
+    setServerError(null);
 
     if (!isFormValid) return;
 
-    // Mostrar modal de éxito inmediatamente (el formulario es válido)
-    setShowSuccessModal(true);
-
-    // Intentar llamar al backend en paralelo (sin bloquear el flujo)
-    // TODO: cuando el backend esté listo, manejar el token aquí
     setLoading(true);
     try {
       await register(username, password, { nombre, apellidos, email });
-    } catch (_) {
-      // Error de red o backend no disponible: el modal ya está abierto,
-      // el usuario continúa el flujo. Se registrará correctamente
-      // en cuanto el backend esté disponible.
+      // Si la llamada al servicio de registro (memoria global) es exitosa:
+      setShowSuccessModal(true);
+    } catch (error) {
+      setServerError(error.message);
     } finally {
       setLoading(false);
     }
@@ -81,6 +84,8 @@ export const useRegister = ({ onRegisterSuccess = () => {} } = {}) => {
     errors,
     isFormValid,
     loading,
+    serverError,
+    setServerError,
     handleRegister,
     showSuccessModal,
     handleModalClose,

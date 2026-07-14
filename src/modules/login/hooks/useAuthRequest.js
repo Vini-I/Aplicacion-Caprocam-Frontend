@@ -2,11 +2,19 @@
  * ============================================================
  * HOOK: useAuthRequest
  * ============================================================
- *
- * Encapsula el flujo común a login y registro: estado de
- * loading, manejo de error del servidor y guardado del JWT
- * en caso de éxito. useAuth.js y useRegister.js lo usan para
- * no duplicar este flujo.
+ * 
+ * Responsabilidad: Encapsular el flujo común para peticiones de autenticación
+ * (login y registro): loading, errores del servidor y tokenStorage.
+ * 
+ * FUNCIONALIDAD:
+ * - Provee un método submit para ejecutar llamadas asíncronas y guardar el JWT token.
+ * 
+ * DATOS:
+ * - loading: Estado de carga de la petición.
+ * - serverError: Mensaje de error retornado por la consulta.
+ * 
+ * DEPENDENCIAS:
+ * - tokenStorage.js
  */
 
 import { useState } from 'react';
@@ -52,5 +60,5 @@ export const useAuthRequest = ({ onSuccess = () => {} } = {}) => {
     }
   };
 
-  return { loading, serverError, submit };
+  return { loading, serverError, setServerError, submit };
 };

@@ -40,15 +40,20 @@ export default function RegistrosIndex() {
     router.push("/(drawer)/(tabs)/registros/Raleo");
   };
 
+  const irDetalleRegistro = () => {
+    router.push("/(drawer)/(tabs)/registros/DetalleRegistro");
+  }
+
   return (
     <RegistroScreen
       onFisicoQuimica={irAFisicoQuimica}
       onAlimentacion={irAAlimentacion}
-       onDensidadPoblacional={irADensidadPoblacional}
+      onDensidadPoblacional={irADensidadPoblacional}
       onCrecimiento={irACrecimiento}
       onEnfermedades={irAEnfermedades}
       onParasitologia={irAParasitologia}
       onRaleo={irARaleo}
+      onDetalleRegistro={irDetalleRegistro}
     />
   );
 }

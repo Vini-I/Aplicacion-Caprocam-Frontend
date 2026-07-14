@@ -68,29 +68,35 @@ export default function ColaboradorCard({ colaborador, onPress, onEdit, onDelete
           />
         </View>
         <View style={styles.details}>
-          <CustomText style={styles.detailText}>📞 {colaborador.telefono}</CustomText>
-          <CustomText style={styles.detailText}>✉️ {colaborador.email}</CustomText>
+          <View style={styles.detailRow}>
+            <Icon icon={ICONS.phone} size={14} color={COLORS.textTertiary} style={{ marginRight: 6 }} />
+            <CustomText style={styles.detailText}>{colaborador.telefono}</CustomText>
+          </View>
+          <View style={styles.detailRow}>
+            <Icon icon={ICONS.user} size={14} color={COLORS.textTertiary} style={{ marginRight: 6 }} />
+            <CustomText style={styles.detailText}>{colaborador.email}</CustomText>
+          </View>
         </View>
-<View style={styles.actions}>
-  <Button
-    variant="outline"
-    onPress={() => onEdit?.(colaborador)}
-    style={[styles.actionBtn, { borderColor: COLORS.primary }]}
-    textStyle={{ color: COLORS.primary }}
-  >
-    <Icon icon={ICONS.edit} size={16} color={COLORS.primary} />
-    <CustomText style={{ color: COLORS.primary, marginLeft: 4, fontSize: 12 }}>Editar</CustomText>
-  </Button>
-  <Button
-    variant="outline"
-    onPress={() => onDelete?.(colaborador.id)}
-    style={[styles.actionBtn, { borderColor: COLORS.error }]}
-    textStyle={{ color: COLORS.error }}
-  >
-    <Icon icon={ICONS.delete} size={16} color={COLORS.error} />
-    <CustomText style={{ color: COLORS.error, marginLeft: 4, fontSize: 12 }}>Eliminar</CustomText>
-  </Button>
-</View>
+        <View style={styles.actions}>
+          <Button
+            variant="outline"
+            onPress={() => onEdit?.(colaborador)}
+            style={[styles.actionBtn, { borderColor: COLORS.primary }]}
+            textStyle={{ color: COLORS.primary }}
+          >
+            <Icon icon={ICONS.edit} size={16} color={COLORS.primary} />
+            <CustomText style={{ color: COLORS.primary, marginLeft: 4, fontSize: 12 }}>Editar</CustomText>
+          </Button>
+          <Button
+            variant="outline"
+            onPress={() => onDelete?.(colaborador.id)}
+            style={[styles.actionBtn, { borderColor: COLORS.error }]}
+            textStyle={{ color: COLORS.error }}
+          >
+            <Icon icon={ICONS.delete} size={16} color={COLORS.error} />
+            <CustomText style={{ color: COLORS.error, marginLeft: 4, fontSize: 12 }}>Eliminar</CustomText>
+          </Button>
+        </View>
       </Card>
     </TouchableOpacity>
   );

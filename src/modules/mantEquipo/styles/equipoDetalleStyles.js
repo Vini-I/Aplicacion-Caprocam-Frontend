@@ -2,28 +2,20 @@
  * ============================================================
  * ESTILOS: equipoDetalleStyles
  * ============================================================
+ * Módulo: Mantenimiento de Equipos
  *
  * Estilos para la pantalla EquipoDetalleScreen.
  * Utiliza la paleta de COLORS del tema central.
  *
  * Dependencias:
  * - COLORS desde theme/colors
- *
- * Ejemplo de uso:
- * import { styles } from './equipoDetalleStyles';
- * <View style={styles.container}>...</View>
+ * ============================================================
  */
 
-// ============================================================
-// IMPORTS
-// ============================================================
 import { StyleSheet } from "react-native";
 import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
 
-// ============================================================
-// EXPORTACIÓN DE ESTILOS
-// ============================================================
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -36,7 +28,7 @@ export const styles = StyleSheet.create({
 
   scrollContent: {
     padding: 16,
-    paddingBottom: 80, // Espacio para el footer fijo
+    paddingBottom: 80,
   },
 
   closeButton: {
@@ -126,6 +118,7 @@ export const styles = StyleSheet.create({
     color: COLORS.white,
   },
 
+  // Sección de información
   seccion: {
     marginTop: 12,
     borderTopWidth: 1,
@@ -141,8 +134,21 @@ export const styles = StyleSheet.create({
     color: COLORS.textSecondary,
   },
 
+  // Filas de detalle con ícono alineado
   filaDetalle: {
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 10,
+  },
+
+  filaDetalleIcono: {
+    width: 24,
+    alignItems: "center",
+    marginRight: 8,
+  },
+
+  filaDetalleContenido: {
+    flex: 1,
   },
 
   filaEtiqueta: {
@@ -166,7 +172,7 @@ export const styles = StyleSheet.create({
     textDecorationLine: "underline",
   },
 
-  // Sección de horas de uso
+  // Horas de uso
   horasContainer: {
     marginTop: 8,
     padding: 12,
@@ -178,6 +184,15 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+  },
+
+  horasLabelContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  horasIcon: {
+    marginRight: 4,
   },
 
   horasLabel: {
@@ -195,7 +210,7 @@ export const styles = StyleSheet.create({
     color: COLORS.error,
   },
 
-  // Registro de encendidos
+  // Historial de encendidos
   registroItem: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -221,7 +236,7 @@ export const styles = StyleSheet.create({
     marginTop: 20,
   },
 
-  // Footer fijo con botones Editar y Eliminar
+  // Footer fijo con botones
   footerContainer: {
     backgroundColor: COLORS.white,
     borderTopWidth: 1,
@@ -257,6 +272,19 @@ export const styles = StyleSheet.create({
     backgroundColor: COLORS.error,
   },
 
+  botonCerrar: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 8,
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    backgroundColor: "transparent",
+    marginTop: 0,
+  },
+
   botonTexto: {
     fontSize: 14,
     fontFamily: TYPOGRAPHY.fontFamily.bold,
@@ -266,7 +294,5 @@ export const styles = StyleSheet.create({
 });
 
 export const ICON_SIZE = {
-  navbar: 22,
   boton: 20,
-  modal: 20,
 };
