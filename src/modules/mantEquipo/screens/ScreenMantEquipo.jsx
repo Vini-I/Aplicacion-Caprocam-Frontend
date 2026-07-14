@@ -157,7 +157,7 @@ export default function ScreenMantEquipo() {
             />
             <Button
               variant="outline"
-              onPress={() => router.push("/mantEquipo/tareas")}
+              onPress={() => router.push("/equipos/tareas")}
               style={styles.btnAddTask}
             >
               <Icon icon={ICONS.clipboard} size={15} color={COLORS.warning} />

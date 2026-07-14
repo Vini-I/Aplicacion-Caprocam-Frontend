@@ -117,7 +117,7 @@ export default function RegistrarEquipoScreen() {
 
   // Manejar cancelar / cerrar
   const handleCancelar = () => {
-    router.replace("/mantEquipo/equipos");
+    router.back();
   };
 
   // Función auxiliar para renderizar mensaje de error solo si hay mensaje

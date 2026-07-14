@@ -142,7 +142,7 @@ const equiposFiltrados = equipos.filter((equipo) => {
   // MANEJADORES
   // --------------------------------------------------------
   const handleAdd = () => {
-router.push("/registrarEquipo");
+router.push("/equipos/registrarEquipo");
   };
 
   const handleEdit = (equipo) => {
@@ -217,7 +217,7 @@ const confirmDelete = async () => {
   };
 
   const navigateToMantEquipo = () => {
-    router.push("/mantEquipo/mantEquipo");
+    router.push("/equipos/mantEquipo");
   };
 
   // --------------------------------------------------------
