@@ -43,7 +43,6 @@
 import React from "react";
 import Card from "../../../shared/components/Card";
 import Input from "../../../shared/components/Input";
-import CustomText from "../../../shared/components/Text";
 import DateInput from "../../../shared/components/DateInput";
 import { COLORS } from "../../../theme/colors";
 
@@ -66,15 +65,6 @@ export default function RegistroConteo({
         allowFutureDates={true}
         inputStyle={invalidoFecha ? bordeError : null}
       />
-      {invalidoFecha && (
-        <CustomText
-          size={12}
-          color={COLORS.error}
-          style={{ marginTop: -6, marginBottom: 8, marginLeft: 2 }}
-        >
-          {errores.fecha || "La fecha es obligatoria"}
-        </CustomText>
-      )}
 
       <Input
         label="Método de conteo"

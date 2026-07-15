@@ -1,9 +1,17 @@
 /**
- * Servicio temporal para registrar nuevos movimientos de Trazabilidad.
- * Posteriormente debera conectarse con la base de datos o API.
+ * ============================================================
+ * SERVICIO - AGREGAR TRAZABILIDAD
+ * ============================================================
  *
- * Este registro es un hecho histórico: no existe función de edición
- * ni de borrado, tal como lo establece la especificación del módulo.
+ * Descripción:
+ * Servicio que crea un nuevo registro de trazabilidad en la
+ * colección local (placeholder). Construye el objeto de registro
+ * a partir del `formData` y delega la persistencia a
+ * `agregarRegistroTrazabilidad`.
+ *
+ * Reglas importantes:
+ * - El registro es histórico: no hay edición ni borrado.
+ * - Validaciones complejas deben ejecutarse antes de llamar aquí.
  */
 
 import {

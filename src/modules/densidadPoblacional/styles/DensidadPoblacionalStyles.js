@@ -43,6 +43,16 @@ export const styles = StyleSheet.create({
     fontWeight: "600",
   },
 
+  sectionTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+
+  sectionIcon: {
+    marginRight: 8,
+  },
+
   label: {
     color: COLORS.textPrimary,
     fontSize: 15,

@@ -37,30 +37,6 @@ export const styles = StyleSheet.create({
     gap: 12,
   },
 
-  horasContainer: {
-    flexDirection: "row",
-    gap: 8,
-    marginTop: 4,
-  },
-  horasContainerInvalid: {
-    borderWidth: 1.5,
-    borderColor: COLORS.error,
-    borderRadius: 8,
-    padding: 4,
-  },
-  pctBtn: {
-    flex: 1,
-    padding: 12,
-    borderWidth: 1.5,
-    borderRadius: 8,
-    alignItems: "center",
-    backgroundColor: COLORS.white,
-    borderColor: COLORS.secondary,
-  },
-  pctBtnSelected: {
-    backgroundColor: COLORS.secondary,
-    borderColor: COLORS.primary,
-  },
   errorText: {
     marginTop: -6,
     marginBottom: 8,

@@ -1,3 +1,22 @@
+/**
+ * ============================================================
+ * ESTILOS - DETALLE TRAZABILIDAD
+ * ============================================================
+ *
+ * Descripción:
+ * Estilos para la pantalla de detalle de un registro de
+ * trazabilidad (lectura única, no editable). Incluye layout
+ * para mostrar origen/destino y metadatos del movimiento.
+ *
+ * Reglas importantes:
+ * - Mantener la pantalla como solo lectura (sin botones de
+ *   edición o borrado).
+ * - Usar colores y tipografías del tema del proyecto.
+ *
+ * Restricciones:
+ * - Este archivo sólo contiene estilos (StyleSheet).
+ */
+
 import { StyleSheet } from "react-native";
 
 import { COLORS } from "../../../theme/colors";
@@ -9,78 +28,10 @@ export const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
   },
 
-  header: {
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: 20,
-    paddingTop: 28,
-    paddingBottom: 18,
-    borderBottomLeftRadius: 18,
-    borderBottomRightRadius: 18,
-    borderBottomWidth: 0,
-  },
-
-  headerRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    width: "100%",
-  },
-
-  headerRowLeft: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    width: "100%",
-    gap: 15,
-  },
-
-  backButton: {
-    width: 40,
-    height: 40,
-    backgroundColor: "rgba(255,255,255,0.2)",
-    borderWidth: 0,
-    borderRadius: 12,
-    paddingHorizontal: 0,
-    paddingVertical: 0,
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 0,
-  },
-
-  iconColor: {
-    color: COLORS.white,
-    bold: true,
-  },
-
-  headerSubtitle: {
-    color: "rgba(255,255,255,0.8)",
-    fontSize: 12,
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
-    marginBottom: 2,
-  },
-
-  headerTitle: {
-    color: COLORS.white,
-    fontSize: 18,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-  },
-
-  title: {
-    color: COLORS.white,
-    fontSize: 18,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    lineHeight: 22,
-  },
 
   scrollContent: {
     paddingVertical: 24,
     paddingBottom: 40,
-  },
-
-  wrapper: {
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
   },
 
   notFoundText: {
