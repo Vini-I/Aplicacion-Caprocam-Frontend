@@ -107,12 +107,13 @@ export const styles = StyleSheet.create({
   },
 
   // Columnas
-  colId: { width: 60 },
-  colNombre: { flex: 1.5, minWidth: 100 },
-  colDesc: { flex: 2, minWidth: 140 },
-  colCategoria: { flex: 1, minWidth: 90 },
-  colDuracion: { width: 80 },
-  colAcciones: { width: 90 },
+colId: { width: 60 },
+colNombre: { flex: 1.5, minWidth: 100 },
+colDesc: { flex: 2, minWidth: 140 },
+colCategoria: { flex: 1, minWidth: 90 },
+colDuracion: { width: 90 },   
+colEstado: { width: 110, minWidth: 90 }, // <-- "No iniciada"
+colAcciones: { width: 180 },         // <--  para "Editar" y "Eliminar"
 
   // Fila de la tabla
  row: {
@@ -236,6 +237,12 @@ export const styles = StyleSheet.create({
     backgroundColor: "transparent",
   },
 
+modalProductoContainer: {
+  maxHeight: "80%",
+  maxWidth: 500,
+  width: "100%",
+},
+
   modalDeleteBtn: {
     flex: 1,
     marginTop: 0,
@@ -243,4 +250,41 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     backgroundColor: "transparent",
   },
+
+  // Estilos para el modal de detalle (como en mantEquipo)
+detalleEncabezado: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between",
+  marginBottom: 14,
+},
+detalleRow: {
+  flexDirection: "row",
+  paddingVertical: 8,
+  borderBottomWidth: 1,
+  borderBottomColor: COLORS.secondary,
+  gap: 6,
+},
+equipoDetailLabel: {
+  fontSize: 13,
+  fontWeight: "600",
+  color: COLORS.textTertiary,
+  width: 110, // ancho fijo para alinear etiquetas
+},
+equipoDetailVal: {
+  fontSize: 13,
+  fontWeight: "400",
+  color: COLORS.textSecondary,
+  flex: 1,
+},
+
+// También agregamos un estilo para el contenedor de selección de producto
+productoSeleccionadoContainer: {
+  marginTop: 8,
+  padding: 12,
+  backgroundColor: COLORS.surface,
+  borderRadius: 8,
+  borderWidth: 1,
+  borderColor: COLORS.secondary,
+},
 });
