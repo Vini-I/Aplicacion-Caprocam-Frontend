@@ -169,15 +169,16 @@ export default function TareaFormScreen() {
                 {busquedaProducto.trim() !== '' && productosFiltrados.length > 0 && (
                   <View style={styles.listaProductosDisponibles}>
                     {productosFiltrados.map((p) => (
-                      <Button
-                        key={p.id}
-                        variant="outline"
-                        onPress={() => seleccionarProducto(p)}
-                        style={styles.itemProducto}
-                        textStyle={styles.itemProductoText}
-                      >
-                        {p.nombre} ({p.unidad}) - Stock: {p.cantidad}
-                      </Button>
+<Button
+  key={p.id}
+  variant="outline"
+  onPress={() => seleccionarProducto(p)}
+  style={styles.itemProducto}
+>
+  <CustomText style={styles.itemProductoText}>
+    {p.nombre} ({p.unidad}) - Stock: {p.cantidad}
+  </CustomText>
+</Button>
                     ))}
                   </View>
                 )}
