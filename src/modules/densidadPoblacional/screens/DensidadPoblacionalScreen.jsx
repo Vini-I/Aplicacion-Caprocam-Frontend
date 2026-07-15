@@ -38,9 +38,12 @@ import InformacionEstanque from "./InformacionEstanque";
 import RegistroConteo from "./RegistroConteo";
 import NavbarRegistro from "../../../shared/components/NavbarRegistro";
 import Alert from "../../../shared/components/Alert";
+import Icon from "../../../shared/components/Icons";
 import { styles } from "../styles/DensidadPoblacionalStyles";
 import { STYLE } from "../../../theme/style"
 import { TYPOGRAPHY } from "../../../theme/typography";
+import { ICONS } from "../../../theme/icons";
+import { COLORS } from "../../../theme/colors";
 import Button from "../../../shared/components/Button";
 import Footer from "../../../shared/components/Footer";
 import useDensidadPoblacional from "../hooks/useDensidadPoblacional";
@@ -98,19 +101,23 @@ export default function DensidadPoblacionalScreen({ onBack }) {
 
     <ScrollView
       contentContainerStyle={STYLE.contentWrapper}
+      showsVerticalScrollIndicator={false}
     >
 
       <View style={styles.content}>
         {/* Todo tu contenido actual */}
 
-        <Title
-          style={[
-            styles.subTitle,
-            { fontFamily: TYPOGRAPHY.fontFamily.medium },
-          ]}
-        >
-          Finca / Estanque
-        </Title>
+        <View style={styles.sectionTitleRow}>
+          <Icon icon={ICONS.water} size={18} color={COLORS.primary} style={styles.sectionIcon} />
+          <Title
+            style={[
+              styles.subTitle,
+              { fontFamily: TYPOGRAPHY.fontFamily.medium },
+            ]}
+          >
+            Finca / Estanque
+          </Title>
+        </View>
 
         <InformacionEstanque
           finca={finca}
@@ -127,14 +134,17 @@ export default function DensidadPoblacionalScreen({ onBack }) {
           errores={errores}
         />
 
-        <Title
-          style={[
-            styles.subTitle,
-            { fontFamily: TYPOGRAPHY.fontFamily.medium },
-          ]}
-        >
-          Registro de Conteo
-        </Title>
+        <View style={styles.sectionTitleRow}>
+          <Icon icon={ICONS.calendar} size={18} color={COLORS.primary} style={styles.sectionIcon} />
+          <Title
+            style={[
+              styles.subTitle,
+              { fontFamily: TYPOGRAPHY.fontFamily.medium },
+            ]}
+          >
+            Registro de Conteo
+          </Title>
+        </View>
 
         <RegistroConteo
           fecha={fecha}

@@ -22,19 +22,15 @@ import Card from "../../../shared/components/Card";
 import Select from "../../../shared/components/Select";
 import Text from "../../../shared/components/Text";
 import DateInput from "../../../shared/components/DateInput";
+import Icon from "../../../shared/components/Icons";
 import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
+import { ICONS } from "../../../theme/icons";
 import { HORAS, FINCAS, ESTANQUES } from "../constants/alimentacionOpciones";
 
 const bordeError = { borderColor: COLORS.error, borderWidth: 1.5 };
-const errorText = { marginTop: -6, marginBottom: 8, marginLeft: 2 };
-
-const CampoError = ({ mostrar, mensaje, style }) =>
-  mostrar ? (
-    <Text size={12} color={COLORS.error} style={[errorText, style]}>
-      {mensaje}
-    </Text>
-  ) : null;
+const sectionTitleRow = { flexDirection: "row", alignItems: "center", marginBottom: 10 };
+const sectionIcon = { marginRight: 8 };
 
 export default function AlimentacionFormInfoGeneral({
   form = {},
@@ -48,7 +44,14 @@ export default function AlimentacionFormInfoGeneral({
   const invalidoHora = submitted && !!errores.hora;
 
   return (
-    <Card title="Información General">
+    <Card>
+      <View style={sectionTitleRow}>
+        <Icon icon={ICONS.calendar} size={18} color={COLORS.primary} style={sectionIcon} />
+        <Text size={18} weight="700" color={COLORS.textSecondary}>
+          Información General
+        </Text>
+      </View>
+
       <DateInput
         label="Fecha de Registro *"
         value={form.fecha ?? ""}
@@ -56,7 +59,6 @@ export default function AlimentacionFormInfoGeneral({
         labelStyle={{ fontFamily: TYPOGRAPHY.fontFamily.medium }}
         inputStyle={invalidoFecha ? bordeError : null}
       />
-      <CampoError mostrar={invalidoFecha} mensaje={errores.fecha} />
 
       <Text size={14} weight="600" color={COLORS.textSecondary} style={styles.horaLabel}>
         Hora *
@@ -77,7 +79,6 @@ export default function AlimentacionFormInfoGeneral({
           );
         })}
       </View>
-      <CampoError mostrar={invalidoHora} mensaje={errores.hora} style={{ marginTop: 6 }} />
 
       <Select
         label="Finca *"
@@ -87,7 +88,6 @@ export default function AlimentacionFormInfoGeneral({
         placeholder="Seleccionar finca"
         selectStyle={invalidoFinca ? bordeError : null}
       />
-      <CampoError mostrar={invalidoFinca} mensaje={errores.finca} />
 
       <Select
         label="Estanque *"
@@ -97,7 +97,6 @@ export default function AlimentacionFormInfoGeneral({
         placeholder="Seleccionar estanque"
         selectStyle={invalidoEstanque ? bordeError : null}
       />
-      <CampoError mostrar={invalidoEstanque} mensaje={errores.estanque} />
     </Card>
   );
 }
