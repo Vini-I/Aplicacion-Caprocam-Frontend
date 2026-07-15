@@ -8,6 +8,7 @@
  */
 import Text from "../../../shared/components/Text.jsx";
 import Icon from "../../../shared/components/Icons.jsx";
+import Card from "../../../shared/components/Card.jsx";
 import { COLORS } from "../../../theme/colors.js";
 import { View } from "react-native";
 import { styles } from "../styles/VentaStyles.js"
@@ -152,4 +153,9 @@ const hayFiltro = Boolean(fincaFiltro  && estanqueFiltro);
     handleFincaChange,
     handleEstanqueChange,
   };
+}
+
+function formatearMontoColones(value) {
+  const numero = Math.round(Number(value) || 0);
+  return `₡ ${String(numero).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
 }
