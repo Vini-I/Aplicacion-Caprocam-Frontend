@@ -20,27 +20,15 @@
  * const { tareas, loading, crearTarea } = useTareas();
  */
 
-// ============================================================
-// IMPORTS
-// ============================================================
 import { useState, useEffect, useCallback } from "react";
 import * as tareasService from "../services/tareasService";
 
-// ============================================================
-// HOOK
-// ============================================================
 export const useTareas = () => {
-  // --------------------------------------------------------
-  // ESTADOS
-  // --------------------------------------------------------
   const [tareas, setTareas] = useState([]);
   const [busqueda, setBusqueda] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // --------------------------------------------------------
-  // CARGA DE DATOS
-  // --------------------------------------------------------
   const cargarTareas = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -54,14 +42,10 @@ export const useTareas = () => {
     }
   }, []);
 
-  // Carga inicial al montar el hook.
   useEffect(() => {
     cargarTareas();
   }, [cargarTareas]);
 
-  // --------------------------------------------------------
-  // FILTRADO LOCAL (por nombre, descripción o categoría)
-  // --------------------------------------------------------
   const tareasFiltradas = tareas.filter((t) => {
     if (!busqueda.trim()) return true;
     const q = busqueda.toLowerCase().trim();
@@ -71,10 +55,6 @@ export const useTareas = () => {
       t.categoria.toLowerCase().includes(q)
     );
   });
-
-  // --------------------------------------------------------
-  // OPERACIONES CRUD
-  // --------------------------------------------------------
 
   const crearTarea = async (datos) => {
     setLoading(true);
@@ -118,9 +98,6 @@ export const useTareas = () => {
     }
   };
 
-  // --------------------------------------------------------
-  // RETORNO DEL HOOK
-  // --------------------------------------------------------
   return {
     tareas,
     tareasFiltradas,

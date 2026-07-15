@@ -7,47 +7,43 @@
  * Módulo: Mantenimiento de Equipos
  *
  * Vista principal del módulo de gestión de tareas.
- * Permite listar, buscar, crear, editar y eliminar tareas de mantenimiento.
+ * Permite listar, buscar, filtrar, ver detalle y eliminar tareas de mantenimiento.
  *
  * Funcionalidad:
  * - Muestra un listado de tareas con scroll vertical.
  * - Permite buscar tareas por nombre, descripción o categoría.
- * - Abre un modal para crear o editar tareas con estado y productos asociados.
- * - Al hacer clic en una fila, muestra un modal de detalle (solo lectura) con formato de lista.
+ * - Al hacer clic en una fila, muestra un modal de detalle (solo lectura).
  * - Confirma la eliminación mediante un modal (no alert nativo).
  * - Muestra alertas de éxito, advertencia o error al realizar acciones.
- * - Dentro del modal, muestra un Alert cuando faltan campos obligatorios.
- * - Filtros por categoría y estado (botón sin borde).
+ * - Filtros por categoría y estado (usando FilterButton compartido).
  * - Botón "Agregar Tarea" flotante (siempre visible al hacer scroll).
+ * - La creación y edición se realizan en una pantalla independiente (TareaFormScreen).
  *
  * Componentes utilizados:
  * - SearchBar, FilterButton (compartidos desde inventarios)
- * - Alert, Modal, Button, Input, Select, Icon, CustomText, Spinner, FlatList, NumberInput
+ * - Alert, Modal, Button, Icon, CustomText, Spinner, FlatList
  *
  * Dependencias:
  * - useTareas (hook para datos y CRUD)
  * - tareasStyles (estilos locales)
  * - tareasMensajes (constantes de texto)
  * - STYLE (estilos globales)
- * - InventarioService (para obtener productos)
+ * - useRouter para navegación
  * ============================================================
  */
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { View, FlatList, Text, ScrollView, Pressable } from "react-native";
+import { View, FlatList, Text, Pressable } from "react-native";
 import { useRouter } from "expo-router";
 
 import Button from "../../../shared/components/Button";
 import Modal from "../../../shared/components/Modal";
-import Input from "../../../shared/components/Input";
-import Select from "../../../shared/components/Select";
 import Spinner from "../../../shared/components/Spinner";
 import Icon from "../../../shared/components/Icons";
 import CustomText from "../../../shared/components/Text";
 import Alert from "../../../shared/components/Alert";
 import SearchBar from "../../inventarios/components/SearchBar";
 import FilterButton from "../../inventarios/components/FilterButton";
-import NumberInput from "../../../shared/components/NumberInput";
 
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
@@ -58,12 +54,9 @@ import {
   TEXTOS_PANTALLA,
   HEADERS_TABLA,
   OPCIONES_CATEGORIA,
-  TEXTOS_MODAL_TAREA,
   OPCIONES_ESTADO,
-  TEXTOS_MODAL_PRODUCTO,
 } from "../constants/tareasMensajes";
 import { styles } from "../styles/tareasStyles";
-import { getProductosInventario } from "../../inventarios/services/InventarioService";
 
 // ============================================================
 // COMPONENTE: ModalDetalleTarea (detalle de tarea - solo lectura)
@@ -77,8 +70,6 @@ function ModalDetalleTarea({ visible, tarea, onClose }) {
   const estadoLabel =
     OPCIONES_ESTADO.find((e) => e.value === tarea.estado)?.label || tarea.estado;
 
-  const productosDisponibles = getProductosInventario();
-
   return (
     <Modal
       visible={visible}
@@ -90,7 +81,7 @@ function ModalDetalleTarea({ visible, tarea, onClose }) {
         <CustomText style={styles.modalTitle}>Detalle de tarea</CustomText>
       </View>
 
-      <ScrollView style={styles.modalScroll} showsVerticalScrollIndicator={false}>
+      <View style={styles.modalScroll}>
         <View style={styles.detalleRow}>
           <CustomText style={styles.equipoDetailLabel}>ID</CustomText>
           <CustomText style={styles.equipoDetailVal}>{tarea.id}</CustomText>
@@ -115,30 +106,21 @@ function ModalDetalleTarea({ visible, tarea, onClose }) {
           <CustomText style={styles.equipoDetailLabel}>Estado</CustomText>
           <CustomText style={styles.equipoDetailVal}>{estadoLabel}</CustomText>
         </View>
-
         <View style={styles.detalleRow}>
           <CustomText style={styles.equipoDetailLabel}>Productos</CustomText>
           <View style={{ flex: 1 }}>
             {tarea.productos && tarea.productos.length > 0 ? (
-              tarea.productos.map((p) => {
-                const producto = productosDisponibles.find(
-                  (prod) => prod.id === p.productoId
-                );
-                return (
-                  <CustomText key={p.productoId} style={styles.equipoDetailVal}>
-                    {producto?.nombre || `ID: ${p.productoId}`} - {p.cantidad}{" "}
-                    {producto?.unidad || "u"}
-                  </CustomText>
-                );
-              })
+              tarea.productos.map((p) => (
+                <CustomText key={p.productoId} style={styles.equipoDetailVal}>
+                  {p.nombre || `ID: ${p.productoId}`} - {p.cantidad} u
+                </CustomText>
+              ))
             ) : (
-              <CustomText style={styles.equipoDetailVal}>
-                {TEXTOS_MODAL_PRODUCTO.sinProductos}
-              </CustomText>
+              <CustomText style={styles.equipoDetailVal}>—</CustomText>
             )}
           </View>
         </View>
-      </ScrollView>
+      </View>
 
       <View style={styles.modalFooter}>
         <Button
@@ -148,354 +130,6 @@ function ModalDetalleTarea({ visible, tarea, onClose }) {
         >
           <Icon icon={ICONS.exit} size={18} color={COLORS.primary} />
           <CustomText style={{ color: COLORS.primary, fontWeight: "600" }}>Cerrar</CustomText>
-        </Button>
-      </View>
-    </Modal>
-  );
-}
-
-// ============================================================
-// COMPONENTE: ModalTarea (creación / edición)
-// ============================================================
-function ModalTarea({
-  visible,
-  onClose,
-  modoEdicion,
-  tareaEditando,
-  onGuardar,
-}) {
-  const [nombre, setNombre] = useState("");
-  const [descripcion, setDescripcion] = useState("");
-  const [categoria, setCategoria] = useState("");
-  const [duracion, setDuracion] = useState("");
-  const [estado, setEstado] = useState("no_iniciada");
-  const [productos, setProductos] = useState([]);
-  const [errores, setErrores] = useState({});
-  const [submitted, setSubmitted] = useState(false);
-
-  // Estados para la búsqueda y selección de productos
-  const [busquedaProducto, setBusquedaProducto] = useState("");
-  const [productoSeleccionado, setProductoSeleccionado] = useState(null); // objeto producto
-  const [cantidadProducto, setCantidadProducto] = useState("");
-
-  const productosDisponibles = getProductosInventario();
-
-  // Filtrado local de productos
-  const productosFiltrados = productosDisponibles.filter((p) =>
-    p.nombre.toLowerCase().includes(busquedaProducto.toLowerCase().trim())
-  );
-
-  useEffect(() => {
-    if (visible && modoEdicion && tareaEditando) {
-      setNombre(tareaEditando.nombre || "");
-      setDescripcion(tareaEditando.descripcion || "");
-      setCategoria(tareaEditando.categoria || "");
-      setDuracion(String(tareaEditando.duracionEstimada || ""));
-      setEstado(tareaEditando.estado || "no_iniciada");
-      setProductos(tareaEditando.productos || []);
-      setErrores({});
-      setSubmitted(false);
-    } else if (visible && !modoEdicion) {
-      setNombre("");
-      setDescripcion("");
-      setCategoria("");
-      setDuracion("");
-      setEstado("no_iniciada");
-      setProductos([]);
-      setErrores({});
-      setSubmitted(false);
-    }
-    // Limpiar búsqueda y selección al abrir/cerrar
-    setBusquedaProducto("");
-    setProductoSeleccionado(null);
-    setCantidadProducto("");
-  }, [visible, modoEdicion, tareaEditando]);
-
-  const validar = () => {
-    const e = {};
-    if (!nombre.trim()) e.nombre = "El nombre es requerido";
-    if (!descripcion.trim()) e.descripcion = "La descripción es requerida";
-    if (!categoria) e.categoria = "Debe seleccionar una categoría";
-    const duracionNum = Number(duracion);
-    if (!duracion.trim() || isNaN(duracionNum) || duracionNum <= 0) {
-      e.duracion = "Debe ingresar una duración válida (mayor a 0)";
-    }
-    setErrores(e);
-    return Object.keys(e).length === 0;
-  };
-
-  const handleGuardar = () => {
-    setSubmitted(true);
-    if (!validar()) return;
-    onGuardar({
-      nombre: nombre.trim(),
-      descripcion: descripcion.trim(),
-      categoria,
-      duracionEstimada: Number(duracion),
-      estado,
-      productos,
-    });
-  };
-
-  // Función para seleccionar un producto de la lista
-  const seleccionarProducto = (producto) => {
-    setProductoSeleccionado(producto);
-    setCantidadProducto("1"); // valor por defecto
-  };
-
-  // Función para agregar el producto seleccionado con la cantidad indicada
-  const agregarProductoConCantidad = () => {
-    if (!productoSeleccionado) return;
-    const cantidadNum = Number(cantidadProducto);
-    if (!cantidadProducto || isNaN(cantidadNum) || cantidadNum <= 0) {
-      // Podríamos mostrar un alert, pero por ahora no hacemos nada
-      return;
-    }
-
-    // Verificar si ya existe el producto
-    const existe = productos.some((p) => p.productoId === productoSeleccionado.id);
-    if (existe) {
-      // Si existe, sumamos la cantidad
-      setProductos((prev) =>
-        prev.map((p) =>
-          p.productoId === productoSeleccionado.id
-            ? { ...p, cantidad: p.cantidad + cantidadNum }
-            : p
-        )
-      );
-    } else {
-      setProductos((prev) => [
-        ...prev,
-        {
-          productoId: productoSeleccionado.id,
-          cantidad: cantidadNum,
-          nombre: productoSeleccionado.nombre,
-        },
-      ]);
-    }
-    // Limpiar selección y búsqueda
-    setProductoSeleccionado(null);
-    setCantidadProducto("");
-    setBusquedaProducto("");
-  };
-
-  const eliminarProducto = (productoId) => {
-    setProductos((prev) => prev.filter((p) => p.productoId !== productoId));
-  };
-
-  const T = TEXTOS_MODAL_TAREA;
-  const hasErrors = Object.keys(errores).length > 0;
-
-  return (
-    <Modal
-      visible={visible}
-      onClose={onClose}
-      showCloseButton={false}
-      containerStyle={styles.modalContainer}
-    >
-      <CustomText style={styles.modalTitle}>
-        {modoEdicion ? T.tituloEditar : T.tituloCrear}
-      </CustomText>
-
-      <ScrollView style={styles.modalScroll} keyboardShouldPersistTaps="handled">
-        <Input
-          label={`${T.labelNombre} *`}
-          value={nombre}
-          onChangeText={setNombre}
-          placeholder={T.placeholderNombre}
-          style={errores.nombre ? { borderColor: COLORS.error } : null}
-        />
-
-        <Input
-          label={`${T.labelDescripcion} *`}
-          value={descripcion}
-          onChangeText={setDescripcion}
-          placeholder={T.placeholderDesc}
-          multiline
-          style={[errores.descripcion ? { borderColor: COLORS.error } : null, { minHeight: 80 }]}
-        />
-
-        <Select
-          label={`${T.labelCategoria} *`}
-          options={OPCIONES_CATEGORIA}
-          value={categoria}
-          onChange={setCategoria}
-          placeholder="Seleccionar categoría"
-          selectStyle={errores.categoria ? { borderColor: COLORS.error } : null}
-        />
-
-        <Input
-          label={`${T.labelDuracion} *`}
-          value={duracion}
-          onChangeText={setDuracion}
-          placeholder={T.placeholderDuracion}
-          keyboardType="numeric"
-          style={errores.duracion ? { borderColor: COLORS.error } : null}
-        />
-
-        {/* Estado */}
-        <Select
-          label="Estado"
-          options={OPCIONES_ESTADO}
-          value={estado}
-          onChange={setEstado}
-          placeholder="Seleccionar estado"
-        />
-
-        {/* Productos con búsqueda y lista */}
-        <View style={{ marginTop: 12 }}>
-          <CustomText size={14} weight="600" color={COLORS.textSecondary}>
-            Productos utilizados
-          </CustomText>
-
-          {/* Barra de búsqueda de productos */}
-          <SearchBar
-            value={busquedaProducto}
-            onChangeText={setBusquedaProducto}
-            placeholder="Buscar producto..."
-            containerStyle={{ marginTop: 6, marginBottom: 8 }}
-          />
-
-          {/* Lista de productos disponibles (con scroll) */}
-          {busquedaProducto.trim() !== "" && productosFiltrados.length > 0 && (
-            <View style={{ maxHeight: 120, marginBottom: 8 }}>
-              <FlatList
-                data={productosFiltrados}
-                keyExtractor={(item) => String(item.id)}
-                renderItem={({ item }) => (
-                  <Pressable
-                    onPress={() => seleccionarProducto(item)}
-                    style={({ pressed }) => ({
-                      paddingVertical: 6,
-                      paddingHorizontal: 10,
-                      borderBottomWidth: 1,
-                      borderBottomColor: COLORS.secondary,
-                      backgroundColor: pressed ? COLORS.secondary : COLORS.surface,
-                    })}
-                  >
-                    <CustomText>
-                      {item.nombre} ({item.unidad}) - Stock: {item.cantidad}
-                    </CustomText>
-                  </Pressable>
-                )}
-                keyboardShouldPersistTaps="handled"
-              />
-            </View>
-          )}
-
-          {/* Bloque para seleccionar cantidad y agregar */}
-          {productoSeleccionado && (
-            <View style={styles.productoSeleccionadoContainer}>
-              <CustomText size={13} weight="600" color={COLORS.textSecondary}>
-                Agregar {productoSeleccionado.nombre}
-              </CustomText>
-              <NumberInput
-                label="Cantidad"
-                value={cantidadProducto}
-                onChangeText={setCantidadProducto}
-                min={1}
-                max={999}
-                step={1}
-                containerStyle={{ marginBottom: 6 }}
-              />
-              <View style={{ flexDirection: "row", gap: 8 }}>
-                <Button
-                  variant="outline"
-                  onPress={() => {
-                    setProductoSeleccionado(null);
-                    setCantidadProducto("");
-                  }}
-                  style={{ flex: 1 }}
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  variant="outline"
-                  onPress={agregarProductoConCantidad}
-                  style={{ flex: 1, borderColor: COLORS.primary }}
-                >
-                  <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-                    <Icon icon={ICONS.add} size={16} color={COLORS.primary} />
-                    <CustomText style={{ color: COLORS.primary, fontWeight: "600" }}>
-                      Agregar
-                    </CustomText>
-                  </View>
-                </Button>
-              </View>
-            </View>
-          )}
-
-          {/* Lista de productos seleccionados */}
-          {productos.length === 0 ? (
-            <CustomText size={13} color={COLORS.textTertiary} style={{ marginTop: 8 }}>
-              {TEXTOS_MODAL_PRODUCTO.sinProductos}
-            </CustomText>
-          ) : (
-            <View style={{ marginTop: 8 }}>
-              {productos.map((p) => {
-                const producto = productosDisponibles.find(
-                  (prod) => prod.id === p.productoId
-                );
-                return (
-                  <View
-                    key={p.productoId}
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      paddingVertical: 6,
-                      borderBottomWidth: 1,
-                      borderBottomColor: COLORS.secondary,
-                    }}
-                  >
-                    <CustomText>
-                      {producto?.nombre || `ID: ${p.productoId}`} - {p.cantidad}{" "}
-                      {producto?.unidad || "u"}
-                    </CustomText>
-                    <Button
-                      variant="outline"
-                      onPress={() => eliminarProducto(p.productoId)}
-                      style={{ paddingVertical: 2, paddingHorizontal: 6, minWidth: 30, height: 30 }}
-                    >
-                      <Icon icon={ICONS.delete} size={14} color={COLORS.error} />
-                    </Button>
-                  </View>
-                );
-              })}
-            </View>
-          )}
-        </View>
-
-        {submitted && hasErrors && (
-          <Alert
-            variant="danger"
-            message="Revisa los campos obligatorios marcados con * antes de guardar."
-            style={{ marginBottom: 12 }}
-          />
-        )}
-      </ScrollView>
-
-      <View style={styles.modalFooter}>
-        <Button
-          variant="outline"
-          onPress={onClose}
-          style={[styles.btnCancel, { flexDirection: "row", alignItems: "center", gap: 6 }]}
-        >
-          <Icon icon={ICONS.exit} size={18} color={COLORS.primary} />
-          <CustomText style={{ color: COLORS.primary, fontWeight: "600" }}>
-            {T.btnCancelar}
-          </CustomText>
-        </Button>
-
-        <Button
-          variant="outline"
-          onPress={handleGuardar}
-          style={[styles.btnAccept, { flexDirection: "row", alignItems: "center", gap: 6 }]}
-        >
-          <Icon icon={ICONS.save} size={18} color={COLORS.primary} />
-          <CustomText style={{ color: COLORS.primary, fontWeight: "600" }}>
-            {T.btnGuardar}
-          </CustomText>
         </Button>
       </View>
     </Modal>
@@ -581,14 +215,8 @@ export default function TareasScreen() {
     setBusqueda,
     loading,
     error,
-    crearTarea,
-    actualizarTarea,
     eliminarTarea,
   } = useTareas();
-
-  const [modalVisible, setModalVisible] = useState(false);
-  const [modoEdicion, setModoEdicion] = useState(false);
-  const [tareaEditando, setTareaEditando] = useState(null);
 
   const [detalleModalVisible, setDetalleModalVisible] = useState(false);
   const [tareaSeleccionada, setTareaSeleccionada] = useState(null);
@@ -648,31 +276,13 @@ export default function TareasScreen() {
     }, 4000);
   };
 
+  // Navegación a creación/edición de tareas (pantalla independiente)
   const handleAgregar = () => {
-    setModoEdicion(false);
-    setTareaEditando(null);
-    setModalVisible(true);
+    router.push('/equipos/tareaForm');
   };
 
   const handleEditar = (tarea) => {
-    setModoEdicion(true);
-    setTareaEditando(tarea);
-    setModalVisible(true);
-  };
-
-  const handleGuardarTarea = async (datos) => {
-    try {
-      if (modoEdicion && tareaEditando) {
-        await actualizarTarea(tareaEditando.id, datos);
-        showAlert("success", `Tarea "${datos.nombre}" actualizada correctamente.`);
-      } else {
-        await crearTarea(datos);
-        showAlert("success", `Tarea "${datos.nombre}" creada correctamente.`);
-      }
-      setModalVisible(false);
-    } catch (err) {
-      showAlert("danger", err.message || "Ocurrió un error al guardar la tarea.");
-    }
+    router.push(`/equipos/tareaForm?id=${tarea.id}`);
   };
 
   const handleEliminarPress = (tarea) => {
@@ -846,21 +456,14 @@ export default function TareasScreen() {
         </Button>
       </View>
 
-      {/* Modales */}
-      <ModalTarea
-        visible={modalVisible}
-        onClose={() => setModalVisible(false)}
-        modoEdicion={modoEdicion}
-        tareaEditando={tareaEditando}
-        onGuardar={handleGuardarTarea}
-      />
-
+      {/* Modal de detalle de tarea (solo lectura) */}
       <ModalDetalleTarea
         visible={detalleModalVisible}
         tarea={tareaSeleccionada}
         onClose={() => setDetalleModalVisible(false)}
       />
 
+      {/* Modal de confirmación de eliminación */}
       <Modal
         visible={showConfirmModal}
         onClose={cancelDelete}

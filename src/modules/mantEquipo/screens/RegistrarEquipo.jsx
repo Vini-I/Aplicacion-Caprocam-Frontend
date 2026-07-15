@@ -261,16 +261,7 @@ export default function RegistrarEquipoScreen() {
         )}
 
         {/* Botones: Cancelar (outline) y Guardar (primary) */}
-        <View style={styles.buttonRow}>
-          <Button
-            variant="outline"
-            onPress={handleCancelar}
-            style={[styles.cancelButton, { flexDirection: "row", alignItems: "center", gap: 8 }]}
-            disabled={guardando}
-          >
-            <Icon icon={ICONS.exit} size={18} color={COLORS.primary} />
-            <Text style={{ color: COLORS.primary, fontWeight: "600" }}>Cancelar</Text>
-          </Button>
+              <View style={styles.botonesContainer}>
 
 <Button
   variant="outline"

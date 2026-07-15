@@ -1,3 +1,5 @@
+// src/app/(drawer)/equipos/_layout.jsx
+
 import { Stack } from "expo-router";
 import { useRouter } from "expo-router";
 import { Pressable } from "react-native";
@@ -8,7 +10,7 @@ import { ICONS } from "../../../theme/icons.js";
 function BackButton() {
   const router = useRouter();
   return (
-    <Pressable onPress={() => router.replace("/mantEquipo/equipos")}>
+    <Pressable onPress={() => router.replace("/equipos/equipos")}>
       <Icon icon={ICONS.exit} size={22} color={COLORS.white} />
     </Pressable>
   );
@@ -16,15 +18,18 @@ function BackButton() {
 
 export default function MantEquipoStackLayout() {
   return (
-    <Stack screenOptions={{headerShown: false, headerStyle: { backgroundColor: COLORS.primary },
-    headerTintColor: COLORS.white, headerTitleStyle: { fontWeight: "700", fontSize: 18 },
-     headerBackVisible: false,}}>
-      
+    <Stack screenOptions={{
+      headerShown: false,
+      headerStyle: { backgroundColor: COLORS.primary },
+      headerTintColor: COLORS.white,
+      headerTitleStyle: { fontWeight: "700", fontSize: 18 },
+      headerBackVisible: false,
+    }}>
       <Stack.Screen name="equipos" options={{ title: "Equipos" }} />
-
-      <Stack.Screen name="mantEquipo" options={{title: "Mantenimiento de Equipos",headerShown: true,}}/>
-
-      <Stack.Screen name="tareas" options={{title: "Agregar Tareas",headerShown: true,}}/>
-</Stack>
+      <Stack.Screen name="mantEquipo" options={{ title: "Mantenimiento de Equipos", headerShown: true }} />
+      <Stack.Screen name="tareas" options={{ title: "Tareas", headerShown: true }} />
+      <Stack.Screen name="registrarEquipo" options={{ title: "Registrar Equipo", headerShown: true }} />
+      <Stack.Screen name="tareaForm" options={{ title: "Formulario de Tarea", headerShown: true }}/>
+      </Stack>
   );
 }
