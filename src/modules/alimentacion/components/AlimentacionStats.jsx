@@ -1,3 +1,30 @@
+/**
+ * ============================================================
+ * COMPONENTE ALIMENTACIONSTATS
+ * ============================================================
+ *
+ * Fila de tarjetas con estadísticas rápidas del día para el
+ * módulo de Alimentación (registros de hoy, kg suministrados y
+ * estanques activos).
+ *
+ * Funcionalidad:
+ * - Todos los colores usados provienen de COLORS (COLORS.textPrimary,
+ *   COLORS.textSecondary, COLORS.textTertiary, COLORS.black), sin
+ *   valores de color hardcodeados.
+ *
+ * Props principales:
+ * - registrosHoy: cantidad de registros del día.
+ * - kgSuministrados: total de kg suministrados.
+ * - estanquesActivos: cantidad de estanques distintos con registro.
+ *
+ * Ejemplo:
+ * <AlimentacionStats
+ *   registrosHoy={3}
+ *   kgSuministrados={120}
+ *   estanquesActivos={2}
+ * />
+ */
+
 import React from "react";
 import { View, StyleSheet } from "react-native";
 import Card from "../../../shared/components/Card";

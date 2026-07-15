@@ -1,3 +1,28 @@
+/**
+ * ============================================================
+ * STYLES: PRODUCTFORMSTYLES
+ * ============================================================
+ * Módulo: Productos
+ *
+ * Estilos del formulario de alta/edición de producto
+ * (ProductForm.jsx).
+ *
+ * FUNCIONALIDAD:
+ * 1. Layout del navbar, la tarjeta del formulario y cada campo
+ *    (input, select, numberInput).
+ * 2. inputError: borde rojo que se combina con input/select/
+ *    numberInput cuando el campo es inválido tras intentar guardar.
+ * 3. saveButton/saveButtonText: botón outline (celeste) de guardar;
+ *    saveButtonDisabled solo baja la opacidad, no cambia colores.
+ * 4. validationText: mensaje general de error debajo del botón.
+ *
+ * IMPORTANTE:
+ * - saveButton NO debe tener backgroundColor: el fondo blanco y el
+ *   borde celeste los pone Button variant="outline" en el JSX.
+ * ============================================================
+ */
+
+
 import { StyleSheet } from "react-native";
 import { COLORS } from "../../../theme/colors.js";
 
@@ -28,12 +53,12 @@ export const styles = StyleSheet.create({
     width: 32,
     height: 32,
   },
-  content: { padding: 16, paddingBottom: 32 },
+  content: { paddingBottom: 32 },
   card: {
     borderRadius: 18,
     padding: 18,
     backgroundColor: COLORS.white,
-    borderColor: COLORS.header,
+    borderColor: COLORS.secondary,
   },
   cardTitle: {
     fontSize: 19,
@@ -51,40 +76,43 @@ export const styles = StyleSheet.create({
   input: {
     minHeight: 48,
     borderRadius: 12,
-    borderColor: COLORS.header,
+    borderColor: COLORS.secondary,
     backgroundColor: COLORS.white,
     paddingHorizontal: 14,
     fontSize: 15
   },
   numberInput: {
     borderRadius: 12,
-    borderColor: COLORS.header,
+    borderColor: COLORS.secondary,
     backgroundColor: COLORS.white,
   },
   select: {
     minHeight: 48,
     borderRadius: 12,
-    borderColor: COLORS.header,
+    borderColor: COLORS.secondary,
     backgroundColor: COLORS.white,
     paddingHorizontal: 14,
+  },
+
+  inputError: {
+   borderColor: COLORS.error,
   },
   saveButton: {
     marginTop: 10,
     borderRadius: 14,
     paddingVertical: 14,
-    backgroundColor: COLORS.primary,
   },
   saveButtonDisabled: {
-    backgroundColor: COLORS.textQuaternary || "#D1D5DB",
+    opacity: 0.5,
   },
   saveButtonText: {
     fontSize: 16,
-    color: COLORS.white,
+    color: COLORS.primary,
   },
-  validationText: {
-    marginTop: 8,
-    fontSize: 13,
-    textAlign: "center",
-    color: COLORS.textTertiary,
+  alertBox: {
+    marginTop: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    width: "100%",
   },
 });

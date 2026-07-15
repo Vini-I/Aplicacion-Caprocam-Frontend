@@ -1,3 +1,4 @@
+import iconSet from "@expo/vector-icons/build/Fontisto";
 import { COLORS } from "../../../theme/colors";
 
 /**
@@ -46,48 +47,55 @@ export const MODULOS = [
     label: "Alimentacion",
     descripcion: "Raciones, alimento y comederos",
     icono: "food",
-    color: COLORS.primary,
+    color: COLORS.Alimentacion,
   },
   {
     id: "crecimiento",
     label: "Crecimiento",
     descripcion: "Peso, incremento y biomasa",
     icono: "growth",
-    color: COLORS.success,
+    color: COLORS.Crecimiento,
   },
   {
     id: "fisicoquimica",
     label: "Fisico-Quimica",
     descripcion: "Temp, O2, pH y nutrientes",
     icono: "chemicalContainer",
-    color: COLORS.violet,
+    color: COLORS.FisicoQuimica,
   },
   {
     id: "densidadPoblacional",
     label: "Densidad Poblacional",
     descripcion: "Conteo y sobrevivencia de camarones",
     icono: "report",
-    color: COLORS.warning,
+    color: COLORS.Densidad,
   },
   {
     id: "enfermedades",
     label: "Enfermedades",
     descripcion: "Casos sanitarios y severidad",
     icono: "shieldAlert",
-    color: COLORS.error,
+    color: COLORS.Enfermedades,
   },
   {
     id: "parasitologia",
     label: "Parasitologia",
     descripcion: "Parasitos, infeccion y grado",
     icono: "parasite",
-    color: COLORS.violet,
+    color: COLORS.Parasitologia,
   },
   {
     id: "raleo",
     label: "Raleo",
     descripcion: "Cosecha parcial y densidad",
     icono: "raleo",
-    color: COLORS.primary,
+    color: COLORS.Raleo,
+  },
+  {
+    id: "detalleRegistro",
+    label: "Detalle Registro",
+    descripcion: "Detalle, Historico",
+    icono: "document",
+    color: COLORS.DetalleRegistro
   },
 ];

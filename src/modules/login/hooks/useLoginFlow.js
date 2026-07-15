@@ -1,3 +1,12 @@
+/**
+ * ============================================================
+ * HOOK: useLoginFlow
+ * ============================================================
+ *
+ * Orquesta el flujo de login: carga trabajadores, filtra la
+ * lista, controla el PIN y administra la sincronización.
+ */
+
 import { useState } from 'react';
 
 import { useWorkers } from './useWorkers';
@@ -13,20 +22,31 @@ import { verifyPinCredentials } from '../services/loginAuth.service';
 export function useLoginFlow({ onLoginSuccess }) {
   const { workers, loading, error } = useWorkers();
   const [selectedWorker, setSelectedWorker] = useState(null);
+  const [workerSearchText, setWorkerSearchText] = useState('');
   const [isPinModalVisible, setIsPinModalVisible] = useState(false);
   const [pinCode, setPinCode] = useState('');
   const [pinError, setPinError] = useState('');
   const [isAuthenticating, setIsAuthenticating] = useState(false);
+  const [hasSyncedData, setHasSyncedData] = useState(false);
 
   const formattedDate = formatDateInSpanish();
   const isFormValid = isLoginFormValid(!!selectedWorker);
   const validationMessage = getLoginValidationMessage(!!selectedWorker);
+  const normalizedSearchText = workerSearchText.trim().toLowerCase();
+  const filteredWorkers = normalizedSearchText === ''
+    ? workers
+    : workers.filter((worker) => String(worker.name ?? '').toLowerCase().includes(normalizedSearchText));
 
   const openPinModal = () => {
     if (!isFormValid) return;
     setPinCode('');
     setPinError('');
     setIsPinModalVisible(true);
+  };
+
+  const handleSyncData = () => {
+    if (hasSyncedData) return;
+    setHasSyncedData(true);
   };
 
   const closePinModal = () => {
@@ -64,10 +84,13 @@ export function useLoginFlow({ onLoginSuccess }) {
 
   return {
     workers,
+    filteredWorkers,
     loading,
     error,
     selectedWorker,
     setSelectedWorker,
+    workerSearchText,
+    setWorkerSearchText,
     formattedDate,
     isFormValid,
     validationMessage,
@@ -75,7 +98,9 @@ export function useLoginFlow({ onLoginSuccess }) {
     pinCode,
     pinError,
     isAuthenticating,
+    hasSyncedData,
     openPinModal,
+    handleSyncData,
     closePinModal,
     handlePinChange,
     submitPin,

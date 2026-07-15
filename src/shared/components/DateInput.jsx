@@ -43,18 +43,29 @@ const MONTH_NAMES = [
 
 const DAY_NAMES = ["Dom", "Lun", "Mar", "Mie", "Jue", "Vie", "Sab"];
 
+function getSafeDate(value) {
+  const parsed = parseDate(value);
+
+  if (parsed !== null) {
+    return parsed;
+  }
+
+  return new Date();
+}
+
 function getMonthDays(calendarDate) {
-  const year = calendarDate.getFullYear();
-  const month = calendarDate.getMonth();
+  const safeDate = getSafeDate(calendarDate);
+  const year = safeDate.getFullYear();
+  const month = safeDate.getMonth();
   const firstDate = new Date(year, month, 1);
   const lastDate = new Date(year, month + 1, 0);
   const days = [];
 
-  for (let index = 0; index < firstDate.getDay(); index++) {
+  for (let index = 0; index < firstDate.getDay(); index += 1) {
     days.push(null);
   }
 
-  for (let day = 1; day <= lastDate.getDate(); day++) {
+  for (let day = 1; day <= lastDate.getDate(); day += 1) {
     days.push(new Date(year, month, day));
   }
 
@@ -62,6 +73,10 @@ function getMonthDays(calendarDate) {
 }
 
 function isSameCalendarDay(firstDate, secondDate) {
+  if (firstDate === null || secondDate === null) {
+    return false;
+  }
+
   return (
     firstDate.getFullYear() === secondDate.getFullYear() &&
     firstDate.getMonth() === secondDate.getMonth() &&
@@ -76,6 +91,7 @@ function isFutureDate(date) {
     today.getMonth(),
     today.getDate(),
   );
+
   const cleanDate = new Date(
     date.getFullYear(),
     date.getMonth(),
@@ -107,8 +123,10 @@ export default function DateInput({
     displayedValue = getCurrentDate();
   }
 
+  const initialDate = getSafeDate(displayedValue);
+
   const [showCalendar, setShowCalendar] = useState(false);
-  const [calendarDate, setCalendarDate] = useState(parseDate(displayedValue));
+  const [calendarDate, setCalendarDate] = useState(initialDate);
 
   let showError = false;
   let finalHelperText = helperText;
@@ -128,7 +146,7 @@ export default function DateInput({
       return;
     }
 
-    setCalendarDate(parseDate(displayedValue));
+    setCalendarDate(getSafeDate(displayedValue));
     setShowCalendar(true);
   }
 
@@ -150,13 +168,17 @@ export default function DateInput({
 
   function goPreviousMonth() {
     setCalendarDate(function (current) {
-      return new Date(current.getFullYear(), current.getMonth() - 1, 1);
+      const safeCurrent = getSafeDate(current);
+
+      return new Date(safeCurrent.getFullYear(), safeCurrent.getMonth() - 1, 1);
     });
   }
 
   function goNextMonth() {
     setCalendarDate(function (current) {
-      return new Date(current.getFullYear(), current.getMonth() + 1, 1);
+      const safeCurrent = getSafeDate(current);
+
+      return new Date(safeCurrent.getFullYear(), safeCurrent.getMonth() + 1, 1);
     });
   }
 
@@ -178,8 +200,9 @@ export default function DateInput({
     inputStyles.push(inputStyle);
   }
 
-  const selectedDate = parseDate(displayedValue);
-  const monthDays = getMonthDays(calendarDate);
+  const selectedDate = getSafeDate(displayedValue);
+  const safeCalendarDate = getSafeDate(calendarDate);
+  const monthDays = getMonthDays(safeCalendarDate);
 
   return (
     <View style={[styles.container, containerStyle]}>
@@ -229,8 +252,8 @@ export default function DateInput({
               </Pressable>
 
               <Text style={styles.monthTitle}>
-                {MONTH_NAMES[calendarDate.getMonth()]}{" "}
-                {calendarDate.getFullYear()}
+                {MONTH_NAMES[safeCalendarDate.getMonth()]}{" "}
+                {safeCalendarDate.getFullYear()}
               </Text>
 
               <Pressable style={styles.navButton} onPress={goNextMonth}>
