@@ -92,9 +92,9 @@ export const MODULOS = [
     color: COLORS.Raleo,
   },
   {
-    id: "detalleRegistro",
-    label: "Detalle Registro",
-    descripcion: "Detalle, Historico",
+    id: "reporteria",
+    label: "Reportería",
+    descripcion: "Reporte, Historico",
     icono: "document",
     color: COLORS.DetalleRegistro
   },
