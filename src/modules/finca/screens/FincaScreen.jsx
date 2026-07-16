@@ -30,22 +30,18 @@ import Title from "../../../shared/components/Title.jsx";
 import Text from "../../../shared/components/Text.jsx";
 import Icon from "../../../shared/components/Icons.jsx";
 import Badge from "../../../shared/components/Badge.jsx";
-import ModalEliminarFinca from "./ModalEliminarFinca.jsx";
+import ModalEliminar from "../../../shared/components/ModalEliminar.jsx";
 
 export default function FincasScreen({ onDetail, onNew, onEdit }) {
   const {
     fincas,
-    width,
     isCompact,
+    alert,
     ModalVisible,
-    FincaCodigoInternoSeleccionada,
     FincaNombreSeleccionada,
-    setModalVisible,
-    setFincaNombreSeleccionada,
     abrirModalEliminar,
     cancelarEliminar,
     confirmarEliminar,
-    alert,
   } = useFincaScreen();
 
   return (
@@ -130,17 +126,17 @@ export default function FincasScreen({ onDetail, onNew, onEdit }) {
         ))}
 
         <Button style={styles.addButton} onPress={() => onNew()}>
-          <Icon icon={ICONS.add} size={15} />
-          <Text size={15}>REGISTRAR NUEVA FINCA</Text>
+          <Icon style={styles.addButtonText} icon={ICONS.add} size={15} />
+          <Text style={styles.addButtonText} size={15}>REGISTRAR NUEVA FINCA</Text>
         </Button>
-      
-      <ModalEliminarFinca
-        visible={ModalVisible}
-        id={FincaCodigoInternoSeleccionada}
-        nombre={FincaNombreSeleccionada}
-        onCancelar={cancelarEliminar}
-        onConfirmar={confirmarEliminar}
-      />
+        
+        <ModalEliminar
+          visible={ModalVisible}
+          title="¿Eliminar finca?"
+          message={`¿Estás seguro que deseas eliminar ${FincaNombreSeleccionada}?`}
+          onCancel={cancelarEliminar}
+          onConfirm={confirmarEliminar}
+        />
       </View>
     </ScrollView>
   );

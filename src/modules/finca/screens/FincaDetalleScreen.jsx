@@ -121,8 +121,8 @@ export default function FincaDetalleScreen({
             </Button>
           </Card>
           <Button style={styles.addButton} onPress={() => onEstanque()}>
-            <Icon icon={ICONS.add} size={15} />
-            <Text size={15}>REGISTRAR NUEVO ESTANQUE</Text>
+            <Icon style={styles.addButtonText} icon={ICONS.add} size={15} />
+            <Text style={styles.addButtonText} size={15}>REGISTRAR NUEVO ESTANQUE</Text>
           </Button>
 
           {estanquesFinca?.map((estanque, index) => (
