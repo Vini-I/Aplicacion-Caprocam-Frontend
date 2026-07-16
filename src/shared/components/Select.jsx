@@ -42,6 +42,7 @@
 
 import React, { useState, useRef } from "react";
 import {
+  ScrollView,
   View,
   Text,
   Pressable,
@@ -205,7 +206,7 @@ export default function Select({
         >
 
 
-          <View
+          <ScrollView
             style={[
               styles.optionsContainer,
               {
@@ -214,6 +215,7 @@ export default function Select({
                 width: position.width,
               }
             ]}
+            showsVerticalScrollIndicator={true}
           >
 
 
@@ -249,7 +251,7 @@ export default function Select({
             }
 
 
-          </View>
+          </ScrollView>
 
 
         </Pressable>
@@ -325,8 +327,9 @@ const styles = StyleSheet.create({
 
 
   optionsContainer: {
-
     position: "absolute",
+
+    maxHeight: 140,
 
     borderWidth: 1,
     borderColor: COLORS.secondary,

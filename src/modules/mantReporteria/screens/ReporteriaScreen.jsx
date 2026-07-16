@@ -16,16 +16,16 @@ import Select from "../../../shared/components/Select.jsx";
 import Text from "../../../shared/components/Text.jsx";
 import NavbarRegistro from "../../../shared/components/NavbarRegistro.jsx"
 
-import { useDetalleRegistro } from "../hooks/useDetalleRegistro.js";
-import { TIPOS_REGISTRO } from "../constants/tipoRegistro.js";
+import { useReporteria } from "../hooks/useReporteria.js";
+import { TIPOS_REGISTRO } from "../constants/tipoReporte.js";
 
 import { COLORS } from "../../../theme/colors.js";
 import { ICONS } from "../../../theme/icons.js";
 
 import { STYLE } from "../../../theme/style.js";
-import { styles } from "../styles/DetalleRegistroStyle.js";
+import { styles } from "../styles/ReporteriaStyle.js";
 
-export default function DetalleRegistroScreen() {
+export default function Reporteria() {
 
     const {
         registroTipo,
@@ -39,12 +39,12 @@ export default function DetalleRegistroScreen() {
         setRegistroTipo,
         setFinca,
         setEstanque,
-    } = useDetalleRegistro();
+    } = useReporteria();
 
     return (
         <View style={styles.background}>
             <NavbarRegistro
-                Titulo="Detalle Registro"
+                Titulo="Reportería"
                 Subtitulo="Historico Registros"
                 Icono="document"
             />
