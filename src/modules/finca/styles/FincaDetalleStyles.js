@@ -61,39 +61,19 @@ export const styles = StyleSheet.create({
   },
 
   addButton: {
-    maxWidth: "100%",
-    alignSelf: "center",
-    width: "100%",
     borderWidth: 2,
-    color: COLORS.black,
+    color: COLORS.primary,
     borderColor: COLORS.primary,
     backgroundColor: COLORS.white,
-    borderStyle: "dashed",
     borderRadius: 12,
     flexDirection: "row",
     gap: 8,
-    marginTop: 10,
-    marginBottom: 18,
+    marginVertical: 20,
   },
 
   addButtonText: {
-    color: COLORS.textPrimary,
-    fontWeight: "700",
-    marginLeft: 8,
-  },
-
-  addButtonContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  iconAdd: {
-    marginRight: 5
-  },
-
-  iconDetail: {
-    marginRight: 5
+    color: COLORS.primary,
+    fontWeight: "600",
   },
 
   titleText: {
