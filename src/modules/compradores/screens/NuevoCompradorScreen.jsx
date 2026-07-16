@@ -1,20 +1,50 @@
-import React, { useState } from "react";
-import { View, ScrollView } from "react-native";
-import { useRouter } from "expo-router";
+/**
+ * ============================================================
+ * PANTALLA: NUEVOCOMPRADORSCREEN
+ * ============================================================
+ * Módulo: Compradores
+ *
+ * Formulario de alta de un nuevo comprador.
+ *
+ * FUNCIONALIDAD:
+ * 1. Campos: nombre*, cédula*, teléfono*, correo, dirección, notas
+ *    (los marcados con * son obligatorios). La cédula, una vez
+ *    guardado el comprador, ya no se puede modificar (ver
+ *    EditarCompradorScreen.jsx, donde se muestra deshabilitada).
+ * 2. Valida al presionar "Guardar comprador" (useNuevoCompradorScreen):
+ *    pinta de rojo cada campo inválido y muestra un solo mensaje
+ *    general debajo del botón.
+ * 3. Al guardar exitosamente, muestra una alerta de éxito en la
+ *    misma pantalla (el guardado real queda pendiente de
+ *    integración con backend).
+ *
+ * IMPORTANTE:
+ * - Mismo regex y misma regla de teléfono/correo que
+ *   useEditarCompradorScreen.js.
+ * - El borde rojo nunca aparece antes del primer intento de
+ *   guardar.
+ * - El campo "Tipo de producto" se eliminó del formulario: las
+ *   opciones (antibióticos, fertilizantes, equipos, etc.) no
+ *   aplicaban a este flujo.
+ * ============================================================
+ */
 
-import Navbar from "../../../shared/components/Navbar";
+
+
+import React from "react";
+import { View, ScrollView } from "react-native";
+
 import Card from "../../../shared/components/Card";
 import Input from "../../../shared/components/Input";
-import CustomText from "../../../shared/components/Text";
-import Select from "../../../shared/components/Select";
+import Text from "../../../shared/components/Text";
 import Button from "../../../shared/components/Button";
 import Icon from "../../../shared/components/Icons";
-import CustomAlert from "../../../shared/components/Alert";
+import Alert from "../../../shared/components/Alert";
 
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
+import { STYLE } from "../../../theme/style";
 import { styles, ICON_SIZES } from "../styles/StylesNuevoComprador";
-import { TIPOS_PRODUCTO } from "../services/NuevoCompradorData";
 
 import { useNuevoCompradorScreen, TELEFONO_MAX_LENGTH } from "../hooks/useNuevoCompradorScreen";
 
@@ -22,17 +52,21 @@ export default function NuevoCompradorScreen() {
   const {
     nombre,
     setNombre,
-    tipoProducto,
-    setTipoProducto,
+    cedula,
     telefono,
     correo,
     setCorreo,
     direccion,
     setDireccion,
     notas,
-    setNotas,
-    mensajeError,
+    setNotas, 
+    errorNombre,
+    errorCedula,
+    errorTelefono,
+    errorCorreo,
+    mensajeError,  
     guardadoExitoso,
+    handleCedulaChange,
     handleTelefonoChange,
     handleSubmit,
     handleVolver,
@@ -41,12 +75,10 @@ export default function NuevoCompradorScreen() {
   return (
     <View style={styles.container}>
 
-      {/* Navbar con botón para volver a la lista de compradores */}
-      
       {/* Formulario con scroll para evitar que el teclado tape los campos */}
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, STYLE.contentWrapper]}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
@@ -57,37 +89,35 @@ export default function NuevoCompradorScreen() {
         >
           {/* Campos del formulario */}
           <Input
-            label="Nombre del comprador"
+            label="Nombre del comprador *"
             value={nombre}
             onChangeText={setNombre}
-            placeholder="Ej. Biomar S.A."
+            placeholder="Ej. María José Solano Vargas"
             containerStyle={styles.field}
-            style={styles.input}
+            style={[styles.input, errorNombre && styles.inputError]}
             labelStyle={styles.label}
-          />
-
-          <Select
-            label="Tipo de producto"
-            value={tipoProducto}
-            options={TIPOS_PRODUCTO}
-            onChange={setTipoProducto}
-            placeholder="Seleccione un tipo de producto"
-            containerStyle={styles.field}
-            selectStyle={styles.select}
-            labelStyle={styles.label}
-            selectedTextStyle={styles.selectText}
-            optionTextStyle={styles.selectOption}
           />
 
           <Input
-            label="Teléfono"
+            label="Cédula *"
+            value={cedula}
+            onChangeText={handleCedulaChange}
+            placeholder="Ej. 1-0234-0567"
+            keyboardType="numeric"
+            containerStyle={styles.field}
+            style={[styles.input, errorCedula && styles.inputError]}
+            labelStyle={styles.label}
+          />
+
+          <Input
+            label="Teléfono *"
             value={telefono}
             onChangeText={handleTelefonoChange}
             placeholder="+506 7689-9087"
             keyboardType="phone-pad"
             maxLength={TELEFONO_MAX_LENGTH}
             containerStyle={styles.field}
-            style={styles.input}
+            style={[styles.input, errorTelefono && styles.inputError]}
             labelStyle={styles.label}
           />
 
@@ -99,7 +129,7 @@ export default function NuevoCompradorScreen() {
             keyboardType="email-address"
             autoCapitalize="none"
             containerStyle={styles.field}
-            style={styles.input}
+            style={[styles.input, errorCorreo && styles.inputError]}
             labelStyle={styles.label}
           />
 
@@ -125,26 +155,26 @@ export default function NuevoCompradorScreen() {
           />
 
           {/* Botón para guardar, dispara la validación */}
-          <Button onPress={handleSubmit} style={styles.saveButton}>
+          <Button variant="outline" onPress={handleSubmit} style={styles.saveButton}>
             <View style={styles.buttonContent}>
-              <Icon icon={ICONS.save} size={ICON_SIZES.save} color={COLORS.white} />
-              <CustomText style={styles.saveButtonText}>Guardar comprador</CustomText>
+               <Icon icon={ICONS.save} size={ICON_SIZES.save} color={COLORS.primary} />
+               <Text style={styles.saveButtonText}>Guardar comprador</Text>
             </View>
           </Button>
 
-          {mensajeError !== "" && (
-            <CustomAlert
-              variant="danger"
-              message={mensajeError}
+          {guardadoExitoso && (
+            <Alert
+              variant="success"
+              message="Comprador guardado correctamente."
               style={styles.alertBox}
               textStyle={styles.alertText}
             />
           )}
 
-          {guardadoExitoso && (
-            <CustomAlert
-              variant="success"
-              message="Comprador guardado correctamente."
+          {mensajeError !== "" && (
+            <Alert
+              variant="danger"
+              message={mensajeError}
               style={styles.alertBox}
               textStyle={styles.alertText}
             />

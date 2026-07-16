@@ -1,17 +1,34 @@
 /**
+ * ============================================================
  * HOOK: useTareas
- * Ruta: src/modules/mantEquipo/hooks/useTareas.js
+ * ============================================================
  *
  * Hook personalizado para gestionar las tareas de mantenimiento.
  * Proporciona estado, carga, filtrado y operaciones CRUD.
  *
- * Ejemplo de uso:
- *   const { tareas, loading, error, crearTarea, eliminarTarea } = useTareas();
+ * Retorna:
+ * - tareas: array completo de tareas
+ * - tareasFiltradas: array filtrado según búsqueda
+ * - busqueda: string para filtrar
+ * - setBusqueda: función para actualizar la búsqueda
+ * - loading: boolean
+ * - error: string | null
+ * - cargarTareas: función para recargar datos
+ * - crearTarea, actualizarTarea, eliminarTarea: funciones asíncronas
+ *
+ * Ejemplo:
+ * const { tareas, loading, crearTarea } = useTareas();
  */
 
+// ============================================================
+// IMPORTS
+// ============================================================
 import { useState, useEffect, useCallback } from "react";
 import * as tareasService from "../services/tareasService";
 
+// ============================================================
+// HOOK
+// ============================================================
 export const useTareas = () => {
   // --------------------------------------------------------
   // ESTADOS
@@ -59,11 +76,6 @@ export const useTareas = () => {
   // OPERACIONES CRUD
   // --------------------------------------------------------
 
-  /**
-   * Crea una nueva tarea.
-   * @param {Object} datos - { nombre, descripcion, categoria, duracionEstimada }
-   * @returns {Promise<Object>} Tarea creada.
-   */
   const crearTarea = async (datos) => {
     setLoading(true);
     try {
@@ -78,12 +90,6 @@ export const useTareas = () => {
     }
   };
 
-  /**
-   * Actualiza una tarea existente.
-   * @param {string} id - ID de la tarea.
-   * @param {Object} datos - Campos a actualizar.
-   * @returns {Promise<Object>} Tarea actualizada.
-   */
   const actualizarTarea = async (id, datos) => {
     setLoading(true);
     try {
@@ -98,11 +104,6 @@ export const useTareas = () => {
     }
   };
 
-  /**
-   * Elimina una tarea por su ID.
-   * @param {string} id - ID de la tarea.
-   * @returns {Promise<boolean>}
-   */
   const eliminarTarea = async (id) => {
     setLoading(true);
     try {

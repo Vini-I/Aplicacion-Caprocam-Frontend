@@ -1,3 +1,19 @@
+/**
+ * ============================================================
+ * ESTILOS: colaboradorCardStyles
+ * ============================================================
+ *
+ * Estilos para el componente ColaboradorCard.
+ * Utiliza la paleta de COLORS del tema central.
+ *
+ * Dependencias:
+ * - COLORS desde theme/colors
+ *
+ * Ejemplo de uso:
+ * import { styles } from './colaboradorCardStyles';
+ * <View style={styles.card}>...</View>
+ */
+
 import { StyleSheet } from "react-native";
 import { COLORS } from "../../../theme/colors";
 
@@ -6,7 +22,7 @@ export const styles = StyleSheet.create({
     marginBottom: 12,
     width: "100%",
     maxWidth: 900,
-    alignSelf: "center", 
+    alignSelf: "center",
   },
   header: {
     flexDirection: "row",
@@ -32,21 +48,17 @@ export const styles = StyleSheet.create({
     justifyContent: "flex-end",
     gap: 12,
   },
-  editBtn: {
-    backgroundColor: COLORS.primary,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-  },
-  deleteBtn: {
-    backgroundColor: COLORS.error,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-  },
-  btnText: {
-    color: COLORS.white,
-    fontWeight: "600",
-    fontSize: 12,
-  },
+actionBtn: {
+  marginTop: 0,
+  paddingVertical: 6,
+  paddingHorizontal: 10,
+  borderWidth: 1,
+  borderRadius: 6,
+  backgroundColor: "transparent",
+  minWidth: 70,
+  alignItems: "center",
+  justifyContent: "center",
+  flexDirection: "row",
+  gap: 4,
+},
 });
