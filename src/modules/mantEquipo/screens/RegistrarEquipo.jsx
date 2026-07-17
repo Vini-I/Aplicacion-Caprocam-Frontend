@@ -4,11 +4,13 @@
  * ============================================================
  * Módulo: Mantenimiento de Equipos
  *
- * Formulario para registrar un nuevo equipo en el sistema.
+ * Formulario para registrar o editar un equipo en el sistema.
  * Solicita la información necesaria y aplica validaciones
  * con retroalimentación visual (Alert) al usuario.
  *
  * Funcionalidad:
+ * - Si recibe el parámetro "edit" en la URL (ej. ?edit=eq-001),
+ *   carga los datos del equipo para edición.
  * - Muestra campos para número de serie, nombre, descripción,
  *   tipo, modelo, fecha de instalación, función, estanque
  *   asociado (opcional), horas para mantenimiento y estado.
@@ -17,12 +19,12 @@
  *   a la lista de equipos.
  * - Muestra alerta de error si hay campos incompletos o inválidos,
  *   con mensajes específicos por campo.
- * - Botón "Guardar" (relleno azul, con ícono) y "Cancelar"
- *   (outline azul, con ícono) que navega de vuelta a la lista.
+ * - Botón "Guardar" (outline) y "Cancelar" (outline) que navega
+ *   de vuelta a la lista.
  *
  * Componentes utilizados:
  * - Button, Card, Input, NumberInput, Select, Text, Alert
- * - EquipoFechaInput, RegistrarEquipoHeader
+ * - EquipoFechaInput
  *
  * Dependencias:
  * - useRegistrarEquipo (hook con lógica y estado)
@@ -31,98 +33,105 @@
  * ============================================================
  */
 
-import React, { useState, useRef, useEffect } from "react";
-import { Dimensions, ScrollView, View } from "react-native";
-import { useRouter } from "expo-router";
+import React, { useState, useRef, useEffect } from 'react';
+import { Dimensions, ScrollView, View } from 'react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 
-import Button from "../../../shared/components/Button";
-import Card from "../../../shared/components/Card";
-import Input from "../../../shared/components/Input";
-import NumberInput from "../../../shared/components/NumberInput";
-import Select from "../../../shared/components/Select";
-import Text from "../../../shared/components/Text";
-import Alert from "../../../shared/components/Alert";
-import Icon from "../../../shared/components/Icons";
+import Button from '../../../shared/components/Button';
+import Card from '../../../shared/components/Card';
+import Input from '../../../shared/components/Input';
+import NumberInput from '../../../shared/components/NumberInput';
+import Select from '../../../shared/components/Select';
+import Text from '../../../shared/components/Text';
+import Alert from '../../../shared/components/Alert';
+import Icon from '../../../shared/components/Icons';
 
-import { COLORS } from "../../../theme/colors";
-import { TYPOGRAPHY } from "../../../theme/typography";
-import { STYLE } from "../../../theme/style";
-import { ICONS } from "../../../theme/icons";
+import { COLORS } from '../../../theme/colors';
+import { TYPOGRAPHY } from '../../../theme/typography';
+import { STYLE } from '../../../theme/style';
+import { ICONS } from '../../../theme/icons';
 
-import EquipoFechaInput from "../components/EquipoFechaInput";
-import RegistrarEquipoHeader from "../components/RegistrarEquipoHeader";
-import { useRegistrarEquipo } from "../hooks/useRegistrarEquipo";
-import { equiposService } from "../services/equiposService";
-import { styles } from "../styles/RegistrarEquipoStyles";
+import EquipoFechaInput from '../components/EquipoFechaInput';
+import { useRegistrarEquipo } from '../hooks/useRegistrarEquipo';
+import { equiposService } from '../services/equiposService';
+import { styles } from '../styles/RegistrarEquipoStyles';
 
-const { width } = Dimensions.get("window");
+const { width } = Dimensions.get('window');
 const isLargeScreen = width > 700;
 
 export default function RegistrarEquipoScreen() {
   const router = useRouter();
+  const { edit } = useLocalSearchParams();
+  const [equipoEdicion, setEquipoEdicion] = useState(null);
+  const [cargandoDatos, setCargandoDatos] = useState(!!edit);
+
+  // Cargar datos del equipo si estamos en modo edición
+  useEffect(() => {
+    if (edit) {
+      const cargarEquipo = async () => {
+        try {
+          const data = await equiposService.getEquipoById(edit);
+          setEquipoEdicion(data);
+        } catch (err) {
+          setEquipoEdicion(null);
+        } finally {
+          setCargandoDatos(false);
+        }
+      };
+      cargarEquipo();
+    } else {
+      setCargandoDatos(false);
+    }
+  }, [edit]);
+
   const {
     formulario,
     errores,
     submitted,
     guardando,
+    isEditing,
     tiposEquipo,
     estadosEquipo,
     actualizarCampo,
     guardarEquipo,
-    resetFormulario,
-  } = useRegistrarEquipo();
+  } = useRegistrarEquipo(equipoEdicion);
 
   const estanquesDisponibles = equiposService.getEstanquesDisponibles() || [];
-  const hasErrors = Object.values(errores).some((valor) => valor !== "");
 
   // Estado para alertas
   const [alert, setAlert] = useState(null);
   const alertTimeoutRef = useRef(null);
 
-  // Limpiar timeout al desmontar
   useEffect(() => {
     return () => {
-      if (alertTimeoutRef.current) {
-        clearTimeout(alertTimeoutRef.current);
-      }
+      if (alertTimeoutRef.current) clearTimeout(alertTimeoutRef.current);
     };
   }, []);
 
-  // Función para mostrar alerta con auto-cierre
   const showAlert = (type, message) => {
-    if (alertTimeoutRef.current) {
-      clearTimeout(alertTimeoutRef.current);
-    }
+    if (alertTimeoutRef.current) clearTimeout(alertTimeoutRef.current);
     setAlert({ type, message });
-    alertTimeoutRef.current = setTimeout(() => {
-      setAlert(null);
-    }, 4000);
+    alertTimeoutRef.current = setTimeout(() => setAlert(null), 4000);
   };
 
-  // Manejar guardado
   const handleGuardar = async () => {
     try {
       await guardarEquipo();
-      // Si llegamos aquí, el guardado fue exitoso (el hook no lanzó error)
-      showAlert("success", "Equipo registrado correctamente.");
-      // Redirigir a la lista de equipos después de un breve delay
+      showAlert('success', isEditing ? 'Equipo actualizado correctamente.' : 'Equipo registrado correctamente.');
       setTimeout(() => {
-        router.replace("/mantEquipo/equipos");
+        router.replace('/equipos/equipos');
       }, 1500);
     } catch (error) {
-      // El hook lanza error con el mensaje detallado
-      showAlert("danger", error.message || "Ocurrió un error al guardar el equipo.");
+      showAlert('danger', error.message || 'Ocurrió un error al guardar el equipo.');
     }
   };
 
-  // Manejar cancelar / cerrar
   const handleCancelar = () => {
     router.back();
   };
 
-  // Función auxiliar para renderizar mensaje de error solo si hay mensaje
   const renderError = (mensaje) => {
-    if (mensaje && typeof mensaje === "string" && mensaje.trim().length > 0) {
+    if (mensaje && typeof mensaje === 'string' && mensaje.trim().length > 0) {
       return (
         <Text size={12} color={COLORS.error} style={styles.fieldErrorText}>
           {mensaje}
@@ -131,6 +140,14 @@ export default function RegistrarEquipoScreen() {
     }
     return null;
   };
+
+  if (cargandoDatos) {
+    return (
+      <View style={[STYLE.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <Text>Cargando equipo...</Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView
@@ -142,75 +159,71 @@ export default function RegistrarEquipoScreen() {
       keyboardShouldPersistTaps="handled"
     >
       <View style={STYLE.contentWrapper}>
-
         <Card style={styles.card}>
-          {/* Número de serie / Identificador */}
+          {/* Número de serie / Identificador - solo lectura en edición */}
           <Input
             label="Número de serie / Identificador *"
             value={formulario.codigoInterno}
-            onChangeText={(valor) => actualizarCampo("codigoInterno", valor)}
+            onChangeText={(valor) => actualizarCampo('codigoInterno', valor)}
             placeholder="Ej: EQ-001"
+            editable={!isEditing}
             style={submitted && errores.codigoInterno ? styles.invalidField : undefined}
             labelStyle={{ fontFamily: TYPOGRAPHY.fontFamily.medium }}
           />
 
-          {/* Nombre */}
           <Input
             label="Nombre del equipo *"
             value={formulario.nombre}
-            onChangeText={(valor) => actualizarCampo("nombre", valor)}
+            onChangeText={(valor) => actualizarCampo('nombre', valor)}
             placeholder="Ej: Aireador principal"
             style={submitted && errores.nombre ? styles.invalidField : undefined}
             labelStyle={{ fontFamily: TYPOGRAPHY.fontFamily.medium }}
           />
 
-          {/* Descripción */}
           <Input
             label="Descripción *"
             value={formulario.descripcion}
-            onChangeText={(valor) => actualizarCampo("descripcion", valor)}
+            onChangeText={(valor) => actualizarCampo('descripcion', valor)}
             placeholder="Ej: Aireador de paletas para oxigenación"
             style={submitted && errores.descripcion ? styles.invalidField : undefined}
             labelStyle={{ fontFamily: TYPOGRAPHY.fontFamily.medium }}
           />
 
-          {/* Tipo de equipo */}
           <Select
             label="Tipo de equipo *"
             value={formulario.tipo}
-            onChange={(valor) => actualizarCampo("tipo", valor)}
+            onChange={(valor) => actualizarCampo('tipo', valor)}
             options={tiposEquipo}
             placeholder="Seleccione el tipo"
             selectStyle={submitted && errores.tipo ? styles.invalidField : undefined}
             labelStyle={{ fontFamily: TYPOGRAPHY.fontFamily.medium }}
           />
 
-          {/* Modelo */}
           <Input
             label="Modelo *"
             value={formulario.modelo}
-            onChangeText={(valor) => actualizarCampo("modelo", valor)}
+            onChangeText={(valor) => actualizarCampo('modelo', valor)}
             placeholder="Ej: MX-2000"
             style={submitted && errores.modelo ? styles.invalidField : undefined}
             labelStyle={{ fontFamily: TYPOGRAPHY.fontFamily.medium }}
           />
 
-          {/* Fecha de instalación */}
+          {/* Fecha de instalación - solo lectura en edición */}
           <EquipoFechaInput
             label="Fecha de instalación *"
             value={formulario.fechaInstalacion}
-            onChangeText={(valor) => actualizarCampo("fechaInstalacion", valor)}
+            onChangeText={(valor) => actualizarCampo('fechaInstalacion', valor)}
             placeholder="Seleccione la fecha de instalación"
+            editable={!isEditing}
             inputStyle={submitted && errores.fechaInstalacion ? styles.invalidField : undefined}
             labelStyle={{ fontFamily: TYPOGRAPHY.fontFamily.medium }}
           />
           {renderError(errores.fechaInstalacion)}
 
-          {/* Función del equipo */}
           <Input
             label="Función del equipo *"
             value={formulario.funcionEquipo}
-            onChangeText={(valor) => actualizarCampo("funcionEquipo", valor)}
+            onChangeText={(valor) => actualizarCampo('funcionEquipo', valor)}
             placeholder="Ej: Mantener la oxigenación constante"
             multiline
             style={[
@@ -220,32 +233,29 @@ export default function RegistrarEquipoScreen() {
             labelStyle={{ fontFamily: TYPOGRAPHY.fontFamily.medium }}
           />
 
-          {/* Estanque asociado (opcional) */}
           <Select
             label="Estanque asociado"
             value={formulario.estanqueId}
-            onChange={(valor) => actualizarCampo("estanqueId", valor)}
+            onChange={(valor) => actualizarCampo('estanqueId', valor)}
             options={estanquesDisponibles}
             placeholder="Seleccione un estanque (opcional)"
             labelStyle={{ fontFamily: TYPOGRAPHY.fontFamily.medium }}
           />
 
-          {/* Horas para mantenimiento */}
           <NumberInput
             label="Horas para mantenimiento"
-            value={String(formulario.horasMantenimiento ?? "")}
-            onChangeText={(valor) => actualizarCampo("horasMantenimiento", valor)}
+            value={String(formulario.horasMantenimiento ?? '')}
+            onChangeText={(valor) => actualizarCampo('horasMantenimiento', valor)}
             min={0}
             max={99999}
             step={1}
             labelStyle={{ fontFamily: TYPOGRAPHY.fontFamily.medium }}
           />
 
-          {/* Estado */}
           <Select
             label="Estado *"
             value={formulario.estado}
-            onChange={(valor) => actualizarCampo("estado", valor)}
+            onChange={(valor) => actualizarCampo('estado', valor)}
             options={estadosEquipo}
             placeholder="Seleccione el estado actual"
             selectStyle={submitted && errores.estado ? styles.invalidField : undefined}
@@ -253,38 +263,37 @@ export default function RegistrarEquipoScreen() {
           />
         </Card>
 
-        {/* Alerta de éxito/error después de la acción */}
         {alert && (
           <View style={{ marginBottom: 12 }}>
             <Alert variant={alert.type} message={alert.message} />
           </View>
         )}
 
-        {/* Botones: Cancelar (outline) y Guardar (primary) */}
-              <View style={styles.botonesContainer}>
+        {/* Botones: Cancelar y Guardar */}
+        <View style={styles.botonesContainer}>
 
-<Button
-  variant="outline"
-  onPress={handleGuardar}
-  disabled={guardando}
-  style={{
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    borderColor: COLORS.primary,
-    backgroundColor: "transparent",
-    paddingVertical: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-  }}
->
-  <Icon icon={ICONS.save} size={18} color={COLORS.primary} />
-  <Text style={{ color: COLORS.primary, fontWeight: "600" }}>
-    {guardando ? "Guardando..." : "Guardar equipo"}
-  </Text>
-</Button>
+          <Button
+            variant="outline"
+            onPress={handleGuardar}
+            disabled={guardando}
+            style={{
+              flex: 1,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+              borderColor: COLORS.primary,
+              backgroundColor: 'transparent',
+              paddingVertical: 12,
+              borderRadius: 8,
+              borderWidth: 1,
+            }}
+          >
+            <Icon icon={ICONS.save} size={18} color={COLORS.primary} />
+            <Text style={{ color: COLORS.primary, fontWeight: '600' }}>
+              {guardando ? 'Guardando...' : isEditing ? 'Actualizar equipo' : 'Guardar equipo'}
+            </Text>
+          </Button>
         </View>
       </View>
     </ScrollView>

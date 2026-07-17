@@ -212,9 +212,9 @@ const confirmDelete = async () => {
     }
   };
 
-  const openDetail = (equipoId) => {
-    setSelectedEquipoId(equipoId);
-  };
+const openDetail = (equipoId) => {
+  router.push(`/equipos/detalleEquipo?id=${equipoId}`);
+};
 
   const navigateToMantEquipo = () => {
     router.push("/equipos/mantEquipo");
