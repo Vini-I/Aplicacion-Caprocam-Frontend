@@ -40,8 +40,8 @@ export default function RegistrosIndex() {
     router.push("/(drawer)/(tabs)/registros/Raleo");
   };
 
-  const irDetalleRegistro = () => {
-    router.push("/(drawer)/(tabs)/registros/DetalleRegistro");
+  const irAReporteria = () => {
+    router.push("/(drawer)/(tabs)/registros/Reporteria");
   }
 
   return (
@@ -53,7 +53,7 @@ export default function RegistrosIndex() {
       onEnfermedades={irAEnfermedades}
       onParasitologia={irAParasitologia}
       onRaleo={irARaleo}
-      onDetalleRegistro={irDetalleRegistro}
+      onReporteria={irAReporteria}
     />
   );
 }
