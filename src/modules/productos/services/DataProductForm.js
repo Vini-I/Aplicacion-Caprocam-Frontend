@@ -1,3 +1,25 @@
+/**
+ * ============================================================
+ * SERVICE: DATAPRODUCTFORM
+ * ============================================================
+ * Módulo: Productos
+ *
+ * Datos estáticos que usa el formulario de producto (ProductForm.jsx).
+ *
+ * FUNCIONALIDAD:
+ * 1. CATEGORIAS: opciones para el Select de categoría del producto.
+ * 2. UNIDADES: opciones para el Select de unidad de medida.
+ * 3. initialForm: estado inicial vacío del formulario, usado al crear
+ *    un producto nuevo (y para resetear el form si params.productoParam
+ *    no llega o es inválido).
+ *
+ * IMPORTANTE:
+ * - Las categorías "Alimentación" y "Tratamiento" son las que habilitan
+ *   el campo "Fecha de caducidad" en useProductForm.js.
+ * - unidad arranca en "kg" por defecto en initialForm.
+ * ============================================================
+*/
+
 
 // ─────────────────────────────────────────────
 // Opciones de selects

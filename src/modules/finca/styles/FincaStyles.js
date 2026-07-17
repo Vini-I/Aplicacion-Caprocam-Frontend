@@ -32,7 +32,6 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
   },
 
-
   iconContainer: {
     width: 45,
     height: 45,
@@ -108,15 +107,18 @@ export const styles = StyleSheet.create({
 
   addButton: {
     borderWidth: 2,
-    color: COLORS.black,
+    color: COLORS.primary,
     borderColor: COLORS.primary,
     backgroundColor: COLORS.white,
-    borderStyle: "dashed",
     borderRadius: 12,
     flexDirection: "row",
     gap: 8,
-    marginTop: 10,
-    marginVertical:20,
+    marginVertical: 20,
+  },
+
+  addButtonText: {
+    color: COLORS.primary,
+    fontWeight: 600
   },
 
   alertCorrect: {

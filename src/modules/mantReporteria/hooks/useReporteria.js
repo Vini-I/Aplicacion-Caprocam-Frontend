@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 
-import { obtenerDetalleRegistro } from "../services/detalleRegistro.service";
+import { obtenerDetalleRegistro } from "../services/Reporteria.service";
 
-export function useDetalleRegistro() {
+export function useReporteria() {
 
     const [registroTipo, setRegistroTipo] = useState(null);
     const [finca, setFinca] = useState(null);

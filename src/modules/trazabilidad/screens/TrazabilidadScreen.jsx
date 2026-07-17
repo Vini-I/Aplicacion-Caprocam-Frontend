@@ -1,40 +1,34 @@
 /**
- * Pantalla: TrazabilidadScreen
+ * ============================================================
+ * TrazabilidadScreen
+ * ============================================================
  *
- * Muestra el listado de registros de Trazabilidad (movimientos de
- * pre-cría a engorde) registrados en el sistema.
+ * Listado de movimientos de trazabilidad.
  *
- * Funcionalidades principales:
- * - Buscar registros por finca, estanque o responsable.
- * - Filtrar registros por finca, colaborador o fecha del movimiento.
- * - Mostrar cada registro mediante una tarjeta resumen.
- * - Abrir el detalle completo de un registro al presionar su tarjeta.
- * - Acceder al formulario para agregar un nuevo registro.
+ * Reglas importantes / restricciones:
+ * - No introducir headers locales en pantallas que usan el header global.
+ * - El botón fijo de acción debe colocarse fuera del ScrollView.
  *
- * Componentes utilizados:
- * - Navbar: encabezado principal de la pantalla.
- * - Button: acción para agregar un nuevo registro.
- * - SearchBar: búsqueda por finca, estanque o responsable.
- * - FilterButton: filtros por finca, colaborador y fecha.
- * - TrazabilidadCard: tarjeta reutilizable para mostrar cada registro.
- * - EmptyState: mensaje cuando no hay registros o no hay resultados.
+ * Navegación / dependencias relevantes:
+ * - Usa `useTrazabilidadList` para obtener datos y acciones.
  */
 import { View, ScrollView } from "react-native";
 
 import { styles } from "../styles/TrazabilidadStyles";
+import { STYLE } from "../../../theme/style";
 
-import Navbar from "../../../shared/components/Navbar";
 import Button from "../../../shared/components/Button";
+import Card from "../../../shared/components/Card";
 import EmptyState from "../../../shared/components/EmptyState";
 import Icon from "../../../shared/components/Icons";
 import Text from "../../../shared/components/Text";
-import Title from "../../../shared/components/Title";
 import { ICONS } from "../../../theme/icons";
+import { COLORS } from "../../../theme/colors";
+import Footer from "../../../shared/components/Footer";
 
-import TrazabilidadCard from "../components/TrazabilidadCard";
-import SearchBar from "../components/SearchBar";
+import SearchBar from "../../inventarios/components/SearchBar";
 import FilterButton from "../components/FilterButton";
-import { useTrazabilidadList } from "../hooks/useTrazabilidadList";
+import { useTrazabilidadList, formatRegistroForView } from "../hooks/useTrazabilidadList";
 
 export default function TrazabilidadScreen() {
   const {
@@ -49,34 +43,70 @@ export default function TrazabilidadScreen() {
     limpiarBusqueda,
     nuevoRegistro,
     abrirDetalle,
-    volver,
+
   } = useTrazabilidadList();
 
   function renderRegistro(registro) {
+    const r = formatRegistroForView(registro);
     return (
-      <TrazabilidadCard
-        key={registro.id}
-        fincaNombre={registro.fincaNombre}
-        fecha={registro.fecha}
-        colaboradorNombre={registro.colaboradorNombre}
-        estanqueOrigenLabel={registro.estanqueOrigenLabel}
-        estanqueDestinoLabel={registro.estanqueDestinoLabel}
-        pl={registro.pl}
-        tamaño={registro.tamaño}
-        dias={registro.dias}
-        onPress={() => abrirDetalle(registro.id)}
-        style={styles.tarjeta}
-      />
+      <Button onPress={() => abrirDetalle(r.id)} style={styles.touchable} key={r.id}>
+        <Card style={styles.card}>
+          <View style={styles.cardHeader}>
+            <Text style={styles.fincaText}>{r.fincaNombre}</Text>
+            <Text style={styles.fechaText}>{r.fecha}</Text>
+          </View>
+
+          <Text style={styles.colaboradorText}>
+            Responsable: {r.colaboradorNombre}
+          </Text>
+
+          <View style={styles.movimiento}>
+            <Text style={styles.estanqueText} numberOfLines={1}>
+              {r.estanqueOrigenLabel}
+            </Text>
+
+            <Icon
+              icon={ICONS.arrowLongRight}
+              size={32}
+              color={COLORS.primary}
+              style={styles.flechaIcon}
+            />
+
+            <Text style={styles.estanqueText} numberOfLines={1}>
+              {r.estanqueDestinoLabel}
+            </Text>
+          </View>
+
+          <View style={styles.cardFooter}>
+            <View style={styles.dato}>
+              <Text style={styles.datoLabel}>PL</Text>
+              <Text style={styles.datoValor}>
+                {r.plFormatted}
+              </Text>
+            </View>
+
+            <View style={styles.dato}>
+              <Text style={styles.datoLabel}>Tamaño</Text>
+              <Text style={styles.datoValor}>{r.tamanoFormatted}</Text>
+            </View>
+
+            <View style={styles.dato}>
+              <Text style={styles.datoLabel}>Días</Text>
+              <Text style={styles.datoValor}>{registro.dias}</Text>
+            </View>
+          </View>
+        </Card>
+      </Button>
     );
   }
 
   return (
-    <View style={styles.screen}>
+    <View style={STYLE.container}>
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.wrapper}>
+        <View style={STYLE.contentWrapper}>
           <View style={styles.busquedaRow}>
             <SearchBar
               value={busqueda}
@@ -119,7 +149,7 @@ export default function TrazabilidadScreen() {
                       Limpiar búsqueda
                     </Button>
                   ) : (
-                    <Button onPress={nuevoRegistro}>
+                    <Button variant="outline" onPress={nuevoRegistro}>
                       Agregar trazabilidad
                     </Button>
                   )
@@ -138,8 +168,16 @@ export default function TrazabilidadScreen() {
               registrosFiltrados.map(renderRegistro)
             )}
           </View>
+
         </View>
       </ScrollView>
+      <View style={STYLE.contentWrapper}>
+      <View style={styles.stickyButtonContainer}>
+        <Button variant="outline" onPress={nuevoRegistro} style={styles.fullButton}>
+          + Agregar movimiento
+        </Button>
+      </View>
+      </View>
     </View>
   );
 }

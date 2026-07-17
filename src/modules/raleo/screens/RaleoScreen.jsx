@@ -76,7 +76,7 @@ useEffect(() => {
     setErrores(erroresValidacion);
 
     if (!valido) {
-      setAlerta({ visible: true, variant: "warning", mensaje: "Por favor complete todos los campos obligatorios." });
+      setAlerta({ visible: true, variant: "danger", mensaje: "Por favor complete todos los campos obligatorios." });
       return;
     }
 
