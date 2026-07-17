@@ -20,7 +20,7 @@
  * - NHP queda aqui como enfermedad bacteriana asociada a Hepatobacter penaei.
  */
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ScrollView, View, useWindowDimensions } from "react-native";
 import { useRouter } from "expo-router";
 
@@ -44,6 +44,7 @@ import {
   SEVERIDADES_ENFERMEDAD,
   obtenerNombreEnfermedad,
   obtenerNombreSeveridad,
+  obtenerResponsableBackend,
 } from "../services/EnfermedadesService";
 
 import { styles } from "../styles/EnfermedadesStyle";
@@ -135,7 +136,7 @@ export default function EnfermedadesScreen({ onBack, navigation }) {
   const [finca, setFinca] = useState("");
   const [estanque, setEstanque] = useState("");
   const [fechaReporte, setFechaReporte] = useState(getCurrentDate());
-  const [responsable, setResponsable] = useState("");
+  const [responsable, setResponsable] = useState("Cargando responsable...");
   const [enfermedadesSeleccionadas, setEnfermedadesSeleccionadas] = useState(
     [],
   );
@@ -166,6 +167,24 @@ export default function EnfermedadesScreen({ onBack, navigation }) {
 
   const opcionesFincas = obtenerOpcionesFincas();
   const opcionesEstanques = obtenerOpcionesEstanques(finca);
+
+  useEffect(function () {
+    let activo = true;
+
+    async function cargarResponsable() {
+      const responsableBackend = await obtenerResponsableBackend();
+
+      if (activo === true) {
+        setResponsable(responsableBackend);
+      }
+    }
+
+    cargarResponsable();
+
+    return function () {
+      activo = false;
+    };
+  }, []);
 
   function volver() {
     if (onBack) {
@@ -219,7 +238,7 @@ export default function EnfermedadesScreen({ onBack, navigation }) {
     setFinca("");
     setEstanque("");
     setFechaReporte(getCurrentDate());
-    setResponsable("");
+    setResponsable(responsable);
     setEnfermedadesSeleccionadas([]);
     setSeveridad("");
     setMortalidad("0");
@@ -373,11 +392,13 @@ export default function EnfermedadesScreen({ onBack, navigation }) {
 
               <View style={itemStyle}>
                 <Input
-                  label="Responsable"
+                  label="Persona encargada"
                   value={responsable}
                   onChangeText={setResponsable}
-                  placeholder="Nombre del responsable"
+                  placeholder="Responsable obtenido del backend"
+                  editable={false}
                   labelStyle={styles.label}
+                  helperText="Este dato se obtiene desde backend."
                 />
               </View>
             </View>
@@ -423,7 +444,7 @@ export default function EnfermedadesScreen({ onBack, navigation }) {
 
               <View style={itemStyle}>
                 <NumberInput
-                  label="Mortalidad registrada"
+                  label="Mortalidad registrada (U)"
                   value={mortalidad}
                   onChangeText={setMortalidad}
                   min={0}

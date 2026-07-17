@@ -6,14 +6,10 @@
  * Muestra la informacion completa de una finca seleccionada
  * junto con los estanques asociados.
  *
- * Funcionalidad:
- * - Presenta informacion general de la finca.
- * - Muestra telefonos, ubicacion y caracteristicas principales.
- * - Permite generar reportes PDF de la finca.
- * - Lista los estanques asociados.
- * - Permite navegar al registro y detalle de estanques.
- * - Permite eliminar estanques con confirmacion Si / No.
- * - Utiliza componentes reutilizables para mantener el diseno.
+ * Cambios:
+ * - Eliminar estanque abre modal de confirmacion.
+ * - Si confirma, elimina el estanque de la lista local.
+ * - Se guia por el flujo usado para eliminar fincas.
  */
 
 import { useEffect, useState } from "react";
@@ -26,7 +22,6 @@ import { COLORS } from "../../../theme/colors";
 import { STYLE } from "../../../theme/style";
 
 import useFincaDetalle from "../hooks/useFincaDetalle";
-import { estanques } from "./EstanqueData";
 
 import Alert from "../../../shared/components/Alert";
 import Card from "../../../shared/components/Card";
@@ -43,19 +38,6 @@ function detenerEvento(event) {
   }
 }
 
-function eliminarEstanqueDeData(codigo) {
-  const posicion = estanques.findIndex(function (item) {
-    return item.codigo === codigo;
-  });
-
-  if (posicion >= 0) {
-    estanques.splice(posicion, 1);
-    return true;
-  }
-
-  return false;
-}
-
 export default function FincaDetalleScreen({
   onEstanque,
   onEstanqueDetalle,
@@ -63,7 +45,8 @@ export default function FincaDetalleScreen({
 }) {
   const router = useRouter();
 
-  const { finca, estanquesFinca, haldleGenerar, loading } = useFincaDetalle();
+  const { finca, estanquesFinca, eliminarEstanque, haldleGenerar, loading } =
+    useFincaDetalle();
 
   const [estanquesMostrados, setEstanquesMostrados] = useState([]);
   const [modalEliminarVisible, setModalEliminarVisible] = useState(false);
@@ -74,19 +57,30 @@ export default function FincaDetalleScreen({
     function () {
       setEstanquesMostrados(estanquesFinca || []);
     },
-    [finca?.codigoInterno],
+    [finca?.codigoInterno, estanquesFinca.length],
   );
 
   function irANuevoEstanque() {
     if (onEstanque) {
       onEstanque();
+      return;
     }
+
+    router.push("/finca/estanque");
   }
 
   function irADetalleEstanque(codigo) {
     if (onEstanqueDetalle) {
       onEstanqueDetalle(codigo);
+      return;
     }
+
+    router.push({
+      pathname: "/finca/detalleEstanque",
+      params: {
+        id: codigo,
+      },
+    });
   }
 
   function irAEditarEstanque(event, estanque) {
@@ -115,12 +109,12 @@ export default function FincaDetalleScreen({
   }
 
   function confirmarEliminarEstanque() {
-    if (!estanqueSeleccionado) {
+    if (estanqueSeleccionado === null) {
       cerrarModalEliminar();
       return;
     }
 
-    eliminarEstanqueDeData(estanqueSeleccionado.codigo);
+    eliminarEstanque(estanqueSeleccionado.codigo);
 
     setEstanquesMostrados(function (listaActual) {
       return listaActual.filter(function (item) {
@@ -167,13 +161,13 @@ export default function FincaDetalleScreen({
 
       <ScrollView style={STYLE.container}>
         <View style={STYLE.contentWrapper}>
-          {mensajeEliminado !== "" ? (
+          {mensajeEliminado !== "" && (
             <Alert
               variant="success"
               message={mensajeEliminado}
               style={styles.alertMensaje}
             />
-          ) : null}
+          )}
 
           <Card>
             <View>
@@ -241,6 +235,7 @@ export default function FincaDetalleScreen({
                 style={styles.iconDocument}
                 size={18}
               />
+
               <Text size={15}>
                 {loading ? "GENERANDO..." : "GENERAR REPORTE FINCA"}
               </Text>
@@ -248,22 +243,28 @@ export default function FincaDetalleScreen({
           </Card>
 
           <Button style={styles.addButton} onPress={irANuevoEstanque}>
-            <Icon icon={ICONS.add} size={15} />
-            <Text size={15}>REGISTRAR NUEVO ESTANQUE</Text>
+            <Icon style={styles.addButtonText} icon={ICONS.add} size={15} />
+            <Text style={styles.addButtonText} size={15}>
+              REGISTRAR NUEVO ESTANQUE
+            </Text>
           </Button>
 
-          {estanquesMostrados.length === 0 ? (
+          {estanquesMostrados.length === 0 && (
             <Card>
               <Text color={COLORS.textTertiary} align="center">
                 No hay estanques registrados para esta finca.
               </Text>
             </Card>
-          ) : null}
+          )}
 
           {estanquesMostrados.map(function (estanque, index) {
             return (
               <View key={`${estanque.codigo}-${index}`}>
-                <CardPress onPress={() => irADetalleEstanque(estanque.codigo)}>
+                <CardPress
+                  onPress={function () {
+                    irADetalleEstanque(estanque.codigo);
+                  }}
+                >
                   <View style={styles.header}>
                     <View style={styles.icon}>
                       <Icon icon={ICONS.waterFlow} color={COLORS.primary} />
@@ -299,7 +300,9 @@ export default function FincaDetalleScreen({
                   <View style={styles.Buttons}>
                     <Button
                       style={styles.Eliminar}
-                      onPress={(event) => abrirModalEliminar(event, estanque)}
+                      onPress={function (event) {
+                        abrirModalEliminar(event, estanque);
+                      }}
                     >
                       <Icon
                         icon={ICONS.delete}
@@ -313,7 +316,9 @@ export default function FincaDetalleScreen({
 
                     <Button
                       style={styles.Editar}
-                      onPress={(event) => irAEditarEstanque(event, estanque)}
+                      onPress={function (event) {
+                        irAEditarEstanque(event, estanque);
+                      }}
                     >
                       <Icon
                         icon={ICONS.edit}
@@ -334,7 +339,7 @@ export default function FincaDetalleScreen({
 
       <Modal
         visible={modalEliminarVisible}
-        transparent
+        transparent={true}
         animationType="fade"
         onRequestClose={cerrarModalEliminar}
       >

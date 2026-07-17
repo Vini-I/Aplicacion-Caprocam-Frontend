@@ -3,8 +3,9 @@
  * COMPONENTE SELECT
  * ============================================================
  *
+ * Selector global para formularios y filtros.
+ *
  * Responsabilidad:
- * - Selector global para formularios y filtros.
  * - Usa Modal con ScrollView para no deformar las cards.
  * - Soporta required, submitted, error y helperText.
  * - Muestra borde rojo solo luego del intento de guardado o error manual.
@@ -193,7 +194,11 @@ export default function Select({
               },
             ]}
           >
-            <ScrollView nestedScrollEnabled={true}>
+            <ScrollView
+              style={styles.optionsScroll}
+              nestedScrollEnabled={true}
+              showsVerticalScrollIndicator={true}
+            >
               {options.map(function (option) {
                 const optionStyles = [styles.option];
 
@@ -246,7 +251,7 @@ const styles = StyleSheet.create({
   select: {
     minHeight: 46,
     borderWidth: 1,
-    borderColor: COLORS.inputBorder,
+    borderColor: COLORS.inputBorder || COLORS.secondary,
     borderRadius: 8,
     paddingVertical: 10,
     paddingHorizontal: 12,
@@ -306,7 +311,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     maxHeight: 240,
     borderWidth: 1,
-    borderColor: COLORS.inputBorder,
+    borderColor: COLORS.inputBorder || COLORS.secondary,
     borderRadius: 8,
     backgroundColor: COLORS.white,
     overflow: "hidden",
@@ -320,11 +325,15 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
   },
 
+  optionsScroll: {
+    maxHeight: 240,
+  },
+
   option: {
     paddingVertical: 12,
     paddingHorizontal: 12,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
+    borderBottomColor: COLORS.border || COLORS.secondary,
   },
 
   selectedOption: {

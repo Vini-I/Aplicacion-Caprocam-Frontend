@@ -732,4 +732,98 @@ export const styles = StyleSheet.create({
     justifyContent: "center",
     marginRight: 12,
   },
+
+  alertDropdownGroup: {
+    marginBottom: 10,
+  },
+
+  alertDropdownHeader: {
+    marginTop: 0,
+    minHeight: 44,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: BORDER_COLOR,
+    backgroundColor: COLORS.white,
+    paddingVertical: 9,
+    paddingHorizontal: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+
+  alertDropdownLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
+
+  alertDropdownTitle: {
+    marginLeft: 8,
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
+  },
+
+  alertDropdownRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+
+  alertDropdownBody: {
+    marginTop: 8,
+  },
+
+  emptyAlertBoxSmall: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    marginBottom: 8,
+  },
+
+  alertCategoryTitle: {
+    marginTop: 6,
+    marginBottom: 6,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
+  },
+
+  alertDismissButton: {
+    width: 28,
+    height: 28,
+    minHeight: 28,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: BORDER_COLOR,
+    backgroundColor: COLORS.white,
+    marginTop: 0,
+    paddingHorizontal: 0,
+    paddingVertical: 0,
+  },
+
+  alertDetail: {
+    marginTop: 4,
+    lineHeight: 17,
+    fontFamily: TYPOGRAPHY.fontFamily.medium,
+  },
+
+  viewAllAlertsButton: {
+    minHeight: 44,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    backgroundColor: COLORS.white,
+    marginTop: 4,
+  },
+
+  inlineButtonContentCentered: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  viewAllAlertsText: {
+    marginLeft: 8,
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
+  },
 });

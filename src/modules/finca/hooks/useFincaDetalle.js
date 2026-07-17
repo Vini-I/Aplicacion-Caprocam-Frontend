@@ -3,39 +3,52 @@
  * HOOK DE DETALLE DE FINCA
  * ============================================================
  *
- * Gestiona la información necesaria para mostrar el detalle de
- * una finca seleccionada, obteniendo sus datos y los estanques
- * asociados para generar reportes.
- *
- * Funcionalidad:
- * - Obtiene el código interno de la finca desde los parámetros
- *   de navegación.
- * - Busca la información de la finca seleccionada en el contexto.
- * - Filtra los estanques relacionados con la finca actual.
- * - Permite generar un PDF con la información de la finca.
- * - Controla el estado de carga durante la generación del reporte.
+ * Gestiona la informacion necesaria para mostrar el detalle de
+ * una finca seleccionada y sus estanques asociados.
  */
+
 import { useLocalSearchParams } from "expo-router";
+
 import { useFinca } from "../context/FincaContext.js";
 import { estanques } from "../screens/EstanqueData";
 import { usePdf } from "../hooks/usePdf";
 
 export default function useFincaDetalle() {
-    const { fincas } = useFinca();
-    const { id } = useLocalSearchParams();
+  const { fincas } = useFinca();
+  const { id } = useLocalSearchParams();
 
-    const finca = fincas.find((f) => f.codigoInterno === id);
+  const finca = fincas.find(function (item) {
+    return item.codigoInterno === id;
+  });
 
-    const estanquesFinca = finca? estanques.filter((e) => e.finca === finca.nombre) : [];
+  let estanquesFinca = [];
 
-    const { crearPDFFinca, loading } = usePdf();
+  if (finca) {
+    estanquesFinca = estanques.filter(function (estanque) {
+      return estanque.finca === finca.nombre;
+    });
+  }
 
-    const haldleGenerar = () => crearPDFFinca(finca, estanquesFinca);
+  const { crearPDFFinca, loading } = usePdf();
 
-    return {
-        finca,
-        estanquesFinca, 
-        haldleGenerar, 
-        loading,
+  function eliminarEstanque(codigoEstanque) {
+    for (let index = 0; index < estanques.length; index++) {
+      if (estanques[index].codigo === codigoEstanque) {
+        estanques.splice(index, 1);
+        break;
+      }
     }
+  }
+
+  function haldleGenerar() {
+    crearPDFFinca(finca, estanquesFinca);
+  }
+
+  return {
+    finca,
+    estanquesFinca,
+    eliminarEstanque,
+    haldleGenerar,
+    loading,
+  };
 }

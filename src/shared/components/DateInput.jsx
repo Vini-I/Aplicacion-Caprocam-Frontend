@@ -3,20 +3,20 @@
  * COMPONENTE DATEINPUT
  * ============================================================
  *
- * Responsabilidad:
- * - Campo reutilizable para seleccionar fechas.
- * - Toma la fecha de hoy por defecto desde dateUtils.
- * - Abre un calendario al presionar el campo o el icono.
- * - Usa formato oficial dd/mm/aaaa.
- * - Soporta required, submitted, error y helperText.
+ * Campo reutilizable para seleccionar fechas.
  *
- * Reglas:
- * - No usa regex local por modulo.
- * - El borde rojo aparece solo despues de intentar guardar o por error manual.
+ * Funcionalidad:
+ * - Al tocar el input se despliega el calendario.
+ * - Al tocar el icono se despliega el calendario.
+ * - En web usa input type="date".
+ * - En Android/iOS usa DateTimePicker.
+ * - Permite seleccionar fechas futuras por defecto.
+ * - Mantiene formato visible dd/mm/aaaa.
  */
 
-import React, { useState } from "react";
-import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import React, { useEffect, useRef, useState } from "react";
+import { View, Text, Pressable, StyleSheet, Platform } from "react-native";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 import Icon from "./Icons";
 
@@ -26,79 +26,56 @@ import { ICONS } from "../../theme/icons";
 
 import { formatDate, getCurrentDate, parseDate } from "../utils/dateUtils";
 
-const MONTH_NAMES = [
-  "Enero",
-  "Febrero",
-  "Marzo",
-  "Abril",
-  "Mayo",
-  "Junio",
-  "Julio",
-  "Agosto",
-  "Septiembre",
-  "Octubre",
-  "Noviembre",
-  "Diciembre",
-];
+function obtenerFechaWeb(value) {
+  const fecha = parseDate(value);
+  let fechaFinal = fecha;
 
-const DAY_NAMES = ["Dom", "Lun", "Mar", "Mie", "Jue", "Vie", "Sab"];
-
-function getSafeDate(value) {
-  const parsed = parseDate(value);
-
-  if (parsed !== null) {
-    return parsed;
+  if (fechaFinal === null || fechaFinal === undefined) {
+    fechaFinal = new Date();
   }
 
-  return new Date();
+  if (Number.isNaN(fechaFinal.getTime()) === true) {
+    fechaFinal = new Date();
+  }
+
+  const year = fechaFinal.getFullYear();
+  const month = String(fechaFinal.getMonth() + 1).padStart(2, "0");
+  const day = String(fechaFinal.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
 }
 
-function getMonthDays(calendarDate) {
-  const safeDate = getSafeDate(calendarDate);
-  const year = safeDate.getFullYear();
-  const month = safeDate.getMonth();
-  const firstDate = new Date(year, month, 1);
-  const lastDate = new Date(year, month + 1, 0);
-  const days = [];
+function convertirFechaWeb(value) {
+  const partes = value.split("-");
+  let fecha = new Date();
 
-  for (let index = 0; index < firstDate.getDay(); index += 1) {
-    days.push(null);
+  if (partes.length === 3) {
+    const year = Number(partes[0]);
+    const month = Number(partes[1]) - 1;
+    const day = Number(partes[2]);
+
+    fecha = new Date(year, month, day);
   }
 
-  for (let day = 1; day <= lastDate.getDate(); day += 1) {
-    days.push(new Date(year, month, day));
-  }
-
-  return days;
+  return fecha;
 }
 
-function isSameCalendarDay(firstDate, secondDate) {
-  if (firstDate === null || secondDate === null) {
-    return false;
+function obtenerFechaSegura(value) {
+  let fecha = new Date();
+
+  if (value !== "" && value !== undefined && value !== null) {
+    fecha = parseDate(value);
   }
 
-  return (
-    firstDate.getFullYear() === secondDate.getFullYear() &&
-    firstDate.getMonth() === secondDate.getMonth() &&
-    firstDate.getDate() === secondDate.getDate()
-  );
-}
+  if (fecha === null || fecha === undefined) {
+    fecha = new Date();
+  }
 
-function isFutureDate(date) {
-  const today = new Date();
-  const cleanToday = new Date(
-    today.getFullYear(),
-    today.getMonth(),
-    today.getDate(),
-  );
+  if (Number.isNaN(fecha.getTime()) === true) {
+    fecha = new Date();
+  }
 
-  const cleanDate = new Date(
-    date.getFullYear(),
-    date.getMonth(),
-    date.getDate(),
-  );
-
-  return cleanDate.getTime() > cleanToday.getTime();
+  return fecha;
 }
 
 export default function DateInput({
@@ -117,16 +94,23 @@ export default function DateInput({
   labelStyle,
   textStyle,
 }) {
-  let displayedValue = value;
-
-  if (displayedValue === "") {
-    displayedValue = getCurrentDate();
-  }
-
-  const initialDate = getSafeDate(displayedValue);
+  const webInputRef = useRef(null);
 
   const [showCalendar, setShowCalendar] = useState(false);
-  const [calendarDate, setCalendarDate] = useState(initialDate);
+  const [selectedDate, setSelectedDate] = useState(obtenerFechaSegura(value));
+
+  useEffect(
+    function () {
+      setSelectedDate(obtenerFechaSegura(value));
+    },
+    [value],
+  );
+
+  let displayedValue = getCurrentDate();
+
+  if (value !== "") {
+    displayedValue = value;
+  }
 
   let showError = false;
   let finalHelperText = helperText;
@@ -141,12 +125,30 @@ export default function DateInput({
     finalHelperText = "Este campo es obligatorio.";
   }
 
+  function abrirCalendarioWeb() {
+    if (webInputRef.current) {
+      webInputRef.current.focus();
+
+      try {
+        if (webInputRef.current.showPicker) {
+          webInputRef.current.showPicker();
+        }
+      } catch (errorPicker) {
+        console.log("No se pudo abrir showPicker:", errorPicker);
+      }
+    }
+  }
+
   function openCalendar() {
     if (disabled === true) {
       return;
     }
 
-    setCalendarDate(getSafeDate(displayedValue));
+    if (Platform.OS === "web") {
+      abrirCalendarioWeb();
+      return;
+    }
+
     setShowCalendar(true);
   }
 
@@ -154,36 +156,49 @@ export default function DateInput({
     setShowCalendar(false);
   }
 
-  function selectDate(date) {
-    if (allowFutureDates === false && isFutureDate(date) === true) {
+  function handleNativeChange(event, date) {
+    if (event && event.type === "dismissed") {
+      closeCalendar();
       return;
     }
 
-    if (onChangeText) {
-      onChangeText(formatDate(date));
+    if (Platform.OS === "android") {
+      closeCalendar();
     }
 
-    closeCalendar();
+    if (date) {
+      setSelectedDate(date);
+
+      if (onChangeText) {
+        onChangeText(formatDate(date));
+      }
+    }
   }
 
-  function goPreviousMonth() {
-    setCalendarDate(function (current) {
-      const safeCurrent = getSafeDate(current);
+  function handleWebChange(event) {
+    const valueWeb = event.target.value;
 
-      return new Date(safeCurrent.getFullYear(), safeCurrent.getMonth() - 1, 1);
-    });
+    if (valueWeb !== "") {
+      const fecha = convertirFechaWeb(valueWeb);
+
+      setSelectedDate(fecha);
+
+      if (onChangeText) {
+        onChangeText(formatDate(fecha));
+      }
+    }
   }
 
-  function goNextMonth() {
-    setCalendarDate(function (current) {
-      const safeCurrent = getSafeDate(current);
+  function handleWebClick(event) {
+    event.currentTarget.focus();
 
-      return new Date(safeCurrent.getFullYear(), safeCurrent.getMonth() + 1, 1);
-    });
-  }
-
-  function selectToday() {
-    selectDate(new Date());
+    try {
+      if (event.currentTarget.showPicker) {
+        event.currentTarget.showPicker();
+      }
+    } catch (errorPicker) {
+      console.log("No se pudo abrir el calendario:", errorPicker);
+    }
   }
 
   const inputStyles = [styles.input];
@@ -200,15 +215,37 @@ export default function DateInput({
     inputStyles.push(inputStyle);
   }
 
-  const selectedDate = getSafeDate(displayedValue);
-  const safeCalendarDate = getSafeDate(calendarDate);
-  const monthDays = getMonthDays(safeCalendarDate);
+  let maximumDate = undefined;
+  let webMaxDate = undefined;
+
+  if (allowFutureDates === false) {
+    maximumDate = new Date();
+    webMaxDate = obtenerFechaWeb(getCurrentDate());
+  }
+
+  const webInputStyle = {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: "100%",
+    height: "100%",
+    opacity: 0.01,
+    cursor: "pointer",
+    zIndex: 999,
+    borderWidth: 0,
+    borderColor: "transparent",
+    backgroundColor: "transparent",
+    color: "transparent",
+  };
 
   return (
     <View style={[styles.container, containerStyle]}>
       {label !== "" && (
         <Text style={[styles.label, labelStyle]}>
           {label}
+
           {required === true && <Text style={styles.requiredMark}> *</Text>}
         </Text>
       )}
@@ -226,6 +263,19 @@ export default function DateInput({
         <View style={styles.iconBox}>
           <Icon icon={ICONS.calendar} size={22} color={COLORS.primary} />
         </View>
+
+        {Platform.OS === "web" && (
+          <input
+            ref={webInputRef}
+            type="date"
+            value={obtenerFechaWeb(displayedValue)}
+            max={webMaxDate}
+            disabled={disabled}
+            onChange={handleWebChange}
+            onClick={handleWebClick}
+            style={webInputStyle}
+          />
+        )}
       </Pressable>
 
       {finalHelperText !== "" && (
@@ -236,91 +286,15 @@ export default function DateInput({
         </Text>
       )}
 
-      <Modal
-        transparent={true}
-        visible={showCalendar}
-        animationType="fade"
-        onRequestClose={closeCalendar}
-      >
-        <View style={styles.modalRoot}>
-          <Pressable style={styles.modalBackdrop} onPress={closeCalendar} />
-
-          <View style={styles.calendarCard}>
-            <View style={styles.calendarHeader}>
-              <Pressable style={styles.navButton} onPress={goPreviousMonth}>
-                <Text style={styles.navButtonText}>‹</Text>
-              </Pressable>
-
-              <Text style={styles.monthTitle}>
-                {MONTH_NAMES[safeCalendarDate.getMonth()]}{" "}
-                {safeCalendarDate.getFullYear()}
-              </Text>
-
-              <Pressable style={styles.navButton} onPress={goNextMonth}>
-                <Text style={styles.navButtonText}>›</Text>
-              </Pressable>
-            </View>
-
-            <View style={styles.weekRow}>
-              {DAY_NAMES.map(function (dayName) {
-                return (
-                  <Text key={dayName} style={styles.weekDay}>
-                    {dayName}
-                  </Text>
-                );
-              })}
-            </View>
-
-            <View style={styles.daysGrid}>
-              {monthDays.map(function (date, index) {
-                if (date === null) {
-                  return <View key={"empty-" + index} style={styles.dayCell} />;
-                }
-
-                const dayStyles = [styles.dayButton];
-                const dayTextStyles = [styles.dayText];
-                let disabledDay = false;
-
-                if (isSameCalendarDay(date, selectedDate) === true) {
-                  dayStyles.push(styles.daySelected);
-                  dayTextStyles.push(styles.daySelectedText);
-                }
-
-                if (allowFutureDates === false && isFutureDate(date) === true) {
-                  dayStyles.push(styles.dayDisabled);
-                  dayTextStyles.push(styles.dayDisabledText);
-                  disabledDay = true;
-                }
-
-                return (
-                  <Pressable
-                    key={formatDate(date)}
-                    style={styles.dayCell}
-                    onPress={function () {
-                      selectDate(date);
-                    }}
-                    disabled={disabledDay}
-                  >
-                    <View style={dayStyles}>
-                      <Text style={dayTextStyles}>{date.getDate()}</Text>
-                    </View>
-                  </Pressable>
-                );
-              })}
-            </View>
-
-            <View style={styles.calendarActions}>
-              <Pressable style={styles.todayButton} onPress={selectToday}>
-                <Text style={styles.todayButtonText}>Hoy</Text>
-              </Pressable>
-
-              <Pressable style={styles.closeButton} onPress={closeCalendar}>
-                <Text style={styles.closeButtonText}>Cerrar</Text>
-              </Pressable>
-            </View>
-          </View>
-        </View>
-      </Modal>
+      {showCalendar === true && Platform.OS !== "web" && (
+        <DateTimePicker
+          value={selectedDate}
+          mode="date"
+          display="default"
+          maximumDate={maximumDate}
+          onChange={handleNativeChange}
+        />
+      )}
     </View>
   );
 }
@@ -344,14 +318,15 @@ const styles = StyleSheet.create({
   input: {
     minHeight: 46,
     borderWidth: 1,
-    borderColor: COLORS.inputBorder,
+    borderColor: COLORS.secondary,
     borderRadius: 8,
-    paddingVertical: 10,
+    paddingVertical: 6,
     paddingLeft: 12,
-    paddingRight: 10,
+    paddingRight: 8,
     backgroundColor: COLORS.white,
     flexDirection: "row",
     alignItems: "center",
+    position: "relative",
   },
 
   inputError: {
@@ -389,156 +364,5 @@ const styles = StyleSheet.create({
 
   errorText: {
     color: COLORS.error,
-  },
-
-  modalRoot: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 16,
-  },
-
-  modalBackdrop: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(15, 23, 42, 0.35)",
-  },
-
-  calendarCard: {
-    width: "100%",
-    maxWidth: 360,
-    borderRadius: 18,
-    backgroundColor: COLORS.white,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    elevation: 12,
-    shadowColor: COLORS.black,
-    shadowOffset: {
-      width: 0,
-      height: 6,
-    },
-    shadowOpacity: 0.18,
-    shadowRadius: 14,
-  },
-
-  calendarHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 14,
-  },
-
-  navButton: {
-    width: 38,
-    height: 38,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: COLORS.primaryLight,
-  },
-
-  navButtonText: {
-    fontSize: 28,
-    lineHeight: 30,
-    color: COLORS.primary,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-  },
-
-  monthTitle: {
-    flex: 1,
-    textAlign: "center",
-    fontSize: 17,
-    color: COLORS.textSecondary,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-  },
-
-  weekRow: {
-    flexDirection: "row",
-    marginBottom: 8,
-  },
-
-  weekDay: {
-    flex: 1,
-    textAlign: "center",
-    fontSize: 12,
-    color: COLORS.textTertiary,
-    fontFamily: TYPOGRAPHY.fontFamily.medium,
-  },
-
-  daysGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-  },
-
-  dayCell: {
-    width: "14.285%",
-    height: 42,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  dayButton: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  daySelected: {
-    backgroundColor: COLORS.primary,
-  },
-
-  dayDisabled: {
-    opacity: 0.35,
-  },
-
-  dayText: {
-    color: COLORS.textSecondary,
-    fontSize: 14,
-    fontFamily: TYPOGRAPHY.fontFamily.medium,
-  },
-
-  daySelectedText: {
-    color: COLORS.white,
-  },
-
-  dayDisabledText: {
-    color: COLORS.textQuaternary,
-  },
-
-  calendarActions: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    gap: 10,
-    marginTop: 14,
-  },
-
-  todayButton: {
-    borderWidth: 1,
-    borderColor: COLORS.primary,
-    borderRadius: 10,
-    paddingVertical: 9,
-    paddingHorizontal: 14,
-    backgroundColor: COLORS.white,
-  },
-
-  todayButtonText: {
-    color: COLORS.primary,
-    fontFamily: TYPOGRAPHY.fontFamily.medium,
-  },
-
-  closeButton: {
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: 10,
-    paddingVertical: 9,
-    paddingHorizontal: 14,
-    backgroundColor: COLORS.surface,
-  },
-
-  closeButtonText: {
-    color: COLORS.textSecondary,
-    fontFamily: TYPOGRAPHY.fontFamily.medium,
   },
 });
