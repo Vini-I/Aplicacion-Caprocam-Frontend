@@ -27,7 +27,7 @@
  * <ModalEliminar
  *     visible={modalVisible}
  *     title="¿Eliminar finca?"
- *     message={`¿Está seguro que desea eliminar ${nombre}?`}
+ *     message={`${nombre}`}
  *     confirmText="Sí, eliminar"
  *     cancelText="Cancelar"
  *     onConfirm={confirmarEliminar}
@@ -62,11 +62,11 @@ export default function ModalEliminar({
       containerStyle={STYLE.contentWrapper}
     >
       <Title level={3} style={styles.titleText}>
-        {title}
+        ¿Eliminar {title}?
       </Title>
 
       <Text numberOfLines={2} style={styles.messageText}>
-        {message}
+        ¿Estás seguro que deseas eliminar <Text style={styles.boldText} >{message}</Text>?
       </Text>
 
       <Button style={styles.confirmButton} onPress={onConfirm}>
@@ -107,6 +107,10 @@ export const styles = StyleSheet.create({
   messageText: {
     color: COLORS.textTertiary,
     alignSelf: "center",
-    fontWeight: "600",
+    fontWeight: 600
+  },
+  
+  boldText: {
+    fontWeight: "bold",
   },
 });
