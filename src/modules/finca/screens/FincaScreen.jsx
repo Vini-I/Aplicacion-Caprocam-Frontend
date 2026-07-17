@@ -132,8 +132,8 @@ export default function FincasScreen({ onDetail, onNew, onEdit }) {
         
         <ModalEliminar
           visible={ModalVisible}
-          title="¿Eliminar finca?"
-          message={`¿Estás seguro que deseas eliminar ${FincaNombreSeleccionada}?`}
+          title="finca"
+          message={FincaNombreSeleccionada}
           onCancel={cancelarEliminar}
           onConfirm={confirmarEliminar}
         />
