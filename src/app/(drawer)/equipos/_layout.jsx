@@ -29,7 +29,8 @@ export default function MantEquipoStackLayout() {
       <Stack.Screen name="mantEquipo" options={{ title: "Mantenimiento de Equipos", headerShown: true }} />
       <Stack.Screen name="tareas" options={{ title: "Tareas", headerShown: true }} />
       <Stack.Screen name="registrarEquipo" options={{ title: "Registrar Equipo", headerShown: true }} />
-      <Stack.Screen name="tareaForm" options={{ title: "Formulario de Tarea", headerShown: true }}/>
-      </Stack>
+      <Stack.Screen name="tareaForm" options={{ title: "Formulario de Tarea", headerShown: true }} />
+      <Stack.Screen name="detalleTarea" options={{ title: "Detalle de Tarea", headerShown: true }} />
+    </Stack>
   );
 }

@@ -29,105 +29,33 @@ let TAREAS_MOCK = [
     categoria: "preventivo",
     duracionEstimada: 2.5,
     estado: "no_iniciada",           // <-- nuevo
-    productos: [                     // <-- nuevo
-      { productoId: 1, cantidad: 2 },
-      { productoId: 3, cantidad: 1 },
+productos: [
+  { productoId: 1, nombre: "Alimento Biomar 35%", cantidad: 2 },
+  { productoId: 3, nombre: "Cal agrícola", cantidad: 1 },
     ],
   },
-    {
-    id: "T001",
+  {
+    id: "T002",
     nombre: "Cambio de aceite y filtros",
     descripcion: "Realizar cambio de aceite y filtros de los motores de bombeo.",
     categoria: "preventivo",
     duracionEstimada: 2.5,
     estado: "no_iniciada",           // <-- nuevo
-    productos: [                     // <-- nuevo
-      { productoId: 1, cantidad: 2 },
-      { productoId: 3, cantidad: 1 },
+productos: [
+  { productoId: 1, nombre: "Alimento Biomar 35%", cantidad: 2 },
+  { productoId: 3, nombre: "Cal agrícola", cantidad: 1 },
     ],
   },
     {
-    id: "T001",
-    nombre: "Cambio de aceite y filtros",
+    id: "T003",
+    nombre: "Nuevo de aceite y filtros",
     descripcion: "Realizar cambio de aceite y filtros de los motores de bombeo.",
     categoria: "preventivo",
     duracionEstimada: 2.5,
-    estado: "no_iniciada",           // <-- nuevo
-    productos: [                     // <-- nuevo
-      { productoId: 1, cantidad: 2 },
-      { productoId: 3, cantidad: 1 },
-    ],
-  },
-    {
-    id: "T001",
-    nombre: "Cambio de aceite y filtros",
-    descripcion: "Realizar cambio de aceite y filtros de los motores de bombeo.",
-    categoria: "preventivo",
-    duracionEstimada: 2.5,
-    estado: "no_iniciada",           // <-- nuevo
-    productos: [                     // <-- nuevo
-      { productoId: 1, cantidad: 2 },
-      { productoId: 3, cantidad: 1 },
-    ],
-  },
-    {
-    id: "T001",
-    nombre: "Cambio de aceite y filtros",
-    descripcion: "Realizar cambio de aceite y filtros de los motores de bombeo.",
-    categoria: "preventivo",
-    duracionEstimada: 2.5,
-    estado: "no_iniciada",           // <-- nuevo
-    productos: [                     // <-- nuevo
-      { productoId: 1, cantidad: 2 },
-      { productoId: 3, cantidad: 1 },
-    ],
-  },
-    {
-    id: "T001",
-    nombre: "Cambio de aceite y filtros",
-    descripcion: "Realizar cambio de aceite y filtros de los motores de bombeo.",
-    categoria: "preventivo",
-    duracionEstimada: 2.5,
-    estado: "no_iniciada",           // <-- nuevo
-    productos: [                     // <-- nuevo
-      { productoId: 1, cantidad: 2 },
-      { productoId: 3, cantidad: 1 },
-    ],
-  },
-    {
-    id: "T001",
-    nombre: "Cambio de aceite y filtros",
-    descripcion: "Realizar cambio de aceite y filtros de los motores de bombeo.",
-    categoria: "preventivo",
-    duracionEstimada: 2.5,
-    estado: "no_iniciada",           // <-- nuevo
-    productos: [                     // <-- nuevo
-      { productoId: 1, cantidad: 2 },
-      { productoId: 3, cantidad: 1 },
-    ],
-  },
-    {
-    id: "T001",
-    nombre: "Cambio de aceite y filtros",
-    descripcion: "Realizar cambio de aceite y filtros de los motores de bombeo.",
-    categoria: "preventivo",
-    duracionEstimada: 2.5,
-    estado: "no_iniciada",           // <-- nuevo
-    productos: [                     // <-- nuevo
-      { productoId: 1, cantidad: 2 },
-      { productoId: 3, cantidad: 1 },
-    ],
-  },
-    {
-    id: "T001",
-    nombre: "Cambio de aceite y filtros",
-    descripcion: "Realizar cambio de aceite y filtros de los motores de bombeo.",
-    categoria: "preventivo",
-    duracionEstimada: 2.5,
-    estado: "no_iniciada",           // <-- nuevo
-    productos: [                     // <-- nuevo
-      { productoId: 1, cantidad: 2 },
-      { productoId: 3, cantidad: 1 },
+    estado: "en_ejecucion",           // <-- nuevo
+productos: [
+  { productoId: 1, nombre: "Alimento Biomar 35%", cantidad: 2 },
+  { productoId: 3, nombre: "Cal agrícola", cantidad: 1 },
     ],
   },
 ];
