@@ -7,11 +7,21 @@
  * opciones de selección para la pantalla de finca de crecimiento.
  */
 
+
 import { useLocalSearchParams } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 
 import { fincas } from "../../finca/screens/FincaData.js";
 import { estanques, searchEstanqueById } from "../services/EstanqueData.js";
+
+function getFechaHoy() {
+  const hoy = new Date();
+  const dia = String(hoy.getDate()).padStart(2, "0");
+  const mes = String(hoy.getMonth() + 1).padStart(2, "0");
+  const anio = hoy.getFullYear();
+
+  return `${dia}/${mes}/${anio}`;
+}
 
 export function useFincaCrecimiento() {
   const { id } = useLocalSearchParams();
@@ -24,6 +34,7 @@ export function useFincaCrecimiento() {
   const [fincaSeleccionada, setFincaSeleccionada] = useState("");
   const [estanqueSeleccionado, setEstanqueSeleccionado] = useState("");
   const [pesoActual, setPesoActual] = useState("");
+  const [fechaRegistro, setFechaRegistro] = useState(getFechaHoy());
 
   const [submitted, setSubmitted] = useState(false);
   const [errors, setErrors] = useState({});
@@ -86,9 +97,13 @@ export function useFincaCrecimiento() {
       nextErrors.peso = "Ingrese un peso actual válido.";
     }
 
+    if (!fechaRegistro) {
+      nextErrors.fecha = "Seleccione una fecha de registro.";
+    }
+
     setErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
-  }, [fincaSeleccionada, estanqueSeleccionado, pesoActual]);
+  }, [fincaSeleccionada, estanqueSeleccionado, pesoActual, fechaRegistro]);
 
   const handleFincaChange = useCallback((value) => {
     setFincaSeleccionada(value);
@@ -122,6 +137,18 @@ export function useFincaCrecimiento() {
     [submitted],
   );
 
+  const handleFechaRegistroChange = useCallback(
+    (value) => {
+      setFechaRegistro(value);
+      setSuccessMessage("");
+      setErrorMessage("");
+      if (submitted) {
+        setErrors((prev) => ({ ...prev, fecha: undefined }));
+      }
+    },
+    [submitted],
+  );
+
   const guardarDatos = useCallback(() => {
     setSubmitted(true);
     setSuccessMessage("");
@@ -147,17 +174,20 @@ export function useFincaCrecimiento() {
   const mostrarErrorFinca = submitted && Boolean(errors.finca);
   const mostrarErrorEstanque = submitted && Boolean(errors.estanque);
   const mostrarErrorPeso = submitted && Boolean(errors.peso);
+  const mostrarErrorFecha = submitted && Boolean(errors.fecha);
 
   return {
     fincaSeleccionada,
     estanqueSeleccionado,
     pesoActual,
+    fechaRegistro,
     opcionesFincas,
     estanquesFiltrados,
     estanqueSeleccionadoObj,
     estanque,
     setEstanqueSeleccionado: handleEstanqueChange,
     setPesoActual: handlePesoActualChange,
+    setFechaRegistro: handleFechaRegistroChange,
     handleFincaChange,
     guardarDatos,
     submitted,
@@ -168,5 +198,6 @@ export function useFincaCrecimiento() {
     mostrarErrorFinca,
     mostrarErrorEstanque,
     mostrarErrorPeso,
+    mostrarErrorFecha,
   };
 }
