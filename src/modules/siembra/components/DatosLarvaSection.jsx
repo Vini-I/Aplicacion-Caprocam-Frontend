@@ -327,8 +327,6 @@ export default function DatosLarvaSection({
         visible={vistaModal === "eliminar"}
         title={info ? info.titulo : "ítem"}
         message={itemAEliminar?.label ?? ""}
-        confirmText="Sí, eliminar"
-        cancelText="Cancelar"
         onConfirm={confirmarEliminar}
         onCancel={volverALista}
       />
