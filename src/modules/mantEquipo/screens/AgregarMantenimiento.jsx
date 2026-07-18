@@ -35,7 +35,7 @@
  * ============================================================
  */
 
-import React, { useState, useCallback, useEffect } from "react";
+import React from "react";
 import { View, ScrollView } from "react-native";
 
 import CustomText from "../../../shared/components/Text.jsx";
@@ -49,197 +49,61 @@ import { ICONS } from "../../../theme/icons.js";
 import { COLORS } from "../../../theme/colors.js";
 import { STYLE } from "../../../theme/style.js";
 import { styles } from "../styles/mantEquipoStyles.js";
-import { TYPOGRAPHY } from "../../../theme/typography.js";
 
-import {
-  TEXTOS_MODAL_AGREGAR,
-  USUARIO_SESION,
-} from "../constants/mantEquipoMensajes.js";
-import { TAREAS_DEMO } from "../services/tareasService.js";
+import { TEXTOS_MODAL_AGREGAR, USUARIO_SESION, LISTA_ESTADOS_TICKET, LISTA_TIPOS_PERSONAL }
+  from "../constants/mantEquipoMensajes.js";
 import * as MantService from "../services/mantEquipoService.js";
-import { generarNuevoId, obtenerFechaHoraActual } from "../utils/mantEquipoUtils.js";
 import MantenimientoEquipoSelect from "../components/MantenimientoEquipoSelect.jsx";
 import MantenimientoTareaSelect from "../components/MantenimientoTareaSelect.jsx";
 import EquipoDetail from "../components/EquipoDetailTicket.jsx";
-
 import SelectorPills from "../components/SelectorPills.jsx";
 import TareasSeleccionadasList from "../components/TareasSeleccionadasList.jsx";
 import Select from "../../../shared/components/Select.jsx";
-import { getProductosInventario } from "../../inventarios/services/InventarioService.js";
 import ProductosSeleccionadosList from "../components/ProductosSeleccionadosList.jsx";
 import DateInput from "../../../shared/components/DateInput.jsx";
-import { parseDate } from "../../../shared/utils/dateUtils.js";
 
-// Monkey patch de ScrollView para forzar la ocultación de scrollbars en todo el módulo
-if (ScrollView.prototype && ScrollView.prototype.render) {
-  const originalRender = ScrollView.prototype.render;
-  ScrollView.prototype.render = function () {
-    this.props = {
-      ...this.props,
-      showsVerticalScrollIndicator: false,
-      showsHorizontalScrollIndicator: false,
-    };
-    return originalRender.apply(this, arguments);
-  };
-} else if (ScrollView.render) {
-  const originalRender = ScrollView.render;
-  ScrollView.render = function (props, ref) {
-    const newProps = {
-      ...props,
-      showsVerticalScrollIndicator: false,
-      showsHorizontalScrollIndicator: false,
-    };
-    return originalRender(newProps, ref);
-  };
-}
-
-export default function AgregarMantenimientoScreen({ onNavigateToMain = () => {} }) {
-
-  const [titulo, setTitulo] = useState("");
-  const [descripcion, setDescripcion] = useState("");
-  const [equipoId, setEquipoId] = useState("");
-  const [estadoEquipo, setEstadoEquipo] = useState("");
-  const [equipoSeleccionado, setEquipoSeleccionado] = useState(null);
-  const [tareasSeleccionadas, setTareasSeleccionadas] = useState([]);
-  const [errores, setErrores] = useState({});
-  const [submitted, setSubmitted] = useState(false);
-  const [fecha, setFecha] = useState(obtenerFechaHoraActual());
-
-  // Nuevos campos de Horas de uso y Costos del estándar
-  const [horasUso, setHorasUso] = useState("");
-  const [tipoPersonal, setTipoPersonal] = useState("interno");
-  const [costoManoObra, setCostoManoObra] = useState("0");
-  const [estadoTicket, setEstadoTicket] = useState("en_espera");
-
-  // Insumos del inventario
-  const [productosSeleccionados, setProductosSeleccionados] = useState([]);
-  const [productosList, setProductosList] = useState([]);
-
-  useEffect(() => {
-    const list = getProductosInventario() || [];
-    setProductosList(list);
-  }, []);
-
-  const seleccionarProducto = (prodId) => {
-    if (!prodId) return;
-    const prod = productosList.find(p => String(p.id) === String(prodId));
-    if (prod && !productosSeleccionados.some(x => x.id === prod.id)) {
-      setProductosSeleccionados(prev => [...prev, prod]);
-    }
-  };
-
-  const quitarProducto = (prodId) => {
-    setProductosSeleccionados(prev => prev.filter(p => p.id !== prodId));
-  };
+import { useAgregarMantenimiento } from "../hooks/useAgregarMantenimiento.js";
 
 
+export default function AgregarMantenimientoScreen({ onNavigateToMain = () => { } }) {
 
-  const seleccionarEquipoById = (eq) => {
-    if (eq) {
-      setEquipoSeleccionado(eq);
-      setEquipoId(eq.id);
-      setEstadoEquipo(eq.estado || "");
-      // Pre-cargar horas de uso actuales
-      setHorasUso(String(eq.horasUso || ""));
-      if (errores.equipoId) setErrores((prev) => { const s = { ...prev }; delete s.equipoId; return s; });
-      if (errores.horasUso) setErrores((prev) => { const s = { ...prev }; delete s.horasUso; return s; });
-    }
-  };
-
-  const quitarEquipo = () => {
-    setEquipoSeleccionado(null);
-    setEquipoId("");
-    setEstadoEquipo("");
-    setHorasUso("");
-  };
-
-
-
-  // Calcular el costo total dinámicamente sumando mano de obra y el precio de todos los insumos seleccionados
-  const numManoObra = parseFloat(costoManoObra) || 0;
-  const precioInsumos = productosSeleccionados.reduce((sum, p) => sum + (parseFloat(p.precioUnidad) || 0), 0);
-  const costoTotal = numManoObra + precioInsumos;
-
-  const validar = () => {
-    const err = {};
-    if (!titulo.trim()) err.titulo = true;
-    if (!equipoId) err.equipoId = true;
-    if (!descripcion.trim()) err.descripcion = true;
-    if (tareasSeleccionadas.length === 0) err.tareas = true;
-
-    // El costo de mano de obra es obligatorio en cualquier estado (debe ser un número >= 0)
-    if (!costoManoObra.trim() || isNaN(costoManoObra) || parseFloat(costoManoObra) < 0) {
-      err.costoManoObra = true;
-    }
-
-    // No se puede terminar el ticket si existen tareas pendientes
-    if (estadoTicket === "Terminado" && tareasSeleccionadas.some(t => !t.realizada)) {
-      err.tareasPendientes = true;
-    }
-
-    setErrores(err);
-    return Object.keys(err).length === 0;
-  };
-
-  const handleCrear = () => {
-    setSubmitted(true);
-    if (!validar()) return;
-
-    // Crear el payload del nuevo ticket
-    const nuevo = {
-      id: generarNuevoId(MantService.TICKETS_MOCK),
-      equipoId,
-      herramienta: `${equipoSeleccionado.nombre} ${equipoSeleccionado.serie}`,
-      titulo: titulo.trim(),
-      descripcion: descripcion.trim(),
-      tareas: tareasSeleccionadas,
-      estado: estadoTicket,
-      creadoPor: USUARIO_SESION,
-      fechaCreacion: parseDate(fecha) || new Date(),
-
-      horasUsoIngreso: equipoSeleccionado ? equipoSeleccionado.horasUso : 0,
-      tipoPersonal: tipoPersonal,
-      costoMiscelaneo: 0,
-      costoManoObra: parseFloat(costoManoObra) || 0,
-      costoTotal: costoTotal,
-      productos: productosSeleccionados.map(p => ({ id: p.id, precio: p.precioUnidad })),
-    };
-
-    // Agregar el ticket al servicio mutable
-    MantService.agregarTicket(nuevo);
-
-    // Actualizar estado del equipo si se modificó
-    if (estadoEquipo) {
-      MantService.actualizarEstadoEquipo(equipoId, estadoEquipo);
-    }
-
-    // Reiniciar las horas de uso del equipo a 0 solo si se completa el ticket ("Terminado")
-    if (estadoTicket === "Terminado") {
-      MantService.reiniciarHorasEquipo(equipoId);
-    }
-
-    // Redireccionar al listado principal con alerta de éxito
-    onNavigateToMain({
-      alertaTipo: "success",
-      alertaMensaje: `Ticket ${nuevo.id} creado con éxito.`,
-    });
-  };
+  const {
+    titulo, setTitulo,
+    descripcion, setDescripcion,
+    equipoId,
+    estadoEquipo, setEstadoEquipo,
+    equipoSeleccionado,
+    tareasSeleccionadas, setTareasSeleccionadas,
+    fecha, setFecha,
+    tipoPersonal, setTipoPersonal,
+    costoManoObra, setCostoManoObra,
+    estadoTicket, setEstadoTicket,
+    productosList,
+    productosSeleccionados,
+    costoTotal,
+    errores, setErrores,
+    submitted,
+    seleccionarEquipoById,
+    quitarEquipo,
+    seleccionarProducto,
+    quitarProducto,
+    handleCrear,
+  } = useAgregarMantenimiento({ onNavigateToMain });
 
   const SectionTitle = ({ icon, title }) => (
-    <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
-      <Icon icon={icon} size={18} color={COLORS.primary} style={{ marginRight: 8 }} />
-      <CustomText style={{ fontSize: 14, fontWeight: "700", color: COLORS.textPrimary, letterSpacing: 0.3 }}>
-        {title}
-      </CustomText>
+    <View style={styles.sectionTitleRow}>
+      <Icon icon={icon} size={18} color={COLORS.primary} style={styles.sectionTitleIcon} />
+      <CustomText style={styles.sectionTitleText}>{title}</CustomText>
     </View>
   );
 
   return (
-    <ScrollView style={STYLE.container} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
-      <View style={[STYLE.contentWrapper, { paddingBottom: 40, gap: 16 }]}>
+    <ScrollView style={STYLE.container} keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
+      <View style={[STYLE.contentWrapper, styles.screenFormContent]}>
 
         {/* Sección: IDENTIFICACIÓN Y GENERAL */}
-        <Card style={[styles.card, { padding: 16 }]}>
+        <Card style={[styles.card, styles.cardSection]}>
           <SectionTitle icon={ICONS.document} title="IDENTIFICACIÓN Y DATOS GENERALES" />
 
           {/* Fecha y Creado por */}
@@ -257,8 +121,8 @@ export default function AgregarMantenimientoScreen({ onNavigateToMain = () => {}
             <View style={styles.halfCol}>
               <View style={styles.comboContainer}>
                 <CustomText style={styles.comboLabel}>{TEXTOS_MODAL_AGREGAR.labelCreadoPor}</CustomText>
-                <View style={[styles.comboInput, { backgroundColor: COLORS.surface }]}>
-                  <CustomText style={{ fontSize: 14, color: COLORS.textSecondary }}>{USUARIO_SESION}</CustomText>
+                <View style={[styles.comboInput, styles.readOnlyField]}>
+                  <CustomText style={styles.readOnlyText}>{USUARIO_SESION}</CustomText>
                 </View>
               </View>
             </View>
@@ -292,13 +156,14 @@ export default function AgregarMantenimientoScreen({ onNavigateToMain = () => {}
               multiline
               numberOfLines={4}
               containerStyle={{ marginBottom: 0 }}
-              style={[styles.comboInput, { minHeight: 80, textAlignVertical: "top" }, submitted && errores.descripcion && { borderColor: COLORS.error }]}
+              style={[styles.comboInput, styles.inputMultiline, submitted && errores.descripcion &&
+                { borderColor: COLORS.error }]}
             />
           </View>
         </Card>
 
         {/* Sección: DETALLES DEL EQUIPO */}
-        <Card style={[styles.card, { padding: 16 }]}>
+        <Card style={[styles.card, styles.cardSection]}>
           <SectionTitle icon={ICONS.tools} title="DETALLES DEL EQUIPO" />
 
           {/* Selector de Equipo */}
@@ -321,7 +186,7 @@ export default function AgregarMantenimientoScreen({ onNavigateToMain = () => {}
         </Card>
 
         {/* Sección: TAREAS ASIGNADAS */}
-        <Card style={[styles.card, { padding: 16 }]}>
+        <Card style={[styles.card, styles.cardSection]}>
           <SectionTitle icon={ICONS.clipboard} title="TAREAS ASIGNADAS" />
 
           {/* Tareas (Selector Combobox) */}
@@ -341,7 +206,7 @@ export default function AgregarMantenimientoScreen({ onNavigateToMain = () => {}
         </Card>
 
         {/* Sección: COSTOS Y ESTADO DEL TICKET */}
-        <Card style={[styles.card, { padding: 16 }]}>
+        <Card style={[styles.card, styles.cardSection]}>
           <SectionTitle icon={ICONS.money} title="COSTOS Y PERSONAL" />
 
           {/* Tipo de Personal */}
@@ -352,10 +217,7 @@ export default function AgregarMantenimientoScreen({ onNavigateToMain = () => {}
               setTipoPersonal(v);
               if (v === "interno") setCostoManoObra("0");
             }}
-            opciones={[
-              { label: "Trabajador Interno", value: "interno" },
-              { label: "Trabajador Externo", value: "externo" }
-            ]}
+            opciones={LISTA_TIPOS_PERSONAL}
           />
 
           {/* Selector de Producto / Insumo */}
@@ -373,7 +235,7 @@ export default function AgregarMantenimientoScreen({ onNavigateToMain = () => {}
             onChange={seleccionarProducto}
             placeholder="Seleccione productos..."
             containerStyle={{ marginBottom: 12 }}
-            selectStyle={[styles.comboInput, { minHeight: 45 }]}
+            selectStyle={[styles.comboInput, styles.selectMinHeight]}
             labelStyle={styles.comboLabel}
             showsVerticalScrollIndicator={false}
           />
@@ -400,19 +262,9 @@ export default function AgregarMantenimientoScreen({ onNavigateToMain = () => {}
           </View>
 
           {/* Preview del Precio Global */}
-          <View style={{
-            backgroundColor: COLORS.primaryLight,
-            borderColor: COLORS.primary,
-            borderWidth: 1,
-            borderRadius: 8,
-            padding: 12,
-            marginVertical: 12,
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center"
-          }}>
-            <CustomText style={{ fontSize: 13, fontWeight: "700", color: COLORS.textSecondary }}>Costo Total Estimado:</CustomText>
-            <CustomText style={{ fontSize: 16, fontWeight: "700", color: COLORS.primary }}>₡{costoTotal.toLocaleString("es-CR")}</CustomText>
+          <View style={styles.costoTotalBox}>
+            <CustomText style={styles.costoTotalLabel}>Costo Total Estimado:</CustomText>
+            <CustomText style={styles.costoTotalValor}>₡{costoTotal.toLocaleString("es-CR")}</CustomText>
           </View>
 
           {/* Estado del ticket */}
@@ -420,11 +272,7 @@ export default function AgregarMantenimientoScreen({ onNavigateToMain = () => {}
             label={TEXTOS_MODAL_AGREGAR.labelEstado}
             value={estadoTicket}
             onChange={(v) => setEstadoTicket(v)}
-            opciones={[
-              { label: "En espera", value: "en_espera" },
-              { label: "En mantenimiento", value: "en_mantenimiento" },
-              { label: "Terminado", value: "Terminado" }
-            ]}
+            opciones={LISTA_ESTADOS_TICKET}
           />
         </Card>
 
@@ -433,30 +281,20 @@ export default function AgregarMantenimientoScreen({ onNavigateToMain = () => {}
           <Alert
             variant="danger"
             message={errores.tareasPendientes ? "No se puede terminar el ticket si existen tareas pendientes." : "Revisa los campos obligatorios marcados con * antes de guardar."}
-            containerStyle={{ marginVertical: 12, alignItems: "center", justifyContent: "center", width: "100%" }}
-            textStyle={{ color: "#000000", fontWeight: "600", fontSize: 13, textAlign: "center", width: "100%" }}
+            containerStyle={styles.alertValidacion}
+            textStyle={styles.alertValidacionTexto}
           />
         )}
 
         {/* Botones de acción del Formulario */}
-        <View style={styles.modalFooter}>
-          <Button
-            variant="outline"
-            onPress={() => onNavigateToMain({})}
-            style={styles.btnCancel}
-          >
-            <Icon icon={ICONS.exit} size={15} color={COLORS.primary} />
-            <CustomText style={{ color: COLORS.primary, fontWeight: "600" }}>
-              {TEXTOS_MODAL_AGREGAR.btnCancelar}
-            </CustomText>
-          </Button>
+        <View style={styles.formFooter}>
           <Button
             variant="outline"
             onPress={handleCrear}
-            style={styles.btnAccept}
+            style={[styles.btnAccept, { flex: 1 }]}
           >
             <Icon icon={ICONS.check} size={15} color={COLORS.primary} />
-            <CustomText style={{ color: COLORS.primary, fontWeight: "600" }}>
+            <CustomText style={styles.btnTextPrimary}>
               {TEXTOS_MODAL_AGREGAR.btnAceptar}
             </CustomText>
           </Button>
