@@ -7,13 +7,18 @@
  * orquesta los modales de creación/edición y detalle.
  */
 
-import React, { useState } from "react";
-import { View, FlatList, TextInput, Pressable, Text, ScrollView } from "react-native";
+import React, { useState, useMemo } from "react";
+import { View, Pressable, Text, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
 
 import Spinner from "../../../shared/components/Spinner.jsx";
 import Button  from "../../../shared/components/Button.jsx";
 import Modal   from "../../../shared/components/Modal.jsx";
+import SearchBar from "../../inventarios/components/SearchBar.jsx";
+import Badge from "../../../shared/components/Badge.jsx";
+import FilterButton from "../../inventarios/components/FilterButton";
+import Icon from "../../../shared/components/Icons.jsx";
+import { ICONS } from "../../../theme/icons.js";
 
 import { COLORS } from "../../../theme/colors.js";
 import { styles } from "../styles/mantEquipoStyles.js";
@@ -21,54 +26,16 @@ import { useMantEquipo }           from "../hooks/useMantEquipo.js";
 import { useAgregarMantenimiento } from "../hooks/useAgregarMantenimiento.js";
 import ModalAgregarMantenimiento   from "./ModalAgregarMantenimiento.jsx";
 
-import { formatearFechaCorta, etiquetaPorEstado } from "../utils/mantEquipoUtils.js";
 import {
-  OPCIONES_FILTRO, TEXTOS_PANTALLA,
-  HEADERS_TABLA,   TEXTOS_MODAL_DETALLE,
+  formatearFechaCorta, etiquetaPorEstado, variantePorEstado,
+} from "../utils/mantEquipoUtils.js";
+import {
+  TEXTOS_PANTALLA,
+  HEADERS_TABLA,   TEXTOS_MODAL_DETALLE, TAREAS_DEMO,
 } from "../constants/mantEquipoMensajes.js";
 import * as MantService from "../services/mantEquipoService.js";
 
 // ── Componentes internos ──────────────────────────────────────
-
-/**
- * Select personalizado con dropdown absolutamente posicionado.
- * Permite al usuario elegir por qué campo filtrar la tabla.
- *
- * @param {string}   value       - Opción actualmente seleccionada.
- * @param {Array}    options     - Lista de opciones { label, value }.
- * @param {Function} onChange    - Callback al seleccionar una opción.
- * @param {string}   placeholder - Texto cuando no hay selección.
- */
-function FiltroSelect({ value, options, onChange, placeholder }) {
-  const [open, setOpen] = useState(false);
-  const label = options.find((o) => o.value === value)?.label ?? placeholder;
-
-  return (
-    <View style={{ minWidth: 160, zIndex: 100 }}>
-      <Pressable
-        onPress={() => setOpen((v) => !v)}
-        style={{ height: 42, borderWidth: 1, borderColor: COLORS.secondary, borderRadius: 8, backgroundColor: COLORS.white, flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 12 }}
-      >
-        <Text style={{ fontSize: 14, color: COLORS.textSecondary }}>{label}</Text>
-        <Text style={{ fontSize: 16, color: COLORS.textTertiary }}>▾</Text>
-      </Pressable>
-
-      {open && (
-        <View style={{ position: "absolute", top: 46, left: 0, right: 0, borderWidth: 1, borderColor: COLORS.secondary, borderRadius: 8, backgroundColor: COLORS.white, zIndex: 200, shadowColor: "#000", shadowOpacity: 0.1, shadowRadius: 6, elevation: 10 }}>
-          {options.map((op) => (
-            <Pressable
-              key={op.value}
-              onPress={() => { onChange(op.value); setOpen(false); }}
-              style={{ paddingVertical: 11, paddingHorizontal: 12, borderBottomWidth: 1, borderBottomColor: COLORS.secondary }}
-            >
-              <Text style={{ fontSize: 14, color: COLORS.textPrimary }}>{op.label}</Text>
-            </Pressable>
-          ))}
-        </View>
-      )}
-    </View>
-  );
-}
 
 /**
  * Badge de estado de un ticket. Si el ticket está "fuera de servicio",
@@ -77,19 +44,26 @@ function FiltroSelect({ value, options, onChange, placeholder }) {
  * @param {object}   ticket   - Ticket que contiene el estado a mostrar.
  * @param {Function} onToggle - Callback al presionar el badge (solo activo en estado FUERA_DE_SERVICIO).
  */
-function BadgeEstado({ ticket, onToggle }) {
-  const esFuera = ticket.estado === MantService.ESTADOS?.FUERA_DE_SERVICIO;
+function BadgeEstado({ ticket }) {
+  const label = etiquetaPorEstado(ticket.estado);
+  const variant = variantePorEstado(ticket.estado);
+
+  let textColor = COLORS.textSecondary;
+  if (variant === "success") {
+    textColor = COLORS.success;
+  } else if (variant === "warning") {
+    textColor = COLORS.warning;
+  } else if (variant === "info") {
+    textColor = COLORS.primary;
+  }
+
   return (
-    <Pressable
-      onPress={(e) => { e.stopPropagation?.(); esFuera && onToggle(ticket.id); }}
-      accessibilityRole="button"
-    >
-      <View style={esFuera ? styles.badgeFuera : styles.badgeEnMant}>
-        <Text style={esFuera ? styles.badgeTextFuera : styles.badgeText}>
-          {etiquetaPorEstado(ticket.estado)}
-        </Text>
-      </View>
-    </Pressable>
+    <Badge
+      label={label}
+      variant={variant}
+      textStyle={{ color: textColor, fontWeight: "600", fontSize: 11 }}
+      style={{ paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, alignSelf: "flex-start", marginTop: 0 }}
+    />
   );
 }
 
@@ -100,17 +74,33 @@ function BadgeEstado({ ticket, onToggle }) {
  * @param {Function} onToggle    - Callback para cambiar el estado del ticket.
  * @param {Function} onVerDetalle - Callback al presionar la fila (abre el modal de detalle).
  */
-function FilaTicket({ ticket, onToggle, onVerDetalle }) {
+function FilaTicket({ ticket, onVerDetalle }) {
   return (
     <Pressable style={styles.row} onPress={() => onVerDetalle(ticket)}>
       <View style={styles.colTicket}><Text style={styles.ticketLink}>{ticket.id}</Text></View>
       <View style={styles.colDue}><Text style={styles.cellText}>{formatearFechaCorta(ticket.fechaCreacion)}</Text></View>
-      <View style={styles.colStatus}><BadgeEstado ticket={ticket} onToggle={onToggle} /></View>
+      <View style={styles.colStatus}><BadgeEstado ticket={ticket} /></View>
       <View style={styles.colTool}><Text style={styles.cellText}>{ticket.herramienta}</Text></View>
+      <View style={styles.colTareas}>
+        {ticket.tareas && ticket.tareas.length > 0 ? (
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 4 }}>
+            {ticket.tareas.map((t, idx) => {
+              const fullTask = TAREAS_DEMO.find((d) => d.value === t.value) || t;
+              return (
+                <Badge key={idx} label={fullTask.nombre || fullTask.label} variant="info" 
+                  style={{ paddingHorizontal: 6, paddingVertical: 3, borderRadius: 6, maxWidth: "100%" }} 
+                  textStyle={{ fontSize: 10, flexShrink: 1, flexWrap: "wrap" }} />
+              );
+            })}
+          </View>
+        ) : (
+          <Text style={styles.cellText}>—</Text>
+        )}
+      </View>
       <View style={styles.colDesc}><Text style={styles.cellText} numberOfLines={2}>{ticket.descripcion}</Text></View>
       <View style={styles.colBy}>
         <Text style={styles.cellText}>{ticket.creadoPor}</Text>
-        <Text style={styles.cellTextSub}>{formatearFechaCorta(ticket.fechaCreacion)}</Text>
+        <Text style={styles.cellTextSub}>{MantService.EMPLEADOS_MOCK[ticket.creadoPor]?.id || "—"}</Text>
       </View>
     </Pressable>
   );
@@ -145,10 +135,15 @@ function ModalDetalleTicket({ ticket, onClose, onModificar, onEliminar }) {
     <Modal visible onClose={onClose} showCloseButton={false} containerStyle={styles.modalContainer}>
       <View style={styles.detalleEncabezado}>
         <Text style={styles.modalTitle}>{T.titulo}</Text>
-        <View style={esFuera ? styles.badgeFuera : styles.badgeEnMant}>
-          <Text style={esFuera ? styles.badgeTextFuera : styles.badgeText}>
-            {etiquetaPorEstado(ticket.estado)}
-          </Text>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+          <BadgeEstado ticket={ticket} />
+          <Button
+            variant="outline"
+            onPress={onClose}
+            style={{ width: 32, height: 32, borderRadius: 99, alignItems: "center", justifyContent: "center", marginTop: 0, paddingVertical: 0, paddingHorizontal: 0, borderColor: COLORS.primary }}
+          >
+            <Icon icon={ICONS.exit} size={16} color={COLORS.primary} />
+          </Button>
         </View>
       </View>
 
@@ -162,18 +157,38 @@ function ModalDetalleTicket({ ticket, onClose, onModificar, onEliminar }) {
       </ScrollView>
 
       <View style={styles.modalFooter}>
-        <Button variant="outline" onPress={() => { onClose(); onModificar(ticket); }} style={styles.btnCancel}>
-          {T.btnModificar}
+        <Button
+          variant="outline"
+          onPress={() => { onClose(); onModificar(ticket); }}
+          style={[styles.btnCancel, { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6 }]}
+        >
+          <Icon icon={ICONS.edit} size={15} color={COLORS.primary} />
+          <Text style={{ color: COLORS.primary, fontWeight: "600", fontSize: 14 }}>Editar</Text>
         </Button>
-        <Button variant="danger" onPress={() => { onEliminar(ticket.id); onClose(); }} style={styles.btnAccept}>
-          {T.btnCancelar}
+        <Button
+          variant="outline"
+          onPress={() => { onEliminar(ticket.id); onClose(); }}
+          style={[styles.btnAccept, { borderColor: COLORS.error, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6 }]}
+        >
+          <Icon icon={ICONS.delete} size={15} color={COLORS.error} />
+          <Text style={{ color: COLORS.error, fontWeight: "600", fontSize: 14 }}>Eliminar</Text>
         </Button>
       </View>
     </Modal>
   );
 }
 
-// ── Pantalla principal ────────────────────────────────────────
+const LISTA_ESTADOS_EQUIPO = [
+  { label: "En funcionamiento", value: "funcionamiento" },
+  { label: "En mantenimiento", value: "mantenimiento" },
+  { label: "Fuera de servicio", value: "fuera_servicio" },
+];
+
+const LISTA_ESTADOS_TICKET = [
+  { label: "En espera", value: "en_espera" },
+  { label: "En mantenimiento", value: "en_mantenimiento" },
+  { label: "Terminado", value: "Terminado" },
+];
 
 /**
  * Pantalla raíz del módulo de mantenimiento de equipos.
@@ -183,14 +198,71 @@ export default function ScreenMantEquipo() {
   const router = useRouter();
 
   const {
-    tickets, ticketsFiltrados, busqueda, cargando,
-    setBusqueda, toggleEstado, agregarTicket, eliminarTicket, actualizarTicket,
+    tickets, busqueda, cargando,
+    setBusqueda, agregarTicket, eliminarTicket, actualizarTicket, actualizarEstadoEquipo,
   } = useMantEquipo();
 
-  const modalHook = useAgregarMantenimiento(tickets, agregarTicket, actualizarTicket);
+  const modalHook = useAgregarMantenimiento(
+    tickets,
+    agregarTicket,
+    actualizarTicket,
+    actualizarEstadoEquipo,
+    eliminarTicket
+  );
 
-  const [filtro,        setFiltro]        = useState("");
   const [ticketAbierto, setTicketAbierto] = useState(null);
+
+  const [filtros, setFiltros] = useState({
+    estadosEquipo: [],
+    estadosTicket: [],
+    fecha: "",
+  });
+
+  const ticketsFiltrados = useMemo(() => {
+    let result = tickets;
+
+    // 1. Filtrar por búsqueda de texto
+    if (busqueda.trim()) {
+      const q = busqueda.toLowerCase().trim();
+      result = result.filter((t) => {
+        const coincideCampos = ["id", "herramienta", "descripcion", "titulo", "creadoPor", "estado"].some(
+          (k) => String(t[k] ?? "").toLowerCase().includes(q)
+        );
+        const coincideTareas = Array.isArray(t.tareas) && t.tareas.some((tar) => {
+          const fullTask = TAREAS_DEMO.find((d) => d.value === tar.value) || tar;
+          return (fullTask.nombre || fullTask.label || "").toLowerCase().includes(q) ||
+                 (fullTask.descripcion || "").toLowerCase().includes(q);
+        });
+        return coincideCampos || coincideTareas;
+      });
+    }
+
+    // 2. Filtrar por estado de equipo seleccionado
+    if (filtros.estadosEquipo.length > 0) {
+      result = result.filter((t) => {
+        const equipo = MantService.EQUIPOS_MOCK?.find((e) => e.id === t.equipoId);
+        const estEq = equipo?.estadoEquipo || "funcionamiento";
+        return filtros.estadosEquipo.includes(estEq);
+      });
+    }
+
+    // 3. Filtrar por estado de ticket seleccionado
+    if (filtros.estadosTicket.length > 0) {
+      result = result.filter((t) => filtros.estadosTicket.includes(t.estado));
+    }
+
+    // 4. Filtrar por fecha
+    if (filtros.fecha) {
+      result = result.filter((t) => {
+        const d = new Date(t.fechaCreacion);
+        const p = (n) => String(n).padStart(2, "0");
+        const formattedT = `${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()}`;
+        return formattedT === filtros.fecha;
+      });
+    }
+
+    return result;
+  }, [tickets, busqueda, filtros]);
 
   // Muestra spinner centrado mientras se cargan los tickets iniciales.
   if (cargando) {
@@ -206,43 +278,58 @@ export default function ScreenMantEquipo() {
       <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
         <View style={styles.content}>
 
-          {/* Botón de retroceso */}
-          <Pressable onPress={() => router.back()} style={{ marginBottom: 12, alignSelf: "flex-start", padding: 4 }}>
-            <Text style={{ fontSize: 22, color: COLORS.primary }}>←</Text>
-          </Pressable>
-
-          {/* Toolbar: filtro, búsqueda y acciones */}
-          <View style={[styles.toolbar, { zIndex: 10 }]}>
-            <FiltroSelect
-              value={filtro}
-              options={OPCIONES_FILTRO}
-              onChange={setFiltro}
-              placeholder={TEXTOS_PANTALLA.filtrarPor}
+          {/* Toolbar: búsqueda y acciones */}
+          <View style={[styles.toolbar, { zIndex: 10, marginTop: 12 }]}>
+            <SearchBar
+              value={busqueda}
+              onChangeText={setBusqueda}
+              placeholder={TEXTOS_PANTALLA.placeholderBuscar}
+              containerStyle={{ flex: 1, minWidth: 180 }}
             />
-            <View style={styles.searchBox}>
-              <Text style={{ color: COLORS.textTertiary, fontSize: 14 }}>🔍</Text>
-              <TextInput
-                style={styles.searchInput}
-                value={busqueda}
-                onChangeText={setBusqueda}
-                placeholder={TEXTOS_PANTALLA.placeholderBuscar}
-                placeholderTextColor={COLORS.textQuaternary}
-              />
-            </View>
-            {/* TODO: conectar con el módulo de tareas cuando esté disponible */}
-            <Pressable style={styles.btnAddTask} onPress={() => router.push("/mantEquipo/tareas")}>
-              <Text style={styles.btnLabel}>{TEXTOS_PANTALLA.btnAgregarTarea}</Text>
-            </Pressable>
-            <Pressable style={styles.btnAddMaint} onPress={modalHook.abrir}>
-              <Text style={styles.btnLabel}>{TEXTOS_PANTALLA.btnAgregarMant}</Text>
-            </Pressable>
+            <FilterButton
+              categories={LISTA_ESTADOS_TICKET}
+              suppliers={LISTA_ESTADOS_EQUIPO}
+              activeFilters={{
+                categories: filtros.estadosTicket,
+                suppliers: filtros.estadosEquipo,
+                units: [],
+                lowStock: false,
+                expiryDate: filtros.fecha,
+              }}
+              showLowStock={false}
+              showExpiryDate={true}
+              buttonStyle={{ paddingVertical: 12, paddingHorizontal: 20, marginTop: 0 }}
+              onApply={(pending) => {
+                setFiltros({
+                  estadosTicket: pending.categories || [],
+                  estadosEquipo: pending.suppliers || [],
+                  fecha: pending.expiryDate || "",
+                });
+              }}
+            />
+            <Button
+              variant="outline"
+              onPress={() => router.push("/mantEquipo/tareas")}
+              style={[styles.btnAddTask, { borderColor: COLORS.warning, marginTop: 0, flexDirection: "row", alignItems: "center", gap: 6 }]}
+            >
+              <Icon icon={ICONS.clipboard} size={15} color={COLORS.warning} />
+              <Text style={[styles.btnLabel, { color: COLORS.warning }]}>{TEXTOS_PANTALLA.btnAgregarTarea}</Text>
+            </Button>
+            <Button
+              variant="outline"
+              onPress={modalHook.abrir}
+              style={[styles.btnAddMaint, { marginTop: 0, flexDirection: "row", alignItems: "center", gap: 6 }]}
+            >
+              <Icon icon={ICONS.add} size={15} color={COLORS.primary} />
+              <Text style={[styles.btnLabel, { color: COLORS.primary }]}>{TEXTOS_PANTALLA.btnAgregarMant}</Text>
+            </Button>
           </View>
 
           {/* Tabla de tickets */}
           <View style={styles.tableWrapper}>
             {/* Encabezado */}
             <View style={styles.tableHeader}>
-              {[styles.colTicket, styles.colDue, styles.colStatus, styles.colTool, styles.colDesc, styles.colBy].map((col, i) => (
+              {[styles.colTicket, styles.colDue, styles.colStatus, styles.colTool, styles.colTareas, styles.colDesc, styles.colBy].map((col, i) => (
                 <View key={i} style={col}>
                   <Text style={styles.headerCell}>{HEADERS_TABLA[i]}</Text>
                 </View>
@@ -250,19 +337,15 @@ export default function ScreenMantEquipo() {
             </View>
 
             {/* Filas */}
-            <FlatList
-              data={ticketsFiltrados}
-              keyExtractor={(t) => t.id}
-              renderItem={({ item }) => (
-                <FilaTicket ticket={item} onToggle={toggleEstado} onVerDetalle={setTicketAbierto} />
-              )}
-              scrollEnabled={false}
-              ListEmptyComponent={
-                <View style={{ padding: 24, alignItems: "center" }}>
-                  <Text style={{ color: COLORS.textTertiary, fontSize: 14 }}>{TEXTOS_PANTALLA.sinTickets}</Text>
-                </View>
-              }
-            />
+            {ticketsFiltrados.length === 0 ? (
+              <View style={{ padding: 24, alignItems: "center" }}>
+                <Text style={{ color: COLORS.textTertiary, fontSize: 14 }}>{TEXTOS_PANTALLA.sinTickets}</Text>
+              </View>
+            ) : (
+              ticketsFiltrados.map((item) => (
+                <FilaTicket key={item.id} ticket={item} onVerDetalle={setTicketAbierto} />
+              ))
+            )}
           </View>
 
         </View>

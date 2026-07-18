@@ -1,3 +1,33 @@
+/**
+ * ============================================================
+ * HOOK: USEEDITARCOMPRADORSCREEN
+ * ============================================================
+ * Módulo: Compradores
+ *
+ * Maneja el estado del formulario de edición de comprador.
+ *
+ * FUNCIONALIDAD:
+ * 1. Carga los datos actuales del comprador (compradoresMock[0])
+ *    como valores iniciales del formulario.
+ * 2. Valida teléfono y correo (obligatorios, con formato) solo al
+ *    presionar "Guardar" (función guardar), nunca mientras se
+ *    escribe.
+ * 3. Muestra una única alerta general: error si teléfono/correo
+ *    son inválidos, advertencia si faltan dirección/notas, éxito
+ *    si todo está correcto.
+ * 4. Expone la navegación de vuelta al detalle del comprador.
+ *
+ * IMPORTANTE:
+ * - handleTelefonoChange/handleCorreoChange solo actualizan el
+ *   valor: no validan en cada tecla, para que el borde/mensaje
+ *   rojo aparezca únicamente después de intentar guardar.
+ * - Igual que nombre, cedula se carga desde el comprador base pero
+ *   no se expone ningún setter: no se puede modificar una vez
+ *   creado el comprador (en la pantalla se muestra deshabilitada).
+ * ============================================================
+ */
+
+
 import { useState } from "react";
 import { useRouter } from "expo-router";
 import { compradoresMock } from "../services/CompradorData";
@@ -33,7 +63,9 @@ export function useEditarCompradorScreen() {
 
   // Campos del formulario
   const [nombre, setNombre] = useState(base.nombre);
-  const [tipoProducto, setTipoProducto] = useState(base.tipoProducto);
+  // La cédula no se puede editar: se carga desde el comprador base y no se
+  // expone ningún setter hacia la pantalla.
+  const [cedula] = useState(base.cedula);
   const [telefono, setTelefono] = useState(base.telefono);
   const [correo, setCorreo] = useState(base.correo);
   const [direccion, setDireccion] = useState(base.direccion);
@@ -46,14 +78,12 @@ export function useEditarCompradorScreen() {
 
   // Valida el teléfono en tiempo real mientras el usuario escribe
   function handleTelefonoChange(valor) {
-    setTelefono(valor);
-    setErrorTelefono(validarTelefono(valor));
+   setTelefono(valor);
   }
 
   // Valida el correo en tiempo real mientras el usuario escribe
   function handleCorreoChange(valor) {
-    setCorreo(valor);
-    setErrorCorreo(validarCorreo(valor));
+   setCorreo(valor);
   }
 
   function volverADetalle() {
@@ -90,12 +120,18 @@ export function useEditarCompradorScreen() {
       variant: "success",
       message: "Comprador actualizado correctamente.",
     });
+    
+    setTimeout(() => {
+      router.replace({
+        pathname: "/(drawer)/compradores/detalleComprador",
+        params: { id: base.id.toString() },
+      });
+    }, 900);
   }
 
   return {
     nombre,
-    tipoProducto,
-    setTipoProducto,
+    cedula,
     telefono,
     correo,
     direccion,

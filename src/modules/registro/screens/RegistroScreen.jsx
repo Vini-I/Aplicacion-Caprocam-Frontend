@@ -41,6 +41,7 @@ export default function RegistroScreen({
   onEnfermedades,
   onParasitologia,
   onRaleo,
+  onReporteria
 }) {
   const {
     fincaSeleccionada,
@@ -90,6 +91,10 @@ export default function RegistroScreen({
 
     if (moduloId === "raleo") {
       accion = onRaleo;
+    }
+
+    if (moduloId === "reporteria") {
+      accion = onReporteria;
     }
 
     return accion;

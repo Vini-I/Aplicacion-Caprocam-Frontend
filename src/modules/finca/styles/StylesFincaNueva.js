@@ -27,11 +27,30 @@ export const styles = StyleSheet.create({
     padding: 12,
     paddingBottom: 28,
   },
+  containerLarge: {
+    paddingHorizontal: 40,
+  },
+  containerSmall: {
+    paddingHorizontal: 16,
+  },
   sectionTitle: {
     fontWeight: "700",
     marginBottom: 12,
     color: COLORS.textPrimary,
     letterSpacing: 0.3,
+  },
+  sectionTitleText: {
+    fontWeight: "700",
+    color: COLORS.textPrimary,
+    letterSpacing: 0.3,
+  },
+  sectionTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  sectionIcon: {
+    marginRight: 8,
   },
   row: {
     flexDirection: "row",
@@ -43,17 +62,15 @@ export const styles = StyleSheet.create({
     minWidth: 150,
   },
   buttonContainer: {
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
     marginTop: 12,
   },
   saveButton: {
-    width: "100%",
     minHeight: 56,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: COLORS.primary,
+    borderWidth: 2,
+    borderColor: COLORS.primary,
+    backgroundColor: COLORS.white,
   },
   buttonContent: {
     flexDirection: "row",
@@ -62,7 +79,7 @@ export const styles = StyleSheet.create({
     gap: 10,
   },
   buttonText: {
-    color: COLORS.white,
+    color: COLORS.primary,
     fontWeight: "600",
     fontSize: 16,
   },
@@ -72,6 +89,10 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 10,
     marginTop: 12,
+  },
+  phoneTitle: {
+    flexDirection: "row",
+    alignItems: "center",
   },
   addPhoneButton: {
     width: 36,
@@ -89,6 +110,9 @@ export const styles = StyleSheet.create({
     gap: 10,
     marginBottom: 8,
   },
+  phoneInputContainer: {
+    flex: 1,
+  },
   removePhoneButton: {
     backgroundColor: COLORS.surface,
     width: 40,
@@ -96,6 +120,16 @@ export const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginTop: 20,
+  },
+  addPhoneFallbackText: {
+    fontSize: 18,
+    color: COLORS.black,
+    fontWeight: "bold",
+  },
+  removePhoneFallbackText: {
+    fontSize: 16,
+    color: COLORS.error,
+    fontWeight: "bold",
   },
   wrapperError: {
     borderWidth: 1.5,

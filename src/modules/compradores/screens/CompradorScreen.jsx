@@ -1,22 +1,45 @@
 /**
- * CompradorScreen
+ * ============================================================
+ * PANTALLA: COMPRADORSCREEN
+ * ============================================================
+ * Módulo: Compradores
+ *
  * Pantalla principal del módulo de compradores.
- * Muestra la lista de compradores con búsqueda, filtros y acceso al detalle.
+ *
+ * FUNCIONALIDAD:
+ * 1. Muestra la lista de compradores (compradoresMock) en tarjetas.
+ * 2. Permite buscar por nombre, tipo de producto, teléfono o correo.
+ * 3. Permite filtrar por tipo de producto.
+ * 4. Botón "Ver Detalle" en cada tarjeta navega al detalle del
+ *    comprador.
+ * 5. Botón flotante "Agregar comprador" navega al formulario de
+ *    alta.
+ *
+ * IMPORTANTE:
+ * - SearchBar y FilterButton se importan desde el módulo de
+ *   Inventarios (../../inventarios/components/...): es una
+ *   dependencia cruzada pendiente de migrar a un componente
+ *   realmente global en shared/, coordinado con ese equipo.
+ * - El ancho de la barra de búsqueda, las tarjetas, la lista y el
+ *   botón de agregar se alinea con STYLE.contentWrapper (misma
+ *   referencia que usa el módulo de Finca), en vez de repetir
+ *   maxWidth/alignSelf por separado en cada estilo.
+ * ============================================================
  */
+
 import React from "react";
 import { View, FlatList } from "react-native";
-import { useState } from "react";
 
-import Navbar from "../../../shared/components/Navbar";
 import Card from "../../../shared/components/Card";
 import Button from "../../../shared/components/Button";
 import Icon from "../../../shared/components/Icons";
-import CustomText from "../../../shared/components/Text";
+import Text from "../../../shared/components/Text";
 import SearchBar from "../../inventarios/components/SearchBar";
 import FilterButton from "../../inventarios/components/FilterButton";
 import EmptyState from "../../../shared/components/EmptyState";
 
 import { ICONS } from "../../../theme/icons";
+import { STYLE } from "../../../theme/style";
 import { styles, ICON_STYLES } from "../styles/CompradorStyles";
 import { useCompradorScreen } from "../hooks/useCompradorScreen";
 
@@ -32,35 +55,32 @@ export default function CompradorScreen() {
     TIPOS,
     handleVerDetalle,
     handleAgregar,
-    handleHome,
   } = useCompradorScreen();
 
   // Renderiza la tarjeta de cada comprador con su info de contacto
   function renderComprador(comprador) {
     return (
-      <Card style={styles.card}>
+      <Card style={[styles.card, STYLE.contentWrapper]}>
         {/* Encabezado con avatar, nombre, tipo y botón de detalle */}
         <View style={styles.cardHeader}>
           <View style={styles.avatar}>
-            <CustomText style={styles.avatarText}>
+            <Text style={styles.avatarText}>
               {comprador.iniciales}
-            </CustomText>
+            </Text>
           </View>
 
           <View style={styles.providerInfo}>
-            <CustomText style={styles.providerName}>
+            <Text style={styles.providerName}>
               {comprador.nombre}
-            </CustomText>
-            <CustomText style={styles.providerType}>
-              {comprador.tipoProducto}
-            </CustomText>
+            </Text>
           </View>
 
           <Button
+            variant="outline"
             onPress={() => handleVerDetalle(comprador.id)}
             style={styles.btnVerDetalle}
           >
-            <CustomText style={styles.btnVerDetalleText}>Ver Detalle</CustomText>
+            <Text style={styles.btnVerDetalleText}>Ver Detalle</Text>
           </Button>
         </View>
 
@@ -71,9 +91,9 @@ export default function CompradorScreen() {
             size={ICON_STYLES.phone.size}
             color={ICON_STYLES.phone.color}
           />
-          <CustomText style={styles.contactText}>
+          <Text style={styles.contactText}>
             {comprador.telefono.replace(/^\+506\s?(\d{4})(\d{4})$/, "+506 $1-$2")}
-          </CustomText>
+          </Text>
         </View>
 
         {/* Correo electrónico del comprador */}
@@ -83,7 +103,7 @@ export default function CompradorScreen() {
             size={ICON_STYLES.user.size}
             color={ICON_STYLES.user.color}
           />
-          <CustomText style={styles.contactText}>{comprador.correo}</CustomText>
+          <Text style={styles.contactText}>{comprador.correo}</Text>
         </View>
       </Card>
     );
@@ -91,10 +111,8 @@ export default function CompradorScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Navbar con botón de inicio a la izquierda */}
-
       {/* Barra de búsqueda por texto y filtro por tipo de producto */}
-      <View style={styles.barraBusqueda}>
+      <View style={[styles.barraBusqueda, STYLE.contentWrapper]}>
         <SearchBar
           value={busqueda}
           onChangeText={setBusqueda}
@@ -124,14 +142,14 @@ export default function CompradorScreen() {
           data={compradoresFiltrados}
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => renderComprador(item)}
-          contentContainerStyle={styles.lista}
+          contentContainerStyle={[styles.lista, STYLE.contentWrapper]}
           ListHeaderComponent={
-            <CustomText style={styles.contadorResultados}>
+            <Text style={styles.contadorResultados}>
               {compradoresFiltrados.length}{" "}
               {compradoresFiltrados.length === 1
                 ? "comprador encontrado"
                 : "compradores encontrados"}
-            </CustomText>
+            </Text>
           }
           ListEmptyComponent={
             <EmptyState
@@ -144,16 +162,16 @@ export default function CompradorScreen() {
 
       {/* Botón de agregar fijo en la parte inferior */}
       <Button
-        variant="ghost"
+        variant="outline"
         onPress={handleAgregar}
-        style={styles.btnAgregar}
+        style={[styles.btnAgregar, STYLE.contentWrapper]}
       >
         <Icon
           icon={ICONS.add}
           size={ICON_STYLES.add.size}
           color={ICON_STYLES.add.color}
         />
-        <CustomText style={styles.btnAgregarText}>Agregar comprador</CustomText>
+        <Text style={styles.btnAgregarText}>Agregar comprador</Text>
       </Button>
     </View>
   );

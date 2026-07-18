@@ -1,84 +1,66 @@
 /**
+ * ============================================================
  * HOOK: useMantEquipo
- * Ruta: src/modules/mantEquipo/hooks/useMantEquipo.js
- *
- * Carga los tickets de mantenimiento y expone las operaciones CRUD
- * sobre ellos. El filtrado por texto se delega al backend; localmente
- * solo se mantiene el estado de la cadena de búsqueda.
- *
- * TODO backend: reemplazar obtenerTickets() por llamada real al API.
+ * ============================================================
+ * 
+ * Responsabilidad: Maneja el estado global de la lista de tickets,
+ * obtención inicial, filtrado general y operaciones de CRUD
+ * en memoria (demo).
+ * 
+ * Datos:
+ * - tickets: Lista completa de tickets.
+ * - ticketsFiltrados: Lista procesada según texto de búsqueda.
+ * 
+ * Validaciones:
+ * - Filtra tickets en base al criterio seleccionado de forma segura.
+ * 
+ * Navegación:
+ * - Ninguna.
+ * 
+ * Dependencias:
+ * - mantEquipoService.js
+ * - mantEquipoUtils.js
  */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import * as MantService from "../services/mantEquipoService.js";
+import { filtrarTickets } from "../utils/mantEquipoUtils.js";
 
 export function useMantEquipo() {
   const [tickets,  setTickets]  = useState([]);
   const [busqueda, setBusqueda] = useState("");
+  const [filtro,   setFiltro]   = useState("");
   const [cargando, setCargando] = useState(true);
 
-  /** Carga inicial de tickets al montar el componente. */
   useEffect(() => {
-    const { obtenerTickets } = MantService;
-    if (typeof obtenerTickets !== "function") { setCargando(false); return; }
-
-    obtenerTickets()
+    MantService.obtenerTickets()
       .then((data) => setTickets(Array.isArray(data) ? data : []))
       .catch(() => setTickets([]))
       .finally(() => setCargando(false));
   }, []);
 
-  /**
-   * Avanza el estado de un ticket de "fuera de servicio" a "en mantenimiento".
-   * Solo opera si el ticket está en el estado correcto de partida.
-   * @param {string} ticketId - ID del ticket a actualizar.
-   */
-  function toggleEstado(ticketId) {
-    const { ESTADOS } = MantService;
-    setTickets((prev) =>
-      prev.map((t) => {
-        if (t.id !== ticketId || t.estado !== ESTADOS?.FUERA_DE_SERVICIO) return t;
-        return { ...t, estado: ESTADOS.EN_MANTENIMIENTO };
-      })
-    );
+  // Filtrado real para demo
+  const ticketsFiltrados = useMemo(
+    () => filtrarTickets(tickets, busqueda, filtro),
+    [tickets, busqueda, filtro]
+  );
+
+  function agregarTicket(t)         { setTickets((prev) => [t, ...prev]); }
+  function eliminarTicket(id)       { setTickets((prev) => prev.filter((t) => t.id !== id)); }
+  function actualizarTicket(upd)    {
+    setTickets((prev) => prev.map((t) => t.id === upd.id ? { ...t, ...upd } : t));
   }
 
-  /**
-   * Inserta un ticket nuevo al inicio de la lista.
-   * @param {object} nuevoTicket - Ticket recién creado.
-   */
-  function agregarTicket(nuevoTicket) {
-    setTickets((prev) => [nuevoTicket, ...prev]);
-  }
-
-  /**
-   * Elimina un ticket de la lista local por su ID.
-   * @param {string} ticketId - ID del ticket a eliminar.
-   */
-  function eliminarTicket(ticketId) {
-    setTickets((prev) => prev.filter((t) => t.id !== ticketId));
-  }
-
-  /**
-   * Aplica cambios parciales a un ticket existente.
-   * @param {object} cambios - Objeto con al menos { id } y los campos a actualizar.
-   */
-  function actualizarTicket(cambios) {
-    setTickets((prev) =>
-      prev.map((t) => (t.id === cambios.id ? { ...t, ...cambios } : t))
-    );
+  // Cambia el estadoEquipo en el mock de equipos (demo sin backend)
+  function actualizarEstadoEquipo(equipoId, nuevoEstado) {
+    MantService.actualizarEstadoEquipo(equipoId, nuevoEstado);
   }
 
   return {
-    tickets,
-    /** Alias de tickets; el filtrado real lo aplicará el backend. */
-    ticketsFiltrados: tickets,
-    busqueda,
+    tickets, ticketsFiltrados,
+    busqueda, setBusqueda,
+    filtro,   setFiltro,
     cargando,
-    setBusqueda,
-    toggleEstado,
-    agregarTicket,
-    eliminarTicket,
-    actualizarTicket,
+    agregarTicket, eliminarTicket, actualizarTicket, actualizarEstadoEquipo,
   };
 }

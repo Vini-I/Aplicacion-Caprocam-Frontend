@@ -1,71 +1,108 @@
 /**
+ * ============================================================
  * UTILIDADES: mantEquipoUtils
- * Ruta: src/modules/mantEquipo/utils/mantEquipoUtils.js
- *
- * Funciones puras de apoyo para el módulo de mantenimiento de equipos.
- * No contienen estado ni efectos secundarios.
+ * ============================================================
+ * 
+ * Responsabilidad: Funciones puras de apoyo para formateo de datos,
+ * generación de IDs y filtrado de elementos en el módulo de
+ * Mantenimiento de Equipos.
+ * 
+ * Datos:
+ * - Recibe objetos ticket, equipo y tareas para procesar sus campos.
+ * 
+ * Validaciones:
+ * - Formatea fechas cortas.
+ * - Determina las etiquetas legibles y variantes de color según el estado.
+ * - Construye cadenas formateadas con el detalle extendido de tareas.
+ * 
+ * Navegación:
+ * - Ninguna.
+ * 
+ * Dependencias:
+ * - ESTADOS de mantEquipoService.js.
+ * - TAREAS_DEMO de mantEquipoMensajes.js.
  */
 
 import { ESTADOS } from "../services/mantEquipoService.js";
+import { TAREAS_DEMO } from "../constants/mantEquipoMensajes.js";
 
-/**
- * Formatea una fecha para mostrarla en la tabla.
- * @param {Date|string|null} fecha - Fecha a formatear.
- * @returns {string} Texto como "Mar 12, 2024 03:55..." o "—" si no hay fecha.
- */
 export function formatearFechaCorta(fecha) {
   if (!fecha) return "—";
-
   const d = new Date(fecha);
   const meses = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-  const horas   = String(d.getHours()).padStart(2, "0");
-  const minutos = String(d.getMinutes()).padStart(2, "0");
-
-  return `${meses[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()} ${horas}:${minutos}...`;
+  return `${meses[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()} ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
 }
 
-/**
- * Devuelve la etiqueta legible de un estado de ticket.
- * @param {string} estado - Valor del estado (clave de ESTADOS).
- * @returns {string} Texto para mostrar al usuario.
- */
 export function etiquetaPorEstado(estado) {
+  if (estado === ESTADOS.EN_ESPERA)        return "En espera";
   if (estado === ESTADOS.EN_MANTENIMIENTO) return "En mantenimiento";
-  if (estado === ESTADOS.FUERA_DE_SERVICIO) return "Fuera de servicio";
+  if (estado === ESTADOS.TICKET_RESUELTO)  return "Terminado";
   return estado;
 }
 
-/**
- * Genera el siguiente ID de ticket en formato A### basándose en los tickets existentes.
- * @param {Array<{id: string}>} tickets - Lista actual de tickets.
- * @returns {string} Nuevo ID, p.ej. "A027".
- */
-export function generarNuevoId(tickets) {
-  const nums = tickets
-    .map((t) => parseInt(t.id.replace(/\D/g, ""), 10))
-    .filter((n) => !isNaN(n));
+export function variantePorEstado(estado) {
+  if (estado === ESTADOS.EN_ESPERA)        return "warning";
+  if (estado === ESTADOS.EN_MANTENIMIENTO) return "info";
+  if (estado === ESTADOS.TICKET_RESUELTO)   return "success";
+  return "info";
+}
 
-  const siguiente = nums.length > 0 ? Math.max(...nums) + 1 : 1;
-  return `A${String(siguiente).padStart(3, "0")}`;
+export function generarNuevoId(tickets) {
+  const nums = tickets.map((t) => parseInt(t.id.replace(/\D/g,""), 10)).filter((n) => !isNaN(n));
+  return `A${String(nums.length > 0 ? Math.max(...nums) + 1 : 1).padStart(3,"0")}`;
+}
+
+export function filtrarEquipos(equipos, texto) {
+  if (!texto || !texto.trim()) return equipos;
+  const q = texto.toLowerCase();
+  return equipos.filter((e) =>
+    e.nombre.toLowerCase().includes(q) || e.serie.toLowerCase().includes(q) ||
+    e.tipo.toLowerCase().includes(q)   || e.marca.toLowerCase().includes(q) ||
+    e.ubicacion.toLowerCase().includes(q)
+  );
 }
 
 /**
- * Filtra equipos por texto libre contra nombre, serie, tipo, marca y ubicación.
- * @param {Array<object>} equipos - Lista de equipos.
- * @param {string} texto - Texto de búsqueda del usuario.
- * @returns {Array<object>} Equipos que coinciden con el texto.
+ * Filtra tickets según texto y columna seleccionada.
+ * Si no hay columna filtra en todas las propiedades string del ticket.
  */
-export function filtrarEquipos(equipos, texto) {
-  if (!texto || texto.trim() === "") return equipos;
-
+export function filtrarTickets(tickets, texto, columna) {
+  if (!texto || texto.trim().length < 1) return tickets;
   const q = texto.toLowerCase().trim();
 
-  return equipos.filter(
-    (e) =>
-      e.nombre.toLowerCase().includes(q) ||
-      e.serie.toLowerCase().includes(q)  ||
-      e.tipo.toLowerCase().includes(q)   ||
-      e.marca.toLowerCase().includes(q)  ||
-      e.ubicacion.toLowerCase().includes(q)
-  );
+  return tickets.filter((t) => {
+    if (columna) {
+      const val = String(t[columna] ?? "").toLowerCase();
+      return val.includes(q);
+    }
+    // Sin columna: busca en todos los campos string y en tareas
+    const coincideCampos = ["id","herramienta","descripcion","titulo","creadoPor","estado"].some(
+      (k) => String(t[k] ?? "").toLowerCase().includes(q)
+    );
+    if (coincideCampos) return true;
+    
+    // Buscar también coincidencia en el nombre o descripción de las tareas
+    return Array.isArray(t.tareas) && t.tareas.some((tar) => {
+      const fullTask = TAREAS_DEMO.find((d) => d.value === tar.value) || tar;
+      return (fullTask.nombre || fullTask.label || "").toLowerCase().includes(q) ||
+             (fullTask.descripcion || "").toLowerCase().includes(q);
+    });
+  });
+}
+
+/** Devuelve las etiquetas de las tareas de un ticket para mostrar en la tabla con su descripción y duración. */
+export function etiquetasTareas(tareas) {
+  if (!Array.isArray(tareas) || tareas.length === 0) return "—";
+  return tareas.map((t) => {
+    const fullTask = TAREAS_DEMO.find((d) => d.value === t.value) || t;
+    const desc = fullTask.descripcion ? `: ${fullTask.descripcion}` : "";
+    const hrs = fullTask.duracionEstimada ? ` (${fullTask.duracionEstimada} hrs)` : "";
+    return `${fullTask.nombre || fullTask.label}${desc}${hrs}`;
+  }).join("\n");
+}
+
+/** Devuelve la fecha y hora actual formateada como YYYY-MM-DD HH:mm */
+export function obtenerFechaHoraActual() {
+  const d = new Date(), p = (n) => String(n).padStart(2,"0");
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
 }

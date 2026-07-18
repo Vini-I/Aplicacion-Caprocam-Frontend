@@ -1,9 +1,21 @@
 /**
- * Servicio temporal para consultar los registros de Trazabilidad.
- * Posteriormente debera conectarse con la base de datos o API.
+ * ============================================================
+ * SERVICIOS - TRAZABILIDAD
+ * ============================================================
  *
- * La pantalla nunca llama al backend directamente: todo pasa por
- * estas funciones, tal como lo establece el estandar del modulo finca.
+ * Descripción:
+ * Implementa funciones de consulta y filtrado de registros de
+ * trazabilidad. Actualmente usa datos locales en memoria como
+ * placeholder hasta integrar con un backend.
+ *
+ * Funcionalidad principal:
+ * - `obtenerRegistrosTrazabilidad`, `obtenerRegistroTrazabilidadPorId`,
+ *   `filtrarRegistrosTrazabilidad`, `agregarRegistroTrazabilidad`,
+ *   `obtenerFincas`, `obtenerEstanquesPorFinca`, `obtenerSiembraPorEstanque`, `obtenerColaboradores`.
+ *
+ * Restricciones del proyecto:
+ * - Reemplazar la implementación por llamadas a la API cuando el
+ *   backend esté disponible, asegurando manejo de errores y tests.
  */
 
 import { registrosTrazabilidad } from "../screens/TrazabilidadData";

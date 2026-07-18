@@ -1,12 +1,41 @@
+/**
+ * ============================================================
+ * HOOK DE REGISTRO DE VENTAS
+ * ============================================================
+ *
+ * Gestiona la lógica necesaria para registrar ventas de producto,
+ * controlando el formulario, cálculos, catálogos relacionados,
+ * validaciones y almacenamiento temporal de las ventas registradas.
+ *
+ * Funcionalidad:
+ * - Carga colaboradores activos para asociarlos a la venta.
+ * - Obtiene opciones de fincas, estanques y compradores disponibles.
+ * - Filtra estanques según la finca seleccionada.
+ * - Normaliza y valida campos numéricos como peso, tamaño, kilos y precio.
+ * - Calcula el total estimado de la venta según kilos vendidos y precio.
+ * - Permite registrar ventas con compradores existentes o cliente genérico.
+ * - Genera nombres consecutivos para clientes genéricos, como Cliente 001.
+ * - Guarda la venta en el listado local y muestra mensajes de resultado.
+ */
+import { createVenta } from "../services/mantVentas.service.js";
+import { MantVentaDTO } from "../dtos/mantVenta.dto.js";
+
+import Text from "../../../shared/components/Text.jsx";
+import Icon from "../../../shared/components/Icons.jsx";
+
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useWindowDimensions } from "react-native";
+import { useWindowDimensions, View } from "react-native";
+import { useFocusEffect } from "expo-router";
 
-import { colaboradoresService } from "../../colaboradores/services/colaboradoresService.js";
-import { fincas } from "../../finca/screens/FincaData.js";
-import { estanques } from "../../mantCrecimiento/services/EstanqueData.js";
-import { compradores as compradoresData } from "../services/CompradorData.js";
+import { colaboradorService } from "../../colaboradores/services/colaborador.service.js";
+import { fincaService } from "../../finca/services/finca.service.js";
+import { estanqueService } from "../../estanques/services/estanque.service.js";
+import { compradorService } from "../../compradores/services/comprador.service.js";
 
-export const COMPRADOR_MANUAL = "comprador-manual";
+import { styles } from "../styles/VentaStyles.js";
+import { COLORS } from "../../../theme/colors.js";
+
+export const CLIENTE_GENERICO = "cliente-generico";
 
 export function obtenerFechaActual() {
   const fecha = new Date();
@@ -15,6 +44,11 @@ export function obtenerFechaActual() {
   const anio = fecha.getFullYear();
 
   return `${dia}/${mes}/${anio}`;
+}
+
+export function convertirFechaParaBackend(fechaDDMMYYYY) {
+  const [dia, mes, anio] = fechaDDMMYYYY.split("/");
+  return `${anio}-${mes}-${dia}`;
 }
 
 function limpiarDecimal(value) {
@@ -38,17 +72,6 @@ export function normalizarDecimal(value, decimales = 1) {
   return numero.toFixed(decimales).replace(/\.0$/, "");
 }
 
-export function obtenerIdNumericoFinca(codigoInterno) {
-  const partes = String(codigoInterno).split("-");
-  const numero = Number(partes[1]);
-
-  if (Number.isNaN(numero)) {
-    return null;
-  }
-
-  return numero;
-}
-
 export function formatearMontoColones(value) {
   const numero = Math.round(Number(value) || 0);
   return `₡ ${String(numero).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
@@ -63,7 +86,6 @@ export function validarVentaFormulario({
   precioKiloNumero,
   colaboradorSeleccionado,
   compradorSeleccionado,
-  compradorManual,
 }) {
   const errores = {};
 
@@ -75,13 +97,6 @@ export function validarVentaFormulario({
   if (precioKiloNumero <= 0) errores.precioKilo = true;
   if (!colaboradorSeleccionado) errores.colaborador = true;
   if (!compradorSeleccionado) errores.comprador = true;
-
-  if (
-    compradorSeleccionado === COMPRADOR_MANUAL &&
-    compradorManual.trim() === ""
-  ) {
-    errores.compradorManual = true;
-  }
 
   return errores;
 }
@@ -99,9 +114,10 @@ export function useVenta() {
   const [fechaVenta, setFechaVenta] = useState(obtenerFechaActual());
   const [colaboradorSeleccionado, setColaboradorSeleccionado] = useState("");
   const [compradorSeleccionado, setCompradorSeleccionado] = useState("");
-  const [compradorManual, setCompradorManual] = useState("");
   const [colaboradores, setColaboradores] = useState([]);
-  const [ventas, setVentas] = useState([]);
+  const [fincas, setFincas] = useState([]);
+  const [estanques, setEstanques] = useState([]);
+  const [compradoresData, setCompradoresData] = useState([]);
   const [mensaje, setMensaje] = useState("");
   const [tipoMensaje, setTipoMensaje] = useState("");
   const [errores, setErrores] = useState({});
@@ -110,15 +126,24 @@ export function useVenta() {
   useEffect(() => {
     let activo = true;
 
-    async function cargarColaboradores() {
-      const data = await colaboradoresService.getColaboradores({ activo: true });
+    async function cargarCatalogos() {
+      const [dataColaboradores, dataFincas, dataEstanques, dataCompradores] =
+        await Promise.all([
+          colaboradorService.getColaboradores({ activo: true }),
+          fincaService.getFincas(),
+          estanqueService.getEstanques(),
+          compradorService.getCompradores(),
+        ]);
 
       if (activo) {
-        setColaboradores(data);
+        setColaboradores(dataColaboradores);
+        setFincas(dataFincas);
+        setEstanques(dataEstanques);
+        setCompradoresData(dataCompradores);
       }
     }
 
-    cargarColaboradores();
+    cargarCatalogos();
 
     return () => {
       activo = false;
@@ -128,29 +153,22 @@ export function useVenta() {
   const opcionesFincas = useMemo(
     () =>
       fincas.map((finca) => ({
-        label: finca.nombre,
-        value: finca.codigoInterno,
+        label: finca.nombreFinca,
+        value: finca.id,
       })),
-    [],
+    [fincas],
   );
 
   const estanquesFiltrados = useMemo(() => {
-    const finca = fincas.find((item) => item.codigoInterno === fincaSeleccionada);
-
-    if (!finca) return [];
-
-    const fincaId = obtenerIdNumericoFinca(finca.codigoInterno);
+    if (!fincaSeleccionada) return [];
 
     return estanques
-      .filter(
-        (estanque) =>
-          estanque.fincaNombre === finca.nombre || estanque.fincaId === fincaId,
-      )
+      .filter((estanque) => estanque.idFinca === Number(fincaSeleccionada))
       .map((estanque) => ({
-        label: `${estanque.codigo} - ${estanque.nombre}`,
-        value: String(estanque.id),
+        label: estanque.codigo,
+        value: estanque.id,
       }));
-  }, [fincaSeleccionada]);
+  }, [fincaSeleccionada, estanques]);
 
   const opcionesColaboradores = useMemo(
     () =>
@@ -163,17 +181,30 @@ export function useVenta() {
 
   const opcionesCompradores = useMemo(
     () => [
-      { label: "Comprador manual", value: COMPRADOR_MANUAL },
+      { label: "Cliente genérico", value: CLIENTE_GENERICO },
       ...compradoresData.map((comprador) => ({
         label: comprador.nombre,
         value: comprador.id,
       })),
     ],
-    [],
+    [compradoresData],
   );
 
   const precioKiloNumero = Number(precioKilo || 0);
   const totalVenta = Number(kilosVendidos || 0) * precioKiloNumero;
+
+  const gridStyle = useMemo(
+    () => (isWide ? styles.inputRow : styles.inputGrid),
+    [isWide],
+  );
+
+  const errorInputStyle = useMemo(
+    () => ({
+      borderColor: COLORS.error,
+      backgroundColor: COLORS.surface,
+    }),
+    [],
+  );
 
   const limpiarError = useCallback((campo) => {
     setErrores((actual) => {
@@ -181,6 +212,20 @@ export function useVenta() {
       return { ...actual, [campo]: false };
     });
   }, []);
+
+  const limpiarMensaje = useCallback(() => {
+    setMensaje("");
+    setTipoMensaje("");
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        limpiarMensaje();
+      };
+    }, [limpiarMensaje]),
+  );
+
 
   const handlePesoPromedioChange = useCallback(
     (value) => {
@@ -235,11 +280,6 @@ export function useVenta() {
     (value) => {
       setCompradorSeleccionado(value);
       limpiarError("comprador");
-
-      if (value !== COMPRADOR_MANUAL) {
-        setCompradorManual("");
-        limpiarError("compradorManual");
-      }
     },
     [limpiarError],
   );
@@ -254,11 +294,10 @@ export function useVenta() {
     setFechaVenta(obtenerFechaActual());
     setColaboradorSeleccionado("");
     setCompradorSeleccionado("");
-    setCompradorManual("");
     setErrores({});
   }, []);
 
-  const guardarVenta = useCallback(() => {
+  const guardarVenta = useCallback(async () => {
     const nuevosErrores = validarVentaFormulario({
       fincaSeleccionada,
       estanqueSeleccionado,
@@ -268,7 +307,6 @@ export function useVenta() {
       precioKiloNumero,
       colaboradorSeleccionado,
       compradorSeleccionado,
-      compradorManual,
     });
 
     setErrores(nuevosErrores);
@@ -281,35 +319,42 @@ export function useVenta() {
 
     setGuardando(true);
 
-    const finca = fincas.find((item) => item.codigoInterno === fincaSeleccionada);
-    const estanque = estanques.find((item) => String(item.id) === estanqueSeleccionado);
-    const colaborador = colaboradores.find((item) => item.id === colaboradorSeleccionado);
-    const comprador = compradoresData.find((item) => item.id === compradorSeleccionado);
-    const esCompradorManual = compradorSeleccionado === COMPRADOR_MANUAL;
-
-    const nuevaVenta = {
-      id: String(Date.now()),
-      fincaId: fincaSeleccionada,
-      fincaNombre: finca?.nombre ?? "",
-      estanqueId: estanqueSeleccionado,
-      estanqueNombre: estanque?.nombre ?? "",
+    const ventaDTO = new MantVentaDTO({
+      finca: Number(fincaSeleccionada),
+      estanque: Number(estanqueSeleccionado),
+      colaborador: Number(colaboradorSeleccionado),
+      comprador:
+        compradorSeleccionado === CLIENTE_GENERICO
+          ? null
+          : Number(compradorSeleccionado),
       pesoPromedio: Number(pesoPromedio),
       tamanoPromedio: Number(tamanoPromedio),
-      kilosVendidos: Number(kilosVendidos),
+      cantVendida: Number(kilosVendidos),
       precioKilo: precioKiloNumero,
-      totalVenta,
-      fechaVenta,
-      colaboradorId: colaboradorSeleccionado,
-      colaboradorNombre: colaborador?.nombre ?? "",
-      compradorId: esCompradorManual ? "" : compradorSeleccionado,
-      compradorNombre: esCompradorManual ? compradorManual.trim() : comprador?.nombre || "",
-    };
+      fecha: convertirFechaParaBackend(fechaVenta),
+    });
 
-    setVentas((actual) => [nuevaVenta, ...actual]);
-    setTipoMensaje("success");
-    setMensaje("Venta guardada correctamente.");
-    limpiarFormulario();
-    setGuardando(false);
+    try {
+
+      await createVenta(ventaDTO);
+
+      setTipoMensaje("success");
+
+      setMensaje("Venta guardada correctamente.")
+
+      limpiarFormulario();
+
+    } catch (error) {
+
+      setTipoMensaje("error");
+
+      setMensaje("No fue posible guardar la venta.");
+
+    } finally {
+
+      setGuardando(false);
+
+    }
   }, [
     fincaSeleccionada,
     estanqueSeleccionado,
@@ -319,14 +364,26 @@ export function useVenta() {
     precioKiloNumero,
     colaboradorSeleccionado,
     compradorSeleccionado,
-    compradorManual,
-    colaboradores,
-    totalVenta,
     fechaVenta,
     limpiarFormulario,
   ]);
 
+  function SectionTitle({ icon, title }) {
+    return (
+      <View style={styles.sectionTitle}>
+        <Icon
+          icon={icon}
+          size={18}
+          color={COLORS.primary}
+          style={styles.sectionIcon}
+        />
+        <Text style={styles.sectionText}>{title}</Text>
+      </View>
+    );
+  }
+
   return {
+    SectionTitle,
     fincaSeleccionada,
     estanqueSeleccionado,
     pesoPromedio,
@@ -336,22 +393,20 @@ export function useVenta() {
     fechaVenta,
     colaboradorSeleccionado,
     compradorSeleccionado,
-    compradorManual,
     mensaje,
     tipoMensaje,
     errores,
     guardando,
-    isWide,
+    gridStyle,
+    errorInputStyle,
     opcionesFincas,
     estanquesFiltrados,
     opcionesColaboradores,
     opcionesCompradores,
     precioKiloNumero,
     totalVenta,
-    ventas,
     // setters directos
     setEstanqueSeleccionado,
-    setCompradorManual,
     handleFincaChange,
     handlePesoPromedioChange,
     handleTamanoPromedioChange,

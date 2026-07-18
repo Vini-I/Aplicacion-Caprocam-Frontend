@@ -1,7 +1,22 @@
 /**
- * CompradorStyles
- * Estilos para la pantalla de comprador
+ * ============================================================
+ * STYLES: COMPRADORSTYLES
+ * ============================================================
+ * Módulo: Compradores
+ *
+ * Estilos de CompradorScreen.jsx (lista de compradores).
+ *
+ * FUNCIONALIDAD:
+ * 1. Layout del navbar, la barra de búsqueda/filtro, las tarjetas
+ *    de cada comprador y el botón flotante de agregar.
+ *
+ * IMPORTANTE:
+ * - btnVerDetalle/btnAgregar no deben tener backgroundColor: el
+ *   fondo blanco y el borde celeste los pone Button
+ *   variant="outline" en el JSX.
+ * ============================================================
  */
+
 import { StyleSheet } from "react-native";
 import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
@@ -37,9 +52,6 @@ export const styles = StyleSheet.create({
 
   card: {
     marginBottom: 14,
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
   },
 
   cardHeader: {
@@ -99,13 +111,9 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 12,
     gap: 8,
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
   },
 
   btnVerDetalle: {
-    backgroundColor: COLORS.primary,
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 8,
@@ -114,7 +122,7 @@ export const styles = StyleSheet.create({
 
   btnVerDetalleText: {
     fontSize: 13,
-    color: COLORS.white,
+    color: COLORS.primary,
     fontFamily: TYPOGRAPHY.fontFamily.bold,
   },
 
@@ -147,9 +155,6 @@ export const styles = StyleSheet.create({
 
   lista: {
     paddingBottom: 16,
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
   },
 
   listaContainer: {
@@ -160,19 +165,15 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: COLORS.primary,
     paddingVertical: 14,
 
     marginBottom: 16,
     borderRadius: 10,
     gap: 8,
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
   },
 
   btnAgregarText: {
-    color: COLORS.white,
+    color: COLORS.primary,
     fontSize: 14,
     fontFamily: TYPOGRAPHY.fontFamily.bold,
   },
@@ -181,11 +182,11 @@ export const styles = StyleSheet.create({
 export const ICON_STYLES = {
   home: {
     size: 28,
-    color: COLORS.white,
+    color: COLORS.primary,
   },
   add: {
     size: 18,
-    color: COLORS.white,
+    color: COLORS.primary,
   },
   phone: {
     size: 14,

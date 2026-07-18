@@ -82,11 +82,6 @@ export const styles = StyleSheet.create({
     color: COLORS.textSecondary,
   },
 
-  successText: {
-    color: COLORS.success,
-    marginBottom: 12,
-  },
-
   currencyPreview: {
     color: COLORS.textTertiary,
     marginTop: -4,
@@ -101,15 +96,31 @@ export const styles = StyleSheet.create({
 
   alertText: {
     textAlign: "center",
-    color: COLORS.error,
+    color: COLORS.black,
   },
 
-  buttonRow: {
-    marginTop: 12,
+  successAlert: {
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 14,
+    backgroundColor: COLORS.successLight,
+    borderColor: COLORS.success,
   },
+
+  successAlertText: {
+    textAlign: "center",
+    color: COLORS.textSecondary,
+    fontWeight: "600",
+  },
+
 
   saveButton: {
-    width: "100%",
+    minHeight: 56,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: COLORS.primary,
+    backgroundColor: COLORS.white,
   },
 
   buttonContent: {
@@ -120,7 +131,7 @@ export const styles = StyleSheet.create({
   },
 
   buttonText: {
-    color: COLORS.white,
+    color: COLORS.primary,
     fontWeight: "600",
     fontSize: 16,
   },
