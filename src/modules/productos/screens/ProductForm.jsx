@@ -74,6 +74,7 @@ export default function ProductForm() {
     canSave,
     validationMessage,
     showExpirationDate,
+    errorCodigo,
     errorNombre,
     errorCategoria,
     errorProveedor,
@@ -103,6 +104,18 @@ export default function ProductForm() {
           style={styles.card}
           titleStyle={styles.cardTitle}
         >
+
+          {/* Código / identificador */}
+          <Input
+            label="Código *"
+            value={form.codigo}
+            onChangeText={(v) => handleField("codigo", v)}
+            placeholder="Ej. ALI-001"
+            containerStyle={styles.field}
+            style={[styles.input, errorCodigo && styles.inputError]}
+            labelStyle={styles.label}
+          />
+
           {/* Nombre */}
           <Input
             label="Nombre del producto *"

@@ -76,6 +76,7 @@ export function useProductForm() {
         const producto = JSON.parse(params.productoParam);
 
         const cargado = {
+          codigo: producto.codigo ?? "", 
           nombre: producto.nombre ?? "",
           categoria: producto.categoria ?? "",
           proveedor: producto.proveedor ?? "",
@@ -111,6 +112,7 @@ export function useProductForm() {
   const hasChanges = JSON.stringify(form) !== JSON.stringify(originalForm);
 
   const hasRequiredData =
+    form.codigo.trim() !== "" && 
     form.nombre.trim() !== "" &&
     form.categoria !== "" &&
     form.proveedor !== "" &&
@@ -124,6 +126,7 @@ export function useProductForm() {
      : isEditMode && !hasChanges ? "Realice algún cambio para guardar la actualización." : "";
  
   const errorNombre = intentoGuardar && form.nombre.trim() === "";
+  const errorCodigo = intentoGuardar && form.codigo.trim() === "";
   const errorCategoria = intentoGuardar && form.categoria === "";
   const errorProveedor = intentoGuardar && form.proveedor === "";
   const errorCantidad = intentoGuardar && form.cantidad === "";
@@ -156,6 +159,7 @@ export function useProductForm() {
    if (!canSave) return;
 
     const producto = {
+      codigo: form.codigo.trim(), 
       nombre: form.nombre.trim(),
       categoria: form.categoria,
       proveedor: form.proveedor,
@@ -211,6 +215,7 @@ export function useProductForm() {
     canSave,
     validationMessage,
     showExpirationDate,
+    errorCodigo,
     errorNombre,
     errorProveedor,
     errorCategoria,
