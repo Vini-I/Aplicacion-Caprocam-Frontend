@@ -34,6 +34,7 @@ import Button from "../../../shared/components/Button";
 import Text from "../../../shared/components/Text";
 import Title from "../../../shared/components/Title";
 import Modal from "../../../shared/components/Modal";
+import ModalEliminar from "../../../shared/components/ModalEliminar";
 import EmptyState from "../../../shared/components/EmptyState";
 import Alert from "../../../shared/components/Alert";
 
@@ -152,26 +153,13 @@ export default function DetalleCompradorScreen() {
 
       </ScrollView>
 
-      <Modal
+      <ModalEliminar
         visible={modalVisible}
-        onClose={() => setModalVisible(false)}
-        closeText="Cancelar"
-        buttonStyle={styles.modalCancelButton}
-        overlayStyle={styles.modalOverlay}
-        containerStyle={styles.modalContainer}
-      >
-        <Title level={3} style={styles.modalTitle}>
-          ¿Eliminar comprador?
-        </Title>
-        <Text style={styles.modalMessage}>
-          ¿Estás seguro que deseas eliminar{" "}
-          <Text style={styles.modalNombreNegrita}>{comprador.nombre}</Text>?
-        </Text>
-        <Button style={styles.modalConfirmButton} onPress={irAtras}>
-          <Icon icon={ICONS.delete} size={ICON_SIZE.modal} color={COLORS.white} />
-          <Text style={styles.modalConfirmTexto}>Sí, eliminar</Text>
-        </Button>
-      </Modal>
+        title="comprador"
+        message={comprador.nombre}
+        onCancel={() => setModalVisible(false)}
+        onConfirm={irAtras}
+    />
 
       
 
