@@ -7,7 +7,6 @@
  * tipo y categoria.
  */
 
-
 import React, { useEffect, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 
@@ -18,6 +17,7 @@ import NavbarRegistro from "../../../shared/components/NavbarRegistro";
 
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
+import { STYLE } from "../../../theme/style";
 
 import { fincas as fincasModulo } from "../../finca/screens/FincaData";
 import { estanques as estanquesModulo } from "../../mantCrecimiento/services/EstanqueData";
@@ -35,82 +35,16 @@ import {
   filtrarAlertasDescartadas,
   obtenerAlertasDescartadas,
 } from "../services/AlertasServices.js";
+import {
+  agruparPorCategoria,
+  obtenerColorTipo,
+  obtenerEstadoInicialDropdowns,
+  obtenerEstiloAlerta,
+  obtenerIconoTipo,
+  obtenerTituloTipo,
+} from "../services/AlertasScreenService.js";
 
 import { styles } from "../styles/AlertasStyle";
-
-function obtenerEstiloAlerta(tipo) {
-  const estilos = [styles.alertItem];
-
-  if (tipo === "critica") {
-    estilos.push(styles.alertCritical);
-  }
-
-  if (tipo === "advertencia") {
-    estilos.push(styles.alertWarning);
-  }
-
-  if (tipo === "info") {
-    estilos.push(styles.alertInfo);
-  }
-
-  return estilos;
-}
-
-function obtenerColorTipo(tipo) {
-  let color = COLORS.primary;
-
-  if (tipo === "critica") {
-    color = COLORS.error;
-  }
-
-  if (tipo === "advertencia") {
-    color = COLORS.warning;
-  }
-
-  return color;
-}
-
-function obtenerTituloTipo(tipo) {
-  let titulo = "Informativas";
-
-  if (tipo === "critica") {
-    titulo = "Criticas";
-  }
-
-  if (tipo === "advertencia") {
-    titulo = "Advertencias";
-  }
-
-  return titulo;
-}
-
-function obtenerIconoTipo(tipo) {
-  let icono = ICONS.info;
-
-  if (tipo === "critica") {
-    icono = ICONS.shieldAlert;
-  }
-
-  if (tipo === "advertencia") {
-    icono = ICONS.alertTriangle;
-  }
-
-  return icono;
-}
-
-function agruparPorCategoria(alertas) {
-  const grupos = {};
-
-  alertas.forEach(function (alerta) {
-    if (grupos[alerta.categoria] === undefined) {
-      grupos[alerta.categoria] = [];
-    }
-
-    grupos[alerta.categoria].push(alerta);
-  });
-
-  return grupos;
-}
 
 function ResumenAlertas({ grupos }) {
   return (
@@ -291,11 +225,7 @@ function AlertaItem({ alerta, onDismiss }) {
 export default function AlertasScreen() {
   const { alimentaciones, recargar } = useAlimentacion();
 
-  const [abiertos, setAbiertos] = useState({
-    critica: true,
-    advertencia: true,
-    info: false,
-  });
+  const [abiertos, setAbiertos] = useState(obtenerEstadoInicialDropdowns());
   const [descartadas, setDescartadas] = useState([]);
   const [registrosEnfermedades, setRegistrosEnfermedades] = useState([]);
   const [registrosParasitologia, setRegistrosParasitologia] = useState([]);
@@ -359,8 +289,8 @@ export default function AlertasScreen() {
         Icono="notification"
       />
 
-      <ScrollView style={styles.screen} showsVerticalScrollIndicator={false}>
-        <View style={styles.content}>
+      <ScrollView style={STYLE.container} showsVerticalScrollIndicator={false}>
+        <View style={STYLE.contentWrapper}>
           <ResumenAlertas grupos={grupos} />
 
           <DropdownAlertas

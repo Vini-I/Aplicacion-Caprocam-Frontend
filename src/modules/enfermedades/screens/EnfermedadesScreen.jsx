@@ -36,8 +36,6 @@ import CustomText from "../../../shared/components/Text";
 import Title from "../../../shared/components/Title";
 import NavbarRegistro from "../../../shared/components/NavbarRegistro";
 
-import { FINCAS, ESTANQUES } from "../../registro/screens/RegistroData";
-
 import useEnfermedades from "../hooks/UseEnfermedades";
 import {
   ENFERMEDADES_CATALOGO,
@@ -46,75 +44,22 @@ import {
   obtenerNombreSeveridad,
   obtenerResponsableBackend,
 } from "../services/EnfermedadesService";
+import {
+  actualizarSeleccionEnfermedad,
+  construirCasoEnfermedad,
+  obtenerOpcionesEstanques,
+  obtenerOpcionesFincas,
+  obtenerTextoEnfermedades,
+  validarFormularioEnfermedad,
+} from "../services/EnfermedadesScreenService";
 
 import { styles } from "../styles/EnfermedadesStyle";
 
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
 import { TYPOGRAPHY } from "../../../theme/typography";
+import { STYLE } from "../../../theme/style";
 import { getCurrentDate } from "../../../shared/utils/dateUtils";
-
-function obtenerOpcionesFincas() {
-  const opciones = [];
-
-  FINCAS.forEach(function (finca) {
-    opciones.push({
-      label: finca.nombre,
-      value: finca.id,
-    });
-  });
-
-  return opciones;
-}
-
-function obtenerOpcionesEstanques(fincaId) {
-  let opciones = [];
-
-  if (fincaId !== "") {
-    const estanquesFinca = ESTANQUES[fincaId];
-
-    if (estanquesFinca !== undefined) {
-      estanquesFinca.forEach(function (estanque) {
-        opciones.push({
-          label: `${estanque.id} - ${estanque.especie}`,
-          value: estanque.id,
-        });
-      });
-    }
-  }
-
-  return opciones;
-}
-
-function obtenerNombreFinca(fincaId) {
-  let nombre = "";
-
-  FINCAS.forEach(function (finca) {
-    if (finca.id === fincaId) {
-      nombre = finca.nombre;
-    }
-  });
-
-  return nombre;
-}
-
-function obtenerTextoEnfermedades(enfermedades) {
-  let texto = "";
-
-  enfermedades.forEach(function (item, index) {
-    const nombre = obtenerNombreEnfermedad(item);
-
-    if (index === 0) {
-      texto = nombre;
-    }
-
-    if (index > 0) {
-      texto = `${texto}, ${nombre}`;
-    }
-  });
-
-  return texto;
-}
 
 export default function EnfermedadesScreen({ onBack, navigation }) {
   const router = useRouter();
@@ -147,7 +92,7 @@ export default function EnfermedadesScreen({ onBack, navigation }) {
   const [tipoMensaje, setTipoMensaje] = useState("info");
   const [submitted, setSubmitted] = useState(false);
 
-  let contentStyle = [styles.content];
+  let contentStyle = [STYLE.contentWrapper, styles.content];
   let gridStyle = [styles.grid];
   let itemStyle = [styles.gridItem];
   let itemFullStyle = [styles.gridItem];
@@ -206,30 +151,10 @@ export default function EnfermedadesScreen({ onBack, navigation }) {
   }
 
   function cambiarEnfermedad(valor) {
-    let nuevasEnfermedades = [];
-    let yaExiste = false;
-
-    enfermedadesSeleccionadas.forEach(function (item) {
-      if (item === valor) {
-        yaExiste = true;
-      }
-    });
-
-    if (yaExiste === true) {
-      enfermedadesSeleccionadas.forEach(function (item) {
-        if (item !== valor) {
-          nuevasEnfermedades.push(item);
-        }
-      });
-    }
-
-    if (yaExiste === false) {
-      enfermedadesSeleccionadas.forEach(function (item) {
-        nuevasEnfermedades.push(item);
-      });
-
-      nuevasEnfermedades.push(valor);
-    }
+    const nuevasEnfermedades = actualizarSeleccionEnfermedad(
+      valor,
+      enfermedadesSeleccionadas,
+    );
 
     setEnfermedadesSeleccionadas(nuevasEnfermedades);
   }
@@ -249,45 +174,21 @@ export default function EnfermedadesScreen({ onBack, navigation }) {
   function validarFormulario() {
     setSubmitted(true);
 
-    let valido = true;
+    const resultado = validarFormularioEnfermedad({
+      finca: finca,
+      estanque: estanque,
+      enfermedadesSeleccionadas: enfermedadesSeleccionadas,
+      severidad: severidad,
+      mortalidad: mortalidad,
+      reporte: reporte,
+    });
 
-    if (finca === "") {
-      setTipoMensaje("warning");
-      setMensaje("Debe seleccionar una finca.");
-      valido = false;
+    if (resultado.valido === false) {
+      setTipoMensaje(resultado.tipoMensaje);
+      setMensaje(resultado.mensaje);
     }
 
-    if (valido === true && estanque === "") {
-      setTipoMensaje("warning");
-      setMensaje("Debe seleccionar un estanque.");
-      valido = false;
-    }
-
-    if (valido === true && enfermedadesSeleccionadas.length === 0) {
-      setTipoMensaje("warning");
-      setMensaje("Debe seleccionar al menos una enfermedad.");
-      valido = false;
-    }
-
-    if (valido === true && severidad === "") {
-      setTipoMensaje("warning");
-      setMensaje("Debe seleccionar la severidad del caso.");
-      valido = false;
-    }
-
-    if (valido === true && reporte.trim() === "") {
-      setTipoMensaje("warning");
-      setMensaje("Debe escribir un reporte del caso.");
-      valido = false;
-    }
-
-    if (valido === true && Number(mortalidad) < 0) {
-      setTipoMensaje("warning");
-      setMensaje("La mortalidad no puede ser negativa.");
-      valido = false;
-    }
-
-    return valido;
+    return resultado.valido;
   }
 
   async function registrarEnfermedad() {
@@ -295,17 +196,16 @@ export default function EnfermedadesScreen({ onBack, navigation }) {
       return;
     }
 
-    const nuevoCaso = {
+    const nuevoCaso = construirCasoEnfermedad({
       finca: finca,
-      fincaNombre: obtenerNombreFinca(finca),
       estanque: estanque,
       fechaReporte: fechaReporte,
       responsable: responsable,
-      enfermedades: enfermedadesSeleccionadas,
+      enfermedadesSeleccionadas: enfermedadesSeleccionadas,
       severidad: severidad,
       mortalidad: mortalidad,
-      reporte: reporte.trim(),
-    };
+      reporte: reporte,
+    });
 
     const guardado = await guardarEnfermedad(nuevoCaso);
 
@@ -329,7 +229,7 @@ export default function EnfermedadesScreen({ onBack, navigation }) {
         Icono="shieldAlert"
       />
 
-      <ScrollView style={styles.screen} showsVerticalScrollIndicator={false}>
+      <ScrollView style={STYLE.container} showsVerticalScrollIndicator={false}>
         <View style={contentStyle}>
           {mensaje !== "" && (
             <Alert

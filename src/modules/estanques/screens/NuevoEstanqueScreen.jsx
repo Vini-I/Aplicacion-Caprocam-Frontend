@@ -33,129 +33,26 @@ import { getCurrentDate } from "../../../shared/utils/dateUtils";
 
 import { styles } from "../styles/EstanqueStyle";
 import {
-  obtenerCodigoAireadorDefault,
-  obtenerEstanqueAireador,
-  obtenerOpcionesAireadores,
   obtenerOpcionesEstanqueSeleccionado,
 } from "../services/AireadoresEstanqueService";
+import {
+  AIREADORES_EXISTENTES,
+  ESPECIES,
+  ESTADOS_ESTANQUE,
+  FUENTES_AGUA,
+  METODOS_ALIMENTACION,
+  OPCIONES_AIREADORES,
+  OPCIONES_ALIMENTADOR,
+  OPCIONES_PRECRIA,
+  TIPOS_ESTANQUE,
+  construirNuevoEstanque,
+  obtenerCambioAireadores,
+  validarFormularioEstanque,
+} from "../services/EstanqueScreenService";
 
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
 import { TYPOGRAPHY } from "../../../theme/typography";
-
-const TIPOS_ESTANQUE = [
-  {
-    label: "Estanque de tierra semiintensivo",
-    value: "tierra_semiintensivo",
-  },
-  {
-    label: "Estanque reservorio",
-    value: "reservorio",
-  },
-  {
-    label: "Estanque con geomembrana",
-    value: "geomembrana",
-  },
-  {
-    label: "Estanque superintensivo",
-    value: "superintensivo",
-  },
-];
-
-const FUENTES_AGUA = [
-  {
-    label: "Estero",
-    value: "estero",
-  },
-  {
-    label: "Golfo",
-    value: "golfo",
-  },
-  {
-    label: "Reservorio",
-    value: "reservorio",
-  },
-];
-
-const ESPECIES = [
-  {
-    label: "Litopenaeus vannamei - Camaron blanco",
-    value: "litopenaeus_vannamei",
-  },
-];
-
-const OPCIONES_PRECRIA = [
-  {
-    label: "Si, usa precria",
-    value: "si",
-  },
-  {
-    label: "No, siembra directa",
-    value: "no",
-  },
-];
-
-const METODOS_ALIMENTACION = [
-  {
-    label: "Manual",
-    value: "manual",
-  },
-  {
-    label: "Automatico",
-    value: "automatico",
-  },
-  {
-    label: "Manual y automatico",
-    value: "manual_automatico",
-  },
-];
-
-const OPCIONES_AIREADORES = [
-  {
-    label: "Si",
-    value: "si",
-  },
-  {
-    label: "No",
-    value: "no",
-  },
-];
-
-const OPCIONES_ALIMENTADOR = [
-  {
-    label: "Si",
-    value: "si",
-  },
-  {
-    label: "No",
-    value: "no",
-  },
-];
-
-const AIREADORES_EXISTENTES = obtenerOpcionesAireadores();
-
-const ESTADOS_ESTANQUE = [
-  {
-    label: "Activo",
-    value: "activo",
-  },
-  {
-    label: "En preparacion",
-    value: "preparacion",
-  },
-  {
-    label: "Mantenimiento",
-    value: "mantenimiento",
-  },
-  {
-    label: "Engorde",
-    value: "engorde",
-  },
-  {
-    label: "Cosechado",
-    value: "cosechado",
-  },
-];
 
 export default function NuevoEstanqueScreen({ navigation }) {
   const router = useRouter();
@@ -201,66 +98,34 @@ export default function NuevoEstanqueScreen({ navigation }) {
   }
 
   function manejarTieneAireadores(valor) {
+    const cambio = obtenerCambioAireadores(valor, codigoAireador);
+
     setTieneAireadores(valor);
-
-    if (valor === "si") {
-      setNumeroAireadores("1");
-
-      if (codigoAireador === "") {
-        setCodigoAireador(obtenerCodigoAireadorDefault());
-      }
-    }
-
-    if (valor === "no") {
-      setNumeroAireadores("0");
-      setCodigoAireador("");
-    }
+    setNumeroAireadores(cambio.numeroAireadores);
+    setCodigoAireador(cambio.codigoAireador);
   }
 
   function validarFormulario() {
     setSubmitted(true);
 
-    if (codigo === "") {
-      mostrarError("Debe ingresar el codigo del estanque.");
-      return false;
+    const resultado = validarFormularioEstanque({
+      codigo: codigo,
+      tipoEstanque: tipoEstanque,
+      largo: largo,
+      ancho: ancho,
+      profundidad: profundidad,
+      fechaSiembra: fechaSiembra,
+      densidadSiembra: densidadSiembra,
+      tieneAireadores: tieneAireadores,
+      codigoAireador: codigoAireador,
+    });
+
+    if (resultado.valido === false) {
+      setTipoMensaje(resultado.tipoMensaje);
+      setMensaje(resultado.mensaje);
     }
 
-    if (tipoEstanque === "") {
-      mostrarError("Debe seleccionar el tipo de estanque.");
-      return false;
-    }
-
-    if (largo === "") {
-      mostrarError("Debe ingresar el largo del estanque.");
-      return false;
-    }
-
-    if (ancho === "") {
-      mostrarError("Debe ingresar el ancho del estanque.");
-      return false;
-    }
-
-    if (profundidad === "") {
-      mostrarError("Debe ingresar la profundidad del estanque.");
-      return false;
-    }
-
-    if (fechaSiembra === "") {
-      mostrarError("Debe seleccionar la fecha de siembra.");
-      return false;
-    }
-
-    if (Number(densidadSiembra) <= 0) {
-      mostrarError("La densidad de siembra debe ser mayor a 0.");
-      return false;
-    }
-
-    if (tieneAireadores === "si" && codigoAireador === "") {
-      mostrarError("Debe seleccionar el codigo del aireador.");
-      return false;
-    }
-
-    return true;
+    return resultado.valido;
   }
 
   function registrarEstanque() {
@@ -268,9 +133,7 @@ export default function NuevoEstanqueScreen({ navigation }) {
       return;
     }
 
-    const nuevoEstanque = {
-      id: String(Date.now()),
-      finca: "Finca La Reina",
+    const nuevoEstanque = construirNuevoEstanque({
       codigo: codigo,
       estado: estado,
       tipoEstanque: tipoEstanque,
@@ -289,13 +152,8 @@ export default function NuevoEstanqueScreen({ navigation }) {
       numeroAireadores: numeroAireadores,
       tieneAireadores: tieneAireadores,
       codigoAireador: codigoAireador,
-      estanqueAireador: obtenerEstanqueAireador(
-        tieneAireadores,
-        codigo,
-        "Finca La Reina",
-      ),
       tieneAlimentadorAutomatico: tieneAlimentadorAutomatico,
-    };
+    });
 
     console.log("Estanque registrado:", nuevoEstanque);
 
