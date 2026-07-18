@@ -23,7 +23,7 @@
  * Dependencias:
  * - tareasService (para obtener la tarea)
  * - shared/components (NavbarRegistro, Card, Icon, Button, ModalEliminar, etc.)
- * - styles/tareasStyles (reutiliza algunos estilos, pero la mayoría son locales)
+ * - styles/tareasStyles (reutiliza algunos estilos)
  * ============================================================
  */
 
@@ -43,7 +43,7 @@ import Alert from '../../../shared/components/Alert';
 import { COLORS } from '../../../theme/colors';
 import { ICONS } from '../../../theme/icons';
 import { STYLE } from '../../../theme/style';
-import { styles } from '../styles/tareasStyles';
+import { styles, detalleStyles } from '../styles/tareasStyles';
 
 import * as tareasService from '../services/tareasService';
 import { OPCIONES_CATEGORIA, OPCIONES_ESTADO } from '../constants/tareasMensajes';
@@ -63,33 +63,6 @@ function FilaDetalleIcono({ icon, label, value }) {
   );
 }
 
-// Estilos locales para la pantalla de detalle (se pueden mover a tareasStyles si se prefiere)
-const detalleStyles = {
-  fila: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  iconoWrapper: {
-    width: 28,
-    alignItems: 'center',
-    marginRight: 10,
-  },
-  contenido: {
-    flex: 1,
-  },
-  etiqueta: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: COLORS.textTertiary,
-    marginBottom: 2,
-  },
-  valor: {
-    fontSize: 15,
-    color: COLORS.textSecondary,
-  },
-};
-
 export default function DetalleTareaScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
@@ -104,12 +77,9 @@ export default function DetalleTareaScreen() {
   useEffect(() => {
     const cargarTarea = async () => {
       try {
-        console.log('ID recibido:', id); // Depuración
         const data = await tareasService.obtenerTareaPorId(id);
-        console.log('Tarea encontrada:', data); // Depuración
         setTarea(data);
       } catch (err) {
-        console.error('Error al cargar tarea:', err);
         setError(err.message || 'No se pudo cargar la tarea.');
       } finally {
         setLoading(false);
@@ -133,7 +103,6 @@ export default function DetalleTareaScreen() {
       await tareasService.eliminarTarea(tarea.id);
       setAlert({ type: 'warning', message: `Tarea "${tarea.nombre}" eliminada.` });
       setShowConfirmModal(false);
-      // Volver a la lista después de un breve retraso
       setTimeout(() => router.replace('/equipos/tareas'), 1500);
     } catch (err) {
       setAlert({ type: 'danger', message: err.message || 'No se pudo eliminar la tarea.' });
@@ -176,43 +145,36 @@ export default function DetalleTareaScreen() {
     <>
       <ScrollView style={STYLE.container} contentContainerStyle={STYLE.contentWrapper}>
         <Card>
-          {/* Fila: ID */}
           <FilaDetalleIcono
             icon={ICONS.certificate}
             label="ID"
             value={tarea.id}
           />
-          {/* Fila: Nombre */}
           <FilaDetalleIcono
             icon={ICONS.user}
             label="Nombre"
             value={tarea.nombre}
           />
-          {/* Fila: Descripción */}
           <FilaDetalleIcono
             icon={ICONS.document}
             label="Descripción"
             value={tarea.descripcion}
           />
-          {/* Fila: Categoría - CORREGIDO: ICONS.id en lugar de ICONS.tag */}
           <FilaDetalleIcono
             icon={ICONS.id}
             label="Categoría"
             value={categoriaLabel}
           />
-          {/* Fila: Duración estimada */}
           <FilaDetalleIcono
             icon={ICONS.clock}
             label="Duración estimada"
             value={`${tarea.duracionEstimada} hrs`}
           />
-          {/* Fila: Estado */}
           <FilaDetalleIcono
             icon={ICONS.check}
             label="Estado"
             value={estadoLabel}
           />
-          {/* Fila: Productos */}
           <FilaDetalleIcono
             icon={ICONS.box}
             label="Productos"

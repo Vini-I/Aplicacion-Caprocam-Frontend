@@ -5,6 +5,9 @@
  * Módulo: Mantenimiento de Equipos
  *
  * Estilos para la pantalla TareasScreen y sus componentes.
+ * También incluye estilos compartidos para DetalleEquipoScreen
+ * y DetalleTareaScreen.
+ *
  * Utiliza la paleta de COLORS del tema central.
  *
  * Dependencias:
@@ -14,6 +17,7 @@
 
 import { StyleSheet } from 'react-native';
 import { COLORS } from '../../../theme/colors';
+import { STYLE } from '../../../theme/style';
 
 export const styles = StyleSheet.create({
   // Contenedor principal de la pantalla
@@ -161,31 +165,31 @@ export const styles = StyleSheet.create({
     fontSize: 14,
   },
 
-  // Botón flotante "Agregar tarea" (mismo ancho que la tabla)
-floatingButtonContainer: {
-  position: 'absolute',
-  bottom: 20,
-  left: 0,
-  right: 0,
-  alignItems: 'center',
-  paddingHorizontal: 16,
-},
+  // Botón flotante "Agregar tarea"
+  floatingButtonContainer: {
+    position: 'absolute',
+    bottom: 20,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    paddingHorizontal: 16,
+  },
 
-floatingButton: {
-  width: '100%',
-  maxWidth: 900,
-  alignSelf: 'center',   // para que respete el maxWidth y se centre
-  backgroundColor: 'transparent', // el Button con variant="outline" ya tiene fondo blanco
-  borderColor: COLORS.primary,
-  borderWidth: 1,
-  paddingVertical: 12,
-  paddingHorizontal: 20,
-  borderRadius: 8,
-  flexDirection: 'row',
-  justifyContent: 'center',
-  alignItems: 'center',
-  gap: 6,
-},
+  floatingButton: {
+    width: '100%',
+    maxWidth: 900,
+    alignSelf: 'center',
+    backgroundColor: 'transparent',
+    borderColor: COLORS.primary,
+    borderWidth: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 6,
+  },
 
   floatingButtonText: {
     color: COLORS.primary,
@@ -338,5 +342,193 @@ floatingButton: {
     fontWeight: '400',
     color: COLORS.textSecondary,
     flex: 1,
+  },
+
+  // Centro de carga/error
+  centerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});
+
+// ============================================================
+// ESTILOS ADICIONALES PARA DETALLE DE EQUIPO Y TAREA
+// (movidos desde los screens para mantener orden)
+// ============================================================
+
+// Estilos para filas con ícono (usado en DetalleEquipo y DetalleTarea)
+export const detalleStyles = StyleSheet.create({
+  fila: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  iconoWrapper: {
+    width: 28,
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  contenido: {
+    flex: 1,
+  },
+  etiqueta: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: COLORS.textTertiary,
+    marginBottom: 2,
+  },
+  valor: {
+    fontSize: 15,
+    color: COLORS.textSecondary,
+  },
+  valorLink: {
+    fontSize: 15,
+    color: COLORS.primary,
+    textDecorationLine: 'underline',
+  },
+});
+
+// Estilos específicos para la pantalla DetalleEquipo
+export const equipoDetalleStyles = StyleSheet.create({
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  avatar: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: COLORS.secondary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 14,
+  },
+  info: {
+    flex: 1,
+  },
+  nombre: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: COLORS.textSecondary,
+    marginBottom: 4,
+  },
+  badges: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  codigo: {
+    fontSize: 13,
+    color: COLORS.textTertiary,
+  },
+  estadoBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  estadoBadgeContainer: {
+    backgroundColor: COLORS.secondary,
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  estadoBadgeText: {
+    fontWeight: '600',
+    fontSize: 12,
+  },
+  horasContainer: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 12,
+  },
+  horasRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  horasLabelContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  horasLabel: {
+    fontSize: 13,
+    color: COLORS.textTertiary,
+  },
+  horasValor: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.primary,
+  },
+  horasValorCritico: {
+    color: COLORS.error,
+  },
+  horasValueRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  horasAlertIcon: {
+    marginRight: 6,
+  },
+  historialTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.textSecondary,
+    marginBottom: 8,
+  },
+  registroItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.secondary,
+  },
+  registroFecha: {
+    fontSize: 12,
+    color: COLORS.textTertiary,
+  },
+  registroHoras: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+  },
+  botonesContainer: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 8,
+    marginBottom: 20,
+  },
+  boton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    backgroundColor: 'transparent',
+    marginTop: 0,
+  },
+  botonEditar: {
+    borderColor: COLORS.primary,
+  },
+  botonEliminar: {
+    borderColor: COLORS.error,
+  },
+  botonTexto: {
+    color: COLORS.primary,
+    fontWeight: '600',
+  },
+  botonTextoEliminar: {
+    color: COLORS.error,
+    fontWeight: '600',
+  },
+  alertWrapper: {
+    marginBottom: 12,
   },
 });

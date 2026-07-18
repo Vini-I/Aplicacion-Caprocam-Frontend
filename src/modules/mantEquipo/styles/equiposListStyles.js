@@ -21,6 +21,10 @@ export const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
   },
 
+  mainFlex: {
+    flex: 1,
+  },
+
   searchRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -51,10 +55,15 @@ export const styles = StyleSheet.create({
     backgroundColor: "transparent",
     height: 42,
     marginTop: 0,
+    borderColor: COLORS.primary,
   },
 
-  // Botón de filtro junto a la barra de búsqueda (mismo estándar visual
-  // que filterButtonStyle en tareasStyles)
+  btnActionText: {
+    color: COLORS.primary,
+    fontWeight: "600",
+    fontSize: 13,
+  },
+
   filterButtonStyle: {
     height: 42,
     borderColor: COLORS.textTertiary,
@@ -62,13 +71,13 @@ export const styles = StyleSheet.create({
     alignSelf: "center",
   },
 
+  scrollView: {
+    flex: 1,
+  },
+
   list: {
     padding: 16,
-    // Espacio inferior mayor que en la tabla de Tareas: las cards son más
-    // altas que una fila de tabla, por lo que se necesita más margen para
-    // que la última card no quede tapada por el botón flotante "Agregar equipo"
     paddingBottom: 110,
-    left: 8,
   },
 
   error: {
@@ -77,8 +86,6 @@ export const styles = StyleSheet.create({
     marginTop: 20,
   },
 
-  // Botón flotante "Agregar equipo" (mismo estándar de ancho que en
-  // TareasScreen: máximo 900, centrado, independiente del scroll)
   floatingButtonContainer: {
     position: "absolute",
     bottom: 0,
@@ -87,7 +94,7 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 15,
-    backgroundColor: COLORS.white, // Fondo semitransparente para que se vea el contenido detrás
+    backgroundColor: COLORS.white,
   },
 
   floatingButton: {
@@ -122,7 +129,7 @@ export const styles = StyleSheet.create({
 
   header: {
     flexDirection: "row",
-    alignItems: "center", // Alinea ícono y texto verticalmente
+    alignItems: "center",
     marginBottom: 8,
   },
 
@@ -179,7 +186,7 @@ export const styles = StyleSheet.create({
 
   infoLabelContainer: {
     flexDirection: "row",
-    alignItems: "center", // Alinea icono y etiqueta
+    alignItems: "center",
     marginBottom: 2,
   },
 
@@ -218,11 +225,11 @@ export const styles = StyleSheet.create({
   },
 
   toggleBtnOn: {
-    backgroundColor: COLORS.error, // Rojo cuando está encendido (para apagar)
+    backgroundColor: COLORS.error,
   },
 
   toggleBtnOff: {
-    backgroundColor: COLORS.success, // Verde cuando está apagado (para encender)
+    backgroundColor: COLORS.success,
   },
 
   toggleBtnText: {
@@ -296,10 +303,28 @@ export const styles = StyleSheet.create({
     backgroundColor: "transparent",
   },
 
-  modalDeleteBtn: {
-    marginTop: 0,
-    flex: 1,
+  modalCancelBtnText: {
+    color: COLORS.primary,
+    fontWeight: "600",
   },
+
+  modalDeleteBtn: {
+    flex: 1,
+    marginTop: 0,
+    borderColor: COLORS.error,
+    borderWidth: 1,
+    backgroundColor: "transparent",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+  },
+
+  modalDeleteBtnText: {
+    color: COLORS.error,
+    fontWeight: "600",
+  },
+
   alertWrapper: {
     marginBottom: 12,
     paddingHorizontal: 16,
@@ -389,8 +414,53 @@ export const styles = StyleSheet.create({
     maxHeight: "92%",
     padding: 16,
   },
-    formContainer: {
+
+  modalContentContainer: {
+    flex: 1,
+    flexDirection: "column",
+  },
+
+  modalTitleHeader: {
+    padding: 16,
+    paddingBottom: 0,
+  },
+
+  modalScrollForm: {
+    flex: 1,
+    paddingHorizontal: 16,
     paddingBottom: 16,
+  },
+
+  modalScrollFormContent: {
+    paddingBottom: 16,
+  },
+
+  modalFooterButtons: {
+    flexDirection: "row",
+    padding: 16,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.secondary,
+    backgroundColor: COLORS.white,
+    gap: 12,
+  },
+
+  modalFooterButton: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    borderColor: COLORS.primary,
+    backgroundColor: "transparent",
+  },
+
+  modalFooterButtonText: {
+    color: COLORS.primary,
+    fontWeight: "600",
+  },
+
+  modalErrorAlert: {
+    marginBottom: 12,
   },
 
   errorInput: {

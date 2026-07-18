@@ -28,8 +28,8 @@
  */
 
 import React, { useState, useRef, useEffect, useMemo, useCallback } from "react";
-import { View, ScrollView, Alert as RNAlert } from "react-native";
-import { useRouter } from "expo-router";
+import { View, ScrollView } from "react-native";
+import { useRouter, useFocusEffect } from "expo-router";
 import { useEquipos } from "../hooks/useEquipos";
 import EquipoCard from "../components/EquipoCard";
 import EquipoForm from "../components/EquipoForm";
@@ -49,8 +49,6 @@ import { ICONS } from "../../../theme/icons";
 import { COLORS } from "../../../theme/colors";
 import { styles } from "../styles/equiposListStyles";
 import { equiposService } from "../services/equiposService";
-import { useFocusEffect } from "expo-router";
-
 
 export default function EquiposListScreen() {
   const router = useRouter();
@@ -109,10 +107,10 @@ export default function EquiposListScreen() {
   }, []);
 
   useFocusEffect(
-  useCallback(() => {
-    fetchEquipos();
-  }, [fetchEquipos])
-);
+    useCallback(() => {
+      fetchEquipos();
+    }, [fetchEquipos])
+  );
 
   // Función para mostrar alerta con auto-cierre
   const showAlert = (type, message) => {
@@ -128,45 +126,36 @@ export default function EquiposListScreen() {
   // --------------------------------------------------------
   // FILTRADO LOCAL
   // --------------------------------------------------------
-const equiposFiltrados = equipos.filter((equipo) => {
-  if (!searchText) return true;
-  const q = searchText.toLowerCase().trim();
+  const equiposFiltrados = equipos.filter((equipo) => {
+    if (!searchText) return true;
+    const q = searchText.toLowerCase().trim();
 
-  // Coincidencia en campos estándar: nombre, código, descripción, marca, modelo, estado
-  const coincideCampos =
-    equipo.nombre.toLowerCase().includes(q) ||
-    equipo.codigo.toLowerCase().includes(q) ||
-    equipo.descripcion.toLowerCase().includes(q) ||
-    equipo.marca.toLowerCase().includes(q) ||
-    equipo.modelo.toLowerCase().includes(q) ||
-    (equipo.estado && equipo.estado.toLowerCase().includes(q));
+    const coincideCampos =
+      equipo.nombre.toLowerCase().includes(q) ||
+      equipo.codigo.toLowerCase().includes(q) ||
+      equipo.descripcion.toLowerCase().includes(q) ||
+      equipo.marca.toLowerCase().includes(q) ||
+      equipo.modelo.toLowerCase().includes(q) ||
+      (equipo.estado && equipo.estado.toLowerCase().includes(q));
 
-  // Coincidencia especial: si el texto contiene palabras clave de mantenimiento
-  const palabrasClave = ["mantenimiento", "requiere", "necesita"];
-  const contienePalabraClave = palabrasClave.some((palabra) => q.includes(palabra));
-  const requiereMantenimiento = equipo.horasUso >= equipo.horasMantenimiento;
+    const palabrasClave = ["mantenimiento", "requiere", "necesita"];
+    const contienePalabraClave = palabrasClave.some((palabra) => q.includes(palabra));
+    const requiereMantenimiento = equipo.horasUso >= equipo.horasMantenimiento;
 
-  // Si el usuario escribe "mantenimiento" (o similar), mostrar equipos que requieren mantenimiento
-  const coincidePorMantenimiento = contienePalabraClave && requiereMantenimiento;
+    const coincidePorMantenimiento = contienePalabraClave && requiereMantenimiento;
 
-  return coincideCampos || coincidePorMantenimiento;
-});
+    return coincideCampos || coincidePorMantenimiento;
+  });
 
-  // Opciones de "tipo de equipo" para el FilterButton, normalizadas a
-  // { label, value } sin importar si equiposService.getTiposEquipo()
-  // retorna strings u objetos
   const opcionesTipo = (equiposService.getTiposEquipo() || []).map((tipo) =>
     typeof tipo === "string" ? { label: tipo, value: tipo } : tipo
   );
 
-  // Opciones de estado del equipo (según el toggle encendido/apagado)
   const opcionesEstado = [
     { label: "Encendido", value: "encendido" },
     { label: "Apagado", value: "apagado" },
   ];
 
-  // Aplicar filtros adicionales (tipo y estado) sobre equiposFiltrados,
-  // que ya contempla la búsqueda por texto
   const equiposFinales = useMemo(() => {
     return equiposFiltrados.filter((equipo) => {
       if (
@@ -187,13 +176,13 @@ const equiposFiltrados = equipos.filter((equipo) => {
   // MANEJADORES
   // --------------------------------------------------------
   const handleAdd = () => {
-router.push("/equipos/registrarEquipo");
+    router.push("/equipos/registrarEquipo");
   };
 
   const handleEdit = (equipo) => {
     setEditingEquipo(equipo);
     setModalVisible(true);
-      setValidationError(""); 
+    setValidationError("");
   };
 
   const handleDeletePress = (id) => {
@@ -205,29 +194,29 @@ router.push("/equipos/registrarEquipo");
     }
   };
 
-const confirmDelete = async () => {
-  if (!deleteTarget) {
-    setCodigoError("Equipo no encontrado");
-    return;
-  }
+  const confirmDelete = async () => {
+    if (!deleteTarget) {
+      setCodigoError("Equipo no encontrado");
+      return;
+    }
 
-  if (codigoConfirmacion !== deleteTarget.codigo) {
-    setCodigoError("El código ingresado no coincide con el del equipo");
-    return;
-  }
+    if (codigoConfirmacion !== deleteTarget.codigo) {
+      setCodigoError("El código ingresado no coincide con el del equipo");
+      return;
+    }
 
-  try {
-    await eliminarEquipo(deleteTarget.id);
-    showAlert("warning", `El equipo "${deleteTarget.nombre}" ha sido eliminado correctamente`);
-    setShowConfirmModal(false);
-    setDeleteTarget(null);
-    setCodigoConfirmacion("");
-    setCodigoError(""); // limpiar error al éxito
-    fetchEquipos();
-  } catch (error) {
-    setCodigoError("No se pudo eliminar el equipo");
-  }
-};
+    try {
+      await eliminarEquipo(deleteTarget.id);
+      showAlert("warning", `El equipo "${deleteTarget.nombre}" ha sido eliminado correctamente`);
+      setShowConfirmModal(false);
+      setDeleteTarget(null);
+      setCodigoConfirmacion("");
+      setCodigoError("");
+      fetchEquipos();
+    } catch (error) {
+      setCodigoError("No se pudo eliminar el equipo");
+    }
+  };
 
   const handleSubmit = async (formData) => {
     try {
@@ -240,7 +229,6 @@ const confirmDelete = async () => {
       }
       setModalVisible(false);
       setEditingEquipo(null);
-      // Recargar lista
       fetchEquipos();
     } catch (error) {
       showAlert("danger", error.message || "Ocurrió un error al guardar el equipo");
@@ -250,16 +238,15 @@ const confirmDelete = async () => {
   const handleToggle = async (id) => {
     try {
       await toggleEquipo(id);
-      // Recargar lista
       fetchEquipos();
     } catch (error) {
       showAlert("danger", "No se pudo cambiar el estado del equipo");
     }
   };
 
-const openDetail = (equipoId) => {
-  router.push(`/equipos/detalleEquipo?id=${equipoId}`);
-};
+  const openDetail = (equipoId) => {
+    router.push(`/equipos/detalleEquipo?id=${equipoId}`);
+  };
 
   const navigateToMantEquipo = () => {
     router.push("/equipos/mantEquipo");
@@ -274,100 +261,85 @@ const openDetail = (equipoId) => {
   // --------------------------------------------------------
   // RENDER PRINCIPAL
   // --------------------------------------------------------
-return (
-  <View style={[STYLE.container, styles.container]}>
-    {/* Barra de búsqueda y botones de acción - sin wrapper que limite ancho */}
-    <View style={{ flex: 1 }}>
-      <View style={styles.searchRow}>
-        <SearchBar
-          value={searchText}
-          onChangeText={setSearchText}
-          placeholder="Buscar por nombre, código, marca o modelo"
-          containerStyle={styles.searchInput}
-        />
-        <FilterButton
-          categories={opcionesTipo}
-          suppliers={opcionesEstado}
-          activeFilters={filtros}
-          onApply={(f) =>
-            setFiltros({
-              categories: f.categories || [],
-              suppliers: f.suppliers || [],
-              units: [],
-              lowStock: false,
-              expiryDate: "",
-            })
-          }
-          showLowStock={false}
-          showExpiryDate={false}
-          buttonStyle={styles.filterButtonStyle}
-        />
-        <Button
-          variant="outline"
-          onPress={navigateToMantEquipo}
-          style={[styles.btnAction, { borderColor: COLORS.primary }]}
-        >
-          <Icon icon={ICONS.clipboard} size={16} color={COLORS.primary} />
-          <CustomText style={{ color: COLORS.primary, fontWeight: "600", fontSize: 13 }}>
-            Ver Mantenimiento
-          </CustomText>
-        </Button>
-      </View>
-
-{/* Alerta flotante: se muestra debajo de la barra de búsqueda, dentro del flujo */}
-{alert && (
-  <View style={styles.alertWrapper}>
-    <Alert variant={alert.type} message={alert.message} />
-  </View>
-)}
-
-      {/* Lista de equipos - ahora ocupa todo el ancho disponible */}
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.list}>
-        {equiposFinales.map((equipo) => (
-          <EquipoCard
-            key={equipo.id}
-            equipo={equipo}
-            onPress={openDetail}
-            onToggle={handleToggle}
+  return (
+    <View style={styles.container}>
+      <View style={styles.mainFlex}>
+        <View style={styles.searchRow}>
+          <SearchBar
+            value={searchText}
+            onChangeText={setSearchText}
+            placeholder="Buscar por nombre, código, marca o modelo"
+            containerStyle={styles.searchInput}
           />
-        ))}
-      </ScrollView>
-    </View>
+          <FilterButton
+            categories={opcionesTipo}
+            suppliers={opcionesEstado}
+            activeFilters={filtros}
+            onApply={(f) =>
+              setFiltros({
+                categories: f.categories || [],
+                suppliers: f.suppliers || [],
+                units: [],
+                lowStock: false,
+                expiryDate: "",
+              })
+            }
+            showLowStock={false}
+            showExpiryDate={false}
+            buttonStyle={styles.filterButtonStyle}
+          />
+          <Button
+            variant="outline"
+            onPress={navigateToMantEquipo}
+            style={styles.btnAction}
+          >
+            <Icon icon={ICONS.clipboard} size={16} color={COLORS.primary} />
+            <CustomText style={styles.btnActionText}>Ver Mantenimiento</CustomText>
+          </Button>
+        </View>
 
-    {/* Botón flotante "Agregar equipo", fijo en la parte inferior e
-        independiente del scroll. Hermano directo del contenedor raíz
-        (mismo nivel jerárquico que en TareasScreen) para que se posicione
-        respecto a toda la pantalla y no quede atrapado dentro del wrapper
-        interno junto al ScrollView, que era lo que causaba el solapamiento
-        con la última card. Mismo ancho estándar que en Tareas. */}
-    <View style={styles.floatingButtonContainer}>
-      <Button variant="outline" onPress={handleAdd} style={styles.floatingButton}>
-        <Icon icon={ICONS.add} size={16} color={COLORS.primary} />
-        <CustomText style={styles.floatingButtonText}>Agregar equipo</CustomText>
-      </Button>
-    </View>
+        {alert && (
+          <View style={styles.alertWrapper}>
+            <Alert variant={alert.type} message={alert.message} />
+          </View>
+        )}
+
+        <ScrollView style={styles.scrollView} contentContainerStyle={styles.list}>
+          {equiposFinales.map((equipo) => (
+            <EquipoCard
+              key={equipo.id}
+              equipo={equipo}
+              onPress={openDetail}
+              onToggle={handleToggle}
+            />
+          ))}
+        </ScrollView>
+
+        <View style={styles.floatingButtonContainer}>
+          <Button variant="outline" onPress={handleAdd} style={styles.floatingButton}>
+            <Icon icon={ICONS.add} size={16} color={COLORS.primary} />
+            <CustomText style={styles.floatingButtonText}>Agregar equipo</CustomText>
+          </Button>
+        </View>
 
         {/* Modal para crear/editar */}
         <Modal
           visible={modalVisible}
-            onClose={() => {
-    setModalVisible(false);
-    setValidationError(""); // <-- limpiar error
-  }}
+          onClose={() => {
+            setModalVisible(false);
+            setValidationError("");
+          }}
           showCloseButton={false}
-          containerStyle={styles.modalContainer
-            
-          }
-          
+          containerStyle={styles.modalContainer}
         >
-          <View style={{ flex: 1, flexDirection: "column" }}>
-            <Title level={4} style={{ padding: 16, paddingBottom: 0 }}>
+          <View style={styles.modalContentContainer}>
+            <Title level={4} style={styles.modalTitleHeader}>
               {editingEquipo ? "Editar equipo" : "Nuevo equipo"}
             </Title>
 
             <ScrollView
-              style={{ flex: 1, paddingHorizontal: 16, paddingBottom: 16 }}
-              contentContainerStyle={{ paddingBottom: 16 }}
+              style={styles.modalScrollForm}
+              contentContainerStyle={styles.modalScrollFormContent}
             >
               <EquipoForm
                 ref={formRef}
@@ -378,71 +350,43 @@ return (
                 tiposEquipo={equiposService.getTiposEquipo()}
                 subcategorias={equiposService.getSubcategorias}
                 estanquesDisponibles={equiposService.getEstanquesDisponibles()}
-  onValidationError={(msg) => setValidationError(msg)} // <-- Cambiar aquí
+                onValidationError={(msg) => setValidationError(msg)}
               />
             </ScrollView>
 
-            {/* Botones fijos en la parte inferior */}
-            <View
-              style={{
-                flexDirection: "row",
-                padding: 16,
-                borderTopWidth: 1,
-                borderTopColor: COLORS.secondary,
-                backgroundColor: COLORS.white,
-                gap: 12,
-              }}
-            >
+            <View style={styles.modalFooterButtons}>
               <Button
                 variant="outline"
                 onPress={() => setModalVisible(false)}
-                style={{
-                  flex: 1,
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 6,
-                  borderColor: COLORS.primary,
-                  backgroundColor: "transparent",
-                }}
+                style={styles.modalFooterButton}
               >
                 <Icon icon={ICONS.exit} size={18} color={COLORS.primary} />
-                <CustomText style={{ color: COLORS.primary, fontWeight: "600" }}>
-                  Cancelar
-                </CustomText>
+                <CustomText style={styles.modalFooterButtonText}>Cancelar</CustomText>
               </Button>
 
-<Button
-  variant="outline"
-  onPress={() => formRef.current?.submit()}
-  style={{
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 6,
-    borderColor: COLORS.primary,
-    backgroundColor: "transparent",
-  }}
->
-  <Icon icon={ICONS.save} size={18} color={COLORS.primary} />
-  <CustomText style={{ color: COLORS.primary, fontWeight: "600" }}>
-    {editingEquipo ? "Actualizar" : "Registrar"}
-  </CustomText>
-</Button>
+              <Button
+                variant="outline"
+                onPress={() => formRef.current?.submit()}
+                style={styles.modalFooterButton}
+              >
+                <Icon icon={ICONS.save} size={18} color={COLORS.primary} />
+                <CustomText style={styles.modalFooterButtonText}>
+                  {editingEquipo ? "Actualizar" : "Registrar"}
+                </CustomText>
+              </Button>
             </View>
           </View>
         </Modal>
 
         {/* Modal de confirmación con validación de código */}
-<Modal
-  visible={showConfirmModal}
-  onClose={() => {
-    setShowConfirmModal(false);
-    setCodigoConfirmacion("");
-    setDeleteTarget(null);
-    setCodigoError(""); // ← agregar esta línea
-  }}
+        <Modal
+          visible={showConfirmModal}
+          onClose={() => {
+            setShowConfirmModal(false);
+            setCodigoConfirmacion("");
+            setDeleteTarget(null);
+            setCodigoError("");
+          }}
           showCloseButton={false}
           containerStyle={styles.modalConfirmContainer}
         >
@@ -466,46 +410,35 @@ return (
             autoCapitalize="characters"
             containerStyle={styles.modalInput}
           />
-          {/* Alerta de error dentro del modal */}
-{codigoError !== "" && (
-  <Alert
-    variant="danger"
-    message={codigoError}
-    style={{ marginBottom: 12 }}
-  />
-)}
-          
+          {codigoError !== "" && (
+            <Alert
+              variant="danger"
+              message={codigoError}
+              style={styles.modalErrorAlert}
+            />
+          )}
           <View style={styles.modalButtons}>
-<Button
-  onPress={() => {
-    setShowConfirmModal(false);
-    setCodigoConfirmacion("");
-    setDeleteTarget(null);
-    setCodigoError(""); // ← agregar
-  }}
+            <Button
+              onPress={() => {
+                setShowConfirmModal(false);
+                setCodigoConfirmacion("");
+                setDeleteTarget(null);
+                setCodigoError("");
+              }}
               variant="outline"
-              style={[styles.modalCancelBtn, { flexDirection: "row", alignItems: "center", gap: 6 }]}
+              style={styles.modalCancelBtn}
             >
               <Icon icon={ICONS.exit} size={16} color={COLORS.primary} />
-              <CustomText style={{ color: COLORS.primary, fontWeight: "600" }}>Cancelar</CustomText>
+              <CustomText style={styles.modalCancelBtnText}>Cancelar</CustomText>
             </Button>
-    <Button
-      onPress={confirmDelete}
-      variant="outline"
-      style={[
-        styles.modalDeleteBtn,
-        {
-          borderColor: COLORS.error,      
-          flexDirection: "row",
-        },
-      ]}
-      textStyle={{ color: COLORS.error }} // texto rojo
-    >
-      <Icon icon={ICONS.delete} size={16} color={COLORS.error} />
-      <CustomText style={{ color: COLORS.error, fontWeight: "600" }}>
-        Eliminar
-      </CustomText>
-    </Button>
+            <Button
+              onPress={confirmDelete}
+              variant="outline"
+              style={styles.modalDeleteBtn}
+            >
+              <Icon icon={ICONS.delete} size={16} color={COLORS.error} />
+              <CustomText style={styles.modalDeleteBtnText}>Eliminar</CustomText>
+            </Button>
           </View>
         </Modal>
 
@@ -532,6 +465,7 @@ return (
             onToggle={handleToggle}
           />
         </Modal>
+      </View>
     </View>
   );
 }

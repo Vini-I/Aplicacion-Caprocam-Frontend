@@ -109,7 +109,7 @@ export default function TareasScreen() {
   // Estados de carga y error
   if (loading && tareasFiltradas.length === 0) {
     return (
-      <View style={[STYLE.container, { justifyContent: 'center', alignItems: 'center' }]}>
+      <View style={[STYLE.container, styles.centerContainer]}>
         <Spinner />
       </View>
     );
@@ -117,7 +117,7 @@ export default function TareasScreen() {
 
   if (error) {
     return (
-      <View style={[STYLE.container, { justifyContent: 'center', alignItems: 'center' }]}>
+      <View style={[STYLE.container, styles.centerContainer]}>
         <CustomText style={{ color: COLORS.error }}>Error: {error}</CustomText>
       </View>
     );
