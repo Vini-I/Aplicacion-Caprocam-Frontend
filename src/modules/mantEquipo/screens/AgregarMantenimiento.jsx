@@ -37,7 +37,6 @@
 
 import React, { useState, useCallback, useEffect } from "react";
 import { View, ScrollView } from "react-native";
-import { useRouter } from "expo-router";
 
 import CustomText from "../../../shared/components/Text.jsx";
 import Button from "../../../shared/components/Button.jsx";
@@ -94,8 +93,7 @@ if (ScrollView.prototype && ScrollView.prototype.render) {
   };
 }
 
-export default function AgregarMantenimientoScreen() {
-  const router = useRouter();
+export default function AgregarMantenimientoScreen({ onNavigateToMain = () => {} }) {
 
   const [titulo, setTitulo] = useState("");
   const [descripcion, setDescripcion] = useState("");
@@ -221,12 +219,9 @@ export default function AgregarMantenimientoScreen() {
     }
 
     // Redireccionar al listado principal con alerta de éxito
-    router.replace({
-      pathname: "/equipos/mantEquipo",
-      params: {
-        alertaTipo: "success",
-        alertaMensaje: `Ticket ${nuevo.id} creado con éxito.`,
-      }
+    onNavigateToMain({
+      alertaTipo: "success",
+      alertaMensaje: `Ticket ${nuevo.id} creado con éxito.`,
     });
   };
 
@@ -447,7 +442,7 @@ export default function AgregarMantenimientoScreen() {
         <View style={styles.modalFooter}>
           <Button
             variant="outline"
-            onPress={() => router.replace("/equipos/mantEquipo")}
+            onPress={() => onNavigateToMain({})}
             style={styles.btnCancel}
           >
             <Icon icon={ICONS.exit} size={15} color={COLORS.primary} />

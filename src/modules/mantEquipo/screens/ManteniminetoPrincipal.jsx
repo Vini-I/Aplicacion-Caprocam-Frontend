@@ -37,7 +37,6 @@
 
 import React, { useState, useMemo, useEffect } from "react";
 import { View, ScrollView } from "react-native";
-import { useRouter, useLocalSearchParams } from "expo-router";
 
 // Monkey patch de ScrollView para forzar la ocultación de scrollbars en todo el módulo
 if (ScrollView.prototype && ScrollView.prototype.render) {
@@ -86,9 +85,14 @@ import {
 import { obtenerTareas } from "../services/tareasService.js";
 import * as MantService from "../services/mantEquipoService.js";
 
-export default function ManteniminetoPrincipal() {
-  const router = useRouter();
-  const params = useLocalSearchParams();
+export default function ManteniminetoPrincipal({
+  onNavigateToCreate = () => {},
+  onNavigateToDetail = (id) => {},
+  onNavigateToTareas = () => {},
+  refreshTimestamp,
+  alertaTipo,
+  alertaMensaje
+}) {
 
   const {
     tickets,
@@ -111,19 +115,19 @@ export default function ManteniminetoPrincipal() {
     obtenerTareas().then(data => setTareasCatalog(data || []));
   }, []);
 
-  // Cargar alerta si se pasa por parámetros de la ruta
+  // Cargar alerta si se pasa por props
   useEffect(() => {
-    if (params.alertaTipo && params.alertaMensaje) {
+    if (alertaTipo && alertaMensaje) {
       setAlerta({
-        tipo: params.alertaTipo,
-        mensaje: params.alertaMensaje,
+        tipo: alertaTipo,
+        mensaje: alertaMensaje,
       });
       const timer = setTimeout(() => {
         setAlerta(null);
       }, 4000);
       return () => clearTimeout(timer);
     }
-  }, [params.alertaTipo, params.alertaMensaje]);
+  }, [alertaTipo, alertaMensaje, refreshTimestamp]);
 
   const ticketsFiltrados = useMemo(() => {
     let result = tickets;
@@ -248,7 +252,7 @@ export default function ManteniminetoPrincipal() {
                 <FilaTicket
                   key={item.id}
                   ticket={item}
-                  onVerDetalle={(t) => router.push({ pathname: "/equipos/DetalleMantenimiento", params: { id: t.id } })}
+                  onVerDetalle={(t) => onNavigateToDetail(t.id)}
                 />
               ))
             )}
@@ -258,7 +262,7 @@ export default function ManteniminetoPrincipal() {
           <View style={{ flexDirection: "row", width: "100%", gap: 12, marginTop: 16 }}>
             <Button
               variant="outline"
-              onPress={() => router.push("/equipos/AgregarMantenimiento")}
+              onPress={onNavigateToCreate}
               style={[styles.btnAddMaint, { flex: 1 }]}
             >
               <Icon icon={ICONS.add} size={15} color={COLORS.primary} />
@@ -266,7 +270,7 @@ export default function ManteniminetoPrincipal() {
             </Button>
             <Button
               variant="outline"
-              onPress={() => router.push("/equipos/tareas")}
+              onPress={onNavigateToTareas}
               style={[styles.btnAddTask, { flex: 1 }]}
             >
               <Icon icon={ICONS.clipboard} size={15} color={COLORS.warning} />

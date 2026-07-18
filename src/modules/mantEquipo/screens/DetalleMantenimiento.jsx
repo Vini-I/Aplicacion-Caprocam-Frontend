@@ -36,7 +36,6 @@
 
 import React, { useState, useEffect } from "react";
 import { View, ScrollView } from "react-native";
-import { useRouter, useLocalSearchParams } from "expo-router";
 
 import CustomText from "../../../shared/components/Text.jsx";
 import Button from "../../../shared/components/Button.jsx";
@@ -58,10 +57,13 @@ import { formatDate } from "../../../shared/utils/dateUtils.js";
 
 
 
-export default function DetalleMantenimientoScreen() {
-  const router = useRouter();
-  const params = useLocalSearchParams();
-  const { id } = params;
+export default function DetalleMantenimientoScreen({
+  id,
+  alertaTipo,
+  alertaMensaje,
+  onNavigateToEdit = (id) => {},
+  onNavigateToMain = (params) => {}
+}) {
 
   const [ticket, setTicket] = useState(null);
   const [equipo, setEquipo] = useState(null);
@@ -95,29 +97,26 @@ export default function DetalleMantenimientoScreen() {
     }
   }, [id, MantService.TICKETS_MOCK]);
 
-  // Cargar alertas de éxito si se redirigió desde edición
+  // Cargar alertas de éxito si se pasó por props
   useEffect(() => {
-    if (params.alertaTipo && params.alertaMensaje) {
+    if (alertaTipo && alertaMensaje) {
       setAlerta({
-        tipo: params.alertaTipo,
-        mensaje: params.alertaMensaje,
+        tipo: alertaTipo,
+        mensaje: alertaMensaje,
       });
       const timer = setTimeout(() => {
         setAlerta(null);
       }, 4000);
       return () => clearTimeout(timer);
     }
-  }, [params.alertaTipo, params.alertaMensaje]);
+  }, [alertaTipo, alertaMensaje]);
 
   const confirmDelete = () => {
     setShowConfirmModal(false);
     MantService.eliminarTicket(id);
-    router.replace({
-      pathname: "/equipos/mantEquipo",
-      params: {
-        alertaTipo: "danger",
-        alertaMensaje: `El ticket ${id} ha sido eliminado correctamente del sistema.`,
-      }
+    onNavigateToMain({
+      alertaTipo: "danger",
+      alertaMensaje: `El ticket ${id} ha sido eliminado correctamente del sistema.`,
     });
   };
 
@@ -125,7 +124,7 @@ export default function DetalleMantenimientoScreen() {
     return (
       <View style={[STYLE.container, { justifyContent: "center", alignItems: "center" }]}>
         <CustomText style={{ color: COLORS.error }}>Ticket no encontrado.</CustomText>
-        <Button variant="outline" onPress={() => router.replace("/equipos/mantEquipo")} style={{ marginTop: 12 }}>
+        <Button variant="outline" onPress={() => onNavigateToMain({})} style={{ marginTop: 12 }}>
           Regresar a lista
         </Button>
       </View>
@@ -285,7 +284,7 @@ export default function DetalleMantenimientoScreen() {
         <View style={[styles.modalFooter, { borderTopWidth: 1, borderTopColor: COLORS.secondary, paddingTop: 16 }]}>
           <Button
             variant="outline"
-            onPress={() => router.replace("/equipos/mantEquipo")}
+            onPress={() => onNavigateToMain({})}
             style={[styles.btnCancel, { flex: 1 }]}
           >
             <Icon icon={ICONS.exit} size={15} color={COLORS.primary} />
@@ -293,7 +292,7 @@ export default function DetalleMantenimientoScreen() {
           </Button>
           <Button
             variant="outline"
-            onPress={() => router.push({ pathname: "/equipos/EditarMantenimiento", params: { id: ticket.id } })}
+            onPress={() => onNavigateToEdit(ticket.id)}
             style={[styles.btnCancel, { flex: 1 }]}
           >
             <Icon icon={ICONS.edit} size={15} color={COLORS.primary} />

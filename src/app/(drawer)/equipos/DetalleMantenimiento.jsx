@@ -12,7 +12,34 @@
  */
 
 import DetalleMantenimientoScreen from "../../../modules/mantEquipo/screens/DetalleMantenimiento";
+import { useRouter, useLocalSearchParams } from "expo-router";
 
 export default function DetalleMantenimientoRoute() {
-  return <DetalleMantenimientoScreen />;
+  const router = useRouter();
+  const params = useLocalSearchParams();
+  const { id } = params;
+
+  const handleNavigateToEdit = (ticketId) => {
+    router.push({
+      pathname: "/equipos/EditarMantenimiento",
+      params: { id: ticketId }
+    });
+  };
+
+  const handleNavigateToMain = (routeParams = {}) => {
+    router.replace({
+      pathname: "/equipos/mantEquipo",
+      params: routeParams
+    });
+  };
+
+  return (
+    <DetalleMantenimientoScreen 
+      id={id}
+      alertaTipo={params.alertaTipo}
+      alertaMensaje={params.alertaMensaje}
+      onNavigateToEdit={handleNavigateToEdit}
+      onNavigateToMain={handleNavigateToMain}
+    />
+  );
 }

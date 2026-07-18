@@ -37,7 +37,6 @@
 
 import React, { useState, useEffect } from "react";
 import { View, ScrollView } from "react-native";
-import { useRouter, useLocalSearchParams } from "expo-router";
 
 import CustomText from "../../../shared/components/Text.jsx";
 import Button from "../../../shared/components/Button.jsx";
@@ -93,9 +92,7 @@ if (ScrollView.prototype && ScrollView.prototype.render) {
   };
 }
 
-export default function EditarMantenimientoScreen() {
-  const router = useRouter();
-  const { id } = useLocalSearchParams();
+export default function EditarMantenimientoScreen({ id, onNavigateToDetail = () => {}, onNavigateToMain = () => {} }) {
 
   // Buscar el ticket correspondiente
   const ticketOriginal = MantService.TICKETS_MOCK.find(t => t.id === id);
@@ -248,13 +245,9 @@ export default function EditarMantenimientoScreen() {
     }
 
     // Redireccionar al detalle del ticket con una alerta de éxito
-    router.replace({
-      pathname: "/equipos/DetalleMantenimiento",
-      params: {
-        id: ticketOriginal.id,
-        alertaTipo: "success",
-        alertaMensaje: `Ticket ${ticketOriginal.id} modificado correctamente.`,
-      }
+    onNavigateToDetail(ticketOriginal.id, {
+      alertaTipo: "success",
+      alertaMensaje: `Ticket ${ticketOriginal.id} modificado correctamente.`,
     });
   };
 
@@ -262,7 +255,7 @@ export default function EditarMantenimientoScreen() {
     return (
       <View style={[STYLE.container, { justifyContent: "center", alignItems: "center" }]}>
         <CustomText style={{ color: COLORS.error }}>Ticket no encontrado.</CustomText>
-        <Button variant="outline" onPress={() => router.replace("/equipos/mantEquipo")} style={{ marginTop: 12 }}>
+        <Button variant="outline" onPress={onNavigateToMain} style={{ marginTop: 12 }}>
           Regresar a lista
         </Button>
       </View>
@@ -504,7 +497,7 @@ export default function EditarMantenimientoScreen() {
         <View style={styles.modalFooter}>
           <Button
             variant="outline"
-            onPress={() => router.replace({ pathname: "/equipos/DetalleMantenimiento", params: { id: ticketOriginal.id } })}
+            onPress={() => onNavigateToDetail(ticketOriginal.id)}
             style={styles.btnCancel}
           >
             <Icon icon={ICONS.exit} size={15} color={COLORS.primary} />

@@ -12,7 +12,17 @@
  */
 
 import AgregarMantenimientoScreen from "../../../modules/mantEquipo/screens/AgregarMantenimiento";
+import { useRouter } from "expo-router";
 
 export default function AgregarMantenimientoRoute() {
-  return <AgregarMantenimientoScreen />;
+  const router = useRouter();
+  
+  const handleNavigateToMain = (params = {}) => {
+    router.replace({
+      pathname: "/equipos/mantEquipo",
+      params
+    });
+  };
+
+  return <AgregarMantenimientoScreen onNavigateToMain={handleNavigateToMain} />;
 }
