@@ -42,17 +42,22 @@ export const styles = StyleSheet.create({
     marginBottom: 8,
     marginLeft: 2,
   },
-  saveButton: {
-    marginTop: 8,
-    marginBottom: 16,
-  },
   saveBtnContent: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
   },
-  saveBtnText: {
-    fontFamily: TYPOGRAPHY.fontFamily.medium,
+    submitButton: {
+    marginTop: 12,
   },
+  buttonContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+  },
+  buttonText: {
+    color: COLORS.primary
+  }
 });

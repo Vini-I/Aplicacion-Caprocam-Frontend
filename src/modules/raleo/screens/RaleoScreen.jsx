@@ -50,6 +50,15 @@ export default function RaleoScreen() {
   const [submitted, setSubmitted] = useState(false);
   const [errores, setErrores] = useState({});
   const [alerta, setAlerta] = useState({ visible: false, variant: "success", mensaje: "" });
+//Constantes para el calculo de biomasa estimada
+const biomasaActual = Number(form.biomasaActual);
+const porcentaje = Number(form.porcentajeRaleo);
+
+const biomasaRestante =
+  form.biomasaActual !== "" &&
+  form.porcentajeRaleo !== ""
+    ? biomasaActual * (1 - porcentaje / 100)
+    : "";
 
 useEffect(() => {
   if (!alerta.visible) return;
@@ -76,7 +85,7 @@ useEffect(() => {
     setErrores(erroresValidacion);
 
     if (!valido) {
-      setAlerta({ visible: true, variant: "danger", mensaje: "Por favor complete todos los campos obligatorios." });
+      setAlerta({ visible: true, variant: "danger", mensaje: "Rellenar campos obligatorios." });
       return;
     }
 
@@ -103,15 +112,7 @@ useEffect(() => {
     />
 
     <View style={STYLE.container}>
-      <View style={STYLE.contentWrapper}>
-        {alerta.visible && (
-          <Alert
-            variant={alerta.variant}
-            message={alerta.mensaje}
-            style={styles.alert}
-          />
-        )}
-      </View>
+
 
     <ScrollView
       contentContainerStyle={STYLE.contentWrapper}
@@ -122,30 +123,27 @@ useEffect(() => {
           updateField={updateField}
           submitted={submitted}
           errores={errores}
+          biomasaCalculada={biomasaRestante}
         />
 
         <View style={styles.contenido}>
-        <Button
-          variant="outline"
-          onPress={handleGuardar}
-          style={styles.saveButton}
-        >
-          <View style={styles.saveBtnContent}>
-            <Icon
-              icon={ICONS.save}
-              size={18}
-              color={COLORS.primary}
-            />
-
-            <Text
-              size={16}
-              color={COLORS.primary}
-              style={styles.saveBtnText}
-            >
-              Registrar Raleo
-            </Text>
-          </View>
-        </Button>
+          <View style={STYLE.contentWrapper}>
+        {alerta.visible && (
+          <Alert
+            variant={alerta.variant}
+            message={alerta.mensaje}
+            style={styles.alert}
+          />
+        )}
+      </View>
+      <Button variant="outline" onPress={handleGuardar} style={styles.submitButton}>
+        <View style={styles.buttonContent}>
+          <Icon icon={ICONS.save} size={24} color={COLORS.primary}/>
+          <Text style={styles.buttonText}>
+            Guardar
+          </Text>
+        </View>
+      </Button>
       </View>
     </ScrollView>
   </View>
