@@ -126,27 +126,21 @@ export default function FincaCrecimientoScreen() {
           </View>
 
           <View style={styles.inputColumn}>
-            <View style={styles.inputItem}>
+              <Calendario
+              label="Fecha de registro *"
+              value={fechaRegistro}
+              onChangeText={setFechaRegistro}
+              inputStyle={mostrarErrorFecha ? styles.inputError : null}
+            />
+            <View>
               <NumberInput
-                label="Peso actual (g)*"
-                style={[
-                  styles.sameInput,
-                  mostrarErrorPeso && styles.inputError,
-                ]}
+              label="Peso actual (g) *"
+                style={[styles.sameInput, mostrarErrorPeso && styles.inputError]}
                 value={pesoActual}
                 onChangeText={setPesoActual}
                 step={0.5}
                 min={0}
                 max={1000}
-              />
-            </View>
-
-            <View style={styles.inputItem}>
-              <Calendario
-                label="Fecha de registro *"
-                value={fechaRegistro}
-                onChangeText={setFechaRegistro}
-                inputStyle={mostrarErrorFecha ? styles.inputError : null}
               />
             </View>
           </View>
