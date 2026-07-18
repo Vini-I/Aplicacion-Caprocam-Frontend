@@ -23,7 +23,7 @@ export const styles = StyleSheet.create({
   searchRow: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 16,
+    paddingHorizontal: 0,
     paddingVertical: 12,
     backgroundColor: COLORS.white,
     marginTop: 8,
@@ -43,7 +43,7 @@ export const styles = StyleSheet.create({
     alignSelf: "center",
   },
   list: {
-    padding: 16,
+    padding: 0,
     paddingBottom: 110, // espacio para el botón flotante
     width: '100%',
     left: 8,

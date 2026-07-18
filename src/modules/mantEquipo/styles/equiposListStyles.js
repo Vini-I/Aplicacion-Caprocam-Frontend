@@ -78,6 +78,7 @@ export const styles = StyleSheet.create({
   list: {
     padding: 16,
     paddingBottom: 110,
+    left: 8,
   },
 
   error: {
