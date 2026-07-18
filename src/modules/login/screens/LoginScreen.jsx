@@ -6,8 +6,10 @@
  * Selecciona un trabajador y valida su PIN para continuar.
  */
 
+import { useState } from 'react';
 import { View, ScrollView } from 'react-native';
 
+import Alert from '../../../shared/components/Alert';
 import Avatar from '../../../shared/components/Avatar';
 import Button from '../../../shared/components/Button';
 import Card from '../../../shared/components/Card';
@@ -103,14 +105,39 @@ function WorkerSection({
   isFormValid,
   onContinue,
 }) {
+  // Estado demostrativo de sincronización — reemplazar con lógica real
+  const [syncStatus, setSyncStatus] = useState(null); // null | 'success' | 'danger'
+
+  const handleSync = () => {
+    // TODO: reemplazar con la lógica real de sincronización
+    // Por ahora alterna entre éxito y error para demostración
+    const result = Math.random() > 0.5 ? 'success' : 'danger';
+    setSyncStatus(result);
+    if (onSyncData) onSyncData();
+  };
+
   return (
     <Card style={styles.sectionCard}>
       <Title level={4} color={COLORS.textPrimary} align="center">
         {LOGIN_MESSAGES.WORKER_TITLE}
       </Title>
-      <Button onPress={onSyncData} variant="outline" disabled={isSyncDisabled} style={styles.syncButton}>
+      <Button onPress={handleSync} variant="outline" disabled={isSyncDisabled} style={styles.syncButton}>
         {LOGIN_MESSAGES.SYNC_BUTTON_TEXT}
       </Button>
+      {syncStatus === 'success' && (
+        <Alert
+          variant="success"
+          message="Sincronización completada correctamente."
+          style={styles.syncAlert}
+        />
+      )}
+      {syncStatus === 'danger' && (
+        <Alert
+          variant="danger"
+          message="Error al sincronizar. Verifique su conexión a internet."
+          style={styles.syncAlert}
+        />
+      )}
       <WorkerSearchBar
         value={searchText}
         onChangeText={onSearchTextChange}
@@ -224,9 +251,7 @@ function PinModal({ visible, pinCode, pinError, isAuthenticating, onClose, onPin
                 style={styles.pinInput}
             />
             {pinError !== '' && (
-                <Text size={12} color={COLORS.error} align="center" style={styles.pinErrorText}>
-                    {pinError}
-                </Text>
+                <Alert variant="danger" message={pinError} style={styles.pinErrorAlert} />
             )}
             <Button onPress={onSubmit} variant="outline" disabled={pinCode.length !== 4 || isAuthenticating}>
                 Ingresar

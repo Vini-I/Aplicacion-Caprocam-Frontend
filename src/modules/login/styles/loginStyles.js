@@ -156,10 +156,15 @@ const styles = StyleSheet.create({
     color: COLORS.textPrimary,
     backgroundColor: COLORS.white,
   },
-  pinErrorText: {
+  pinErrorAlert: {
     marginTop: 10,
     marginBottom: 8,
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
+  },
+  syncAlert: {
+    width: '100%',
+    maxWidth: 450,
+    alignSelf: 'center',
+    marginBottom: 12,
   },
 });
 

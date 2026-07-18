@@ -24,7 +24,7 @@ export const LOGIN_MESSAGES = {
   ERROR_PREFIX: 'Error: ',
   NO_WORKERS_FOUND: 'No se encontraron trabajadores.',
   SEARCH_PLACEHOLDER: 'Buscar por nombre',
-  SYNC_BUTTON_TEXT: 'Sincronizar Datos',
+  SYNC_BUTTON_TEXT: 'Sincronizar Usuarios',
 
   // Botón
   BUTTON_TEXT: 'Continuar',
