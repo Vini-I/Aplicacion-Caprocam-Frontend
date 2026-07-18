@@ -1,3 +1,28 @@
+/**
+ * ============================================================
+ * HOOK: USECOMPRADORSCREEN
+ * ============================================================
+ * Módulo: Compradores
+ *
+ * Maneja el estado de la pantalla principal de compradores
+ * (lista, búsqueda y filtros).
+ *
+ * FUNCIONALIDAD:
+ * 1. Carga la lista mock de compradores (compradoresMock).
+ * 2. Calcula los tipos de producto únicos para usarlos como
+ *    opciones de filtro.
+ * 3. Filtra la lista según el texto de búsqueda (nombre, cédula,
+ *    tipo, teléfono o correo) y los tipos seleccionados en el
+ *    filtro.
+ * 4. Expone la navegación a Detalle, a Nuevo comprador y a Inicio.
+ *
+ * IMPORTANTE:
+ * - La búsqueda no distingue mayúsculas/minúsculas.
+ * - Si no hay tipos seleccionados en el filtro, se muestran todos.
+ * ============================================================
+ */
+
+
 import { useState } from "react";
 import { useRouter } from "expo-router";
 import { compradoresMock } from "../services/CompradorData";
@@ -17,6 +42,7 @@ export function useCompradorScreen() {
     const texto = busqueda.toLowerCase();
     const coincideTexto =
       c.nombre.toLowerCase().includes(texto) ||
+      c.cedula.toLowerCase().includes(texto) ||
       c.tipoProducto.toLowerCase().includes(texto) ||
       c.telefono.toLowerCase().includes(texto) ||
       c.correo.toLowerCase().includes(texto);

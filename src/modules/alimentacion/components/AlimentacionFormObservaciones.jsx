@@ -16,13 +16,17 @@
  */
 
 import React from "react";
+import { View } from "react-native";
 import Card from "../../../shared/components/Card";
 import Input from "../../../shared/components/Input";
 import Text from "../../../shared/components/Text";
+import Icon from "../../../shared/components/Icons";
 import { COLORS } from "../../../theme/colors";
+import { ICONS } from "../../../theme/icons";
 
 const bordeError = { borderColor: COLORS.error, borderWidth: 1.5 };
-const errorText = { marginTop: -6, marginBottom: 8, marginLeft: 2 };
+const sectionTitleRow = { flexDirection: "row", alignItems: "center", marginBottom: 10 };
+const sectionIcon = { marginRight: 8 };
 
 export default function AlimentacionFormObservaciones({
   form = {},
@@ -33,7 +37,14 @@ export default function AlimentacionFormObservaciones({
   const invalidoObservaciones = submitted && !!errores.observaciones;
 
   return (
-    <Card title="Observaciones">
+    <Card>
+      <View style={sectionTitleRow}>
+        <Icon icon={ICONS.clipboard} size={18} color={COLORS.primary} style={sectionIcon} />
+        <Text size={18} weight="700" color={COLORS.textSecondary}>
+          Observaciones
+        </Text>
+      </View>
+
       <Input
         label="Notas *"
         placeholder="Ingrese observaciones"
@@ -41,11 +52,6 @@ export default function AlimentacionFormObservaciones({
         onChangeText={(v) => updateField("observaciones", v)}
         style={invalidoObservaciones ? bordeError : null}
       />
-      {invalidoObservaciones && (
-        <Text size={12} color={COLORS.error} style={errorText}>
-          {errores.observaciones}
-        </Text>
-      )}
     </Card>
   );
 }

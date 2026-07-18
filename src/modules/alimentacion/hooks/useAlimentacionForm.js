@@ -39,7 +39,7 @@ const estadoInicial = {
     fecha:            hoy(),
     hora:             "",
     metodo:           "",
-    cantidadKg:       0,
+    cantidadKg:       "",
     proveedor:        "",
     observaciones:    "",
     tipoAlimento:     "",

@@ -47,11 +47,9 @@ import React from "react";
 import Card from "../../../shared/components/Card";
 import Input from "../../../shared/components/Input";
 import Select from "../../../shared/components/Select";
-import Text from "../../../shared/components/Text";
 import { COLORS } from "../../../theme/colors";
 
 const bordeError = { borderColor: COLORS.error, borderWidth: 1.5 };
-const errorTextStyle = { marginTop: -6, marginBottom: 8, marginLeft: 2 };
 
 export default function InformacionEstanque({
   finca,
@@ -82,11 +80,6 @@ export default function InformacionEstanque({
         onChange={setFinca}
         selectStyle={invalidoFinca ? bordeError : null}
       />
-      {invalidoFinca && (
-        <Text size={12} color={COLORS.error} style={errorTextStyle}>
-          {errores.finca}
-        </Text>
-      )}
 
       <Select
         label="Estanque *"
@@ -96,39 +89,24 @@ export default function InformacionEstanque({
         onChange={setEstanque}
         selectStyle={invalidoEstanque ? bordeError : null}
       />
-      {invalidoEstanque && (
-        <Text size={12} color={COLORS.error} style={errorTextStyle}>
-          {errores.estanque}
-        </Text>
-      )}
 
       <Input
         label="Cantidad de siembra por m² *"
-        placeholder="Siembra"
+        placeholder="Ej: 25"
         value={siembraPorM2}
         onChangeText={setSiembraPorM2}
         keyboardType="numeric"
         style={invalidoSiembraPorM2 ? bordeError : null}
       />
-      {invalidoSiembraPorM2 && (
-        <Text size={12} color={COLORS.error} style={errorTextStyle}>
-          {errores.siembraPorM2}
-        </Text>
-      )}
 
       <Input
         label="Tamaño del área del estanque *"
-        placeholder="Área"
+        placeholder="Ej: 500"
         value={areaEstanque}
         onChangeText={setAreaEstanque}
         keyboardType="numeric"
         style={invalidoAreaEstanque ? bordeError : null}
       />
-      {invalidoAreaEstanque && (
-        <Text size={12} color={COLORS.error} style={errorTextStyle}>
-          {errores.areaEstanque}
-        </Text>
-      )}
     </Card>
   );
 }

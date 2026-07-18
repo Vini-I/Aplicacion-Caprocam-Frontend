@@ -25,6 +25,8 @@
  * - Ninguna dependencia externa.
  */
 
+import { equiposService } from "./equiposService.js";
+
 export const ESTADOS = {
   EN_ESPERA: "en_espera",
   EN_MANTENIMIENTO: "en_mantenimiento",
@@ -32,20 +34,20 @@ export const ESTADOS = {
 };
 
 export const ESTADOS_EQUIPO = [
-  { label: "En funcionamiento", value: "funcionamiento" },
+  { label: "Activo", value: "activo" },
+  { label: "Inactivo", value: "inactivo" },
   { label: "En mantenimiento", value: "mantenimiento" },
-  { label: "Fuera de servicio", value: "fuera_servicio" },
 ];
 
 // Array mutable para demo — actualizarEstadoEquipo lo modifica en memoria
 export let EQUIPOS_MOCK = [
-  { id: "eq-001", nombre: "MAKITA", serie: "9-0050", tipo: "Aireación", marca: "Makita", ubicacion: "Estanque 1", fechaInstalacion: "2022-03-15", funcionEquipo: "Oxigenación del estanque principal", estadoEquipo: "funcionamiento" },
-  { id: "eq-002", nombre: "FT", serie: "9-0024", tipo: "Bombeo", marca: "FT Industrial", ubicacion: "Estanque 2", fechaInstalacion: "2021-07-20", funcionEquipo: "Bombeo y circulación estanque 2", estadoEquipo: "funcionamiento" },
-  { id: "eq-003", nombre: "MAKITA", serie: "9-0052", tipo: "Aireación", marca: "Makita", ubicacion: "Estanque 3", fechaInstalacion: "2023-01-10", funcionEquipo: "Aireación secundaria estanque 3", estadoEquipo: "funcionamiento" },
-  { id: "eq-004", nombre: "ERABLUE", serie: "9-0015", tipo: "Monitoreo", marca: "Erablue", ubicacion: "Estanque 4", fechaInstalacion: "2022-11-05", funcionEquipo: "Monitoreo de parámetros del agua", estadoEquipo: "funcionamiento" },
-  { id: "eq-005", nombre: "BOSCH", serie: "9-0003", tipo: "Mantenimiento", marca: "Bosch", ubicacion: "General", fechaInstalacion: "2020-06-18", funcionEquipo: "Herramienta eléctrica de mantenimiento", estadoEquipo: "funcionamiento" },
-  { id: "eq-006", nombre: "CRAFTSMAN", serie: "9-0013", tipo: "Alimentación", marca: "Craftsman", ubicacion: "Estanque 5", fechaInstalacion: "2021-09-22", funcionEquipo: "Sistema automático de alimentación", estadoEquipo: "funcionamiento" },
-  { id: "eq-007", nombre: "Westinghouse", serie: "9-0003", tipo: "Bombeo", marca: "Westinghouse", ubicacion: "Estanque 6", fechaInstalacion: "2019-04-30", funcionEquipo: "Motor de bombeo principal", estadoEquipo: "funcionamiento" },
+  { id: "eq-001", nombre: "MAKITA", serie: "9-0050", tipo: "Aireación", marca: "Makita", ubicacion: "Estanque 1", fechaInstalacion: "2022-03-15", funcionEquipo: "Oxigenación del estanque principal", estado: "activo", horasUso: 1247, horasMantenimiento: 500 },
+  { id: "eq-002", nombre: "FT", serie: "9-0024", tipo: "Bombeo", marca: "FT Industrial", ubicacion: "Estanque 2", fechaInstalacion: "2021-07-20", funcionEquipo: "Bombeo y circulación estanque 2", estado: "activo", horasUso: 876, horasMantenimiento: 500 },
+  { id: "eq-003", nombre: "MAKITA", serie: "9-0052", tipo: "Aireación", marca: "Makita", ubicacion: "Estanque 3", fechaInstalacion: "2023-01-10", funcionEquipo: "Aireación secundaria estanque 3", estado: "activo", horasUso: 876, horasMantenimiento: 500 },
+  { id: "eq-004", nombre: "ERABLUE", serie: "9-0015", tipo: "Monitoreo", marca: "Erablue", ubicacion: "Estanque 4", fechaInstalacion: "2022-11-05", funcionEquipo: "Monitoreo de parámetros del agua", estado: "activo", horasUso: 567, horasMantenimiento: 1000 },
+  { id: "eq-005", nombre: "BOSCH", serie: "9-0003", tipo: "Mantenimiento", marca: "Bosch", ubicacion: "General", fechaInstalacion: "2020-06-18", funcionEquipo: "Herramienta eléctrica de mantenimiento", estado: "activo", horasUso: 432, horasMantenimiento: 500 },
+  { id: "eq-006", nombre: "CRAFTSMAN", serie: "9-0013", tipo: "Alimentación", marca: "Craftsman", ubicacion: "Estanque 5", fechaInstalacion: "2021-09-22", funcionEquipo: "Sistema automático de alimentación", estado: "activo", horasUso: 432, horasMantenimiento: 500 },
+  { id: "eq-007", nombre: "Westinghouse", serie: "9-0003", tipo: "Bombeo", marca: "Westinghouse", ubicacion: "Estanque 6", fechaInstalacion: "2019-04-30", funcionEquipo: "Motor de bombeo principal", estado: "activo", horasUso: 3210, horasMantenimiento: 1000 },
 ];
 
 // Mock de empleados para mostrar ID debajo del nombre
@@ -66,16 +68,46 @@ const TICKETS_INICIALES = [
   { id: "A018", equipoId: "eq-007", herramienta: "Westinghouse 9-0003", titulo: "Preventivo Westinghouse", descripcion: "Mantenimiento preventivo anual", tareas: [{ value: "T001", label: "Cambio de aceite y filtros" }], estado: ESTADOS.TICKET_RESUELTO, creadoPor: "Juli", fechaCreacion: new Date("2023-05-26T04:55:00") },
 ];
 
+export let TICKETS_MOCK = [...TICKETS_INICIALES];
+
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export async function obtenerTickets() {
-  await delay(2500);
-  return [...TICKETS_INICIALES];
+  await delay(1200); // Retardo reducido para agilizar flujo
+  return [...TICKETS_MOCK];
 }
 
-// Muta EQUIPOS_MOCK en memoria para la demo — TODO: reemplazar por PATCH /equipos/:id
+// Muta EQUIPOS_MOCK en memoria y sincroniza con el catálogo de equipos general
 export function actualizarEstadoEquipo(equipoId, nuevoEstado) {
+  // 1. Actualizar en el mock local de mantEquipo
   EQUIPOS_MOCK = EQUIPOS_MOCK.map((e) =>
-    e.id === equipoId ? { ...e, estadoEquipo: nuevoEstado } : e
+    e.id === equipoId ? { ...e, estado: nuevoEstado } : e
   );
+
+  // 2. Actualizar en el catálogo de equipos general llamando a la API pública oficial
+  equiposService.updateEquipo(equipoId, { estado: nuevoEstado }).catch(() => {});
+}
+
+// Reinicia el contador de horas de uso de un equipo (cuando el ticket se completa a Terminado)
+export function reiniciarHorasEquipo(equipoId) {
+  // 1. Reiniciar en el mock local de mantEquipo
+  EQUIPOS_MOCK = EQUIPOS_MOCK.map((e) =>
+    e.id === equipoId ? { ...e, horasUso: 0, estado: "activo" } : e
+  );
+
+  // 2. Reiniciar en el catálogo de equipos general llamando a la API pública oficial
+  equiposService.updateEquipo(equipoId, { horasUso: 0, estado: "activo" }).catch(() => {});
+}
+
+// Funciones CRUD para TICKETS_MOCK
+export function agregarTicket(ticket) {
+  TICKETS_MOCK = [ticket, ...TICKETS_MOCK];
+}
+
+export function actualizarTicket(ticket) {
+  TICKETS_MOCK = TICKETS_MOCK.map((t) => (t.id === ticket.id ? { ...t, ...ticket } : t));
+}
+
+export function eliminarTicket(id) {
+  TICKETS_MOCK = TICKETS_MOCK.filter((t) => t.id !== id);
 }
