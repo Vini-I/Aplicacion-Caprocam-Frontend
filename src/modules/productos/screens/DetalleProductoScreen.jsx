@@ -35,6 +35,7 @@ import Card from "../../../shared/components/Card";
 import Button from "../../../shared/components/Button";
 import Text from "../../../shared/components/Text";
 import Title from "../../../shared/components/Title";
+import ModalEliminar from "../../../shared/components/ModalEliminar";
 import Badge from "../../../shared/components/Badge";
 import Modal from "../../../shared/components/Modal";
 import Alert from "../../../shared/components/Alert";
@@ -179,27 +180,13 @@ export default function DetalleProductoScreen() {
                 )}
             </ScrollView>
 
-            <Modal
+            <ModalEliminar
                 visible={modalEliminarVisible}
-                onClose={handleCerrarModal}
-                closeText="Cancelar"
-                buttonStyle={styles.modalCancelButton}
-                overlayStyle={styles.modalOverlay}
-                containerStyle={styles.modalContainer}
-            >
-                <Title level={5} style={styles.modalTitulo}>
-                    Eliminar producto
-                </Title>
-                <Text size={14} color={COLORS.textSecondary} style={styles.modalTexto}>
-                    ¿Está seguro que desea eliminar "{producto.nombre}"? Esta acción no se puede deshacer.
-                </Text>
-                <Button style={styles.botonModalEliminar} onPress={confirmarEliminar}>
-                    <Icon icon={ICONS.delete} size={18} color={COLORS.white} />
-                    <Text color={COLORS.white} weight="600" size={14}>
-                        Eliminar
-                    </Text>
-                </Button>
-            </Modal>
+                title="producto"
+                message={producto.nombre}
+                onCancel={handleCerrarModal}
+                onConfirm={confirmarEliminar}
+            />
         </View>        
     );
 }
