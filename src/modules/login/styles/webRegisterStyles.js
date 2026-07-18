@@ -21,6 +21,7 @@ import { COLORS } from '../../../theme/colors';
 const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
+    backgroundColor: COLORS.white,
   },
 
   errorField: {
