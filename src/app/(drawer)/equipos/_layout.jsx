@@ -22,9 +22,15 @@ export default function MantEquipoStackLayout() {
       
       <Stack.Screen name="equipos" options={{ title: "Equipos" }} />
 
-      <Stack.Screen name="mantEquipo" options={{title: "Mantenimiento de Equipos",headerShown: true,}}/>
+      <Stack.Screen name="mantEquipo" options={{title: "Mantenimiento de Equipos", headerShown: true}}/>
 
-      <Stack.Screen name="tareas" options={{title: "Agregar Tareas",headerShown: true,}}/>
-</Stack>
+      <Stack.Screen name="tareas" options={{title: "Agregar Tareas", headerShown: true}}/>
+
+      <Stack.Screen name="AgregarMantenimiento" options={{title: "Agregar Mantenimiento", headerShown: true}}/>
+
+      <Stack.Screen name="EditarMantenimiento" options={{title: "Editar Mantenimiento", headerShown: true}}/>
+
+      <Stack.Screen name="DetalleMantenimiento" options={{title: "Detalle de Mantenimiento", headerShown: true}}/>
+    </Stack>
   );
 }

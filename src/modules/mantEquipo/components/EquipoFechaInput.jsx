@@ -10,6 +10,7 @@
  */
 
 import React from "react";
+// Watcher trigger
 import { Platform } from "react-native";
 
 import DateInput from "../../../shared/components/DateInput.jsx";

@@ -57,36 +57,18 @@ let TAREAS_MOCK = [
     categoria: "emergencia",
     duracionEstimada: 6.0,
   },
-
-  {
-    id: "T002",
-    nombre: "Limpieza de intercambiadores de calor",
-    descripcion: "Limpieza profunda de los intercambiadores de calor de los sistemas de refrigeración.",
-    categoria: "correctivo",
-    duracionEstimada: 4.0,
-  },
-    {
-    id: "T002",
-    nombre: "Limpieza de intercambiadores de calor",
-    descripcion: "Limpieza profunda de los intercambiadores de calor de los sistemas de refrigeración.",
-    categoria: "correctivo",
-    duracionEstimada: 4.0,
-  },
-    {
-    id: "T002",
-    nombre: "Limpieza de intercambiadores de calor",
-    descripcion: "Limpieza profunda de los intercambiadores de calor de los sistemas de refrigeración.",
-    categoria: "correctivo",
-    duracionEstimada: 4.0,
-  },
-    {
-    id: "T002",
-    nombre: "Limpieza de intercambiadores de calor",
-    descripcion: "Limpieza profunda de los intercambiadores de calor de los sistemas de refrigeración.",
-    categoria: "correctivo",
-    duracionEstimada: 4.0,
-  },
 ];
+
+/**
+ * TAREAS_DEMO: Vista sincronizada de TAREAS_MOCK con los campos
+ * value (= id) y label (= nombre) para uso en selectores y búsquedas.
+ * Importar desde aquí en todo el módulo en lugar de mantEquipoMensajes.
+ */
+export const TAREAS_DEMO = TAREAS_MOCK.map((t) => ({
+  ...t,
+  value: t.id,
+  label: t.nombre,
+}));
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 

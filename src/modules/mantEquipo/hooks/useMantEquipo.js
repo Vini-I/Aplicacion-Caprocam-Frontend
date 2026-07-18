@@ -22,26 +22,47 @@
  */
 
 import { useState, useEffect } from "react";
+import { useNavigation } from "expo-router";
 import * as MantService from "../services/mantEquipoService.js";
 
 export function useMantEquipo() {
   const [tickets,  setTickets]  = useState([]);
   const [busqueda, setBusqueda] = useState("");
   const [cargando, setCargando] = useState(true);
+  const navigation = useNavigation();
 
-  useEffect(() => {
+  const cargarTickets = () => {
+    setCargando(true);
     MantService.obtenerTickets()
       .then((data) => setTickets(Array.isArray(data) ? data : []))
       .catch(() => setTickets([]))
       .finally(() => setCargando(false));
-  }, []);
+  };
 
+  useEffect(() => {
+    cargarTickets();
 
+    const unsubscribe = navigation.addListener("focus", () => {
+      // Sincronizar instantáneamente con la base mutable en memoria
+      setTickets([...MantService.TICKETS_MOCK]);
+    });
 
-  function agregarTicket(t)         { setTickets((prev) => [t, ...prev]); }
-  function eliminarTicket(id)       { setTickets((prev) => prev.filter((t) => t.id !== id)); }
-  function actualizarTicket(upd)    {
-    setTickets((prev) => prev.map((t) => t.id === upd.id ? { ...t, ...upd } : t));
+    return unsubscribe;
+  }, [navigation]);
+
+  function agregarTicket(t) {
+    MantService.agregarTicket(t);
+    setTickets([...MantService.TICKETS_MOCK]);
+  }
+
+  function eliminarTicket(id) {
+    MantService.eliminarTicket(id);
+    setTickets([...MantService.TICKETS_MOCK]);
+  }
+
+  function actualizarTicket(upd) {
+    MantService.actualizarTicket(upd);
+    setTickets([...MantService.TICKETS_MOCK]);
   }
 
   // Cambia el estadoEquipo en el mock de equipos (demo sin backend)
