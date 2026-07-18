@@ -10,21 +10,24 @@
  * de equipos (tickets).
  *
  * Funcionalidad:
- * - Lista equipos con búsqueda y filtros.
+ * - Lista equipos con búsqueda y filtros (por tipo de equipo y estado,
+ *   mediante FilterButton ubicado junto a la barra de búsqueda).
  * - Modal para crear/editar equipos con validaciones.
  * - Modal de detalle de equipo.
  * - Modal de confirmación para eliminar.
  * - Alertas de éxito/error al crear, editar o eliminar.
+ * - Botón "Agregar equipo" fijo en la parte inferior de la lista,
+ *   independiente del scroll (mismo estándar de ancho que en Tareas).
  *
  * Dependencias:
  * - useEquipos hook para manejar datos y operaciones CRUD
- * - SearchBar compartido desde inventarios
+ * - SearchBar y FilterButton compartidos desde inventarios
  * - Layout global STYLE
  * - Componentes compartidos de la aplicación
  * ============================================================
  */
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { View, ScrollView, Alert as RNAlert } from "react-native";
 import { useRouter } from "expo-router";
 import { useEquipos } from "../hooks/useEquipos";
@@ -40,6 +43,7 @@ import CustomText from "../../../shared/components/Text";
 import Icon from "../../../shared/components/Icons";
 import Alert from "../../../shared/components/Alert";
 import SearchBar from "../../inventarios/components/SearchBar";
+import FilterButton from "../../inventarios/components/FilterButton";
 import { STYLE } from "../../../theme/style";
 import { ICONS } from "../../../theme/icons";
 import { COLORS } from "../../../theme/colors";
@@ -64,6 +68,16 @@ export default function EquiposListScreen() {
   const [codigoConfirmacion, setCodigoConfirmacion] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+
+  // Filtros adicionales (tipo de equipo y estado), aplicados sobre la
+  // búsqueda por texto ya resuelta en equiposFiltrados
+  const [filtros, setFiltros] = useState({
+    categories: [],
+    suppliers: [],
+    units: [],
+    lowStock: false,
+    expiryDate: "",
+  });
 
   // Estado para alertas globales
   const [alert, setAlert] = useState(null);
@@ -137,6 +151,37 @@ const equiposFiltrados = equipos.filter((equipo) => {
 
   return coincideCampos || coincidePorMantenimiento;
 });
+
+  // Opciones de "tipo de equipo" para el FilterButton, normalizadas a
+  // { label, value } sin importar si equiposService.getTiposEquipo()
+  // retorna strings u objetos
+  const opcionesTipo = (equiposService.getTiposEquipo() || []).map((tipo) =>
+    typeof tipo === "string" ? { label: tipo, value: tipo } : tipo
+  );
+
+  // Opciones de estado del equipo (según el toggle encendido/apagado)
+  const opcionesEstado = [
+    { label: "Encendido", value: "encendido" },
+    { label: "Apagado", value: "apagado" },
+  ];
+
+  // Aplicar filtros adicionales (tipo y estado) sobre equiposFiltrados,
+  // que ya contempla la búsqueda por texto
+  const equiposFinales = useMemo(() => {
+    return equiposFiltrados.filter((equipo) => {
+      if (
+        filtros.categories.length > 0 &&
+        !filtros.categories.includes(equipo.tipo)
+      )
+        return false;
+      if (
+        filtros.suppliers.length > 0 &&
+        !filtros.suppliers.includes((equipo.estado || "").toLowerCase())
+      )
+        return false;
+      return true;
+    });
+  }, [equiposFiltrados, filtros]);
 
   // --------------------------------------------------------
   // MANEJADORES
@@ -230,7 +275,7 @@ const openDetail = (equipoId) => {
   // RENDER PRINCIPAL
   // --------------------------------------------------------
 return (
-  <View style={styles.container}>
+  <View style={[STYLE.container, styles.container]}>
     {/* Barra de búsqueda y botones de acción - sin wrapper que limite ancho */}
     <View style={{ flex: 1 }}>
       <View style={styles.searchRow}>
@@ -240,6 +285,23 @@ return (
           placeholder="Buscar por nombre, código, marca o modelo"
           containerStyle={styles.searchInput}
         />
+        <FilterButton
+          categories={opcionesTipo}
+          suppliers={opcionesEstado}
+          activeFilters={filtros}
+          onApply={(f) =>
+            setFiltros({
+              categories: f.categories || [],
+              suppliers: f.suppliers || [],
+              units: [],
+              lowStock: false,
+              expiryDate: "",
+            })
+          }
+          showLowStock={false}
+          showExpiryDate={false}
+          buttonStyle={styles.filterButtonStyle}
+        />
         <Button
           variant="outline"
           onPress={navigateToMantEquipo}
@@ -248,16 +310,6 @@ return (
           <Icon icon={ICONS.clipboard} size={16} color={COLORS.primary} />
           <CustomText style={{ color: COLORS.primary, fontWeight: "600", fontSize: 13 }}>
             Ver Mantenimiento
-          </CustomText>
-        </Button>
-        <Button
-          variant="outline"
-          onPress={handleAdd}
-          style={[styles.btnAction, { borderColor: COLORS.primary }]}
-        >
-          <Icon icon={ICONS.add} size={16} color={COLORS.primary} />
-          <CustomText style={{ color: COLORS.primary, fontWeight: "600", fontSize: 13 }}>
-            Agregar equipo
           </CustomText>
         </Button>
       </View>
@@ -271,7 +323,7 @@ return (
 
       {/* Lista de equipos - ahora ocupa todo el ancho disponible */}
       <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.list}>
-        {equiposFiltrados.map((equipo) => (
+        {equiposFinales.map((equipo) => (
           <EquipoCard
             key={equipo.id}
             equipo={equipo}
@@ -280,6 +332,20 @@ return (
           />
         ))}
       </ScrollView>
+    </View>
+
+    {/* Botón flotante "Agregar equipo", fijo en la parte inferior e
+        independiente del scroll. Hermano directo del contenedor raíz
+        (mismo nivel jerárquico que en TareasScreen) para que se posicione
+        respecto a toda la pantalla y no quede atrapado dentro del wrapper
+        interno junto al ScrollView, que era lo que causaba el solapamiento
+        con la última card. Mismo ancho estándar que en Tareas. */}
+    <View style={styles.floatingButtonContainer}>
+      <Button variant="outline" onPress={handleAdd} style={styles.floatingButton}>
+        <Icon icon={ICONS.add} size={16} color={COLORS.primary} />
+        <CustomText style={styles.floatingButtonText}>Agregar equipo</CustomText>
+      </Button>
+    </View>
 
         {/* Modal para crear/editar */}
         <Modal
@@ -466,7 +532,6 @@ return (
             onToggle={handleToggle}
           />
         </Modal>
-      </View>
     </View>
   );
 }

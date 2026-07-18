@@ -24,7 +24,7 @@ export const styles = StyleSheet.create({
   searchRow: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 16,
+    paddingHorizontal: 0,
     paddingVertical: 12,
     backgroundColor: COLORS.white,
     marginTop: 8,
@@ -53,15 +53,62 @@ export const styles = StyleSheet.create({
     marginTop: 0,
   },
 
+  // Botón de filtro junto a la barra de búsqueda (mismo estándar visual
+  // que filterButtonStyle en tareasStyles)
+  filterButtonStyle: {
+    height: 42,
+    borderColor: COLORS.textTertiary,
+    marginTop: 0,
+    alignSelf: "center",
+  },
+
   list: {
     padding: 16,
-    paddingBottom: 80,
+    // Espacio inferior mayor que en la tabla de Tareas: las cards son más
+    // altas que una fila de tabla, por lo que se necesita más margen para
+    // que la última card no quede tapada por el botón flotante "Agregar equipo"
+    paddingBottom: 110,
+    left: 8,
   },
 
   error: {
     color: COLORS.error,
     textAlign: "center",
     marginTop: 20,
+  },
+
+  // Botón flotante "Agregar equipo" (mismo estándar de ancho que en
+  // TareasScreen: máximo 900, centrado, independiente del scroll)
+  floatingButtonContainer: {
+    position: "absolute",
+    bottom: 15,
+    left: 0,
+    right: 0,
+    alignItems: "center",
+    paddingHorizontal: 16,
+    backgroundColor: COLORS.white, // Fondo semitransparente para que se vea el contenido detrás
+  },
+
+  floatingButton: {
+    width: "100%",
+    maxWidth: 900,
+    alignSelf: "center",
+    backgroundColor: "transparent",
+    borderColor: COLORS.primary,
+    borderWidth: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 6,
+  },
+
+  floatingButtonText: {
+    color: COLORS.primary,
+    fontWeight: "600",
+    fontSize: 13,
   },
 
   // ----- Estilos de EquipoCard -----
