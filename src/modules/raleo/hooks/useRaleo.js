@@ -50,7 +50,7 @@ const FORM_INICIAL = {
   estanque: "",
   porcentajeRaleo: "",
   pesoPromedio: "",
-  biomasaTotal: "",
+  biomasaActual: "",
   objetivo: "",
   metodo: "",
   responsable: "",
@@ -77,7 +77,7 @@ export default function useRaleo() {
       errores.porcentajeRaleo = "El porcentaje de raleo es obligatorio y debe ser numérico";
     }
     if (!form.pesoPromedio) errores.pesoPromedio = "El peso promedio estimado es obligatorio";
-    if (!form.biomasaTotal) errores.biomasaTotal = "La biomasa total estimada es obligatoria";
+    if (!form.biomasaActual) errores.biomasaActual = "La biomasa actual estimada es obligatoria";
     if (!form.objetivo) errores.objetivo = "El objetivo del raleo es obligatorio";
     if (!form.metodo) errores.metodo = "El método es obligatorio";
     if (!form.responsable) errores.responsable = "El responsable es obligatorio";

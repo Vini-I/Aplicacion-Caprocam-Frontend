@@ -26,7 +26,7 @@
 import React from "react";
 import { View } from "react-native";
 import Card from "../../../shared/components/Card";
-import Title from "../../../shared/components/Title";
+import Text from "../../../shared/components/Text";
 import Icon from "../../../shared/components/Icons";
 import FormularioConteo from "./FormularioConteo";
 import { styles } from "../styles/DensidadPoblacionalStyles";
@@ -37,18 +37,13 @@ import { COLORS } from "../../../theme/colors";
 export default function DatosConteo(props) {
   return (
     <View>
-      <View style={styles.sectionTitleRow}>
-        <Icon icon={ICONS.shrimp} size={18} color={COLORS.primary} style={styles.sectionIcon} />
-        <Title
-          style={[
-            styles.subTitle,
-            { fontFamily: TYPOGRAPHY.fontFamily.medium }
-          ]}
-        >
-          Datos de Conteo
-        </Title>
-      </View>
       <Card>
+        <View style={styles.sectionTitleRow}>
+        <Icon icon={ICONS.shrimp} size={18} color={COLORS.primary} style={styles.sectionIcon} />
+                  <Text size={18} weight="700" color={COLORS.textSecondary}>
+                    Datos de conteo
+                  </Text>
+      </View>
         <FormularioConteo {...props} />
       </Card>
     </View>
