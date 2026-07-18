@@ -7,6 +7,7 @@
  * tipo y categoria.
  */
 
+
 import React, { useEffect, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 
