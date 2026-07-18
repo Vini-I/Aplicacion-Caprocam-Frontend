@@ -29,198 +29,84 @@ import CustomText from "../../../shared/components/Text";
 import Title from "../../../shared/components/Title";
 import NavbarRegistro from "../../../shared/components/NavbarRegistro";
 
-import { getCurrentDate } from "../../../shared/utils/dateUtils";
-
 import { styles } from "../styles/EstanqueStyle";
 import {
-  obtenerCodigoAireadorDefault,
-  obtenerEstanqueAireador,
-  obtenerOpcionesAireadores,
   obtenerOpcionesEstanqueSeleccionado,
 } from "../services/AireadoresEstanqueService";
+import {
+  AIREADORES_EXISTENTES,
+  ESPECIES,
+  ESTADOS_ESTANQUE,
+  FUENTES_AGUA,
+  METODOS_ALIMENTACION,
+  OPCIONES_AIREADORES,
+  OPCIONES_ALIMENTADOR,
+  OPCIONES_PRECRIA,
+  TIPOS_ESTANQUE,
+  construirEstanqueEditado,
+  obtenerCambioAireadores,
+  obtenerParametro,
+  obtenerValoresInicialesEditar,
+  validarFormularioEstanque,
+} from "../services/EstanqueScreenService";
 
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
 import { TYPOGRAPHY } from "../../../theme/typography";
 
-const TIPOS_ESTANQUE = [
-  {
-    label: "Estanque de tierra semiintensivo",
-    value: "tierra_semiintensivo",
-  },
-  {
-    label: "Estanque reservorio",
-    value: "reservorio",
-  },
-  {
-    label: "Estanque con geomembrana",
-    value: "geomembrana",
-  },
-  {
-    label: "Estanque superintensivo",
-    value: "superintensivo",
-  },
-];
-
-const FUENTES_AGUA = [
-  {
-    label: "Estero",
-    value: "estero",
-  },
-  {
-    label: "Golfo",
-    value: "golfo",
-  },
-  {
-    label: "Reservorio",
-    value: "reservorio",
-  },
-];
-
-const ESPECIES = [
-  {
-    label: "Litopenaeus vannamei - Camaron blanco",
-    value: "litopenaeus_vannamei",
-  },
-];
-
-const OPCIONES_PRECRIA = [
-  {
-    label: "Si, usa precria",
-    value: "si",
-  },
-  {
-    label: "No, siembra directa",
-    value: "no",
-  },
-];
-
-const METODOS_ALIMENTACION = [
-  {
-    label: "Manual",
-    value: "manual",
-  },
-  {
-    label: "Automatico",
-    value: "automatico",
-  },
-  {
-    label: "Manual y automatico",
-    value: "manual_automatico",
-  },
-];
-
-const OPCIONES_AIREADORES = [
-  {
-    label: "Si",
-    value: "si",
-  },
-  {
-    label: "No",
-    value: "no",
-  },
-];
-
-const OPCIONES_ALIMENTADOR = [
-  {
-    label: "Si",
-    value: "si",
-  },
-  {
-    label: "No",
-    value: "no",
-  },
-];
-
-const AIREADORES_EXISTENTES = obtenerOpcionesAireadores();
-
-const ESTADOS_ESTANQUE = [
-  {
-    label: "Activo",
-    value: "activo",
-  },
-  {
-    label: "En preparacion",
-    value: "preparacion",
-  },
-  {
-    label: "Mantenimiento",
-    value: "mantenimiento",
-  },
-  {
-    label: "Engorde",
-    value: "engorde",
-  },
-  {
-    label: "Cosechado",
-    value: "cosechado",
-  },
-];
-
-function obtenerParametro(valor, respaldo) {
-  let resultado = respaldo;
-
-  if (valor !== undefined && valor !== null && valor !== "") {
-    resultado = String(valor);
-  }
-
-  return resultado;
-}
-
 export default function EditarEstanqueScreen({ navigation }) {
   const router = useRouter();
   const params = useLocalSearchParams();
+  const valoresIniciales = obtenerValoresInicialesEditar(params);
 
-  const [codigo, setCodigo] = useState(
-    obtenerParametro(params.codigo, "EST-01"),
-  );
+  const [codigo, setCodigo] = useState(valoresIniciales.codigo);
   const [estado, setEstado] = useState(
-    obtenerParametro(params.estado, "activo"),
+    valoresIniciales.estado,
   );
   const [tipoEstanque, setTipoEstanque] = useState(
-    obtenerParametro(params.tipoEstanque, ""),
+    valoresIniciales.tipoEstanque,
   );
-  const [largo, setLargo] = useState(obtenerParametro(params.largo, ""));
-  const [ancho, setAncho] = useState(obtenerParametro(params.ancho, ""));
+  const [largo, setLargo] = useState(valoresIniciales.largo);
+  const [ancho, setAncho] = useState(valoresIniciales.ancho);
   const [profundidad, setProfundidad] = useState(
-    obtenerParametro(params.profundidad, ""),
+    valoresIniciales.profundidad,
   );
   const [fuenteAgua, setFuenteAgua] = useState(
-    obtenerParametro(params.fuenteAgua, ""),
+    valoresIniciales.fuenteAgua,
   );
   const [especie, setEspecie] = useState(
-    obtenerParametro(params.especie, "litopenaeus_vannamei"),
+    valoresIniciales.especie,
   );
   const [fechaSiembra, setFechaSiembra] = useState(
-    obtenerParametro(params.fechaSiembra, getCurrentDate()),
+    valoresIniciales.fechaSiembra,
   );
   const [fechaInicioEngorde, setFechaInicioEngorde] = useState(
-    obtenerParametro(params.fechaInicioEngorde, getCurrentDate()),
+    valoresIniciales.fechaInicioEngorde,
   );
   const [fechaMantenimiento, setFechaMantenimiento] = useState(
-    obtenerParametro(params.fechaMantenimiento, getCurrentDate()),
+    valoresIniciales.fechaMantenimiento,
   );
   const [densidadSiembra, setDensidadSiembra] = useState(
-    obtenerParametro(params.densidadSiembra, "12"),
+    valoresIniciales.densidadSiembra,
   );
-  const [precria, setPrecria] = useState(obtenerParametro(params.precria, ""));
+  const [precria, setPrecria] = useState(valoresIniciales.precria);
   const [metodoAlimentacion, setMetodoAlimentacion] = useState(
-    obtenerParametro(params.metodoAlimentacion, ""),
+    valoresIniciales.metodoAlimentacion,
   );
   const [proveedorAlimento, setProveedorAlimento] = useState(
-    obtenerParametro(params.proveedorAlimento, "Biomar"),
+    valoresIniciales.proveedorAlimento,
   );
   const [numeroAireadores, setNumeroAireadores] = useState(
-    obtenerParametro(params.numeroAireadores, "0"),
+    valoresIniciales.numeroAireadores,
   );
   const [tieneAireadores, setTieneAireadores] = useState(
-    obtenerParametro(params.tieneAireadores, "no"),
+    valoresIniciales.tieneAireadores,
   );
   const [codigoAireador, setCodigoAireador] = useState(
-    obtenerParametro(params.codigoAireador, ""),
+    valoresIniciales.codigoAireador,
   );
   const [tieneAlimentadorAutomatico, setTieneAlimentadorAutomatico] = useState(
-    obtenerParametro(params.tieneAlimentadorAutomatico, ""),
+    valoresIniciales.tieneAlimentadorAutomatico,
   );
   const [mensaje, setMensaje] = useState("");
   const [tipoMensaje, setTipoMensaje] = useState("info");
@@ -241,66 +127,34 @@ export default function EditarEstanqueScreen({ navigation }) {
   }
 
   function manejarTieneAireadores(valor) {
+    const cambio = obtenerCambioAireadores(valor, codigoAireador);
+
     setTieneAireadores(valor);
-
-    if (valor === "si") {
-      setNumeroAireadores("1");
-
-      if (codigoAireador === "") {
-        setCodigoAireador(obtenerCodigoAireadorDefault());
-      }
-    }
-
-    if (valor === "no") {
-      setNumeroAireadores("0");
-      setCodigoAireador("");
-    }
+    setNumeroAireadores(cambio.numeroAireadores);
+    setCodigoAireador(cambio.codigoAireador);
   }
 
   function validarFormulario() {
     setSubmitted(true);
 
-    if (codigo === "") {
-      mostrarError("Debe ingresar el codigo del estanque.");
-      return false;
+    const resultado = validarFormularioEstanque({
+      codigo: codigo,
+      tipoEstanque: tipoEstanque,
+      largo: largo,
+      ancho: ancho,
+      profundidad: profundidad,
+      fechaSiembra: fechaSiembra,
+      densidadSiembra: densidadSiembra,
+      tieneAireadores: tieneAireadores,
+      codigoAireador: codigoAireador,
+    });
+
+    if (resultado.valido === false) {
+      setTipoMensaje(resultado.tipoMensaje);
+      setMensaje(resultado.mensaje);
     }
 
-    if (tipoEstanque === "") {
-      mostrarError("Debe seleccionar el tipo de estanque.");
-      return false;
-    }
-
-    if (largo === "") {
-      mostrarError("Debe ingresar el largo del estanque.");
-      return false;
-    }
-
-    if (ancho === "") {
-      mostrarError("Debe ingresar el ancho del estanque.");
-      return false;
-    }
-
-    if (profundidad === "") {
-      mostrarError("Debe ingresar la profundidad del estanque.");
-      return false;
-    }
-
-    if (fechaSiembra === "") {
-      mostrarError("Debe seleccionar la fecha de siembra.");
-      return false;
-    }
-
-    if (Number(densidadSiembra) <= 0) {
-      mostrarError("La densidad de siembra debe ser mayor a 0.");
-      return false;
-    }
-
-    if (tieneAireadores === "si" && codigoAireador === "") {
-      mostrarError("Debe seleccionar el codigo del aireador.");
-      return false;
-    }
-
-    return true;
+    return resultado.valido;
   }
 
   function guardarCambios() {
@@ -308,34 +162,30 @@ export default function EditarEstanqueScreen({ navigation }) {
       return;
     }
 
-    const estanqueEditado = {
-      id: obtenerParametro(params.id, String(Date.now())),
-      finca: obtenerParametro(params.finca, "Finca La Reina"),
-      codigo: codigo,
-      estado: estado,
-      tipoEstanque: tipoEstanque,
-      largo: largo,
-      ancho: ancho,
-      profundidad: profundidad,
-      fuenteAgua: fuenteAgua,
-      especie: especie,
-      fechaSiembra: fechaSiembra,
-      fechaInicioEngorde: fechaInicioEngorde,
-      fechaMantenimiento: fechaMantenimiento,
-      densidadSiembra: densidadSiembra,
-      precria: precria,
-      metodoAlimentacion: metodoAlimentacion,
-      proveedorAlimento: proveedorAlimento,
-      numeroAireadores: numeroAireadores,
-      tieneAireadores: tieneAireadores,
-      codigoAireador: codigoAireador,
-      estanqueAireador: obtenerEstanqueAireador(
-        tieneAireadores,
-        codigo,
-        obtenerParametro(params.finca, "Finca La Reina"),
-      ),
-      tieneAlimentadorAutomatico: tieneAlimentadorAutomatico,
-    };
+    const estanqueEditado = construirEstanqueEditado(
+      {
+        codigo: codigo,
+        estado: estado,
+        tipoEstanque: tipoEstanque,
+        largo: largo,
+        ancho: ancho,
+        profundidad: profundidad,
+        fuenteAgua: fuenteAgua,
+        especie: especie,
+        fechaSiembra: fechaSiembra,
+        fechaInicioEngorde: fechaInicioEngorde,
+        fechaMantenimiento: fechaMantenimiento,
+        densidadSiembra: densidadSiembra,
+        precria: precria,
+        metodoAlimentacion: metodoAlimentacion,
+        proveedorAlimento: proveedorAlimento,
+        numeroAireadores: numeroAireadores,
+        tieneAireadores: tieneAireadores,
+        codigoAireador: codigoAireador,
+        tieneAlimentadorAutomatico: tieneAlimentadorAutomatico,
+      },
+      params,
+    );
 
     console.log("Estanque editado:", estanqueEditado);
 

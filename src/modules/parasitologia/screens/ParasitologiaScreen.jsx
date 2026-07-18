@@ -37,8 +37,6 @@ import CustomText from "../../../shared/components/Text";
 import Title from "../../../shared/components/Title";
 import NavbarRegistro from "../../../shared/components/NavbarRegistro";
 
-import { FINCAS, ESTANQUES } from "../../registro/screens/RegistroData";
-
 import useParasitologia from "../hooks/useParasitologia";
 import {
   PARASITOS_CATALOGO,
@@ -52,68 +50,13 @@ import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
 import { TYPOGRAPHY } from "../../../theme/typography";
 import { getCurrentDate } from "../../../shared/utils/dateUtils";
-
-function obtenerOpcionesFincas() {
-  const opciones = [];
-
-  FINCAS.forEach(function (finca) {
-    opciones.push({
-      label: finca.nombre,
-      value: finca.id,
-    });
-  });
-
-  return opciones;
-}
-
-function obtenerOpcionesEstanques(fincaId) {
-  let opciones = [];
-
-  if (fincaId !== "") {
-    const estanquesFinca = ESTANQUES[fincaId];
-
-    if (estanquesFinca !== undefined) {
-      estanquesFinca.forEach(function (estanque) {
-        opciones.push({
-          label: `${estanque.id} - ${estanque.especie}`,
-          value: estanque.id,
-        });
-      });
-    }
-  }
-
-  return opciones;
-}
-
-function obtenerNombreFinca(fincaId) {
-  let nombre = "";
-
-  FINCAS.forEach(function (finca) {
-    if (finca.id === fincaId) {
-      nombre = finca.nombre;
-    }
-  });
-
-  return nombre;
-}
-
-function obtenerColorGrado(grado) {
-  let color = COLORS.success;
-
-  if (Number(grado) === 2) {
-    color = COLORS.warning;
-  }
-
-  if (Number(grado) === 3) {
-    color = COLORS.error;
-  }
-
-  if (Number(grado) === 4) {
-    color = COLORS.error;
-  }
-
-  return color;
-}
+import {
+  construirRegistroParasitologia,
+  obtenerColorGrado,
+  obtenerOpcionesEstanques,
+  obtenerOpcionesFincas,
+  validarFormularioParasitologia,
+} from "../services/ParasitologiaScreenService";
 
 export default function ParasitologiaScreen({ onBack, navigation }) {
   const router = useRouter();
@@ -208,54 +151,21 @@ export default function ParasitologiaScreen({ onBack, navigation }) {
   function validarFormulario() {
     setSubmitted(true);
 
-    let valido = true;
+    const resultado = validarFormularioParasitologia({
+      finca: finca,
+      estanque: estanque,
+      fechaReporte: fechaReporte,
+      parasito: parasito,
+      camaronesMuestreados: camaronesMuestreados,
+      camaronesInfectados: camaronesInfectados,
+    });
 
-    if (finca === "") {
-      setTipoMensaje("warning");
-      setMensaje("Debe seleccionar una finca.");
-      valido = false;
+    if (resultado.valido === false) {
+      setTipoMensaje(resultado.tipoMensaje);
+      setMensaje(resultado.mensaje);
     }
 
-    if (valido === true && estanque === "") {
-      setTipoMensaje("warning");
-      setMensaje("Debe seleccionar un estanque.");
-      valido = false;
-    }
-
-    if (valido === true && fechaReporte === "") {
-      setTipoMensaje("warning");
-      setMensaje("Debe seleccionar la fecha del reporte.");
-      valido = false;
-    }
-
-    if (valido === true && parasito === "") {
-      setTipoMensaje("warning");
-      setMensaje("Debe seleccionar el parasito.");
-      valido = false;
-    }
-
-    if (valido === true && Number(camaronesMuestreados) <= 0) {
-      setTipoMensaje("warning");
-      setMensaje("Debe ingresar la cantidad de camarones muestreados.");
-      valido = false;
-    }
-
-    if (valido === true && Number(camaronesInfectados) < 0) {
-      setTipoMensaje("warning");
-      setMensaje("Los camarones infectados no pueden ser negativos.");
-      valido = false;
-    }
-
-    if (
-      valido === true &&
-      Number(camaronesInfectados) > Number(camaronesMuestreados)
-    ) {
-      setTipoMensaje("warning");
-      setMensaje("Los camarones infectados no pueden superar la muestra.");
-      valido = false;
-    }
-
-    return valido;
+    return resultado.valido;
   }
 
   async function registrarParasitologia() {
@@ -263,17 +173,16 @@ export default function ParasitologiaScreen({ onBack, navigation }) {
       return;
     }
 
-    const nuevoRegistro = {
+    const nuevoRegistro = construirRegistroParasitologia({
       finca: finca,
-      fincaNombre: obtenerNombreFinca(finca),
       estanque: estanque,
       fechaReporte: fechaReporte,
       responsable: responsable,
       parasito: parasito,
       camaronesMuestreados: camaronesMuestreados,
       camaronesInfectados: camaronesInfectados,
-      observaciones: observaciones.trim(),
-    };
+      observaciones: observaciones,
+    });
 
     const guardado = await guardarRegistro(nuevoRegistro);
 

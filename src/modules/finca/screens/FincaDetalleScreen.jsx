@@ -13,7 +13,7 @@
  */
 
 import { useEffect, useState } from "react";
-import { Modal, ScrollView, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { useRouter } from "expo-router";
 
 import { styles } from "../styles/FincaDetalleStyles";
@@ -31,6 +31,7 @@ import Icon from "../../../shared/components/Icons";
 import Button from "../../../shared/components/Button";
 import Badge from "../../../shared/components/Badge";
 import NavbarRegistro from "../../../shared/components/NavbarRegistro";
+import ModalEliminar from "../../../shared/components/ModalEliminar";
 
 function detenerEvento(event) {
   if (event && typeof event.stopPropagation === "function") {
@@ -337,51 +338,15 @@ export default function FincaDetalleScreen({
         </View>
       </ScrollView>
 
-      <Modal
+      <ModalEliminar
         visible={modalEliminarVisible}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={cerrarModalEliminar}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
-            <View style={styles.modalIconContainer}>
-              <Icon icon={ICONS.delete} size={30} color={COLORS.error} />
-            </View>
-
-            <Text size={20} style={styles.modalTitle}>
-              Eliminar estanque
-            </Text>
-
-            <Text size={15} style={styles.modalMessage}>
-              ¿Esta seguro que desea eliminar el estanque{" "}
-              {estanqueSeleccionado?.codigo}?
-            </Text>
-
-            <View style={styles.modalActions}>
-              <Button
-                variant="outline"
-                style={styles.modalNoButton}
-                onPress={cerrarModalEliminar}
-              >
-                <Text size={14} style={styles.modalNoText}>
-                  No
-                </Text>
-              </Button>
-
-              <Button
-                variant="outline"
-                style={styles.modalYesButton}
-                onPress={confirmarEliminarEstanque}
-              >
-                <Text size={14} style={styles.modalYesText}>
-                  Si
-                </Text>
-              </Button>
-            </View>
-          </View>
-        </View>
-      </Modal>
+        title="estanque"
+        message={estanqueSeleccionado?.codigo}
+        confirmText="Si, eliminar"
+        cancelText="No"
+        onCancel={cerrarModalEliminar}
+        onConfirm={confirmarEliminarEstanque}
+      />
     </>
   );
 }
