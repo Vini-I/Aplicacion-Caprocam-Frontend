@@ -16,7 +16,7 @@
 
 import {
   obtenerFincas,
-  obtenerColaboradores,
+  obtenerColaboradorSesion,
   obtenerEstanquesPorFinca,
   obtenerRegistrosTrazabilidad,
   agregarRegistroTrazabilidad,
@@ -24,14 +24,11 @@ import {
 
 export function crearRegistroTrazabilidad(formData) {
   const fincas = obtenerFincas();
-  const colaboradores = obtenerColaboradores();
+  const colaboradorSesion = obtenerColaboradorSesion();
   const estanques = obtenerEstanquesPorFinca(formData.fincaId);
   const registrosActuales = obtenerRegistrosTrazabilidad();
 
   const finca = fincas.find((item) => item.value === formData.fincaId);
-  const colaborador = colaboradores.find(
-    (item) => item.value === formData.colaboradorId,
-  );
   const origen = estanques.find(
     (item) => item.value === formData.estanqueOrigenId,
   );
@@ -48,8 +45,8 @@ export function crearRegistroTrazabilidad(formData) {
     estanqueDestinoId: formData.estanqueDestinoId,
     estanqueDestinoLabel: destino?.label ?? "",
     fecha: formData.fecha,
-    colaboradorId: formData.colaboradorId,
-    colaboradorNombre: colaborador?.label ?? "",
+    colaboradorId: colaboradorSesion.value,
+    colaboradorNombre: colaboradorSesion.label,
     tamaño: formData.tamaño,
     dias: formData.dias,
     pl: formData.pl,

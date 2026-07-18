@@ -101,10 +101,6 @@ export const styles = StyleSheet.create({
     fontWeight: "700",
     color: COLORS.textSecondary,
   },
-  errorCard: {
-    borderWidth: 1,
-    borderColor: COLORS.error,
-  },
   estanqueInfo: {
     marginTop: 8,
     fontSize: 14,

@@ -64,6 +64,7 @@ import {
   obtenerOpcionesFincas,
   sincronizarLecturasLocales,
   validarFormularioFisicoQuimica,
+  validarSeleccionAntesDeAgregar,
 } from '../services/FisicoQuimicaServices';
 
 export default function useFisicoQuimica() {
@@ -143,6 +144,15 @@ export default function useFisicoQuimica() {
       estanquesFiltrados.find((item) => item.value === estanqueSeleccionado) || null,
     [estanqueSeleccionado, estanquesFiltrados],
   );
+
+  const puedeAgregarMediciones = Boolean(fincaSeleccionada && estanqueSeleccionado);
+
+  const handleIntentoAgregarSinSeleccion = useCallback(() => {
+  setSubmitted(true);
+  setErrorMessage(
+    validarSeleccionAntesDeAgregar({ fincaSeleccionada, estanqueSeleccionado }),
+  );
+}, [fincaSeleccionada, estanqueSeleccionado]);
 
   const handleFincaChange = useCallback((value) => {
     manejarCambioFinca({
@@ -245,6 +255,7 @@ export default function useFisicoQuimica() {
     errorMessage,
     tieneMedicionesExistentes,
     tieneAlgunaMedicion,
+    puedeAgregarMediciones,
     opcionesFincas,
     estanquesFiltrados,
     estanqueSeleccionadoObj,
@@ -257,6 +268,7 @@ export default function useFisicoQuimica() {
     handleTempChange,
     handleOxChange,
     handleGuardarClick,
+    handleIntentoAgregarSinSeleccion,
     alEditar,
   };
 }

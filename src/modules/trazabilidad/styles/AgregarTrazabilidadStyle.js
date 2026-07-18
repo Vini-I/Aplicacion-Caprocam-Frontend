@@ -23,6 +23,8 @@ export const styles = StyleSheet.create({
   infoBanner: {
     marginBottom: 16,
     alignItems: "center",
+    borderColor: COLORS.primary,
+    backgroundColor: COLORS.primaryLight,
   },
 
   createButton: {

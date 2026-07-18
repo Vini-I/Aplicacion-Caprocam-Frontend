@@ -32,7 +32,7 @@ import { initialForm } from "../screens/TrazabilidadData";
 import {
   obtenerEstanquesPorFinca,
   obtenerFincas,
-  obtenerColaboradores,
+  obtenerColaboradorSesion,
   obtenerSiembraPorEstanque,
 } from "../services/TrazabilidadServices";
 import { crearRegistroTrazabilidad } from "../services/AgregarTrazabilidadService";
@@ -42,8 +42,13 @@ import { esFechaFutura, esFechaValida } from "../../../shared/utils/dateUtils";
 
 export function useTrazabilidad() {
   const router = useRouter();
+  const colaboradorSesion = obtenerColaboradorSesion();
 
-  const [formData, setFormData] = useState(initialForm);
+
+  const [formData, setFormData] = useState(() => ({
+    ...initialForm,
+    colaboradorId: colaboradorSesion.value,
+  }));
   const [mensajeError, setMensajeError] = useState("");
   const [plAutocompletado, setPlAutocompletado] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -58,7 +63,6 @@ export function useTrazabilidad() {
   }, []);
 
   const fincas = obtenerFincas();
-  const colaboradores = obtenerColaboradores();
   const estanquesOrigen = obtenerEstanquesPorFinca(formData.fincaId);
   const estanquesDestino = obtenerEstanquesPorFinca(formData.fincaId);
 
@@ -181,7 +185,7 @@ export function useTrazabilidad() {
   return {
     formData,
     fincas,
-    colaboradores,
+    colaboradorSesion,
     estanquesOrigen,
     estanquesDestino,
     plAutocompletado,

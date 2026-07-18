@@ -53,21 +53,7 @@ export const styles = StyleSheet.create({
     zIndex: 2000,
     elevation: 2000,
   },
-  selectWrapperColaborador: {
-    zIndex: 1000,
-    elevation: 1000,
-  },
   selectContainer: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 9999,
-    elevation: 9999,
-    overflow: "visible",
-    width: "100%",
-  },
-  selectAbsoluteWrapper: {
     position: "absolute",
     top: 0,
     left: 0,

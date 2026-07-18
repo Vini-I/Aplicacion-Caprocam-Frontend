@@ -56,6 +56,7 @@ export default function FisicoQuimicaScreen({ onBack }) {
     submitted,
     errorMessage,
     tieneMedicionesExistentes,
+    puedeAgregarMediciones,
     opcionesFincas,
     estanquesFiltrados,
     estanqueSeleccionadoObj,
@@ -67,6 +68,7 @@ export default function FisicoQuimicaScreen({ onBack }) {
     handleTempChange,
     handleOxChange,
     handleGuardarClick,
+    handleIntentoAgregarSinSeleccion,
     alEditar,
   } = useFisicoQuimica();
 
@@ -141,6 +143,8 @@ export default function FisicoQuimicaScreen({ onBack }) {
               maxLecturas={2} labelStyle="daynight"
               initialValues={medicionesPorEstanque.ph}
               onChange={handlePhChange}
+              puedeAgregar={puedeAgregarMediciones}
+              onIntentoAgregarBloqueado={handleIntentoAgregarSinSeleccion}
             />
 
             <RangeCard
@@ -152,6 +156,8 @@ export default function FisicoQuimicaScreen({ onBack }) {
               maxLecturas={2} labelStyle="daynight"
               initialValues={medicionesPorEstanque.salinidad}
               onChange={handleSalinidadChange}
+              puedeAgregar={puedeAgregarMediciones}
+              onIntentoAgregarBloqueado={handleIntentoAgregarSinSeleccion}
             />
 
             <RangeCard
@@ -163,6 +169,8 @@ export default function FisicoQuimicaScreen({ onBack }) {
               maxLecturas={2} labelStyle="daynight"
               initialValues={medicionesPorEstanque.temperatura}
               onChange={handleTempChange}
+              puedeAgregar={puedeAgregarMediciones}
+              onIntentoAgregarBloqueado={handleIntentoAgregarSinSeleccion}
             />
 
             <RangeCard
@@ -174,6 +182,8 @@ export default function FisicoQuimicaScreen({ onBack }) {
               maxLecturas={5} labelStyle="numeric"
               initialValues={medicionesPorEstanque.ox}
               onChange={handleOxChange}
+              puedeAgregar={puedeAgregarMediciones}
+              onIntentoAgregarBloqueado={handleIntentoAgregarSinSeleccion}
             />
 
             <View style={{ height: 24 }} />
@@ -203,18 +213,18 @@ export default function FisicoQuimicaScreen({ onBack }) {
               </View>
 
               {Boolean(fincaSeleccionada && estanqueSeleccionado) && (
-              <View style={styles.footerActions}>
-                {tieneMedicionesExistentes ? (
-                  <Button variant="outline" onPress={alEditar}>
-                    Actualizar módulo
-                  </Button>
-                ) : (
-                  <Button variant="outline" onPress={handleGuardarClick}>
-                    Guardar módulo
-                  </Button>
-                )}
-              </View>
-            )}
+                <View style={styles.footerActions}>
+                  {tieneMedicionesExistentes ? (
+                    <Button variant="outline" onPress={alEditar}>
+                      Actualizar módulo
+                    </Button>
+                  ) : (
+                    <Button variant="outline" onPress={handleGuardarClick}>
+                      Guardar módulo
+                    </Button>
+                  )}
+                </View>
+              )}
             </View>
           }
         />

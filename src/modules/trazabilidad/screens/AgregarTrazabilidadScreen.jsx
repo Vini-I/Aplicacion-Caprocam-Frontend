@@ -31,7 +31,7 @@ export default function AgregarTrazabilidadScreen() {
   const {
     formData,
     fincas,
-    colaboradores,
+    colaboradorSesion,
     estanquesOrigen,
     estanquesDestino,
     mensajeError,
@@ -58,13 +58,13 @@ export default function AgregarTrazabilidadScreen() {
             variant="info"
             message="Este registro es un hecho histórico: no se puede editar ni borrar una vez guardado."
             style={styles.infoBanner}
-            textStyle={{ color: COLORS.white }}
+            textStyle={{ color: COLORS.error }}
           />
 
           <TrazabilidadForm
             formData={formData}
             fincas={fincas}
-            colaboradores={colaboradores}
+            colaboradorSesion={colaboradorSesion}
             estanquesOrigen={estanquesOrigen}
             estanquesDestino={estanquesDestino}
             onChange={manejarCambio}
