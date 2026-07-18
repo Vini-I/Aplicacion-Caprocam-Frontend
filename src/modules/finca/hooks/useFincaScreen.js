@@ -26,7 +26,6 @@ export function useFincaScreen() {
   const { 
     fincas, 
     alert, 
-    limpiarAlert, 
     eliminarFinca 
   } = useFinca();
   const [ModalVisible, setModalVisible] = useState(false);
@@ -56,16 +55,10 @@ export function useFincaScreen() {
   return {
     fincas,
     alert,
-    limpiarAlert,
-
-    width,
     isCompact,
-
     ModalVisible,
     FincaNombreSeleccionada,
-    FincaCodigoInternoSeleccionada,
-    setModalVisible,
-    setFincaNombreSeleccionada,
+    
     abrirModalEliminar,
     cancelarEliminar,
     confirmarEliminar,

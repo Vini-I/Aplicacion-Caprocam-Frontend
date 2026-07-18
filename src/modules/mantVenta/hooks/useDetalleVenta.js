@@ -6,30 +6,69 @@
  * Centraliza la lógica de carga de parámetros, filtros y
  * opciones de selección para la pantalla de detalle de ventas.
  */
+import { fincaService } from "../../finca/services/finca.service.js";
+import { estanqueService } from "../../estanques/services/estanque.service.js";
+import { getVentas } from "../services/mantVentas.service.js";
 
-import { useMemo, useState, useCallback } from "react";
+import Text from "../../../shared/components/Text.jsx";
+import Icon from "../../../shared/components/Icons.jsx";
+import Card from "../../../shared/components/Card.jsx";
+import { COLORS } from "../../../theme/colors.js";
+import { View } from "react-native";
+import { styles } from "../styles/VentaStyles.js"
+import { useMemo, useState, useCallback, useEffect } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { useWindowDimensions } from "react-native";
-import { fincas } from "../../finca/screens/FincaData.js";
-import { estanques } from "../../mantCrecimiento/services/EstanqueData.js";
-import { obtenerIdNumericoFinca } from "./useVenta.js";
 
 export function useDetalleVenta() {
   const params = useLocalSearchParams();
   const { width } = useWindowDimensions();
   const isWide = width >= 700;
 
-  const ventas = useMemo(() => {
-    if (typeof params.ventas === "string") {
-      try {
-        return JSON.parse(params.ventas);
-      } catch {
-        return [];
+  const [fincas, setFincas] = useState([]);
+  const [estanques, setEstanques] = useState([]);
+
+  useEffect(() => {
+    let activo = true;
+
+    async function cargarCatalogos() {
+      const [dataFincas, dataEstanques] = await Promise.all([
+        fincaService.getFincas(),
+        estanqueService.getEstanques(),
+      ]);
+
+      if (activo) {
+        setFincas(dataFincas);
+        setEstanques(dataEstanques);
       }
     }
 
-    return [];
-  }, [params.ventas]);
+    cargarCatalogos();
+
+    return () => {
+      activo = false;
+    };
+  }, []);
+
+  const [ventas, setVentas] = useState([]);
+
+  useEffect(() => {
+    let activo = true;
+
+    async function cargarVentas() {
+      const data = await getVentas();
+
+      if (activo) {
+        setVentas(data);
+      }
+    }
+
+    cargarVentas();
+
+    return () => {
+      activo = false;
+    };
+  }, []);
 
 const fincaInicial = typeof params.fincaFiltro === "string" ? params.fincaFiltro : "";
 const estanqueInicial = typeof params.estanqueFiltro === "string" ? params.estanqueFiltro : "";
@@ -40,33 +79,29 @@ const estanqueInicial = typeof params.estanqueFiltro === "string" ? params.estan
   const opcionesFincas = useMemo(
     () =>
       fincas.map((finca) => ({
-        label: finca.nombre,
-        value: finca.codigoInterno,
+        label: finca.nombreFinca,
+        value: finca.id,
       })),
-    [],
+    [fincas],
   );
 
   const opcionesEstanques = useMemo(() => {
-    const finca = fincas.find((item) => item.codigoInterno === fincaFiltro);
-
-    if (!finca) return [];
-
-    const fincaId = obtenerIdNumericoFinca(finca.codigoInterno);
+    if (!fincaFiltro) return [];
 
     return estanques
-      .filter(
-        (estanque) => estanque.fincaNombre === finca.nombre || estanque.fincaId === fincaId,
-      )
+      .filter((estanque) => estanque.idFinca === Number(fincaFiltro))
       .map((estanque) => ({
-        label: `${estanque.codigo} - ${estanque.nombre}`,
-        value: String(estanque.id),
+        label: estanque.codigo,
+        value: estanque.id
       }));
-  }, [fincaFiltro]);
+  }, [fincaFiltro, estanques]);
 
   const ventasFiltradas = useMemo(() => {
+
     return (ventas || []).filter((venta) => {
-      const coincideFinca = !fincaFiltro || venta.fincaId === fincaFiltro;
-      const coincideEstanque = !estanqueFiltro || venta.estanqueId === estanqueFiltro;
+      
+      const coincideFinca = !fincaFiltro || venta.finca_id === Number(fincaFiltro);
+      const coincideEstanque = !estanqueFiltro || venta.estanque_id === Number(estanqueFiltro);
 
       return coincideFinca && coincideEstanque;
     });
@@ -87,7 +122,57 @@ const hayFiltro = Boolean(fincaFiltro  && estanqueFiltro);
     setEstanqueFiltro(value);
   }, []);
 
+  function SectionTitle({ icon, title }) {
+    return (
+      <View style={styles.sectionTitle}>
+        <Icon icon={icon} size={18} color={COLORS.primary} style={styles.sectionIcon} />
+        <Text style={styles.sectionText}>{title}</Text>
+      </View>
+    );
+  }
+  
+  function FilaDetalle({ etiqueta, valor }) {
+    return (
+      <View style={styles.filaDetalle}>
+        <Text size={12} color={COLORS.textTertiary} style={styles.etiquetaDetalle}>
+          {etiqueta}
+        </Text>
+  
+        <Text size={14} weight="600" color={COLORS.textSecondary} style={styles.valorDetalle}>
+          {valor}
+        </Text>
+      </View>
+    );
+  }
+  
+  function TarjetaVenta({ venta }) {
+
+    const finca = fincas.find((item) => item.id === venta.finca_id);
+    const estanque = estanques.find((item) => item.id === venta.estanque_id);
+
+    return (
+      <Card style={styles.tarjeta}>
+        <View style={styles.tarjetaEncabezado}>
+          <Text style={styles.nombreProducto}>
+            {finca?.nombreFinca ?? "Finca"} • {estanque?.codigo ?? "Estanque"}
+          </Text>
+        </View>
+  
+        <View style={styles.filasDetalle}>
+          <FilaDetalle etiqueta="Fecha" valor={venta.fecha} />
+          <FilaDetalle etiqueta="Total" valor={formatearMontoColones(venta.total)} />
+          <FilaDetalle etiqueta="Kilos" valor={`${venta.cantidad_vendida} kg`} />
+          <FilaDetalle etiqueta="Precio/kg" valor={`₡ ${Number(venta.precio_kilo).toLocaleString("es-CR")}`} />
+        </View>
+      </Card>
+    );
+  }
+  
+
   return {
+    SectionTitle,
+    FilaDetalle,
+    TarjetaVenta,
     ventas,
     fincaFiltro,
     estanqueFiltro,
@@ -100,4 +185,9 @@ const hayFiltro = Boolean(fincaFiltro  && estanqueFiltro);
     handleFincaChange,
     handleEstanqueChange,
   };
+}
+
+function formatearMontoColones(value) {
+  const numero = Math.round(Number(value) || 0);
+  return `₡ ${String(numero).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
 }

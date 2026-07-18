@@ -1,16 +1,3 @@
-import { View, TextInput } from 'react-native';
-import ProgressBar from '../../../shared/components/ProgressBar';
-import Button from '../../../shared/components/Button';
-import Text from '../../../shared/components/Text';
-import Title from '../../../shared/components/Title';
-import Input from '../../../shared/components/Input';
-import Icon from '../../../shared/components/Icons';
-import { COLORS } from '../../../theme/colors';
-import { ICONS } from '../../../theme/icons';
-import useRangeCard from '../hooks/useRangeCard';
-import { cardStyles as s, innerStyles as inner } from '../styles/RangeCardStyles';
-
-
 /**
  * ============================================================
  * COMPONENTE RANGECARD
@@ -30,6 +17,7 @@ import { cardStyles as s, innerStyles as inner } from '../styles/RangeCardStyles
  *
  * La lógica de estado vive en el hook useRangeCard(); este
  * archivo solo arma el JSX.
+ * Admite `containerStyle` para personalizar el contenedor desde quien lo usa.
  *
  * ---
  * PROPS
@@ -53,6 +41,12 @@ import { cardStyles as s, innerStyles as inner } from '../styles/RangeCardStyles
  * onChange       fn?      — (lecturas) => void, se llama con el arreglo
  *                            completo de lecturas en cada cambio
  *
+ * ---
+ * RESTRICCIONES
+ * ---
+ * - No manejar estado de lecturas aquí; ese estado vive en useRangeCard().
+ * - No hardcodear colores; deben venir de COLORS.
+ * 
  * ============================================================
  * EJEMPLOS DE USO
  * ============================================================
@@ -87,6 +81,22 @@ import { cardStyles as s, innerStyles as inner } from '../styles/RangeCardStyles
  * />
  */
 
+import { View } from 'react-native';
+import ProgressBar from '../../../shared/components/ProgressBar';
+import Button from '../../../shared/components/Button';
+import Text from '../../../shared/components/Text';
+import Title from '../../../shared/components/Title';
+import Input from '../../../shared/components/Input';
+import Icon from '../../../shared/components/Icons';
+import { COLORS } from '../../../theme/colors';
+import { ICONS } from '../../../theme/icons';
+import useRangeCard from '../hooks/useRangeCard';
+import { cardStyles as s, innerStyles as inner } from '../styles/RangeCardStyles';
+
+
+
+
+
 const ETIQUETAS_DIA_NOCHE = [
   { type: 'icon', icon: ICONS.morningSun },
   { type: 'icon', icon: ICONS.nightSun },
@@ -115,6 +125,7 @@ export default function RangeCard({
   badgeLabel,
   initialValues = [],
   onChange,
+  containerStyle,
 }) {
   const {
     lecturas,
@@ -134,7 +145,7 @@ export default function RangeCard({
   );
 
   return (
-    <View style={s.card}>
+    <View style={[s.card, containerStyle]}>
       <View style={s.cardHeader}>
         <View style={s.cardHeaderLeft}>
           {icon}
@@ -207,22 +218,18 @@ export default function RangeCard({
               <Text size={20} color={COLORS.white} style={{ lineHeight: 26 }}>+</Text>
             </Button>
 
-            {lecturas.length > 1 ? (
-              <Button
-                onPress={() => eliminarLectura(r.id)}
-                style={{ backgroundColor: 'transparent', padding: 0, marginTop: 0, marginLeft: 2 }}
-              >
-                <Icon icon={ICONS.delete} size={20} color={COLORS.textQuaternary} />
-              </Button>
-            ) : (
-              <View style={{ width: 22, marginLeft: 2 }} />
-            )}
+            <Button
+              onPress={() => eliminarLectura(r.id)}
+              style={inner.iconBtn}
+            >
+              <Icon icon={ICONS.delete} size={20} color={COLORS.error} />
+            </Button>
           </View>
         );
       })}
 
       {lecturas.length < maxLecturas && (
-        <Button variant="primary" onPress={agregarLectura}>+ Agregar medición</Button>
+        <Button variant="outline" onPress={agregarLectura}>+ Agregar medición</Button>
       )}
     </View>
   );

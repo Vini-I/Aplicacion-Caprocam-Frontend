@@ -1,3 +1,41 @@
+/**
+ * ============================================================
+ * HOOK: USENUEVOCOMPRADORSCREEN
+ * ============================================================
+ * Módulo: Compradores
+ *
+ * Maneja el estado del formulario de alta de un nuevo comprador.
+ *
+ * FUNCIONALIDAD:
+ * 1. Obligatorios: nombre, cédula y teléfono. El teléfono además
+ *    debe cumplir el formato +506 XXXX-XXXX; el correo es opcional
+ *    pero, si se llena, debe tener formato válido.
+ * 2. handleTelefonoChange filtra en vivo caracteres no permitidos
+ *    (solo dígitos, espacios, guiones y +), pero eso NO es
+ *    validación: no marca error mientras se escribe. handleCedulaChange
+ *    hace lo mismo para la cédula (solo dígitos y guiones).
+ * 3. handleSubmit calcula un booleano de error por campo
+ *    (errorNombre, errorCedula, errorTelefono, errorCorreo) para
+ *    pintar el borde rojo, y UN SOLO mensaje general (mensajeError)
+ *    para mostrar debajo del formulario.
+ *
+ * IMPORTANTE:
+ * - Los errores solo se calculan dentro de handleSubmit: nunca
+ *   antes de presionar "Guardar comprador".
+ * - Mismo regex y misma regla de teléfono/correo que
+ *   useEditarCompradorScreen.js, para que ambas pantallas validen
+ *   igual.
+ * - La cédula solo se valida como obligatoria (no se le exige un
+ *   formato exacto): una vez guardado el comprador, la cédula ya no
+ *   se puede modificar (en EditarComprador se muestra deshabilitada).
+ * - El campo "Tipo de producto" se eliminó: no tenía sentido en
+ *   este flujo (antibióticos, fertilizantes, equipos, etc. no
+ *   aplican a un comprador).
+ * ============================================================
+ */
+
+
+
 import { useState } from "react";
 import { useRouter } from "expo-router";
 
@@ -8,19 +46,32 @@ export const TELEFONO_MAX_LENGTH = 14;
 // Regex básico para validar formato de correo electrónico
 const CORREO_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+function esTelefonoValido(valor) {
+  return valor.trim() !== "" && TELEFONO_REGEX.test(valor.trim());
+}
+
+function esCorreoValido(valor) {
+  return valor.trim() === "" || CORREO_REGEX.test(valor.trim()); // correo no es obligatorio
+}
+
+const MENSAJE_ERROR_GENERAL = "Revisa los campos obligatorios marcados con * antes de guardar.";
+
 export function useNuevoCompradorScreen() {
   const router = useRouter();
 
   // Campos del formulario
   const [nombre, setNombre] = useState("");
-  const [tipoProducto, setTipoProducto] = useState("");
+  const [cedula, setCedula] = useState("");
   const [telefono, setTelefono] = useState("");
   const [correo, setCorreo] = useState("");
   const [direccion, setDireccion] = useState("");
   const [notas, setNotas] = useState("");
 
   // Estado de validación y alertas
-  const [errores, setErrores] = useState({});
+  const [errorNombre, setErrorNombre] = useState(false);
+  const [errorCedula, setErrorCedula] = useState(false);
+  const [errorTelefono, setErrorTelefono] = useState(false);
+  const [errorCorreo, setErrorCorreo] = useState(false);
   const [mensajeError, setMensajeError] = useState("");
   const [guardadoExitoso, setGuardadoExitoso] = useState(false);
 
@@ -29,44 +80,35 @@ export function useNuevoCompradorScreen() {
     setTelefono(valor.replace(/[^\d\s\-+]/g, ""));
   };
 
-  // Retorna el mensaje de error según los campos inválidos
-  function obtenerMensajeError(nuevosErrores) {
-    if (nuevosErrores.nombre || nuevosErrores.tipoProducto || nuevosErrores.telefono) {
-      return "Complete los campos obligatorios para guardar.";
-    }
-    if (nuevosErrores.telefono) return "El teléfono debe tener 8 dígitos";
-    if (nuevosErrores.correo) return "Ingrese un correo electrónico válido";
-    return "";
-  }
+  // Permite solo dígitos y guiones en la cédula
+  const handleCedulaChange = (valor) => {
+    setCedula(valor.replace(/[^\d-]/g, ""));
+  };
 
   // Valida los campos y guarda el comprador si no hay errores
   function handleSubmit() {
-    const nuevosErrores = {};
+    const errNombre = nombre.trim() === "";
+    const errCedula = cedula.trim() === "";
+    const errTel = !esTelefonoValido(telefono);
+    const errCorreo = !esCorreoValido(correo);
 
-    if (!nombre.trim()) nuevosErrores.nombre = true;
-    if (!tipoProducto) nuevosErrores.tipoProducto = true;
-    if (!telefono.trim()) nuevosErrores.telefono = true;
-    if (telefono.trim() !== "" && !TELEFONO_REGEX.test(telefono.trim())) {
-      nuevosErrores.telefono = true;
-    }
-    if (correo.trim() !== "" && !CORREO_REGEX.test(correo.trim())) {
-      nuevosErrores.correo = true;
-    }
+    setErrorNombre(errNombre);
+    setErrorCedula(errCedula);
+    setErrorTelefono(errTel);
+    setErrorCorreo(errCorreo);
 
-    if (Object.keys(nuevosErrores).length > 0) {
-      setErrores(nuevosErrores);
-      setMensajeError(obtenerMensajeError(nuevosErrores));
+    if (errNombre || errCedula || errTel || errCorreo) {
+      setMensajeError(MENSAJE_ERROR_GENERAL);
       setGuardadoExitoso(false);
       return;
     }
 
-    setErrores({});
     setMensajeError("");
     setGuardadoExitoso(true);
 
     const comprador = {
       nombre: nombre.trim(),
-      tipoProducto,
+      cedula: cedula.trim(),
       telefono: telefono.trim(),
       correo: correo.trim(),
       direccion: direccion.trim(),
@@ -74,6 +116,9 @@ export function useNuevoCompradorScreen() {
     };
 
     console.log("Comprador guardado:", comprador);
+    setTimeout(() => {
+      router.replace("/(drawer)/compradores/compradorScreen");
+    }, 900);
   }
 
   function handleVolver() {
@@ -83,8 +128,7 @@ export function useNuevoCompradorScreen() {
   return {
     nombre,
     setNombre,
-    tipoProducto,
-    setTipoProducto,
+    cedula,
     telefono,
     correo,
     setCorreo,
@@ -92,9 +136,13 @@ export function useNuevoCompradorScreen() {
     setDireccion,
     notas,
     setNotas,
-    errores,
-    mensajeError,
+    errorNombre,
+    errorCedula,
+    errorTelefono,
+    errorCorreo,
+    mensajeError, 
     guardadoExitoso,
+    handleCedulaChange,
     handleTelefonoChange,
     handleSubmit,
     handleVolver,

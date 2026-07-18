@@ -80,6 +80,7 @@ export default function RaleoForm({
   updateField = () => {},
   submitted = false,
   errores = {},
+  biomasaCalculada= "",
 }) {
   const invalidoFinca = submitted && !!errores.finca;
   const invalidoEstanque = submitted && !!errores.estanque;
@@ -155,12 +156,21 @@ export default function RaleoForm({
           style={invalidoPesoPromedio ? bordeError : null}
         />
         <Input
-          label="Biomasa total estimada (kg) *"
+          label="Biomasa actual del estanque (kg) *"
           placeholder="Ej: 800"
-          value={String(form.biomasaTotal ?? "")}
+          value={String(form.biomasaActual ?? "")}
           keyboardType="decimal-pad"
-          onChangeText={(v) => updateField("biomasaTotal", v.replace(/[^0-9.]/g, ""))}
+          onChangeText={(v) => updateField("biomasaActual", v.replace(/[^0-9.]/g, ""))}
           style={invalidoBiomasaTotal ? bordeError : null}
+        />
+        <Input
+          label="Biomasa restante estimada (kg)"
+          value={
+            biomasaCalculada !== ""
+              ? biomasaCalculada.toFixed(2)
+              : ""
+          }
+          editable={false}
         />
         <Select
           label="Objetivo del raleo *"

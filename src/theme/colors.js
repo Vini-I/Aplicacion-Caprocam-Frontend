@@ -46,5 +46,13 @@ export const COLORS = {
   primaryLight: "#EAF7FF",
   
   //Colores modulos registro
-  violet: '#8B5CF6',
+
+  Alimentacion: '#009EF5',    
+  Crecimiento: '#22C55E',   
+  FisicoQuimica: '#8B5CF6',   
+  Densidad: '#F59E0B',       
+  Enfermedades: '#EF4444',   
+  Parasitologia: '#D946EF',  
+  Raleo: '#06B6D4',           
+  DetalleRegistro: '#64748B',
 };

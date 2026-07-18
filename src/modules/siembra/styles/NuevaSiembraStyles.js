@@ -1,74 +1,63 @@
+/**
+ * ============================================================
+ * ESTILOS NUEVA SIEMBRA
+ * ============================================================
+ *
+ * Define los estilos utilizados en la pantalla de creación
+ * de una nueva siembra.
+ *
+ * Incluye:
+ * - Contenedor del formulario.
+ * - Botón de creación.
+ * - Alert de validación/confirmación (centrado, arriba del botón guardar).
+ 
+ *
+ * Mantiene la identidad visual mediante estilos globales.
+ */
 import { StyleSheet } from "react-native";
 
 import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
 
 export const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.white,
-  },
-  header: {
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: 20,
-    paddingTop: 28,
-    paddingBottom: 18,
-    borderBottomLeftRadius: 18,
-    borderBottomRightRadius: 18,
-    borderBottomWidth: 0,
-  },
-  title: {
-    color: COLORS.white,
-    fontSize: 20,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    textAlign: "left",
-    alignSelf: "flex-start",
-    width: "100%",
-  },
   scrollContent: {
     paddingVertical: 28,
     paddingBottom: 40,
   },
-  wrapper: {
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
+  fieldContainer: {
+    marginBottom: 14,
   },
-  backButton: {
-    width: 44,
-    height: 44,
-    backgroundColor: "transparent",
-    borderWidth: 0,
-    paddingHorizontal: 0,
-    paddingVertical: 0,
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 0,
+  requiredLabel: {
+    color: COLORS.textSecondary,
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
   },
-  iconColor: {
-    color: COLORS.white,
+  inputError: {
+    borderWidth: 1.5,
+    borderColor: COLORS.error,
+    borderRadius: 8,
   },
   createButton: {
-    backgroundColor: COLORS.primary,
+    width: "100%",
     height: 56,
     borderRadius: 14,
     marginTop: 24,
     marginBottom: 20,
   },
+  createButtonContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
+  },
   createButtonText: {
-    color: COLORS.white,
-    fontSize: 16,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
+    fontFamily: TYPOGRAPHY.fontFamily.medium,
   },
-  modalTitle: {
-    color: COLORS.textSecondary,
-    fontSize: 18,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    marginBottom: 8,
+  alert: {
+    width: "100%",
+    marginBottom: 16,
   },
-  modalMessage: {
-    color: COLORS.textTertiary,
-    fontSize: 14,
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
+  alertSuccess: {
+    backgroundColor: COLORS.successLight,
+    borderColor: COLORS.success,
   },
 });

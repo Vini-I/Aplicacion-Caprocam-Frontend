@@ -93,4 +93,17 @@ export const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: "700",
   },
+
+  submitButton: {
+    marginTop: 12,
+  },
+    buttonContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+  },
+  buttonText: {
+    color: COLORS.primary
+  }
 });

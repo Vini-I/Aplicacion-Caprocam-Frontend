@@ -15,11 +15,14 @@
  * - Obtiene las opciones de cantones y distritos según la ubicación.
  * - Registra una nueva finca mediante el contexto global.
  */
+import Text from "../../../shared/components/Text.jsx";
+import Icon from "../../../shared/components/Icons.jsx";
 import { useMemo, useState } from "react";
 import { Dimensions, View } from "react-native";
 import { provincias, ubicaciones } from "../screens/FincaNuevaData.js";
 import { styles } from "../styles/StylesFincaNueva.js";
 import { STYLE } from "../../../theme/style.js";
+import { COLORS } from "../../../theme/colors.js";
 import { useFinca } from "../context/FincaContext";
 
 const { width } = Dimensions.get("window");
@@ -40,7 +43,6 @@ export function useFincaNueva({ onFinca }) {
   });
 
   const [telefonos, setTelefonos] = useState([""]);
-  const [errorMessage, setErrorMessage] = useState("");
   const [errores, setErrores] = useState({});
 
   function normalizarNumeroDecimal(valor) {
@@ -99,7 +101,6 @@ export function useFincaNueva({ onFinca }) {
 
   const registrarFinca = () => {
     const nuevosErrores = {};
-    setErrorMessage("");
 
     if (!formulario.codigoInterno.trim()) nuevosErrores.codigoInterno = true;
     if (!formulario.nombre.trim()) nuevosErrores.nombre = true;
@@ -113,7 +114,6 @@ export function useFincaNueva({ onFinca }) {
       !isNumber(formulario.areaTotal)
     ) {
       nuevosErrores.areaTotal = true;
-      setErrorMessage("El area total debe ser un numero positivo");
     }
 
     if (
@@ -121,15 +121,14 @@ export function useFincaNueva({ onFinca }) {
       !isNumber(formulario.espejoAgua)
     ) {
       nuevosErrores.espejoAgua = true;
-      setErrorMessage("El espejo de agua debe ser un numero positivo");
     }
 
     for (let i = 0; i < telefonos.length; i++) {
-      if (!isTelefonoValido(telefonos[i])) {
+      const tel = String(telefonos[i] ?? "").trim();
+      if (tel === "") continue;
+
+      if (!isTelefonoValido(tel)) {
         nuevosErrores[`telefono${i}`] = true;
-        setErrorMessage(
-          "Cada telefono debe contener exactamente solo 8 digitos numericos."
-        );
         break;
       }
     }
@@ -166,13 +165,25 @@ export function useFincaNueva({ onFinca }) {
       return <View style={[STYLE.contentWrapper, style]}>{children}</View>;
     };
   }, []);
+
+  function SectionTitle({ icon, title }) {
+    return (
+        <View style={styles.sectionTitleRow}>
+          <Icon icon={icon} size={18} color={COLORS.primary} style={styles.sectionIcon} />
+          <Text style={styles.sectionTitleText} size={14} weight="700" color={COLORS.textPrimary}>
+            {title}
+          </Text>
+        </View>
+      );
+    }
+
   return {
+    SectionTitle,
     ContentWrapper,
     formulario,
     setFormulario,
     telefonos,
     setTelefonos,
-    errorMessage,
     errores,
     setErrores,
 

@@ -1,47 +1,38 @@
 /**
+ * ============================================================
  * HOOK: useAgregarMantenimiento
- * Ruta: src/modules/mantEquipo/hooks/useAgregarMantenimiento.js
- *
- * Gestiona el estado y la lógica del modal para crear o editar tickets
- * de mantenimiento. Expone métodos para abrir/cerrar el modal, manejar
- * los combobox de equipo y tarea, validar el formulario y confirmar.
+ * ============================================================
+ * 
+ * Responsabilidad: Gestiona el estado y la lógica de negocio del
+ * formulario de creación y modificación de tickets de mantenimiento.
+ * 
+ * Datos:
+ * - form: Estado de los campos (título, descripción, equipoId, estado, etc.).
+ * - equipoSeleccionado: Detalles del equipo elegido.
+ * - tareasSeleccionadas: Array de tareas asignadas al ticket.
+ * - errores: Estado de las validaciones de campos requeridos.
+ * 
+ * Validaciones:
+ * - Título, descripción, equipo y tareas son campos obligatorios (*).
+ * - Filtra las tareas disponibles para evitar duplicados en la selección.
+ * 
+ * Navegación:
+ * - Controla el cierre automático del modal al guardar o eliminar.
+ * 
+ * Dependencias:
+ * - EQUIPOS_MOCK, ESTADOS de mantEquipoService.js.
+ * - TAREAS_DEMO de mantEquipoMensajes.js.
+ * - generarNuevoId, filtrarEquipos de mantEquipoUtils.js.
  */
 
 import { useState, useCallback } from "react";
 import * as MantService from "../services/mantEquipoService.js";
-import { filtrarEquipos, generarNuevoId } from "../utils/mantEquipoUtils.js";
-import { TAREAS_DEMO } from "../constants/mantEquipoMensajes.js";
+import { filtrarEquipos, generarNuevoId, obtenerFechaHoraActual } from "../utils/mantEquipoUtils.js";
+import { TAREAS_DEMO, USUARIO_SESION } from "../constants/mantEquipoMensajes.js";
 
-/** Usuario de sesión temporal hasta integrar autenticación real. */
-const USUARIO_SESION = "Usuario";
+const FORM_INICIAL = { titulo: "", descripcion: "", equipoId: "", fechaHora: "", creadoPor: USUARIO_SESION, estado: "", estadoEquipo: "" };
 
-/** Estado vacío del formulario que se usa al abrir el modal en modo creación. */
-const FORM_INICIAL = {
-  titulo:      "",
-  descripcion: "",
-  equipoId:    "",
-  tareaId:     "",
-  fechaHora:   "",
-  creadoPor:   USUARIO_SESION,
-  estado:      "",   // solo se usa en modo edición
-};
-
-/**
- * Devuelve la fecha y hora actual formateada como "YYYY-MM-DD HH:MM".
- * @returns {string}
- */
-function ahora() {
-  const d = new Date();
-  const pad = (n) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
-
-/**
- * @param {Array}    tickets            - Lista actual de tickets (para generar el ID).
- * @param {Function} onTicketCreado     - Callback al confirmar un ticket nuevo.
- * @param {Function} onTicketActualizado - Callback al confirmar una edición.
- */
-export function useAgregarMantenimiento(tickets = [], onTicketCreado, onTicketActualizado) {
+export function useAgregarMantenimiento(tickets = [], onTicketCreado, onTicketActualizado, onActualizarEstadoEquipo, onTicketEliminado) {
   const [visible,            setVisible]            = useState(false);
   const [modoEdicion,        setModoEdicion]        = useState(false);
   const [ticketEditandoId,   setTicketEditandoId]   = useState(null);
@@ -51,170 +42,123 @@ export function useAgregarMantenimiento(tickets = [], onTicketCreado, onTicketAc
   const [mostrarDropEquipo,  setMostrarDropEquipo]  = useState(false);
   const [mostrarDropTarea,   setMostrarDropTarea]   = useState(false);
   const [equipoSeleccionado, setEquipoSeleccionado] = useState(null);
+  const [tareasSeleccionadas, setTareasSeleccionadas] = useState([]); // multi-tarea
   const [errores,            setErrores]            = useState({});
 
-  // Equipos filtrados según el texto de búsqueda; si no hay coincidencia muestra todos.
   const equiposSafe      = Array.isArray(MantService.EQUIPOS_MOCK) ? MantService.EQUIPOS_MOCK : [];
   const equiposFiltrados = filtrarEquipos(equiposSafe, busquedaEquipo).length > 0
-    ? filtrarEquipos(equiposSafe, busquedaEquipo)
-    : equiposSafe;
+    ? filtrarEquipos(equiposSafe, busquedaEquipo) : equiposSafe;
 
-  // Tareas filtradas según el texto de búsqueda; si está vacío muestra todas.
-  const tareasFiltradas = busquedaTarea.trim() === ""
-    ? TAREAS_DEMO
-    : TAREAS_DEMO.filter((t) => t.label.toLowerCase().includes(busquedaTarea.toLowerCase()));
+  // Filtrar para que la tarea que ya se seleccionó no vuelva a salir en el combobox
+  const tareasDisponibles = TAREAS_DEMO.filter(
+    (t) => !tareasSeleccionadas.some((sel) => sel.value === t.value)
+  );
+  const tareasFiltradas  = busquedaTarea.trim() === ""
+    ? tareasDisponibles : tareasDisponibles.filter((t) => t.label.toLowerCase().includes(busquedaTarea.toLowerCase()));
 
-  /** Abre el modal en modo creación con el formulario limpio. */
   const abrir = useCallback(() => {
-    setModoEdicion(false);
-    setTicketEditandoId(null);
-    setForm({ ...FORM_INICIAL, fechaHora: ahora(), creadoPor: USUARIO_SESION });
-    setBusquedaEquipo("");
-    setBusquedaTarea("");
-    setEquipoSeleccionado(null);
-    setMostrarDropEquipo(false);
-    setMostrarDropTarea(false);
-    setErrores({});
-    setVisible(true);
+    setModoEdicion(false); setTicketEditandoId(null);
+    setForm({ ...FORM_INICIAL, fechaHora: obtenerFechaHoraActual() });
+    setBusquedaEquipo(""); setBusquedaTarea(""); setTareasSeleccionadas([]);
+    setEquipoSeleccionado(null); setMostrarDropEquipo(false); setMostrarDropTarea(false);
+    setErrores({}); setVisible(true);
   }, []);
 
-  /**
-   * Abre el modal en modo edición con los datos del ticket existente.
-   * @param {object} ticket - Ticket a editar.
-   */
   const abrirEdicion = useCallback((ticket) => {
-    setModoEdicion(true);
-    setTicketEditandoId(ticket.id);
-    setForm({
-      titulo:      ticket.titulo      || "",
-      descripcion: ticket.descripcion || "",
-      equipoId:    ticket.equipoId    || "",
-      tareaId:     ticket.tareaId     || "",
-      fechaHora:   ticket.fechaHora   || ahora(),
-      creadoPor:   ticket.creadoPor   || USUARIO_SESION,
-      estado:      ticket.estado      || "",
-    });
-    setBusquedaEquipo(ticket.herramienta || "");
-    setBusquedaTarea(ticket.tareaLabel   || "");
-    setEquipoSeleccionado(null);
-    setMostrarDropEquipo(false);
-    setMostrarDropTarea(false);
-    setErrores({});
-    setVisible(true);
-  }, []);
+    const equipo = equiposSafe.find((e) => e.id === ticket.equipoId) ?? null;
+    setModoEdicion(true); setTicketEditandoId(ticket.id);
+    setForm({ titulo: ticket.titulo||"", descripcion: ticket.descripcion||"", equipoId: ticket.equipoId||"",
+      fechaHora: obtenerFechaHoraActual(), creadoPor: ticket.creadoPor||USUARIO_SESION, estado: ticket.estado||"",
+      estadoEquipo: equipo?.estadoEquipo || "" });
+    setBusquedaEquipo(ticket.herramienta||""); setBusquedaTarea("");
+    setTareasSeleccionadas(Array.isArray(ticket.tareas) ? ticket.tareas : []);
+    setEquipoSeleccionado(equipo); setMostrarDropEquipo(false); setMostrarDropTarea(false);
+    setErrores({}); setVisible(true);
+  }, [equiposSafe]);
 
-  /** Cierra el modal y reinicia todo el estado del formulario. */
   const cerrar = useCallback(() => {
-    setVisible(false);
-    setForm(FORM_INICIAL);
-    setEquipoSeleccionado(null);
-    setErrores({});
-    setModoEdicion(false);
-    setTicketEditandoId(null);
+    setVisible(false); setForm(FORM_INICIAL); setEquipoSeleccionado(null);
+    setTareasSeleccionadas([]); setErrores({}); setModoEdicion(false); setTicketEditandoId(null);
   }, []);
 
-  /**
-   * Actualiza un campo del formulario y limpia su error si lo tenía.
-   * @param {string} campo - Nombre del campo.
-   * @param {string} valor - Nuevo valor.
-   */
+  const eliminar = useCallback((id) => {
+    const targetId = typeof id === "string" ? id : ticketEditandoId;
+    if (targetId) {
+      onTicketEliminado?.(targetId);
+      cerrar();
+    }
+  }, [ticketEditandoId, onTicketEliminado, cerrar]);
+
   function actualizarCampo(campo, valor) {
     setForm((prev) => ({ ...prev, [campo]: valor }));
-    if (errores[campo]) {
-      setErrores((prev) => { const s = { ...prev }; delete s[campo]; return s; });
-    }
+    if (errores[campo]) setErrores((prev) => { const s={...prev}; delete s[campo]; return s; });
   }
 
-  /**
-   * Confirma la selección de un equipo desde el dropdown y cierra la lista.
-   * @param {object} equipo - Equipo seleccionado.
-   */
   function seleccionarEquipo(equipo) {
     setEquipoSeleccionado(equipo);
     setBusquedaEquipo(`${equipo.nombre} — ${equipo.serie}`);
-    setForm((prev) => ({ ...prev, equipoId: equipo.id }));
+    setForm((prev) => ({ ...prev, equipoId: equipo.id, estadoEquipo: equipo.estadoEquipo || "" }));
     setMostrarDropEquipo(false);
-    if (errores.equipoId) {
-      setErrores((prev) => { const s = { ...prev }; delete s.equipoId; return s; });
-    }
+    if (errores.equipoId) setErrores((prev) => { const s={...prev}; delete s.equipoId; return s; });
   }
 
-  /**
-   * Confirma la selección de una tarea desde el dropdown y cierra la lista.
-   * @param {object} tarea - Tarea seleccionada.
-   */
+  // Agrega la tarea si no está ya, la quita si ya estaba (toggle)
   function seleccionarTarea(tarea) {
-    setBusquedaTarea(tarea.label);
-    setForm((prev) => ({ ...prev, tareaId: tarea.value }));
+    setTareasSeleccionadas((prev) => {
+      const existe = prev.some((t) => t.value === tarea.value);
+      return existe ? prev.filter((t) => t.value !== tarea.value) : [...prev, tarea];
+    });
+    setBusquedaTarea("");
     setMostrarDropTarea(false);
-    if (errores.tareaId) {
-      setErrores((prev) => { const s = { ...prev }; delete s.tareaId; return s; });
-    }
+    if (errores.tareas) setErrores((prev) => { const s={...prev}; delete s.tareas; return s; });
   }
 
-  /**
-   * Valida el formulario y, si es válido, llama al callback de creación o edición.
-   * Solo título y descripción son campos obligatorios.
-   */
+  function quitarEquipo() {
+    setEquipoSeleccionado(null);
+    setBusquedaEquipo("");
+    setForm((prev) => ({ ...prev, equipoId: "", estadoEquipo: "" }));
+  }
+
   function aceptar() {
-    // Si el usuario escribió texto en el combobox de equipo pero no hizo clic,
-    // se toma el primer resultado filtrado como equipo implícito.
     let equipoFinal = equipoSeleccionado;
     let formFinal   = { ...form };
-
     if (!formFinal.equipoId && busquedaEquipo.trim() && equiposFiltrados.length > 0) {
-      equipoFinal        = equiposFiltrados[0];
-      formFinal.equipoId = equipoFinal.id;
+      equipoFinal = equiposFiltrados[0]; formFinal.equipoId = equipoFinal.id;
     }
-
-    // Validación: solo título y descripción son obligatorios.
     const e = {};
     if (!formFinal.titulo.trim())      e.titulo = true;
     if (!formFinal.descripcion.trim()) e.descripcion = true;
+    if (!formFinal.equipoId)           e.equipoId = true;
+    if (!tareasSeleccionadas || tareasSeleccionadas.length === 0) e.tareas = true;
     if (Object.keys(e).length) { setErrores(e); return; }
 
-    const herramienta = equipoFinal
-      ? `${equipoFinal.nombre} ${equipoFinal.serie}`
-      : busquedaEquipo || "—";
+    const herramienta = equipoFinal ? `${equipoFinal.nombre} ${equipoFinal.serie}` : busquedaEquipo||"—";
 
-    if (modoEdicion && ticketEditandoId) {
-      onTicketActualizado?.({
-        id:          ticketEditandoId,
-        equipoId:    formFinal.equipoId,
-        herramienta,
-        descripcion: formFinal.descripcion.trim(),
-        titulo:      formFinal.titulo.trim(),
-        estado:      formFinal.estado,   // permite cambiar el estado desde el modal
-        creadoPor:   USUARIO_SESION,
-        tareaId:     formFinal.tareaId,
-        tareaLabel:  busquedaTarea,
-      });
-    } else {
-      onTicketCreado({
-        id:               generarNuevoId(tickets),
-        equipoId:         formFinal.equipoId,
-        herramienta,
-        descripcion:      formFinal.descripcion.trim(),
-        titulo:           formFinal.titulo.trim(),
-        estado:           MantService.ESTADOS?.FUERA_DE_SERVICIO ?? "fuera_de_servicio",
-        creadoPor:        USUARIO_SESION,
-        fechaCreacion:    new Date(),
-        fechaVencimiento: null,
-        tareaId:          formFinal.tareaId,
-        tareaLabel:       busquedaTarea,
-      });
+    // Actualizar estado del equipo en el mock si cambió
+    if (formFinal.equipoId && formFinal.estadoEquipo) {
+      onActualizarEstadoEquipo?.(formFinal.equipoId, formFinal.estadoEquipo);
     }
 
+    if (modoEdicion && ticketEditandoId) {
+      onTicketActualizado?.({ id: ticketEditandoId, equipoId: formFinal.equipoId, herramienta,
+        descripcion: formFinal.descripcion.trim(), titulo: formFinal.titulo.trim(),
+        estado: formFinal.estado, creadoPor: formFinal.creadoPor || USUARIO_SESION, tareas: tareasSeleccionadas });
+    } else {
+      onTicketCreado({ id: generarNuevoId(tickets), equipoId: formFinal.equipoId, herramienta,
+        descripcion: formFinal.descripcion.trim(), titulo: formFinal.titulo.trim(),
+        estado: MantService.ESTADOS?.EN_ESPERA ?? "en_espera",
+        creadoPor: USUARIO_SESION, fechaCreacion: new Date(), tareas: tareasSeleccionadas });
+    }
     cerrar();
   }
 
   return {
-    visible, modoEdicion, form, busquedaEquipo, busquedaTarea,
-    mostrarDropEquipo, mostrarDropTarea, equipoSeleccionado, errores,
+    visible, modoEdicion, ticketEditandoId, form, busquedaEquipo, busquedaTarea,
+    mostrarDropEquipo, mostrarDropTarea, equipoSeleccionado, tareasSeleccionadas, errores,
     equiposFiltrados, tareasFiltradas,
-    abrir, abrirEdicion, cerrar, actualizarCampo,
+    abrir, abrirEdicion, cerrar, eliminar, actualizarCampo,
     setBusquedaEquipo, setBusquedaTarea,
     setMostrarDropEquipo, setMostrarDropTarea,
-    seleccionarEquipo, seleccionarTarea, aceptar,
+    seleccionarEquipo, seleccionarTarea, quitarEquipo, aceptar,
   };
 }
