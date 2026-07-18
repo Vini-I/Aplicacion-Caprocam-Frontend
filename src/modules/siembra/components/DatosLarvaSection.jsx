@@ -21,10 +21,10 @@
  * ese campo no se muestran.
  *
  * DEPENDENCIAS:
- * - Card, Input, Select, Button, Modal, ModalEliminar (shared/components).
+ * - Card, Input, Select, Button, Alert, Modal, ModalEliminar (shared/components).
  * - SectionTitle, useCatalogoModal.
  */
-import { View } from "react-native";
+import { View, ScrollView } from "react-native";
 
 import Card from "../../../shared/components/Card";
 import Input from "../../../shared/components/Input";
@@ -32,14 +32,17 @@ import Select from "../../../shared/components/Select";
 import Button from "../../../shared/components/Button";
 import Modal from "../../../shared/components/Modal";
 import ModalEliminar from "../../../shared/components/ModalEliminar";
+import Alert from "../../../shared/components/Alert";
 import Text from "../../../shared/components/Text";
 
 import { ICONS } from "../../../theme/icons";
+import { COLORS } from "../../../theme/colors";
+import Icon from "../../../shared/components/Icons";
 import { styles } from "../styles/SiembraSectionStyles";
 import SectionTitle from "./SectionTitle";
 import { useCatalogoModal } from "../hooks/useCatalogoModal";
 
-const camposCatalogo= {
+const camposCatalogo = {
   proveedorLarva: {
     titulo: "proveedor de larva",
     tituloPlural: "Proveedores de larva",
@@ -80,7 +83,9 @@ export default function DatosLarvaSection({
     itemEnEdicionValue,
     nombreForm,
     setNombreForm,
-    errorForm,
+    nombreConError,
+    mensaje,
+    mensajeVariant,
     itemAEliminar,
     opcionesPorCampo,
     handlersAgregar,
@@ -122,7 +127,8 @@ export default function DatosLarvaSection({
           style={styles.btnLinkCatalogo}
           onPress={() => abrirAgregar(campo)}
         >
-          <Text style={styles.textoLinkCatalogo}>+ Agregar nuevo</Text>
+          <Icon icon={ICONS.add} color={COLORS.primary} />
+          <Text style={styles.textoLinkCatalogo}>Agregar nuevo</Text>
         </Button>
 
         {opciones.length > 0 && (
@@ -229,37 +235,50 @@ export default function DatosLarvaSection({
           <>
             <Text style={styles.modalTitulo}>{info.tituloPlural}</Text>
 
+            {mensaje !== "" && (
+              <Alert
+                message={mensaje}
+                variant={mensajeVariant}
+                style={styles.alert}
+                textStyle={{ textAlign: "center" }}
+              />
+            )}
+
             {opcionesCampoActivo.length === 0 && (
               <Text style={styles.itemListaVacio}>
                 Todavía no hay ítems en este catálogo.
               </Text>
             )}
 
-            {opcionesCampoActivo.map((item) => (
-              <View key={item.value} style={styles.itemListaFila}>
-                <Text style={styles.itemListaNombre}>{item.label}</Text>
+            <ScrollView style={styles.listaScroll} showsVerticalScrollIndicator={false}>
+              {opcionesCampoActivo.map((item) => (
+                <View key={item.value} style={styles.itemListaFila}>
+                  <Text style={styles.itemListaNombre}>{item.label}</Text>
 
-                <View style={styles.itemListaAcciones}>
-                  <Button
-                    variant="ghost"
-                    style={styles.btnItemLista}
-                    onPress={() => abrirEditar(item)}
-                  >
-                    <Text style={styles.textoLinkCatalogo}>Editar</Text>
-                  </Button>
+                  <View style={styles.itemListaAcciones}>
+                    <Button
+                      variant="outline"
+                      style={styles.btnItemLista}
+                      onPress={() => abrirEditar(item)}
+                    >
+                      <Icon icon={ICONS.edit} color={COLORS.primary} />
+                      <Text style={styles.textoLinkCatalogo}>Editar</Text>
+                    </Button>
 
-                  <Button
-                    variant="ghost"
-                    style={styles.btnItemLista}
-                    onPress={() => pedirConfirmacionEliminar(item)}
-                  >
-                    <Text style={styles.textoBtnEliminarCatalogo}>
-                      Eliminar
-                    </Text>
-                  </Button>
+                    <Button
+                      variant="outline"
+                      style={[styles.btnItemLista, styles.btnItemListaEliminar]}
+                      onPress={() => pedirConfirmacionEliminar(item)}
+                    >
+                      <Icon icon={ICONS.delete} color={COLORS.error} />
+                      <Text style={styles.textoBtnEliminarCatalogo}>
+                        Eliminar
+                      </Text>
+                    </Button>
+                  </View>
                 </View>
-              </View>
-            ))}
+              ))}
+            </ScrollView>
 
             <View style={styles.actions}>
               <Button
@@ -267,7 +286,8 @@ export default function DatosLarvaSection({
                 style={styles.button}
                 onPress={() => abrirAgregar(campoActivo)}
               >
-                <Text style={styles.textoBoton}>+ Agregar nuevo</Text>
+                <Icon icon={ICONS.add} color={COLORS.primary} />
+                <Text style={styles.textoBoton}>Agregar nuevo</Text>
               </Button>
 
               <Button
@@ -275,6 +295,7 @@ export default function DatosLarvaSection({
                 style={styles.button}
                 onPress={cerrarTodo}
               >
+                <Icon icon={ICONS.close} color={COLORS.primary} />
                 <Text style={styles.textoBoton}>Cerrar</Text>
               </Button>
             </View>
@@ -290,15 +311,21 @@ export default function DatosLarvaSection({
             </Text>
 
             <Input
-              label="Nombre"
+              label={requiredLabel("Nombre")}
               placeholder={`Nombre del ${info.titulo}`}
               value={nombreForm}
               onChangeText={setNombreForm}
-              style={errorForm ? styles.inputError : null}
+              labelStyle={styles.requiredLabel}
+              style={nombreConError ? styles.inputError : null}
             />
 
-            {errorForm !== "" && (
-              <Text style={styles.errorNombreNuevo}>{errorForm}</Text>
+            {mensaje !== "" && (
+              <Alert
+                message={mensaje}
+                variant={mensajeVariant}
+                style={styles.alert}
+                textStyle={{ textAlign: "center" }}
+              />
             )}
 
             <View style={styles.actions}>
@@ -307,6 +334,7 @@ export default function DatosLarvaSection({
                 style={styles.button}
                 onPress={guardarFormulario}
               >
+                <Icon icon={ICONS.save} color={COLORS.primary} />
                 <Text style={styles.textoBoton}>Guardar</Text>
               </Button>
 
@@ -315,6 +343,7 @@ export default function DatosLarvaSection({
                 style={styles.button}
                 onPress={itemEnEdicionValue ? volverALista : cerrarTodo}
               >
+                <Icon icon={ICONS.close} color={COLORS.primary} />
                 <Text style={styles.textoBoton}>Cancelar</Text>
               </Button>
             </View>
