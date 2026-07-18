@@ -250,7 +250,7 @@ export default function DatosLarvaSection({
               </Text>
             )}
 
-            <ScrollView style={styles.listaScroll}>
+            <ScrollView style={styles.listaScroll} showsVerticalScrollIndicator={false}>
               {opcionesCampoActivo.map((item) => (
                 <View key={item.value} style={styles.itemListaFila}>
                   <Text style={styles.itemListaNombre}>{item.label}</Text>
