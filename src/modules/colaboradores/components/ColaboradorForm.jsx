@@ -137,12 +137,7 @@ export default function ColaboradorForm({
       )}
 
       <View style={styles.buttonContainer}>
-        <Button variant="outline" onPress={onCancel} style={styles.cancelButton}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <Icon icon={ICONS.exit} size={18} color={COLORS.primary} />
-            <Text style={{ color: COLORS.primary, fontWeight: '600' }}>Cancelar</Text>
-          </View>
-        </Button>
+
 
         <Button
           variant="outline"

@@ -9,22 +9,18 @@
  *
  * Retorna:
  * - user (mock con id, fincaId, role)
- * - modalVisible, setModalVisible
- * - editingColaborador, setEditingColaborador
- * - selectedColaboradorId, setSelectedColaboradorId
  * - searchText, setSearchText
  * - cedulaConfirmacion, setCedulaConfirmacion
  * - deleteTarget, setDeleteTarget
  * - showConfirmModal, setShowConfirmModal
  * - cedulaError, setCedulaError
- * - alert, showAlert (para mensajes en la lista)
+ * - alert, showAlert
  * - colaboradores, loading, error
  * - listaFiltrada
- * - handleAdd, handleEdit, handleDeletePress, confirmDelete, handleSubmit, openStats
+ * - handleDeletePress, confirmDelete
  */
 
 import { useState, useEffect, useRef } from "react";
-import { Alert as RNAlert } from "react-native";
 import { useColaboradores } from "./useColaboradores";
 
 export function useMiPersonal() {
@@ -32,16 +28,13 @@ export function useMiPersonal() {
   const user = { id: "3", fincaId: "finca3", role: "external_owner" };
 
   // Estados de la UI
-  const [modalVisible, setModalVisible] = useState(false);
-  const [editingColaborador, setEditingColaborador] = useState(null);
-  const [selectedColaboradorId, setSelectedColaboradorId] = useState(null);
   const [searchText, setSearchText] = useState("");
   const [cedulaConfirmacion, setCedulaConfirmacion] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [cedulaError, setCedulaError] = useState("");
 
-  // Estado para alerta flotante (como en ColaboradoresListScreen)
+  // Estado para alerta flotante
   const [alert, setAlert] = useState(null);
   const alertTimeoutRef = useRef(null);
 
@@ -61,8 +54,6 @@ export function useMiPersonal() {
     colaboradores,
     loading,
     error,
-    crearColaborador,
-    actualizarColaborador,
     eliminarColaborador,
     fetchColaboradores,
   } = useColaboradores({ fincaId: user.fincaId, rol: "external_worker", activo: true });
@@ -85,22 +76,12 @@ export function useMiPersonal() {
   });
 
   // Manejadores
-  const handleAdd = () => {
-    setEditingColaborador(null);
-    setModalVisible(true);
-  };
-
-  const handleEdit = (colaborador) => {
-    setEditingColaborador(colaborador);
-    setModalVisible(true);
-  };
-
   const handleDeletePress = (id) => {
     const colaborador = colaboradores.find((c) => c.id === id);
     if (colaborador) {
       setDeleteTarget(colaborador);
       setCedulaConfirmacion("");
-      setCedulaError(""); // Limpiar error al abrir el modal
+      setCedulaError("");
       setShowConfirmModal(true);
     }
   };
@@ -123,48 +104,14 @@ export function useMiPersonal() {
       setDeleteTarget(null);
       setCedulaConfirmacion("");
       setCedulaError("");
-      // Recargar lista
       fetchColaboradores();
     } catch (error) {
       setCedulaError("No se pudo eliminar el colaborador. Intente nuevamente.");
     }
   };
 
-  const handleSubmit = async (formData) => {
-    try {
-      if (editingColaborador) {
-        await actualizarColaborador(editingColaborador.id, formData);
-        showAlert("success", `Colaborador ${formData.nombre} actualizado correctamente.`);
-      } else {
-        await crearColaborador({
-          ...formData,
-          rol: "external_worker",
-          fincaId: user.fincaId,
-          externalOwnerId: user.id,
-        });
-        showAlert("success", `Colaborador ${formData.nombre} agregado correctamente.`);
-      }
-      setModalVisible(false);
-      setEditingColaborador(null);
-      // Recargar lista
-      fetchColaboradores();
-    } catch (error) {
-      showAlert("danger", "Ocurrió un error al guardar el colaborador. Intente nuevamente.");
-    }
-  };
-
-  const openStats = (colaboradorId) => {
-    setSelectedColaboradorId(colaboradorId);
-  };
-
   return {
     user,
-    modalVisible,
-    setModalVisible,
-    editingColaborador,
-    setEditingColaborador,
-    selectedColaboradorId,
-    setSelectedColaboradorId,
     searchText,
     setSearchText,
     cedulaConfirmacion,
@@ -180,11 +127,7 @@ export function useMiPersonal() {
     loading,
     error,
     listaFiltrada,
-    handleAdd,
-    handleEdit,
     handleDeletePress,
     confirmDelete,
-    handleSubmit,
-    openStats,
   };
 }

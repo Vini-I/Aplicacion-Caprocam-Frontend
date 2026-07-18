@@ -4,7 +4,10 @@
  * ============================================================
  * Módulo: Mantenimiento de Equipos
  *
- * Estilos para la pantalla TareasScreen.
+ * Estilos para la pantalla TareasScreen y sus componentes.
+ * También incluye estilos compartidos para DetalleEquipoScreen
+ * y DetalleTareaScreen.
+ *
  * Utiliza la paleta de COLORS del tema central.
  *
  * Dependencias:
@@ -12,45 +15,43 @@
  * ============================================================
  */
 
-import { StyleSheet } from "react-native";
-import { COLORS } from "../../../theme/colors";
+import { StyleSheet } from 'react-native';
+import { COLORS } from '../../../theme/colors';
+import { STYLE } from '../../../theme/style';
 
 export const styles = StyleSheet.create({
   // Contenedor principal de la pantalla
-  screen: {
+  container: {
     flex: 1,
-    backgroundColor: COLORS.surface,
+    paddingHorizontal: 0,
+    paddingBottom: 80,
   },
 
-  // Barra de herramientas (búsqueda + botón agregar)
+  // Barra de herramientas (búsqueda + filtros)
   toolbar: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 8,
     marginBottom: 14,
-    flexWrap: "wrap",
+    flexWrap: 'wrap',
     width: '100%',
     maxWidth: 900,
     alignSelf: 'center',
     paddingHorizontal: 16,
   },
 
-  // Botón de acción (outline)
-  btnAction: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 6,
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: 8,
-    borderWidth: 1,
-    backgroundColor: "transparent",
-    height: 42,
-    marginTop: 0,
+  searchBarContainer: {
+    flex: 1,
   },
 
-  // Alerta global (mismo ancho que la barra de búsqueda)
+  filterButtonStyle: {
+    height: 42,
+    borderColor: COLORS.textTertiary,
+    marginTop: 0,
+    alignSelf: 'center',
+  },
+
+  // Alerta global
   alertWrapper: {
     marginBottom: 12,
     paddingHorizontal: 16,
@@ -59,42 +60,21 @@ export const styles = StyleSheet.create({
     alignSelf: 'center',
   },
 
-  // Contenedor de la tabla (ocupa todo el espacio restante)
+  // Tabla
   tableWrapper: {
     flex: 1,
     width: '100%',
   },
-    rowInner: {
+
+  rowInner: {
     maxWidth: 900,
     alignSelf: 'center',
     width: '100%',
     paddingHorizontal: 16,
   },
 
-  // Ajusta tableHeader para que use rowInner
   tableHeader: {
-    flexDirection: "row",
-    backgroundColor: COLORS.secondary,
-    paddingVertical: 10,
-    paddingHorizontal: 8,
-  },
-
-  // Contenedor interno de la tabla para centrar y limitar ancho
-  tableInner: {
-    flex: 1,
-    maxWidth: 900,
-    alignSelf: 'center',
-    width: '100%',
-    borderWidth: 1,
-    borderColor: COLORS.secondary,
-    borderRadius: 10,
-    overflow: 'hidden',
-    backgroundColor: COLORS.white,
-  },
-
-  // Cabecera de la tabla (fija)
-  tableHeader: {
-    flexDirection: "row",
+    flexDirection: 'row',
     backgroundColor: COLORS.secondary,
     paddingVertical: 10,
     paddingHorizontal: 8,
@@ -102,7 +82,7 @@ export const styles = StyleSheet.create({
 
   headerCell: {
     fontSize: 12,
-    fontWeight: "700",
+    fontWeight: '700',
     color: COLORS.textSecondary,
   },
 
@@ -111,13 +91,14 @@ export const styles = StyleSheet.create({
   colNombre: { flex: 1.5, minWidth: 100 },
   colDesc: { flex: 2, minWidth: 140 },
   colCategoria: { flex: 1, minWidth: 90 },
-  colDuracion: { width: 80 },
-  colAcciones: { width: 90 },
+  colDuracion: { width: 90 },
+  colEstado: { width: 110, minWidth: 90 },
+  colAcciones: { width: 180 },
 
-  // Fila de la tabla
- row: {
-    flexDirection: "row",
-    alignItems: "center",
+  // Fila
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingVertical: 12,
     paddingHorizontal: 8,
     borderTopWidth: 1,
@@ -129,32 +110,103 @@ export const styles = StyleSheet.create({
     color: COLORS.textSecondary,
   },
 
-  // Botones de acción dentro de la fila (editar/eliminar) - outline
+  // Botones de acción en fila
+  accionesContainer: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+
   btnAccion: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     gap: 4,
     paddingVertical: 4,
     paddingHorizontal: 8,
     borderRadius: 6,
     borderWidth: 1,
-    backgroundColor: "transparent",
+    backgroundColor: 'transparent',
     marginTop: 0,
     minWidth: 36,
     height: 32,
   },
 
-  // Modal de tarea (creación/edición)
+  btnAccionEditar: {
+    borderColor: COLORS.primary,
+  },
+
+  btnAccionEliminar: {
+    borderColor: COLORS.error,
+  },
+
+  btnAccionText: {
+    color: COLORS.primary,
+    fontWeight: '600',
+    marginLeft: 4,
+  },
+
+  // FlatList
+  flatList: {
+    flex: 1,
+    width: '100%',
+  },
+
+  flatListContent: {
+    flexGrow: 1,
+  },
+
+  emptyContainer: {
+    padding: 24,
+    alignItems: 'center',
+  },
+
+  emptyText: {
+    color: COLORS.textTertiary,
+    fontSize: 14,
+  },
+
+  // Botón flotante "Agregar tarea"
+  floatingButtonContainer: {
+    position: 'absolute',
+    bottom: 20,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    paddingHorizontal: 16,
+  },
+
+  floatingButton: {
+    width: '100%',
+    maxWidth: 900,
+    alignSelf: 'center',
+    backgroundColor: 'transparent',
+    borderColor: COLORS.primary,
+    borderWidth: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 6,
+  },
+
+  floatingButtonText: {
+    color: COLORS.primary,
+    fontWeight: '600',
+    fontSize: 13,
+  },
+
+  // Modal de detalle
   modalContainer: {
-    maxHeight: "92%",
+    maxHeight: '92%',
     maxWidth: 600,
-    width: "100%",
+    width: '100%',
   },
 
   modalTitle: {
     fontSize: 18,
-    fontWeight: "700",
+    fontWeight: '700',
     color: COLORS.textSecondary,
     marginBottom: 14,
   },
@@ -164,7 +216,7 @@ export const styles = StyleSheet.create({
   },
 
   modalFooter: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: 10,
     marginTop: 16,
   },
@@ -173,59 +225,55 @@ export const styles = StyleSheet.create({
     flex: 1,
     borderColor: COLORS.primary,
     borderWidth: 1,
-    backgroundColor: "transparent",
+    backgroundColor: 'transparent',
   },
 
-  btnAccept: {
-    flex: 1,
-    borderColor: COLORS.primary,
-    borderWidth: 1,
-    backgroundColor: "transparent",
+  btnCancelCerrar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+
+  btnCancelText: {
+    color: COLORS.primary,
+    fontWeight: '600',
   },
 
   // Modal de confirmación de eliminación
   modalConfirmContainer: {
-    width: "100%",
+    width: '100%',
     maxWidth: 900,
-    alignSelf: "center",
-    maxHeight: "80%",
+    alignSelf: 'center',
+    maxHeight: '80%',
     padding: 16,
-  },
-
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: COLORS.error,
-    marginBottom: 16,
-    textAlign: "center",
   },
 
   modalText: {
     fontSize: 14,
     color: COLORS.textTertiary,
     marginBottom: 8,
-    textAlign: "center",
+    textAlign: 'center',
   },
 
   modalName: {
     fontSize: 14,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     color: COLORS.textSecondary,
     marginBottom: 16,
-    textAlign: "center",
+    textAlign: 'center',
   },
 
   modalSubText: {
     fontSize: 14,
     color: COLORS.textTertiary,
     marginBottom: 8,
-    textAlign: "center",
+    textAlign: 'center',
   },
 
   modalButtons: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: 12,
-    justifyContent: "center",
+    justifyContent: 'center',
   },
 
   modalCancelBtn: {
@@ -233,7 +281,18 @@ export const styles = StyleSheet.create({
     marginTop: 0,
     borderColor: COLORS.primary,
     borderWidth: 1,
-    backgroundColor: "transparent",
+    backgroundColor: 'transparent',
+  },
+
+  modalCancelBtnContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+
+  modalCancelBtnText: {
+    color: COLORS.primary,
+    fontWeight: '600',
   },
 
   modalDeleteBtn: {
@@ -241,6 +300,235 @@ export const styles = StyleSheet.create({
     marginTop: 0,
     borderColor: COLORS.error,
     borderWidth: 1,
-    backgroundColor: "transparent",
+    backgroundColor: 'transparent',
+  },
+
+  modalDeleteBtnContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+
+  modalDeleteBtnText: {
+    color: COLORS.error,
+    fontWeight: '600',
+  },
+
+  // Estilos para el detalle (usados en ModalDetalleTarea)
+  detalleEncabezado: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 14,
+  },
+
+  detalleRow: {
+    flexDirection: 'row',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.secondary,
+    gap: 6,
+  },
+
+  equipoDetailLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: COLORS.textTertiary,
+    width: 110,
+  },
+
+  equipoDetailVal: {
+    fontSize: 13,
+    fontWeight: '400',
+    color: COLORS.textSecondary,
+    flex: 1,
+  },
+
+  // Centro de carga/error
+  centerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});
+
+// ============================================================
+// ESTILOS ADICIONALES PARA DETALLE DE EQUIPO Y TAREA
+// (movidos desde los screens para mantener orden)
+// ============================================================
+
+// Estilos para filas con ícono (usado en DetalleEquipo y DetalleTarea)
+export const detalleStyles = StyleSheet.create({
+  fila: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  iconoWrapper: {
+    width: 28,
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  contenido: {
+    flex: 1,
+  },
+  etiqueta: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: COLORS.textTertiary,
+    marginBottom: 2,
+  },
+  valor: {
+    fontSize: 15,
+    color: COLORS.textSecondary,
+  },
+  valorLink: {
+    fontSize: 15,
+    color: COLORS.primary,
+    textDecorationLine: 'underline',
+  },
+});
+
+// Estilos específicos para la pantalla DetalleEquipo
+export const equipoDetalleStyles = StyleSheet.create({
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  avatar: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: COLORS.secondary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 14,
+  },
+  info: {
+    flex: 1,
+  },
+  nombre: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: COLORS.textSecondary,
+    marginBottom: 4,
+  },
+  badges: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  codigo: {
+    fontSize: 13,
+    color: COLORS.textTertiary,
+  },
+  estadoBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  estadoBadgeContainer: {
+    backgroundColor: COLORS.secondary,
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  estadoBadgeText: {
+    fontWeight: '600',
+    fontSize: 12,
+  },
+  horasContainer: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 12,
+  },
+  horasRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  horasLabelContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  horasLabel: {
+    fontSize: 13,
+    color: COLORS.textTertiary,
+  },
+  horasValor: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.primary,
+  },
+  horasValorCritico: {
+    color: COLORS.error,
+  },
+  horasValueRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  horasAlertIcon: {
+    marginRight: 6,
+  },
+  historialTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.textSecondary,
+    marginBottom: 8,
+  },
+  registroItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.secondary,
+  },
+  registroFecha: {
+    fontSize: 12,
+    color: COLORS.textTertiary,
+  },
+  registroHoras: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+  },
+  botonesContainer: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 8,
+    marginBottom: 20,
+  },
+  boton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    backgroundColor: 'transparent',
+    marginTop: 0,
+  },
+  botonEditar: {
+    borderColor: COLORS.primary,
+  },
+  botonEliminar: {
+    borderColor: COLORS.error,
+  },
+  botonTexto: {
+    color: COLORS.primary,
+    fontWeight: '600',
+  },
+  botonTextoEliminar: {
+    color: COLORS.error,
+    fontWeight: '600',
+  },
+  alertWrapper: {
+    marginBottom: 12,
   },
 });

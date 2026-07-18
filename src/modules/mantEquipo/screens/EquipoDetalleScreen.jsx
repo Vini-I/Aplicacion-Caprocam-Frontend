@@ -188,13 +188,13 @@ export default function EquipoDetalleScreen({
                   {necesitaMant ? "Mantenimiento requerido" : "Horas para mantenimiento"}
                 </CustomText>
               </View>
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <View style={styles.horasValueRow}>
                 {necesitaMant && (
                   <Icon
                     icon={ICONS.alertTriangle}
                     size={18}
                     color={COLORS.error}
-                    style={{ marginRight: 6 }}
+                    style={styles.horasAlertIcon}
                   />
                 )}
                 <CustomText
@@ -362,57 +362,31 @@ export default function EquipoDetalleScreen({
       {/* Botones de acción fijos en la parte inferior */}
       <View style={styles.footerContainer}>
         <View style={styles.footerButtonsContainer}>
-<Button
-  variant="outline"
-  onPress={() => onEdit?.(equipo)}
-  style={[
-    styles.boton,
-    {
-      borderColor: COLORS.primary,
-      backgroundColor: "transparent",
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: 8,
-    },
-  ]}
->
-  <Icon icon={ICONS.edit} size={ICON_SIZE.boton} color={COLORS.primary} />
-  <CustomText style={[styles.botonTexto, { color: COLORS.primary }]}>
-    Editar
-  </CustomText>
-</Button>
-<Button
-  variant="outline"
-  onPress={() => onDelete?.(equipo.id)}
-  style={[
-    styles.boton,
-    {
-      borderColor: COLORS.error,
-      backgroundColor: "transparent",
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: 8,
-    },
-  ]}
->
-  <Icon icon={ICONS.delete} size={ICON_SIZE.boton} color={COLORS.error} />
-  <CustomText style={[styles.botonTexto, { color: COLORS.error }]}>
-    Eliminar
-  </CustomText>
-</Button>
+          <Button
+            variant="outline"
+            onPress={() => onEdit?.(equipo)}
+            style={[styles.boton, styles.botonEditar]}
+          >
+            <Icon icon={ICONS.edit} size={ICON_SIZE.boton} color={COLORS.primary} />
+            <CustomText style={styles.botonTexto}>Editar</CustomText>
+          </Button>
+          <Button
+            variant="outline"
+            onPress={() => onDelete?.(equipo.id)}
+            style={[styles.boton, styles.botonEliminar]}
+          >
+            <Icon icon={ICONS.delete} size={ICON_SIZE.boton} color={COLORS.error} />
+            <CustomText style={styles.botonTextoEliminar}>Eliminar</CustomText>
+          </Button>
         </View>
         <Button
           variant="outline"
           onPress={onClose}
-          style={[styles.botonCerrar, { marginTop: 12, width: "100%" }]}
+          style={[styles.botonCerrar, styles.botonCerrarFull]}
         >
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+          <View style={styles.botonContent}>
             <Icon icon={ICONS.exit} size={ICON_SIZE.boton} color={COLORS.primary} />
-            <CustomText style={[styles.botonTexto, { color: COLORS.primary }]}>
-              Cerrar
-            </CustomText>
+            <CustomText style={styles.botonTexto}>Cerrar</CustomText>
           </View>
         </Button>
       </View>
