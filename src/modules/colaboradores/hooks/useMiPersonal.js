@@ -9,17 +9,15 @@
  *
  * Retorna:
  * - user (mock con id, fincaId, role)
- * - modalVisible, setModalVisible
- * - editingColaborador, setEditingColaborador
  * - searchText, setSearchText
  * - cedulaConfirmacion, setCedulaConfirmacion
  * - deleteTarget, setDeleteTarget
  * - showConfirmModal, setShowConfirmModal
  * - cedulaError, setCedulaError
- * - alert, showAlert (para mensajes en la lista)
+ * - alert, showAlert
  * - colaboradores, loading, error
  * - listaFiltrada
- * - handleAdd, handleEdit, handleDeletePress, confirmDelete, handleSubmit
+ * - handleDeletePress, confirmDelete
  */
 
 import { useState, useEffect, useRef } from "react";
@@ -30,8 +28,6 @@ export function useMiPersonal() {
   const user = { id: "3", fincaId: "finca3", role: "external_owner" };
 
   // Estados de la UI
-  const [modalVisible, setModalVisible] = useState(false);
-  const [editingColaborador, setEditingColaborador] = useState(null);
   const [searchText, setSearchText] = useState("");
   const [cedulaConfirmacion, setCedulaConfirmacion] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
@@ -58,8 +54,6 @@ export function useMiPersonal() {
     colaboradores,
     loading,
     error,
-    crearColaborador,
-    actualizarColaborador,
     eliminarColaborador,
     fetchColaboradores,
   } = useColaboradores({ fincaId: user.fincaId, rol: "external_worker", activo: true });
@@ -82,16 +76,6 @@ export function useMiPersonal() {
   });
 
   // Manejadores
-  const handleAdd = () => {
-    setEditingColaborador(null);
-    setModalVisible(true);
-  };
-
-  const handleEdit = (colaborador) => {
-    setEditingColaborador(colaborador);
-    setModalVisible(true);
-  };
-
   const handleDeletePress = (id) => {
     const colaborador = colaboradores.find((c) => c.id === id);
     if (colaborador) {
@@ -126,34 +110,8 @@ export function useMiPersonal() {
     }
   };
 
-  const handleSubmit = async (formData) => {
-    try {
-      if (editingColaborador) {
-        await actualizarColaborador(editingColaborador.id, formData);
-        showAlert("success", `Colaborador ${formData.nombre} actualizado correctamente.`);
-      } else {
-        await crearColaborador({
-          ...formData,
-          rol: "external_worker",
-          fincaId: user.fincaId,
-          externalOwnerId: user.id,
-        });
-        showAlert("success", `Colaborador ${formData.nombre} agregado correctamente.`);
-      }
-      setModalVisible(false);
-      setEditingColaborador(null);
-      fetchColaboradores();
-    } catch (error) {
-      showAlert("danger", "Ocurrió un error al guardar el colaborador. Intente nuevamente.");
-    }
-  };
-
   return {
     user,
-    modalVisible,
-    setModalVisible,
-    editingColaborador,
-    setEditingColaborador,
     searchText,
     setSearchText,
     cedulaConfirmacion,
@@ -169,10 +127,7 @@ export function useMiPersonal() {
     loading,
     error,
     listaFiltrada,
-    handleAdd,
-    handleEdit,
     handleDeletePress,
     confirmDelete,
-    handleSubmit,
   };
 }

@@ -13,6 +13,8 @@ export default function ColaboradoresLayout() {
     >
       <Stack.Screen name="index" options={{ title: "Colaboradores" }} />
       <Stack.Screen name="detalle" options={{ title: "Detalle de Colaborador", headerShown: true }} />
+      <Stack.Screen name="form" options={{ title: "Formulario de Colaborador", headerShown: true }} />
+
     </Stack>
   );
 }

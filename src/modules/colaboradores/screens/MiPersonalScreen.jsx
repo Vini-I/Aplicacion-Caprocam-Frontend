@@ -9,7 +9,7 @@
  *
  * Dependencias:
  * - useMiPersonal hook para lógica y estado
- * - ColaboradorCard, ColaboradorForm
+ * - ColaboradorCard, ColaboradorForm (pantalla separada)
  * - Layout global STYLE
  * ============================================================
  */
@@ -20,11 +20,9 @@ import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 
 import { useMiPersonal } from '../hooks/useMiPersonal';
 import ColaboradorCard from '../components/ColaboradorCard';
-import ColaboradorForm from '../components/ColaboradorForm';
 import Modal from '../../../shared/components/Modal';
 import Spinner from '../../../shared/components/Spinner';
 import Button from '../../../shared/components/Button';
-import Title from '../../../shared/components/Title';
 import Input from '../../../shared/components/Input';
 import CustomText from '../../../shared/components/Text';
 import Icon from '../../../shared/components/Icons';
@@ -42,10 +40,6 @@ export default function MiPersonalScreen() {
 
   const {
     user,
-    modalVisible,
-    setModalVisible,
-    editingColaborador,
-    setEditingColaborador,
     searchText,
     setSearchText,
     cedulaConfirmacion,
@@ -61,25 +55,20 @@ export default function MiPersonalScreen() {
     loading,
     error,
     listaFiltrada,
-    handleAdd,
-    handleEdit,
     handleDeletePress,
     confirmDelete,
-    handleSubmit,
   } = useMiPersonal();
 
-  // Detectar si se viene de la pantalla de detalle con editId para abrir el modal de edición
+  // Detectar si se viene de la pantalla de detalle con editId para redirigir al formulario
   useFocusEffect(
     useCallback(() => {
-      if (editId && colaboradores.length > 0) {
-        const colaborador = colaboradores.find((c) => c.id === editId);
-        if (colaborador) {
-          setEditingColaborador(colaborador);
-          setModalVisible(true);
-          router.setParams({ editId: undefined });
-        }
+      if (editId) {
+        router.replace({
+          pathname: '/(drawer)/colaboradores/form',
+          params: { id: editId, userRole: 'external_owner', fincaId: user.fincaId },
+        });
       }
-    }, [editId, colaboradores, router, setEditingColaborador, setModalVisible])
+    }, [editId, router, user.fincaId])
   );
 
   // Navegar al detalle de un colaborador
@@ -87,6 +76,22 @@ export default function MiPersonalScreen() {
     router.push({
       pathname: '/(drawer)/colaboradores/detalle',
       params: { id: colaboradorId },
+    });
+  };
+
+  // Navegar al formulario de edición
+  const handleEditNavigation = (colaborador) => {
+    router.push({
+      pathname: '/(drawer)/colaboradores/form',
+      params: { id: colaborador.id, userRole: 'external_owner', fincaId: user.fincaId },
+    });
+  };
+
+  // Navegar al formulario de creación
+  const handleAddNavigation = () => {
+    router.push({
+      pathname: '/(drawer)/colaboradores/form',
+      params: { userRole: 'external_owner', fincaId: user.fincaId },
     });
   };
 
@@ -120,7 +125,7 @@ export default function MiPersonalScreen() {
         />
         <Button
           variant="outline"
-          onPress={handleAdd}
+          onPress={handleAddNavigation}
           style={[styles.addButtonContainer, { borderColor: COLORS.primary }]}
         >
           <View style={styles.addButtonContent}>
@@ -150,35 +155,11 @@ export default function MiPersonalScreen() {
             key={colab.id}
             colaborador={colab}
             onPress={() => openDetail(colab.id)}
-            onEdit={handleEdit}
+            onEdit={handleEditNavigation}
             onDelete={() => handleDeletePress(colab.id)}
           />
         ))}
       </ScrollView>
-
-      {/* Modal para crear/editar */}
-      <Modal
-        visible={modalVisible}
-        onClose={() => {
-          setModalVisible(false);
-          setEditingColaborador(null);
-        }}
-        showCloseButton={false}
-        containerStyle={styles.modalContainer}
-      >
-        <Title level={4}>{editingColaborador ? 'Editar' : 'Nuevo'} colaborador</Title>
-        <ColaboradorForm
-          initialData={editingColaborador || {}}
-          onSubmit={handleSubmit}
-          isEditing={!!editingColaborador}
-          userRole="external_owner"
-          fincaId={user.fincaId}
-          onCancel={() => {
-            setModalVisible(false);
-            setEditingColaborador(null);
-          }}
-        />
-      </Modal>
 
       {/* Modal de confirmación de eliminación con validación de cédula */}
       <Modal

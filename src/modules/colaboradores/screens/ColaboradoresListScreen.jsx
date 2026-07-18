@@ -9,7 +9,7 @@
  *
  * Dependencias:
  * - useColaboradoresList hook para lógica y estado
- * - ColaboradorCard, ColaboradorForm, DetalleColaboradorScreen (navegación)
+ * - ColaboradorCard, ColaboradorForm (usado en pantalla separada)
  * - Layout global STYLE
  * - Iconos desde theme/icons
  */
@@ -23,12 +23,8 @@ import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 
 import { useColaboradoresList } from '../hooks/useColaboradoresList';
 import ColaboradorCard from '../components/ColaboradorCard';
-import ColaboradorForm from '../components/ColaboradorForm';
-import Modal from '../../../shared/components/Modal';
 import Spinner from '../../../shared/components/Spinner';
 import Button from '../../../shared/components/Button';
-import Title from '../../../shared/components/Title';
-import Input from '../../../shared/components/Input';
 import CustomText from '../../../shared/components/Text';
 import Icon from '../../../shared/components/Icons';
 import SearchBar from '../../inventarios/components/SearchBar';
@@ -37,6 +33,8 @@ import { ICONS } from '../../../theme/icons';
 import { COLORS } from '../../../theme/colors';
 import { styles } from '../styles/colaboradoresListStyles';
 import Alert from '../../../shared/components/Alert';
+import Modal from '../../../shared/components/Modal';
+import Input from '../../../shared/components/Input';
 
 // ============================================================
 // COMPONENTE PRINCIPAL
@@ -49,10 +47,6 @@ export default function ColaboradoresListScreen() {
   const {
     activeTab,
     setActiveTab,
-    modalVisible,
-    setModalVisible,
-    editingColaborador,
-    setEditingColaborador,
     searchText,
     setSearchText,
     cedulaConfirmacion,
@@ -68,25 +62,21 @@ export default function ColaboradoresListScreen() {
     handleEdit,
     handleDeletePress,
     confirmDelete,
-    handleSubmit,
     alert,
     cedulaError,
     setCedulaError,
   } = useColaboradoresList();
 
-  // Detectar si se viene de la pantalla de detalle con editId para abrir el modal de edición
+  // Detectar si se viene de la pantalla de detalle con editId para redirigir al formulario
   useFocusEffect(
     useCallback(() => {
-      if (editId && lista.length > 0) {
-        const colaborador = lista.find((c) => c.id === editId);
-        if (colaborador) {
-          setEditingColaborador(colaborador);
-          setModalVisible(true);
-          // Limpiar el parámetro para que no se repita al volver a enfocar
-          router.setParams({ editId: undefined });
-        }
+      if (editId) {
+        router.replace({
+          pathname: '/(drawer)/colaboradores/form',
+          params: { id: editId },
+        });
       }
-    }, [editId, lista, router, setEditingColaborador, setModalVisible])
+    }, [editId, router])
   );
 
   // Navegar al detalle de un colaborador
@@ -95,6 +85,19 @@ export default function ColaboradoresListScreen() {
       pathname: '/(drawer)/colaboradores/detalle',
       params: { id: colaboradorId },
     });
+  };
+
+  // Navegar al formulario de edición
+  const handleEditNavigation = (colaborador) => {
+    router.push({
+      pathname: '/(drawer)/colaboradores/form',
+      params: { id: colaborador.id },
+    });
+  };
+
+  // Navegar al formulario de creación
+  const handleAddNavigation = () => {
+    router.push('/(drawer)/colaboradores/form');
   };
 
   // --------------------------------------------------------
@@ -118,7 +121,7 @@ export default function ColaboradoresListScreen() {
         />
         <Button
           variant="outline"
-          onPress={handleAdd}
+          onPress={handleAddNavigation}
           style={[styles.addButtonContainer, { borderColor: COLORS.primary }]}
         >
           <View style={styles.addButtonContent}>
@@ -146,7 +149,7 @@ export default function ColaboradoresListScreen() {
             key={colab.id}
             colaborador={colab}
             onPress={() => openDetail(colab.id)}
-            onEdit={handleEdit}
+            onEdit={handleEditNavigation}
             onDelete={() => handleDeletePress(colab.id)}
           />
         ))}
@@ -169,29 +172,6 @@ export default function ColaboradoresListScreen() {
           <CustomText style={styles.tabText}>Dueños Externos</CustomText>
         </Button>
       </View>
-
-      {/* Modal para crear/editar colaborador */}
-      <Modal
-        visible={modalVisible}
-        onClose={() => {
-          setModalVisible(false);
-          setEditingColaborador(null);
-        }}
-        showCloseButton={false}
-        containerStyle={styles.modalContainer}
-      >
-        <Title level={4}>{editingColaborador ? 'Editar' : 'Nuevo'} colaborador</Title>
-        <ColaboradorForm
-          initialData={editingColaborador || {}}
-          onSubmit={handleSubmit}
-          isEditing={!!editingColaborador}
-          userRole="camprocam_admin"
-          onCancel={() => {
-            setModalVisible(false);
-            setEditingColaborador(null);
-          }}
-        />
-      </Modal>
 
       {/* Modal de confirmación de eliminación con validación de cédula */}
       <Modal
