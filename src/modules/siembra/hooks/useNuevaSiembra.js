@@ -220,7 +220,7 @@ export default function useNuevaSiembra() {
 
   const [origenSiembra, setOrigenSiembra] = useState("directa");
 
-  const CAMPOS_HEREDADOS_DE_PRECRIA = [
+  const camposHeredadosDePrecria = [
     "duracionPrecria",
     "fechaSalidaPrecria",
     "cantidadSobrevivientePrecria",
@@ -236,7 +236,7 @@ export default function useNuevaSiembra() {
     if (!precriaId) {
       setFormData((previo) => {
         const limpio = { ...previo, pasoPorPrecria: "no", precriaId: "" };
-        CAMPOS_HEREDADOS_DE_PRECRIA.forEach((campo) => {
+        camposHeredadosDePrecria.forEach((campo) => {
           limpio[campo] = "";
         });
         return limpio;

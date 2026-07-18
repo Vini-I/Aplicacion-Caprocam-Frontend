@@ -39,7 +39,7 @@ import { styles } from "../styles/SiembraSectionStyles";
 import SectionTitle from "./SectionTitle";
 import { useCatalogoModal } from "../hooks/useCatalogoModal";
 
-const CAMPOS_CATALOGO = {
+const camposCatalogo= {
   proveedorLarva: {
     titulo: "proveedor de larva",
     tituloPlural: "Proveedores de larva",
@@ -140,7 +140,7 @@ export default function DatosLarvaSection({
       </View>
     );
   }
-  const info = campoActivo ? CAMPOS_CATALOGO[campoActivo] : null;
+  const info = campoActivo ? camposCatalogo[campoActivo] : null;
   const opcionesCampoActivo = campoActivo
     ? opcionesPorCampo[campoActivo] || []
     : [];
