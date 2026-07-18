@@ -34,10 +34,10 @@ import { STYLE } from "../../../theme/style.js";
 
 export default function FincaEditarScreen({ onFinca, codigoInterno }) {
   const {
+    SectionTitle,
     ContentWrapper,
     formulario,
     telefonos,
-    errorMessage,
     errores,
     setErrores,
 
@@ -63,19 +63,12 @@ export default function FincaEditarScreen({ onFinca, codigoInterno }) {
           STYLE.container,
           { paddingHorizontal: isLargeScreen ? 40 : 16 },
         ]}
-        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
         <ContentWrapper>
           <Card>
-            <Text
-              style={styles.sectionTitle}
-              size={14}
-              weight="700"
-              color={COLORS.textPrimary}
-            >
-              IDENTIFICACIÓN
-            </Text>
+            <SectionTitle icon={ICONS.id} title="IDENTIFICACIÓN" />
             <View style={styles.row}>
               <View style={styles.column}>
                 <Input
@@ -90,14 +83,7 @@ export default function FincaEditarScreen({ onFinca, codigoInterno }) {
           </Card>
 
           <Card>
-            <Text
-              style={styles.sectionTitle}
-              size={14}
-              weight="700"
-              color={COLORS.textPrimary}
-            >
-              CONTACTO
-            </Text>
+            <SectionTitle icon={ICONS.user} title="CONTACTO" />
             <View>
               <Input
                 label="Propietario / Responsable *"
@@ -109,23 +95,12 @@ export default function FincaEditarScreen({ onFinca, codigoInterno }) {
             </View>
 
             <View style={styles.phoneHeader}>
-              <Text size={14} weight="600" color={COLORS.textPrimary}>
-                Teléfonos
-              </Text>
+              <View style={styles.phoneTitle}>
+                <Icon icon={ICONS.phone} size={18} color={COLORS.primary} style={styles.sectionIcon} />
+                <Text size={14} weight="600" color={COLORS.textPrimary}>Teléfonos</Text>
+              </View>
               <Button style={styles.addPhoneButton} onPress={agregarTelefono}>
-                {ICONS && ICONS.add ? (
-                  <Icon icon={ICONS.add} size={18} color={COLORS.black} />
-                ) : (
-                  <Text
-                    style={{
-                      fontSize: 18,
-                      color: COLORS.black,
-                      fontWeight: "bold",
-                    }}
-                  >
-                    +
-                  </Text>
-                )}
+                <Icon icon={ICONS.add} size={18} color={COLORS.black} />
               </Button>
             </View>
 
@@ -143,43 +118,15 @@ export default function FincaEditarScreen({ onFinca, codigoInterno }) {
                     }
                   />
                 </View>
-                {index > 0 && (
-                  <Button
-                    style={styles.removePhoneButton}
-                    onPress={() => eliminarTelefono(index)}
-                  >
-                    {ICONS && ICONS.delete ? (
-                      <Icon
-                        icon={ICONS.delete}
-                        size={20}
-                        color={COLORS.error}
-                      />
-                    ) : (
-                      <Text
-                        style={{
-                          fontSize: 16,
-                          color: COLORS.error,
-                          fontWeight: "bold",
-                        }}
-                      >
-                        ✕
-                      </Text>
-                    )}
-                  </Button>
-                )}
+                <Button style={styles.removePhoneButton} onPress={() => eliminarTelefono(index)}>
+                  <Icon icon={ICONS.delete} size={20} color={COLORS.error}/>
+                </Button>
               </View>
             ))}
           </Card>
 
           <Card>
-            <Text
-              style={styles.sectionTitle}
-              size={14}
-              weight="700"
-              color={COLORS.textPrimary}
-            >
-              CARACTERÍSTICAS
-            </Text>
+            <SectionTitle icon={ICONS.document} title="CARACTERÍSTICAS" />
             <View>
               <Input
                 label="Área total (ha) *"
@@ -205,10 +152,7 @@ export default function FincaEditarScreen({ onFinca, codigoInterno }) {
           {Object.keys(errores).length > 0 && (
             <CustomAlert
               variant="danger"
-              message={
-                errorMessage ||
-                "Rellene los espacios importantes para continuar"
-              }
+              message={"Rellene los espacios importantes para continuar"}
               containerStyle={[styles.errorAlertContainer]}
               textStyle={[styles.errorAlertItems]}
               style={[styles.errorAlertItems]}
@@ -218,9 +162,7 @@ export default function FincaEditarScreen({ onFinca, codigoInterno }) {
           <View style={styles.buttonContainer}>
             <Button onPress={registrarFinca} style={styles.saveButton}>
               <View style={styles.buttonContent}>
-                {ICONS && ICONS.save ? (
-                  <Icon icon={ICONS.edit} size={24} color={COLORS.white} />
-                ) : null}
+                <Icon icon={ICONS.edit} size={24} color={COLORS.primary} />
                 <Text style={styles.buttonText}>Editar Finca</Text>
               </View>
             </Button>

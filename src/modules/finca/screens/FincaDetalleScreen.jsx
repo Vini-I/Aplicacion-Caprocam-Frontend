@@ -3,19 +3,18 @@
  * PANTALLA DE DETALLE DE FINCA
  * ============================================================
  *
- * Muestra la información completa de una finca seleccionada
+ * Muestra la informacion completa de una finca seleccionada
  * junto con los estanques asociados.
  *
- * Funcionalidad:
- * - Presenta información general de la finca.
- * - Muestra teléfonos, ubicación y características principales.
- * - Permite generar reportes PDF de la finca.
- * - Lista los estanques asociados.
- * - Permite navegar al registro y detalle de estanques.
- * - Utiliza componentes reutilizables para mantener el diseño.
+ * Cambios:
+ * - Eliminar estanque abre modal de confirmacion.
+ * - Si confirma, elimina el estanque de la lista local.
+ * - Se guia por el flujo usado para eliminar fincas.
  */
-import { ScrollView, View, TouchableOpacity } from "react-native";
-import { Color, useRouter } from "expo-router";
+
+import { useEffect, useState } from "react";
+import { Modal, ScrollView, View } from "react-native";
+import { useRouter } from "expo-router";
 
 import { styles } from "../styles/FincaDetalleStyles";
 import { ICONS } from "../../../theme/icons";
@@ -24,14 +23,20 @@ import { STYLE } from "../../../theme/style";
 
 import useFincaDetalle from "../hooks/useFincaDetalle";
 
+import Alert from "../../../shared/components/Alert";
 import Card from "../../../shared/components/Card";
 import CardPress from "../../../shared/components/CardPress";
 import Text from "../../../shared/components/Text";
 import Icon from "../../../shared/components/Icons";
 import Button from "../../../shared/components/Button";
 import Badge from "../../../shared/components/Badge";
-import Avatar from "../../../shared/components/Avatar";
 import NavbarRegistro from "../../../shared/components/NavbarRegistro";
+
+function detenerEvento(event) {
+  if (event && typeof event.stopPropagation === "function") {
+    event.stopPropagation();
+  }
+}
 
 export default function FincaDetalleScreen({
   onEstanque,
@@ -40,7 +45,111 @@ export default function FincaDetalleScreen({
 }) {
   const router = useRouter();
 
-  const { finca, estanquesFinca, haldleGenerar, loading } = useFincaDetalle();
+  const { finca, estanquesFinca, eliminarEstanque, haldleGenerar, loading } =
+    useFincaDetalle();
+
+  const [estanquesMostrados, setEstanquesMostrados] = useState([]);
+  const [modalEliminarVisible, setModalEliminarVisible] = useState(false);
+  const [estanqueSeleccionado, setEstanqueSeleccionado] = useState(null);
+  const [mensajeEliminado, setMensajeEliminado] = useState("");
+
+  useEffect(
+    function () {
+      setEstanquesMostrados(estanquesFinca || []);
+    },
+    [finca?.codigoInterno, estanquesFinca.length],
+  );
+
+  function irANuevoEstanque() {
+    if (onEstanque) {
+      onEstanque();
+      return;
+    }
+
+    router.push("/finca/estanque");
+  }
+
+  function irADetalleEstanque(codigo) {
+    if (onEstanqueDetalle) {
+      onEstanqueDetalle(codigo);
+      return;
+    }
+
+    router.push({
+      pathname: "/finca/detalleEstanque",
+      params: {
+        id: codigo,
+      },
+    });
+  }
+
+  function irAEditarEstanque(event, estanque) {
+    detenerEvento(event);
+
+    if (onEstanqueEditar) {
+      onEstanqueEditar(estanque.codigo);
+      return;
+    }
+
+    router.push({
+      pathname: "/finca/editarEstanque",
+      params: estanque,
+    });
+  }
+
+  function abrirModalEliminar(event, estanque) {
+    detenerEvento(event);
+    setEstanqueSeleccionado(estanque);
+    setModalEliminarVisible(true);
+  }
+
+  function cerrarModalEliminar() {
+    setModalEliminarVisible(false);
+    setEstanqueSeleccionado(null);
+  }
+
+  function confirmarEliminarEstanque() {
+    if (estanqueSeleccionado === null) {
+      cerrarModalEliminar();
+      return;
+    }
+
+    eliminarEstanque(estanqueSeleccionado.codigo);
+
+    setEstanquesMostrados(function (listaActual) {
+      return listaActual.filter(function (item) {
+        return item.codigo !== estanqueSeleccionado.codigo;
+      });
+    });
+
+    setMensajeEliminado(
+      `El estanque ${estanqueSeleccionado.codigo} fue eliminado correctamente.`,
+    );
+
+    setModalEliminarVisible(false);
+    setEstanqueSeleccionado(null);
+  }
+
+  if (!finca) {
+    return (
+      <>
+        <NavbarRegistro
+          Titulo="Detalle de Finca"
+          Subtitulo="No encontrada"
+          Icono="document"
+        />
+
+        <ScrollView style={STYLE.container}>
+          <View style={STYLE.contentWrapper}>
+            <Alert
+              variant="warning"
+              message="No se encontro la finca seleccionada."
+            />
+          </View>
+        </ScrollView>
+      </>
+    );
+  }
 
   return (
     <>
@@ -49,8 +158,17 @@ export default function FincaDetalleScreen({
         Subtitulo={finca.nombre}
         Icono="document"
       />
+
       <ScrollView style={STYLE.container}>
         <View style={STYLE.contentWrapper}>
+          {mensajeEliminado !== "" && (
+            <Alert
+              variant="success"
+              message={mensajeEliminado}
+              style={styles.alertMensaje}
+            />
+          )}
+
           <Card>
             <View>
               <Text color={COLORS.textTertiary} style={styles.titleText}>
@@ -88,15 +206,17 @@ export default function FincaDetalleScreen({
               <Text style={styles.valor}>{finca.responsable}</Text>
             </View>
 
-            {finca.telefonos?.map((telefono, index) => (
-              <View key={index} style={styles.filaDetalle}>
-                <Text style={styles.etiqueta}>Teléfono {index + 1}: </Text>
-                <Text style={styles.valor}>{telefono}</Text>
-              </View>
-            ))}
+            {finca.telefonos?.map(function (telefono, index) {
+              return (
+                <View key={String(index)} style={styles.filaDetalle}>
+                  <Text style={styles.etiqueta}>Telefono {index + 1}: </Text>
+                  <Text style={styles.valor}>{telefono}</Text>
+                </View>
+              );
+            })}
 
             <View style={styles.filaDetalle}>
-              <Text style={styles.etiqueta}>Área:</Text>
+              <Text style={styles.etiqueta}>Area:</Text>
               <Text style={styles.valor}>{finca.areaTotal}</Text>
             </View>
 
@@ -115,83 +235,153 @@ export default function FincaDetalleScreen({
                 style={styles.iconDocument}
                 size={18}
               />
+
               <Text size={15}>
                 {loading ? "GENERANDO..." : "GENERAR REPORTE FINCA"}
               </Text>
             </Button>
           </Card>
-          <Button style={styles.addButton} onPress={() => onEstanque()}>
-            <Icon icon={ICONS.add} size={15} />
-            <Text size={15}>REGISTRAR NUEVO ESTANQUE</Text>
+
+          <Button style={styles.addButton} onPress={irANuevoEstanque}>
+            <Icon style={styles.addButtonText} icon={ICONS.add} size={15} />
+            <Text style={styles.addButtonText} size={15}>
+              REGISTRAR NUEVO ESTANQUE
+            </Text>
           </Button>
 
-          {estanquesFinca?.map((estanque, index) => (
-            <View key={index}>
-              <CardPress onPress={() => onEstanqueDetalle(estanque.codigo)}>
-                <View style={styles.header}>
-                  <View style={styles.icon}>
-                    <Icon icon={ICONS.waterFlow} color={COLORS.primary} />
+          {estanquesMostrados.length === 0 && (
+            <Card>
+              <Text color={COLORS.textTertiary} align="center">
+                No hay estanques registrados para esta finca.
+              </Text>
+            </Card>
+          )}
+
+          {estanquesMostrados.map(function (estanque, index) {
+            return (
+              <View key={`${estanque.codigo}-${index}`}>
+                <CardPress
+                  onPress={function () {
+                    irADetalleEstanque(estanque.codigo);
+                  }}
+                >
+                  <View style={styles.header}>
+                    <View style={styles.icon}>
+                      <Icon icon={ICONS.waterFlow} color={COLORS.primary} />
+                    </View>
+
+                    <View>
+                      <Text style={styles.finca}>{estanque.finca}</Text>
+                      <Text style={styles.codigo}>{estanque.codigo}</Text>
+                    </View>
+
+                    <Badge style={styles.estado} label={estanque.estado} />
                   </View>
 
-                  <View>
-                    <Text style={styles.finca}>{estanque.finca}</Text>
-                    <Text style={styles.codigo}>{estanque.codigo}</Text>
+                  <View style={styles.dimensiones}>
+                    <View style={styles.item}>
+                      <Text style={styles.label}>Largo</Text>
+                      <Text style={styles.valorE}>{estanque.largo} m</Text>
+                    </View>
+
+                    <View style={styles.item}>
+                      <Text style={styles.label}>Ancho</Text>
+                      <Text style={styles.valorE}>{estanque.ancho} m</Text>
+                    </View>
+
+                    <View style={styles.item}>
+                      <Text style={styles.label}>Profundidad</Text>
+                      <Text style={styles.valorE}>
+                        {estanque.profundidad} m
+                      </Text>
+                    </View>
                   </View>
 
-                  <Badge style={styles.estado} label={estanque.estado} />
-                </View>
+                  <View style={styles.Buttons}>
+                    <Button
+                      style={styles.Eliminar}
+                      onPress={function (event) {
+                        abrirModalEliminar(event, estanque);
+                      }}
+                    >
+                      <Icon
+                        icon={ICONS.delete}
+                        style={styles.iconEliminar}
+                        size={20}
+                      />
+                      <Text size={12} style={styles.textEliminar}>
+                        Eliminar
+                      </Text>
+                    </Button>
 
-                <View style={styles.dimensiones}>
-                  <View style={styles.item}>
-                    <Text style={styles.label}>Largo</Text>
-                    <Text style={styles.valorE}>{estanque.largo} m</Text>
+                    <Button
+                      style={styles.Editar}
+                      onPress={function (event) {
+                        irAEditarEstanque(event, estanque);
+                      }}
+                    >
+                      <Icon
+                        icon={ICONS.edit}
+                        style={styles.iconEditar}
+                        size={20}
+                      />
+                      <Text size={12} style={styles.textEditar}>
+                        Editar
+                      </Text>
+                    </Button>
                   </View>
-
-                  <View style={styles.item}>
-                    <Text style={styles.label}>Ancho</Text>
-                    <Text style={styles.valorE}>{estanque.ancho} m</Text>
-                  </View>
-
-                  <View style={styles.item}>
-                    <Text style={styles.label}>Profundidad</Text>
-                    <Text style={styles.valorE}>{estanque.profundidad} m</Text>
-                  </View>
-                </View>
-
-                <View style={styles.Buttons}>
-                  <Button
-                    style={styles.Eliminar}
-                    onPress={() => abrirModalEliminar(Finca)}
-                  >
-                    <Icon
-                      icon={ICONS.delete}
-                      style={{ color: COLORS.error }}
-                      size={20}
-                    />
-                    <Text size={12} style={{ color: COLORS.error }}>
-                      Eliminar
-                    </Text>
-                  </Button>
-
-                  <Button
-                    style={styles.Editar}
-                    onPress={() => onEstanqueEditar()}
-                  >
-                    <Icon
-                      icon={ICONS.edit}
-                      style={{ color: COLORS.primary }}
-                      size={20}
-                    />
-                    <Text size={12} style={{ color: COLORS.primary }}>
-                      Editar
-                    </Text>
-                  </Button>
-                </View>
-              </CardPress>
-            </View>
-          ))}
+                </CardPress>
+              </View>
+            );
+          })}
         </View>
       </ScrollView>
+
+      <Modal
+        visible={modalEliminarVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={cerrarModalEliminar}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalCard}>
+            <View style={styles.modalIconContainer}>
+              <Icon icon={ICONS.delete} size={30} color={COLORS.error} />
+            </View>
+
+            <Text size={20} style={styles.modalTitle}>
+              Eliminar estanque
+            </Text>
+
+            <Text size={15} style={styles.modalMessage}>
+              ¿Esta seguro que desea eliminar el estanque{" "}
+              {estanqueSeleccionado?.codigo}?
+            </Text>
+
+            <View style={styles.modalActions}>
+              <Button
+                variant="outline"
+                style={styles.modalNoButton}
+                onPress={cerrarModalEliminar}
+              >
+                <Text size={14} style={styles.modalNoText}>
+                  No
+                </Text>
+              </Button>
+
+              <Button
+                variant="outline"
+                style={styles.modalYesButton}
+                onPress={confirmarEliminarEstanque}
+              >
+                <Text size={14} style={styles.modalYesText}>
+                  Si
+                </Text>
+              </Button>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </>
   );
 }

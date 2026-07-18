@@ -32,7 +32,7 @@ import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
 
 import { fincas as fincasModulo } from "../../finca/screens/FincaData";
-import { estanques as estanquesModulo } from "../../mantCrecimiento/screens/EstanqueData";
+import { estanques as estanquesModulo } from "../../mantCrecimiento/services/EstanqueData";
 import { obtenerSiembras } from "../../siembra/services/SiembraService";
 import useAlimentacion from "../../alimentacion/hooks/useAlimentacion";
 import { getProductosInventario } from "../../inventarios/services/InventarioService";
@@ -48,12 +48,21 @@ import parasitologiaService, {
 
 import {
   formatDate,
+  getCurrentDate,
   getDayName,
   isSameDate,
   parseDate,
 } from "../../../shared/utils/dateUtils";
 
 import { styles } from "../styles/DashboardStyle";
+
+import {
+  agruparAlertasPorTipo,
+  construirAlertasOperativas,
+  descartarAlerta,
+  filtrarAlertasDescartadas,
+  obtenerAlertasDescartadas,
+} from "../../alertas/services/AlertasServices.js";
 
 const HORARIOS_ALIMENTACION = [
   {
@@ -126,11 +135,29 @@ function formatearNumero(valor) {
 }
 
 function convertirFecha(fechaTexto) {
-  return parseDate(fechaTexto);
+  let fecha = new Date();
+
+  if (fechaTexto !== undefined && fechaTexto !== null && fechaTexto !== "") {
+    fecha = parseDate(fechaTexto);
+  }
+
+  if (fecha === null) {
+    fecha = new Date();
+  }
+
+  if (fecha === undefined) {
+    fecha = new Date();
+  }
+
+  if (Number.isNaN(fecha.getTime()) === true) {
+    fecha = new Date();
+  }
+
+  return fecha;
 }
 
 function formatearFechaCorta(fechaTexto) {
-  return formatDate(parseDate(fechaTexto));
+  return formatDate(convertirFecha(fechaTexto));
 }
 
 function obtenerDiaSemana(fechaTexto) {
@@ -1014,6 +1041,32 @@ function obtenerTextoTipoAlerta(tipo) {
   return texto;
 }
 
+function obtenerFechaSiembraSegura(siembra) {
+  let fecha = "";
+
+  if (siembra.fechaSiembra !== undefined && siembra.fechaSiembra !== null) {
+    fecha = siembra.fechaSiembra;
+  }
+
+  if (fecha === "" && siembra.fecha !== undefined && siembra.fecha !== null) {
+    fecha = siembra.fecha;
+  }
+
+  if (
+    fecha === "" &&
+    siembra.fechaRegistro !== undefined &&
+    siembra.fechaRegistro !== null
+  ) {
+    fecha = siembra.fechaRegistro;
+  }
+
+  if (fecha === "") {
+    fecha = getCurrentDate();
+  }
+
+  return fecha;
+}
+
 function obtenerUltimosRegistros(
   alimentaciones,
   siembras,
@@ -1023,64 +1076,78 @@ function obtenerUltimosRegistros(
   const registros = [];
 
   alimentaciones.forEach(function (registro) {
+    const fechaAlimentacion = obtenerTextoSeguro(
+      registro.timestamp,
+      registro.fecha,
+    );
+
     registros.push({
       id: `alimentacion-${registro.id}`,
-      modulo: "Alimentación",
-      detalle: `${obtenerTextoSeguro(registro.estanque, "Sin estanque")} · ${obtenerTextoSeguro(
-        registro.finca,
-        "Sin finca",
-      )}`,
+      modulo: "Alimentacion",
+      detalle: `${obtenerTextoSeguro(
+        registro.estanque,
+        "Sin estanque",
+      )} · ${obtenerTextoSeguro(registro.finca, "Sin finca")}`,
       fechaVisible: obtenerTextoSeguro(
         registro.hora,
         formatearFechaCorta(registro.fecha),
       ),
-      fechaOrden: convertirFecha(
-        obtenerTextoSeguro(registro.timestamp, registro.fecha),
-      ).getTime(),
+      fechaOrden: convertirFecha(fechaAlimentacion).getTime(),
     });
   });
 
   siembras.forEach(function (siembra) {
+    const fechaSiembra = obtenerFechaSiembraSegura(siembra);
+
     registros.push({
-      id: `siembra-${siembra.siembraId}`,
+      id: `siembra-${obtenerTextoSeguro(siembra.siembraId, siembra.id)}`,
       modulo: "Siembra",
-      detalle: `${siembra.estanque} · ${siembra.finca}`,
-      fechaVisible: siembra.fechaSiembra,
-      fechaOrden: convertirFecha(siembra.fechaSiembra).getTime(),
+      detalle: `${obtenerTextoSeguro(
+        siembra.estanque,
+        "Sin estanque",
+      )} · ${obtenerTextoSeguro(siembra.finca, "Sin finca")}`,
+      fechaVisible: fechaSiembra,
+      fechaOrden: convertirFecha(fechaSiembra).getTime(),
     });
   });
 
   registrosEnfermedades.forEach(function (registro) {
+    const fechaEnfermedad = obtenerTextoSeguro(
+      registro.timestamp,
+      registro.fechaReporte,
+    );
+
     registros.push({
       id: `enfermedad-${registro.id}`,
       modulo: "Enfermedades",
-      detalle: `${obtenerTextoSeguro(registro.estanque, "Sin estanque")} · ${obtenerTextoSeguro(
-        registro.fincaNombre,
-        registro.finca,
-      )}`,
+      detalle: `${obtenerTextoSeguro(
+        registro.estanque,
+        "Sin estanque",
+      )} · ${obtenerTextoSeguro(registro.fincaNombre, registro.finca)}`,
       fechaVisible: formatearFechaCorta(
         obtenerTextoSeguro(registro.fechaReporte, registro.timestamp),
       ),
-      fechaOrden: convertirFecha(
-        obtenerTextoSeguro(registro.timestamp, registro.fechaReporte),
-      ).getTime(),
+      fechaOrden: convertirFecha(fechaEnfermedad).getTime(),
     });
   });
 
   registrosParasitologia.forEach(function (registro) {
+    const fechaParasitologia = obtenerTextoSeguro(
+      registro.timestamp,
+      registro.fechaReporte,
+    );
+
     registros.push({
       id: `parasitologia-${registro.id}`,
-      modulo: "Parasitología",
-      detalle: `${obtenerTextoSeguro(registro.estanque, "Sin estanque")} · ${obtenerTextoSeguro(
-        registro.fincaNombre,
-        registro.finca,
-      )}`,
+      modulo: "Parasitologia",
+      detalle: `${obtenerTextoSeguro(
+        registro.estanque,
+        "Sin estanque",
+      )} · ${obtenerTextoSeguro(registro.fincaNombre, registro.finca)}`,
       fechaVisible: formatearFechaCorta(
         obtenerTextoSeguro(registro.fechaReporte, registro.timestamp),
       ),
-      fechaOrden: convertirFecha(
-        obtenerTextoSeguro(registro.timestamp, registro.fechaReporte),
-      ).getTime(),
+      fechaOrden: convertirFecha(fechaParasitologia).getTime(),
     });
   });
 
@@ -1135,7 +1202,51 @@ function MareasAccessCard({ onPress }) {
   );
 }
 
-function AlertasPanel({ alertas }) {
+function obtenerResumenAlertas(alertas) {
+  const grupos = agruparAlertasPorTipo(alertas);
+
+  return [
+    {
+      tipo: "critica",
+      titulo: "Criticas",
+      color: COLORS.error,
+      icono: ICONS.shieldAlert,
+      alertas: grupos.critica,
+    },
+    {
+      tipo: "advertencia",
+      titulo: "Advertencias",
+      color: COLORS.warning,
+      icono: ICONS.alertTriangle,
+      alertas: grupos.advertencia,
+    },
+    {
+      tipo: "info",
+      titulo: "Informativas",
+      color: COLORS.primary,
+      icono: ICONS.info,
+      alertas: grupos.info,
+    },
+  ];
+}
+
+function obtenerCategoriasAlertas(alertas) {
+  const categorias = {};
+
+  alertas.forEach(function (alerta) {
+    if (categorias[alerta.categoria] === undefined) {
+      categorias[alerta.categoria] = [];
+    }
+
+    categorias[alerta.categoria].push(alerta);
+  });
+
+  return categorias;
+}
+
+function AlertasPanel({ alertas, abiertos, onToggle, onDismiss, onViewAll }) {
+  const grupos = obtenerResumenAlertas(alertas);
+
   return (
     <Card style={styles.alertsCard}>
       <View style={styles.alertsHeader}>
@@ -1150,7 +1261,7 @@ function AlertasPanel({ alertas }) {
             </Title>
 
             <CustomText size={12} color={COLORS.textTertiary} numberOfLines={1}>
-              Inventario, cosecha, alimentación, bombeo y aireadores
+              Prioridad por contaminacion, sanidad, cosecha e inventario
             </CustomText>
           </View>
         </View>
@@ -1170,42 +1281,161 @@ function AlertasPanel({ alertas }) {
         </View>
       )}
 
-      {alertas.map(function (alerta) {
-        return (
-          <View key={alerta.id} style={obtenerEstiloAlerta(alerta.tipo)}>
-            <View style={styles.alertIconContainer}>
-              <Icon icon={alerta.icono} size={18} color={alerta.color} />
-            </View>
+      {grupos.map(function (grupo) {
+        let iconoDropdown = ICONS.chevronDown;
+        const categorias = obtenerCategoriasAlertas(grupo.alertas);
+        const nombresCategorias = Object.keys(categorias);
 
-            <View style={styles.alertContent}>
-              <View style={styles.alertTitleRow}>
+        if (abiertos[grupo.tipo] === true) {
+          iconoDropdown = ICONS.chevronUp;
+        }
+
+        return (
+          <View key={grupo.tipo} style={styles.alertDropdownGroup}>
+            <Button
+              variant="outline"
+              style={styles.alertDropdownHeader}
+              onPress={function () {
+                onToggle(grupo.tipo);
+              }}
+            >
+              <View style={styles.alertDropdownLeft}>
+                <Icon icon={grupo.icono} size={18} color={grupo.color} />
+
                 <CustomText
                   size={14}
-                  weight="800"
                   color={COLORS.textSecondary}
-                  numberOfLines={1}
+                  style={styles.alertDropdownTitle}
                 >
-                  {alerta.titulo}
+                  {grupo.titulo}
                 </CustomText>
-
-                <View style={styles.alertBadge}>
-                  <CustomText size={10} weight="700" color={alerta.color}>
-                    {obtenerTextoTipoAlerta(alerta.tipo)}
-                  </CustomText>
-                </View>
               </View>
 
-              <CustomText
-                size={12}
-                color={COLORS.textTertiary}
-                style={styles.alertMessage}
-              >
-                {alerta.mensaje}
-              </CustomText>
-            </View>
+              <View style={styles.alertDropdownRight}>
+                <CustomText size={12} color={grupo.color} weight="800">
+                  {grupo.alertas.length}
+                </CustomText>
+
+                <Icon
+                  icon={iconoDropdown}
+                  size={20}
+                  color={COLORS.textTertiary}
+                />
+              </View>
+            </Button>
+
+            {abiertos[grupo.tipo] === true && (
+              <View style={styles.alertDropdownBody}>
+                {grupo.alertas.length === 0 && (
+                  <View style={styles.emptyAlertBoxSmall}>
+                    <CustomText
+                      size={12}
+                      color={COLORS.textTertiary}
+                      align="center"
+                    >
+                      No hay alertas en este tipo.
+                    </CustomText>
+                  </View>
+                )}
+
+                {nombresCategorias.map(function (categoria) {
+                  return (
+                    <View key={categoria}>
+                      <CustomText
+                        size={11}
+                        color={COLORS.textTertiary}
+                        style={styles.alertCategoryTitle}
+                      >
+                        {categoria}
+                      </CustomText>
+
+                      {categorias[categoria].map(function (alerta) {
+                        return (
+                          <View
+                            key={alerta.id}
+                            style={obtenerEstiloAlerta(alerta.tipo)}
+                          >
+                            <View style={styles.alertIconContainer}>
+                              <Icon
+                                icon={alerta.icono}
+                                size={18}
+                                color={alerta.color}
+                              />
+                            </View>
+
+                            <View style={styles.alertContent}>
+                              <View style={styles.alertTitleRow}>
+                                <CustomText
+                                  size={14}
+                                  weight="800"
+                                  color={COLORS.textSecondary}
+                                  numberOfLines={1}
+                                >
+                                  {alerta.titulo}
+                                </CustomText>
+
+                                <Button
+                                  variant="outline"
+                                  style={styles.alertDismissButton}
+                                  onPress={function () {
+                                    onDismiss(alerta.id);
+                                  }}
+                                >
+                                  <Icon
+                                    icon={ICONS.close}
+                                    size={15}
+                                    color={COLORS.textTertiary}
+                                  />
+                                </Button>
+                              </View>
+
+                              <CustomText
+                                size={12}
+                                color={COLORS.textTertiary}
+                                style={styles.alertMessage}
+                              >
+                                {alerta.mensaje}
+                              </CustomText>
+
+                              {alerta.detalle !== "" && (
+                                <CustomText
+                                  size={12}
+                                  color={COLORS.textSecondary}
+                                  style={styles.alertDetail}
+                                >
+                                  {alerta.detalle}
+                                </CustomText>
+                              )}
+                            </View>
+                          </View>
+                        );
+                      })}
+                    </View>
+                  );
+                })}
+              </View>
+            )}
           </View>
         );
       })}
+
+      <Button
+        variant="outline"
+        style={styles.viewAllAlertsButton}
+        onPress={onViewAll}
+      >
+        <View style={styles.inlineButtonContentCentered}>
+          <Icon icon={ICONS.notification} size={17} color={COLORS.primary} />
+
+          <CustomText
+            size={14}
+            color={COLORS.primary}
+            style={styles.viewAllAlertsText}
+          >
+            Ver todas las alertas
+          </CustomText>
+        </View>
+      </Button>
     </Card>
   );
 }
@@ -1403,7 +1633,7 @@ function EstanquesPanel({ estanques, alimentacionSemanal }) {
       <SectionHeader
         icon={ICONS.waterFlow}
         title="Estanques registrados"
-        color="#2563EB"
+        color={COLORS.primary}
       />
 
       <View style={styles.divider} />
@@ -1522,7 +1752,7 @@ function EstanquesPanel({ estanques, alimentacionSemanal }) {
         return (
           <View key={estanque.id} style={styles.infoRowIndigo}>
             <View style={styles.rowIconBoxIndigo}>
-              <Icon icon={ICONS.waterFlow} size={20} color="#2563EB" />
+              <Icon icon={ICONS.waterFlow} size={20} color={COLORS.primary} />
             </View>
 
             <View style={styles.rowContent}>
@@ -1729,20 +1959,20 @@ function MortalidadPanel({ resumenEnfermedades, registrosEnfermedades }) {
       <SectionHeader
         icon={ICONS.mortality}
         title="Mortalidad registrada"
-        color="#FF002A"
+        color={COLORS.error}
       />
 
       <View style={styles.divider} />
 
       <View style={styles.mortalityTotalBox}>
-        <Icon icon={ICONS.report} size={34} color="#FF5A6D" />
+        <Icon icon={ICONS.report} size={34} color={COLORS.error} />
 
         <View style={styles.totalBoxText}>
-          <CustomText size={32} weight="900" color="#FF002A">
+          <CustomText size={32} weight="900" color={COLORS.error}>
             {formatearNumero(totalMortalidad)}
           </CustomText>
 
-          <CustomText size={13} color="#FF5A6D">
+          <CustomText size={13} color={COLORS.error}>
             individuos totales registrados
           </CustomText>
         </View>
@@ -1763,7 +1993,7 @@ function MortalidadPanel({ resumenEnfermedades, registrosEnfermedades }) {
       {registrosMortalidad.map(function (item) {
         return (
           <View key={item.id} style={styles.mortalityRow}>
-            <Icon icon={ICONS.shrimp} size={18} color="#FF5A6D" />
+            <Icon icon={ICONS.shrimp} size={18} color={COLORS.error} />
 
             <View style={styles.rowContent}>
               <CustomText
@@ -1786,7 +2016,7 @@ function MortalidadPanel({ resumenEnfermedades, registrosEnfermedades }) {
             </View>
 
             <View style={styles.rowRight}>
-              <CustomText size={17} weight="900" color="#FF002A">
+              <CustomText size={17} weight="900" color={COLORS.error}>
                 {formatearNumero(item.mortalidad)}
               </CustomText>
 
@@ -1861,6 +2091,12 @@ export default function DashboardScreen() {
   const router = useRouter();
 
   const [selectedCard, setSelectedCard] = useState(null);
+  const [alertasDescartadas, setAlertasDescartadas] = useState([]);
+  const [alertasAbiertas, setAlertasAbiertas] = useState({
+    critica: true,
+    advertencia: true,
+    info: false,
+  });
   const [fincasData, setFincasData] = useState([]);
   const [estanquesData, setEstanquesData] = useState([]);
   const [siembrasData, setSiembrasData] = useState([]);
@@ -1888,15 +2124,20 @@ export default function DashboardScreen() {
 
   const totalMortalidad = obtenerMortalidadTotal(resumenEnfermedades);
 
-  const alertasDashboard = obtenerAlertasDashboard(
-    productosInventario,
-    siembrasData,
-    alimentaciones,
-    estanquesData,
-    equiposData,
-    registrosEnfermedades,
-    registrosParasitologia,
-  );
+  const alertasBase = construirAlertasOperativas({
+    productosInventario: productosInventario,
+    siembras: siembrasData,
+    alimentaciones: alimentaciones,
+    estanques: estanquesData,
+    equipos: equiposData,
+    registrosEnfermedades: registrosEnfermedades,
+    registrosParasitologia: registrosParasitologia,
+  });
+
+  const alertasDashboard = filtrarAlertasDescartadas(
+    alertasBase,
+    alertasDescartadas,
+  ).slice(0, 10);
 
   const ultimosRegistros = obtenerUltimosRegistros(
     alimentaciones,
@@ -1931,6 +2172,24 @@ export default function DashboardScreen() {
     router.push("/mareas/");
   }
 
+  function irAAlertas() {
+    router.push("/alertas");
+  }
+
+  function alternarAlertas(tipo) {
+    setAlertasAbiertas(function (actual) {
+      return {
+        ...actual,
+        [tipo]: !actual[tipo],
+      };
+    });
+  }
+
+  async function descartarAlertaDashboard(id) {
+    const ids = await descartarAlerta(id);
+    setAlertasDescartadas(ids);
+  }
+
   useEffect(function () {
     let activo = true;
     let intervalo = null;
@@ -1955,8 +2214,17 @@ export default function DashboardScreen() {
       }
     }
 
+    async function cargarDescartadas() {
+      const ids = await obtenerAlertasDescartadas();
+
+      if (activo === true) {
+        setAlertasDescartadas(ids);
+      }
+    }
+
     recargar();
     cargarDatos();
+    cargarDescartadas();
 
     intervalo = setInterval(function () {
       recargar();
@@ -2001,7 +2269,13 @@ export default function DashboardScreen() {
 
         <MareasAccessCard onPress={irAMareas} />
 
-        <AlertasPanel alertas={alertasDashboard} />
+        <AlertasPanel
+          alertas={alertasDashboard}
+          abiertos={alertasAbiertas}
+          onToggle={alternarAlertas}
+          onDismiss={descartarAlertaDashboard}
+          onViewAll={irAAlertas}
+        />
 
         <View style={gridStyles}>
           <StatCard
@@ -2030,7 +2304,7 @@ export default function DashboardScreen() {
             label="Estanques registrados"
             cardStyle={styles.cardIndigo}
             iconStyle={styles.iconIndigo}
-            iconColor="#2563EB"
+            iconColor={COLORS.primary}
             isTablet={isTablet}
           />
 
@@ -2060,7 +2334,7 @@ export default function DashboardScreen() {
             label="Mortalidad total"
             cardStyle={styles.cardRed}
             iconStyle={styles.iconRed}
-            iconColor="#FF002A"
+            iconColor={COLORS.error}
             danger={true}
             isTablet={isTablet}
           />

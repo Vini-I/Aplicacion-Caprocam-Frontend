@@ -38,7 +38,7 @@
  */
 
 import { useState } from "react";
-import { View, ScrollView, StyleSheet } from "react-native";
+import { View, ScrollView } from "react-native";
 
 import Modal from "../../../shared/components/Modal";
 import Button from "../../../shared/components/Button";
@@ -46,10 +46,11 @@ import Icon from "../../../shared/components/Icons";
 import Title from "../../../shared/components/Title";
 import Text from "../../../shared/components/Text";
 import Badge from "../../../shared/components/Badge";
-import DateInput from "../../../shared/components/DateInput";
+import Input from "../../../shared/components/Input";
 
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
+import { styles, sectionStyles, chipStyles } from "../styles/FilterButtonStyles";
 
 export default function FilterButton({
   fincas = [],
@@ -73,6 +74,10 @@ export default function FilterButton({
     (activeFilters.fincas?.length || 0) +
     (activeFilters.colaboradores?.length || 0) +
     (activeFilters.fecha ? 1 : 0);
+
+  const buttonVariant = activeCount > 0 ? "primary" : "outline";
+  const buttonIconColor = activeCount > 0 ? COLORS.white : COLORS.textSecondary;
+  const buttonTextColor = activeCount > 0 ? COLORS.white : COLORS.textSecondary;
 
   function abrirModal() {
     setPendingFincas([...(activeFilters.fincas || [])]);
@@ -115,23 +120,24 @@ export default function FilterButton({
     <>
       <View style={containerStyle}>
         <Button
-          variant="outline"
+          variant={buttonVariant}
           onPress={abrirModal}
           style={[
             styles.filterBtn,
             activeCount > 0 && styles.filterBtnActive,
+            activeCount === 0 && styles.filterBtnInactive,
             style,
           ]}
         >
           <Icon
             icon={ICONS.filter}
             size={16}
-            color={activeCount > 0 ? COLORS.primary : COLORS.textSecondary}
+            color={buttonIconColor}
           />
           <Text
             size={14}
             weight="500"
-            color={activeCount > 0 ? COLORS.primary : COLORS.textSecondary}
+            color={buttonTextColor}
             style={styles.filterBtnText}
           >
             Filtrar
@@ -197,9 +203,11 @@ export default function FilterButton({
           )}
 
           <FilterSection label="Fecha del movimiento">
-            <DateInput
+            <Input
               value={pendingFecha}
               onChangeText={setPendingFecha}
+              placeholder="dd/mm/aaaa"
+              keyboardType="numbers-and-punctuation"
               containerStyle={styles.dateInput}
             />
           </FilterSection>
@@ -234,20 +242,6 @@ function FilterSection({ label, children }) {
   );
 }
 
-const sectionStyles = StyleSheet.create({
-  container: {
-    marginBottom: 20,
-  },
-  label: {
-    marginBottom: 10,
-  },
-  chipsRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-  },
-});
-
 function Chip({ label, selected, onPress }) {
   return (
     <Button
@@ -266,102 +260,4 @@ function Chip({ label, selected, onPress }) {
   );
 }
 
-const chipStyles = StyleSheet.create({
-  chip: {
-    paddingVertical: 6,
-    paddingHorizontal: 14,
-    borderRadius: 99,
-    borderWidth: 1,
-    borderColor: COLORS.textTertiary,
-    backgroundColor: COLORS.white,
-  },
-  chipSelected: {
-    borderColor: COLORS.primary,
-    backgroundColor: COLORS.white,
-  },
-});
 
-const styles = StyleSheet.create({
-  filterBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: COLORS.textTertiary,
-    backgroundColor: COLORS.white,
-  },
-  filterBtnActive: {
-    borderColor: COLORS.primary,
-  },
-  filterBtnText: {
-    marginTop: 0,
-  },
-  badge: {
-    backgroundColor: COLORS.primary,
-    borderRadius: 99,
-    minWidth: 18,
-    height: 18,
-    paddingHorizontal: 6,
-    paddingVertical: 3,
-    marginTop: 4,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  badgeText: {
-    color: COLORS.white,
-    fontSize: 10,
-    fontWeight: "600",
-    textAlign: "center",
-  },
-  overlay: {
-    backgroundColor: "rgba(0,0,0,0.45)",
-    justifyContent: "flex-end",
-    padding: 0,
-  },
-  modalContainer: {
-    borderRadius: 20,
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
-    maxHeight: "90%",
-    paddingBottom: 8,
-  },
-  modalHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 24,
-  },
-  closeBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 99,
-    borderWidth: 1,
-    borderColor: COLORS.textTertiary,
-    backgroundColor: COLORS.secondary,
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 0,
-    paddingVertical: 0,
-    paddingHorizontal: 0,
-  },
-  dateInput: {
-    flex: 1,
-    marginBottom: 0,
-  },
-  actions: {
-    flexDirection: "row",
-    gap: 8,
-    marginTop: 20,
-  },
-  btnClear: {
-    flex: 1,
-    marginTop: 0,
-  },
-  btnApply: {
-    flex: 1,
-    marginTop: 0,
-  },
-});

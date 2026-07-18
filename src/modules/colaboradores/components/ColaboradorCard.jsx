@@ -28,9 +28,12 @@ import React from "react";
 import { View, TouchableOpacity } from "react-native";
 import Card from "../../../shared/components/Card";
 import Badge from "../../../shared/components/Badge";
+import Button from "../../../shared/components/Button";
+import Icon from "../../../shared/components/Icons";
 import CustomText from "../../../shared/components/Text";
 import { styles } from "../styles/colaboradorCardStyles";
 import { COLORS } from "../../../theme/colors";
+import { ICONS } from "../../../theme/icons";
 
 // ============================================================
 // COMPONENTE
@@ -68,14 +71,26 @@ export default function ColaboradorCard({ colaborador, onPress, onEdit, onDelete
           <CustomText style={styles.detailText}>📞 {colaborador.telefono}</CustomText>
           <CustomText style={styles.detailText}>✉️ {colaborador.email}</CustomText>
         </View>
-        <View style={styles.actions}>
-          <TouchableOpacity onPress={() => onEdit?.(colaborador)} style={styles.editBtn}>
-            <CustomText style={styles.btnText}>Editar</CustomText>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => onDelete?.(colaborador.id)} style={styles.deleteBtn}>
-            <CustomText style={styles.btnText}>Eliminar</CustomText>
-          </TouchableOpacity>
-        </View>
+<View style={styles.actions}>
+  <Button
+    variant="outline"
+    onPress={() => onEdit?.(colaborador)}
+    style={[styles.actionBtn, { borderColor: COLORS.primary }]}
+    textStyle={{ color: COLORS.primary }}
+  >
+    <Icon icon={ICONS.edit} size={16} color={COLORS.primary} />
+    <CustomText style={{ color: COLORS.primary, marginLeft: 4, fontSize: 12 }}>Editar</CustomText>
+  </Button>
+  <Button
+    variant="outline"
+    onPress={() => onDelete?.(colaborador.id)}
+    style={[styles.actionBtn, { borderColor: COLORS.error }]}
+    textStyle={{ color: COLORS.error }}
+  >
+    <Icon icon={ICONS.delete} size={16} color={COLORS.error} />
+    <CustomText style={{ color: COLORS.error, marginLeft: 4, fontSize: 12 }}>Eliminar</CustomText>
+  </Button>
+</View>
       </Card>
     </TouchableOpacity>
   );

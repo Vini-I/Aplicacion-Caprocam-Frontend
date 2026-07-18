@@ -1,6 +1,3 @@
-import jsPDF from "jspdf/dist/jspdf.es.min.js";
-import autoTable from "jspdf-autotable";
-
 // Esta versión SOLO se carga cuando la app corre en navegador (web).
 // Genera el PDF con texto real usando jsPDF, y usa jspdf-autotable
 // para dibujar tablas reales en vez de texto suelto línea por línea.
@@ -9,6 +6,9 @@ import autoTable from "jspdf-autotable";
 //   (etiqueta / valor).
 // - Cada estanque tiene su PROPIA tabla de 2 columnas (campo / valor),
 //   apiladas una tras otra.
+
+import jsPDF from "jspdf/dist/jspdf.es.min.js";
+import autoTable from "jspdf-autotable";
 
 export const generarRegistroPDF = (finca, estanquesFinca = []) => {
   try {

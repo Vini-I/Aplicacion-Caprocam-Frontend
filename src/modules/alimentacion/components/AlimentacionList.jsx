@@ -1,3 +1,26 @@
+/**
+ * ============================================================
+ * COMPONENTE ALIMENTACIONLIST
+ * ============================================================
+ *
+ * Lista de tarjetas con los registros de alimentación ya
+ * guardados. Cada tarjeta muestra qué es (estanque), cuándo
+ * (fecha/hora), cuánto (cantidad en kg), el método usado y el
+ * proveedor, cuando estén disponibles.
+ *
+ * Funcionalidad:
+ * - fmtFecha es la única función de formato de fecha en este
+ *   archivo: normaliza a dd/mm/aaaa strings ya formateados,
+ *   fechas ISO (aaaa-mm-dd) y fechas parseables por Date.
+ * - Muestra un EmptyState cuando no hay registros.
+ *
+ * Props principales:
+ * - alimentaciones: arreglo de registros a listar.
+ *
+ * Ejemplo:
+ * <AlimentacionList alimentaciones={alimentaciones} />
+ */
+
 import React from 'react';
 import { FlatList, View, StyleSheet } from 'react-native';
 import Text from '../../../shared/components/Text';

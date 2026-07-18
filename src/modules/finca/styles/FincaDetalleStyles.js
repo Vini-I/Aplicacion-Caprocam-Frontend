@@ -61,39 +61,19 @@ export const styles = StyleSheet.create({
   },
 
   addButton: {
-    maxWidth: "100%",
-    alignSelf: "center",
-    width: "100%",
     borderWidth: 2,
-    color: COLORS.black,
+    color: COLORS.primary,
     borderColor: COLORS.primary,
     backgroundColor: COLORS.white,
-    borderStyle: "dashed",
     borderRadius: 12,
     flexDirection: "row",
     gap: 8,
-    marginTop: 10,
-    marginBottom: 18,
+    marginVertical: 20,
   },
 
   addButtonText: {
-    color: COLORS.textPrimary,
-    fontWeight: "700",
-    marginLeft: 8,
-  },
-
-  addButtonContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  iconAdd: {
-    marginRight: 5
-  },
-
-  iconDetail: {
-    marginRight: 5
+    color: COLORS.primary,
+    fontWeight: "600",
   },
 
   titleText: {
@@ -188,6 +168,104 @@ export const styles = StyleSheet.create({
     marginHorizontal: 2,
     paddingHorizontal: 12,
     paddingVertical: 4,
+  },
+
+
+  alertMensaje: {
+    marginBottom: 12,
+  },
+
+  iconEliminar: {
+    color: COLORS.error,
+    marginRight: 6,
+  },
+
+  textEliminar: {
+    color: COLORS.error,
+    fontWeight: "700",
+  },
+
+  iconEditar: {
+    color: COLORS.primary,
+    marginRight: 6,
+  },
+
+  textEditar: {
+    color: COLORS.primary,
+    fontWeight: "700",
+  },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(15, 23, 42, 0.45)",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 18,
+  },
+
+  modalCard: {
+    width: "100%",
+    maxWidth: 380,
+    backgroundColor: COLORS.white,
+    borderRadius: 18,
+    padding: 20,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: COLORS.errorLight,
+  },
+
+  modalIconContainer: {
+    width: 62,
+    height: 62,
+    borderRadius: 31,
+    backgroundColor: COLORS.errorLight,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 14,
+  },
+
+  modalTitle: {
+    color: COLORS.textPrimary,
+    fontWeight: "800",
+    textAlign: "center",
+    marginBottom: 8,
+  },
+
+  modalMessage: {
+    color: COLORS.textTertiary,
+    textAlign: "center",
+    lineHeight: 22,
+    marginBottom: 14,
+  },
+
+  modalActions: {
+    width: "100%",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 10,
+  },
+
+  modalNoButton: {
+    flex: 1,
+    borderColor: COLORS.textTertiary,
+    backgroundColor: COLORS.white,
+  },
+
+  modalYesButton: {
+    flex: 1,
+    borderColor: COLORS.error,
+    backgroundColor: COLORS.white,
+  },
+
+  modalNoText: {
+    color: COLORS.textTertiary,
+    fontWeight: "800",
+  },
+
+  modalYesText: {
+    color: COLORS.error,
+    fontWeight: "800",
   },
 
 });
