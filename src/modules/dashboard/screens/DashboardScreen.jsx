@@ -62,7 +62,7 @@ import {
   descartarAlerta,
   filtrarAlertasDescartadas,
   obtenerAlertasDescartadas,
-} from "../../alertas/services/AlertasService";
+} from "../../alertas/services/AlertasServices.js";
 
 const HORARIOS_ALIMENTACION = [
   {

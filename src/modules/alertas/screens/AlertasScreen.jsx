@@ -33,7 +33,7 @@ import {
   descartarAlerta,
   filtrarAlertasDescartadas,
   obtenerAlertasDescartadas,
-} from "../services/AlertasService";
+} from "../services/AlertasService.js";
 
 import { styles } from "../styles/AlertasStyle";
 
