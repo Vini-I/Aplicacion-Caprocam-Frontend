@@ -44,10 +44,9 @@
 
 import React, { useEffect, useState } from "react";
 import { View, ScrollView } from "react-native";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { Stack, useRouter, useLocalSearchParams } from "expo-router";
 
 
-import Navbar from "../../../shared/components/Navbar";
 import Card from "../../../shared/components/Card";
 import Input from "../../../shared/components/Input";
 import Select from "../../../shared/components/Select";
@@ -56,9 +55,11 @@ import NumberInput from "../../../shared/components/NumberInput";
 import Text from "../../../shared/components/Text";
 import Icon from "../../../shared/components/Icons";
 import DateInput from "../../../shared/components/DateInput";
+import Alert from "../../../shared/components/Alert";
 
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
+import { STYLE } from "../../../theme/style";
 import { useProductForm } from "../hooks/useProductForm";
 import { CATEGORIAS,UNIDADES } from "../services/DataProductForm";
 
@@ -75,9 +76,11 @@ export default function ProductForm() {
     showExpirationDate,
     errorNombre,
     errorCategoria,
+    errorProveedor,
     errorCantidad,
     errorStockMinimo,
     errorPrecio,
+    guardadoExitoso,
     handleField,
     handleCategoriaChange,
     handleSubmit,
@@ -85,9 +88,13 @@ export default function ProductForm() {
   } = useProductForm();
 
   return (
-    <View style={styles.screen}>
+    <>
+      <Stack.Screen
+        options={{ title: isEditMode ? "Editar Producto" : "Agregar Producto" }}
+      />
+      <View style={STYLE.container}>
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, STYLE.contentWrapper]}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
@@ -120,12 +127,12 @@ export default function ProductForm() {
 
           {/* Proveedor */}
           <Select
-            label="Proveedor"
+            label="Proveedor *"
             value={form.proveedor}
             options={opcionesProveedores}
             onChange={(v) => handleField("proveedor", v)}
             containerStyle={styles.field}
-            selectStyle={styles.select}
+            selectStyle={[styles.select, errorProveedor && styles.inputError]}
             labelStyle={styles.label}
           />
 
@@ -167,15 +174,16 @@ export default function ProductForm() {
           />
 
           {/* Precio por unidad */}
-          <Input
+          <NumberInput
             label="Precio por unidad *"
             value={form.precioUnidad}
             onChangeText={(v) => handleField("precioUnidad", v)}
-            placeholder="0"
-            keyboardType="numeric"
+            min={0}
+            max={999999}
+            step={1}
             containerStyle={styles.field}
-            style={[styles.input, errorPrecio && styles.inputError]}
             labelStyle={styles.label}
+            style={[styles.numberInput, errorPrecio && styles.inputError]}
           />
 
           <DateInput
@@ -202,21 +210,31 @@ export default function ProductForm() {
           <Button
             variant="outline"
             onPress={handleSubmit}
-            disabled={isEditMode && !canSave}
+            disabled={(isEditMode && !canSave) || guardadoExitoso}
             style={[styles.saveButton, isEditMode && !canSave && styles.saveButtonDisabled]}
             textStyle={styles.saveButtonText}
           >
             {isEditMode ? "Guardar cambios" : "Guardar producto"}
           </Button>
 
+          {guardadoExitoso && (
+            <Alert
+              variant="success"
+              message={isEditMode ? "Producto actualizado correctamente." : "Producto guardado correctamente."}
+              style={styles.alertBox}
+            />
+          )}
+
           {validationMessage !== "" && (
-            <Text style={styles.validationText}>
-              {validationMessage}
-            </Text>
+            <Alert
+              variant="danger"
+              message={validationMessage}
+              style={styles.alertBox}
+            />
           )}
         </Card>
       </ScrollView>
-    </View>
+      </View>
+    </>
   );
 }
-

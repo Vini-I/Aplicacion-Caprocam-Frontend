@@ -8,8 +8,8 @@
  *
  * FUNCIONALIDAD:
  * 1. Busca el comprador por id (useDetalleCompradorScreen).
- * 2. Muestra nombre, tipo de producto, teléfono, correo, dirección
- *    y notas.
+ * 2. Muestra nombre, cédula, tipo de producto, teléfono, correo,
+ *    dirección y notas.
  * 3. Botón "Editar" navega al formulario de edición.
  * 4. Botón "Eliminar" abre un modal de confirmación antes de
  *    volver a la lista.
@@ -19,25 +19,27 @@
  *   Eliminar además suma styles.botonEliminar (solo borderColor)
  *   para verse en rojo, sin depender de una variante roja del
  *   Button global.
+ * - El "tipo de producto" que se muestra aquí es un dato existente
+ *   del comprador (badge de solo lectura); no depende del select
+ *   que se eliminó del formulario de alta/edición.
  * ============================================================
  */
 
 import { useState } from "react";
 import { View, ScrollView } from "react-native";
-import { useRouter, useLocalSearchParams } from "expo-router";
 
-import Navbar from "../../../shared/components/Navbar";
 import Icon from "../../../shared/components/Icons";
 import Card from "../../../shared/components/Card";
 import Button from "../../../shared/components/Button";
-import CustomText from "../../../shared/components/Text";
+import Text from "../../../shared/components/Text";
 import Title from "../../../shared/components/Title";
-import Badge from "../../../shared/components/Badge";
 import Modal from "../../../shared/components/Modal";
 import EmptyState from "../../../shared/components/EmptyState";
+import Alert from "../../../shared/components/Alert";
 
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
+import { STYLE } from "../../../theme/style";
 
 import { styles, ICON_SIZE } from "../styles/DetalleCompradorStyles";
 import { useDetalleCompradorScreen } from "../hooks/useDetalleCompradorScreen";
@@ -48,6 +50,7 @@ export default function DetalleCompradorScreen() {
     comprador,
     modalVisible,
     setModalVisible,
+    eliminado,
     irAtras,
     irAEditar,
     getTipoProductoSelect,
@@ -68,7 +71,7 @@ export default function DetalleCompradorScreen() {
     <View style={styles.container}>
       <ScrollView
         style={styles.scroll}
-        contentContainerStyle={styles.contenido}
+        contentContainerStyle={[styles.contenido, STYLE.contentWrapper]}
         showsVerticalScrollIndicator={false}
       >
         <Card style={styles.tarjeta}>
@@ -76,51 +79,51 @@ export default function DetalleCompradorScreen() {
           {/* Encabezado con avatar, nombre y tipo de producto */}
           <View style={styles.header}>
             <View style={styles.avatar}>
-              <CustomText style={styles.avatarIniciales}>
+              <Text style={styles.avatarIniciales}>
                 {comprador.iniciales}
-              </CustomText>
+              </Text>
             </View>
             <View style={styles.compradorInfo}>
               <Title level={4}>{comprador.nombre}</Title>
-              <Badge
-                label={getTipoProductoSelect(comprador.tipoProducto)}
-                style={styles.badge}
-                textStyle={styles.badgeTexto}
-              />
             </View>
           </View>
 
           {/* Sección de contacto: teléfono, correo y dirección */}
           <View style={styles.seccion}>
-            <CustomText style={styles.seccionTitulo}>
+            <Text style={styles.seccionTitulo}>
               Información de contacto
-            </CustomText>
+            </Text>
 
             <View style={styles.filaDetalle}>
-              <CustomText style={styles.filaEtiqueta}>Teléfono</CustomText>
-              <CustomText style={styles.filaValor}>{comprador.telefono}</CustomText>
+              <Text style={styles.filaEtiqueta}>Cédula</Text>
+              <Text style={styles.filaValor}>{comprador.cedula}</Text>
             </View>
 
             <View style={styles.filaDetalle}>
-              <CustomText style={styles.filaEtiqueta}>Correo electrónico</CustomText>
-              <CustomText style={styles.filaValor}>{comprador.correo}</CustomText>
+              <Text style={styles.filaEtiqueta}>Teléfono</Text>
+              <Text style={styles.filaValor}>{comprador.telefono}</Text>
             </View>
 
             <View style={styles.filaDetalle}>
-              <CustomText style={styles.filaEtiqueta}>Dirección</CustomText>
-              <CustomText style={styles.filaValor}>{comprador.direccion}</CustomText>
+              <Text style={styles.filaEtiqueta}>Correo electrónico</Text>
+              <Text style={styles.filaValor}>{comprador.correo}</Text>
+            </View>
+
+            <View style={styles.filaDetalle}>
+              <Text style={styles.filaEtiqueta}>Dirección</Text>
+              <Text style={styles.filaValor}>{comprador.direccion}</Text>
             </View>
           </View>
 
           {/* Sección de notas, solo se muestra si el comprador tiene notas */}
           {!!comprador.notas && (
             <View style={styles.seccionNotas}>
-              <CustomText style={styles.seccionTitulo}>
+              <Text style={styles.seccionTitulo}>
                 Notas adicionales
-              </CustomText>
-              <CustomText style={styles.notasValor}>
+              </Text>
+              <Text style={styles.notasValor}>
                 {comprador.notas}
-              </CustomText>
+              </Text>
             </View>
           )}
         </Card>
@@ -129,17 +132,26 @@ export default function DetalleCompradorScreen() {
         <View style={styles.botones}>
          <Button variant="outline" style={[styles.boton, styles.botonEditar]} onPress={irAEditar}>
           <Icon icon={ICONS.edit} size={ICON_SIZE.boton} color={COLORS.primary} />
-          <CustomText style={[styles.botonTexto, styles.botonTextoEditar]}>Editar</CustomText>
+          <Text style={[styles.botonTexto, styles.botonTextoEditar]}>Editar</Text>
         </Button>
         
         <Button variant="outline" style={[styles.boton, styles.botonEliminar]} onPress={() => setModalVisible(true)}>
           <Icon icon={ICONS.delete} size={ICON_SIZE.boton} color={COLORS.error} />
-          <CustomText style={[styles.botonTexto, styles.botonTextoEliminar]}>Eliminar</CustomText>
+          <Text style={[styles.botonTexto, styles.botonTextoEliminar]}>Eliminar</Text>
         </Button>
         </View>
+
+          {/* Alert de éxito al pie de la pantalla, igual que al guardar un producto */}
+      {eliminado && (
+        <Alert
+          variant="danger"
+          message="Comprador eliminado correctamente."
+          style={styles.alertEliminado}
+        />
+      )}
+
       </ScrollView>
 
-      {/* Modal de confirmación antes de eliminar el comprador */}
       <Modal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
@@ -151,15 +163,17 @@ export default function DetalleCompradorScreen() {
         <Title level={3} style={styles.modalTitle}>
           ¿Eliminar comprador?
         </Title>
-        <CustomText style={styles.modalMessage}>
+        <Text style={styles.modalMessage}>
           ¿Estás seguro que deseas eliminar{" "}
-          <CustomText style={styles.modalNombreNegrita}>{comprador.nombre}</CustomText>?
-        </CustomText>
-        <Button variant="outline"style={styles.modalConfirmButton, styles.botonEliminar} onPress={irAtras}>
-          <Icon icon={ICONS.delete} size={ICON_SIZE.modal} color={COLORS.error} />
-          <CustomText style={styles.modalConfirmTexto, { color: COLORS.error }}>Sí, eliminar</CustomText>
+          <Text style={styles.modalNombreNegrita}>{comprador.nombre}</Text>?
+        </Text>
+        <Button style={styles.modalConfirmButton} onPress={irAtras}>
+          <Icon icon={ICONS.delete} size={ICON_SIZE.modal} color={COLORS.white} />
+          <Text style={styles.modalConfirmTexto}>Sí, eliminar</Text>
         </Button>
       </Modal>
+
+      
 
     </View>
   );

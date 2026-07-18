@@ -1,3 +1,12 @@
+/**
+ * ============================================================
+ * SERVICIO: registrarEquipo
+ * ============================================================
+ *
+ * Expone catálogos y el payload normalizado para el formulario
+ * de registro de equipos.
+ */
+
 export const TIPOS_EQUIPO = [
   { label: "Aireación", value: "aireacion" },
   { label: "Bombeo", value: "bombeo" },

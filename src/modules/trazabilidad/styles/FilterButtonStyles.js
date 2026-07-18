@@ -16,15 +16,18 @@ import { COLORS } from "../../../theme/colors";
 
 export const styles = StyleSheet.create({
   overlay: {
-    backgroundColor: "rgba(0,0,0,0.45)",
-  },
-  modalContainer: {
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 24,
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
-  },
+  backgroundColor: "rgba(0,0,0,0.45)",
+  justifyContent: "flex-end",
+  padding: 0,
+},
+ modalContainer: {
+  paddingHorizontal: 16,
+  paddingTop: 12,
+  paddingBottom: 24,
+  borderTopLeftRadius: 12,
+  borderTopRightRadius: 12,
+  maxHeight: "90%",
+},
   modalHeader: {
     flexDirection: "row",
     alignItems: "center",

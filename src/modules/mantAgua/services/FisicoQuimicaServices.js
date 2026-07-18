@@ -114,6 +114,13 @@ export function validarFormularioFisicoQuimica({ fincaSeleccionada, estanqueSele
   return '';
 }
 
+export function validarSeleccionAntesDeAgregar({ fincaSeleccionada, estanqueSeleccionado }) {
+  if (!fincaSeleccionada || !estanqueSeleccionado) {
+    return 'Selecciona la finca y el estanque antes de agregar mediciones.';
+  }
+  return '';
+}
+
 export function manejarCambioFinca({ value, setters }) {
   setters?.finca?.(value);
   setters?.estanque?.("");

@@ -1,7 +1,21 @@
+/**
+ * ============================================================
+ * ESTILOS: colaboradoresListStyles
+ * ============================================================
+ *
+ * Estilos para la pantalla ColaboradoresListScreen.
+ * Utiliza la paleta de COLORS del tema central.
+ *
+ * Dependencias:
+ * - COLORS desde theme/colors
+ *
+ * Ejemplo de uso:
+ * import { styles } from './colaboradoresListStyles';
+ * <View style={styles.container}>...</View>
+ */
+
 import { StyleSheet } from "react-native";
 import { COLORS } from "../../../theme/colors";
-import Icon from "../../../shared/components/Icons";
-import { ICONS } from "../../../theme/icons";
 
 export const styles = StyleSheet.create({
   container: {
@@ -29,23 +43,48 @@ export const styles = StyleSheet.create({
     color: COLORS.textSecondary,
   },
   searchRow: {
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 12,
     backgroundColor: COLORS.white,
     marginTop: 8,
-  },
-  searchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
     gap: 8,
     width: "100%",
     maxWidth: 900,
     alignSelf: "center",
   },
-  searchInput: { flex: 1, marginBottom: 0 },
-  addButtonContainer: { alignSelf: "center" },
-  list: { padding: 16, paddingBottom: 80 },
-  error: { color: COLORS.error, textAlign: "center", marginTop: 20 },
+  searchInput: {
+    flex: 1,
+    marginBottom: 0,
+  },
+  addButtonContainer: {
+    alignSelf: "center",
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: COLORS.primary,
+    borderWidth: 0,
+  },
+  addButtonContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  addButtonText: {
+    color: COLORS.white,
+    fontWeight: "600",
+    fontSize: 14,
+  },
+  list: {
+    padding: 16,
+    paddingBottom: 80,
+  },
+  error: {
+    color: COLORS.error,
+    textAlign: "center",
+    marginTop: 20,
+  },
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.6)",
@@ -97,6 +136,36 @@ export const styles = StyleSheet.create({
     marginBottom: 16,
     textAlign: "center",
   },
-  modalInput: { marginBottom: 20 },
-  modalButtons: { flexDirection: "row", gap: 12, justifyContent: "center" },
+  modalInput: {
+    marginBottom: 20,
+  },
+  modalButtons: {
+    flexDirection: "row",
+    gap: 12,
+    justifyContent: "center",
+  },
+  modalConfirmContainer: {
+    width: "100%",
+    maxWidth: 900,
+    alignSelf: "center",
+  },
+  modalConfirmCancelButton: {
+    backgroundColor: COLORS.textTertiary,
+  },
+  modalCancelBtn: {
+    marginTop: 0,
+    flex: 1,
+  },
+  modalDeleteBtn: {
+    marginTop: 0,
+    flex: 1,
+  },
+  modalDetalleContainer: {
+    width: "100%",
+    maxWidth: 900,
+    alignSelf: "center",
+  },
+  modalDetalleOverlay: {
+    backgroundColor: "rgba(0,0,0,0.6)",
+  },
 });

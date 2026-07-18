@@ -74,9 +74,6 @@ export const styles = StyleSheet.create({
     borderRadius: 18,
     backgroundColor: COLORS.white,
     borderColor: COLORS.secondary,
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
   },
   cardTitle: {
     fontSize: 19,
@@ -115,19 +112,6 @@ export const styles = StyleSheet.create({
     color: COLORS.error,
   },
   
-  select: {
-    minHeight: 48,
-    borderRadius: 12,
-    borderColor: COLORS.secondary,
-    backgroundColor: COLORS.white,
-    paddingHorizontal: 14,
-  },
-  selectOption: {
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
-  },
-  selectText: {
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
-  },
   saveButton: {
     marginTop: 10,
     borderRadius: 14,
@@ -154,6 +138,5 @@ export const styles = StyleSheet.create({
   alertText: {
     textAlign: "center",
     width: "100%",
-    color: COLORS.error,
   },
 });

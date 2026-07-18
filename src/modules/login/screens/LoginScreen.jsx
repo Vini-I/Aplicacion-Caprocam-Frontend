@@ -7,7 +7,6 @@
  */
 
 import { View, ScrollView } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import Avatar from '../../../shared/components/Avatar';
 import Button from '../../../shared/components/Button';
@@ -22,6 +21,7 @@ import { COLORS } from '../../../theme/colors';
 import { ICONS } from '../../../theme/icons';
 import { LOGIN_MESSAGES } from '../constants/messages';
 import { useLoginFlow } from '../hooks/useLoginFlow';
+import WorkerSearchBar from '../components/WorkerSearchBar';
 import styles from '../styles/loginStyles';
 
 /**
@@ -37,21 +37,19 @@ export default function LoginScreen({ onLoginSuccess = () => {} }) {
       <ScrollView style={styles.container} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <LoginHeader formattedDate={loginFlow.formattedDate} />
         <WorkerSection
-          workers={loginFlow.workers}
+          workers={loginFlow.filteredWorkers}
           loading={loginFlow.loading}
           error={loginFlow.error}
           selectedWorker={loginFlow.selectedWorker}
           onSelectWorker={loginFlow.setSelectedWorker}
-        />
-      </ScrollView>
-
-      <SafeAreaView edges={['bottom']} style={styles.safeActionArea}>
-        <ActionSection
+          onSyncData={loginFlow.handleSyncData}
+          isSyncDisabled={loginFlow.hasSyncedData}
+          searchText={loginFlow.workerSearchText}
+          onSearchTextChange={loginFlow.setWorkerSearchText}
           isFormValid={loginFlow.isFormValid}
-          validationMessage={loginFlow.validationMessage}
           onContinue={loginFlow.openPinModal}
         />
-      </SafeAreaView>
+      </ScrollView>
 
       <PinModal
         visible={loginFlow.isPinModalVisible}
@@ -92,29 +90,55 @@ function LoginHeader({ formattedDate }) {
  *
  * Lista a los trabajadores disponibles.
  */
-function WorkerSection({ workers, loading, error, selectedWorker, onSelectWorker }) {
+function WorkerSection({
+  workers,
+  loading,
+  error,
+  selectedWorker,
+  onSelectWorker,
+  onSyncData,
+  isSyncDisabled,
+  searchText,
+  onSearchTextChange,
+  isFormValid,
+  onContinue,
+}) {
   return (
     <Card style={styles.sectionCard}>
       <Title level={4} color={COLORS.textPrimary} align="center">
         {LOGIN_MESSAGES.WORKER_TITLE}
       </Title>
-      <Text size={13} color={COLORS.textTertiary} align="center" style={styles.sectionSubtitle}>
-        {LOGIN_MESSAGES.WORKER_SUBTITLE}
-      </Text>
+      <Button onPress={onSyncData} variant="primary" disabled={isSyncDisabled} style={styles.syncButton}>
+        {LOGIN_MESSAGES.SYNC_BUTTON_TEXT}
+      </Button>
+      <WorkerSearchBar
+        value={searchText}
+        onChangeText={onSearchTextChange}
+        placeholder={LOGIN_MESSAGES.SEARCH_PLACEHOLDER}
+      />
       {loading && <SectionStatus message={LOGIN_MESSAGES.LOADING} />}
       {error && <SectionStatus message={`${LOGIN_MESSAGES.ERROR_PREFIX}${error}`} error />}
       {!loading && !error && (
         <View style={styles.workersList}>
-          {workers.map((worker) => (
-            <WorkerItem
-              key={worker.id}
-              worker={worker}
-              isSelected={selectedWorker === worker.id}
-              onPress={() => onSelectWorker(worker.id)}
-            />
-          ))}
+          {workers.length === 0 ? (
+            <SectionStatus message={LOGIN_MESSAGES.NO_WORKERS_FOUND} />
+          ) : (
+            workers.map((worker) => (
+              <WorkerItem
+                key={worker.id}
+                worker={worker}
+                isSelected={selectedWorker === worker.id}
+                onPress={() => onSelectWorker(worker.id)}
+              />
+            ))
+          )}
         </View>
       )}
+      <View style={styles.actionSection}>
+        <Button onPress={onContinue} variant="primary" disabled={!isFormValid} style={styles.continueButton}>
+          {LOGIN_MESSAGES.BUTTON_TEXT}
+        </Button>
+      </View>
     </Card>
   );
 }
@@ -164,26 +188,6 @@ function SectionStatus({ message, error = false }) {
     <Text size={14} color={error ? COLORS.error : COLORS.textTertiary} align="center" style={styles.statusText}>
       {message}
     </Text>
-  );
-}
-
-/**
- * ActionSection
- *
- * Footer fijo con el botón de continuar.
- */
-function ActionSection({ isFormValid, validationMessage, onContinue }) {
-  return (
-    <View style={styles.footerContent}>
-      <Button onPress={onContinue} variant={isFormValid ? 'primary' : 'secondary'} disabled={!isFormValid}>
-        {LOGIN_MESSAGES.BUTTON_TEXT}
-      </Button>
-      <View style={styles.validationContainer}>
-        <Text size={12} color={COLORS.textTertiary} align="center">
-          {validationMessage}
-        </Text>
-      </View>
-    </View>
   );
 }
 

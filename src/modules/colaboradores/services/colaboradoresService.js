@@ -1,12 +1,32 @@
-// src/modules/colaboradores/services/colaboradoresService.js
 /**
+ * ============================================================
+ * SERVICIO: colaboradoresService
+ * ============================================================
+ *
  * Servicio con operaciones CRUD y estadísticas para colaboradores.
  * Actualmente usa datos mock, pero puede reemplazarse por llamadas a API.
+ *
+ * Funciones:
+ * - getColaboradores(filtros) -> Promise<Array>
+ * - getColaboradorById(id) -> Promise<Object>
+ * - createColaborador(data) -> Promise<Object>
+ * - updateColaborador(id, data) -> Promise<Object>
+ * - deleteColaborador(id) -> Promise<boolean>
+ * - getEstadisticasColaborador(colaboradorId) -> Promise<Object>
+ * - getTrabajadoresByOwner(ownerId) -> Promise<Array>
+ *
+ * Ejemplo:
+ * const colaboradores = await colaboradoresService.getColaboradores({ rol: 'external_worker' });
  */
 
-// Datos mock de colaboradores
-// src/modules/colaboradores/services/colaboradoresService.js
-// Agrega externalOwnerId a los colaboradores existentes
+// ============================================================
+// IMPORTS
+// ============================================================
+// (no hay dependencias externas)
+
+// ============================================================
+// DATOS MOCK
+// ============================================================
 let colaboradoresMock = [
   {
     id: "1",
@@ -65,7 +85,6 @@ let colaboradoresMock = [
   },
 ];
 
-// Datos mock de estadísticas (alimentación, estanques, siembras) 
 const estadisticasMock = {
   "1": {
     alimentaciones: 24,
@@ -87,11 +106,12 @@ const estadisticasMock = {
   },
 };
 
-// Simula retardo de red
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+// ============================================================
+// EXPORTACIÓN DE FUNCIONES
+// ============================================================
 export const colaboradoresService = {
-  // Obtener todos los colaboradores (con filtro opcional por fincaId y rol)
   async getColaboradores(filtros = {}) {
     await delay(500);
     let resultados = [...colaboradoresMock];
@@ -107,7 +127,6 @@ export const colaboradoresService = {
     return resultados;
   },
 
-  // Obtener un colaborador por ID
   async getColaboradorById(id) {
     await delay(300);
     const colaborador = colaboradoresMock.find((c) => c.id === id);
@@ -115,7 +134,6 @@ export const colaboradoresService = {
     return { ...colaborador };
   },
 
-  // Crear nuevo colaborador
   async createColaborador(data) {
     await delay(500);
     const newId = String(Date.now());
@@ -128,7 +146,6 @@ export const colaboradoresService = {
     return { ...nuevoColaborador };
   },
 
-  // Actualizar colaborador existente
   async updateColaborador(id, data) {
     await delay(500);
     const index = colaboradoresMock.findIndex((c) => c.id === id);
@@ -137,21 +154,14 @@ export const colaboradoresService = {
     return { ...colaboradoresMock[index] };
   },
 
-  // Eliminar (desactivar) colaborador
-// src/modules/colaboradores/services/colaboradoresService.js
-// Reemplaza el método deleteColaborador:
+  async deleteColaborador(id) {
+    await delay(500);
+    const index = colaboradoresMock.findIndex((c) => c.id === id);
+    if (index === -1) throw new Error("Colaborador no encontrado");
+    colaboradoresMock.splice(index, 1);
+    return true;
+  },
 
-async deleteColaborador(id) {
-  await delay(500);
-  const index = colaboradoresMock.findIndex((c) => c.id === id);
-  if (index === -1) throw new Error("Colaborador no encontrado");
-  // Eliminar completamente del array
-  colaboradoresMock.splice(index, 1);
-  return true;
-},
-
-
-  // Obtener estadísticas de un colaborador
   async getEstadisticasColaborador(colaboradorId) {
     await delay(400);
     const stats = estadisticasMock[colaboradorId] || {
@@ -163,9 +173,10 @@ async deleteColaborador(id) {
     return stats;
   },
 
-  // Agrega este método al servicio
-async getTrabajadoresByOwner(ownerId) {
-  await delay(300);
-  return colaboradoresMock.filter((c) => c.externalOwnerId === ownerId && c.rol === "external_worker" && c.activo);
-},
+  async getTrabajadoresByOwner(ownerId) {
+    await delay(300);
+    return colaboradoresMock.filter(
+      (c) => c.externalOwnerId === ownerId && c.rol === "external_worker" && c.activo
+    );
+  },
 };

@@ -60,7 +60,7 @@ export const styles = StyleSheet.create({
         paddingVertical: 0,
         marginTop: 0,
     },
-    contentContainer: { padding: 16, paddingBottom: 40 },
+    contentContainer: { paddingBottom: 40 },
     emptyContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
     tarjeta: { marginBottom: 20, borderColor: COLORS.secondary },
     tarjetaEncabezado: { marginBottom: 12 },
@@ -100,5 +100,19 @@ export const styles = StyleSheet.create({
         paddingVertical: 12,
         borderRadius: 12,
         backgroundColor: COLORS.error,
+    },
+    alertEliminado: {
+        marginTop: 16,
+    },
+    modalCancelButton: {
+        backgroundColor: COLORS.textTertiary,
+    },
+    modalOverlay: {
+        backgroundColor: "#00000066",
+    },
+    modalContainer: {
+        width: "100%",
+        maxWidth: 900,
+        alignSelf: "center",
     },
 });

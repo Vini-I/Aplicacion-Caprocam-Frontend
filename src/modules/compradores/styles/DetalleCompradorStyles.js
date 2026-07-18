@@ -63,9 +63,6 @@ export const styles = StyleSheet.create({
   contenido: {
     paddingTop: 30,
     paddingBottom: 40,
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
   },
 
   tarjeta: {
@@ -208,10 +205,15 @@ export const styles = StyleSheet.create({
     fontWeight: undefined,
   },
 
- modalConfirmButton: {
+  modalConfirmButton: {
   marginTop: 12,
   flexDirection: "row",
+  backgroundColor: COLORS.error,
  },
+
+  alertEliminado: {
+    marginTop: 16,
+  },
 
   modalConfirmTexto: {
     color: COLORS.white,

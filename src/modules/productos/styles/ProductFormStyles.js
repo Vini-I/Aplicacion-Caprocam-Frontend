@@ -53,7 +53,7 @@ export const styles = StyleSheet.create({
     width: 32,
     height: 32,
   },
-  content: { padding: 16, paddingBottom: 32 },
+  content: { paddingBottom: 32 },
   card: {
     borderRadius: 18,
     padding: 18,
@@ -109,10 +109,10 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     color: COLORS.primary,
   },
-  validationText: {
-    marginTop: 8,
-    fontSize: 13,
-    textAlign: "center",
-    color: COLORS.error,
+  alertBox: {
+    marginTop: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    width: "100%",
   },
 });

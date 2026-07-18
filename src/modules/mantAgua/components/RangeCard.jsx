@@ -126,6 +126,8 @@ export default function RangeCard({
   initialValues = [],
   onChange,
   containerStyle,
+  puedeAgregar = true,
+  onIntentoAgregarBloqueado,
 }) {
   const {
     lecturas,
@@ -229,7 +231,18 @@ export default function RangeCard({
       })}
 
       {lecturas.length < maxLecturas && (
-        <Button variant="outline" onPress={agregarLectura}>+ Agregar medición</Button>
+        <Button
+          variant="outline"
+          onPress={() => {
+            if (!puedeAgregar) {
+              onIntentoAgregarBloqueado?.();
+              return;
+            }
+            agregarLectura();
+          }}
+        >
+          + Agregar medición
+        </Button>
       )}
     </View>
   );

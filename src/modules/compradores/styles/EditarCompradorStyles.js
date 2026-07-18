@@ -54,9 +54,6 @@ export const styles = StyleSheet.create({
   content: {
     paddingTop: 40,
     paddingBottom: 40,
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
   },
 
   card: {
@@ -111,16 +108,6 @@ export const styles = StyleSheet.create({
     color: COLORS.textSecondary,
   },
 
-  select: {
-    minHeight: 48,
-    borderRadius: 0,
-    borderWidth: 0,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.secondary,
-    backgroundColor: "transparent",
-    paddingHorizontal: 0,
-  },
-
   saveButton: {
     marginTop: 10,
     borderRadius: 14,
@@ -153,6 +140,17 @@ export const styles = StyleSheet.create({
 
   alertContainer: {
     marginBottom: 16,
+  },
+
+  // Solo para esta pantalla: cuando la alerta general es "warning" (campos
+  // sin completar), se pinta en rojo en vez del amarillo por defecto de
+  // Alert.jsx, sin tocar el componente compartido.
+  alertWarningComoError: {
+    backgroundColor: COLORS.errorLight,
+    borderColor: COLORS.error,
+  },
+  alertWarningComoErrorTexto: {
+    color: COLORS.error,
   },
 });
 
