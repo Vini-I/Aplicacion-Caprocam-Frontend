@@ -11,7 +11,6 @@
  * - user (mock con id, fincaId, role)
  * - modalVisible, setModalVisible
  * - editingColaborador, setEditingColaborador
- * - selectedColaboradorId, setSelectedColaboradorId
  * - searchText, setSearchText
  * - cedulaConfirmacion, setCedulaConfirmacion
  * - deleteTarget, setDeleteTarget
@@ -20,11 +19,10 @@
  * - alert, showAlert (para mensajes en la lista)
  * - colaboradores, loading, error
  * - listaFiltrada
- * - handleAdd, handleEdit, handleDeletePress, confirmDelete, handleSubmit, openStats
+ * - handleAdd, handleEdit, handleDeletePress, confirmDelete, handleSubmit
  */
 
 import { useState, useEffect, useRef } from "react";
-import { Alert as RNAlert } from "react-native";
 import { useColaboradores } from "./useColaboradores";
 
 export function useMiPersonal() {
@@ -34,14 +32,13 @@ export function useMiPersonal() {
   // Estados de la UI
   const [modalVisible, setModalVisible] = useState(false);
   const [editingColaborador, setEditingColaborador] = useState(null);
-  const [selectedColaboradorId, setSelectedColaboradorId] = useState(null);
   const [searchText, setSearchText] = useState("");
   const [cedulaConfirmacion, setCedulaConfirmacion] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [cedulaError, setCedulaError] = useState("");
 
-  // Estado para alerta flotante (como en ColaboradoresListScreen)
+  // Estado para alerta flotante
   const [alert, setAlert] = useState(null);
   const alertTimeoutRef = useRef(null);
 
@@ -100,7 +97,7 @@ export function useMiPersonal() {
     if (colaborador) {
       setDeleteTarget(colaborador);
       setCedulaConfirmacion("");
-      setCedulaError(""); // Limpiar error al abrir el modal
+      setCedulaError("");
       setShowConfirmModal(true);
     }
   };
@@ -123,7 +120,6 @@ export function useMiPersonal() {
       setDeleteTarget(null);
       setCedulaConfirmacion("");
       setCedulaError("");
-      // Recargar lista
       fetchColaboradores();
     } catch (error) {
       setCedulaError("No se pudo eliminar el colaborador. Intente nuevamente.");
@@ -146,15 +142,10 @@ export function useMiPersonal() {
       }
       setModalVisible(false);
       setEditingColaborador(null);
-      // Recargar lista
       fetchColaboradores();
     } catch (error) {
       showAlert("danger", "Ocurrió un error al guardar el colaborador. Intente nuevamente.");
     }
-  };
-
-  const openStats = (colaboradorId) => {
-    setSelectedColaboradorId(colaboradorId);
   };
 
   return {
@@ -163,8 +154,6 @@ export function useMiPersonal() {
     setModalVisible,
     editingColaborador,
     setEditingColaborador,
-    selectedColaboradorId,
-    setSelectedColaboradorId,
     searchText,
     setSearchText,
     cedulaConfirmacion,
@@ -185,6 +174,5 @@ export function useMiPersonal() {
     handleDeletePress,
     confirmDelete,
     handleSubmit,
-    openStats,
   };
 }

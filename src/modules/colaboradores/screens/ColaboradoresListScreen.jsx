@@ -9,7 +9,7 @@
  *
  * Dependencias:
  * - useColaboradoresList hook para lógica y estado
- * - ColaboradorCard, ColaboradorForm, ColaboradorDetalleScreen, etc.
+ * - ColaboradorCard, ColaboradorForm, DetalleColaboradorScreen (navegación)
  * - Layout global STYLE
  * - Iconos desde theme/icons
  */
@@ -17,30 +17,35 @@
 // ============================================================
 // IMPORTS
 // ============================================================
-import React from "react";
-import { View, ScrollView, TouchableOpacity } from "react-native";
-import { useColaboradoresList } from "../hooks/useColaboradoresList";
-import ColaboradorCard from "../components/ColaboradorCard";
-import ColaboradorForm from "../components/ColaboradorForm";
-import ColaboradorDetalleScreen from "./ColaboradorDetalleScreen";
-import Modal from "../../../shared/components/Modal";
-import Spinner from "../../../shared/components/Spinner";
-import Button from "../../../shared/components/Button";
-import Title from "../../../shared/components/Title";
-import Input from "../../../shared/components/Input";
-import CustomText from "../../../shared/components/Text";
-import Icon from "../../../shared/components/Icons";
-import SearchBar from "../../inventarios/components/SearchBar";
-import { STYLE } from "../../../theme/style";
-import { ICONS } from "../../../theme/icons";
-import { COLORS } from "../../../theme/colors";
-import { styles } from "../styles/colaboradoresListStyles";
-import Alert from "../../../shared/components/Alert";
+import React, { useCallback } from 'react';
+import { View, ScrollView } from 'react-native';
+import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
+
+import { useColaboradoresList } from '../hooks/useColaboradoresList';
+import ColaboradorCard from '../components/ColaboradorCard';
+import ColaboradorForm from '../components/ColaboradorForm';
+import Modal from '../../../shared/components/Modal';
+import Spinner from '../../../shared/components/Spinner';
+import Button from '../../../shared/components/Button';
+import Title from '../../../shared/components/Title';
+import Input from '../../../shared/components/Input';
+import CustomText from '../../../shared/components/Text';
+import Icon from '../../../shared/components/Icons';
+import SearchBar from '../../inventarios/components/SearchBar';
+import { STYLE } from '../../../theme/style';
+import { ICONS } from '../../../theme/icons';
+import { COLORS } from '../../../theme/colors';
+import { styles } from '../styles/colaboradoresListStyles';
+import Alert from '../../../shared/components/Alert';
 
 // ============================================================
 // COMPONENTE PRINCIPAL
 // ============================================================
 export default function ColaboradoresListScreen() {
+  const router = useRouter();
+  const params = useLocalSearchParams();
+  const editId = params.editId;
+
   const {
     activeTab,
     setActiveTab,
@@ -48,8 +53,6 @@ export default function ColaboradoresListScreen() {
     setModalVisible,
     editingColaborador,
     setEditingColaborador,
-    selectedColaboradorId,
-    setSelectedColaboradorId,
     searchText,
     setSearchText,
     cedulaConfirmacion,
@@ -66,11 +69,33 @@ export default function ColaboradoresListScreen() {
     handleDeletePress,
     confirmDelete,
     handleSubmit,
-    openStats,
     alert,
-    cedulaError,          // <-- agregar
-    setCedulaError,       // <-- agregar
+    cedulaError,
+    setCedulaError,
   } = useColaboradoresList();
+
+  // Detectar si se viene de la pantalla de detalle con editId para abrir el modal de edición
+  useFocusEffect(
+    useCallback(() => {
+      if (editId && lista.length > 0) {
+        const colaborador = lista.find((c) => c.id === editId);
+        if (colaborador) {
+          setEditingColaborador(colaborador);
+          setModalVisible(true);
+          // Limpiar el parámetro para que no se repita al volver a enfocar
+          router.setParams({ editId: undefined });
+        }
+      }
+    }, [editId, lista, router, setEditingColaborador, setModalVisible])
+  );
+
+  // Navegar al detalle de un colaborador
+  const openDetail = (colaboradorId) => {
+    router.push({
+      pathname: '/(drawer)/colaboradores/detalle',
+      params: { id: colaboradorId },
+    });
+  };
 
   // --------------------------------------------------------
   // RENDERIZADO CONDICIONAL
@@ -82,80 +107,89 @@ export default function ColaboradoresListScreen() {
   // RENDER PRINCIPAL
   // --------------------------------------------------------
   return (
-   <View style={{ flex: 1, backgroundColor: COLORS.white }}>
-        {/* Barra de búsqueda y botón agregar - fijos arriba */}
-        <View style={styles.searchRow}>
-          <SearchBar
-            value={searchText}
-            onChangeText={setSearchText}
-            placeholder="Buscar por nombre, teléfono, email o cédula"
-            containerStyle={styles.searchInput}
-          />
-          <Button
-            variant="outline"
-            onPress={handleAdd}
-            style={[styles.addButtonContainer, { borderColor: COLORS.primary }]}
-          >
-            <View style={styles.addButtonContent}>
-              <Icon icon={ICONS.add} size={16} color={COLORS.primary} />
-              <CustomText style={styles.addButtonText}>Agregar colaborador</CustomText>
-            </View>
-          </Button>
-        </View>
-
-{/* Alerta flotante: se muestra debajo de la barra de búsqueda, dentro del flujo */}
-{alert && (
-  <View style={styles.alertWrapper}>
-    <Alert variant={alert.type} message={alert.message} />
-  </View>
-)}
-        {/* Lista scrolleable */}
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.list}
-          showsVerticalScrollIndicator={true}
+    <View style={{ flex: 1, backgroundColor: COLORS.white }}>
+      {/* Barra de búsqueda y botón agregar - fijos arriba */}
+      <View style={styles.searchRow}>
+        <SearchBar
+          value={searchText}
+          onChangeText={setSearchText}
+          placeholder="Buscar por nombre, teléfono, email o cédula"
+          containerStyle={styles.searchInput}
+        />
+        <Button
+          variant="outline"
+          onPress={handleAdd}
+          style={[styles.addButtonContainer, { borderColor: COLORS.primary }]}
         >
-          {lista.map((colab) => (
-            <ColaboradorCard
-              key={colab.id}
-              colaborador={colab}
-              onPress={openStats}
-              onEdit={handleEdit}
-              onDelete={() => handleDeletePress(colab.id)}
-            />
-          ))}
-        </ScrollView>
+          <View style={styles.addButtonContent}>
+            <Icon icon={ICONS.add} size={16} color={COLORS.primary} />
+            <CustomText style={styles.addButtonText}>Agregar colaborador</CustomText>
+          </View>
+        </Button>
+      </View>
 
-        {/* Tabs fijos en la parte inferior */}
-        <View style={styles.tabBar}>
-          <TouchableOpacity
-            style={[styles.tab, activeTab === "internos" && styles.activeTab]}
-            onPress={() => setActiveTab("internos")}
-          >
-            <CustomText style={styles.tabText}>Personal Interno</CustomText>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.tab, activeTab === "externos" && styles.activeTab]}
-            onPress={() => setActiveTab("externos")}
-          >
-            <CustomText style={styles.tabText}>Dueños Externos</CustomText>
-          </TouchableOpacity>
+      {/* Alerta flotante: se muestra debajo de la barra de búsqueda */}
+      {alert && (
+        <View style={styles.alertWrapper}>
+          <Alert variant={alert.type} message={alert.message} />
+        </View>
+      )}
+
+      {/* Lista scrolleable */}
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.list}
+        showsVerticalScrollIndicator={true}
+      >
+        {lista.map((colab) => (
+          <ColaboradorCard
+            key={colab.id}
+            colaborador={colab}
+            onPress={() => openDetail(colab.id)}
+            onEdit={handleEdit}
+            onDelete={() => handleDeletePress(colab.id)}
+          />
+        ))}
+      </ScrollView>
+
+      {/* Tabs fijos en la parte inferior */}
+      <View style={styles.tabBar}>
+        <Button
+          variant="outline"
+          style={[styles.tab, activeTab === 'internos' && styles.activeTab]}
+          onPress={() => setActiveTab('internos')}
+        >
+          <CustomText style={styles.tabText}>Personal Interno</CustomText>
+        </Button>
+        <Button
+          variant="outline"
+          style={[styles.tab, activeTab === 'externos' && styles.activeTab]}
+          onPress={() => setActiveTab('externos')}
+        >
+          <CustomText style={styles.tabText}>Dueños Externos</CustomText>
+        </Button>
       </View>
 
       {/* Modal para crear/editar colaborador */}
       <Modal
         visible={modalVisible}
-        onClose={() => setModalVisible(false)}
+        onClose={() => {
+          setModalVisible(false);
+          setEditingColaborador(null);
+        }}
         showCloseButton={false}
         containerStyle={styles.modalContainer}
       >
-        <Title level={4}>{editingColaborador ? "Editar" : "Nuevo"} colaborador</Title>
+        <Title level={4}>{editingColaborador ? 'Editar' : 'Nuevo'} colaborador</Title>
         <ColaboradorForm
           initialData={editingColaborador || {}}
           onSubmit={handleSubmit}
           isEditing={!!editingColaborador}
           userRole="camprocam_admin"
-          onCancel={() => setModalVisible(false)}
+          onCancel={() => {
+            setModalVisible(false);
+            setEditingColaborador(null);
+          }}
         />
       </Modal>
 
@@ -164,9 +198,9 @@ export default function ColaboradoresListScreen() {
         visible={showConfirmModal}
         onClose={() => {
           setShowConfirmModal(false);
-          setCedulaConfirmacion("");
+          setCedulaConfirmacion('');
           setDeleteTarget(null);
-          setCedulaError(""); // limpiar error al cerrar
+          setCedulaError('');
         }}
         showCloseButton={false}
         containerStyle={styles.modalConfirmContainer}
@@ -185,20 +219,18 @@ export default function ColaboradoresListScreen() {
           </>
         )}
 
-
-
         <Input
           placeholder="Ingrese la cédula para confirmar"
           value={cedulaConfirmacion}
           onChangeText={(text) => {
             setCedulaConfirmacion(text);
-            setCedulaError(""); // limpiar error al escribir
+            setCedulaError('');
           }}
           keyboardType="numeric"
           containerStyle={styles.modalInput}
         />
-                {/* Mostrar error dentro del modal */}
-        {cedulaError !== "" && (
+        {/* Mostrar error dentro del modal */}
+        {cedulaError !== '' && (
           <Alert
             variant="danger"
             message={cedulaError}
@@ -209,9 +241,9 @@ export default function ColaboradoresListScreen() {
           <Button
             onPress={() => {
               setShowConfirmModal(false);
-              setCedulaConfirmacion("");
+              setCedulaConfirmacion('');
               setDeleteTarget(null);
-              setCedulaError("");
+              setCedulaError('');
             }}
             variant="outline"
             style={styles.modalCancelBtn}
@@ -232,23 +264,6 @@ export default function ColaboradoresListScreen() {
             </View>
           </Button>
         </View>
-      </Modal>
-
-      {/* Modal para ver detalles */}
-      <Modal
-        visible={!!selectedColaboradorId}
-        onClose={() => setSelectedColaboradorId(null)}
-        showCloseButton={false}
-        containerStyle={styles.modalDetalleContainer}
-        overlayStyle={styles.modalDetalleOverlay}
-      >
-        <ColaboradorDetalleScreen
-          colaboradorId={selectedColaboradorId}
-          onClose={() => setSelectedColaboradorId(null)}
-          onSelectTrabajador={(id) => {
-            setSelectedColaboradorId(id);
-          }}
-        />
       </Modal>
     </View>
   );

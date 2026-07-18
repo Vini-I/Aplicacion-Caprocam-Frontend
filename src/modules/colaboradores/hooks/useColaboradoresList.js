@@ -21,13 +21,11 @@ export function useColaboradoresList() {
   const [activeTab, setActiveTab] = useState("internos");
   const [modalVisible, setModalVisible] = useState(false);
   const [editingColaborador, setEditingColaborador] = useState(null);
-  const [selectedColaboradorId, setSelectedColaboradorId] = useState(null);
   const [searchText, setSearchText] = useState("");
   const [cedulaConfirmacion, setCedulaConfirmacion] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [cedulaError, setCedulaError] = useState("");
-
 
   // Estado para la alerta flotante
   const [alert, setAlert] = useState(null);
@@ -35,7 +33,6 @@ export function useColaboradoresList() {
 
   // Función para mostrar alerta con auto-cierre
   const showAlert = (type, message) => {
-    // Limpiar timeout anterior
     if (alertTimeoutRef.current) {
       clearTimeout(alertTimeoutRef.current);
     }
@@ -98,44 +95,42 @@ export function useColaboradoresList() {
     setModalVisible(true);
   };
 
-const handleDeletePress = (id) => {
-  const colaborador = listaOriginal.find((c) => c.id === id);
-  if (colaborador) {
-    setDeleteTarget(colaborador);
-    setCedulaConfirmacion("");
-    setCedulaError("");   // <-- agrega esta línea
-    setShowConfirmModal(true);
-  }
-};
+  const handleDeletePress = (id) => {
+    const colaborador = listaOriginal.find((c) => c.id === id);
+    if (colaborador) {
+      setDeleteTarget(colaborador);
+      setCedulaConfirmacion("");
+      setCedulaError("");
+      setShowConfirmModal(true);
+    }
+  };
 
-const confirmDelete = async () => {
-  if (!deleteTarget) {
-    setCedulaError("No se encontró el colaborador a eliminar.");
-    return;
-  }
+  const confirmDelete = async () => {
+    if (!deleteTarget) {
+      setCedulaError("No se encontró el colaborador a eliminar.");
+      return;
+    }
 
-  if (cedulaConfirmacion !== deleteTarget.cedula) {
-    setCedulaError("La cédula ingresada no coincide con la del colaborador.");
-    return;
-  }
+    if (cedulaConfirmacion !== deleteTarget.cedula) {
+      setCedulaError("La cédula ingresada no coincide con la del colaborador.");
+      return;
+    }
 
-  try {
-    await eliminarActual(deleteTarget.id);
-    // Éxito: mantén el showAlert para notificar éxito en la lista
-    showAlert("warning", `El colaborador ${deleteTarget.nombre} ha sido eliminado correctamente.`);
-    setShowConfirmModal(false);
-    setDeleteTarget(null);
-    setCedulaConfirmacion("");
-    setCedulaError("");
-  } catch (error) {
-    setCedulaError("No se pudo eliminar el colaborador. Intente nuevamente.");
-  }
-};
+    try {
+      await eliminarActual(deleteTarget.id);
+      showAlert("warning", `El colaborador ${deleteTarget.nombre} ha sido eliminado correctamente.`);
+      setShowConfirmModal(false);
+      setDeleteTarget(null);
+      setCedulaConfirmacion("");
+      setCedulaError("");
+    } catch (error) {
+      setCedulaError("No se pudo eliminar el colaborador. Intente nuevamente.");
+    }
+  };
 
   const handleSubmit = async (formData) => {
     try {
       if (editingColaborador) {
-        // Actualizar
         if (activeTab === "internos") {
           await actualizarColaborador(editingColaborador.id, formData);
         } else {
@@ -143,7 +138,6 @@ const confirmDelete = async () => {
         }
         showAlert("success", `Colaborador ${formData.nombre} actualizado correctamente.`);
       } else {
-        // Crear
         if (activeTab === "internos") {
           await crearColaborador({ ...formData, rol: "camprocam_worker" });
         } else {
@@ -151,16 +145,11 @@ const confirmDelete = async () => {
         }
         showAlert("success", `Colaborador ${formData.nombre} agregado correctamente.`);
       }
-      // Cerrar modal solo si todo salió bien
       setModalVisible(false);
       setEditingColaborador(null);
     } catch (error) {
       showAlert("danger", "Ocurrió un error al guardar el colaborador. Intente nuevamente.");
     }
-  };
-
-  const openStats = (colaboradorId) => {
-    setSelectedColaboradorId(colaboradorId);
   };
 
   return {
@@ -170,8 +159,6 @@ const confirmDelete = async () => {
     setModalVisible,
     editingColaborador,
     setEditingColaborador,
-    selectedColaboradorId,
-    setSelectedColaboradorId,
     searchText,
     setSearchText,
     cedulaConfirmacion,
@@ -180,20 +167,18 @@ const confirmDelete = async () => {
     setDeleteTarget,
     showConfirmModal,
     setShowConfirmModal,
+    cedulaError,
+    setCedulaError,
     internos,
     externos,
     loading,
     error,
     lista,
-    eliminarActual,
     handleAdd,
     handleEdit,
     handleDeletePress,
     confirmDelete,
     handleSubmit,
-    openStats,
     alert,
-      cedulaError,
-  setCedulaError,
   };
 }
