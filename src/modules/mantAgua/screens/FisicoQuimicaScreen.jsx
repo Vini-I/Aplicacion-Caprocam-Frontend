@@ -94,38 +94,26 @@ export default function FisicoQuimicaScreen({ onBack }) {
                 <Text style={styles.cardTitle}>Finca y estanque</Text>
               </View>
 
-              <View style={[styles.selectWrapper, styles.selectWrapperFinca]}>
-                <View style={styles.selectContainer}>
-                  <Select
-                    label="Seleccione la finca *"
-                    placeholder="Seleccione una finca"
-                    options={opcionesFincas}
-                    value={fincaSeleccionada}
-                    onChange={handleFincaChange}
-                    containerStyle={styles.selectField}
-                    labelStyle={[styles.label, styles.selectLabel]}
-                    selectStyle={submitted && !fincaSeleccionada ? [styles.selectButton, styles.errorInput] : styles.selectButton}
-                  />
-                </View>
-                <View style={styles.selectPlaceholder} />
-              </View>
+              <Select
+                label="Seleccione la finca *"
+                placeholder="Seleccione una finca"
+                options={opcionesFincas}
+                value={fincaSeleccionada}
+                onChange={handleFincaChange}
+                labelStyle={styles.label}
+                selectStyle={submitted && !fincaSeleccionada ? styles.errorInput : undefined}
+              />
 
-              <View style={[styles.selectWrapper, styles.selectWrapperEstanque]}>
-                <View style={styles.selectContainer}>
-                  <Select
-                    label="Seleccione el estanque *"
-                    placeholder="Seleccione un estanque"
-                    options={estanquesFiltrados}
-                    value={estanqueSeleccionado}
-                    onChange={handleEstanqueChange}
-                    disabled={!fincaSeleccionada}
-                    containerStyle={styles.selectField}
-                    labelStyle={[styles.label, styles.selectLabel]}
-                    selectStyle={submitted && !estanqueSeleccionado ? [styles.selectButton, styles.errorInput] : styles.selectButton}
-                  />
-                </View>
-                <View style={styles.selectPlaceholder} />
-              </View>
+              <Select
+                label="Seleccione el estanque *"
+                placeholder="Seleccione un estanque"
+                options={estanquesFiltrados}
+                value={estanqueSeleccionado}
+                onChange={handleEstanqueChange}
+                disabled={!fincaSeleccionada}
+                labelStyle={styles.label}
+                selectStyle={submitted && !estanqueSeleccionado ? styles.errorInput : undefined}
+              />
 
               {estanqueSeleccionadoObj && (
                 <Text style={styles.estanqueInfo}>
