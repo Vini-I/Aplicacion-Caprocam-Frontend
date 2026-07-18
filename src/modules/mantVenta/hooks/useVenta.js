@@ -46,6 +46,16 @@ export function obtenerFechaActual() {
   return `${dia}/${mes}/${anio}`;
 }
 
+export function formatearFechaParaInput(fecha) {
+  if (!fecha) return obtenerFechaActual();
+
+  const [anio, mes, dia] = fecha.split("-");
+
+  if (!anio || !mes || !dia) return obtenerFechaActual();
+
+  return `${dia}/${mes}/${anio}`;
+}
+
 export function convertirFechaParaBackend(fechaDDMMYYYY) {
   const [dia, mes, anio] = fechaDDMMYYYY.split("/");
   return `${anio}-${mes}-${dia}`;
@@ -122,6 +132,7 @@ export function useVenta() {
   const [tipoMensaje, setTipoMensaje] = useState("");
   const [errores, setErrores] = useState({});
   const [guardando, setGuardando] = useState(false);
+  const [ventas, setVentas] = useState([]);
 
   useEffect(() => {
     let activo = true;
@@ -284,6 +295,18 @@ export function useVenta() {
     [limpiarError],
   );
 
+  const handleFechaChange = useCallback(
+    (value) => {
+      if (!value) {
+        setFechaVenta(obtenerFechaActual());
+        return;
+      }
+
+      setFechaVenta(value);
+    },
+    [],
+  );
+
   const limpiarFormulario = useCallback(() => {
     setFincaSeleccionada("");
     setEstanqueSeleccionado("");
@@ -338,6 +361,7 @@ export function useVenta() {
 
       await createVenta(ventaDTO);
 
+      setVentas((actual) => [ventaDTO, ...actual]);
       setTipoMensaje("success");
 
       setMensaje("Venta guardada correctamente.")
@@ -405,7 +429,9 @@ export function useVenta() {
     opcionesCompradores,
     precioKiloNumero,
     totalVenta,
+    ventas,
     // setters directos
+    setFechaVenta,
     setEstanqueSeleccionado,
     handleFincaChange,
     handlePesoPromedioChange,
@@ -414,6 +440,7 @@ export function useVenta() {
     handlePrecioChange,
     handleCompradorChange,
     handleColaboradorChange,
+    handleFechaChange,
     limpiarError,
     guardarVenta,
   };

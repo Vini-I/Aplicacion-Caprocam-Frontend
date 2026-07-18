@@ -49,7 +49,7 @@ export default function FincaDetalleScreen({
         Subtitulo={finca.nombre}
         Icono="document"
       />
-      <ScrollView style={STYLE.container} showsVerticalScrollIndicator={false}>
+      <ScrollView showsVerticalScrollIndicator={false} style={STYLE.container}>
         <View style={STYLE.contentWrapper}>
           <Card>
             <View>
