@@ -71,8 +71,15 @@ export const styles = StyleSheet.create({
     marginBottom: 12,
   },
   modalContainer: {
-    maxWidth: 420,
+    maxWidth: 900,
     alignSelf: "center",
+  },
+  listaScroll: {
+    maxHeight: 320,
+  },
+  alert: {
+    marginTop: 4,
+    marginBottom: 8,
   },
   errorNombreNuevo: {
     color: COLORS.error,
@@ -98,6 +105,9 @@ export const styles = StyleSheet.create({
     marginTop: 0,
     paddingVertical: 8,
     paddingHorizontal: 4,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
   },
   separadorLinks: {
     color: COLORS.textTertiary,
@@ -128,14 +138,17 @@ export const styles = StyleSheet.create({
     gap: 4,
   },
   btnItemLista: {
-    backgroundColor: "transparent",
     marginTop: 0,
     minHeight: 44,
-    minWidth: 44,
     paddingHorizontal: 10,
-    paddingVertical: 12,
+    paddingVertical: 8,
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
+    gap: 6,
+  },
+  btnItemListaEliminar: {
+    borderColor: COLORS.error,
   },
   textoBtnEliminarCatalogo: {
     color: COLORS.error,
@@ -150,6 +163,10 @@ export const styles = StyleSheet.create({
   button: {
     flex: 1,
     marginTop: 0,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
   },
   textoBoton: {
     color: COLORS.primary,

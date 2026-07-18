@@ -35,7 +35,9 @@ export function useCatalogoModal({
 
   const [itemEnEdicionValue, setItemEnEdicionValue] = useState(null);
   const [nombreForm, setNombreForm] = useState("");
-  const [errorForm, setErrorForm] = useState("");
+  const [nombreConError, setNombreConError] = useState(false);
+  const [mensaje, setMensaje] = useState("");
+  const [mensajeVariant, setMensajeVariant] = useState("info");
 
   const [itemAEliminar, setItemAEliminar] = useState(null);
 
@@ -68,7 +70,8 @@ export function useCatalogoModal({
     setVistaModal(null);
     setItemEnEdicionValue(null);
     setNombreForm("");
-    setErrorForm("");
+    setNombreConError(false);
+    setMensaje("");
     setItemAEliminar(null);
   }
 
@@ -76,7 +79,8 @@ export function useCatalogoModal({
     setCampoActivo(campo);
     setItemEnEdicionValue(null);
     setNombreForm("");
-    setErrorForm("");
+    setNombreConError(false);
+    setMensaje("");
     setVistaModal("formulario");
   }
 
@@ -88,37 +92,57 @@ export function useCatalogoModal({
   function abrirEditar(item) {
     setItemEnEdicionValue(item.value);
     setNombreForm(item.label);
-    setErrorForm("");
+    setNombreConError(false);
+    setMensaje("");
     setVistaModal("formulario");
   }
 
   function volverALista() {
     setItemEnEdicionValue(null);
     setNombreForm("");
-    setErrorForm("");
+    setNombreConError(false);
+    setMensaje("");
     setItemAEliminar(null);
     setVistaModal("lista");
   }
 
   function guardarFormulario() {
     if (!nombreForm.trim()) {
-      setErrorForm("Ingresa un nombre.");
+      setNombreConError(true);
+      setMensaje("Debes completar los campos obligatorios.");
+      setMensajeVariant("danger");
       return;
     }
 
+    setNombreConError(false);
+
     if (itemEnEdicionValue) {
+      const itemOriginal = (opcionesPorCampo[campoActivo] || []).find(
+        (item) => item.value === itemEnEdicionValue,
+      );
+
+      if (itemOriginal && itemOriginal.label === nombreForm.trim()) {
+        setMensaje("No hay cambios para guardar.");
+        setMensajeVariant("danger");
+        return;
+      }
+
       const handler = handlersEditar[campoActivo];
       if (handler) {
         handler(itemEnEdicionValue, nombreForm);
       }
-      volverALista();
     } else {
       const handler = handlersAgregar[campoActivo];
       if (handler) {
         handler(nombreForm);
       }
-      cerrarTodo();
     }
+
+    setItemEnEdicionValue(null);
+    setNombreForm("");
+    setVistaModal("lista");
+    setMensaje("Registrado correctamente.");
+    setMensajeVariant("success");
   }
 
   function pedirConfirmacionEliminar(item) {
@@ -140,7 +164,9 @@ export function useCatalogoModal({
     itemEnEdicionValue,
     nombreForm,
     setNombreForm,
-    errorForm,
+    nombreConError,
+    mensaje,
+    mensajeVariant,
     itemAEliminar,
 
     opcionesPorCampo,
