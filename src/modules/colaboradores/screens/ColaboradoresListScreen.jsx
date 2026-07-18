@@ -4,20 +4,18 @@
  * ============================================================
  *
  * Pantalla principal de administración de colaboradores.
- * Permite cambiar entre personal interno y dueños externos,
- * buscar, agregar, editar, eliminar y ver detalles de cada colaborador.
+ * Muestra todos los colaboradores en una sola lista con búsqueda
+ * y filtro por rol (similar al módulo de Equipos).
  *
  * Dependencias:
- * - useColaboradoresList hook para lógica y estado
- * - ColaboradorCard, ColaboradorForm (usado en pantalla separada)
- * - Layout global STYLE
- * - Iconos desde theme/icons
+ * - useColaboradoresList hook para datos y estado.
+ * - ColaboradorCard para cada elemento.
+ * - SearchBar y FilterButton para filtrado.
+ * - Botón flotante "Agregar colaborador" fijo en la parte inferior.
+ * ============================================================
  */
 
-// ============================================================
-// IMPORTS
-// ============================================================
-import React, { useCallback } from 'react';
+import React, { useCallback, useState, useMemo } from 'react';
 import { View, ScrollView } from 'react-native';
 import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 
@@ -28,25 +26,33 @@ import Button from '../../../shared/components/Button';
 import CustomText from '../../../shared/components/Text';
 import Icon from '../../../shared/components/Icons';
 import SearchBar from '../../inventarios/components/SearchBar';
-import { STYLE } from '../../../theme/style';
-import { ICONS } from '../../../theme/icons';
-import { COLORS } from '../../../theme/colors';
-import { styles } from '../styles/colaboradoresListStyles';
+import FilterButton from '../../inventarios/components/FilterButton';
 import Alert from '../../../shared/components/Alert';
 import Modal from '../../../shared/components/Modal';
 import Input from '../../../shared/components/Input';
 
-// ============================================================
-// COMPONENTE PRINCIPAL
-// ============================================================
+import { STYLE } from '../../../theme/style';
+import { ICONS } from '../../../theme/icons';
+import { COLORS } from '../../../theme/colors';
+import { styles } from '../styles/colaboradoresListStyles';
+
+// Opciones para el filtro por rol
+const CATEGORIAS = [
+  { label: 'Todos', value: 'todos' },
+  { label: 'Trabajador Camprocam', value: 'camprocam_worker' },
+  { label: 'Dueño Externo', value: 'external_owner' },
+  { label: 'Trabajador Externo', value: 'external_worker' },
+];
+
 export default function ColaboradoresListScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const editId = params.editId;
 
   const {
-    activeTab,
-    setActiveTab,
+    colaboradores,
+    loading,
+    error,
     searchText,
     setSearchText,
     cedulaConfirmacion,
@@ -55,19 +61,46 @@ export default function ColaboradoresListScreen() {
     setDeleteTarget,
     showConfirmModal,
     setShowConfirmModal,
-    loading,
-    error,
-    lista,
-    handleAdd,
-    handleEdit,
-    handleDeletePress,
-    confirmDelete,
-    alert,
     cedulaError,
     setCedulaError,
+    alert,
+    handleDeletePress,
+    confirmDelete,
   } = useColaboradoresList();
 
-  // Detectar si se viene de la pantalla de detalle con editId para redirigir al formulario
+  // Estado de filtros del FilterButton
+  const [filtros, setFiltros] = useState({
+    categories: [],
+    suppliers: [],
+    units: [],
+    lowStock: false,
+    expiryDate: '',
+  });
+
+  // Aplicar búsqueda y filtros a la lista
+  const listaFiltrada = useMemo(() => {
+    let result = colaboradores;
+
+    // Búsqueda por texto
+    if (searchText.trim()) {
+      const q = searchText.toLowerCase().trim();
+      result = result.filter((c) =>
+        c.nombre.toLowerCase().includes(q) ||
+        c.cedula.includes(q) ||
+        c.telefono.includes(q) ||
+        c.email.toLowerCase().includes(q)
+      );
+    }
+
+    // Filtro por rol (categoría)
+    if (filtros.categories.length > 0 && !filtros.categories.includes('todos')) {
+      result = result.filter((c) => filtros.categories.includes(c.rol));
+    }
+
+    return result;
+  }, [colaboradores, searchText, filtros]);
+
+  // Redirigir desde detalle con editId al formulario
   useFocusEffect(
     useCallback(() => {
       if (editId) {
@@ -79,7 +112,7 @@ export default function ColaboradoresListScreen() {
     }, [editId, router])
   );
 
-  // Navegar al detalle de un colaborador
+  // Navegaciones
   const openDetail = (colaboradorId) => {
     router.push({
       pathname: '/(drawer)/colaboradores/detalle',
@@ -87,7 +120,6 @@ export default function ColaboradoresListScreen() {
     });
   };
 
-  // Navegar al formulario de edición
   const handleEditNavigation = (colaborador) => {
     router.push({
       pathname: '/(drawer)/colaboradores/form',
@@ -95,23 +127,17 @@ export default function ColaboradoresListScreen() {
     });
   };
 
-  // Navegar al formulario de creación
   const handleAddNavigation = () => {
     router.push('/(drawer)/colaboradores/form');
   };
 
-  // --------------------------------------------------------
-  // RENDERIZADO CONDICIONAL
-  // --------------------------------------------------------
+  // Estados de carga y error
   if (loading) return <Spinner text="Cargando colaboradores..." />;
   if (error) return <CustomText style={styles.error}>Error: {error}</CustomText>;
 
-  // --------------------------------------------------------
-  // RENDER PRINCIPAL
-  // --------------------------------------------------------
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.white }}>
-      {/* Barra de búsqueda y botón agregar - fijos arriba */}
+      {/* Barra de búsqueda y filtro */}
       <View style={styles.searchRow}>
         <SearchBar
           value={searchText}
@@ -119,32 +145,31 @@ export default function ColaboradoresListScreen() {
           placeholder="Buscar por nombre, teléfono, email o cédula"
           containerStyle={styles.searchInput}
         />
-        <Button
-          variant="outline"
-          onPress={handleAddNavigation}
-          style={[styles.addButtonContainer, { borderColor: COLORS.primary }]}
-        >
-          <View style={styles.addButtonContent}>
-            <Icon icon={ICONS.add} size={16} color={COLORS.primary} />
-            <CustomText style={styles.addButtonText}>Agregar colaborador</CustomText>
-          </View>
-        </Button>
+        <FilterButton
+          categories={CATEGORIAS}
+          suppliers={[]} // Por ahora no hay filtro por estado
+          activeFilters={filtros}
+          onApply={setFiltros}
+          showLowStock={false}
+          showExpiryDate={false}
+          buttonStyle={styles.filterButtonStyle}
+        />
       </View>
 
-      {/* Alerta flotante: se muestra debajo de la barra de búsqueda */}
+      {/* Alerta flotante */}
       {alert && (
         <View style={styles.alertWrapper}>
           <Alert variant={alert.type} message={alert.message} />
         </View>
       )}
 
-      {/* Lista scrolleable */}
+      {/* Lista de colaboradores */}
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={true}
       >
-        {lista.map((colab) => (
+        {listaFiltrada.map((colab) => (
           <ColaboradorCard
             key={colab.id}
             colaborador={colab}
@@ -155,25 +180,19 @@ export default function ColaboradoresListScreen() {
         ))}
       </ScrollView>
 
-      {/* Tabs fijos en la parte inferior */}
-      <View style={styles.tabBar}>
+      {/* Botón flotante "Agregar colaborador" */}
+      <View style={styles.floatingButtonContainer}>
         <Button
           variant="outline"
-          style={[styles.tab, activeTab === 'internos' && styles.activeTab]}
-          onPress={() => setActiveTab('internos')}
+          onPress={handleAddNavigation}
+          style={styles.floatingButton}
         >
-          <CustomText style={styles.tabText}>Personal Interno</CustomText>
-        </Button>
-        <Button
-          variant="outline"
-          style={[styles.tab, activeTab === 'externos' && styles.activeTab]}
-          onPress={() => setActiveTab('externos')}
-        >
-          <CustomText style={styles.tabText}>Dueños Externos</CustomText>
+          <Icon icon={ICONS.add} size={16} color={COLORS.primary} />
+          <CustomText style={styles.floatingButtonText}>Agregar colaborador</CustomText>
         </Button>
       </View>
 
-      {/* Modal de confirmación de eliminación con validación de cédula */}
+      {/* Modal de confirmación de eliminación */}
       <Modal
         visible={showConfirmModal}
         onClose={() => {
@@ -198,7 +217,6 @@ export default function ColaboradoresListScreen() {
             <CustomText style={styles.modalCedula}>{deleteTarget.cedula}</CustomText>
           </>
         )}
-
         <Input
           placeholder="Ingrese la cédula para confirmar"
           value={cedulaConfirmacion}
@@ -209,7 +227,6 @@ export default function ColaboradoresListScreen() {
           keyboardType="numeric"
           containerStyle={styles.modalInput}
         />
-        {/* Mostrar error dentro del modal */}
         {cedulaError !== '' && (
           <Alert
             variant="danger"

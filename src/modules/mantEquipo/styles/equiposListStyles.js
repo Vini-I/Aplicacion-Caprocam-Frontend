@@ -81,11 +81,12 @@ export const styles = StyleSheet.create({
   // TareasScreen: máximo 900, centrado, independiente del scroll)
   floatingButtonContainer: {
     position: "absolute",
-    bottom: 15,
+    bottom: 0,
     left: 0,
     right: 0,
     alignItems: "center",
     paddingHorizontal: 16,
+    paddingVertical: 15,
     backgroundColor: COLORS.white, // Fondo semitransparente para que se vea el contenido detrás
   },
 
