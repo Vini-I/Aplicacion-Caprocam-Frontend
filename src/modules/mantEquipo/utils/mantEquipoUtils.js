@@ -104,3 +104,24 @@ export function etiquetasTareas(tareas) {
 export function obtenerFechaHoraActual() {
   return formatDate(new Date());
 }
+
+/**
+ * Valida que el costo de mano de obra sea un número >= 0.
+ * @param {string} valor — valor del campo como string
+ * @returns {boolean} true si es válido
+ */
+export function validarCostoManoObra(valor) {
+  if (!valor || !String(valor).trim()) return false;
+  const num = parseFloat(valor);
+  return !isNaN(num) && num >= 0;
+}
+
+/**
+ * Construye el string "Nombre Serie" de un equipo para el campo herramienta.
+ * @param {object|null} equipo
+ * @returns {string}
+ */
+export function formatearNombreHerramienta(equipo) {
+  if (!equipo) return '';
+  return `${equipo.nombre} ${equipo.serie}`;
+}

@@ -84,7 +84,7 @@ export default function WebRegisterScreen({
   ];
 
   return (
-    <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+    <ScrollView style={styles.scrollView} contentContainerStyle={{ flexGrow: 1, backgroundColor: COLORS.white }} showsVerticalScrollIndicator={false}>
 
       <Modal
         visible={showSuccessModal}

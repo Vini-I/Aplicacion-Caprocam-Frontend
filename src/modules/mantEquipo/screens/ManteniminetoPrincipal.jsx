@@ -168,15 +168,15 @@ export default function ManteniminetoPrincipal({
   // Muestra spinner centrado mientras se cargan los tickets iniciales.
   if (cargando) {
     return (
-      <View style={[STYLE.container, { justifyContent: "center", alignItems: "center" }]}>
+      <View style={[STYLE.container, styles.spinnerContainer]}>
         <Spinner />
       </View>
     );
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: COLORS.white }}>
-      <ScrollView style={STYLE.container} contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
+    <View style={styles.screenRoot}>
+      <ScrollView style={STYLE.container} contentContainerStyle={styles.screenScrollContent} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
         <View style={STYLE.contentWrapper}>
 
           {/* Notificación Alerta */}
@@ -184,18 +184,18 @@ export default function ManteniminetoPrincipal({
             <Alert
               variant={alerta.tipo}
               message={alerta.mensaje}
-              style={{ marginBottom: 14 }}
-              textStyle={{ color: "#000000" }}
+              style={styles.alertBottom}
+              textStyle={{ color: COLORS.black }}
             />
           )}
 
           {/* Toolbar: búsqueda y filtro */}
-          <View style={[styles.toolbar, { zIndex: 10, marginTop: 12 }]}>
+          <View style={[styles.toolbar, styles.toolbarWithZIndex]}>
             <SearchBar
               value={busqueda}
               onChangeText={setBusqueda}
               placeholder={TEXTOS_PANTALLA.placeholderBuscar}
-              containerStyle={{ flex: 1, minWidth: 180 }}
+              containerStyle={styles.searchBarFlex}
             />
             <FilterButton
               categories={LISTA_ESTADOS_TICKET}
@@ -244,8 +244,8 @@ export default function ManteniminetoPrincipal({
 
             {/* Filas */}
             {ticketsFiltrados.length === 0 ? (
-              <View style={{ padding: 24, alignItems: "center" }}>
-                <CustomText style={{ color: COLORS.textTertiary, fontSize: 14 }}>{TEXTOS_PANTALLA.sinTickets}</CustomText>
+              <View style={styles.emptyState}>
+                <CustomText style={styles.emptyStateText}>{TEXTOS_PANTALLA.sinTickets}</CustomText>
               </View>
             ) : (
               ticketsFiltrados.map((item) => (
@@ -259,14 +259,14 @@ export default function ManteniminetoPrincipal({
           </View>
 
           {/* Botones de acción debajo de la tabla */}
-          <View style={{ flexDirection: "row", width: "100%", gap: 12, marginTop: 16 }}>
+          <View style={styles.bottomButtonsRow}>
             <Button
               variant="outline"
               onPress={onNavigateToCreate}
               style={[styles.btnAddMaint, { flex: 1 }]}
             >
               <Icon icon={ICONS.add} size={15} color={COLORS.primary} />
-              <CustomText style={[styles.btnLabel, { color: COLORS.primary }]}>{TEXTOS_PANTALLA.btnAgregarMant}</CustomText>
+              <CustomText style={[styles.btnLabel, styles.btnLabelPrimary]}>{TEXTOS_PANTALLA.btnAgregarMant}</CustomText>
             </Button>
             <Button
               variant="outline"
@@ -274,7 +274,7 @@ export default function ManteniminetoPrincipal({
               style={[styles.btnAddTask, { flex: 1 }]}
             >
               <Icon icon={ICONS.clipboard} size={15} color={COLORS.warning} />
-              <CustomText style={[styles.btnLabel, { color: COLORS.warning }]}>{TEXTOS_PANTALLA.btnAgregarTarea}</CustomText>
+              <CustomText style={[styles.btnLabel, styles.btnLabelWarning]}>{TEXTOS_PANTALLA.btnAgregarTarea}</CustomText>
             </Button>
           </View>
 
