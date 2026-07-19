@@ -53,6 +53,7 @@ export function useTrazabilidad() {
   const [plAutocompletado, setPlAutocompletado] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [mostrarAlerta, setMostrarAlerta] = useState(false);
+  const [fincas, setFincas] = useState([]);
 
   const timerAlertaRef = useRef(null);
 
@@ -62,7 +63,10 @@ export function useTrazabilidad() {
     };
   }, []);
 
-  const fincas = obtenerFincas();
+  useEffect(() => {
+    obtenerFincas().then(setFincas).catch(() => setFincas([]));
+  }, []);
+
   const estanquesOrigen = obtenerEstanquesPorFinca(formData.fincaId);
   const estanquesDestino = obtenerEstanquesPorFinca(formData.fincaId);
 
@@ -157,7 +161,7 @@ export function useTrazabilidad() {
     return true;
   }
 
-  function manejarEnvio() {
+  async function manejarEnvio() {
     setSubmitted(true);
 
     const esValido = validarFormulario();
@@ -166,7 +170,13 @@ export function useTrazabilidad() {
       return;
     }
 
-    crearRegistroTrazabilidad(formData);
+    try {
+      await crearRegistroTrazabilidad(formData);
+    } catch (error) {
+      setMensajeError("No se pudo guardar el registro. Intenta de nuevo.");
+      return;
+    }
+
     setMensajeError("");
     setMostrarAlerta(true);
 

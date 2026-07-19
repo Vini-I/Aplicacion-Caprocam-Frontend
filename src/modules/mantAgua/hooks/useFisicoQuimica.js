@@ -19,7 +19,6 @@
  * errorMessage               string  — mensaje de validación general
  * tieneMedicionesExistentes bool    — true si el estanque ya tenía mediciones
  * tieneAlgunaMedicion       bool    — true si hay al menos una lectura cargada
- * opcionesFincas             array   — opciones para el Select de finca
  * estanquesFiltrados         array   — opciones para el Select de estanque
  * estanqueSeleccionadoObj    obj     — objeto completo del estanque elegido
  * mostrarAlerta              bool    — true mientras se muestra "guardado exitosamente"
@@ -52,7 +51,8 @@ import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useRouter } from 'expo-router';
 import {
   guardarLectura,
-  manejarCambioEstanque,
+  actualizarLectura,
+  getLecturaPorEstanqueYFecha,
   manejarCambioFinca,
   manejarCambioOxigeno,
   manejarCambioPh,
@@ -60,12 +60,40 @@ import {
   manejarCambioTemperatura,
   hayMedicionesRegistradas,
   obtenerEstanquesPorFinca,
-  obtenerLecturasPorEstanque,
   obtenerOpcionesFincas,
   sincronizarLecturasLocales,
   validarFormularioFisicoQuimica,
   validarSeleccionAntesDeAgregar,
 } from '../services/FisicoQuimicaServices';
+
+// Convierte las lecturas de RangeCard ({id, value}) al formato que
+// espera la API ([{valor, etiqueta}]).
+// TODO CRÍTICO — SIN CONFIRMAR: el equipo de API mostró la respuesta
+// de GetPorId/GetAll con ph/salinidad/temperatura/oxigenoDisuelto
+// como valores planos (ej. "ph": 7.5), no como arreglo. No sabemos
+// todavía si el POST/PUT también espera plano ahora, ni cómo se
+// registraría más de una lectura por día (día/noche en pH, hasta 5
+// en oxígeno) si cada fila de la tabla solo guarda un valor por
+// medición. NO cambiar este mapeo hasta que el equipo de API confirme
+// el body real que espera crear/actualizar.
+function mapearLecturas(lecturas) {
+  return (lecturas ?? []).map((lectura, index) => ({
+    valor: lectura.value,
+    etiqueta: String(index + 1),
+  }));
+}
+
+// Inverso de mapearLecturas, para precargar el formulario.
+// Defensivo por el mismo TODO de arriba: si la API manda un arreglo
+// [{valor, etiqueta}] lo convierte a números planos; si manda un
+// valor plano (como en el ejemplo que dio API), lo envuelve en un
+// arreglo de un elemento para no tronar el RangeCard. Esto es un
+// parche temporal, no la solución — falta confirmar el contrato real.
+function desmapearLecturas(valor) {
+  if (Array.isArray(valor)) return valor.map((lectura) => lectura.valor);
+  if (typeof valor === 'number') return [valor];
+  return [];
+}
 
 export default function useFisicoQuimica() {
   // Lecturas que se envían a guardar/actualizar
@@ -98,9 +126,14 @@ export default function useFisicoQuimica() {
   const [submitted, setSubmitted] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [tieneMedicionesExistentes, setTieneMedicionesExistentes] = useState(false);
+  const [lecturaIdActual, setLecturaIdActual] = useState(null);
+
+  // Opciones de finca, ahora vienen de la API (async)
+  const [opcionesFincas, setOpcionesFincas] = useState([]);
 
   const timerAlertaRef = useRef(null);
   const router = useRouter();
+  const fechaHoy = new Date().toISOString().slice(0, 10);
 
   // Limpia el timer de alertas al desmontar
   useEffect(() => {
@@ -122,6 +155,13 @@ export default function useFisicoQuimica() {
     });
   }, [medicionesPorEstanque]);
 
+  // Carga las fincas desde la API al montar la pantalla
+  useEffect(() => {
+    obtenerOpcionesFincas()
+      .then(setOpcionesFincas)
+      .catch(() => setOpcionesFincas([]));
+  }, []);
+
   const tieneAlgunaMedicion = useMemo(
     () => hayMedicionesRegistradas([
       lecturasPhLocal,
@@ -132,7 +172,6 @@ export default function useFisicoQuimica() {
     [lecturasPhLocal, lecturasSalinidadLocal, lecturasTempLocal, lecturasOxLocal],
   );
 
-  const opcionesFincas = useMemo(() => obtenerOpcionesFincas(), []);
 
   const estanquesFiltrados = useMemo(
     () => obtenerEstanquesPorFinca(fincaSeleccionada),
@@ -148,11 +187,11 @@ export default function useFisicoQuimica() {
   const puedeAgregarMediciones = Boolean(fincaSeleccionada && estanqueSeleccionado);
 
   const handleIntentoAgregarSinSeleccion = useCallback(() => {
-  setSubmitted(true);
-  setErrorMessage(
-    validarSeleccionAntesDeAgregar({ fincaSeleccionada, estanqueSeleccionado }),
-  );
-}, [fincaSeleccionada, estanqueSeleccionado]);
+    setSubmitted(true);
+    setErrorMessage(
+      validarSeleccionAntesDeAgregar({ fincaSeleccionada, estanqueSeleccionado }),
+    );
+  }, [fincaSeleccionada, estanqueSeleccionado]);
 
   const handleFincaChange = useCallback((value) => {
     manejarCambioFinca({
@@ -167,27 +206,39 @@ export default function useFisicoQuimica() {
     setTieneMedicionesExistentes(false);
   }, []);
 
-  const handleEstanqueChange = useCallback((value) => {
-    manejarCambioEstanque({
-      value,
-      setters: {
-        estanque: setEstanqueSeleccionado,
-        mediciones: setMedicionesPorEstanque,
-        error: setErrorMessage,
-      },
-      obtenerLecturas: obtenerLecturasPorEstanque,
-    });
+const handleEstanqueChange = useCallback(async (value) => {
+    setEstanqueSeleccionado(value);
+    setErrorMessage("");
 
-    const lecturasExistentes = obtenerLecturasPorEstanque(value);
+    let lecturaExistente = null;
+    try {
+      lecturaExistente = await getLecturaPorEstanqueYFecha(value, fechaHoy);
+    } catch (error) {
+      lecturaExistente = null;
+    }
+
+    // La API devuelve "oxigenoDisuelto" (confirmado por API); el front
+    // usa "ox" en todo el formulario.
+    const mediciones = lecturaExistente
+      ? {
+          ph: desmapearLecturas(lecturaExistente.ph),
+          salinidad: desmapearLecturas(lecturaExistente.salinidad),
+          temperatura: desmapearLecturas(lecturaExistente.temperatura),
+          ox: desmapearLecturas(lecturaExistente.oxigenoDisuelto),
+        }
+      : { ph: [], salinidad: [], temperatura: [], ox: [] };
+
+    setMedicionesPorEstanque(mediciones);
+    setLecturaIdActual(lecturaExistente?.id ?? null);
     setTieneMedicionesExistentes(
       hayMedicionesRegistradas([
-        lecturasExistentes?.ph,
-        lecturasExistentes?.salinidad,
-        lecturasExistentes?.temperatura,
-        lecturasExistentes?.ox,
+        mediciones.ph,
+        mediciones.salinidad,
+        mediciones.temperatura,
+        mediciones.ox,
       ]),
     );
-  }, []);
+  }, [fechaHoy]);
 
   const handlePhChange = useCallback((values) => {
     manejarCambioPh({ values, setters: { ph: setLecturasPh }, localSetters: { ph: setLecturasPhLocal } });
@@ -205,13 +256,22 @@ export default function useFisicoQuimica() {
     manejarCambioOxigeno({ values, setters: { ox: setLecturasOx }, localSetters: { ox: setLecturasOxLocal } });
   }, []);
 
-  const alGuardar = useCallback(() => {
-    guardarLectura({
-      ph: lecturasPh,
-      salinidad: lecturasSalinidad,
-      temperatura: lecturasTemp,
-      oxigeno: lecturasOx,
-    });
+const alGuardar = useCallback(async () => {
+    try {
+      await guardarLectura({
+        fincaId: fincaSeleccionada,
+        estanqueId: estanqueSeleccionado,
+        fecha: fechaHoy,
+        ph: mapearLecturas(lecturasPh),
+        salinidad: mapearLecturas(lecturasSalinidad),
+        temperatura: mapearLecturas(lecturasTemp),
+        oxigeno: mapearLecturas(lecturasOx),
+      });
+    } catch (error) {
+      setErrorMessage('No se pudo guardar la lectura. Intenta de nuevo.');
+      return;
+    }
+
     setMostrarAlerta(true);
     if (timerAlertaRef.current) clearTimeout(timerAlertaRef.current);
     timerAlertaRef.current = setTimeout(() => {
@@ -219,9 +279,24 @@ export default function useFisicoQuimica() {
       timerAlertaRef.current = null;
       router.replace('/(drawer)/(tabs)/registros');
     }, 500);
-  }, [router, lecturasPh, lecturasSalinidad, lecturasTemp, lecturasOx]);
+  }, [router, fincaSeleccionada, estanqueSeleccionado, fechaHoy, lecturasPh, lecturasSalinidad, lecturasTemp, lecturasOx]);
 
-  const alEditar = useCallback(() => {
+  const alEditar = useCallback(async () => {
+    try {
+      await actualizarLectura(lecturaIdActual, {
+        fincaId: fincaSeleccionada,
+        estanqueId: estanqueSeleccionado,
+        fecha: fechaHoy,
+        ph: mapearLecturas(lecturasPh),
+        salinidad: mapearLecturas(lecturasSalinidad),
+        temperatura: mapearLecturas(lecturasTemp),
+        oxigeno: mapearLecturas(lecturasOx),
+      });
+    } catch (error) {
+      setErrorMessage('No se pudo actualizar la lectura. Intenta de nuevo.');
+      return;
+    }
+
     setMostrarAlertaEdicion(true);
     if (timerAlertaRef.current) clearTimeout(timerAlertaRef.current);
     timerAlertaRef.current = setTimeout(() => {
@@ -229,7 +304,7 @@ export default function useFisicoQuimica() {
       timerAlertaRef.current = null;
       router.replace('/(drawer)/(tabs)/registros');
     }, 500);
-  }, [router]);
+  }, [lecturaIdActual, fincaSeleccionada, estanqueSeleccionado, fechaHoy, lecturasPh, lecturasSalinidad, lecturasTemp, lecturasOx, router]);
 
   // Valida el formulario y, si pasa, dispara el guardado
   const handleGuardarClick = useCallback(() => {

@@ -4,31 +4,42 @@
  * ============================================================
  *
  * Descripción:
- * Implementa funciones de consulta y filtrado de registros de
- * trazabilidad. Actualmente usa datos locales en memoria como
- * placeholder hasta integrar con un backend.
+ * Consulta y registro de movimientos de trazabilidad contra la API.
+ * Estanques por finca y siembra activa siguen locales porque
+ * dependen de otros módulos (finca y siembra) que todavía no
+ * exponen esos endpoints.
  *
  * Funcionalidad principal:
- * - `obtenerRegistrosTrazabilidad`, `obtenerRegistroTrazabilidadPorId`,
- *   `filtrarRegistrosTrazabilidad`, `agregarRegistroTrazabilidad`,
- *   `obtenerFincas`, `obtenerEstanquesPorFinca`, `obtenerSiembraPorEstanque`, `obtenerColaboradores`.
+ * - `getRegistros`, `getRegistroPorId`, `crearRegistro`, `toggleActivoRegistro`,
+ *   `filtrarRegistrosTrazabilidad`, `obtenerFincas`, `obtenerEstanquesPorFinca`,
+ *   `obtenerSiembraPorEstanque`, `obtenerColaboradores`.
  *
  * Restricciones del proyecto:
- * - Reemplazar la implementación por llamadas a la API cuando el
- *   backend esté disponible, asegurando manejo de errores y tests.
+ * - No modificar los módulos de finca/colaboradores/siembra, solo
+ *   se consumen sus servicios.
  */
 
-import { registrosTrazabilidad } from "../screens/TrazabilidadData";
+import api from "../../../api/api";
+import { fincaService } from "../../finca/services/finca.service";
+import { colaboradorService } from "../../colaboradores/services/colaborador.service";
 import { obtenerSiembras } from "../../siembra/services/SiembraService";
 
-let registros = [...registrosTrazabilidad];
-
-export function obtenerRegistrosTrazabilidad() {
-  return registros;
+export async function getRegistros() {
+  try {
+    const response = await api.get("/registrosTrazabilidad");
+    return response.data.data;
+  } catch (error) {
+    throw error;
+  }
 }
 
-export function obtenerRegistroTrazabilidadPorId(id) {
-  return registros.find((registro) => registro.id === id);
+export async function getRegistroPorId(id) {
+  try {
+    const response = await api.get(`/registrosTrazabilidad/${id}`);
+    return response.data.data;
+  } catch (error) {
+    throw error;
+  }
 }
 
 export function filtrarRegistrosTrazabilidad(registros, texto, filtros) {
@@ -48,6 +59,9 @@ export function filtrarRegistrosTrazabilidad(registros, texto, filtros) {
 
     const coincideFiltros =
       (filtros.fincas.length === 0 || filtros.fincas.includes(registro.fincaId)) &&
+      ((filtros.estanques ?? []).length === 0 ||
+        filtros.estanques.includes(registro.estanqueOrigenId) ||
+        filtros.estanques.includes(registro.estanqueDestinoId)) &&
       (filtros.colaboradores.length === 0 ||
         filtros.colaboradores.includes(registro.colaboradorId)) &&
       (filtros.fecha === "" || registro.fecha === filtros.fecha);
@@ -56,21 +70,32 @@ export function filtrarRegistrosTrazabilidad(registros, texto, filtros) {
   });
 }
 
-export function agregarRegistroTrazabilidad(registro) {
-  registros = [registro, ...registros];
-
-  return registro;
+export async function crearRegistro(datos) {
+  try {
+    const response = await api.post("/registrosTrazabilidad", datos);
+    return response.data.data;
+  } catch (error) {
+    throw error;
+  }
 }
 
-export function obtenerFincas() {
-  return [
-    { label: "Finca Camarón de Occidente", value: "laReina" },
-    { label: "Finca Camarón del Sur", value: "laEsperanza" },
-    { label: "Finca Camarón del Norte", value: "laVilla" },
-  ];
+export async function toggleActivoRegistro(id) {
+  try {
+    const response = await api.put(`/registrosTrazabilidad/${id}/activo`);
+    return response.data.data;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function obtenerFincas() {
+  const fincas = await fincaService.getFincas();
+  // TODO: confirmar con API los nombres reales de los campos de finca
+  return fincas.map((finca) => ({ label: finca.nombre, value: finca.id }));
 }
 
 export function obtenerEstanquesPorFinca(fincaId) {
+  // Bloqueado: pendiente que finca exponga GET /fincas/:fincaId/estanques
   const estanquesPorFinca = {
     laReina: [
       { label: "Estanque P-01 (Pre-cría)", value: "A01" },
@@ -93,6 +118,8 @@ export function obtenerEstanquesPorFinca(fincaId) {
 }
 
 export function obtenerSiembraPorEstanque(estanqueId) {
+  // Bloqueado: pendiente confirmar con Siembra si expone
+  // GET /estanques/:estanqueId/siembra-activa
   if (!estanqueId) return null;
 
   const siembras = obtenerSiembras();
@@ -108,23 +135,17 @@ export function obtenerSiembraPorEstanque(estanqueId) {
   return siembra ?? null;
 }
 
-export function obtenerColaboradores() {
-  // Datos de ejemplo; en un escenario real, estos datos deberían provenir de una API o base de datos.
-  // con el listado de colaboradores se llena un array y este se 
-  // retorna para el uso del filtrado por colaborador en la pantalla de trazabilidad.
-
-  return [
-    { label: "Mario Juárez", value: "marioJuarez" },
-    { label: "Elena Rostova", value: "elenaRostova" },
-    { label: "Carlos Méndez", value: "carlosMendez" },
-  ];
+export async function obtenerColaboradores() {
+  const colaboradores = await colaboradorService.getColaboradores();
+  // TODO: confirmar con API los nombres reales de los campos de colaborador
+  return colaboradores.map((colaborador) => ({ label: colaborador.nombre, value: colaborador.id }));
 }
-  export function obtenerColaboradorSesion() {
-    // TODO: reemplazar por el colaborador autenticado real (token/contexto
-    // de sesión) cuando este módulo se conecte al backend de autenticación.
-    // Por ahora se simula el usuario que inició sesión.
-    // Este se utiliza en agregarRegistroTrazabilidad para asignar el colaborador que realiza la acción.
-    return { label: "Elena Rostova", value: "elenaRostova" };
-  }
+export function obtenerColaboradorSesion() {
+  // TODO: reemplazar por el colaborador autenticado real (token/contexto
+  // de sesión) cuando este módulo se conecte al backend de autenticación.
+  // Por ahora se simula el usuario que inició sesión.
+  // Este se utiliza en crearRegistro para asignar el colaborador que realiza la acción.
+  return { label: "Elena Rostova", value: "elenaRostova" };
+}
 
 

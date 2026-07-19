@@ -36,8 +36,6 @@
  *   onApply={(f) => setFilters(f)}
  * />
  */
-
-import { useState } from "react";
 import { View, ScrollView } from "react-native";
 
 import Modal from "../../../shared/components/Modal";
@@ -47,6 +45,7 @@ import Title from "../../../shared/components/Title";
 import Text from "../../../shared/components/Text";
 import Badge from "../../../shared/components/Badge";
 import Input from "../../../shared/components/Input";
+import { useFilterButton } from "../hooks/useFilterButton";
 
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
@@ -64,57 +63,27 @@ export default function FilterButton({
   style,
   containerStyle,
 }) {
-  const [modalVisible, setModalVisible] = useState(false);
-
-  const [pendingFincas, setPendingFincas] = useState([]);
-  const [pendingColaboradores, setPendingColaboradores] = useState([]);
-  const [pendingFecha, setPendingFecha] = useState("");
-
-  const activeCount =
-    (activeFilters.fincas?.length || 0) +
-    (activeFilters.colaboradores?.length || 0) +
-    (activeFilters.fecha ? 1 : 0);
+  const {
+    modalVisible,
+    pendingFincas,
+    pendingEstanques,
+    pendingColaboradores,
+    pendingFecha,
+    estanquesDisponibles,
+    activeCount,
+    setPendingFecha,
+    abrirModal,
+    cerrarModal,
+    toggleFinca,
+    toggleEstanque,
+    toggleColaborador,
+    limpiarFiltros,
+    aplicarFiltros,
+  } = useFilterButton({ activeFilters, onApply });
 
   const buttonVariant = activeCount > 0 ? "primary" : "outline";
   const buttonIconColor = activeCount > 0 ? COLORS.white : COLORS.textSecondary;
   const buttonTextColor = activeCount > 0 ? COLORS.white : COLORS.textSecondary;
-
-  function abrirModal() {
-    setPendingFincas([...(activeFilters.fincas || [])]);
-    setPendingColaboradores([...(activeFilters.colaboradores || [])]);
-    setPendingFecha(activeFilters.fecha || "");
-    setModalVisible(true);
-  }
-
-  function cerrarModal() {
-    setModalVisible(false);
-  }
-
-  function toggleItem(list, setList, value) {
-    setList((previous) =>
-      previous.includes(value)
-        ? previous.filter((item) => item !== value)
-        : [...previous, value],
-    );
-  }
-
-  function limpiarFiltros() {
-    setPendingFincas([]);
-    setPendingColaboradores([]);
-    setPendingFecha("");
-  }
-
-  function aplicarFiltros() {
-    if (onApply) {
-      onApply({
-        fincas: pendingFincas,
-        colaboradores: pendingColaboradores,
-        fecha: pendingFecha,
-      });
-    }
-
-    cerrarModal();
-  }
 
   return (
     <>
@@ -175,9 +144,20 @@ export default function FilterButton({
                   key={finca.value}
                   label={finca.label}
                   selected={pendingFincas.includes(finca.value)}
-                  onPress={() =>
-                    toggleItem(pendingFincas, setPendingFincas, finca.value)
-                  }
+                  onPress={() => toggleFinca(finca.value)}
+                />
+              ))}
+            </FilterSection>
+          )}
+
+          {estanquesDisponibles.length > 0 && (
+            <FilterSection label="Estanque">
+              {estanquesDisponibles.map((estanque) => (
+                <Chip
+                  key={estanque.value}
+                  label={estanque.label}
+                  selected={pendingEstanques.includes(estanque.value)}
+                  onPress={() => toggleEstanque(estanque.value)}
                 />
               ))}
             </FilterSection>
@@ -190,13 +170,7 @@ export default function FilterButton({
                   key={colaborador.value}
                   label={colaborador.label}
                   selected={pendingColaboradores.includes(colaborador.value)}
-                  onPress={() =>
-                    toggleItem(
-                      pendingColaboradores,
-                      setPendingColaboradores,
-                      colaborador.value,
-                    )
-                  }
+                  onPress={() => toggleColaborador(colaborador.value)}
                 />
               ))}
             </FilterSection>

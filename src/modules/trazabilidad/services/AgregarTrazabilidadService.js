@@ -4,54 +4,31 @@
  * ============================================================
  *
  * Descripción:
- * Servicio que crea un nuevo registro de trazabilidad en la
- * colección local (placeholder). Construye el objeto de registro
- * a partir del `formData` y delega la persistencia a
- * `agregarRegistroTrazabilidad`.
+ * Arma el body y crea un nuevo registro de trazabilidad contra la
+ * API. El backend regresa el registro completo (con nombres de
+ * finca/estanque/colaborador), ya no hace falta armarlo a mano.
  *
  * Reglas importantes:
  * - El registro es histórico: no hay edición ni borrado.
  * - Validaciones complejas deben ejecutarse antes de llamar aquí.
  */
 
-import {
-  obtenerFincas,
-  obtenerColaboradorSesion,
-  obtenerEstanquesPorFinca,
-  obtenerRegistrosTrazabilidad,
-  agregarRegistroTrazabilidad,
-} from "./TrazabilidadServices";
+import { obtenerColaboradorSesion, crearRegistro } from "./TrazabilidadServices";
 
-export function crearRegistroTrazabilidad(formData) {
-  const fincas = obtenerFincas();
+export async function crearRegistroTrazabilidad(formData) {
   const colaboradorSesion = obtenerColaboradorSesion();
-  const estanques = obtenerEstanquesPorFinca(formData.fincaId);
-  const registrosActuales = obtenerRegistrosTrazabilidad();
 
-  const finca = fincas.find((item) => item.value === formData.fincaId);
-  const origen = estanques.find(
-    (item) => item.value === formData.estanqueOrigenId,
-  );
-  const destino = estanques.find(
-    (item) => item.value === formData.estanqueDestinoId,
-  );
-
-  const nuevoRegistro = {
-    id: registrosActuales.length + 1,
+  // TODO: confirmar formato de fecha esperado por la API (front usa dd/mm/aaaa)
+  const body = {
     fincaId: formData.fincaId,
-    fincaNombre: finca?.label ?? "",
     estanqueOrigenId: formData.estanqueOrigenId,
-    estanqueOrigenLabel: origen?.label ?? "",
     estanqueDestinoId: formData.estanqueDestinoId,
-    estanqueDestinoLabel: destino?.label ?? "",
     fecha: formData.fecha,
     colaboradorId: colaboradorSesion.value,
-    colaboradorNombre: colaboradorSesion.label,
-    tamaño: formData.tamaño,
+    tamano: formData.tamaño,
     dias: formData.dias,
     pl: formData.pl,
-    tipoMovimiento: "Pre-cria a Engorde",
   };
 
-  return agregarRegistroTrazabilidad(nuevoRegistro);
+  return crearRegistro(body);
 }
