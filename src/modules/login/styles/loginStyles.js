@@ -80,6 +80,12 @@ const styles = StyleSheet.create({
   workersList: {
     marginTop: 6,
   },
+  workersScroll: {
+    height: 392, // ~5 items de ~72px cada uno
+  },
+  workersScrollCompressed: {
+    height: 336, // reducido ~56px cuando el alert de sync es visible
+  },
   workerButton: {
     marginTop: 0,
     marginBottom: 12,

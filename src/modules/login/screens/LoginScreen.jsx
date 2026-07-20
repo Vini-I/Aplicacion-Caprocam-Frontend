@@ -3,7 +3,7 @@
  * PANTALLA: LOGIN
  * ============================================================
  *
- * Selecciona un trabajador y valida su PIN para continuar.
+ * Selecciona un colaborador y valida su PIN para continuar.
  */
 
 import { useState } from 'react';
@@ -90,7 +90,7 @@ function LoginHeader({ formattedDate }) {
 /**
  * WorkerSection
  *
- * Lista a los trabajadores disponibles.
+ * Lista a los colaboradores disponibles.
  */
 function WorkerSection({
   workers,
@@ -134,7 +134,7 @@ function WorkerSection({
       {syncStatus === 'danger' && (
         <Alert
           variant="danger"
-          message="Error al sincronizar. Verifique su conexión a internet."
+          message="Error de sincronización. Verifica tu conexión."
           style={styles.syncAlert}
         />
       )}
@@ -144,20 +144,36 @@ function WorkerSection({
         placeholder={LOGIN_MESSAGES.SEARCH_PLACEHOLDER}
       />
       {loading && <SectionStatus message={LOGIN_MESSAGES.LOADING} />}
-      {error && <SectionStatus message={`${LOGIN_MESSAGES.ERROR_PREFIX}${error}`} error />}
+      {error && (
+        <Alert
+          variant="danger"
+          message="No se encontraron colaboradores."
+          style={[styles.syncAlert, { }]}
+          textStyle={{ color: '#000000' }}
+        />
+      )}
       {!loading && !error && (
         <View style={styles.workersList}>
           {workers.length === 0 ? (
-            <SectionStatus message={LOGIN_MESSAGES.NO_WORKERS_FOUND} />
+            <View style={[styles.workersScroll, syncStatus && styles.workersScrollCompressed, { justifyContent: 'center', alignItems: 'center' }]}>
+              <SectionStatus message={LOGIN_MESSAGES.NO_WORKERS_FOUND} />
+            </View>
           ) : (
-            workers.map((worker) => (
-              <WorkerItem
-                key={worker.id}
-                worker={worker}
-                isSelected={selectedWorker === worker.id}
-                onPress={() => onSelectWorker(worker.id)}
-              />
-            ))
+            <ScrollView
+              style={[styles.workersScroll, syncStatus && styles.workersScrollCompressed]}
+              showsVerticalScrollIndicator={false}
+              nestedScrollEnabled={true}
+              keyboardShouldPersistTaps="handled"
+            >
+              {workers.map((worker) => (
+                <WorkerItem
+                  key={worker.id}
+                  worker={worker}
+                  isSelected={selectedWorker === worker.id}
+                  onPress={() => onSelectWorker(worker.id)}
+                />
+              ))}
+            </ScrollView>
           )}
         </View>
       )}
@@ -173,7 +189,7 @@ function WorkerSection({
 /**
  * WorkerItem
  *
- * Botón tocable para seleccionar un trabajador.
+ * Botón tocable para seleccionar un colaborador.
  */
 function WorkerItem({ worker, isSelected, onPress }) {
   return (
