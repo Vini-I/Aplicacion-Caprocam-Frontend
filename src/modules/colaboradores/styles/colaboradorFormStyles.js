@@ -1,4 +1,6 @@
 import { StyleSheet } from "react-native";
+import { COLORS } from '../../../theme/colors';
+
 
 export const styles = StyleSheet.create({
   container: { 
@@ -18,5 +20,9 @@ export const styles = StyleSheet.create({
   loader: { 
     marginTop: 4, 
     marginBottom: 8 
+  },
+    inputError: {
+    borderColor: COLORS.error,
+    borderWidth: 1.5,
   },
 });

@@ -101,7 +101,7 @@ export default function DetalleTareaScreen() {
   const confirmDelete = async () => {
     try {
       await tareasService.eliminarTarea(tarea.id);
-      setAlert({ type: 'warning', message: `Tarea "${tarea.nombre}" eliminada.` });
+      setAlert({ type: 'danger', message: `Tarea "${tarea.nombre}" eliminada.` });
       setShowConfirmModal(false);
       setTimeout(() => router.replace('/equipos/tareas'), 1500);
     } catch (err) {

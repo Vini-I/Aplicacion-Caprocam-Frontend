@@ -207,7 +207,7 @@ export default function EquiposListScreen() {
 
     try {
       await eliminarEquipo(deleteTarget.id);
-      showAlert("warning", `El equipo "${deleteTarget.nombre}" ha sido eliminado correctamente`);
+      showAlert("danger", `El equipo "${deleteTarget.nombre}" ha sido eliminado correctamente`);
       setShowConfirmModal(false);
       setDeleteTarget(null);
       setCodigoConfirmacion("");
