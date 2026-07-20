@@ -4,52 +4,55 @@
  * ============================================================
  *
  * Pantalla principal de administración de colaboradores.
- * Permite cambiar entre personal interno y dueños externos,
- * buscar, agregar, editar, eliminar y ver detalles de cada colaborador.
+ * Muestra todos los colaboradores en una sola lista con búsqueda
+ * y filtro por rol (similar al módulo de Equipos).
  *
  * Dependencias:
- * - useColaboradoresList hook para lógica y estado
- * - ColaboradorCard, ColaboradorForm, ColaboradorDetalleScreen, etc.
- * - Layout global STYLE
- * - Iconos desde theme/icons
+ * - useColaboradoresList hook para datos y estado.
+ * - ColaboradorCard para cada elemento.
+ * - SearchBar y FilterButton para filtrado.
+ * - Botón flotante "Agregar colaborador" fijo en la parte inferior.
+ * ============================================================
  */
 
-// ============================================================
-// IMPORTS
-// ============================================================
-import React from "react";
-import { View, ScrollView, TouchableOpacity } from "react-native";
-import { useColaboradoresList } from "../hooks/useColaboradoresList";
-import ColaboradorCard from "../components/ColaboradorCard";
-import ColaboradorForm from "../components/ColaboradorForm";
-import ColaboradorDetalleScreen from "./ColaboradorDetalleScreen";
-import Modal from "../../../shared/components/Modal";
-import Spinner from "../../../shared/components/Spinner";
-import Button from "../../../shared/components/Button";
-import Title from "../../../shared/components/Title";
-import Input from "../../../shared/components/Input";
-import CustomText from "../../../shared/components/Text";
-import Icon from "../../../shared/components/Icons";
-import SearchBar from "../../inventarios/components/SearchBar";
-import { STYLE } from "../../../theme/style";
-import { ICONS } from "../../../theme/icons";
-import { COLORS } from "../../../theme/colors";
-import { styles } from "../styles/colaboradoresListStyles";
-import Alert from "../../../shared/components/Alert";
+import React, { useCallback, useState, useMemo } from 'react';
+import { View, ScrollView } from 'react-native';
+import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 
-// ============================================================
-// COMPONENTE PRINCIPAL
-// ============================================================
+import { useColaboradoresList } from '../hooks/useColaboradoresList';
+import ColaboradorCard from '../components/ColaboradorCard';
+import Spinner from '../../../shared/components/Spinner';
+import Button from '../../../shared/components/Button';
+import CustomText from '../../../shared/components/Text';
+import Icon from '../../../shared/components/Icons';
+import SearchBar from '../../inventarios/components/SearchBar';
+import FilterButton from '../../inventarios/components/FilterButton';
+import Alert from '../../../shared/components/Alert';
+import Modal from '../../../shared/components/Modal';
+import Input from '../../../shared/components/Input';
+
+import { STYLE } from '../../../theme/style';
+import { ICONS } from '../../../theme/icons';
+import { COLORS } from '../../../theme/colors';
+import { styles } from '../styles/colaboradoresListStyles';
+
+// Opciones para el filtro por rol
+const CATEGORIAS = [
+  { label: 'Todos', value: 'todos' },
+  { label: 'Trabajador Camprocam', value: 'camprocam_worker' },
+  { label: 'Dueño Externo', value: 'external_owner' },
+  { label: 'Trabajador Externo', value: 'external_worker' },
+];
+
 export default function ColaboradoresListScreen() {
+  const router = useRouter();
+  const params = useLocalSearchParams();
+  const editId = params.editId;
+
   const {
-    activeTab,
-    setActiveTab,
-    modalVisible,
-    setModalVisible,
-    editingColaborador,
-    setEditingColaborador,
-    selectedColaboradorId,
-    setSelectedColaboradorId,
+    colaboradores,
+    loading,
+    error,
     searchText,
     setSearchText,
     cedulaConfirmacion,
@@ -58,115 +61,145 @@ export default function ColaboradoresListScreen() {
     setDeleteTarget,
     showConfirmModal,
     setShowConfirmModal,
-    loading,
-    error,
-    lista,
-    handleAdd,
-    handleEdit,
+    cedulaError,
+    setCedulaError,
+    alert,
     handleDeletePress,
     confirmDelete,
-    handleSubmit,
-    openStats,
-    alert,
-    cedulaError,          // <-- agregar
-    setCedulaError,       // <-- agregar
   } = useColaboradoresList();
 
-  // --------------------------------------------------------
-  // RENDERIZADO CONDICIONAL
-  // --------------------------------------------------------
+  // Estado de filtros del FilterButton
+  const [filtros, setFiltros] = useState({
+    categories: [],
+    suppliers: [],
+    units: [],
+    lowStock: false,
+    expiryDate: '',
+  });
+
+  // Aplicar búsqueda y filtros a la lista
+  const listaFiltrada = useMemo(() => {
+    let result = colaboradores;
+
+    // Búsqueda por texto
+    if (searchText.trim()) {
+      const q = searchText.toLowerCase().trim();
+      result = result.filter((c) =>
+        c.nombre.toLowerCase().includes(q) ||
+        c.cedula.includes(q) ||
+        c.telefono.includes(q) ||
+        c.email.toLowerCase().includes(q)
+      );
+    }
+
+    // Filtro por rol (categoría)
+    if (filtros.categories.length > 0 && !filtros.categories.includes('todos')) {
+      result = result.filter((c) => filtros.categories.includes(c.rol));
+    }
+
+    return result;
+  }, [colaboradores, searchText, filtros]);
+
+  // Redirigir desde detalle con editId al formulario
+  useFocusEffect(
+    useCallback(() => {
+      if (editId) {
+        router.replace({
+          pathname: '/(drawer)/colaboradores/form',
+          params: { id: editId },
+        });
+      }
+    }, [editId, router])
+  );
+
+  // Navegaciones
+  const openDetail = (colaboradorId) => {
+    router.push({
+      pathname: '/(drawer)/colaboradores/detalle',
+      params: { id: colaboradorId },
+    });
+  };
+
+  const handleEditNavigation = (colaborador) => {
+    router.push({
+      pathname: '/(drawer)/colaboradores/form',
+      params: { id: colaborador.id },
+    });
+  };
+
+  const handleAddNavigation = () => {
+    router.push('/(drawer)/colaboradores/form');
+  };
+
+  // Estados de carga y error
   if (loading) return <Spinner text="Cargando colaboradores..." />;
   if (error) return <CustomText style={styles.error}>Error: {error}</CustomText>;
 
-  // --------------------------------------------------------
-  // RENDER PRINCIPAL
-  // --------------------------------------------------------
   return (
-   <View style={{ flex: 1, backgroundColor: COLORS.white }}>
-        {/* Barra de búsqueda y botón agregar - fijos arriba */}
-        <View style={styles.searchRow}>
-          <SearchBar
-            value={searchText}
-            onChangeText={setSearchText}
-            placeholder="Buscar por nombre, teléfono, email o cédula"
-            containerStyle={styles.searchInput}
-          />
-          <Button
-            variant="outline"
-            onPress={handleAdd}
-            style={[styles.addButtonContainer, { borderColor: COLORS.primary }]}
-          >
-            <View style={styles.addButtonContent}>
-              <Icon icon={ICONS.add} size={16} color={COLORS.primary} />
-              <CustomText style={styles.addButtonText}>Agregar colaborador</CustomText>
-            </View>
-          </Button>
-        </View>
-
-{/* Alerta flotante: se muestra debajo de la barra de búsqueda, dentro del flujo */}
-{alert && (
-  <View style={styles.alertWrapper}>
-    <Alert variant={alert.type} message={alert.message} />
-  </View>
-)}
-        {/* Lista scrolleable */}
-        <ScrollView
-          style={styles.scrollView}
-          contentContainerStyle={styles.list}
-          showsVerticalScrollIndicator={true}
-        >
-          {lista.map((colab) => (
-            <ColaboradorCard
-              key={colab.id}
-              colaborador={colab}
-              onPress={openStats}
-              onEdit={handleEdit}
-              onDelete={() => handleDeletePress(colab.id)}
-            />
-          ))}
-        </ScrollView>
-
-        {/* Tabs fijos en la parte inferior */}
-        <View style={styles.tabBar}>
-          <TouchableOpacity
-            style={[styles.tab, activeTab === "internos" && styles.activeTab]}
-            onPress={() => setActiveTab("internos")}
-          >
-            <CustomText style={styles.tabText}>Personal Interno</CustomText>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.tab, activeTab === "externos" && styles.activeTab]}
-            onPress={() => setActiveTab("externos")}
-          >
-            <CustomText style={styles.tabText}>Dueños Externos</CustomText>
-          </TouchableOpacity>
+    <View style={{ flex: 1, backgroundColor: COLORS.white }}>
+      {/* Barra de búsqueda y filtro */}
+      <View style={styles.searchRow}>
+        <SearchBar
+          value={searchText}
+          onChangeText={setSearchText}
+          placeholder="Buscar por nombre, teléfono, email o cédula"
+          containerStyle={styles.searchInput}
+        />
+        <FilterButton
+          categories={CATEGORIAS}
+          suppliers={[]} // Por ahora no hay filtro por estado
+          activeFilters={filtros}
+          onApply={setFiltros}
+          showLowStock={false}
+          showExpiryDate={false}
+          buttonStyle={styles.filterButtonStyle}
+        />
       </View>
 
-      {/* Modal para crear/editar colaborador */}
-      <Modal
-        visible={modalVisible}
-        onClose={() => setModalVisible(false)}
-        showCloseButton={false}
-        containerStyle={styles.modalContainer}
-      >
-        <Title level={4}>{editingColaborador ? "Editar" : "Nuevo"} colaborador</Title>
-        <ColaboradorForm
-          initialData={editingColaborador || {}}
-          onSubmit={handleSubmit}
-          isEditing={!!editingColaborador}
-          userRole="camprocam_admin"
-          onCancel={() => setModalVisible(false)}
-        />
-      </Modal>
+      {/* Alerta flotante */}
+      {alert && (
+        <View style={styles.alertWrapper}>
+          <Alert variant={alert.type} message={alert.message} />
+        </View>
+      )}
 
-      {/* Modal de confirmación de eliminación con validación de cédula */}
+      {/* Lista de colaboradores */}
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.list}
+        showsVerticalScrollIndicator={true}
+      >
+        {listaFiltrada.map((colab) => (
+          <ColaboradorCard
+            key={colab.id}
+            colaborador={colab}
+            onPress={() => openDetail(colab.id)}
+            onEdit={handleEditNavigation}
+            onDelete={() => handleDeletePress(colab.id)}
+          />
+        ))}
+      </ScrollView>
+
+      {/* Botón flotante "Agregar colaborador" */}
+      <View style={styles.floatingButtonContainer}>
+        <Button
+          variant="outline"
+          onPress={handleAddNavigation}
+          style={styles.floatingButton}
+        >
+          <Icon icon={ICONS.add} size={16} color={COLORS.primary} />
+          <CustomText style={styles.floatingButtonText}>Agregar colaborador</CustomText>
+        </Button>
+      </View>
+
+      {/* Modal de confirmación de eliminación */}
       <Modal
         visible={showConfirmModal}
         onClose={() => {
           setShowConfirmModal(false);
-          setCedulaConfirmacion("");
+          setCedulaConfirmacion('');
           setDeleteTarget(null);
-          setCedulaError(""); // limpiar error al cerrar
+          setCedulaError('');
         }}
         showCloseButton={false}
         containerStyle={styles.modalConfirmContainer}
@@ -184,21 +217,17 @@ export default function ColaboradoresListScreen() {
             <CustomText style={styles.modalCedula}>{deleteTarget.cedula}</CustomText>
           </>
         )}
-
-
-
         <Input
           placeholder="Ingrese la cédula para confirmar"
           value={cedulaConfirmacion}
           onChangeText={(text) => {
             setCedulaConfirmacion(text);
-            setCedulaError(""); // limpiar error al escribir
+            setCedulaError('');
           }}
           keyboardType="numeric"
           containerStyle={styles.modalInput}
         />
-                {/* Mostrar error dentro del modal */}
-        {cedulaError !== "" && (
+        {cedulaError !== '' && (
           <Alert
             variant="danger"
             message={cedulaError}
@@ -209,9 +238,9 @@ export default function ColaboradoresListScreen() {
           <Button
             onPress={() => {
               setShowConfirmModal(false);
-              setCedulaConfirmacion("");
+              setCedulaConfirmacion('');
               setDeleteTarget(null);
-              setCedulaError("");
+              setCedulaError('');
             }}
             variant="outline"
             style={styles.modalCancelBtn}
@@ -232,23 +261,6 @@ export default function ColaboradoresListScreen() {
             </View>
           </Button>
         </View>
-      </Modal>
-
-      {/* Modal para ver detalles */}
-      <Modal
-        visible={!!selectedColaboradorId}
-        onClose={() => setSelectedColaboradorId(null)}
-        showCloseButton={false}
-        containerStyle={styles.modalDetalleContainer}
-        overlayStyle={styles.modalDetalleOverlay}
-      >
-        <ColaboradorDetalleScreen
-          colaboradorId={selectedColaboradorId}
-          onClose={() => setSelectedColaboradorId(null)}
-          onSelectTrabajador={(id) => {
-            setSelectedColaboradorId(id);
-          }}
-        />
       </Modal>
     </View>
   );

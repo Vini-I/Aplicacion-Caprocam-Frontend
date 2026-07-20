@@ -24,13 +24,12 @@
  */
 
 import { ESTADOS } from "../services/mantEquipoService.js";
-import { TAREAS_DEMO } from "../constants/mantEquipoMensajes.js";
+import { TAREAS_DEMO } from "../services/tareasService.js";
+import { formatDate } from "../../../shared/utils/dateUtils.js";
 
 export function formatearFechaCorta(fecha) {
   if (!fecha) return "—";
-  const d = new Date(fecha);
-  const meses = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-  return `${meses[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()} ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
+  return formatDate(new Date(fecha));
 }
 
 export function etiquetaPorEstado(estado) {
@@ -90,8 +89,6 @@ export function filtrarTickets(tickets, texto, columna) {
   });
 }
 
-
-
 /** Devuelve las etiquetas de las tareas de un ticket para mostrar en la tabla con su descripción y duración. */
 export function etiquetasTareas(tareas) {
   if (!Array.isArray(tareas) || tareas.length === 0) return "—";
@@ -103,8 +100,28 @@ export function etiquetasTareas(tareas) {
   }).join("\n");
 }
 
-/** Devuelve la fecha y hora actual formateada como YYYY-MM-DD HH:mm */
+/** Devuelve la fecha actual formateada como dd/mm/aaaa */
 export function obtenerFechaHoraActual() {
-  const d = new Date(), p = (n) => String(n).padStart(2,"0");
-  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+  return formatDate(new Date());
+}
+
+/**
+ * Valida que el costo de mano de obra sea un número >= 0.
+ * @param {string} valor — valor del campo como string
+ * @returns {boolean} true si es válido
+ */
+export function validarCostoManoObra(valor) {
+  if (!valor || !String(valor).trim()) return false;
+  const num = parseFloat(valor);
+  return !isNaN(num) && num >= 0;
+}
+
+/**
+ * Construye el string "Nombre Serie" de un equipo para el campo herramienta.
+ * @param {object|null} equipo
+ * @returns {string}
+ */
+export function formatearNombreHerramienta(equipo) {
+  if (!equipo) return '';
+  return `${equipo.nombre} ${equipo.serie}`;
 }

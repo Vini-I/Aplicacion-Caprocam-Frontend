@@ -21,10 +21,14 @@ export const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
   },
 
+  mainFlex: {
+    flex: 1,
+  },
+
   searchRow: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 16,
+    paddingHorizontal: 0,
     paddingVertical: 12,
     backgroundColor: COLORS.white,
     marginTop: 8,
@@ -51,17 +55,69 @@ export const styles = StyleSheet.create({
     backgroundColor: "transparent",
     height: 42,
     marginTop: 0,
+    borderColor: COLORS.primary,
+  },
+
+  btnActionText: {
+    color: COLORS.primary,
+    fontWeight: "600",
+    fontSize: 13,
+  },
+
+  filterButtonStyle: {
+    height: 42,
+    borderColor: COLORS.textTertiary,
+    marginTop: 0,
+    alignSelf: "center",
+  },
+
+  scrollView: {
+    flex: 1,
   },
 
   list: {
     padding: 16,
-    paddingBottom: 80,
+    paddingBottom: 110,
+    left: 8,
   },
 
   error: {
     color: COLORS.error,
     textAlign: "center",
     marginTop: 20,
+  },
+
+  floatingButtonContainer: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 15,
+    backgroundColor: COLORS.white,
+  },
+
+  floatingButton: {
+    width: "100%",
+    maxWidth: 900,
+    alignSelf: "center",
+    backgroundColor: "transparent",
+    borderColor: COLORS.primary,
+    borderWidth: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 6,
+  },
+
+  floatingButtonText: {
+    color: COLORS.primary,
+    fontWeight: "600",
+    fontSize: 13,
   },
 
   // ----- Estilos de EquipoCard -----
@@ -74,7 +130,7 @@ export const styles = StyleSheet.create({
 
   header: {
     flexDirection: "row",
-    alignItems: "center", // Alinea ícono y texto verticalmente
+    alignItems: "center",
     marginBottom: 8,
   },
 
@@ -131,7 +187,7 @@ export const styles = StyleSheet.create({
 
   infoLabelContainer: {
     flexDirection: "row",
-    alignItems: "center", // Alinea icono y etiqueta
+    alignItems: "center",
     marginBottom: 2,
   },
 
@@ -170,11 +226,11 @@ export const styles = StyleSheet.create({
   },
 
   toggleBtnOn: {
-    backgroundColor: COLORS.error, // Rojo cuando está encendido (para apagar)
+    backgroundColor: COLORS.error,
   },
 
   toggleBtnOff: {
-    backgroundColor: COLORS.success, // Verde cuando está apagado (para encender)
+    backgroundColor: COLORS.success,
   },
 
   toggleBtnText: {
@@ -248,10 +304,28 @@ export const styles = StyleSheet.create({
     backgroundColor: "transparent",
   },
 
-  modalDeleteBtn: {
-    marginTop: 0,
-    flex: 1,
+  modalCancelBtnText: {
+    color: COLORS.primary,
+    fontWeight: "600",
   },
+
+  modalDeleteBtn: {
+    flex: 1,
+    marginTop: 0,
+    borderColor: COLORS.error,
+    borderWidth: 1,
+    backgroundColor: "transparent",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+  },
+
+  modalDeleteBtnText: {
+    color: COLORS.error,
+    fontWeight: "600",
+  },
+
   alertWrapper: {
     marginBottom: 12,
     paddingHorizontal: 16,
@@ -341,8 +415,53 @@ export const styles = StyleSheet.create({
     maxHeight: "92%",
     padding: 16,
   },
-    formContainer: {
+
+  modalContentContainer: {
+    flex: 1,
+    flexDirection: "column",
+  },
+
+  modalTitleHeader: {
+    padding: 16,
+    paddingBottom: 0,
+  },
+
+  modalScrollForm: {
+    flex: 1,
+    paddingHorizontal: 16,
     paddingBottom: 16,
+  },
+
+  modalScrollFormContent: {
+    paddingBottom: 16,
+  },
+
+  modalFooterButtons: {
+    flexDirection: "row",
+    padding: 16,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.secondary,
+    backgroundColor: COLORS.white,
+    gap: 12,
+  },
+
+  modalFooterButton: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    borderColor: COLORS.primary,
+    backgroundColor: "transparent",
+  },
+
+  modalFooterButtonText: {
+    color: COLORS.primary,
+    fontWeight: "600",
+  },
+
+  modalErrorAlert: {
+    marginBottom: 12,
   },
 
   errorInput: {

@@ -28,27 +28,35 @@ let TAREAS_MOCK = [
     descripcion: "Realizar cambio de aceite y filtros de los motores de bombeo.",
     categoria: "preventivo",
     duracionEstimada: 2.5,
+    estado: "no_iniciada",           // <-- nuevo
+productos: [
+  { productoId: 1, nombre: "Alimento Biomar 35%", cantidad: 2 },
+  { productoId: 3, nombre: "Cal agrícola", cantidad: 1 },
+    ],
   },
   {
     id: "T002",
-    nombre: "Limpieza de intercambiadores de calor",
-    descripcion: "Limpieza profunda de los intercambiadores de calor de los sistemas de refrigeración.",
-    categoria: "correctivo",
-    duracionEstimada: 4.0,
-  },
-  {
-    id: "T003",
-    nombre: "Calibración de sensores de pH",
-    descripcion: "Calibración de los sensores de pH en los estanques de cultivo.",
-    categoria: "predictivo",
-    duracionEstimada: 1.0,
-  },
-  {
-    id: "T004",
-    nombre: "Revisión de sistema de alimentación automática",
-    descripcion: "Inspección y ajuste de los alimentadores automáticos.",
+    nombre: "Cambio de aceite y filtros",
+    descripcion: "Realizar cambio de aceite y filtros de los motores de bombeo.",
     categoria: "preventivo",
-    duracionEstimada: 3.0,
+    duracionEstimada: 2.5,
+    estado: "no_iniciada",           // <-- nuevo
+productos: [
+  { productoId: 1, nombre: "Alimento Biomar 35%", cantidad: 2 },
+  { productoId: 3, nombre: "Cal agrícola", cantidad: 1 },
+    ],
+  },
+    {
+    id: "T003",
+    nombre: "Nuevo de aceite y filtros",
+    descripcion: "Realizar cambio de aceite y filtros de los motores de bombeo.",
+    categoria: "preventivo",
+    duracionEstimada: 2.5,
+    estado: "en_ejecucion",           // <-- nuevo
+productos: [
+  { productoId: 1, nombre: "Alimento Biomar 35%", cantidad: 2 },
+  { productoId: 3, nombre: "Cal agrícola", cantidad: 1 },
+    ],
   },
   {
     id: "T005",
@@ -57,36 +65,18 @@ let TAREAS_MOCK = [
     categoria: "emergencia",
     duracionEstimada: 6.0,
   },
-
-  {
-    id: "T002",
-    nombre: "Limpieza de intercambiadores de calor",
-    descripcion: "Limpieza profunda de los intercambiadores de calor de los sistemas de refrigeración.",
-    categoria: "correctivo",
-    duracionEstimada: 4.0,
-  },
-    {
-    id: "T002",
-    nombre: "Limpieza de intercambiadores de calor",
-    descripcion: "Limpieza profunda de los intercambiadores de calor de los sistemas de refrigeración.",
-    categoria: "correctivo",
-    duracionEstimada: 4.0,
-  },
-    {
-    id: "T002",
-    nombre: "Limpieza de intercambiadores de calor",
-    descripcion: "Limpieza profunda de los intercambiadores de calor de los sistemas de refrigeración.",
-    categoria: "correctivo",
-    duracionEstimada: 4.0,
-  },
-    {
-    id: "T002",
-    nombre: "Limpieza de intercambiadores de calor",
-    descripcion: "Limpieza profunda de los intercambiadores de calor de los sistemas de refrigeración.",
-    categoria: "correctivo",
-    duracionEstimada: 4.0,
-  },
 ];
+
+/**
+ * TAREAS_DEMO: Vista sincronizada de TAREAS_MOCK con los campos
+ * value (= id) y label (= nombre) para uso en selectores y búsquedas.
+ * Importar desde aquí en todo el módulo en lugar de mantEquipoMensajes.
+ */
+export const TAREAS_DEMO = TAREAS_MOCK.map((t) => ({
+  ...t,
+  value: t.id,
+  label: t.nombre,
+}));
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 

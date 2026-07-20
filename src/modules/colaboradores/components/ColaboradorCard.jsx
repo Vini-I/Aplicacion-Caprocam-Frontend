@@ -77,26 +77,6 @@ export default function ColaboradorCard({ colaborador, onPress, onEdit, onDelete
             <CustomText style={styles.detailText}>{colaborador.email}</CustomText>
           </View>
         </View>
-        <View style={styles.actions}>
-          <Button
-            variant="outline"
-            onPress={() => onEdit?.(colaborador)}
-            style={[styles.actionBtn, { borderColor: COLORS.primary }]}
-            textStyle={{ color: COLORS.primary }}
-          >
-            <Icon icon={ICONS.edit} size={16} color={COLORS.primary} />
-            <CustomText style={{ color: COLORS.primary, marginLeft: 4, fontSize: 12 }}>Editar</CustomText>
-          </Button>
-          <Button
-            variant="outline"
-            onPress={() => onDelete?.(colaborador.id)}
-            style={[styles.actionBtn, { borderColor: COLORS.error }]}
-            textStyle={{ color: COLORS.error }}
-          >
-            <Icon icon={ICONS.delete} size={16} color={COLORS.error} />
-            <CustomText style={{ color: COLORS.error, marginLeft: 4, fontSize: 12 }}>Eliminar</CustomText>
-          </Button>
-        </View>
       </Card>
     </TouchableOpacity>
   );

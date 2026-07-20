@@ -28,7 +28,7 @@
  * - Permite regresar a la pantalla de login directamente (onBackToLogin).
  * 
  * DEPENDENCIAS:
- * - Card, CustomText, Spinner, Button, Modal, Header, Separator, FormField.
+ * - Card, CustomText, Spinner, Button, Modal, Header, Separator, FormField, Alert.
  * - Hook useRegister para gestionar la lógica de envío y validación de campos.
  */
 
@@ -43,6 +43,7 @@ import Header   from '../../../shared/components/Header';
 import Separator from '../../../shared/components/Separator';
 import FormField from '../../../shared/components/FormField';
 import Icon     from '../../../shared/components/Icons';
+import Alert    from '../../../shared/components/Alert';
 
 import { useRegister } from '../hooks/useRegister';
 import { AUTH_MESSAGES as MSG } from '../constants/authMessages';
@@ -83,16 +84,16 @@ export default function WebRegisterScreen({
   ];
 
   return (
-    <ScrollView style={[STYLE.container, { padding: 0 }]} showsVerticalScrollIndicator={false}>
+    <ScrollView style={styles.scrollView} contentContainerStyle={{ flexGrow: 1, backgroundColor: COLORS.white }} showsVerticalScrollIndicator={false}>
 
       <Modal
         visible={showSuccessModal}
         onClose={handleModalClose}
         showCloseButton={false}
-        containerStyle={{ width: "100%", maxWidth: 860, alignSelf: "center", padding: 24 }}
+        containerStyle={[STYLE.contentWrapper, styles.modalContainer]}
       >
-        <View style={{ alignItems: "center", paddingVertical: 10 }}>
-          <View style={{ marginBottom: 16, backgroundColor: COLORS.successLight, padding: 12, borderRadius: 99, alignItems: "center", justifyContent: "center", width: 64, height: 64 }}>
+        <View style={styles.modalInner}>
+          <View style={styles.modalIconBadge}>
             <Icon icon={ICONS.check} size={32} color={COLORS.success} />
           </View>
           <CustomText weight="700" size={18} align="center" style={styles.modalTitle}>
@@ -103,8 +104,8 @@ export default function WebRegisterScreen({
           </CustomText>
           <Button
             variant="outline"
-            style={{ width: "100%", marginTop: 24, borderColor: COLORS.primary }}
-            textStyle={{ color: COLORS.primary }}
+            style={styles.modalButton}
+            textStyle={styles.modalButtonText}
             onPress={handleModalClose}
           >
             {MSG.MODAL_SUCCESS_BUTTON}
@@ -118,43 +119,42 @@ export default function WebRegisterScreen({
         logo={require('../../../assets/shrimp-solid.png')}
       />
 
-      <View style={STYLE.contentWrapper}>
-        <View style={styles.formSection}>
-        <Card>
+      <View style={STYLE.container}>
+        <View style={STYLE.contentWrapper}>
+          <Card>
 
-          {fields.map(({ key, error, label, ...fieldProps }) => (
-            <FormField
-              key={key}
-              label={`${label} *`}
-              editable={!loading}
-              style={error ? { borderColor: COLORS.error } : null}
-              {...fieldProps}
-            />
-          ))}
+            {fields.map(({ key, error, label, ...fieldProps }) => (
+              <FormField
+                key={key}
+                label={`${label} *`}
+                editable={!loading}
+                style={error ? styles.errorField : null}
+                {...fieldProps}
+              />
+            ))}
 
-          {(Object.values(errors).some((e) => e !== "") || serverError) && (
-            <View style={{ padding: 12, backgroundColor: COLORS.errorLight, borderRadius: 8, marginBottom: 12, flexDirection: "row", alignItems: "center", gap: 8 }}>
-              <Icon icon={ICONS.alertTriangle} size={18} color={COLORS.error} />
-              <CustomText style={{ color: COLORS.error, fontSize: 13, fontWeight: "600", flex: 1 }}>
-                {serverError ? serverError : "Revisa los campos obligatorios marcados con * antes de guardar."}
-              </CustomText>
-            </View>
-          )}
+            {(Object.values(errors).some((e) => e !== "") || serverError) && (
+              <Alert
+                variant="danger"
+                message={serverError ? serverError : "Revisa los campos obligatorios marcados con * antes de guardar."}
+                style={styles.alertSpacing}
+              />
+            )}
 
-          {loading && <Spinner text={MSG.LOADING_REGISTER} />}
+            {loading && <Spinner text={MSG.LOADING_REGISTER} />}
 
-          <Button variant="outline" disabled={loading} onPress={handleRegister}>
-            {MSG.BUTTON_SUBMIT_REGISTER}
-          </Button>
+            <Button variant="outline" disabled={loading} onPress={handleRegister}>
+              {MSG.BUTTON_SUBMIT_REGISTER}
+            </Button>
 
-          <Separator text={MSG.SEPARATOR_TEXT_REGISTER} />
+            <Separator text={MSG.SEPARATOR_TEXT_REGISTER} />
 
-          <Button variant="outline" disabled={loading} onPress={onBackToLogin}>
-            {MSG.BUTTON_BACK_TO_LOGIN}
-          </Button>
+            <Button variant="outline" disabled={loading} onPress={onBackToLogin}>
+              {MSG.BUTTON_BACK_TO_LOGIN}
+            </Button>
 
-        </Card>
-      </View>
+          </Card>
+        </View>
       </View>
 
     </ScrollView>

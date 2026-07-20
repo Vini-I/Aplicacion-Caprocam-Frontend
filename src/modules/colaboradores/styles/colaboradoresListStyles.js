@@ -4,14 +4,12 @@
  * ============================================================
  *
  * Estilos para la pantalla ColaboradoresListScreen.
- * Utiliza la paleta de COLORS del tema central.
+ * Se eliminaron los estilos de la tabBar y se ajustó el
+ * botón flotante para que quede fijo en la parte inferior.
  *
  * Dependencias:
  * - COLORS desde theme/colors
- *
- * Ejemplo de uso:
- * import { styles } from './colaboradoresListStyles';
- * <View style={styles.container}>...</View>
+ * ============================================================
  */
 
 import { StyleSheet } from "react-native";
@@ -22,30 +20,10 @@ export const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.white,
   },
-  tabBar: {
-    flexDirection: "row",
-    backgroundColor: COLORS.white,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.secondary,
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: 12,
-    alignItems: "center",
-    borderBottomWidth: 2,
-    borderBottomColor: "transparent",
-  },
-  activeTab: {
-    borderBottomColor: COLORS.primary,
-  },
-  tabText: {
-    fontWeight: "600",
-    color: COLORS.textSecondary,
-  },
   searchRow: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 16,
+    paddingHorizontal: 0,
     paddingVertical: 12,
     backgroundColor: COLORS.white,
     marginTop: 8,
@@ -58,42 +36,69 @@ export const styles = StyleSheet.create({
     flex: 1,
     marginBottom: 0,
   },
-addButtonContainer: {
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: 6,
-  paddingVertical: 8,
-  paddingHorizontal: 14,
-  borderRadius: 8,
-  borderWidth: 1,
-  borderColor: COLORS.primary,   // se sobrescribe en la prop style
-  backgroundColor: "transparent",
-  height: 42,
-  marginTop: 0,
-},
-  addButtonContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
+  filterButtonStyle: {
+    height: 42,
+    borderColor: COLORS.textTertiary,
+    marginTop: 0,
+    alignSelf: "center",
   },
-addButtonText: {
-  color: COLORS.primary,
-  fontWeight: "600",
-  fontSize: 14,
-},
   list: {
-    padding: 16,
-    paddingBottom: 80,
-   width: '100%',
-   maxWidth: 900,
-   alignSelf: 'center',
+    padding: 0,
+    paddingBottom: 110, // espacio para el botón flotante
+    width: '100%',
+    left: 8,
+    maxWidth: 900,
+    alignSelf: 'center',
   },
   error: {
     color: COLORS.error,
     textAlign: "center",
     marginTop: 20,
   },
+  scrollView: {
+    flex: 1,
+  },
+  alertWrapper: {
+    marginBottom: 12,
+    paddingHorizontal: 16,
+    width: '100%',
+    maxWidth: 900,
+    alignSelf: 'center',
+  },
+
+  // Botón flotante
+  floatingButtonContainer: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 15,
+    backgroundColor: COLORS.white,
+  },
+  floatingButton: {
+    width: "100%",
+    maxWidth: 900,
+    alignSelf: "center",
+    backgroundColor: "transparent",
+    borderColor: COLORS.primary,
+    borderWidth: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 6,
+  },
+  floatingButtonText: {
+    color: COLORS.primary,
+    fontWeight: "600",
+    fontSize: 13,
+  },
+
+  // Estilos del modal de confirmación
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.6)",
@@ -158,41 +163,33 @@ addButtonText: {
     maxWidth: 900,
     alignSelf: "center",
   },
-  modalConfirmCancelButton: {
-    backgroundColor: COLORS.textTertiary,
-  },
   modalCancelBtn: {
     marginTop: 0,
     flex: 1,
+    borderColor: COLORS.primary,
+    borderWidth: 1,
+    backgroundColor: "transparent",
   },
-    alertWrapper: {
-    marginBottom: 12,
-    paddingHorizontal: 16,
-    width: '100%',
-    maxWidth: 900,
-    alignSelf: 'center',
-  },
-
   modalDeleteBtn: {
     marginTop: 0,
     flex: 1,
+    borderColor: COLORS.error,
+    borderWidth: 1,
+    backgroundColor: "transparent",
   },
-modalDetalleContainer: {
-  width: "100%",
-  maxWidth: 900,
-  maxHeight: "85%",           // ← Limita la altura para que no ocupe toda la pantalla
-  alignSelf: "center",
-  padding: 16,                // ← Márgenes internos estándar
-  borderRadius: 16,
-  overflow: "hidden",
-  backgroundColor: COLORS.surface,
-},
-scrollView: {
-  flex: 1,
-},
-modalDetalleOverlay: {
-  backgroundColor: "rgba(0,0,0,0.6)",
-  justifyContent: "center",   // ← Centra verticalmente el modal
-  padding: 16,                // ← Márgenes externos en pantallas pequeñas
-},
+  modalDetalleContainer: {
+    width: "100%",
+    maxWidth: 900,
+    maxHeight: "85%",
+    alignSelf: "center",
+    padding: 16,
+    borderRadius: 16,
+    overflow: "hidden",
+    backgroundColor: COLORS.surface,
+  },
+  modalDetalleOverlay: {
+    backgroundColor: "rgba(0,0,0,0.6)",
+    justifyContent: "center",
+    padding: 16,
+  },
 });

@@ -1,177 +1,87 @@
-// src/modules/colaboradores/hooks/useColaboradoresList.js
-
 /**
  * ============================================================
  * HOOK: useColaboradoresList
  * ============================================================
  *
- * Encapsula la lógica de la pantalla principal de colaboradores
- * (ColaboradoresListScreen): estado de pestañas, modales, búsqueda,
- * confirmación de eliminación y operaciones CRUD.
+ * Encapsula la lógica de la pantalla principal de colaboradores.
+ * Obtiene todos los colaboradores activos y maneja la eliminación.
  *
- * Ahora incluye un sistema de alertas temporales y fijas para
- * feedback visual de las acciones.
+ * Retorna:
+ * - colaboradores: lista completa de colaboradores activos.
+ * - loading, error, fetchColaboradores.
+ * - searchText, setSearchText.
+ * - Estados y handlers para el modal de confirmación de eliminación.
+ * - alert para mensajes flotantes.
+ * ============================================================
  */
 
 import { useState, useRef } from "react";
 import { useColaboradores } from "./useColaboradores";
 
 export function useColaboradoresList() {
-  // Estados de la UI
-  const [activeTab, setActiveTab] = useState("internos");
-  const [modalVisible, setModalVisible] = useState(false);
-  const [editingColaborador, setEditingColaborador] = useState(null);
-  const [selectedColaboradorId, setSelectedColaboradorId] = useState(null);
+  // Estados de búsqueda y eliminación
   const [searchText, setSearchText] = useState("");
   const [cedulaConfirmacion, setCedulaConfirmacion] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [cedulaError, setCedulaError] = useState("");
 
-
-  // Estado para la alerta flotante
+  // Alerta flotante
   const [alert, setAlert] = useState(null);
   const alertTimeoutRef = useRef(null);
 
-  // Función para mostrar alerta con auto-cierre
   const showAlert = (type, message) => {
-    // Limpiar timeout anterior
-    if (alertTimeoutRef.current) {
-      clearTimeout(alertTimeoutRef.current);
-    }
+    if (alertTimeoutRef.current) clearTimeout(alertTimeoutRef.current);
     setAlert({ type, message });
-    alertTimeoutRef.current = setTimeout(() => {
-      setAlert(null);
-    }, 4000);
+    alertTimeoutRef.current = setTimeout(() => setAlert(null), 4000);
   };
 
-  // Filtros para cada pestaña
-  const filtrosInternos = { rol: "camprocam_worker", activo: true };
-  const filtrosExternos = { rol: "external_owner", activo: true };
-
-  // Datos de colaboradores mediante los hooks de cada filtro
+  // Obtener todos los colaboradores activos (sin filtrar por rol)
   const {
-    colaboradores: internos,
-    loading: loadingInternos,
-    error: errorInternos,
-    crearColaborador,
-    actualizarColaborador,
+    colaboradores: todos,
+    loading,
+    error,
     eliminarColaborador,
-    fetchColaboradores: fetchInternos,
-  } = useColaboradores(filtrosInternos);
+    fetchColaboradores,
+  } = useColaboradores({ activo: true });
 
-  const {
-    colaboradores: externos,
-    loading: loadingExternos,
-    error: errorExternos,
-    crearColaborador: crearExterno,
-    actualizarColaborador: actualizarExterno,
-    eliminarColaborador: eliminarExterno,
-    fetchColaboradores: fetchExternos,
-  } = useColaboradores(filtrosExternos);
-
-  const loading = activeTab === "internos" ? loadingInternos : loadingExternos;
-  const error = activeTab === "internos" ? errorInternos : errorExternos;
-  const listaOriginal = activeTab === "internos" ? internos : externos;
-  const eliminarActual = activeTab === "internos" ? eliminarColaborador : eliminarExterno;
-
-  // Filtrado local por búsqueda
-  const lista = listaOriginal.filter((colab) => {
-    if (!searchText) return true;
-    const searchLower = searchText.toLowerCase();
-    return (
-      colab.nombre.toLowerCase().includes(searchLower) ||
-      colab.telefono.includes(searchText) ||
-      colab.email.toLowerCase().includes(searchLower) ||
-      colab.cedula.includes(searchText)
-    );
-  });
-
-  // Manejadores
-  const handleAdd = () => {
-    setEditingColaborador(null);
-    setModalVisible(true);
-  };
-
-  const handleEdit = (colaborador) => {
-    setEditingColaborador(colaborador);
-    setModalVisible(true);
-  };
-
-const handleDeletePress = (id) => {
-  const colaborador = listaOriginal.find((c) => c.id === id);
-  if (colaborador) {
-    setDeleteTarget(colaborador);
-    setCedulaConfirmacion("");
-    setCedulaError("");   // <-- agrega esta línea
-    setShowConfirmModal(true);
-  }
-};
-
-const confirmDelete = async () => {
-  if (!deleteTarget) {
-    setCedulaError("No se encontró el colaborador a eliminar.");
-    return;
-  }
-
-  if (cedulaConfirmacion !== deleteTarget.cedula) {
-    setCedulaError("La cédula ingresada no coincide con la del colaborador.");
-    return;
-  }
-
-  try {
-    await eliminarActual(deleteTarget.id);
-    // Éxito: mantén el showAlert para notificar éxito en la lista
-    showAlert("warning", `El colaborador ${deleteTarget.nombre} ha sido eliminado correctamente.`);
-    setShowConfirmModal(false);
-    setDeleteTarget(null);
-    setCedulaConfirmacion("");
-    setCedulaError("");
-  } catch (error) {
-    setCedulaError("No se pudo eliminar el colaborador. Intente nuevamente.");
-  }
-};
-
-  const handleSubmit = async (formData) => {
-    try {
-      if (editingColaborador) {
-        // Actualizar
-        if (activeTab === "internos") {
-          await actualizarColaborador(editingColaborador.id, formData);
-        } else {
-          await actualizarExterno(editingColaborador.id, formData);
-        }
-        showAlert("success", `Colaborador ${formData.nombre} actualizado correctamente.`);
-      } else {
-        // Crear
-        if (activeTab === "internos") {
-          await crearColaborador({ ...formData, rol: "camprocam_worker" });
-        } else {
-          await crearExterno({ ...formData, rol: "external_owner" });
-        }
-        showAlert("success", `Colaborador ${formData.nombre} agregado correctamente.`);
-      }
-      // Cerrar modal solo si todo salió bien
-      setModalVisible(false);
-      setEditingColaborador(null);
-    } catch (error) {
-      showAlert("danger", "Ocurrió un error al guardar el colaborador. Intente nuevamente.");
+  // Handlers de eliminación
+  const handleDeletePress = (id) => {
+    const colaborador = todos.find((c) => c.id === id);
+    if (colaborador) {
+      setDeleteTarget(colaborador);
+      setCedulaConfirmacion("");
+      setCedulaError("");
+      setShowConfirmModal(true);
     }
   };
 
-  const openStats = (colaboradorId) => {
-    setSelectedColaboradorId(colaboradorId);
+  const confirmDelete = async () => {
+    if (!deleteTarget) {
+      setCedulaError("No se encontró el colaborador a eliminar.");
+      return;
+    }
+    if (cedulaConfirmacion !== deleteTarget.cedula) {
+      setCedulaError("La cédula ingresada no coincide con la del colaborador.");
+      return;
+    }
+    try {
+      await eliminarColaborador(deleteTarget.id);
+      showAlert("warning", `El colaborador ${deleteTarget.nombre} ha sido eliminado correctamente.`);
+      setShowConfirmModal(false);
+      setDeleteTarget(null);
+      setCedulaConfirmacion("");
+      setCedulaError("");
+      fetchColaboradores();
+    } catch (error) {
+      setCedulaError("No se pudo eliminar el colaborador. Intente nuevamente.");
+    }
   };
 
   return {
-    activeTab,
-    setActiveTab,
-    modalVisible,
-    setModalVisible,
-    editingColaborador,
-    setEditingColaborador,
-    selectedColaboradorId,
-    setSelectedColaboradorId,
+    colaboradores: todos,
+    loading,
+    error,
     searchText,
     setSearchText,
     cedulaConfirmacion,
@@ -180,20 +90,11 @@ const confirmDelete = async () => {
     setDeleteTarget,
     showConfirmModal,
     setShowConfirmModal,
-    internos,
-    externos,
-    loading,
-    error,
-    lista,
-    eliminarActual,
-    handleAdd,
-    handleEdit,
+    cedulaError,
+    setCedulaError,
+    alert,
     handleDeletePress,
     confirmDelete,
-    handleSubmit,
-    openStats,
-    alert,
-      cedulaError,
-  setCedulaError,
+    fetchColaboradores,
   };
 }

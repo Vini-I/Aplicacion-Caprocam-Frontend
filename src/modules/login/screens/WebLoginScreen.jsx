@@ -28,27 +28,25 @@
  * - Redirige al flujo de registro de administradores (onGoToRegister).
  * 
  * DEPENDENCIAS:
- * - Card, CustomText, Spinner, Button, Header, Separator, FormField.
+ * - Card, Alert, Spinner, Button, Header, Separator, FormField.
  * - Hook useAuth para la lógica de negocio y validación de campos.
  */
 
 import { View, ScrollView } from 'react-native';
 
 import Card      from '../../../shared/components/Card';
-import CustomText from '../../../shared/components/Text';
 import Spinner   from '../../../shared/components/Spinner';
 import Button    from '../../../shared/components/Button';
 import Header    from '../../../shared/components/Header';
 import Separator  from '../../../shared/components/Separator';
 import FormField  from '../../../shared/components/FormField';
-import Icon       from '../../../shared/components/Icons';
+import Alert      from '../../../shared/components/Alert';
 
 import { useAuth } from '../hooks/useAuth';
 import { AUTH_MESSAGES as MSG } from '../constants/authMessages';
 import styles from '../styles/webLoginStyles';
-import { COLORS } from "../../../theme/colors";
-import { ICONS } from '../../../theme/icons';
 import { STYLE } from '../../../theme/style';
+import { COLORS } from '../../../theme/colors';
 
 export default function WebLoginScreen({
   onLoginSuccess = () => {},
@@ -62,7 +60,7 @@ export default function WebLoginScreen({
   } = useAuth({ onLoginSuccess });
 
   return (
-    <ScrollView style={[STYLE.container, { padding: 0 }]} showsVerticalScrollIndicator={false}>
+    <ScrollView style={styles.scrollView} contentContainerStyle={{ flexGrow: 1, backgroundColor: COLORS.white }} showsVerticalScrollIndicator={false}>
 
       <Header
         title={MSG.COMPANY_NAME}
@@ -70,63 +68,61 @@ export default function WebLoginScreen({
         logo={require('../../../assets/shrimp-solid.png')}
       />
 
-      <View style={STYLE.contentWrapper}>
-        <View style={styles.formSection}>
-        <Card>
+      <View style={STYLE.container}>
+        <View style={STYLE.contentWrapper}>
+          <Card>
 
-          <FormField
-            label={`${MSG.LABEL_USERNAME} *`}
-            value={username}
-            onChangeText={setUsername}
-            placeholder={MSG.PLACEHOLDER_USERNAME}
-            editable={!loading}
-            autoCapitalize="none"
-            autoCorrect={false}
-            style={errors.username ? { borderColor: COLORS.error } : null}
-          />
+            <FormField
+              label={`${MSG.LABEL_USERNAME} *`}
+              value={username}
+              onChangeText={setUsername}
+              placeholder={MSG.PLACEHOLDER_USERNAME}
+              editable={!loading}
+              autoCapitalize="none"
+              autoCorrect={false}
+              style={errors.username ? styles.errorField : null}
+            />
 
-          <FormField
-            label={`${MSG.LABEL_PASSWORD} *`}
-            value={password}
-            onChangeText={setPassword}
-            placeholder={MSG.PLACEHOLDER_PASSWORD}
-            editable={!loading}
-            secureTextEntry
-            style={errors.password ? { borderColor: COLORS.error } : null}
-          />
+            <FormField
+              label={`${MSG.LABEL_PASSWORD} *`}
+              value={password}
+              onChangeText={setPassword}
+              placeholder={MSG.PLACEHOLDER_PASSWORD}
+              editable={!loading}
+              secureTextEntry
+              style={errors.password ? styles.errorField : null}
+            />
 
-          {serverError !== null && (
-            <View style={{ padding: 12, backgroundColor: COLORS.errorLight, borderRadius: 8, marginBottom: 12, flexDirection: "row", alignItems: "center", gap: 8 }}>
-              <Icon icon={ICONS.alertTriangle} size={18} color={COLORS.error} />
-              <CustomText style={{ color: COLORS.error, fontSize: 13, fontWeight: "600", flex: 1 }}>
-                {serverError}
-              </CustomText>
-            </View>
-          )}
+            {serverError !== null && (
+              <Alert
+                variant="danger"
+                message={serverError}
+                style={styles.alertSpacing}
+              />
+            )}
 
-          {Object.values(errors).some((e) => e !== "") && (
-            <View style={{ padding: 12, backgroundColor: COLORS.errorLight, borderRadius: 8, marginBottom: 12, flexDirection: "row", alignItems: "center", gap: 8 }}>
-              <Icon icon={ICONS.alertTriangle} size={18} color={COLORS.error} />
-              <CustomText style={{ color: COLORS.error, fontSize: 13, fontWeight: "600", flex: 1 }}>
-                Revisa los campos obligatorios marcados con * antes de ingresar.
-              </CustomText>
-            </View>
-          )}
+            {Object.values(errors).some((e) => e !== "") && (
+              <Alert
+                variant="danger"
+                message="Revisa los campos obligatorios marcados con * antes de ingresar."
+                style={styles.alertSpacing}
+              />
+            )}
 
-          {loading && <Spinner text={MSG.LOADING_LOGIN} />}
+            {loading && <Spinner text={MSG.LOADING_LOGIN} />}
 
-          <Button variant="outline" disabled={loading} onPress={handleLogin}>
-            {MSG.BUTTON_LOGIN}
-          </Button>
+            <Button variant="outline" disabled={loading} onPress={handleLogin}>
+              {MSG.BUTTON_LOGIN}
+            </Button>
 
-          <Separator text={MSG.SEPARATOR_TEXT_LOGIN} />
+            <Separator text={MSG.SEPARATOR_TEXT_LOGIN} />
 
-          <Button variant="outline" disabled={loading} onPress={onGoToRegister}>
-            {MSG.BUTTON_GO_TO_REGISTER}
-          </Button>
+            <Button variant="outline" disabled={loading} onPress={onGoToRegister}>
+              {MSG.BUTTON_GO_TO_REGISTER}
+            </Button>
 
-        </Card>
-      </View>
+          </Card>
+        </View>
       </View>
 
     </ScrollView>

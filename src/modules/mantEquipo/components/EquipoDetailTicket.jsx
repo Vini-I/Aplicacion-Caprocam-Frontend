@@ -30,23 +30,66 @@ import { COLORS } from "../../../theme/colors.js";
 import { styles } from "../styles/mantEquipoStyles.js";
 import { LABELS_EQUIPO_DETALLE } from "../constants/mantEquipoMensajes.js";
 
-export default function EquipoDetail({ equipo, onQuitar }) {
+export default function EquipoDetail({ equipo, onQuitar, horasUsoIngreso }) {
   if (!equipo) return null;
   return (
     <View style={styles.equipoDetailCard}>
-      {LABELS_EQUIPO_DETALLE.map(([campo, etiqueta], idx) => (
-        <View key={campo} style={[styles.equipoDetailRow, idx === 0 && { alignItems: "center" }]}>
-          <CustomText style={styles.equipoDetailLabel}>{etiqueta}</CustomText>
+      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+        <CustomText style={{ fontSize: 13, fontWeight: "700", color: COLORS.textSecondary }}>
+          {onQuitar ? "Detalles del equipo seleccionado" : "Detalles de la máquina"}
+        </CustomText>
+        {onQuitar && (
+          <Button
+            variant="outline"
+            onPress={onQuitar}
+            style={{
+              borderColor: COLORS.error,
+              width: 90,
+              height: 32,
+              paddingVertical: 0,
+              paddingHorizontal: 10,
+              marginTop: 0,
+              justifyContent: "center",
+              alignItems: "center",
+              flexDirection: "row",
+              gap: 4
+            }}
+          >
+            <Icon icon={ICONS.delete} size={12} color={COLORS.error} />
+            <CustomText style={{ color: COLORS.error, fontSize: 11, fontWeight: "600" }}>
+              Eliminar
+            </CustomText>
+          </Button>
+        )}
+      </View>
+
+      {LABELS_EQUIPO_DETALLE.filter(([campo]) => campo !== "horasUso" && campo !== "horasMantenimiento").map(([campo, etiqueta]) => (
+        <View key={campo} style={styles.equipoDetailRow}>
+          <CustomText style={styles.equipoDetailLabel}>{etiqueta}:</CustomText>
           <CustomText style={styles.equipoDetailVal} numberOfLines={2}>{equipo[campo] ?? "—"}</CustomText>
-          {idx === 0 && (
-            <Button onPress={onQuitar} variant="outline"
-              style={{ marginTop: 0, width: 28, height: 28, borderRadius: 99, paddingVertical: 0, paddingHorizontal: 0, justifyContent: "center", alignItems: "center", borderColor: COLORS.error }}
-            >
-              <Icon icon={ICONS.delete} size={13} color={COLORS.error} />
-            </Button>
-          )}
         </View>
       ))}
+
+      {/* Si se pasa horasUsoIngreso o si mostramos el valor por defecto */}
+      {horasUsoIngreso !== undefined ? (
+        <View style={[styles.equipoDetailRow, { borderTopWidth: 1, borderTopColor: COLORS.secondary, paddingTop: 6, marginTop: 4 }]}>
+          <CustomText style={[styles.equipoDetailLabel, { width: 145 }]}>Horas de uso al ingresar:</CustomText>
+          <CustomText style={styles.equipoDetailVal}>{horasUsoIngreso} hrs</CustomText>
+        </View>
+      ) : (
+        <View style={styles.equipoDetailRow}>
+          <CustomText style={styles.equipoDetailLabel}>Horas de uso actual:</CustomText>
+          <CustomText style={styles.equipoDetailVal}>{equipo.horasUso ?? 0} hrs</CustomText>
+        </View>
+      )}
+
+      {/* Horas para mantenimiento del equipo (restantes) */}
+      <View style={styles.equipoDetailRow}>
+        <CustomText style={styles.equipoDetailLabel}>Horas para mantenimiento:</CustomText>
+        <CustomText style={styles.equipoDetailVal}>
+          {Math.max(0, Math.round((equipo.horasMantenimiento ?? 500) - (equipo.horasUso ?? 0)))} hrs
+        </CustomText>
+      </View>
     </View>
   );
 }
