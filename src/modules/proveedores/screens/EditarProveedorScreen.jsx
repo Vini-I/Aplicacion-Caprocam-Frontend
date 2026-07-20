@@ -40,7 +40,7 @@ import Alert from "../../../shared/components/Alert";
 import { styles, ICON_STYLES } from "../styles/EditarProveedorStyles";
 import { ICONS } from "../../../theme/icons";
 import { STYLE } from "../../../theme/style";
-import { tiposProducto } from "../services/ProveedorData";
+import { tiposProducto } from "../services/proveedor.service";
 
 import {
   useEditarProveedorScreen,
