@@ -16,24 +16,6 @@
 import api from '../../../api/api';
 import { fincaService } from '../../finca/services/finca.service';
 
-const estanquesPorFinca = {
-  laReina: [
-    { label: 'Estanque P-01 (Pre-cría)', value: 'A01' },
-    { label: 'Estanque P-02 (Pre-cría)', value: 'A02' },
-    { label: 'Estanque E-08 (Engorde)', value: 'B01' },
-    { label: 'Estanque E-09 (Engorde)', value: 'B02' },
-  ],
-  laEsperanza: [
-    { label: 'Estanque P-03 (Pre-cría)', value: 'P-03' },
-    { label: 'Estanque E-02 (Engorde)', value: 'E-02' },
-    { label: 'Estanque E-03 (Engorde)', value: 'E-03' },
-  ],
-  laVilla: [
-    { label: 'Estanque P-04 (Pre-cría)', value: 'P-04' },
-    { label: 'Estanque E-05 (Engorde)', value: 'E-05' },
-  ],
-};
-
 export async function getLecturas() {
   try {
     const response = await api.get('/lecturasFisicoQuimicas');
@@ -91,13 +73,21 @@ export async function guardarLectura(datos) {
 
 export async function obtenerOpcionesFincas() {
   const fincas = await fincaService.getFincas();
-  // TODO: confirmar con API los nombres reales de los campos de finca
-  return fincas.map((finca) => ({ label: finca.nombre, value: finca.id }));
+  return fincas.map((finca) => ({ label: finca.nombreFinca, value: finca.id }));
 }
-
-export function obtenerEstanquesPorFinca(fincaSeleccionada) {
-  // Bloqueado: pendiente que finca exponga GET /fincas/:fincaId/estanques
-  return estanquesPorFinca[fincaSeleccionada] || [];
+export async function obtenerEstanquesPorFinca(fincaId) {
+  if (!fincaId) return [];
+  try {
+    const response = await api.get('/estanques');
+    return (response.data.data ?? [])
+      .filter((estanque) => estanque.idFinca === fincaId)
+      .map((estanque) => ({
+        label: `${estanque.codigo} (${estanque.tipoEstanque})`,
+        value: estanque.id,
+      }));
+  } catch (error) {
+    return [];
+  }
 }
 
 export function obtenerEstadoLecturasLocal(medicionesPorEstanque = {}) {

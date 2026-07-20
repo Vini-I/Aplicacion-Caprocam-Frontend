@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { obtenerEstanquesPorFinca } from "../services/TrazabilidadServices";
 
 export function useFilterButton({ activeFilters, onApply }) {
@@ -14,21 +14,36 @@ export function useFilterButton({ activeFilters, onApply }) {
     (activeFilters.estanques?.length || 0) +
     (activeFilters.colaboradores?.length || 0) +
     (activeFilters.fecha ? 1 : 0);
+  const [estanquesDisponibles, setEstanquesDisponibles] = useState([]);
 
-  const estanquesDisponibles = useMemo(() => {
-    const vistos = new Set();
-    const resultado = [];
+  useEffect(() => {
+    let mounted = true;
 
-    pendingFincas.forEach((fincaId) => {
-      obtenerEstanquesPorFinca(fincaId).forEach((estanque) => {
+    async function loadEstanques() {
+      const listas = await Promise.all(
+        pendingFincas.map((fincaId) => obtenerEstanquesPorFinca(fincaId).catch(() => [])),
+      );
+
+      if (!mounted) return;
+
+      const vistos = new Set();
+      const resultado = [];
+
+      listas.flat().forEach((estanque) => {
         if (!vistos.has(estanque.value)) {
           vistos.add(estanque.value);
           resultado.push(estanque);
         }
       });
-    });
 
-    return resultado;
+      setEstanquesDisponibles(resultado);
+    }
+
+    loadEstanques();
+
+    return () => {
+      mounted = false;
+    };
   }, [pendingFincas]);
 
   function abrirModal() {
@@ -44,22 +59,20 @@ export function useFilterButton({ activeFilters, onApply }) {
   }
 
   function toggleFinca(value) {
-    setPendingFincas((previous) => {
-      const next = previous.includes(value)
-        ? previous.filter((item) => item !== value)
-        : [...previous, value];
+    const next = pendingFincas.includes(value)
+      ? pendingFincas.filter((item) => item !== value)
+      : [...pendingFincas, value];
 
-      // Si se deselecciona una finca, se descartan del filtro los
-      // estanques que ya no pertenecen a ninguna finca seleccionada.
-      setPendingEstanques((prevEstanques) => {
-        const estanquesValidos = next.flatMap((fincaId) =>
-          obtenerEstanquesPorFinca(fincaId).map((estanque) => estanque.value),
-        );
-        return prevEstanques.filter((valor) => estanquesValidos.includes(valor));
-      });
+    setPendingFincas(next);
 
-      return next;
-    });
+    // Si se deselecciona una finca, se descartan del filtro los
+    // estanques que ya no pertenecen a ninguna finca seleccionada.
+    Promise.all(next.map((fincaId) => obtenerEstanquesPorFinca(fincaId).catch(() => [])))
+      .then((listas) => {
+        const estanquesValidos = listas.flatMap((lista) => lista.map((estanque) => estanque.value));
+        setPendingEstanques((prevEstanques) => prevEstanques.filter((valor) => estanquesValidos.includes(valor)));
+      })
+      .catch(() => {});
   }
 
   function toggleEstanque(value) {

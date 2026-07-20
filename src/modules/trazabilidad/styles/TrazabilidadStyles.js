@@ -102,7 +102,7 @@ export const styles = StyleSheet.create({
 
   movimiento: {
     flexDirection: "row",
-    justifyContent: "flex-start",
+    justifyContent: "space-around",
     alignItems: "center",
     gap: 3,
     marginBottom: 16,

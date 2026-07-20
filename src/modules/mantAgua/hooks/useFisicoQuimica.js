@@ -96,6 +96,8 @@ function desmapearLecturas(valor) {
 }
 
 export default function useFisicoQuimica() {
+
+  const [estanquesFiltrados, setEstanquesFiltrados] = useState([]);
   // Lecturas que se envían a guardar/actualizar
   const [lecturasPh, setLecturasPh] = useState([]);
   const [lecturasSalinidad, setLecturasSalinidad] = useState([]);
@@ -133,7 +135,23 @@ export default function useFisicoQuimica() {
 
   const timerAlertaRef = useRef(null);
   const router = useRouter();
-  const fechaHoy = new Date().toISOString().slice(0, 10);
+    const fechaHoy = useMemo(() => {
+    const hoy = new Date();
+    const anio = hoy.getFullYear();
+    const mes = String(hoy.getMonth() + 1).padStart(2, '0');
+    const dia = String(hoy.getDate()).padStart(2, '0');
+    return `${anio}-${mes}-${dia}`;
+  }, []);
+
+  useEffect(() => {
+  if (!fincaSeleccionada) {
+    setEstanquesFiltrados([]);
+    return;
+  }
+  obtenerEstanquesPorFinca(fincaSeleccionada)
+    .then(setEstanquesFiltrados)
+    .catch(() => setEstanquesFiltrados([]));
+}, [fincaSeleccionada]);
 
   // Limpia el timer de alertas al desmontar
   useEffect(() => {
@@ -172,11 +190,6 @@ export default function useFisicoQuimica() {
     [lecturasPhLocal, lecturasSalinidadLocal, lecturasTempLocal, lecturasOxLocal],
   );
 
-
-  const estanquesFiltrados = useMemo(
-    () => obtenerEstanquesPorFinca(fincaSeleccionada),
-    [fincaSeleccionada],
-  );
 
   const estanqueSeleccionadoObj = useMemo(
     () =>
@@ -265,7 +278,7 @@ const alGuardar = useCallback(async () => {
         ph: mapearLecturas(lecturasPh),
         salinidad: mapearLecturas(lecturasSalinidad),
         temperatura: mapearLecturas(lecturasTemp),
-        oxigeno: mapearLecturas(lecturasOx),
+        oxigenoDisuelto: mapearLecturas(lecturasOx),
       });
     } catch (error) {
       setErrorMessage('No se pudo guardar la lectura. Intenta de nuevo.');
@@ -290,7 +303,7 @@ const alGuardar = useCallback(async () => {
         ph: mapearLecturas(lecturasPh),
         salinidad: mapearLecturas(lecturasSalinidad),
         temperatura: mapearLecturas(lecturasTemp),
-        oxigeno: mapearLecturas(lecturasOx),
+        oxigenoDisuelto: mapearLecturas(lecturasOx),
       });
     } catch (error) {
       setErrorMessage('No se pudo actualizar la lectura. Intenta de nuevo.');

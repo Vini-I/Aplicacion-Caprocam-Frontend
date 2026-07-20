@@ -1,30 +1,22 @@
-/**
- * ============================================================
- * SERVICIO - AGREGAR TRAZABILIDAD
- * ============================================================
- *
- * Descripción:
- * Arma el body y crea un nuevo registro de trazabilidad contra la
- * API. El backend regresa el registro completo (con nombres de
- * finca/estanque/colaborador), ya no hace falta armarlo a mano.
- *
- * Reglas importantes:
- * - El registro es histórico: no hay edición ni borrado.
- * - Validaciones complejas deben ejecutarse antes de llamar aquí.
- */
+import { parseDate } from "../../../shared/utils/dateUtils";
+import { crearRegistro } from "./TrazabilidadServices";
 
-import { obtenerColaboradorSesion, crearRegistro } from "./TrazabilidadServices";
+function aFechaISO(fechaTexto) {
+  const fecha = parseDate(fechaTexto);
+  if (!fecha) return fechaTexto;
+  const anio = fecha.getFullYear();
+  const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+  const dia = String(fecha.getDate()).padStart(2, "0");
+  return `${anio}-${mes}-${dia}`;
+}
 
 export async function crearRegistroTrazabilidad(formData) {
-  const colaboradorSesion = obtenerColaboradorSesion();
-
-  // TODO: confirmar formato de fecha esperado por la API (front usa dd/mm/aaaa)
   const body = {
     fincaId: formData.fincaId,
     estanqueOrigenId: formData.estanqueOrigenId,
     estanqueDestinoId: formData.estanqueDestinoId,
-    fecha: formData.fecha,
-    colaboradorId: colaboradorSesion.value,
+    fecha: aFechaISO(formData.fecha),
+    colaboradorId: formData.colaboradorId,
     tamano: formData.tamaño,
     dias: formData.dias,
     pl: formData.pl,

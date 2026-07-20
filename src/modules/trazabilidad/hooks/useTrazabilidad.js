@@ -33,6 +33,7 @@ import {
   obtenerEstanquesPorFinca,
   obtenerFincas,
   obtenerColaboradorSesion,
+  obtenerColaboradorSesionActual,
   obtenerSiembraPorEstanque,
 } from "../services/TrazabilidadServices";
 import { crearRegistroTrazabilidad } from "../services/AgregarTrazabilidadService";
@@ -42,8 +43,8 @@ import { esFechaFutura, esFechaValida } from "../../../shared/utils/dateUtils";
 
 export function useTrazabilidad() {
   const router = useRouter();
-  const colaboradorSesion = obtenerColaboradorSesion();
 
+  const [colaboradorSesion, setColaboradorSesion] = useState(obtenerColaboradorSesion);
 
   const [formData, setFormData] = useState(() => ({
     ...initialForm,
@@ -67,8 +68,50 @@ export function useTrazabilidad() {
     obtenerFincas().then(setFincas).catch(() => setFincas([]));
   }, []);
 
-  const estanquesOrigen = obtenerEstanquesPorFinca(formData.fincaId);
-  const estanquesDestino = obtenerEstanquesPorFinca(formData.fincaId);
+  // Resuelve el nombre real del colaborador de sesión contra la API
+  // (el id ya es correcto desde el montaje, esto solo actualiza el label).
+  useEffect(() => {
+    let cancelado = false;
+    obtenerColaboradorSesionActual().then((real) => {
+      if (cancelado) return;
+      setColaboradorSesion(real);
+      setFormData((previousData) => ({ ...previousData, colaboradorId: real.value }));
+    });
+    return () => {
+      cancelado = true;
+    };
+  }, []);
+
+  const [estanquesOrigen, setEstanquesOrigen] = useState([]);
+  const [estanquesDestino, setEstanquesDestino] = useState([]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    if (!formData.fincaId) {
+      setEstanquesOrigen([]);
+      setEstanquesDestino([]);
+      return () => {
+        mounted = false;
+      };
+    }
+
+    obtenerEstanquesPorFinca(formData.fincaId)
+      .then((lista) => {
+        if (!mounted) return;
+        setEstanquesOrigen(lista || []);
+        setEstanquesDestino(lista || []);
+      })
+      .catch(() => {
+        if (!mounted) return;
+        setEstanquesOrigen([]);
+        setEstanquesDestino([]);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, [formData.fincaId]);
 
   function manejarCambio(field, value) {
     if (field === "estanqueOrigenId") {
@@ -173,10 +216,14 @@ export function useTrazabilidad() {
     try {
       await crearRegistroTrazabilidad(formData);
     } catch (error) {
-      setMensajeError("No se pudo guardar el registro. Intenta de nuevo.");
+      const mensajeApi = error?.response?.data?.message;
+      setMensajeError(
+        error?.response?.status === 400 && mensajeApi
+          ? mensajeApi
+          : "No se pudo guardar el registro. Intenta de nuevo."
+      );
       return;
     }
-
     setMensajeError("");
     setMostrarAlerta(true);
 

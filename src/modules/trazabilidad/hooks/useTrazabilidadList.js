@@ -20,6 +20,9 @@ import {
   getRegistros,
   obtenerFincas,
   obtenerColaboradores,
+  obtenerTodosLosEstanques,
+  construirMapas,
+  enriquecerRegistros,
   filtrarRegistrosTrazabilidad,
 } from "../services/TrazabilidadServices";
 
@@ -37,10 +40,12 @@ export function useTrazabilidadList() {
   const [registros, setRegistros] = useState([]);
   const [fincas, setFincas] = useState([]);
   const [colaboradores, setColaboradores] = useState([]);
+  const [estanques, setEstanques] = useState([]);
 
   useEffect(() => {
     obtenerFincas().then(setFincas).catch(() => setFincas([]));
     obtenerColaboradores().then(setColaboradores).catch(() => setColaboradores([]));
+    obtenerTodosLosEstanques().then(setEstanques).catch(() => setEstanques([]));
   }, []);
 
   // Se vuelve a pedir el listado cada vez que la pantalla toma foco,
@@ -50,9 +55,25 @@ export function useTrazabilidadList() {
       getRegistros().then(setRegistros).catch(() => setRegistros([]));
     }, []),
   );
+
+  // El backend solo devuelve IDs crudos (fincaId, colaboradorId,
+  // estanqueOrigenId, estanqueDestinoId). Se cruzan acá contra
+  // fincas/colaboradores/estanques ya cargados para armar
+  // fincaNombre, colaboradorNombre, estanqueOrigenLabel y
+  // estanqueDestinoLabel, que es lo que espera TrazabilidadScreen.jsx.
+  const mapas = useMemo(
+    () => construirMapas({ fincas, colaboradores, estanques }),
+    [fincas, colaboradores, estanques],
+  );
+
+  const registrosEnriquecidos = useMemo(
+    () => enriquecerRegistros(registros, mapas),
+    [registros, mapas],
+  );
+
   const registrosFiltrados = useMemo(
-    () => filtrarRegistrosTrazabilidad(registros, busqueda, filtros),
-    [registros, busqueda, filtros],
+    () => filtrarRegistrosTrazabilidad(registrosEnriquecidos, busqueda, filtros),
+    [registrosEnriquecidos, busqueda, filtros],
   );
 
   const hayFiltrosActivos =

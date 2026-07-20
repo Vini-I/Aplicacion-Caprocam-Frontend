@@ -11,7 +11,6 @@ export const initialForm = {
   estanqueOrigenId: "",
   estanqueDestinoId: "",
   fecha: "",
-  colaboradorId: "",
   tamaño: "",
   dias: "30",
   pl: "",
