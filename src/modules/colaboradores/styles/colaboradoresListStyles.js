@@ -46,7 +46,7 @@ export const styles = StyleSheet.create({
     padding: 0,
     paddingBottom: 110, // espacio para el botón flotante
     width: '100%',
-    left: 8,
+    left: 0,
     maxWidth: 900,
     alignSelf: 'center',
   },

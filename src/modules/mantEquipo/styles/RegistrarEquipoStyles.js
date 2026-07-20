@@ -11,6 +11,7 @@
 
 import { StyleSheet } from "react-native";
 import { COLORS } from "../../../theme/colors";
+import { TYPOGRAPHY } from "../../../theme/typography";
 
 export const styles = StyleSheet.create({
   container: {
@@ -96,11 +97,54 @@ export const styles = StyleSheet.create({
     fontWeight: "600",
   },
 
+  // Pantalla de carga
+  loadingContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  // Padding del ScrollView según tamaño de pantalla
+  contentPaddingSmall: {
+    paddingHorizontal: 16,
+  },
+  contentPaddingLarge: {
+    paddingHorizontal: 40,
+  },
+
+  // Label de campos del formulario
+  labelMedium: {
+    fontFamily: TYPOGRAPHY.fontFamily.medium,
+  },
+
+  // Wrapper del Alert de resultado
+  alertWrapper: {
+    marginBottom: 12,
+  },
+
   // Botones
   buttonRow: {
     flexDirection: "row",
     gap: 12,
     marginTop: 4,
+  },
+  botonesContainer: {
+    marginTop: 4,
+  },
+  saveButtonOutline: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    borderColor: COLORS.primary,
+    backgroundColor: "transparent",
+    paddingVertical: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  saveButtonText: {
+    color: COLORS.primary,
+    fontWeight: "600",
   },
   saveButton: {
     flex: 1,

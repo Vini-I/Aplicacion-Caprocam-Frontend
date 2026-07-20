@@ -158,22 +158,11 @@ export function useColaboradorForm({ initialData, isEditing, userRole, fincaId, 
 
   const handleSubmit = () => {
     setSubmitted(true);
-    const { hasError, errors: newErrors } = validateForm();
+    const { hasError } = validateForm();
 
     if (hasError) {
-      const messages = [];
-      if (newErrors.cedula) messages.push("• " + newErrors.cedula);
-      if (newErrors.nombre) messages.push("• " + newErrors.nombre);
-      if (newErrors.apellidos) messages.push("• " + newErrors.apellidos);
-      if (newErrors.telefono) messages.push("• " + newErrors.telefono);
-      if (newErrors.email) messages.push("• " + newErrors.email);
-      if (newErrors.fincaId) messages.push("• " + newErrors.fincaId);
-
-      setValidationMessage(
-        messages.length > 0
-          ? "Revisa los campos obligatorios marcados con *:\n" + messages.join("\n")
-          : "Revisa los campos obligatorios marcados con * antes de guardar."
-      );
+      // Mensaje genérico sin detalles de campos específicos
+      setValidationMessage("Revisa los campos obligatorios marcados con *:");
       return;
     }
 

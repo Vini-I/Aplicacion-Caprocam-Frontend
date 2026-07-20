@@ -156,7 +156,7 @@ export default function DetalleEquipoScreen() {
   const confirmDelete = async () => {
     try {
       await equiposService.deleteEquipo(equipo.id);
-      setAlert({ type: 'warning', message: `Equipo "${equipo.nombre}" eliminado.` });
+      setAlert({ type: 'danger', message: `Equipo "${equipo.nombre}" eliminado.` });
       setShowConfirmModal(false);
       setTimeout(() => router.replace('/equipos/equipos'), 1500);
     } catch (err) {

@@ -171,7 +171,7 @@ export function useTareaForm() {
       }
 
       // Éxito: navegar de vuelta
-      router.replace('/equipos/tareas');
+router.back();
     } catch (error) {
       setErrores({ general: error.message || 'Ocurrió un error al guardar la tarea.' });
     } finally {
@@ -180,7 +180,7 @@ export function useTareaForm() {
   };
 
   const cancelar = () => {
-    router.replace('/equipos/tareas');
+router.back();
   };
 
   // Filtrado de productos para búsqueda

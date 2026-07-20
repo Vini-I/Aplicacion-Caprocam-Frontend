@@ -210,10 +210,8 @@ export function useRegistrarEquipo(initialData = null) {
 
     if (mensajes.length > 0) {
       setErrores(nuevosErrores);
-      const mensajeError =
-        'Revisa los campos obligatorios marcados con *:\n' +
-        mensajes.map((m) => `- ${m}`).join('\n');
-      throw new Error(mensajeError);
+      // Mensaje genérico sin lista de errores específicos
+      throw new Error('Revisa los campos obligatorios marcados con *:');
     }
 
     setGuardando(true);
