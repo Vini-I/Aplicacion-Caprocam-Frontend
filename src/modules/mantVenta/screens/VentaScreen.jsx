@@ -13,7 +13,7 @@ import Alert from "../../../shared/components/Alert.jsx";
 import Button from "../../../shared/components/Button.jsx";
 import Card from "../../../shared/components/Card.jsx";
 import Icon from "../../../shared/components/Icons.jsx";
-import Input from "../../../shared/components/Input.jsx";
+import DateInput from "../../../shared/components/DateInput.jsx";
 import NumberInput from "../../../shared/components/NumberInput.jsx";
 import Select from "../../../shared/components/Select.jsx";
 import Text from "../../../shared/components/Text.jsx";
@@ -47,6 +47,7 @@ export default function VentaScreen({ onDetalleVentas }) {
     totalVenta,
     ventas,
     SectionTitle,
+    setFechaVenta,
     setEstanqueSeleccionado,
     handleFincaChange,
     handlePesoPromedioChange,
@@ -55,6 +56,7 @@ export default function VentaScreen({ onDetalleVentas }) {
     handlePrecioChange,
     handleCompradorChange,
     handleColaboradorChange,
+    handleFechaChange,
     limpiarError,
     guardarVenta,
     gridStyle,
@@ -152,7 +154,14 @@ export default function VentaScreen({ onDetalleVentas }) {
           </View>
         </View>
               
-        <Input label="Fecha *" value={fechaVenta} editable={false} />
+        <View style={styles.inputItem}>
+          <DateInput
+            label="Fecha *"
+            value={fechaVenta}
+            onChangeText={handleFechaChange}
+            allowFutureDates={true}
+          />
+        </View>
 
         <View style={styles.summaryBox}>
           <Text style={styles.summaryLabel}>Total estimado</Text>

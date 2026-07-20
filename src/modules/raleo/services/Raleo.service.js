@@ -21,38 +21,27 @@
  * await raleoService.create(form);
  */
 
-import AsyncStorage from "@react-native-async-storage/async-storage";
-
-const CLAVE = "raleos_v1";
+import api from "../../../api/api.js";
 
 const raleoService = {
     getAll: async () => {
-        try {
-            const datos = await AsyncStorage.getItem(CLAVE);
-            return datos ? JSON.parse(datos) : [];
-        } catch {
-            return [];
-        }
+        const respuesta = await api.get(`/raleos`);
+        return respuesta.data;
+    },
+
+    getById: async (id) => {
+        const respuesta = await api.get(`/raleos/${id}`);
+        return respuesta.data;
     },
 
     create: async (registro) => {
-        const lista = await raleoService.getAll();
-        const nuevo = {
-            ...registro,
-            id:        Date.now().toString(),
-            timestamp: new Date().toISOString(),
-        };
-        await AsyncStorage.setItem(CLAVE, JSON.stringify([...lista, nuevo]));
-        return nuevo;
+        const respuesta = await api.post(`/raleos`, registro);
+        return respuesta.data;
     },
 
     deleteById: async (id) => {
-        const lista = await raleoService.getAll();
-        await AsyncStorage.setItem(CLAVE, JSON.stringify(lista.filter(r => r.id !== id)));
-    },
-
-    clearAll: async () => {
-        await AsyncStorage.removeItem(CLAVE);
+        const respuesta = await api.delete(`/raleos/${id}`)
+        return respuesta.data;
     },
 };
 

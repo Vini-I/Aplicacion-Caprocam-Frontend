@@ -17,6 +17,17 @@
  * - Los filtros se aplican solo al presionar Aplicar.
  * - Preparado para conectar al backend.
  *
+ * IMPORTANTE (fix de animación, sin tocar shared/components/Modal):
+ * - El componente Modal compartido anima el overlay (fondo gris) y el
+ *   container como una sola unidad cuando animationType="slide", lo cual
+ *   hacia que el fondo gris subiera junto con el panel.
+ * - Aqui usamos animationType="none" en el Modal compartido (asi el
+ *   overlay + su container aparecen de inmediato, sin efecto, tal como
+ *   se pidio: "que nada mas aparezca la pantalla gris").
+ * - El panel de filtros (fondo blanco) ahora es un Animated.View propio
+ *   de este componente, que es el UNICO que se anima con translateY,
+ *   deslizandose desde abajo hacia su posicion final.
+ *
  * Props principales:
  * - categories: array de strings o array { label, value } - clasificaciones.
  * - suppliers: array de strings o array { label, value } - proveedores.
@@ -43,11 +54,13 @@
  * />
  */
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   ScrollView,
   StyleSheet,
+  Animated,
+  Dimensions,
 } from "react-native";
 
 import Modal from "../../../shared/components/Modal";
@@ -60,6 +73,9 @@ import DateInput from "../../../shared/components/DateInput";
 
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
+
+const SCREEN_HEIGHT = Dimensions.get("window").height;
+const PANEL_ANIM_MS = 260;
 
 /**
  * Acepta tanto array de strings ["Alimento", "Insumos"]
@@ -100,6 +116,22 @@ export default function FilterButton({
   const [pendingLowStock, setPendingLowStock] = useState(false);
   const [pendingExpiryDate, setPendingExpiryDate] = useState("");
 
+  // Animacion propia del panel (el unico elemento que sube/baja).
+  // El fondo gris (overlay) NO usa este valor, por eso queda fijo.
+  const panelTranslateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+
+  useEffect(() => {
+    if (modalVisible) {
+      // Aseguramos que arranque desde abajo cada vez que se abre.
+      panelTranslateY.setValue(SCREEN_HEIGHT);
+      Animated.timing(panelTranslateY, {
+        toValue: 0,
+        duration: PANEL_ANIM_MS,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [modalVisible]);
+
   const activeCount =
     (activeFilters.categories?.length || 0) +
     (activeFilters.suppliers?.length || 0) +
@@ -117,7 +149,15 @@ export default function FilterButton({
   }
 
   function closeModal() {
-    setModalVisible(false);
+    // Bajamos el panel antes de cerrar el modal para que la salida
+    // tambien se sienta natural (el gris no se mueve, solo el panel).
+    Animated.timing(panelTranslateY, {
+      toValue: SCREEN_HEIGHT,
+      duration: PANEL_ANIM_MS,
+      useNativeDriver: true,
+    }).start(() => {
+      setModalVisible(false);
+    });
   }
 
   function toggleItem(list, setList, value) {
@@ -184,114 +224,126 @@ export default function FilterButton({
         </Button>
       </View>
 
-      {/* ── Modal ── */}
+      {/* ── Modal ──
+          animationType="none": el Modal compartido NO anima nada (ni el
+          overlay ni su container interno). El overlay gris asi aparece
+          de inmediato y se queda fijo. containerStyle es transparente:
+          la unica pieza visible que se anima es el Animated.View de abajo. */}
       <Modal
         visible={modalVisible}
         onClose={closeModal}
         showCloseButton={false}
-        animationType="slide"
+        animationType="none"
         overlayStyle={styles.overlay}
-        containerStyle={styles.modalContainer}
+        containerStyle={styles.modalContainerTransparent}
       >
-        {/* Header */}
-        <View style={styles.modalHeader}>
-          <Title level={4}>Filtros</Title>
-          <Button variant="outline" onPress={closeModal} style={styles.closeBtn}>
-            <Icon icon={ICONS.exit} size={18} color={COLORS.black} />
-          </Button>
-        </View>
-
-        <ScrollView showsVerticalScrollIndicator={false}>
-
-          {/* Seccion: Clasificacion — solo si llegan categorías */}
-          {categories.length > 0 && (
-            <FilterSection label="Clasificación">
-              {normalize(categories).map((cat) => (
-                <Chip
-                  key={cat.value}
-                  label={cat.label}
-                  selected={pendingCategories.includes(cat.value)}
-                  onPress={() =>
-                    toggleItem(pendingCategories, setPendingCategories, cat.value)
-                  }
-                />
-              ))}
-            </FilterSection>
-          )}
-
-          {/* Seccion: Proveedor — solo si llegan suppliers */}
-          {suppliers.length > 0 && (
-            <FilterSection label="Proveedor">
-              {normalize(suppliers).map((sup) => (
-                <Chip
-                  key={sup.value}
-                  label={sup.label}
-                  selected={pendingSuppliers.includes(sup.value)}
-                  onPress={() =>
-                    toggleItem(pendingSuppliers, setPendingSuppliers, sup.value)
-                  }
-                />
-              ))}
-            </FilterSection>
-          )}
-
-          {/* Seccion: Unidad de medida — solo si llegan units */}
-          {units.length > 0 && (
-            <FilterSection label="Unidad de medida">
-              {normalize(units).map((unit) => (
-                <Chip
-                  key={unit.value}
-                  label={unit.label}
-                  selected={pendingUnits.includes(unit.value)}
-                  onPress={() =>
-                    toggleItem(pendingUnits, setPendingUnits, unit.value)
-                  }
-                />
-              ))}
-            </FilterSection>
-          )}
-
-          {/* Seccion: Fecha de caducidad — solo si se habilita explícitamente */}
-          {showExpiryDate && (
-            <FilterSection label="Fecha de caducidad">
-              <DateInput
-                value={pendingExpiryDate}
-                onChangeText={setPendingExpiryDate}
-                allowFutureDates={true}
-                containerStyle={styles.dateInput}
-              />
-            </FilterSection>
-          )}
-
-          {/* Checkbox: Stock bajo — solo si se habilita explícitamente */}
-          {showLowStock && (
-            <Button
-              variant="outline"
-              onPress={() => setPendingLowStock((prev) => !prev)}
-              style={styles.checkboxRow}
-            >
-              <CustomText size={14} color={COLORS.textPrimary} style={styles.checkboxLabel}>
-                Solo productos con stock bajo
-              </CustomText>
-              <View style={[styles.checkbox, pendingLowStock && styles.checkboxActive]}>
-                {pendingLowStock && (
-                  <Icon icon={ICONS.check} size={14} color={COLORS.white} />
-                )}
-              </View>
+        {/* Panel real de filtros: unico elemento que se desliza. */}
+        <Animated.View
+          style={[
+            styles.animatedPanel,
+            { transform: [{ translateY: panelTranslateY }] },
+          ]}
+        >
+          {/* Header */}
+          <View style={styles.modalHeader}>
+            <Title level={4}>Filtros</Title>
+            <Button variant="outline" onPress={closeModal} style={styles.closeBtn}>
+              <Icon icon={ICONS.exit} size={18} color={COLORS.black} />
             </Button>
-          )}
+          </View>
 
-        </ScrollView>
+          <ScrollView showsVerticalScrollIndicator={false}>
 
-        {/* Acciones */}
-        <View style={styles.actions}>
-          <Button variant="outline" onPress={handleClear} style={styles.btnClear}>
-            Limpiar filtros
-          </Button>
-          <Button onPress={handleApply} style={styles.btnApply}>
-            Aplicar
-          </Button>
-        </View>
+            {/* Seccion: Clasificacion — solo si llegan categorías */}
+            {categories.length > 0 && (
+              <FilterSection label="Clasificación">
+                {normalize(categories).map((cat) => (
+                  <Chip
+                    key={cat.value}
+                    label={cat.label}
+                    selected={pendingCategories.includes(cat.value)}
+                    onPress={() =>
+                      toggleItem(pendingCategories, setPendingCategories, cat.value)
+                    }
+                  />
+                ))}
+              </FilterSection>
+            )}
+
+            {/* Seccion: Proveedor — solo si llegan suppliers */}
+            {suppliers.length > 0 && (
+              <FilterSection label="Proveedor">
+                {normalize(suppliers).map((sup) => (
+                  <Chip
+                    key={sup.value}
+                    label={sup.label}
+                    selected={pendingSuppliers.includes(sup.value)}
+                    onPress={() =>
+                      toggleItem(pendingSuppliers, setPendingSuppliers, sup.value)
+                    }
+                  />
+                ))}
+              </FilterSection>
+            )}
+
+            {/* Seccion: Unidad de medida — solo si llegan units */}
+            {units.length > 0 && (
+              <FilterSection label="Unidad de medida">
+                {normalize(units).map((unit) => (
+                  <Chip
+                    key={unit.value}
+                    label={unit.label}
+                    selected={pendingUnits.includes(unit.value)}
+                    onPress={() =>
+                      toggleItem(pendingUnits, setPendingUnits, unit.value)
+                    }
+                  />
+                ))}
+              </FilterSection>
+            )}
+
+            {/* Seccion: Fecha de caducidad — solo si se habilita explícitamente */}
+            {showExpiryDate && (
+              <FilterSection label="Fecha de caducidad">
+                <DateInput
+                  value={pendingExpiryDate}
+                  onChangeText={setPendingExpiryDate}
+                  allowFutureDates={true}
+                  containerStyle={styles.dateInput}
+                />
+              </FilterSection>
+            )}
+
+            {/* Checkbox: Stock bajo — solo si se habilita explícitamente */}
+            {showLowStock && (
+              <Button
+                variant="outline"
+                onPress={() => setPendingLowStock((prev) => !prev)}
+                style={styles.checkboxRow}
+              >
+                <CustomText size={14} color={COLORS.textPrimary} style={styles.checkboxLabel}>
+                  Solo productos con stock bajo
+                </CustomText>
+                <View style={[styles.checkbox, pendingLowStock && styles.checkboxActive]}>
+                  {pendingLowStock && (
+                    <Icon icon={ICONS.check} size={14} color={COLORS.white} />
+                  )}
+                </View>
+              </Button>
+            )}
+
+          </ScrollView>
+
+          {/* Acciones */}
+          <View style={styles.actions}>
+            <Button variant="outline" onPress={handleClear} style={styles.btnClear}>
+              Limpiar filtros
+            </Button>
+            <Button onPress={handleApply} style={styles.btnApply}>
+              Aplicar
+            </Button>
+          </View>
+        </Animated.View>
       </Modal>
     </>
   );
@@ -403,12 +455,28 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
     padding: 0,
   },
-  modalContainer: {
+  // El container que le pasamos al Modal compartido ahora es transparente
+  // y sin bordes: solo sirve para posicionar. El panel visible real es
+  // `animatedPanel` (Animated.View) de aca abajo.
+  modalContainerTransparent: {
+    flex: 1,
+    width: "100%",
+    backgroundColor: "transparent",
+    padding: 0,
+  },
+  animatedPanel: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: COLORS.white,
     borderRadius: 20,
     borderBottomLeftRadius: 0,
     borderBottomRightRadius: 0,
     maxHeight: "90%",
-    paddingBottom: 8,
+    paddingTop: 20,
+    paddingHorizontal: 20,
+    paddingBottom: 24,
   },
   modalHeader: {
     flexDirection: "row",

@@ -49,7 +49,7 @@ export default function FincaDetalleScreen({
         Subtitulo={finca.nombre}
         Icono="document"
       />
-      <ScrollView style={STYLE.container}>
+      <ScrollView showsVerticalScrollIndicator={false} style={STYLE.container}>
         <View style={STYLE.contentWrapper}>
           <Card>
             <View>
@@ -122,7 +122,9 @@ export default function FincaDetalleScreen({
           </Card>
           <Button style={styles.addButton} onPress={() => onEstanque()}>
             <Icon style={styles.addButtonText} icon={ICONS.add} size={15} />
-            <Text style={styles.addButtonText} size={15}>REGISTRAR NUEVO ESTANQUE</Text>
+            <Text style={styles.addButtonText} size={15}>
+              REGISTRAR NUEVO ESTANQUE
+            </Text>
           </Button>
 
           {estanquesFinca?.map((estanque, index) => (
