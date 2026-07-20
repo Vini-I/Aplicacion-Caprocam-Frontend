@@ -6,54 +6,68 @@
  * Logica de la pantalla de detalle de un proveedor.
  *
  * FUNCIONALIDAD:
- * 1. Busca el proveedor por id (parámetro de ruta) en proveedoresMock.
+ * 1. Busca el proveedor por id (parámetro de ruta) en el backend
+ *    (getProveedorById).
  * 
- * 2. Expone proveedor (undefined si no existe) para que la screen
- *    decida si mostrar el EmptyState o el detalle, incluyendo si
- *    muestra o no la sección de notas.
+ * 2. Expone proveedor (undefined si no existe o aún no cargó) para
+ *    que la screen decida si mostrar el EmptyState o el detalle,
+ *    incluyendo si muestra o no la sección de notas.
  * 
  * 3. Controla la visibilidad del modal de confirmación de eliminar
  *    (modalVisible, abrirModal, cerrarModal) y expone confirmarEliminar,
- *    que elimina realmente el proveedor de proveedoresMock.
+ *    que elimina realmente el proveedor contra el backend
+ *    (eliminarProveedor).
  * 
  * 4. getTipoLabel traduce el value de tipoProducto a su label legible.
  *
+ * 5. Expone cargando y error para que la screen pueda mostrar el
+ *    estado de la petición.
+ *
  * IMPORTANTE:
- * - Es solo lectura, no aplica validaciones.
+ * - No aplica validaciones.
  * - No navega directamente; expone datos y handlers para que la screen
  *   decida la navegación real.
  */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useLocalSearchParams, useNavigation } from "expo-router";
 import {
-  proveedoresMock,
-  tiposProducto,
+  getProveedorById,
   eliminarProveedor,
-} from "../services/ProveedorData";
-
-function getTipoProductoLabel(value) {
-  const tipo = tiposProducto.find((t) => t.value === value);
-  return tipo ? tipo.label : value;
-}
-
-function getProveedorById(id) {
-  return proveedoresMock.find((p) => p.id === Number(id));
-}
+  getTipoProductoLabel,
+} from "../services/proveedor.service";
 
 export function useDetalleProveedorScreen() {
   const { id } = useLocalSearchParams();
   const navigation = useNavigation();
   const [modalVisible, setModalVisible] = useState(false);
-  const [proveedor, setProveedor] = useState(() => getProveedorById(id));
+  const [proveedor, setProveedor] = useState(undefined);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState("");
+
+  const cargarProveedor = useCallback(async () => {
+    try {
+      setCargando(true);
+      setError("");
+
+      const data = await getProveedorById(id);
+
+      setProveedor(data);
+    } catch (err) {
+      setProveedor(undefined);
+      setError("No fue posible cargar el proveedor.");
+    } finally {
+      setCargando(false);
+    }
+  }, [id]);
 
   useEffect(() => {
-    setProveedor(getProveedorById(id));
+    cargarProveedor();
 
     const unsubscribe = navigation.addListener("focus", () => {
-      setProveedor(getProveedorById(id));
+      cargarProveedor();
     });
     return unsubscribe;
-  }, [navigation, id]);
+  }, [navigation, cargarProveedor]);
 
   function abrirModal() {
     setModalVisible(true);
@@ -63,9 +77,14 @@ export function useDetalleProveedorScreen() {
     setModalVisible(false);
   }
 
-  function confirmarEliminar() {
-    eliminarProveedor(id);
-    setModalVisible(false);
+  async function confirmarEliminar() {
+    try {
+      await eliminarProveedor(id);
+      setModalVisible(false);
+    } catch (err) {
+      setModalVisible(false);
+      setError("No fue posible eliminar el proveedor.");
+    }
   }
 
   function getTipoLabel(value) {
@@ -79,5 +98,7 @@ export function useDetalleProveedorScreen() {
     cerrarModal,
     confirmarEliminar,
     getTipoLabel,
+    cargando,
+    error,
   };
 }
