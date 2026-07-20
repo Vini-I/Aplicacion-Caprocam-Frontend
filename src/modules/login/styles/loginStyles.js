@@ -80,6 +80,12 @@ const styles = StyleSheet.create({
   workersList: {
     marginTop: 6,
   },
+  workersScroll: {
+    height: 392, // ~5 items de ~72px cada uno
+  },
+  workersScrollCompressed: {
+    height: 336, // reducido ~56px cuando el alert de sync es visible
+  },
   workerButton: {
     marginTop: 0,
     marginBottom: 12,
@@ -156,10 +162,15 @@ const styles = StyleSheet.create({
     color: COLORS.textPrimary,
     backgroundColor: COLORS.white,
   },
-  pinErrorText: {
+  pinErrorAlert: {
     marginTop: 10,
     marginBottom: 8,
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
+  },
+  syncAlert: {
+    width: '100%',
+    maxWidth: 450,
+    alignSelf: 'center',
+    marginBottom: 12,
   },
 });
 
