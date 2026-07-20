@@ -70,6 +70,8 @@ export default function ColaboradorForm({
         keyboardType="numeric"
         error={errors.cedula}
         editable={!isEditing}
+          style={submitted && errors.cedula ? styles.inputError : null} 
+
       />
       {loadingTSE && <ActivityIndicator style={styles.loader} color="#009EF5" />}
 
@@ -80,6 +82,7 @@ export default function ColaboradorForm({
         placeholder="Ej: Juan"
         error={errors.nombre}
         editable={!consultedCedula}
+                  style={submitted && errors.nombre ? styles.inputError : null} 
       />
 
       <Input
@@ -89,6 +92,8 @@ export default function ColaboradorForm({
         placeholder="Ej: Pérez Solano"
         error={errors.apellidos}
         editable={!consultedCedula}
+                  style={submitted && errors.apellidos ? styles.inputError : null} 
+
       />
 
       <Input
