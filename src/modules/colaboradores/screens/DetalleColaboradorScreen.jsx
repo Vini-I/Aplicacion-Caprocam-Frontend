@@ -123,7 +123,7 @@ export default function DetalleColaboradorScreen() {
     setEliminando(true);
     try {
       await colaboradoresService.deleteColaborador(colaborador.id);
-      setAlert({ type: 'warning', message: `Colaborador "${colaborador.nombre}" eliminado correctamente.` });
+      setAlert({ type: 'danger', message: `Colaborador "${colaborador.nombre}" eliminado correctamente.` });
       setShowConfirmModal(false);
       // Esperar un momento para que se vea el alert y luego regresar
       setTimeout(() => router.replace('/(drawer)/colaboradores'), 1500);

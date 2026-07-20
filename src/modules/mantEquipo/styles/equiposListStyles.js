@@ -78,7 +78,7 @@ export const styles = StyleSheet.create({
   list: {
     padding: 16,
     paddingBottom: 110,
-    left: 8,
+    left: 0,
   },
 
   error: {
@@ -238,6 +238,11 @@ export const styles = StyleSheet.create({
     fontWeight: "600",
     fontSize: 14,
   },
+touchableContainer: {
+  width: '100%',
+  maxWidth: 900,
+  alignSelf: 'center',
+},
 
   // ----- Modal de confirmación -----
   modalConfirmContainer: {

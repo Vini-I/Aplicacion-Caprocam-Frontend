@@ -79,7 +79,6 @@ export default function TareaFormScreen() {
   if (cargandoDatos) {
     return (
       <View style={STYLE.container}>
-        <CustomText>Cargando tarea...</CustomText>
       </View>
     );
   }

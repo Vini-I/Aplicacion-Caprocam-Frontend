@@ -67,7 +67,7 @@ export function useColaboradoresList() {
     }
     try {
       await eliminarColaborador(deleteTarget.id);
-      showAlert("warning", `El colaborador ${deleteTarget.nombre} ha sido eliminado correctamente.`);
+showAlert("danger", `El colaborador ${deleteTarget.nombre} ha sido eliminado correctamente.`);
       setShowConfirmModal(false);
       setDeleteTarget(null);
       setCedulaConfirmacion("");
