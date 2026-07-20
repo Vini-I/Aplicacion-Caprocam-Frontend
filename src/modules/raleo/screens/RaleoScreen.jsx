@@ -79,6 +79,12 @@ useEffect(() => {
   return () => clearTimeout(timer);
 }, [alerta.visible]);
 
+function convertirFecha(fecha) {
+  const [dia, mes, año] = fecha.split("/");
+
+  return `${año}-${mes}-${dia}`;
+}
+
   const handleGuardar = async () => {
     setSubmitted(true);
     const { valido, errores: erroresValidacion } = validarForm();
@@ -91,7 +97,15 @@ useEffect(() => {
 
     try {
       const registro = {
-        ...form,
+        idFinca: form.finca,
+        idEstanque: form.estanque,
+        idColaborador: 1,
+        fecha: convertirFecha(form.fecha),
+        porcentaje: Number(form.porcentajeRaleo),
+        pesoEstimado: Number(form.pesoPromedio),
+        biomasaEstimado: Number(form.biomasaActual),
+        objetivo: form.objetivo,
+        metodo: form.metodo,
         observaciones: form.observaciones?.trim()
           ? form.observaciones
           : "No se realizan observaciones",

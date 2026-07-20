@@ -43,32 +43,32 @@ import { TYPOGRAPHY } from "../../../theme/typography";
 import { ICONS } from "../../../theme/icons";
 
 const FINCAS = [
-  { label: "Finca La Reina", value: "laReina" },
-  { label: "Finca La Esperanza", value: "laEsperanza" },
-  { label: "Finca La Villa", value: "laVilla" },
-  { label: "Finca El Paraíso", value: "elParaiso" },
+  { label: "Finca La Reina", value: 1 },
+  { label: "Finca La Esperanza", value: 2 },
+  { label: "Finca La Villa", value: 3 },
+  { label: "Finca El Paraíso", value: 4 },
 ];
 const ESTANQUES = [
-  { label: "A01", value: "A01" },
-  { label: "A02", value: "A02" },
-  { label: "B01", value: "B01" },
-  { label: "B02", value: "B02" },
-  { label: "B03", value: "B03" },
-  { label: "E01", value: "E01" },
-  { label: "E02", value: "E02" },
-  { label: "V01", value: "V01" },
-  { label: "V02", value: "V02" },
+  { label: "A01", value: 1 },
+  { label: "A02", value: 2 },
+  { label: "B01", value: 3 },
+  { label: "B02", value: 4 },
+  { label: "B03", value: 5 },
+  { label: "E01", value: 6 },
+  { label: "E02", value: 7 },
+  { label: "V01", value: 8 },
+  { label: "V02", value: 9 },
 ];
 const OBJETIVOS = [
-  { label: "Comercialización", value: "comercializacion" },
-  { label: "Reducción de densidad", value: "reduccion_densidad" },
-  { label: "Resiembra en otro estanque", value: "resiembra" },
+  { label: "Comercialización", value: "Comercializacion" },
+  { label: "Reducción de densidad", value: "Reduccion_densidad" },
+  { label: "Resiembra en otro estanque", value: "Resiembra" },
 ];
 const METODOS = [
-  { label: "Atarraya", value: "atarraya" },
-  { label: "Red de arrastre", value: "red_arrastre" },
-  { label: "Boleo", value: "boleo" },
-  { label: "Trampa selectiva", value: "trampa" },
+  { label: "Atarraya", value: "Atarraya" },
+  { label: "Red de arrastre", value: "Red de arrastre" },
+  { label: "Boleo", value: "Boleo" },
+  { label: "Trampa selectiva", value: "Trampa selectiva" },
 ];
 
 const bordeError = { borderColor: COLORS.error, borderWidth: 1.5 };
@@ -87,7 +87,7 @@ export default function RaleoForm({
   const invalidoFecha = submitted && !!errores.fecha;
   const invalidoPorcentaje = submitted && !!errores.porcentajeRaleo;
   const invalidoPesoPromedio = submitted && !!errores.pesoPromedio;
-  const invalidoBiomasaTotal = submitted && !!errores.biomasaTotal;
+  const invalidoBiomasaTotal = submitted && !!errores.biomasaActual;
   const invalidoObjetivo = submitted && !!errores.objetivo;
   const invalidoMetodo = submitted && !!errores.metodo;
   const invalidoResponsable = submitted && !!errores.responsable;
