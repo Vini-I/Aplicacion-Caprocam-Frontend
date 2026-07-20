@@ -13,14 +13,15 @@
  * - setBusqueda: función para actualizar la búsqueda
  * - loading: boolean
  * - error: string | null
- * - cargarTareas: función para recargar datos
+ * - cargarTareas: función para recargar datos (con flag force)
  * - crearTarea, actualizarTarea, eliminarTarea: funciones asíncronas
  *
  * Ejemplo:
  * const { tareas, loading, crearTarea } = useTareas();
  */
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { useFocusEffect } from "expo-router";
 import * as tareasService from "../services/tareasService";
 
 export const useTareas = () => {
@@ -28,24 +29,44 @@ export const useTareas = () => {
   const [busqueda, setBusqueda] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const initialLoadDone = useRef(false);
 
-  const cargarTareas = useCallback(async () => {
+  const cargarTareas = useCallback(async (force = false) => {
+    // Evita recargas innecesarias si ya hay datos y no se fuerza
+    if (!force && tareas.length > 0 && initialLoadDone.current) {
+      return;
+    }
+
     setLoading(true);
     setError(null);
     try {
       const datos = await tareasService.obtenerTareas();
       setTareas(datos);
+      initialLoadDone.current = true;
     } catch (err) {
       setError(err.message || "Error al cargar las tareas");
     } finally {
       setLoading(false);
     }
+  }, [tareas.length]);
+
+  // Carga inicial al montar el componente
+  useEffect(() => {
+    cargarTareas(true);
   }, []);
 
-  useEffect(() => {
-    cargarTareas();
-  }, [cargarTareas]);
+  // Recarga al recibir foco (cuando la pantalla se vuelve visible)
+  // Esto asegura que después de crear/editar/eliminar, la lista se actualice
+  useFocusEffect(
+    useCallback(() => {
+      // Si ya se cargaron datos inicialmente, recarga forzada para obtener cambios
+      if (initialLoadDone.current) {
+        cargarTareas(true);
+      }
+    }, [cargarTareas])
+  );
 
+  // Filtrado local por búsqueda
   const tareasFiltradas = tareas.filter((t) => {
     if (!busqueda.trim()) return true;
     const q = busqueda.toLowerCase().trim();
@@ -56,6 +77,7 @@ export const useTareas = () => {
     );
   });
 
+  // Crear tarea
   const crearTarea = async (datos) => {
     setLoading(true);
     try {
@@ -70,6 +92,7 @@ export const useTareas = () => {
     }
   };
 
+  // Actualizar tarea
   const actualizarTarea = async (id, datos) => {
     setLoading(true);
     try {
@@ -84,6 +107,7 @@ export const useTareas = () => {
     }
   };
 
+  // Eliminar tarea
   const eliminarTarea = async (id) => {
     setLoading(true);
     try {
@@ -105,7 +129,7 @@ export const useTareas = () => {
     setBusqueda,
     loading,
     error,
-    cargarTareas,
+    cargarTareas, // ahora acepta un flag force
     crearTarea,
     actualizarTarea,
     eliminarTarea,
