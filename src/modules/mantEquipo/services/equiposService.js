@@ -23,13 +23,14 @@
 // ============================================================
 // IMPORTS
 // ============================================================
-// (no hay dependencias externas)
+import api from "../../../api/api";
 
 // ============================================================
 // CONSTANTES
 // ============================================================
 
 // Tipos de equipo con sus códigos de prefijo
+
 export const TIPOS_EQUIPO = [
   { label: "Aireación", value: "aireacion", prefijo: "20" },
   { label: "Bombeo", value: "bombeo", prefijo: "10" },
@@ -284,6 +285,27 @@ function getEstanqueById(estanqueId) {
   return ESTANQUES_DISPONIBLES.find(e => e.id === estanqueId) || null;
 }
 
+// Convierte YYYY-MM-DD (formato que devuelve el backend) a dd/mm/aaaa (formato del formulario)
+function fechaBackendAFormulario(fecha) {
+  if (!fecha) return "";
+  const [anio, mes, dia] = String(fecha).split("-");
+  if (!anio || !mes || !dia) return "";
+  return `${dia}/${mes}/${anio}`;
+}
+
+// Mapea la respuesta del backend al shape que espera el formulario
+function mapEquipoBackend(equipo) {
+  return {
+    id: equipo.id,
+    codigoInterno: equipo.identificador,
+    descripcion: equipo.descripcion,
+    tipo: equipo.tipo,
+    fechaInstalacion: fechaBackendAFormulario(equipo.fechaInstalacion),
+    funcionEquipo: equipo.funcionEquipo,
+    estado: equipo.estado,
+  };
+}
+
 // ============================================================
 // EXPORTACIÓN DE FUNCIONES
 // ============================================================
@@ -291,6 +313,7 @@ function getEstanqueById(estanqueId) {
 export const equiposService = {
   /**
    * Obtiene todos los equipos con filtros opcionales
+   * (sigue en mock — no es parte del flujo de registro)
    */
   async getEquipos(filtros = {}) {
     await delay(500);
@@ -322,76 +345,50 @@ export const equiposService = {
       );
     }
     
-    // Ordenar por nombre
     resultados.sort((a, b) => a.nombre.localeCompare(b.nombre));
     return resultados;
   },
 
   /**
-   * Obtiene un equipo por su ID
+   * Obtiene un equipo por su ID — CONECTADO a la API real
    */
   async getEquipoById(id) {
-    await delay(300);
-    const equipo = equiposMock.find(e => e.id === id);
-    if (!equipo) throw new Error("Equipo no encontrado");
-    return { ...equipo };
+    try {
+      const response = await api.get(`/equipos/${id}`);
+      return mapEquipoBackend(response.data.data);
+    } catch (err) {
+      throw new Error(err.response?.data?.message || "Equipo no encontrado");
+    }
   },
 
   /**
-   * Crea un nuevo equipo
+   * Crea un nuevo equipo — CONECTADO a la API real
    */
   async createEquipo(data) {
-    await delay(500);
-    const newId = `eq-${String(Date.now()).slice(-6)}`;
-    const codigo = data.codigo || generarCodigoEquipo(data.tipo);
-    
-    const nuevoEquipo = {
-      id: newId,
-      codigo: codigo,
-      nombre: data.nombre.trim(),
-      descripcion: data.descripcion ? data.descripcion.trim() : "",
-      tipo: data.tipo,
-      subcategoria: data.subcategoria || "",
-      marca: data.marca || "",
-      modelo: data.modelo || "",
-      serie: data.serie || "",
-      fechaInstalacion: data.fechaInstalacion || new Date().toISOString().split('T')[0],
-      funcionEquipo: data.funcionEquipo || "",
-      ubicacion: data.ubicacion || "",
-      estanqueId: data.estanqueId || "",
-      estado: data.estado || "activo",
-      encendido: false,
-      horasUso: 0,
-      horasMantenimiento: data.horasMantenimiento || 500,
-      ultimoMantenimiento: data.ultimoMantenimiento || data.fechaInstalacion || new Date().toISOString().split('T')[0],
-      registrosEncendido: [],
-    };
-    
-    equiposMock.push(nuevoEquipo);
-    return { ...nuevoEquipo };
+    try {
+      const response = await api.post("/equipos", data);
+      return mapEquipoBackend(response.data.data);
+    } catch (err) {
+      throw new Error(err.response?.data?.message || "No se pudo crear el equipo.");
+    }
   },
 
   /**
-   * Actualiza un equipo existente
+   * Actualiza un equipo existente — CONECTADO a la API real
    */
   async updateEquipo(id, data) {
-    await delay(500);
-    const index = equiposMock.findIndex(e => e.id === id);
-    if (index === -1) throw new Error("Equipo no encontrado");
-    
-    // No permitir actualizar el código
-    const { codigo, ...datosActualizables } = data;
-    
-    equiposMock[index] = {
-      ...equiposMock[index],
-      ...datosActualizables,
-    };
-    
-    return { ...equiposMock[index] };
+    try {
+      const response = await api.put(`/equipos/${id}`, data);
+      return mapEquipoBackend(response.data.data);
+    } catch (err) {
+      throw new Error(err.response?.data?.message || "No se pudo actualizar el equipo.");
+    }
   },
 
   /**
    * Elimina un equipo
+   * (sigue en mock — el backend sí tiene DELETE /equipos/:id,
+   * pero no es parte de este módulo de registro. Lo conectamos después si quieres)
    */
   async deleteEquipo(id) {
     await delay(500);
@@ -403,6 +400,7 @@ export const equiposService = {
 
   /**
    * Cambia el estado de encendido/apagado de un equipo
+   * (sigue en mock — el backend no tiene este concepto todavía)
    */
   async toggleEquipoEstado(id) {
     await delay(300);
@@ -413,7 +411,6 @@ export const equiposService = {
     const ahora = new Date().toISOString();
     
     if (equipo.encendido) {
-      // Apagar: registrar el fin del encendido
       const ultimoRegistro = equipo.registrosEncendido[equipo.registrosEncendido.length - 1];
       if (ultimoRegistro && !ultimoRegistro.fin) {
         ultimoRegistro.fin = ahora;
@@ -425,7 +422,6 @@ export const equiposService = {
       }
       equipo.encendido = false;
     } else {
-      // Encender: agregar nuevo registro
       equipo.registrosEncendido.push({
         inicio: ahora,
         fin: null,
@@ -440,6 +436,7 @@ export const equiposService = {
 
   /**
    * Obtiene los equipos que están próximos a necesitar mantenimiento
+   * (sigue en mock)
    */
   async getEquiposProximosMantenimiento(umbral = 100) {
     await delay(300);
@@ -455,6 +452,7 @@ export const equiposService = {
 
   /**
    * Obtiene estadísticas generales de equipos
+   * (sigue en mock)
    */
   async getEstadisticasEquipos() {
     await delay(300);
@@ -491,15 +489,19 @@ export const equiposService = {
   },
 
   /**
-   * Obtiene la lista de estanques disponibles para asociar
-   * Devuelve un array de objetos con { label, value } para que funcione con el componente Select
-   */
-  getEstanquesDisponibles() {
-    return ESTANQUES_DISPONIBLES.map(e => ({
-      label: e.label,
-      value: e.id,
+ * Obtiene la lista de estanques disponibles para asociar — CONECTADO a la API real
+ */
+async getEstanquesDisponibles() {
+  try {
+    const response = await api.get("/estanques");
+    return response.data.data.map(estanque => ({
+      label: `${estanque.codigo} (${estanque.tipoEstanque})`,
+      value: String(estanque.id),
     }));
-  },
+  } catch (err) {
+    return [];
+  }
+},
 
   /**
    * Obtiene el código de un equipo (read-only)

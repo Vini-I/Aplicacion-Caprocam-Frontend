@@ -1,6 +1,6 @@
 /**
  * ============================================================
- * COMPONENTE ALIMENTACIONLIST
+ * COMPONENTE ALIMENTACIONLIST       IMPORTANTE!:Componente actualmente sin uso, ya que se decidío comentar esta sección del modulo, para pasarlo a otra parte.
  * ============================================================
  *
  * Lista de tarjetas con los registros de alimentación ya

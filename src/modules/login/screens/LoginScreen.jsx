@@ -3,11 +3,13 @@
  * PANTALLA: LOGIN
  * ============================================================
  *
- * Selecciona un trabajador y valida su PIN para continuar.
+ * Selecciona un colaborador y valida su PIN para continuar.
  */
 
+import { useState } from 'react';
 import { View, ScrollView } from 'react-native';
 
+import Alert from '../../../shared/components/Alert';
 import Avatar from '../../../shared/components/Avatar';
 import Button from '../../../shared/components/Button';
 import Card from '../../../shared/components/Card';
@@ -88,7 +90,7 @@ function LoginHeader({ formattedDate }) {
 /**
  * WorkerSection
  *
- * Lista a los trabajadores disponibles.
+ * Lista a los colaboradores disponibles.
  */
 function WorkerSection({
   workers,
@@ -103,34 +105,75 @@ function WorkerSection({
   isFormValid,
   onContinue,
 }) {
+  // Estado demostrativo de sincronización — reemplazar con lógica real
+  const [syncStatus, setSyncStatus] = useState(null); // null | 'success' | 'danger'
+
+  const handleSync = () => {
+    // TODO: reemplazar con la lógica real de sincronización
+    // Por ahora alterna entre éxito y error para demostración
+    const result = Math.random() > 0.5 ? 'success' : 'danger';
+    setSyncStatus(result);
+    if (onSyncData) onSyncData();
+  };
+
   return (
     <Card style={styles.sectionCard}>
       <Title level={4} color={COLORS.textPrimary} align="center">
         {LOGIN_MESSAGES.WORKER_TITLE}
       </Title>
-      <Button onPress={onSyncData} variant="outline" disabled={isSyncDisabled} style={styles.syncButton}>
+      <Button onPress={handleSync} variant="outline" disabled={isSyncDisabled} style={styles.syncButton}>
         {LOGIN_MESSAGES.SYNC_BUTTON_TEXT}
       </Button>
+      {syncStatus === 'success' && (
+        <Alert
+          variant="success"
+          message="Sincronización completada correctamente."
+          style={styles.syncAlert}
+        />
+      )}
+      {syncStatus === 'danger' && (
+        <Alert
+          variant="danger"
+          message="Error de sincronización. Verifica tu conexión."
+          style={styles.syncAlert}
+        />
+      )}
       <WorkerSearchBar
         value={searchText}
         onChangeText={onSearchTextChange}
         placeholder={LOGIN_MESSAGES.SEARCH_PLACEHOLDER}
       />
       {loading && <SectionStatus message={LOGIN_MESSAGES.LOADING} />}
-      {error && <SectionStatus message={`${LOGIN_MESSAGES.ERROR_PREFIX}${error}`} error />}
+      {error && (
+        <Alert
+          variant="danger"
+          message="No se encontraron colaboradores."
+          style={[styles.syncAlert, { }]}
+          textStyle={{ color: '#000000' }}
+        />
+      )}
       {!loading && !error && (
         <View style={styles.workersList}>
           {workers.length === 0 ? (
-            <SectionStatus message={LOGIN_MESSAGES.NO_WORKERS_FOUND} />
+            <View style={[styles.workersScroll, syncStatus && styles.workersScrollCompressed, { justifyContent: 'center', alignItems: 'center' }]}>
+              <SectionStatus message={LOGIN_MESSAGES.NO_WORKERS_FOUND} />
+            </View>
           ) : (
-            workers.map((worker) => (
-              <WorkerItem
-                key={worker.id}
-                worker={worker}
-                isSelected={selectedWorker === worker.id}
-                onPress={() => onSelectWorker(worker.id)}
-              />
-            ))
+            <ScrollView
+              style={[styles.workersScroll, syncStatus && styles.workersScrollCompressed]}
+              showsVerticalScrollIndicator={false}
+              nestedScrollEnabled={true}
+              keyboardShouldPersistTaps="handled"
+            >
+              {workers.map((worker) => (
+                <WorkerItem
+                  key={worker.id}
+                  worker={worker}
+                  isSelected={selectedWorker === worker.id}
+                  onPress={() => onSelectWorker(worker.id)}
+                />
+              ))}
+            </ScrollView>
           )}
         </View>
       )}
@@ -146,7 +189,7 @@ function WorkerSection({
 /**
  * WorkerItem
  *
- * Botón tocable para seleccionar un trabajador.
+ * Botón tocable para seleccionar un colaborador.
  */
 function WorkerItem({ worker, isSelected, onPress }) {
   return (
@@ -224,9 +267,7 @@ function PinModal({ visible, pinCode, pinError, isAuthenticating, onClose, onPin
                 style={styles.pinInput}
             />
             {pinError !== '' && (
-                <Text size={12} color={COLORS.error} align="center" style={styles.pinErrorText}>
-                    {pinError}
-                </Text>
+                <Alert variant="danger" message={pinError} style={styles.pinErrorAlert} />
             )}
             <Button onPress={onSubmit} variant="outline" disabled={pinCode.length !== 4 || isAuthenticating}>
                 Ingresar
