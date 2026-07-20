@@ -123,6 +123,7 @@ export default function FisicoQuimicaScreen({ onBack }) {
             </Card>
 
             <RangeCard
+              key={`ph-${estanqueSeleccionado}`}
               title="pH" unit="pH"
               icon={<Icon icon={ICONS.chemicalContainer} color={COLORS.primary} size={18} />}
               idealMin={7.5} idealMax={8.5}
@@ -136,6 +137,7 @@ export default function FisicoQuimicaScreen({ onBack }) {
             />
 
             <RangeCard
+              key={`salinidad-${estanqueSeleccionado}`}
               title="Salinidad" unit="ppt"
               icon={<Icon icon={ICONS.frequency} color={COLORS.primary} size={18} />}
               idealMin={15} idealMax={35}
@@ -149,6 +151,7 @@ export default function FisicoQuimicaScreen({ onBack }) {
             />
 
             <RangeCard
+              key={`temperatura-${estanqueSeleccionado}`}
               title="Temperatura" unit="°C"
               icon={<Icon icon={ICONS.temperature} color={COLORS.primary} size={18} />}
               idealMin={28} idealMax={30}
@@ -162,6 +165,7 @@ export default function FisicoQuimicaScreen({ onBack }) {
             />
 
             <RangeCard
+              key={`oxigeno-${estanqueSeleccionado}`}
               title="Oxígeno Disuelto" unit="mg/L"
               icon={<Icon icon={ICONS.water} color={COLORS.primary} size={18} />}
               idealMin={5} idealMax={7}
