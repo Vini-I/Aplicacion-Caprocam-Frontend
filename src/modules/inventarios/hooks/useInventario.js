@@ -4,7 +4,7 @@
  * ============================================================
  *
  * Responsabilidad:
- * Maneja el estado de la pantalla de Inventarios: carga de productos,
+ * Maneja el estado de la pantalla de Inventarios: carga de productos desde la API,
  * texto de búsqueda, filtros activos (categoría, proveedor, unidad,
  * stock bajo, caducidad) y el cálculo de la lista filtrada final.
  * El filtro de caducidad muestra los productos cuya fechaCaducidad
@@ -13,7 +13,7 @@
  * esperado para revisar próximos vencimientos.
  *
  * Datos:
- * Lee los productos desde InventarioService.getProductosInventario(),
+ * Lee los productos mediante la llamada asíncronica a InventarioService.getProductosInventario(),
  * que ya devuelve el producto más reciente de primero. Cada producto
  * incluye fechaCaducidad como string dd/mm/aaaa (mismo formato que
  * entrega el DateInput compartido); es un dato real que ya existe en
@@ -24,9 +24,8 @@
  * existentes en memoria.
  *
  * Navegación:
- * Recarga productos y limpia búsqueda/filtros cada vez que la
- * pantalla recibe foco (useFocusEffect), y hace scroll al inicio del
- * listado.
+ * Recarga los productos de la API automáticamente cada vez que la
+ * pantalla recibe foco gracias a useFocusEffect.
  *
  * Dependencias:
  * services/InventarioService.js.
@@ -69,30 +68,27 @@ export function useInventario() {
 
   useFocusEffect(
     useCallback(() => {
-      setProductos(getProductosInventario());
+      let isActive = true;
 
-      setBusqueda("");
-
-      setFiltros({
-        categories: [],
-        suppliers: [],
-        units: [],
-        lowStock: false,
-        expiryDate: "",
-      });
-
-      flatListRef.current?.scrollToOffset({
-        offset: 0,
-        animated: false,
-      });
+      const loadData = async () => {
+        try {
+          const data = await getProductosInventario();
+          if (isActive) {
+            setProductos(data);
+          }
+        }catch (error) {
+          console.error("Error al cargar productos de inventario:", error);
+        }
+      };
+      loadData();
     }, [])
   );
 
-  const categorias = [...new Set(productos.map((p) => p.categoria))];
-  const proveedores = [...new Set(productos.map((p) => p.proveedor))];
-  const unidades = [...new Set(productos.map((p) => p.unidad))];
+  const categorias = Array.isArray(productos) ? [...new Set(productos.map((p) => p.categoria))] : [];
+  const proveedores = Array.isArray(productos) ? [...new Set(productos.map((p) => p.proveedor))] : [];
+  const unidades = Array.isArray(productos) ? [...new Set(productos.map((p) => p.unidad))] : [];
 
-  const productosFiltrados = productos.filter((p) => {
+  const productosFiltrados = Array.isArray(productos) ? productos.filter((p) => {
     const texto = busqueda.toLowerCase();
 
     const coincideTexto =
@@ -130,11 +126,11 @@ export function useInventario() {
       coincideStock &&
       coincideCaducidad
     );
-  });
+  }) : [];
 
-  const cantidadStockBajo = productos.filter(
+  const cantidadStockBajo = Array.isArray(productos) ? productos.filter(
     (p) => p.cantidad < p.stockMinimo
-  ).length;
+  ).length : 0;
 
   return {
     flatListRef,
