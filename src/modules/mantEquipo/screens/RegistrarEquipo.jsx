@@ -47,7 +47,6 @@ import Alert from '../../../shared/components/Alert';
 import Icon from '../../../shared/components/Icons';
 
 import { COLORS } from '../../../theme/colors';
-import { TYPOGRAPHY } from '../../../theme/typography';
 import { STYLE } from '../../../theme/style';
 import { ICONS } from '../../../theme/icons';
 
@@ -96,7 +95,11 @@ export default function RegistrarEquipoScreen() {
     guardarEquipo,
   } = useRegistrarEquipo(equipoEdicion);
 
-  const estanquesDisponibles = equiposService.getEstanquesDisponibles() || [];
+  const [estanquesDisponibles, setEstanquesDisponibles] = useState([]);
+
+useEffect(() => {
+  equiposService.getEstanquesDisponibles().then(setEstanquesDisponibles);
+}, []);
 
   // Estado para alertas
   const [alert, setAlert] = useState(null);
@@ -143,7 +146,7 @@ export default function RegistrarEquipoScreen() {
 
   if (cargandoDatos) {
     return (
-      <View style={[STYLE.container, { justifyContent: 'center', alignItems: 'center' }]}>
+      <View style={[STYLE.container, styles.loadingContainer]}>
         <Text>Cargando equipo...</Text>
       </View>
     );
@@ -154,7 +157,7 @@ export default function RegistrarEquipoScreen() {
       style={STYLE.container}
       contentContainerStyle={[
         styles.content,
-        { paddingHorizontal: isLargeScreen ? 40 : 16 },
+        isLargeScreen ? styles.contentPaddingLarge : styles.contentPaddingSmall,
       ]}
       keyboardShouldPersistTaps="handled"
     >
@@ -168,7 +171,7 @@ export default function RegistrarEquipoScreen() {
             placeholder="Ej: EQ-001"
             editable={!isEditing}
             style={submitted && errores.codigoInterno ? styles.invalidField : undefined}
-            labelStyle={{ fontFamily: TYPOGRAPHY.fontFamily.medium }}
+            labelStyle={styles.labelMedium}
           />
 
           <Input
@@ -177,7 +180,7 @@ export default function RegistrarEquipoScreen() {
             onChangeText={(valor) => actualizarCampo('nombre', valor)}
             placeholder="Ej: Aireador principal"
             style={submitted && errores.nombre ? styles.invalidField : undefined}
-            labelStyle={{ fontFamily: TYPOGRAPHY.fontFamily.medium }}
+            labelStyle={styles.labelMedium}
           />
 
           <Input
@@ -186,7 +189,7 @@ export default function RegistrarEquipoScreen() {
             onChangeText={(valor) => actualizarCampo('descripcion', valor)}
             placeholder="Ej: Aireador de paletas para oxigenación"
             style={submitted && errores.descripcion ? styles.invalidField : undefined}
-            labelStyle={{ fontFamily: TYPOGRAPHY.fontFamily.medium }}
+            labelStyle={styles.labelMedium}
           />
 
           <Select
@@ -196,7 +199,7 @@ export default function RegistrarEquipoScreen() {
             options={tiposEquipo}
             placeholder="Seleccione el tipo"
             selectStyle={submitted && errores.tipo ? styles.invalidField : undefined}
-            labelStyle={{ fontFamily: TYPOGRAPHY.fontFamily.medium }}
+            labelStyle={styles.labelMedium}
           />
 
           <Input
@@ -205,7 +208,7 @@ export default function RegistrarEquipoScreen() {
             onChangeText={(valor) => actualizarCampo('modelo', valor)}
             placeholder="Ej: MX-2000"
             style={submitted && errores.modelo ? styles.invalidField : undefined}
-            labelStyle={{ fontFamily: TYPOGRAPHY.fontFamily.medium }}
+            labelStyle={styles.labelMedium}
           />
 
           {/* Fecha de instalación - solo lectura en edición */}
@@ -216,7 +219,7 @@ export default function RegistrarEquipoScreen() {
             placeholder="Seleccione la fecha de instalación"
             editable={!isEditing}
             inputStyle={submitted && errores.fechaInstalacion ? styles.invalidField : undefined}
-            labelStyle={{ fontFamily: TYPOGRAPHY.fontFamily.medium }}
+            labelStyle={styles.labelMedium}
           />
           {renderError(errores.fechaInstalacion)}
 
@@ -230,7 +233,7 @@ export default function RegistrarEquipoScreen() {
               styles.textArea,
               submitted && errores.funcionEquipo ? styles.invalidField : undefined,
             ]}
-            labelStyle={{ fontFamily: TYPOGRAPHY.fontFamily.medium }}
+            labelStyle={styles.labelMedium}
           />
 
           <Select
@@ -239,7 +242,7 @@ export default function RegistrarEquipoScreen() {
             onChange={(valor) => actualizarCampo('estanqueId', valor)}
             options={estanquesDisponibles}
             placeholder="Seleccione un estanque (opcional)"
-            labelStyle={{ fontFamily: TYPOGRAPHY.fontFamily.medium }}
+            labelStyle={styles.labelMedium}
           />
 
           <NumberInput
@@ -249,7 +252,7 @@ export default function RegistrarEquipoScreen() {
             min={0}
             max={99999}
             step={1}
-            labelStyle={{ fontFamily: TYPOGRAPHY.fontFamily.medium }}
+            labelStyle={styles.labelMedium}
           />
 
           <Select
@@ -259,12 +262,12 @@ export default function RegistrarEquipoScreen() {
             options={estadosEquipo}
             placeholder="Seleccione el estado actual"
             selectStyle={submitted && errores.estado ? styles.invalidField : undefined}
-            labelStyle={{ fontFamily: TYPOGRAPHY.fontFamily.medium }}
+            labelStyle={styles.labelMedium}
           />
         </Card>
 
         {alert && (
-          <View style={{ marginBottom: 12 }}>
+          <View style={styles.alertWrapper}>
             <Alert variant={alert.type} message={alert.message} />
           </View>
         )}
@@ -276,21 +279,10 @@ export default function RegistrarEquipoScreen() {
             variant="outline"
             onPress={handleGuardar}
             disabled={guardando}
-            style={{
-              flex: 1,
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 8,
-              borderColor: COLORS.primary,
-              backgroundColor: 'transparent',
-              paddingVertical: 12,
-              borderRadius: 8,
-              borderWidth: 1,
-            }}
+            style={styles.saveButtonOutline}
           >
             <Icon icon={ICONS.save} size={18} color={COLORS.primary} />
-            <Text style={{ color: COLORS.primary, fontWeight: '600' }}>
+            <Text style={styles.saveButtonText}>
               {guardando ? 'Guardando...' : isEditing ? 'Actualizar equipo' : 'Guardar equipo'}
             </Text>
           </Button>
