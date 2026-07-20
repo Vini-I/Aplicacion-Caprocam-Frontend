@@ -22,6 +22,12 @@
  *
  * 4. Permite editar, guardar y cancelar cambios realizados en la siembra.
  *
+ * 5. Cuando la Siembra viene de una Pre-Cría (pasoPorPrecria === "si"),
+ *    el resumen embebido de Pre-Cría y la sección "Datos de larva"
+ *    quedan siempre en modo lectura (mode="view"), sin importar si el
+ *    resto del formulario está en edición — son datos heredados, no
+ *    propios de esta Siembra.
+ *
  * LÓGICA:
  * - La gestión del estado, validaciones y acciones se realiza mediante:
  *  -useDetalleSiembra.
@@ -149,6 +155,24 @@ export default function DetalleSiembraScreen() {
 
     datosCierrePreCriaCompletos,
 
+    handleAgregarProveedorLarva,
+
+    handleAgregarLaboratorioLarva,
+
+    handleAgregarProcedenciaLarva,
+
+    handleEditarProveedorLarva,
+
+    handleEditarLaboratorioLarva,
+
+    handleEditarProcedenciaLarva,
+
+    handleEliminarProveedorLarva,
+
+    handleEliminarLaboratorioLarva,
+
+    handleEliminarProcedenciaLarva,
+
     fieldHelpers,
   } = useDetalleSiembra(id);
 
@@ -185,10 +209,7 @@ export default function DetalleSiembraScreen() {
           <Card>
             <View style={styles.resumenHeader}>
               <View style={styles.iconContainer}>
-                <Icon
-                  icon={ICONS.shrimp}
-                  style={styles.summaryIcon}
-                />
+                <Icon icon={ICONS.shrimp} style={styles.summaryIcon} />
               </View>
 
               <View style={styles.resumenInfo}>
@@ -264,6 +285,15 @@ export default function DetalleSiembraScreen() {
                 plLarva={plLarva}
                 mode={isEditing ? "edit" : "view"}
                 fieldHelpers={fieldHelpers}
+                onAgregarProveedor={handleAgregarProveedorLarva}
+                onAgregarLaboratorio={handleAgregarLaboratorioLarva}
+                onAgregarProcedencia={handleAgregarProcedenciaLarva}
+                onEditarProveedor={handleEditarProveedorLarva}
+                onEditarLaboratorio={handleEditarLaboratorioLarva}
+                onEditarProcedencia={handleEditarProcedenciaLarva}
+                onEliminarProveedor={handleEliminarProveedorLarva}
+                onEliminarLaboratorio={handleEliminarLaboratorioLarva}
+                onEliminarProcedencia={handleEliminarProcedenciaLarva}
               />
             </>
           ) : (
@@ -286,7 +316,7 @@ export default function DetalleSiembraScreen() {
                 <PreCriaSection
                   formData={formData}
                   onChange={handleChange}
-                  mode={isEditing ? "edit" : "view"}
+                  mode="view"
                   fieldHelpers={fieldHelpers}
                 />
               )}
@@ -300,8 +330,21 @@ export default function DetalleSiembraScreen() {
                 laboratoriosLarva={laboratoriosLarva}
                 procedenciasLarva={procedenciasLarva}
                 plLarva={plLarva}
-                mode={isEditing ? "edit" : "view"}
+                mode={
+                  isEditing && formData.pasoPorPrecria !== "si"
+                    ? "edit"
+                    : "view"
+                }
                 fieldHelpers={fieldHelpers}
+                onAgregarProveedor={handleAgregarProveedorLarva}
+                onAgregarLaboratorio={handleAgregarLaboratorioLarva}
+                onAgregarProcedencia={handleAgregarProcedenciaLarva}
+                onEditarProveedor={handleEditarProveedorLarva}
+                onEditarLaboratorio={handleEditarLaboratorioLarva}
+                onEditarProcedencia={handleEditarProcedenciaLarva}
+                onEliminarProveedor={handleEliminarProveedorLarva}
+                onEliminarLaboratorio={handleEliminarLaboratorioLarva}
+                onEliminarProcedencia={handleEliminarProcedenciaLarva}
               />
 
               {/* Cálculo de población */}
