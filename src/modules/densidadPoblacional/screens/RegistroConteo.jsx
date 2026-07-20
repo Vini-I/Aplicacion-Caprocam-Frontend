@@ -39,12 +39,16 @@
  *   errores={errores}
  * />
  */
-
+import { View } from "react-native";
 import React from "react";
 import Card from "../../../shared/components/Card";
 import Input from "../../../shared/components/Input";
 import DateInput from "../../../shared/components/DateInput";
+import Text from "../../../shared/components/Text";
 import { COLORS } from "../../../theme/colors";
+import { ICONS } from "../../../theme/icons";
+import Icon from "../../../shared/components/Icons";
+import { styles } from "../styles/DensidadPoblacionalStyles";
 
 const bordeError = { borderColor: COLORS.error, borderWidth: 1.5 };
 
@@ -58,6 +62,12 @@ export default function RegistroConteo({
 
   return (
     <Card>
+      <View style={styles.sectionTitleRow}>
+                <Icon icon={ICONS.calendar} size={18} color={COLORS.primary} style={styles.sectionIcon} />
+          <Text size={18} weight="700" color={COLORS.textSecondary}>
+            Registro de conteo
+          </Text>
+              </View>
       <DateInput
         label="Fecha de Registro *"
         value={fecha}
