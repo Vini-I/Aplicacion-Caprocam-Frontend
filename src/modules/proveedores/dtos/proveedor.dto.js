@@ -39,7 +39,19 @@ export function normalizarTelefonoParaBackend(telefono) {
 }
 
 export class ProveedorDTO {
-  constructor({ nombre, tipoProducto, telefono, correo, direccion, notas }) {
+  constructor({
+    
+    nombre, 
+    tipoProducto, 
+    telefono, 
+    correo, 
+    direccion, 
+    notas 
+
+  }) {
+    
+    this.grupoDatos = 1; // Temporal hasta implementar Grupo de Datos
+
     this.nombre = (nombre || "").trim();
     this.tipoProducto = tipoProducto;
     this.telefono = normalizarTelefonoParaBackend(telefono);
