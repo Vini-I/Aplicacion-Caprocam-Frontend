@@ -96,12 +96,11 @@ export default function AlimentacionScreen({ navigation, onBack }) {
 
   if (loading) return <Spinner />;
 
-  if (error)
-    return (
-      <Text color={COLORS.error} alineacion="center">
-        {error}
-      </Text>
-    );
+ {error && (
+    <Text color={COLORS.error}>
+      {error}
+    </Text>
+  )}
 
   return (
   <>

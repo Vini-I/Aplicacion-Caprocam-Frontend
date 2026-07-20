@@ -26,7 +26,8 @@ import Icon from "../../../shared/components/Icons";
 import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
 import { ICONS } from "../../../theme/icons";
-import { HORAS, FINCAS, ESTANQUES } from "../constants/alimentacionOpciones";
+import { HORAS } from "../constants/alimentacionOpciones";
+import { useCatalogos } from "../../../modules/densidadPoblacional/hooks/useCatalogo.js";
 
 const bordeError = { borderColor: COLORS.error, borderWidth: 1.5 };
 const sectionTitleRow = { flexDirection: "row", alignItems: "center", marginBottom: 10 };
@@ -42,6 +43,18 @@ export default function AlimentacionFormInfoGeneral({
   const invalidoEstanque = submitted && !!errores.estanque;
   const invalidoFecha = submitted && !!errores.fecha;
   const invalidoHora = submitted && !!errores.hora;
+
+  const { fincasOptions, estanquesOptions, recargarEstanques } = useCatalogos();
+  
+  const handleFincaChange = (idFinca) => {
+    updateField("finca", idFinca);
+    updateField("estanque", "");
+    recargarEstanques(idFinca);
+  };
+
+  const handleEstanqueChange = (idEstanque) => {
+    updateField("estanque", idEstanque);
+  };
 
   return (
     <Card>
@@ -83,8 +96,8 @@ export default function AlimentacionFormInfoGeneral({
       <Select
         label="Finca *"
         value={form.finca}
-        onChange={(v) => updateField("finca", v)}
-        options={FINCAS}
+        onChange={handleFincaChange}
+        options={fincasOptions}
         placeholder="Seleccionar finca"
         selectStyle={invalidoFinca ? bordeError : null}
       />
@@ -92,8 +105,8 @@ export default function AlimentacionFormInfoGeneral({
       <Select
         label="Estanque *"
         value={form.estanque}
-        onChange={(v) => updateField("estanque", v)}
-        options={ESTANQUES}
+        onChange={handleEstanqueChange}
+        options={estanquesOptions}
         placeholder="Seleccionar estanque"
         selectStyle={invalidoEstanque ? bordeError : null}
       />
