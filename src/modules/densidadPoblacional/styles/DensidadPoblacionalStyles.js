@@ -60,8 +60,17 @@ export const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 4,
   },
-
-  addButton: {
-    ...STYLE.contentWrapper,
+  buttonContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
   },
+  buttonText: {
+    color: COLORS.primary
+  },
+  submitButton: {
+    marginTop: 12,
+  },
+
 });
