@@ -46,6 +46,7 @@ import { useAuth } from '../hooks/useAuth';
 import { AUTH_MESSAGES as MSG } from '../constants/authMessages';
 import styles from '../styles/webLoginStyles';
 import { STYLE } from '../../../theme/style';
+import { COLORS } from '../../../theme/colors';
 
 export default function WebLoginScreen({
   onLoginSuccess = () => {},
@@ -59,7 +60,7 @@ export default function WebLoginScreen({
   } = useAuth({ onLoginSuccess });
 
   return (
-    <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+    <ScrollView style={styles.scrollView} contentContainerStyle={{ flexGrow: 1, backgroundColor: COLORS.white }} showsVerticalScrollIndicator={false}>
 
       <Header
         title={MSG.COMPANY_NAME}

@@ -95,14 +95,15 @@ export const LABELS_EQUIPO_DETALLE = [
 ];
 
 
-export const LISTA_ESTADOS_EQUIPO = [
-  { label: "Activo", value: "activo" },
-  { label: "Inactivo", value: "inactivo" },
-  { label: "En mantenimiento", value: "mantenimiento" },
-];
+// NOTA: Los estados de equipo se definen en mantEquipoService.js como ESTADOS_EQUIPO
 
 export const LISTA_ESTADOS_TICKET = [
   { label: "En espera", value: "en_espera" },
   { label: "En mantenimiento", value: "en_mantenimiento" },
   { label: "Terminado", value: "Terminado" },
+];
+
+export const LISTA_TIPOS_PERSONAL = [
+  { label: "Trabajador Interno", value: "interno" },
+  { label: "Trabajador Externo", value: "externo" },
 ];
