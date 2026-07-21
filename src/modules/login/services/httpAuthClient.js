@@ -10,15 +10,12 @@
  */
 
 import { AUTH_MESSAGES } from '../constants/authMessages';
-
-const API_BASE_URL = 'https://api.caprocam.com';
+import api from '../../../api/api';
 
 /**
  * mapStatusError(status, data, statusMessages)
  *
  * Traduce un status HTTP de error a un mensaje legible.
- * `statusMessages` permite que cada llamada (login/register)
- * sobrescriba el mensaje para un status específico (ej. 401).
  */
 const mapStatusError = (status, data, statusMessages) => {
   if (statusMessages[status]) {
@@ -27,17 +24,16 @@ const mapStatusError = (status, data, statusMessages) => {
   if (status >= 500) {
     return new Error(AUTH_MESSAGES.ERROR_SERVER);
   }
-  return new Error(data.message || AUTH_MESSAGES.ERROR_UNKNOWN);
+  return new Error(data?.message || AUTH_MESSAGES.ERROR_UNKNOWN);
 };
 
 /**
  * postAuth(endpoint, body, statusMessages)
  *
- * Hace un POST JSON al endpoint de autenticación indicado y
- * retorna { token, user }. Lanza un Error con mensaje legible
- * si la respuesta falla o si no hay conexión de red.
+ * Hace un POST al endpoint de autenticación indicado y
+ * retorna { token, user }.
  *
- * @param {string} endpoint - ej. '/api/auth/login'
+ * @param {string} endpoint - ej. '/login'
  * @param {Object} body - cuerpo de la petición
  * @param {Object} [statusMessages] - { [statusCode]: mensaje }
  * @returns {Promise<Object>}
@@ -45,23 +41,18 @@ const mapStatusError = (status, data, statusMessages) => {
  */
 export const postAuth = async (endpoint, body, statusMessages = {}) => {
   try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
+    const response = await api.post(endpoint, body);
+    
+    // Extraer datos usando la estructura que envía el backend Caprocam
+    // { data: { accessToken, refreshToken, usuario } }
+    const { accessToken, usuario } = response.data.data || {};
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw mapStatusError(response.status, data, statusMessages);
-    }
-
-    return { token: data.token, user: data.user };
+    return { token: accessToken, user: usuario };
   } catch (error) {
-    if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
-      throw new Error(AUTH_MESSAGES.ERROR_NETWORK);
+    if (error.response) {
+      throw mapStatusError(error.response.status, error.response.data, statusMessages);
     }
-    throw error;
+    // Network error o backend apagado
+    throw new Error(AUTH_MESSAGES.ERROR_NETWORK || 'Error de conexión con el servidor.');
   }
 };

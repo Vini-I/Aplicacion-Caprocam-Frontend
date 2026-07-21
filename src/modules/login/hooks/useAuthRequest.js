@@ -18,7 +18,7 @@
  */
 
 import { useState } from 'react';
-import { saveToken } from '../utils/tokenStorage';
+import { saveToken, saveUsuario } from '../utils/tokenStorage';
 
 /**
  * useAuthRequest({ onSuccess })
@@ -27,7 +27,7 @@ import { saveToken } from '../utils/tokenStorage';
  * @param {Function} params.onSuccess - se ejecuta tras guardar el token
  * @returns {Object} { loading, serverError, submit }
  */
-export const useAuthRequest = ({ onSuccess = () => {} } = {}) => {
+export const useAuthRequest = ({ onSuccess = () => { } } = {}) => {
   const [loading, setLoading] = useState(false);
   const [serverError, setServerError] = useState(null);
 
@@ -37,7 +37,7 @@ export const useAuthRequest = ({ onSuccess = () => {} } = {}) => {
    * Ejecuta requestFn() (una llamada a authService) solo si el
    * formulario es válido, maneja loading/error y guarda el token.
    *
-   * @param {Function} requestFn - () => Promise<{ token }>
+   * @param {Function} requestFn - () => Promise<{ token, user }>
    * @param {boolean} isFormValid
    */
   const submit = async (requestFn, isFormValid) => {
@@ -50,8 +50,9 @@ export const useAuthRequest = ({ onSuccess = () => {} } = {}) => {
     setLoading(true);
 
     try {
-      const { token } = await requestFn();
-      saveToken(token);
+      const { token, user } = await requestFn();
+      if (token) saveToken(token);
+      if (user) saveUsuario(user);
       onSuccess();
     } catch (error) {
       setServerError(error.message);
