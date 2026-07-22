@@ -29,15 +29,17 @@ if (!global.USUARIOS_REGISTRADOS) {
 /**
  * login(username, password)
  *
- * Busca el usuario en memoria global y valida su contraseña.
+ * Envía las credenciales al backend y retorna el JWT si son correctas.
  *
  * @param {string} username
  * @param {string} password
  * @returns {Promise<Object>}
  */
 export const login = (username, password) => {
-  const user = global.USUARIOS_REGISTRADOS.find(
-    u => u.username.toLowerCase() === username.trim().toLowerCase()
+  return postAuth(
+    '/login',
+    { usuario: username.trim(), contrasena: password },
+    { 401: AUTH_MESSAGES.ERROR_INVALID_CREDENTIALS }
   );
   
   if (!user || user.password !== password) {
@@ -50,7 +52,7 @@ export const login = (username, password) => {
 /**
  * register(username, password, profileData)
  *
- * Registra un nuevo usuario en la memoria global si no existe ya.
+ * Registra un nuevo administrador en el sistema.
  *
  * @param {string} username
  * @param {string} password
@@ -59,23 +61,13 @@ export const login = (username, password) => {
  */
 export const register = (username, password, profileData = {}) => {
   const { nombre, apellidos, email } = profileData;
-  
-  const emailExists = email && global.USUARIOS_REGISTRADOS.some(
-    u => u.email && u.email.toLowerCase() === email.trim().toLowerCase()
-  );
-  
-  if (emailExists) {
-    return Promise.reject(new Error('El correo electrónico ya está registrado'));
-  }
-  
-  const newUser = {
-    username: username.trim(),
-    password,
+
+  return postAuth('/login/registro', {
     nombre: nombre || '',
     apellidos: apellidos || '',
-    email: email || ''
-  };
-  
-  global.USUARIOS_REGISTRADOS.push(newUser);
-  return Promise.resolve({ token: 'mock-jwt-token-for-' + username });
+    correo: email || '',
+    usuario: username.trim(),
+    contrasena: password,
+    rolId: 1
+  });
 };
