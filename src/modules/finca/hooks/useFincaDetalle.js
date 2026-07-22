@@ -21,21 +21,24 @@ import { estanques } from "../screens/EstanqueData";
 import { usePdf } from "../hooks/usePdf";
 
 export default function useFincaDetalle() {
-    const { fincas } = useFinca();
-    const { id } = useLocalSearchParams();
+  const { fincas, loading: loadingFincas } = useFinca();
+  const { id } = useLocalSearchParams();
 
-    const finca = fincas.find((f) => f.codigoInterno === id);
+  const finca = fincas.find((f) => f.id === Number(id));
 
-    const estanquesFinca = finca? estanques.filter((e) => e.finca === finca.nombre) : [];
+  const estanquesFinca = finca
+    ? estanques.filter((e) => e.finca === finca.nombreFinca)
+    : [];
 
-    const { crearPDFFinca, loading } = usePdf();
+  const { crearPDFFinca, loading: loadingPdf } = usePdf();
 
-    const haldleGenerar = () => crearPDFFinca(finca, estanquesFinca);
+  const haldleGenerar = () => crearPDFFinca(finca, estanquesFinca);
 
-    return {
-        finca,
-        estanquesFinca, 
-        haldleGenerar, 
-        loading,
-    }
+  return {
+    finca,
+    estanquesFinca,
+    haldleGenerar,
+    loadingFincas,
+    loadingPdf,
+  };
 }
