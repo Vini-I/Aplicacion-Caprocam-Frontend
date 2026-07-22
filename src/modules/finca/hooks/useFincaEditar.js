@@ -24,11 +24,12 @@ import { styles } from "../styles/StylesFincaNueva.js";
 import { STYLE } from "../../../theme/style.js";
 import { COLORS } from "../../../theme/colors.js";
 import { useFinca } from "../context/FincaContext";
+import { fincaDTO } from "../dtos/finca.dto.js";
 
 const { width } = Dimensions.get("window");
 const isLargeScreen = width > 700;
 
-export function useFincaEditar({ onFinca, codigoInterno }) {
+export function useFincaEditar({ onFinca, id }) {
   const { fincas, editarFinca } = useFinca();
 
   const [formulario, setFormulario] = useState({
@@ -40,12 +41,16 @@ export function useFincaEditar({ onFinca, codigoInterno }) {
 
   const [telefonos, setTelefonos] = useState([""]);
   const [errores, setErrores] = useState({});
-  const finca = fincas.find((f) => f.codigoInterno === codigoInterno);
+  const finca = fincas.find((f) => f.id === Number(id));
 
   const actualizarCampo = (campo, valor) => {
+    const nuevoValor =
+      campo === "areaTotal" || campo === "espejoAgua"
+        ? normalizarNumeroDecimal(valor)
+        : valor;
     setFormulario((actual) => ({
       ...actual,
-      [campo]: valor,
+      [campo]: nuevoValor,
     }));
     if (errores[campo]) {
       setErrores((actual) => ({ ...actual, [campo]: false }));
@@ -58,7 +63,7 @@ export function useFincaEditar({ onFinca, codigoInterno }) {
 
   const actualizarTelefono = (index, valor) => {
     const nuevosTelefonos = [...telefonos];
-    nuevosTelefonos[index] = valor;
+    nuevosTelefonos[index] = String(valor).replace(/\D/g, "").slice(0, 8);
     setTelefonos(nuevosTelefonos);
 
     if (errores[`telefono${index}`]) {
@@ -68,6 +73,26 @@ export function useFincaEditar({ onFinca, codigoInterno }) {
       }));
     }
   };
+
+  //Función para seguir con decimal(10,2)
+  function normalizarNumeroDecimal(valor) {
+    let valorLimpio = String(valor)
+      .replace(",", ".")
+      .replace(/[^0-9.]/g, "");
+
+    const partes = valorLimpio.split(".");
+    let entero = partes[0] ?? "";
+    let decimal = partes.length > 1 ? partes.slice(1).join("") : null;
+
+    entero = entero.slice(0, 10);
+
+    if (decimal !== null) {
+      decimal = decimal.slice(0, 2);
+      return `${entero}.${decimal}`;
+    }
+
+    return entero;
+  }
 
   const agregarTelefono = () => {
     setTelefonos([...telefonos, ""]);
@@ -86,18 +111,21 @@ export function useFincaEditar({ onFinca, codigoInterno }) {
   useEffect(() => {
     if (finca) {
       setFormulario({
-        nombre: finca.nombre ?? "",
-        responsable: finca.responsable ?? finca.propietario ?? "",
+        nombre: finca.nombreFinca ?? "",
+        responsable: finca.propietarioResponsable ?? finca.propietario ?? "",
         areaTotal: String(finca.areaTotal ?? ""),
-        espejoAgua: String(finca.espejoAgua ?? ""),
+        espejoAgua: String(finca.espejosAgua ?? ""),
       });
 
-      setTelefonos(finca.telefonos || [""]);
+      setTelefonos(finca.telefonoParse || [""]);
     }
   }, [finca]);
 
   const registrarFinca = () => {
     const nuevosErrores = {};
+    const telefonosLimpios = telefonos
+      .map((tel) => String(tel ?? "").trim())
+      .filter((tel) => tel !== "");
 
     if (!formulario.nombre.trim()) nuevosErrores.nombre = true;
     if (!formulario.responsable.trim()) nuevosErrores.responsable = true;
@@ -131,7 +159,20 @@ export function useFincaEditar({ onFinca, codigoInterno }) {
       return;
     }
 
-    editarFinca(codigoInterno, { ...formulario, telefonos });
+    const EditarFincaDTO = new fincaDTO({
+      codigoCBO: finca.codigoCBO,
+      nombreFinca: formulario.nombre,
+      provincia: finca.provincia,
+      canton: finca.canton,
+      distrito: finca.distrito,
+      otrasSenas: finca.otrasSenas,
+      propietarioResponsable: formulario.responsable,
+      telefono: telefonosLimpios,
+      areaTotal: Number(formulario.areaTotal),
+      espejosAgua: Number(formulario.espejoAgua),
+    });
+
+    editarFinca(finca.codigoCBO, EditarFincaDTO);
     onFinca();
   };
 
@@ -144,8 +185,18 @@ export function useFincaEditar({ onFinca, codigoInterno }) {
   function SectionTitle({ icon, title }) {
     return (
       <View style={styles.sectionTitleRow}>
-        <Icon icon={icon} size={18} color={COLORS.primary} style={styles.sectionIcon} />
-        <Text style={styles.sectionTitleText} size={14} weight="700" color={COLORS.textPrimary}>
+        <Icon
+          icon={icon}
+          size={18}
+          color={COLORS.primary}
+          style={styles.sectionIcon}
+        />
+        <Text
+          style={styles.sectionTitleText}
+          size={14}
+          weight="700"
+          color={COLORS.textPrimary}
+        >
           {title}
         </Text>
       </View>
@@ -158,7 +209,7 @@ export function useFincaEditar({ onFinca, codigoInterno }) {
     formulario,
     telefonos,
     errores,
-    setErrores,
+    finca,
 
     actualizarCampo,
     actualizarTelefono,
