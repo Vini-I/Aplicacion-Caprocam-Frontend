@@ -8,6 +8,8 @@
  * - Usa tokens del theme cuando estan disponibles.
  * - Mantiene alertas con fondos suaves.
  * - Mantiene acceso outline a modulos.
+ * - Mantiene grafica de estanques activos/cosechados.
+ * - Mantiene grafica de alimentacion semanal.
  */
 
 import { StyleSheet } from "react-native";
@@ -168,6 +170,14 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
 
+  emptyAlertBoxSmall: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    marginBottom: 8,
+  },
+
   alertItem: {
     flexDirection: "row",
     alignItems: "flex-start",
@@ -225,6 +235,92 @@ export const styles = StyleSheet.create({
     marginTop: 4,
     lineHeight: 17,
     fontFamily: TYPOGRAPHY.fontFamily.regular,
+  },
+
+  alertDetail: {
+    marginTop: 4,
+    lineHeight: 17,
+    fontFamily: TYPOGRAPHY.fontFamily.medium,
+  },
+
+  alertDropdownGroup: {
+    marginBottom: 10,
+  },
+
+  alertDropdownHeader: {
+    marginTop: 0,
+    minHeight: 44,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: BORDER_COLOR,
+    backgroundColor: COLORS.white,
+    paddingVertical: 9,
+    paddingHorizontal: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+
+  alertDropdownLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
+
+  alertDropdownTitle: {
+    marginLeft: 8,
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
+  },
+
+  alertDropdownRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+
+  alertDropdownBody: {
+    marginTop: 8,
+  },
+
+  alertCategoryTitle: {
+    marginTop: 6,
+    marginBottom: 6,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
+  },
+
+  alertDismissButton: {
+    width: 28,
+    height: 28,
+    minHeight: 28,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: BORDER_COLOR,
+    backgroundColor: COLORS.white,
+    marginTop: 0,
+    paddingHorizontal: 0,
+    paddingVertical: 0,
+  },
+
+  viewAllAlertsButton: {
+    minHeight: 44,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    backgroundColor: COLORS.white,
+    marginTop: 4,
+  },
+
+  inlineButtonContentCentered: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  viewAllAlertsText: {
+    marginLeft: 8,
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
   },
 
   statsGrid: {
@@ -387,70 +483,6 @@ export const styles = StyleSheet.create({
     marginBottom: 10,
   },
 
-  barChart: {
-    height: 170,
-    width: "100%",
-    borderLeftWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: COLORS.textQuaternary,
-    marginBottom: 18,
-    position: "relative",
-    overflow: "hidden",
-  },
-
-  chartGridLines: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: 28,
-    justifyContent: "space-between",
-  },
-
-  gridLine: {
-    height: 1,
-    width: "100%",
-    borderStyle: "dashed",
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-
-  barChartContent: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "flex-end",
-    justifyContent: "space-between",
-    paddingHorizontal: 8,
-  },
-
-  barItem: {
-    flex: 1,
-    alignItems: "center",
-    minWidth: 0,
-  },
-
-  barTrack: {
-    height: 115,
-    width: 36,
-    justifyContent: "flex-end",
-    alignItems: "center",
-  },
-
-  barFill: {
-    width: "100%",
-    backgroundColor: COLORS.primary,
-    borderTopLeftRadius: 8,
-    borderTopRightRadius: 8,
-    maxHeight: 115,
-  },
-
-  barLabel: {
-    width: "100%",
-    marginTop: 6,
-    paddingHorizontal: 2,
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
-  },
-
   twoColumns: {
     flexDirection: "row",
     gap: 16,
@@ -461,6 +493,34 @@ export const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     minWidth: 0,
+  },
+
+  pastelChartContainer: {
+    width: "100%",
+    alignItems: "center",
+    marginBottom: 18,
+  },
+
+  pastelChartBox: {
+    width: "100%",
+    maxWidth: 420,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  pastelStatsBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 18,
+    marginTop: 14,
+    flexWrap: "wrap",
+  },
+
+  pastelStatItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
   },
 
   donutWrapper: {
@@ -541,6 +601,23 @@ export const styles = StyleSheet.create({
     overflow: "hidden",
   },
 
+  chartGridLines: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 28,
+    justifyContent: "space-between",
+  },
+
+  gridLine: {
+    height: 1,
+    width: "100%",
+    borderStyle: "dashed",
+    borderWidth: 1,
+    borderColor: BORDER_COLOR,
+  },
+
   lineBars: {
     flex: 1,
     flexDirection: "row",
@@ -563,6 +640,53 @@ export const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 4,
     maxHeight: 105,
+  },
+
+  barChart: {
+    height: 170,
+    width: "100%",
+    borderLeftWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: COLORS.textQuaternary,
+    marginBottom: 18,
+    position: "relative",
+    overflow: "hidden",
+  },
+
+  barChartContent: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "flex-end",
+    justifyContent: "space-between",
+    paddingHorizontal: 8,
+  },
+
+  barItem: {
+    flex: 1,
+    alignItems: "center",
+    minWidth: 0,
+  },
+
+  barTrack: {
+    height: 115,
+    width: 36,
+    justifyContent: "flex-end",
+    alignItems: "center",
+  },
+
+  barFill: {
+    width: "100%",
+    backgroundColor: COLORS.primary,
+    borderTopLeftRadius: 8,
+    borderTopRightRadius: 8,
+    maxHeight: 115,
+  },
+
+  barLabel: {
+    width: "100%",
+    marginTop: 6,
+    paddingHorizontal: 2,
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
   },
 
   infoRowBlue: {
@@ -731,99 +855,5 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginRight: 12,
-  },
-
-  alertDropdownGroup: {
-    marginBottom: 10,
-  },
-
-  alertDropdownHeader: {
-    marginTop: 0,
-    minHeight: 44,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: BORDER_COLOR,
-    backgroundColor: COLORS.white,
-    paddingVertical: 9,
-    paddingHorizontal: 10,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-
-  alertDropdownLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    flex: 1,
-  },
-
-  alertDropdownTitle: {
-    marginLeft: 8,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-  },
-
-  alertDropdownRight: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-
-  alertDropdownBody: {
-    marginTop: 8,
-  },
-
-  emptyAlertBoxSmall: {
-    backgroundColor: COLORS.surface,
-    borderRadius: 12,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    marginBottom: 8,
-  },
-
-  alertCategoryTitle: {
-    marginTop: 6,
-    marginBottom: 6,
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-  },
-
-  alertDismissButton: {
-    width: 28,
-    height: 28,
-    minHeight: 28,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: BORDER_COLOR,
-    backgroundColor: COLORS.white,
-    marginTop: 0,
-    paddingHorizontal: 0,
-    paddingVertical: 0,
-  },
-
-  alertDetail: {
-    marginTop: 4,
-    lineHeight: 17,
-    fontFamily: TYPOGRAPHY.fontFamily.medium,
-  },
-
-  viewAllAlertsButton: {
-    minHeight: 44,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: COLORS.primary,
-    backgroundColor: COLORS.white,
-    marginTop: 4,
-  },
-
-  inlineButtonContentCentered: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  viewAllAlertsText: {
-    marginLeft: 8,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
   },
 });

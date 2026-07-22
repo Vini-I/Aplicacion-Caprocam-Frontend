@@ -184,54 +184,5 @@ export const styles = StyleSheet.create({
     color: COLORS.error,
   },
 
-  modalCancelButton: {
-    backgroundColor: COLORS.white,
-    borderWidth: 1,
-    borderColor: COLORS.primary,
-    marginTop: 12,
-    flexDirection: "row",
-  },
-
-  modalCancelButtonText: {
-    color: COLORS.primary,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    fontWeight: undefined,
-  },
-
-
-  modalOverlay: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-  },
-
-  modalContainer: {},
-
-  modalTitle: { alignSelf: "center" },
-
-  modalMessage: {
-    alignSelf: "center",
-    color: COLORS.textTertiary,
-  },
-
-  modalNombreNegrita: {
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    fontWeight: undefined,
-  },
-
-  modalConfirmButton: {
-    backgroundColor: COLORS.white,
-    borderWidth: 1,
-    borderColor: COLORS.error,
-    marginTop: 12,
-    flexDirection: "row",
-  },
-
-  modalConfirmTexto: {
-    color: COLORS.error,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    fontWeight: undefined,
-  },
 });
 

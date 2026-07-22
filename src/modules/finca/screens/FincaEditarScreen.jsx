@@ -25,21 +25,20 @@ import NavbarRegistro from "../../../shared/components/NavbarRegistro.jsx";
 
 import CustomAlert from "../../../shared/components/Alert.jsx";
 
-import { fincas } from "./FincaData.js";
 import { useFincaEditar } from "../hooks/useFincaEditar.js";
 import { ICONS } from "../../../theme/icons.js";
 import { COLORS } from "../../../theme/colors.js";
 import { styles } from "../styles/StylesFincaNueva.js";
 import { STYLE } from "../../../theme/style.js";
 
-export default function FincaEditarScreen({ onFinca, codigoInterno }) {
+export default function FincaEditarScreen({ onFinca, id }) {
   const {
     SectionTitle,
     ContentWrapper,
     formulario,
     telefonos,
     errores,
-    setErrores,
+    finca,
 
     actualizarCampo,
     actualizarTelefono,
@@ -49,13 +48,13 @@ export default function FincaEditarScreen({ onFinca, codigoInterno }) {
     registrarFinca,
 
     isLargeScreen,
-  } = useFincaEditar({ onFinca, codigoInterno });
+  } = useFincaEditar({ onFinca, id });
 
   return (
     <>
       <NavbarRegistro
         Titulo="Editar Finca"
-        Subtitulo="Finca: Finca La Reina"
+        Subtitulo={finca?.nombreFinca ?? "Cargando..."}
         Icono="edit"
       />
       <ScrollView
@@ -106,7 +105,7 @@ export default function FincaEditarScreen({ onFinca, codigoInterno }) {
 
             {(telefonos || []).map((telefono, index) => (
               <View key={index} style={styles.phoneRowWrapper}>
-                <View style={{ flex: 1 }}>
+                <View style={styles.phoneInputContainer}>
                   <Input
                     label={`Teléfono ${index + 1}`}
                     value={telefono}

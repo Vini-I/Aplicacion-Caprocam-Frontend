@@ -158,12 +158,14 @@ export default function NuevoEstanqueScreen({ navigation }) {
     console.log("Estanque registrado:", nuevoEstanque);
 
     setTipoMensaje("success");
-    setMensaje("Estanque registrado correctamente.");
+    setMensaje("Estanque creado correctamente.");
 
-    router.push({
-      pathname: "/registros/DetalleEstanque",
-      params: nuevoEstanque,
-    });
+    setTimeout(function () {
+      router.push({
+        pathname: "/registros/DetalleEstanque",
+        params: nuevoEstanque,
+      });
+    }, 900);
   }
 
   return (
@@ -176,15 +178,6 @@ export default function NuevoEstanqueScreen({ navigation }) {
 
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
-          {mensaje !== "" && (
-            <Alert
-              variant={tipoMensaje}
-              message={mensaje}
-              style={styles.alert}
-              textStyle={styles.alertText}
-            />
-          )}
-
           <Card>
             <SectionTitle title="Identificacion" icon={ICONS.document} />
 
@@ -341,79 +334,15 @@ export default function NuevoEstanqueScreen({ navigation }) {
             />
           </Card>
 
-          <Card>
-            <SectionTitle title="Alimentacion y equipos" icon={ICONS.food} />
 
-            <Select
-              label="Metodo de alimentacion"
-              options={METODOS_ALIMENTACION}
-              value={metodoAlimentacion}
-              onChange={setMetodoAlimentacion}
-              placeholder="Seleccione el metodo"
-              labelStyle={styles.label}
+          {mensaje !== "" && (
+            <Alert
+              variant={tipoMensaje}
+              message={mensaje}
+              style={styles.alert}
+              textStyle={styles.alertText}
             />
-
-            <Input
-              label="Proveedor de alimento"
-              value={proveedorAlimento}
-              onChangeText={setProveedorAlimento}
-              placeholder="Ej: Biomar"
-              labelStyle={styles.label}
-            />
-
-            <Select
-              label="Tiene aireadores"
-              options={OPCIONES_AIREADORES}
-              value={tieneAireadores}
-              onChange={manejarTieneAireadores}
-              placeholder="Seleccione una opcion"
-              labelStyle={styles.label}
-            />
-
-            {tieneAireadores === "si" && (
-              <View style={styles.aeratorBox}>
-                <Select
-                  label="Codigo del aireador"
-                  required={true}
-                  submitted={submitted}
-                  options={AIREADORES_EXISTENTES}
-                  value={codigoAireador}
-                  onChange={setCodigoAireador}
-                  placeholder="Seleccione el codigo"
-                  labelStyle={styles.label}
-                />
-
-                <Select
-                  label="Estanque seleccionado"
-                  options={obtenerOpcionesEstanqueSeleccionado(
-                    codigo,
-                    "Finca La Reina",
-                  )}
-                  value={codigo}
-                  disabled={true}
-                  placeholder="Ingrese primero el codigo del estanque"
-                  labelStyle={styles.label}
-                />
-
-                <CustomText
-                  size={13}
-                  color={COLORS.textTertiary}
-                  style={styles.helperText}
-                >
-                  El aireador se asigna automaticamente al estanque actual.
-                </CustomText>
-              </View>
-            )}
-
-            <Select
-              label="Tiene alimentador automatico"
-              options={OPCIONES_ALIMENTADOR}
-              value={tieneAlimentadorAutomatico}
-              onChange={setTieneAlimentadorAutomatico}
-              placeholder="Seleccione una opcion"
-              labelStyle={styles.label}
-            />
-          </Card>
+          )}
 
           <Button
             variant="outline"

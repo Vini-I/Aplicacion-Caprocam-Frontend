@@ -7,40 +7,61 @@
  * una finca seleccionada y sus estanques asociados.
  */
 
+import { useEffect, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
 
 import { useFinca } from "../context/FincaContext.js";
-import { estanques } from "../screens/EstanqueData";
 import { usePdf } from "../hooks/usePdf";
+import {
+  buscarFincaPorId,
+  eliminarEstanqueLocal,
+  obtenerEstanquesFinca,
+} from "../services/FincaDetalleService.js";
 
 export default function useFincaDetalle() {
-  const { fincas } = useFinca();
+  const { fincas, loading: loadingFincas } = useFinca();
   const { id } = useLocalSearchParams();
+  const { crearPDFFinca, loading: loadingPdf } = usePdf();
 
-  const finca = fincas.find(function (item) {
-    return item.codigoInterno === id;
-  });
+  const [estanquesFinca, setEstanquesFinca] = useState([]);
 
-  let estanquesFinca = [];
+  const finca = buscarFincaPorId(fincas, id);
 
-  if (finca) {
-    estanquesFinca = estanques.filter(function (estanque) {
-      return estanque.finca === finca.nombre;
+  useEffect(
+    function () {
+      if (finca === undefined || finca === null) {
+        setEstanquesFinca([]);
+        return;
+      }
+
+      setEstanquesFinca(obtenerEstanquesFinca(finca));
+    },
+    [finca],
+  );
+
+  function eliminarEstanque(codigoEstanque) {
+    if (
+      codigoEstanque === undefined ||
+      codigoEstanque === null ||
+      codigoEstanque === ""
+    ) {
+      return;
+    }
+
+    eliminarEstanqueLocal(codigoEstanque);
+
+    setEstanquesFinca(function (listaActual) {
+      return listaActual.filter(function (estanque) {
+        return estanque.codigo !== codigoEstanque;
+      });
     });
   }
 
-  const { crearPDFFinca, loading } = usePdf();
-
-  function eliminarEstanque(codigoEstanque) {
-    for (let index = 0; index < estanques.length; index++) {
-      if (estanques[index].codigo === codigoEstanque) {
-        estanques.splice(index, 1);
-        break;
-      }
-    }
-  }
-
   function haldleGenerar() {
+    if (finca === undefined || finca === null) {
+      return;
+    }
+
     crearPDFFinca(finca, estanquesFinca);
   }
 
@@ -49,6 +70,7 @@ export default function useFincaDetalle() {
     estanquesFinca,
     eliminarEstanque,
     haldleGenerar,
-    loading,
+    loadingFincas,
+    loadingPdf,
   };
 }

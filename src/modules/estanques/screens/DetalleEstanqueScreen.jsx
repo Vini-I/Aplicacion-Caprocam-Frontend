@@ -145,46 +145,6 @@ export default function DetalleEstanqueScreen() {
             <Info label="Precria" value={estanque.precria} />
           </Card>
 
-          <Card>
-            <SectionTitle title="Alimentacion y equipos" icon={ICONS.food} />
-
-            <Info
-              label="Metodo de alimentacion"
-              value={estanque.metodoAlimentacion}
-            />
-            <Info
-              label="Proveedor de alimento"
-              value={estanque.proveedorAlimento}
-            />
-            <Info
-              label="Tiene aireadores"
-              value={obtenerTextoSiNo(estanque.tieneAireadores)}
-            />
-
-            {estanque.tieneAireadores === "si" && (
-              <View>
-                <Info
-                  label="Codigo del aireador"
-                  value={estanque.codigoAireador}
-                />
-
-                <Info
-                  label="Estanque seleccionado"
-                  value={estanque.estanqueAireador}
-                />
-
-                <Info
-                  label="Numero de aireadores"
-                  value={estanque.numeroAireadores}
-                />
-              </View>
-            )}
-
-            <Info
-              label="Alimentador automatico"
-              value={estanque.tieneAlimentadorAutomatico}
-            />
-          </Card>
 
           <View style={styles.detailActionsRow}>
             <Button

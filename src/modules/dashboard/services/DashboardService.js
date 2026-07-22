@@ -4,8 +4,6 @@
  * ============================================================
  *
  * Funciones auxiliares del DashboardScreen.
- * Mantiene calculos, mapeos, resumenes y estilos derivados
- * fuera del componente principal.
  */
 
 import { COLORS } from "../../../theme/colors";
@@ -26,8 +24,6 @@ import {
 import {
   obtenerNombreParasito,
 } from "../../parasitologia/services/ParasitologiaService";
-
-import { agruparAlertasPorTipo } from "../../alertas/services/AlertasServices.js";
 
 import { styles } from "../styles/DashboardStyle";
 
@@ -108,11 +104,7 @@ export function convertirFecha(fechaTexto) {
     fecha = parseDate(fechaTexto);
   }
 
-  if (fecha === null) {
-    fecha = new Date();
-  }
-
-  if (fecha === undefined) {
+  if (fecha === null || fecha === undefined) {
     fecha = new Date();
   }
 
@@ -128,15 +120,17 @@ export function formatearFechaCorta(fechaTexto) {
 }
 
 export function obtenerDiaSemana(fechaTexto) {
-  return getDayName(fechaTexto);
+  return getDayName(convertirFecha(fechaTexto));
 }
 
 export function esMismaFecha(fechaUno, fechaDos) {
-  return isSameDate(fechaUno, fechaDos);
+  return isSameDate(convertirFecha(fechaUno), convertirFecha(fechaDos));
 }
 
 export function obtenerMinutosHora(horaTexto) {
-  const partes = horaTexto.split(":");
+  const texto = obtenerTextoSeguro(horaTexto, "00:00");
+  const partes = texto.split(":");
+
   let horas = 0;
   let minutos = 0;
 
@@ -208,8 +202,10 @@ export function agregarAlerta(alertas, alerta) {
   alertas.push({
     id: alerta.id,
     tipo: alerta.tipo,
+    categoria: alerta.categoria || alerta.tipo,
     titulo: alerta.titulo,
     mensaje: alerta.mensaje,
+    detalle: alerta.detalle || "",
     icono: alerta.icono,
     color: alerta.color,
     prioridad: alerta.prioridad,
@@ -230,18 +226,19 @@ export function construirFincasDashboard(fincas, estanques) {
   });
 
   estanques.forEach(function (estanque) {
+    const fincaNombre = obtenerTextoSeguro(estanque.fincaNombre, estanque.finca);
     let existe = false;
 
     resultado.forEach(function (finca) {
-      if (finca.nombre === estanque.fincaNombre) {
+      if (finca.nombre === fincaNombre) {
         existe = true;
       }
     });
 
     if (existe === false) {
       resultado.push({
-        id: `finca-${estanque.fincaId}-${estanque.fincaNombre}`,
-        nombre: estanque.fincaNombre,
+        id: `finca-${obtenerTextoSeguro(estanque.fincaId, fincaNombre)}`,
+        nombre: fincaNombre,
         ubicacion: "Registrada en estanques",
         area: 0,
         estanques: 0,
@@ -256,7 +253,9 @@ export function contarEstanquesPorFinca(nombreFinca, estanques) {
   let total = 0;
 
   estanques.forEach(function (estanque) {
-    if (estanque.fincaNombre === nombreFinca) {
+    const fincaNombre = obtenerTextoSeguro(estanque.fincaNombre, estanque.finca);
+
+    if (fincaNombre === nombreFinca) {
       total = total + 1;
     }
   });
@@ -404,15 +403,15 @@ export function obtenerEstiloSeveridad(severidad) {
   const estilos = [styles.badge];
   const texto = obtenerTextoSeguro(severidad, "").toLowerCase();
 
-  if (texto === "alta" || texto === "critica") {
+  if (texto === "alta" || texto === "critica" || texto === "alto") {
     estilos.push(styles.badgeAlta);
   }
 
-  if (texto === "media") {
+  if (texto === "media" || texto === "medio") {
     estilos.push(styles.badgeMedia);
   }
 
-  if (texto === "baja") {
+  if (texto === "baja" || texto === "bajo") {
     estilos.push(styles.badgeBaja);
   }
 
@@ -423,15 +422,15 @@ export function obtenerColorSeveridad(severidad) {
   let color = COLORS.textTertiary;
   const texto = obtenerTextoSeguro(severidad, "").toLowerCase();
 
-  if (texto === "alta" || texto === "critica") {
+  if (texto === "alta" || texto === "critica" || texto === "alto") {
     color = COLORS.error;
   }
 
-  if (texto === "media") {
+  if (texto === "media" || texto === "medio") {
     color = COLORS.warning;
   }
 
-  if (texto === "baja") {
+  if (texto === "baja" || texto === "bajo") {
     color = COLORS.success;
   }
 
@@ -447,10 +446,20 @@ export function obtenerPrimerNombreEnfermedad(registro) {
     }
   }
 
+  if (
+    Array.isArray(registro.enfermedades) === false &&
+    registro.enfermedad !== undefined
+  ) {
+    nombre = obtenerNombreEnfermedad(registro.enfermedad);
+  }
+
   return nombre;
 }
 
-export function obtenerCasosSanitarios(registrosEnfermedades, registrosParasitologia) {
+export function obtenerCasosSanitarios(
+  registrosEnfermedades,
+  registrosParasitologia,
+) {
   const casos = [];
 
   registrosEnfermedades.forEach(function (registro) {
@@ -486,10 +495,8 @@ export function obtenerCasosSanitarios(registrosEnfermedades, registrosParasitol
   });
 
   casos.sort(function (a, b) {
-    return (
-      convertirFecha(b.timestamp).getTime() -
-      convertirFecha(a.timestamp).getTime()
-    );
+    return convertirFecha(b.timestamp).getTime() -
+      convertirFecha(a.timestamp).getTime();
   });
 
   return casos.slice(0, 6);
@@ -509,19 +516,14 @@ export function obtenerRegistrosMortalidad(registrosEnfermedades) {
         estanque: obtenerTextoSeguro(registro.estanque, "Sin estanque"),
         fecha: obtenerTextoSeguro(registro.fechaReporte, registro.timestamp),
         mortalidad: mortalidad,
-        timestamp: obtenerTextoSeguro(
-          registro.timestamp,
-          registro.fechaReporte,
-        ),
+        timestamp: obtenerTextoSeguro(registro.timestamp, registro.fechaReporte),
       });
     }
   });
 
   registros.sort(function (a, b) {
-    return (
-      convertirFecha(b.timestamp).getTime() -
-      convertirFecha(a.timestamp).getTime()
-    );
+    return convertirFecha(b.timestamp).getTime() -
+      convertirFecha(a.timestamp).getTime();
   });
 
   return registros.slice(0, 6);
@@ -534,30 +536,30 @@ export function obtenerAlertasInventario(productosInventario) {
     const cantidad = obtenerNumeroSeguro(producto.cantidad);
     const stockMinimo = obtenerNumeroSeguro(producto.stockMinimo);
 
-    if (stockMinimo > 0) {
-      if (cantidad < stockMinimo) {
-        agregarAlerta(alertas, {
-          id: `inventario-critico-${producto.id}`,
-          tipo: "critica",
-          titulo: "Inventario crítico",
-          mensaje: `${producto.nombre}: quedan ${producto.cantidad} ${producto.unidad}. Mínimo requerido: ${producto.stockMinimo} ${producto.unidad}.`,
-          icono: ICONS.notification,
-          color: COLORS.error,
-          prioridad: 1,
-        });
-      }
+    if (stockMinimo > 0 && cantidad < stockMinimo) {
+      agregarAlerta(alertas, {
+        id: `inventario-critico-${producto.id}`,
+        tipo: "critica",
+        categoria: "inventario",
+        titulo: "Inventario critico",
+        mensaje: `${producto.nombre}: quedan ${producto.cantidad} ${producto.unidad}. Minimo requerido: ${producto.stockMinimo} ${producto.unidad}.`,
+        icono: ICONS.notification,
+        color: COLORS.error,
+        prioridad: 3,
+      });
+    }
 
-      if (cantidad >= stockMinimo && cantidad <= stockMinimo * 1.5) {
-        agregarAlerta(alertas, {
-          id: `inventario-bajo-${producto.id}`,
-          tipo: "advertencia",
-          titulo: "Inventario por agotarse",
-          mensaje: `${producto.nombre}: quedan ${producto.cantidad} ${producto.unidad}. Conviene reabastecer pronto.`,
-          icono: ICONS.notification,
-          color: COLORS.warning,
-          prioridad: 2,
-        });
-      }
+    if (stockMinimo > 0 && cantidad >= stockMinimo && cantidad <= stockMinimo * 1.5) {
+      agregarAlerta(alertas, {
+        id: `inventario-bajo-${producto.id}`,
+        tipo: "advertencia",
+        categoria: "inventario",
+        titulo: "Inventario por agotarse",
+        mensaje: `${producto.nombre}: quedan ${producto.cantidad} ${producto.unidad}. Conviene reabastecer pronto.`,
+        icono: ICONS.notification,
+        color: COLORS.warning,
+        prioridad: 5,
+      });
     }
   });
 
@@ -573,31 +575,32 @@ export function obtenerAlertasCosecha(siembras) {
     const diasRestantes = diasMaduracion - diasCultivo;
     const estado = obtenerTextoSeguro(siembra.estado, "").toLowerCase();
 
-    if (
-      estado.includes("activa") === true ||
-      estado.includes("activo") === true
-    ) {
+    if (estado.includes("activa") === true || estado.includes("activo") === true) {
       if (diasRestantes <= 0) {
         agregarAlerta(alertas, {
-          id: `cosecha-vencida-${siembra.siembraId}`,
+          id: `cosecha-vencida-${obtenerTextoSeguro(siembra.siembraId, siembra.id)}`,
           tipo: "critica",
+          categoria: "cosecha",
           titulo: "Cosecha pendiente",
-          mensaje: `${siembra.estanque} · ${siembra.finca}: ya cumplió los ${diasMaduracion} días de maduración.`,
+          mensaje: `${siembra.estanque} · ${siembra.finca}: ya cumplio los ${diasMaduracion} dias de maduracion.`,
+          detalle: `Fecha estimada: ${obtenerFechaSiembraSegura(siembra)}.`,
           icono: ICONS.shrimp,
           color: COLORS.error,
-          prioridad: 1,
+          prioridad: 2,
         });
       }
 
       if (diasRestantes > 0 && diasRestantes <= 15) {
         agregarAlerta(alertas, {
-          id: `cosecha-pronta-${siembra.siembraId}`,
+          id: `cosecha-pronta-${obtenerTextoSeguro(siembra.siembraId, siembra.id)}`,
           tipo: "advertencia",
-          titulo: "Cosecha próxima",
-          mensaje: `${siembra.estanque} · ${siembra.finca}: faltan ${diasRestantes} días para cosecha.`,
+          categoria: "cosecha",
+          titulo: "Cosecha proxima",
+          mensaje: `${siembra.estanque} · ${siembra.finca}: faltan ${diasRestantes} dias para cosechar.`,
+          detalle: `Fecha de siembra: ${obtenerFechaSiembraSegura(siembra)}.`,
           icono: ICONS.shrimp,
           color: COLORS.warning,
-          prioridad: 2,
+          prioridad: 4,
         });
       }
     }
@@ -612,16 +615,32 @@ export function obtenerAlertasEstanques(estanques) {
   estanques.forEach(function (estanque) {
     const diasCultivo = obtenerNumeroSeguro(estanque.diasCultivo);
     const estado = obtenerTextoSeguro(estanque.estado, "").toLowerCase();
+    const contaminacion = obtenerTextoSeguro(estanque.contaminacion, "").toLowerCase();
+
+    if (contaminacion === "si" || contaminacion === "alta") {
+      agregarAlerta(alertas, {
+        id: `contaminacion-${estanque.id}`,
+        tipo: "critica",
+        categoria: "contaminacion",
+        titulo: "Alerta de contaminacion",
+        mensaje: `${estanque.codigo} · ${obtenerTextoSeguro(estanque.fincaNombre, estanque.finca)}: revisar posible contaminacion.`,
+        icono: ICONS.shieldAlert,
+        color: COLORS.error,
+        prioridad: 1,
+      });
+    }
 
     if (estado === "activo" && diasCultivo >= 90) {
       agregarAlerta(alertas, {
         id: `estanque-cultivo-avanzado-${estanque.id}`,
         tipo: "advertencia",
+        categoria: "cosecha",
         titulo: "Cultivo avanzado",
-        mensaje: `${estanque.codigo} · ${estanque.fincaNombre}: tiene ${diasCultivo} días de cultivo. Revisar cosecha o muestreo.`,
+        mensaje: `${estanque.codigo} · ${obtenerTextoSeguro(estanque.fincaNombre, estanque.finca)}: tiene ${diasCultivo} dias de cultivo.`,
+        detalle: "Revisar cosecha o muestreo.",
         icono: ICONS.waterFlow,
         color: COLORS.warning,
-        prioridad: 2,
+        prioridad: 4,
       });
     }
 
@@ -629,11 +648,12 @@ export function obtenerAlertasEstanques(estanques) {
       agregarAlerta(alertas, {
         id: `estanque-preparacion-${estanque.id}`,
         tipo: "info",
-        titulo: "Estanque en preparación",
-        mensaje: `${estanque.codigo} · ${estanque.fincaNombre}: pendiente de siembra o validación operativa.`,
+        categoria: "estanques",
+        titulo: "Estanque en preparacion",
+        mensaje: `${estanque.codigo} · ${obtenerTextoSeguro(estanque.fincaNombre, estanque.finca)}: pendiente de siembra o validacion operativa.`,
         icono: ICONS.waterFlow,
         color: COLORS.primary,
-        prioridad: 4,
+        prioridad: 7,
       });
     }
   });
@@ -648,10 +668,7 @@ export function existeAlimentacionRegistrada(alimentaciones, horaProgramada) {
   alimentaciones.forEach(function (registro) {
     const horaRegistro = obtenerHoraNumero(registro.hora);
 
-    if (
-      esMismaFecha(registro.fecha, hoy) === true &&
-      horaRegistro === horaProgramada
-    ) {
+    if (esMismaFecha(registro.fecha, hoy) === true && horaRegistro === horaProgramada) {
       existe = true;
     }
   });
@@ -674,11 +691,12 @@ export function obtenerAlertasAlimentacion(alimentaciones) {
       agregarAlerta(alertas, {
         id: `alimentacion-pendiente-${horario.id}`,
         tipo: "advertencia",
-        titulo: "Alimentación pendiente",
-        mensaje: `No se encontró registro de alimentación de las ${horario.etiqueta} para hoy.`,
+        categoria: "alimentacion",
+        titulo: "Alimentacion pendiente",
+        mensaje: `No se encontro registro de alimentacion de las ${horario.etiqueta} para hoy.`,
         icono: ICONS.food,
         color: COLORS.warning,
-        prioridad: 2,
+        prioridad: 6,
       });
     }
 
@@ -686,11 +704,12 @@ export function obtenerAlertasAlimentacion(alimentaciones) {
       agregarAlerta(alertas, {
         id: `alimentacion-proxima-${horario.id}`,
         tipo: "info",
-        titulo: "Alimentación próxima",
-        mensaje: `Se aproxima la alimentación programada de las ${horario.etiqueta}.`,
+        categoria: "alimentacion",
+        titulo: "Alimentacion proxima",
+        mensaje: `Se aproxima la alimentacion programada de las ${horario.etiqueta}.`,
         icono: ICONS.clock,
         color: COLORS.primary,
-        prioridad: 4,
+        prioridad: 8,
       });
     }
   });
@@ -781,11 +800,12 @@ export function obtenerAlertasBombeo(equipos) {
     agregarAlerta(alertas, {
       id: `bombeo-activo-${horarioActivo.id}`,
       tipo: "info",
+      categoria: "bombeo",
       titulo: "Bombeo en curso",
       mensaje: `Horario activo: ${horarioActivo.etiqueta}. Equipos: ${equiposTexto}.`,
       icono: ICONS.waterFlow,
       color: COLORS.primary,
-      prioridad: 3,
+      prioridad: 7,
     });
   }
 
@@ -794,11 +814,12 @@ export function obtenerAlertasBombeo(equipos) {
       agregarAlerta(alertas, {
         id: `bombeo-proximo-${siguienteHorario.horario.id}`,
         tipo: "advertencia",
-        titulo: "Bombeo próximo",
+        categoria: "bombeo",
+        titulo: "Bombeo proximo",
         mensaje: `Faltan ${siguienteHorario.minutosRestantes} minutos para el bombeo de ${siguienteHorario.horario.etiqueta}. Equipos: ${equiposTexto}.`,
         icono: ICONS.waterFlow,
         color: COLORS.warning,
-        prioridad: 2,
+        prioridad: 6,
       });
     }
 
@@ -806,11 +827,12 @@ export function obtenerAlertasBombeo(equipos) {
       agregarAlerta(alertas, {
         id: `bombeo-siguiente-${siguienteHorario.horario.id}`,
         tipo: "info",
-        titulo: "Próxima hora de bombeo",
+        categoria: "bombeo",
+        titulo: "Proxima hora de bombeo",
         mensaje: `Siguiente bombeo programado: ${siguienteHorario.horario.etiqueta}. Equipos: ${equiposTexto}.`,
         icono: ICONS.clock,
         color: COLORS.primary,
-        prioridad: 5,
+        prioridad: 8,
       });
     }
   }
@@ -822,6 +844,7 @@ export function calcularHorasUsoAireador(equipo) {
   const fechaInstalacion = convertirFecha(equipo.fechaInstalacion);
   const hoy = new Date();
   const diferencia = hoy.getTime() - fechaInstalacion.getTime();
+
   let dias = Math.floor(diferencia / 86400000);
 
   if (dias < 0) {
@@ -862,11 +885,12 @@ export function obtenerAlertasAireadores(equipos) {
       agregarAlerta(alertas, {
         id: `aireador-critico-${equipo.id}`,
         tipo: "critica",
+        categoria: "aireadores",
         titulo: "Aireador casi en mantenimiento",
         mensaje: `${equipo.nombre} ${equipo.serie} · ${equipo.ubicacion}: faltan ${horasRestantes} horas para mantenimiento preventivo.`,
         icono: ICONS.wind,
         color: COLORS.error,
-        prioridad: 1,
+        prioridad: 3,
       });
     }
 
@@ -877,11 +901,12 @@ export function obtenerAlertasAireadores(equipos) {
       agregarAlerta(alertas, {
         id: `aireador-cercano-${equipo.id}`,
         tipo: "advertencia",
+        categoria: "aireadores",
         titulo: "Mantenimiento de aireador cercano",
         mensaje: `${equipo.nombre} ${equipo.serie} · ${equipo.ubicacion}: faltan ${horasRestantes} horas para mantenimiento.`,
         icono: ICONS.wind,
         color: COLORS.warning,
-        prioridad: 2,
+        prioridad: 5,
       });
     }
   });
@@ -890,11 +915,12 @@ export function obtenerAlertasAireadores(equipos) {
     agregarAlerta(alertas, {
       id: `aireador-proximo-${aireadorMasCercano.id}`,
       tipo: "info",
-      titulo: "Próximo mantenimiento de aireador",
+      categoria: "aireadores",
+      titulo: "Proximo mantenimiento de aireador",
       mensaje: `${aireadorMasCercano.nombre} ${aireadorMasCercano.serie}: faltan ${horasMasCercanas} horas para mantenimiento preventivo.`,
       icono: ICONS.wind,
       color: COLORS.primary,
-      prioridad: 5,
+      prioridad: 8,
     });
   }
 
@@ -914,6 +940,7 @@ export function obtenerAlertasSanitarias(
       agregarAlerta(alertas, {
         id: `sanitaria-enfermedad-${registro.id}`,
         tipo: "critica",
+        categoria: "sanidad",
         titulo: "Peligro sanitario",
         mensaje: `${obtenerPrimerNombreEnfermedad(registro)} en ${obtenerTextoSeguro(
           registro.estanque,
@@ -921,7 +948,7 @@ export function obtenerAlertasSanitarias(
         )} · ${obtenerTextoSeguro(registro.fincaNombre, registro.finca)}.`,
         icono: ICONS.shieldAlert,
         color: COLORS.error,
-        prioridad: 1,
+        prioridad: 2,
       });
     }
   });
@@ -933,14 +960,15 @@ export function obtenerAlertasSanitarias(
       agregarAlerta(alertas, {
         id: `sanitaria-parasito-${registro.id}`,
         tipo: "advertencia",
-        titulo: "Parasitología elevada",
+        categoria: "sanidad",
+        titulo: "Parasitologia elevada",
         mensaje: `${obtenerNombreParasito(registro.parasito)} en ${obtenerTextoSeguro(
           registro.estanque,
           "Sin estanque",
         )}: ${obtenerTextoSeguro(registro.nombreGrado, `Grado ${grado}`)}.`,
         icono: ICONS.parasite,
         color: COLORS.warning,
-        prioridad: 2,
+        prioridad: 4,
       });
     }
   });
@@ -959,15 +987,15 @@ export function obtenerAlertasDashboard(
 ) {
   let alertas = [];
 
-  alertas = alertas.concat(obtenerAlertasInventario(productosInventario));
-  alertas = alertas.concat(obtenerAlertasCosecha(siembras));
   alertas = alertas.concat(obtenerAlertasEstanques(estanques));
-  alertas = alertas.concat(obtenerAlertasAlimentacion(alimentaciones));
-  alertas = alertas.concat(obtenerAlertasBombeo(equipos));
-  alertas = alertas.concat(obtenerAlertasAireadores(equipos));
   alertas = alertas.concat(
     obtenerAlertasSanitarias(registrosEnfermedades, registrosParasitologia),
   );
+  alertas = alertas.concat(obtenerAlertasInventario(productosInventario));
+  alertas = alertas.concat(obtenerAlertasCosecha(siembras));
+  alertas = alertas.concat(obtenerAlertasAlimentacion(alimentaciones));
+  alertas = alertas.concat(obtenerAlertasBombeo(equipos));
+  alertas = alertas.concat(obtenerAlertasAireadores(equipos));
 
   alertas.sort(function (a, b) {
     return a.prioridad - b.prioridad;
@@ -998,7 +1026,7 @@ export function obtenerTextoTipoAlerta(tipo) {
   let texto = "Info";
 
   if (tipo === "critica") {
-    texto = "Crítica";
+    texto = "Critica";
   }
 
   if (tipo === "advertencia") {
@@ -1125,9 +1153,24 @@ export function obtenerUltimosRegistros(
   return registros.slice(0, 5);
 }
 
-
 export function obtenerResumenAlertas(alertas) {
-  const grupos = agruparAlertasPorTipo(alertas);
+  const criticas = [];
+  const advertencias = [];
+  const informativas = [];
+
+  alertas.forEach(function (alerta) {
+    if (alerta.tipo === "critica") {
+      criticas.push(alerta);
+    }
+
+    if (alerta.tipo === "advertencia") {
+      advertencias.push(alerta);
+    }
+
+    if (alerta.tipo === "info") {
+      informativas.push(alerta);
+    }
+  });
 
   return [
     {
@@ -1135,21 +1178,21 @@ export function obtenerResumenAlertas(alertas) {
       titulo: "Criticas",
       color: COLORS.error,
       icono: ICONS.shieldAlert,
-      alertas: grupos.critica,
+      alertas: criticas,
     },
     {
       tipo: "advertencia",
       titulo: "Advertencias",
       color: COLORS.warning,
       icono: ICONS.alertTriangle,
-      alertas: grupos.advertencia,
+      alertas: advertencias,
     },
     {
       tipo: "info",
       titulo: "Informativas",
       color: COLORS.primary,
       icono: ICONS.info,
-      alertas: grupos.info,
+      alertas: informativas,
     },
   ];
 }
@@ -1158,13 +1201,14 @@ export function obtenerCategoriasAlertas(alertas) {
   const categorias = {};
 
   alertas.forEach(function (alerta) {
-    if (categorias[alerta.categoria] === undefined) {
-      categorias[alerta.categoria] = [];
+    const categoria = obtenerTextoSeguro(alerta.categoria, alerta.tipo);
+
+    if (categorias[categoria] === undefined) {
+      categorias[categoria] = [];
     }
 
-    categorias[alerta.categoria].push(alerta);
+    categorias[categoria].push(alerta);
   });
 
   return categorias;
 }
-

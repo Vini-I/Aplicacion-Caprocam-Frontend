@@ -41,7 +41,6 @@ import {
   ENFERMEDADES_CATALOGO,
   SEVERIDADES_ENFERMEDAD,
   obtenerNombreEnfermedad,
-  obtenerNombreSeveridad,
   obtenerResponsableBackend,
 } from "../services/EnfermedadesService";
 import {
@@ -49,7 +48,6 @@ import {
   construirCasoEnfermedad,
   obtenerOpcionesEstanques,
   obtenerOpcionesFincas,
-  obtenerTextoEnfermedades,
   validarFormularioEnfermedad,
 } from "../services/EnfermedadesScreenService";
 
@@ -65,7 +63,7 @@ export default function EnfermedadesScreen({ onBack, navigation }) {
   const router = useRouter();
   const { width } = useWindowDimensions();
 
-  const { enfermedades, loading, error, guardarEnfermedad } = useEnfermedades();
+  const { loading, error, guardarEnfermedad } = useEnfermedades();
 
   let esTablet = false;
   let esDesktop = false;
@@ -231,15 +229,6 @@ export default function EnfermedadesScreen({ onBack, navigation }) {
 
       <ScrollView style={STYLE.container} showsVerticalScrollIndicator={false}>
         <View style={contentStyle}>
-          {mensaje !== "" && (
-            <Alert
-              variant={tipoMensaje}
-              message={mensaje}
-              style={styles.alert}
-              textStyle={styles.alertText}
-            />
-          )}
-
           {error !== "" && (
             <Alert
               variant="danger"
@@ -370,6 +359,15 @@ export default function EnfermedadesScreen({ onBack, navigation }) {
             </View>
           </Card>
 
+          {mensaje !== "" && (
+            <Alert
+              variant={tipoMensaje}
+              message={mensaje}
+              style={styles.alert}
+              textStyle={styles.alertText}
+            />
+          )}
+
           <Button
             variant="outline"
             onPress={registrarEnfermedad}
@@ -389,23 +387,6 @@ export default function EnfermedadesScreen({ onBack, navigation }) {
             </View>
           </Button>
 
-          <Card>
-            <SectionTitle title="Detalles guardados" icon={ICONS.certificate} />
-
-            {enfermedades.length === 0 && (
-              <CustomText
-                size={14}
-                color={COLORS.textTertiary}
-                style={styles.emptyText}
-              >
-                Aun no hay enfermedades registradas.
-              </CustomText>
-            )}
-
-            {enfermedades.map(function (caso) {
-              return <CasoRegistrado key={caso.id} caso={caso} />;
-            })}
-          </Card>
         </View>
       </ScrollView>
     </>
@@ -463,65 +444,5 @@ function OptionButton({ label, value, selectedValues, onPress }) {
         {label}
       </CustomText>
     </Button>
-  );
-}
-
-function CasoRegistrado({ caso }) {
-  const enfermedadesTexto = obtenerTextoEnfermedades(caso.enfermedades);
-  const severidadTexto = obtenerNombreSeveridad(caso.severidad);
-
-  return (
-    <View style={styles.savedCase}>
-      <CustomText
-        size={15}
-        color={COLORS.textPrimary}
-        style={styles.savedCaseTitle}
-      >
-        {caso.fincaNombre} - {caso.estanque}
-      </CustomText>
-
-      <Info label="Fecha" value={caso.fechaReporte} />
-      <Info label="Responsable" value={caso.responsable} />
-      <Info label="Enfermedades" value={enfermedadesTexto} />
-      <Info label="Severidad" value={severidadTexto} />
-      <Info label="Mortalidad" value={caso.mortalidad} />
-      <Info label="Reporte" value={caso.reporte} />
-    </View>
-  );
-}
-
-function Info({ label, value }) {
-  let valorFinal = value;
-
-  if (value === "") {
-    valorFinal = "No registrado";
-  }
-
-  if (value === undefined) {
-    valorFinal = "No registrado";
-  }
-
-  if (value === null) {
-    valorFinal = "No registrado";
-  }
-
-  return (
-    <View style={styles.infoRow}>
-      <CustomText
-        size={13}
-        color={COLORS.textTertiary}
-        style={styles.infoLabel}
-      >
-        {label}
-      </CustomText>
-
-      <CustomText
-        size={14}
-        color={COLORS.textSecondary}
-        style={styles.infoValue}
-      >
-        {valorFinal}
-      </CustomText>
-    </View>
   );
 }
