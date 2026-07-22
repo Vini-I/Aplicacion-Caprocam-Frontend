@@ -76,61 +76,74 @@ export function useInventario() {
           if (isActive) {
             setProductos(data);
           }
-        }catch (error) {
+        } catch (error) {
           console.error("Error al cargar productos de inventario:", error);
         }
       };
       loadData();
-    }, [])
+
+      return () => {
+        isActive = false;
+      };
+    }, []),
   );
 
-  const categorias = Array.isArray(productos) ? [...new Set(productos.map((p) => p.categoria))] : [];
-  const proveedores = Array.isArray(productos) ? [...new Set(productos.map((p) => p.proveedor))] : [];
-  const unidades = Array.isArray(productos) ? [...new Set(productos.map((p) => p.unidad))] : [];
+  const categorias = Array.isArray(productos)
+    ? [...new Set(productos.map((p) => p.categoria).filter(Boolean))]
+    : [];
+  const proveedores = Array.isArray(productos)
+    ? [...new Set(productos.map((p) => p.proveedor).filter(Boolean))]
+    : [];
+  const unidades = Array.isArray(productos)
+    ? [...new Set(productos.map((p) => p.unidad).filter(Boolean))]
+    : [];
 
-  const productosFiltrados = Array.isArray(productos) ? productos.filter((p) => {
-    const texto = busqueda.toLowerCase();
+  const productosFiltrados = Array.isArray(productos)
+    ? productos.filter((p) => {
+        const texto = busqueda.toLowerCase();
+        const nombre = (p.nombre || "").toLowerCase();
+        const proveedor = (p.proveedor || "").toLowerCase();
+        const categoria = (p.categoria || "").toLowerCase();
+        const codigo = (p.codigo || "").toLowerCase();
 
-    const coincideTexto =
-      p.nombre.toLowerCase().includes(texto) ||
-      p.proveedor.toLowerCase().includes(texto) ||
-      p.categoria.toLowerCase().includes(texto) ||
-      (p.codigo && p.codigo.toLowerCase().includes(texto));
+        const coincideTexto =
+          nombre.includes(texto) ||
+          proveedor.includes(texto) ||
+          categoria.includes(texto) ||
+          codigo.includes(texto);
 
-    const coincideCategoria =
-      filtros.categories.length === 0 ||
-      filtros.categories.includes(p.categoria);
+        const coincideCategoria =
+          filtros.categories.length === 0 ||
+          filtros.categories.includes(p.categoria);
 
-    const coincideProveedor =
-      filtros.suppliers.length === 0 ||
-      filtros.suppliers.includes(p.proveedor);
+        const coincideProveedor =
+          filtros.suppliers.length === 0 ||
+          filtros.suppliers.includes(p.proveedor);
 
-    const coincideUnidad =
-      filtros.units.length === 0 ||
-      filtros.units.includes(p.unidad);
+        const coincideUnidad =
+          filtros.units.length === 0 || filtros.units.includes(p.unidad);
 
-    const coincideStock =
-      !filtros.lowStock ||
-      p.cantidad < p.stockMinimo;
+        const coincideStock = !filtros.lowStock || Number(p.cantidad) < Number(p.stockMinimo);
 
-    const fechaFiltro = parsearFechaDDMMAAAA(filtros.expiryDate);
-    const fechaProducto = parsearFechaDDMMAAAA(p.fechaCaducidad);
-    const coincideCaducidad =
-      !fechaFiltro || (fechaProducto && fechaProducto <= fechaFiltro);
+        const fechaFiltro = parsearFechaDDMMAAAA(filtros.expiryDate);
+        const fechaProducto = parsearFechaDDMMAAAA(p.fechaCaducidad);
+        const coincideCaducidad =
+          !fechaFiltro || (fechaProducto && fechaProducto <= fechaFiltro);
 
-    return (
-      coincideTexto &&
-      coincideCategoria &&
-      coincideProveedor &&
-      coincideUnidad &&
-      coincideStock &&
-      coincideCaducidad
-    );
-  }) : [];
+        return (
+          coincideTexto &&
+          coincideCategoria &&
+          coincideProveedor &&
+          coincideUnidad &&
+          coincideStock &&
+          coincideCaducidad
+        );
+      })
+    : [];
 
-  const cantidadStockBajo = Array.isArray(productos) ? productos.filter(
-    (p) => p.cantidad < p.stockMinimo
-  ).length : 0;
+  const cantidadStockBajo = Array.isArray(productos)
+    ? productos.filter((p) => Number(p.cantidad) < Number(p.stockMinimo)).length
+    : 0;
 
   return {
     flatListRef,
