@@ -20,6 +20,9 @@
  * - Ninguna.
  */
 
+import { AUTH_MESSAGES } from '../constants/authMessages';
+import { postAuth } from './httpAuthClient';
+
 if (!global.USUARIOS_REGISTRADOS) {
   global.USUARIOS_REGISTRADOS = [
     { username: 'login', password: 'Login1234', nombre: 'Admin', apellidos: 'Caprocam', email: 'admin@caprocam.com' }
@@ -41,11 +44,11 @@ export const login = (username, password) => {
     { usuario: username.trim(), contrasena: password },
     { 401: AUTH_MESSAGES.ERROR_INVALID_CREDENTIALS }
   );
-  
+
   if (!user || user.password !== password) {
     return Promise.reject(new Error('Usuario o contraseña incorrectos'));
   }
-  
+
   return Promise.resolve({ token: 'mock-jwt-token-for-' + username });
 };
 
