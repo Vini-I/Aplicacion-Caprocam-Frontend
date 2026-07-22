@@ -3,39 +3,74 @@
  * HOOK DE DETALLE DE FINCA
  * ============================================================
  *
- * Gestiona la información necesaria para mostrar el detalle de
- * una finca seleccionada, obteniendo sus datos y los estanques
- * asociados para generar reportes.
- *
- * Funcionalidad:
- * - Obtiene el código interno de la finca desde los parámetros
- *   de navegación.
- * - Busca la información de la finca seleccionada en el contexto.
- * - Filtra los estanques relacionados con la finca actual.
- * - Permite generar un PDF con la información de la finca.
- * - Controla el estado de carga durante la generación del reporte.
+ * Gestiona la informacion necesaria para mostrar el detalle de
+ * una finca seleccionada y sus estanques asociados.
  */
+
+import { useEffect, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
+
 import { useFinca } from "../context/FincaContext.js";
-import { estanques } from "../screens/EstanqueData";
 import { usePdf } from "../hooks/usePdf";
+import {
+  buscarFincaPorId,
+  eliminarEstanqueLocal,
+  obtenerEstanquesFinca,
+} from "../services/FincaDetalleService.js";
 
 export default function useFincaDetalle() {
-    const { fincas } = useFinca();
-    const { id } = useLocalSearchParams();
+  const { fincas, loading: loadingFincas } = useFinca();
+  const { id } = useLocalSearchParams();
+  const { crearPDFFinca, loading: loadingPdf } = usePdf();
 
-    const finca = fincas.find((f) => f.codigoInterno === id);
+  const [estanquesFinca, setEstanquesFinca] = useState([]);
 
-    const estanquesFinca = finca? estanques.filter((e) => e.finca === finca.nombre) : [];
+  const finca = buscarFincaPorId(fincas, id);
 
-    const { crearPDFFinca, loading } = usePdf();
+  useEffect(
+    function () {
+      if (finca === undefined || finca === null) {
+        setEstanquesFinca([]);
+        return;
+      }
 
-    const haldleGenerar = () => crearPDFFinca(finca, estanquesFinca);
+      setEstanquesFinca(obtenerEstanquesFinca(finca));
+    },
+    [finca],
+  );
 
-    return {
-        finca,
-        estanquesFinca, 
-        haldleGenerar, 
-        loading,
+  function eliminarEstanque(codigoEstanque) {
+    if (
+      codigoEstanque === undefined ||
+      codigoEstanque === null ||
+      codigoEstanque === ""
+    ) {
+      return;
     }
+
+    eliminarEstanqueLocal(codigoEstanque);
+
+    setEstanquesFinca(function (listaActual) {
+      return listaActual.filter(function (estanque) {
+        return estanque.codigo !== codigoEstanque;
+      });
+    });
+  }
+
+  function haldleGenerar() {
+    if (finca === undefined || finca === null) {
+      return;
+    }
+
+    crearPDFFinca(finca, estanquesFinca);
+  }
+
+  return {
+    finca,
+    estanquesFinca,
+    eliminarEstanque,
+    haldleGenerar,
+    loadingFincas,
+    loadingPdf,
+  };
 }

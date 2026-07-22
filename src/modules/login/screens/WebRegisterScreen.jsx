@@ -141,7 +141,7 @@ export default function WebRegisterScreen({
               />
             )}
 
-            {loading && <Spinner text={MSG.LOADING_REGISTER} />}
+          {loading && <Spinner text={MSG.LOADING_REGISTER} />}
 
             <Button variant="outline" disabled={loading} onPress={handleRegister}>
               {MSG.BUTTON_SUBMIT_REGISTER}

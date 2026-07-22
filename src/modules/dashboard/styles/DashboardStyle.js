@@ -3,20 +3,24 @@
  * ESTILOS DEL DASHBOARD GENERAL
  * ============================================================
  *
- * Estilos exclusivos para DashboardScreen.
- *
- * Incluye:
- * - Header celeste.
- * - Cards desplegables.
- * - Alertas.
- * - Gráficas simples.
- * - Gráfico circular de estanques activos/cosechados.
+ * Responsabilidad:
+ * - Define estilos visuales del DashboardScreen.
+ * - Usa tokens del theme cuando estan disponibles.
+ * - Mantiene alertas con fondos suaves.
+ * - Mantiene acceso outline a modulos.
+ * - Mantiene grafica de estanques activos/cosechados.
+ * - Mantiene grafica de alimentacion semanal.
  */
 
 import { StyleSheet } from "react-native";
 
 import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
+
+const PRIMARY_LIGHT = COLORS.primaryLight || "#ECF8FF";
+const BORDER_COLOR = COLORS.border || "#E5E7EB";
+const INPUT_BORDER = COLORS.inputBorder || "#E5E7EB";
+const INFO_LIGHT = COLORS.infoLight || "#ECF8FF";
 
 export const styles = StyleSheet.create({
   container: {
@@ -77,21 +81,41 @@ export const styles = StyleSheet.create({
     fontFamily: TYPOGRAPHY.fontFamily.regular,
   },
 
+  mareasAccessCard: {
+    width: "100%",
+    backgroundColor: COLORS.white,
+    borderRadius: 18,
+    padding: 16,
+    marginTop: 0,
+    marginBottom: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+  },
+
+  mareasAccessIcon: {
+    width: 46,
+    height: 46,
+    borderRadius: 15,
+    backgroundColor: PRIMARY_LIGHT,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 12,
+  },
+
+  mareasAccessText: {
+    flex: 1,
+    minWidth: 0,
+  },
+
   alertsCard: {
     width: "100%",
     borderRadius: 18,
     padding: 16,
     borderWidth: 1,
-    borderColor: "#FDE68A",
+    borderColor: COLORS.warningLight,
     backgroundColor: COLORS.white,
-    shadowColor: COLORS.black,
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.06,
-    shadowRadius: 6,
-    elevation: 2,
     marginBottom: 14,
   },
 
@@ -113,7 +137,7 @@ export const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 12,
-    backgroundColor: "#FFF7D6",
+    backgroundColor: COLORS.warningLight,
     alignItems: "center",
     justifyContent: "center",
     marginRight: 10,
@@ -133,17 +157,25 @@ export const styles = StyleSheet.create({
     minWidth: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: "#FFF7D6",
+    backgroundColor: COLORS.warningLight,
     alignItems: "center",
     justifyContent: "center",
     marginLeft: 10,
   },
 
   emptyAlertBox: {
-    backgroundColor: "#F8FAFC",
+    backgroundColor: COLORS.surface,
     borderRadius: 12,
     paddingVertical: 14,
     paddingHorizontal: 12,
+  },
+
+  emptyAlertBoxSmall: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    marginBottom: 8,
   },
 
   alertItem: {
@@ -157,17 +189,17 @@ export const styles = StyleSheet.create({
 
   alertCritical: {
     backgroundColor: COLORS.errorLight,
-    borderColor: "#FCA5A5",
+    borderColor: COLORS.error,
   },
 
   alertWarning: {
     backgroundColor: COLORS.warningLight,
-    borderColor: "#FDBA74",
+    borderColor: COLORS.warning,
   },
 
   alertInfo: {
-    backgroundColor: "#ECF8FF",
-    borderColor: "#BAE6FD",
+    backgroundColor: INFO_LIGHT,
+    borderColor: COLORS.primary,
   },
 
   alertIconContainer: {
@@ -205,6 +237,92 @@ export const styles = StyleSheet.create({
     fontFamily: TYPOGRAPHY.fontFamily.regular,
   },
 
+  alertDetail: {
+    marginTop: 4,
+    lineHeight: 17,
+    fontFamily: TYPOGRAPHY.fontFamily.medium,
+  },
+
+  alertDropdownGroup: {
+    marginBottom: 10,
+  },
+
+  alertDropdownHeader: {
+    marginTop: 0,
+    minHeight: 44,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: BORDER_COLOR,
+    backgroundColor: COLORS.white,
+    paddingVertical: 9,
+    paddingHorizontal: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+
+  alertDropdownLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
+
+  alertDropdownTitle: {
+    marginLeft: 8,
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
+  },
+
+  alertDropdownRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+
+  alertDropdownBody: {
+    marginTop: 8,
+  },
+
+  alertCategoryTitle: {
+    marginTop: 6,
+    marginBottom: 6,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
+  },
+
+  alertDismissButton: {
+    width: 28,
+    height: 28,
+    minHeight: 28,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: BORDER_COLOR,
+    backgroundColor: COLORS.white,
+    marginTop: 0,
+    paddingHorizontal: 0,
+    paddingVertical: 0,
+  },
+
+  viewAllAlertsButton: {
+    minHeight: 44,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    backgroundColor: COLORS.white,
+    marginTop: 4,
+  },
+
+  inlineButtonContentCentered: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  viewAllAlertsText: {
+    marginLeft: 8,
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
+  },
+
   statsGrid: {
     width: "100%",
     gap: 12,
@@ -240,19 +358,19 @@ export const styles = StyleSheet.create({
   },
 
   cardBlue: {
-    backgroundColor: "#ECF8FF",
+    backgroundColor: PRIMARY_LIGHT,
   },
 
   cardIndigo: {
-    backgroundColor: "#EEF6FF",
+    backgroundColor: INFO_LIGHT,
   },
 
   cardYellow: {
-    backgroundColor: "#FFF9E8",
+    backgroundColor: COLORS.warningLight,
   },
 
   cardRed: {
-    backgroundColor: "#FFF0F2",
+    backgroundColor: COLORS.errorLight,
   },
 
   statTopRow: {
@@ -275,19 +393,19 @@ export const styles = StyleSheet.create({
   },
 
   iconBlue: {
-    backgroundColor: "#D7F0FF",
+    backgroundColor: COLORS.primaryLight,
   },
 
   iconIndigo: {
-    backgroundColor: "#DDEBFF",
+    backgroundColor: COLORS.secondary,
   },
 
   iconYellow: {
-    backgroundColor: "#FFF0BA",
+    backgroundColor: COLORS.warningLight,
   },
 
   iconRed: {
-    backgroundColor: "#FFDDE2",
+    backgroundColor: COLORS.errorLight,
   },
 
   statValue: {
@@ -300,7 +418,7 @@ export const styles = StyleSheet.create({
   },
 
   statValueDanger: {
-    color: "#FF002A",
+    color: COLORS.error,
   },
 
   statLabel: {
@@ -313,7 +431,7 @@ export const styles = StyleSheet.create({
     borderRadius: 18,
     padding: 16,
     borderWidth: 1,
-    borderColor: "#E5E7EB",
+    borderColor: BORDER_COLOR,
     backgroundColor: COLORS.white,
     shadowColor: COLORS.black,
     shadowOffset: {
@@ -339,7 +457,7 @@ export const styles = StyleSheet.create({
 
   divider: {
     height: 1,
-    backgroundColor: "#E5E7EB",
+    backgroundColor: INPUT_BORDER,
     marginTop: 14,
     marginBottom: 16,
   },
@@ -358,75 +476,11 @@ export const styles = StyleSheet.create({
   },
 
   emptyBox: {
-    backgroundColor: "#F8FAFC",
+    backgroundColor: COLORS.surface,
     borderRadius: 12,
     paddingVertical: 14,
     paddingHorizontal: 12,
     marginBottom: 10,
-  },
-
-  barChart: {
-    height: 170,
-    width: "100%",
-    borderLeftWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: COLORS.textQuaternary,
-    marginBottom: 18,
-    position: "relative",
-    overflow: "hidden",
-  },
-
-  chartGridLines: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: 28,
-    justifyContent: "space-between",
-  },
-
-  gridLine: {
-    height: 1,
-    width: "100%",
-    borderStyle: "dashed",
-    borderWidth: 1,
-    borderColor: "#E5EAF2",
-  },
-
-  barChartContent: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "flex-end",
-    justifyContent: "space-between",
-    paddingHorizontal: 8,
-  },
-
-  barItem: {
-    flex: 1,
-    alignItems: "center",
-    minWidth: 0,
-  },
-
-  barTrack: {
-    height: 115,
-    width: 36,
-    justifyContent: "flex-end",
-    alignItems: "center",
-  },
-
-  barFill: {
-    width: "100%",
-    backgroundColor: "#38BDF8",
-    borderTopLeftRadius: 8,
-    borderTopRightRadius: 8,
-    maxHeight: 115,
-  },
-
-  barLabel: {
-    width: "100%",
-    marginTop: 6,
-    paddingHorizontal: 2,
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
   },
 
   twoColumns: {
@@ -439,6 +493,34 @@ export const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     minWidth: 0,
+  },
+
+  pastelChartContainer: {
+    width: "100%",
+    alignItems: "center",
+    marginBottom: 18,
+  },
+
+  pastelChartBox: {
+    width: "100%",
+    maxWidth: 420,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  pastelStatsBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 18,
+    marginTop: 14,
+    flexWrap: "wrap",
+  },
+
+  pastelStatItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
   },
 
   donutWrapper: {
@@ -454,18 +536,18 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "stretch",
     justifyContent: "center",
-    backgroundColor: "#94A3B8",
+    backgroundColor: COLORS.textQuaternary,
     position: "relative",
   },
 
   donutActiveSegment: {
     height: "100%",
-    backgroundColor: "#38BDF8",
+    backgroundColor: COLORS.primary,
   },
 
   donutHarvestSegment: {
     height: "100%",
-    backgroundColor: "#94A3B8",
+    backgroundColor: COLORS.textQuaternary,
   },
 
   donutInner: {
@@ -498,14 +580,14 @@ export const styles = StyleSheet.create({
   legendBlue: {
     width: 10,
     height: 10,
-    backgroundColor: "#38BDF8",
+    backgroundColor: COLORS.primary,
     marginRight: 4,
   },
 
   legendGray: {
     width: 10,
     height: 10,
-    backgroundColor: "#94A3B8",
+    backgroundColor: COLORS.textQuaternary,
     marginRight: 4,
   },
 
@@ -517,6 +599,23 @@ export const styles = StyleSheet.create({
     borderColor: COLORS.textQuaternary,
     position: "relative",
     overflow: "hidden",
+  },
+
+  chartGridLines: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 28,
+    justifyContent: "space-between",
+  },
+
+  gridLine: {
+    height: 1,
+    width: "100%",
+    borderStyle: "dashed",
+    borderWidth: 1,
+    borderColor: BORDER_COLOR,
   },
 
   lineBars: {
@@ -537,16 +636,63 @@ export const styles = StyleSheet.create({
 
   lineBar: {
     width: 8,
-    backgroundColor: "#38BDF8",
+    backgroundColor: COLORS.primary,
     borderRadius: 8,
     marginBottom: 4,
     maxHeight: 105,
   },
 
+  barChart: {
+    height: 170,
+    width: "100%",
+    borderLeftWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: COLORS.textQuaternary,
+    marginBottom: 18,
+    position: "relative",
+    overflow: "hidden",
+  },
+
+  barChartContent: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "flex-end",
+    justifyContent: "space-between",
+    paddingHorizontal: 8,
+  },
+
+  barItem: {
+    flex: 1,
+    alignItems: "center",
+    minWidth: 0,
+  },
+
+  barTrack: {
+    height: 115,
+    width: 36,
+    justifyContent: "flex-end",
+    alignItems: "center",
+  },
+
+  barFill: {
+    width: "100%",
+    backgroundColor: COLORS.primary,
+    borderTopLeftRadius: 8,
+    borderTopRightRadius: 8,
+    maxHeight: 115,
+  },
+
+  barLabel: {
+    width: "100%",
+    marginTop: 6,
+    paddingHorizontal: 2,
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
+  },
+
   infoRowBlue: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#ECF8FF",
+    backgroundColor: PRIMARY_LIGHT,
     borderRadius: 14,
     padding: 14,
     marginBottom: 10,
@@ -555,7 +701,7 @@ export const styles = StyleSheet.create({
   infoRowIndigo: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#EEF6FF",
+    backgroundColor: INFO_LIGHT,
     borderRadius: 14,
     padding: 14,
     marginBottom: 10,
@@ -565,7 +711,7 @@ export const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 12,
-    backgroundColor: "#BDE8FF",
+    backgroundColor: COLORS.primaryLight,
     alignItems: "center",
     justifyContent: "center",
     marginRight: 12,
@@ -575,7 +721,7 @@ export const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 12,
-    backgroundColor: "#BFDBFE",
+    backgroundColor: COLORS.secondary,
     alignItems: "center",
     justifyContent: "center",
     marginRight: 12,
@@ -602,13 +748,13 @@ export const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 999,
     marginBottom: 4,
-    backgroundColor: "#EAF7FF",
+    backgroundColor: INFO_LIGHT,
   },
 
   diseaseRow: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#F8FAFC",
+    backgroundColor: COLORS.surface,
     borderRadius: 12,
     paddingVertical: 13,
     paddingHorizontal: 12,
@@ -638,7 +784,7 @@ export const styles = StyleSheet.create({
   caseRow: {
     flexDirection: "row",
     alignItems: "flex-start",
-    backgroundColor: "#FFF9E8",
+    backgroundColor: COLORS.warningLight,
     borderRadius: 14,
     padding: 14,
     marginBottom: 10,
@@ -653,28 +799,28 @@ export const styles = StyleSheet.create({
   },
 
   badgeAlta: {
-    backgroundColor: "#FFE4E6",
-    borderColor: "#FDA4AF",
+    backgroundColor: COLORS.errorLight,
+    borderColor: COLORS.error,
   },
 
   badgeMedia: {
-    backgroundColor: "#FEF3C7",
-    borderColor: "#FCD34D",
+    backgroundColor: COLORS.warningLight,
+    borderColor: COLORS.warning,
   },
 
   badgeBaja: {
-    backgroundColor: "#DCFCE7",
-    borderColor: "#86EFAC",
+    backgroundColor: COLORS.successLight,
+    borderColor: COLORS.success,
   },
 
   mortalityTotalBox: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FFF0F2",
+    backgroundColor: COLORS.errorLight,
     borderRadius: 14,
     padding: 18,
     borderWidth: 1,
-    borderColor: "#FFCCD5",
+    borderColor: COLORS.errorLight,
   },
 
   totalBoxText: {
@@ -686,7 +832,7 @@ export const styles = StyleSheet.create({
   mortalityRow: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FFF0F2",
+    backgroundColor: COLORS.errorLight,
     borderRadius: 14,
     padding: 14,
     marginBottom: 10,
@@ -698,14 +844,14 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#F1F5F9",
+    borderBottomColor: INPUT_BORDER,
   },
 
   recordIconBox: {
     width: 36,
     height: 36,
     borderRadius: 10,
-    backgroundColor: "#F1F5F9",
+    backgroundColor: COLORS.surface,
     alignItems: "center",
     justifyContent: "center",
     marginRight: 12,

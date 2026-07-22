@@ -28,15 +28,15 @@ export const generarRegistroPDF = (finca, estanquesFinca = []) => {
 
     //Tabla de datos generales de la finca
     const filasFinca = [
-      ["Nombre", finca.nombre],
-      ["Código", finca.codigoInterno],
+      ["Nombre", finca.nombreFinca],
+      ["Código", finca.codigoCBO],
       ["Provincia", finca.provincia],
       ["Cantón", finca.canton],
       ["Distrito", finca.distrito],
-      ["Responsable", finca.responsable],
-      ["Teléfonos", (finca.telefonos || []).join(", ")],
+      ["Responsable", finca.propietarioResponsable],
+      ["Teléfonos", (finca.telefonoParse  || []).join(", ")],
       ["Área total", `${finca.areaTotal}`],
-      ["Espejo de agua", `${finca.espejoAgua}`],
+      ["Espejo de agua", `${finca.espejosAgua}`],
       ["Cantidad de estanques", `${finca.estanques}`],
     ];
 
@@ -136,7 +136,7 @@ export const generarRegistroPDF = (finca, estanquesFinca = []) => {
     doc.setTextColor(150);
     doc.text("Generado desde la aplicación", 105, y, { align: "center" });
 
-    doc.save(`Reporte_${finca.codigoInterno || "finca"}.pdf`);
+    doc.save(`Reporte_${finca.codigoCBO || "finca"}.pdf`);
 
     return null;
   } catch (error) {

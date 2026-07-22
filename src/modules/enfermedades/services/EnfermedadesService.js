@@ -19,6 +19,9 @@
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+import { colaboradorService } from "../../colaboradores/services/colaborador.service";
+import { colaboradoresService } from "../../colaboradores/services/colaboradoresService";
+
 const CLAVE_ENFERMEDADES = "caprocam_enfermedades_v1";
 
 export const ENFERMEDADES_CATALOGO = [
@@ -95,6 +98,35 @@ export function obtenerNombreSeveridad(valor) {
   });
 
   return nombre;
+}
+
+export async function obtenerResponsableBackend() {
+  let responsable = "Responsable no disponible";
+
+  try {
+    const colaboradores = await colaboradorService.getColaboradores();
+
+    if (Array.isArray(colaboradores) === true && colaboradores.length > 0) {
+      responsable = colaboradores[0].nombre;
+    }
+  } catch {
+    try {
+      const colaboradoresMock = await colaboradoresService.getColaboradores({
+        activo: true,
+      });
+
+      if (
+        Array.isArray(colaboradoresMock) === true &&
+        colaboradoresMock.length > 0
+      ) {
+        responsable = colaboradoresMock[0].nombre;
+      }
+    } catch {
+      responsable = "Responsable no disponible";
+    }
+  }
+
+  return responsable;
 }
 
 function obtenerListaEnfermedadesRegistro(registro) {
