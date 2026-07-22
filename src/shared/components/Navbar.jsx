@@ -3,51 +3,51 @@
  * COMPONENTE NAVBAR
  * ============================================================
  *
- * Barra superior reutilizable para React Native.
- *
- * Funcionalidad:
- * - Muestra titulo de pantalla.
- * - Permite agregar boton izquierdo y boton derecho.
- * - Permite usar children para contenido personalizado.
- * - Sirve como encabezado para pantallas principales o secundarias.
- *
- * Props principales:
- * - title: titulo de la barra.
- * - leftContent: contenido opcional al lado izquierdo.
- * - rightContent: contenido opcional al lado derecho.
- * - children: contenido personalizado debajo del titulo.
- * - style: estilos extra para el contenedor.
- * - titleStyle: estilos extra para el titulo.
- *
- * Ejemplo:
- * <Navbar
- *     title="Estanques"
- *     leftContent={<Button>Volver</Button>}
- *     rightContent={<Avatar name="Admin" />}
- * />
+ * Responsabilidad:
+ * - Header global celeste para pantallas del proyecto.
+ * - Muestra nombre de pantalla y ruta contextual.
+ * - Permite contenido izquierdo, derecho y children.
+ * - Evita headers blancos o headers locales innecesarios.
  */
 
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { COLORS } from "../../theme/colors";
+import { TYPOGRAPHY } from "../../theme/typography";
 
 export default function Navbar({
-  title = "",
+  title = "Caprocam",
+  breadcrumb = "caprocam",
+  subtitle = "",
   leftContent,
   rightContent,
   children,
   style,
   titleStyle,
+  breadcrumbStyle,
 }) {
+  let secondaryText = breadcrumb;
+
+  if (subtitle !== "") {
+    secondaryText = subtitle;
+  }
+
   return (
     <View style={[styles.navbar, style]}>
       <View style={styles.row}>
         <View style={styles.side}>{leftContent}</View>
 
         <View style={styles.center}>
-          {title !== "" && (
-            <Text style={[styles.title, titleStyle]} numberOfLines={1}>
-              {title}
+          <Text style={[styles.brand, titleStyle]} numberOfLines={1}>
+            {title}
+          </Text>
+
+          {secondaryText !== "" && (
+            <Text
+              style={[styles.breadcrumb, breadcrumbStyle]}
+              numberOfLines={1}
+            >
+              {secondaryText}
             </Text>
           )}
         </View>
@@ -63,32 +63,47 @@ export default function Navbar({
 const styles = StyleSheet.create({
   navbar: {
     width: "100%",
-    paddingVertical: 14,
+    paddingTop: 18,
+    paddingBottom: 16,
     paddingHorizontal: 16,
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.headerBackground,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.secondary,
+    borderBottomColor: COLORS.primaryDark,
   },
+
   row: {
     flexDirection: "row",
     alignItems: "center",
   },
+
   side: {
     width: 70,
     minHeight: 32,
     justifyContent: "center",
   },
+
   center: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
   },
-  title: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: COLORS.textSecondary,
+
+  brand: {
+    fontSize: 20,
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
+    color: COLORS.white,
     textAlign: "center",
   },
+
+  breadcrumb: {
+    marginTop: 3,
+    fontSize: 12,
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
+    color: COLORS.white,
+    opacity: 0.9,
+    textAlign: "center",
+  },
+
   childrenContainer: {
     marginTop: 10,
   },
