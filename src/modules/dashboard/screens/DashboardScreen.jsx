@@ -18,7 +18,7 @@
  */
 
 import React, { useEffect, useState } from "react";
-import { ScrollView, View, useWindowDimensions } from "react-native";
+import { ScrollView, View, useWindowDimensions, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 
@@ -93,7 +93,7 @@ import {
   obtenerFechaSiembraSegura,
   obtenerUltimosRegistros,
   obtenerResumenAlertas,
-  obtenerCategoriasAlertas
+  obtenerCategoriasAlertas,
 } from "../services/DashboardService";
 
 import { styles } from "../styles/DashboardStyle";
@@ -525,12 +525,10 @@ function EstanquesPanel({ estanques, alimentacionSemanal }) {
   const totalGraficado = activos + cosechados;
   const mayorKg = obtenerMayorKgSemanal(alimentacionSemanal);
 
-  let porcentajeActivos = 50;
-  let porcentajeCosechados = 50;
+  let porcentajeActivos = 0;
 
   if (totalGraficado > 0) {
-    porcentajeActivos = (activos / totalGraficado) * 100;
-    porcentajeCosechados = (cosechados / totalGraficado) * 100;
+    porcentajeActivos = Math.round((activos / totalGraficado) * 100);
   }
 
   return (
@@ -554,53 +552,31 @@ function EstanquesPanel({ estanques, alimentacionSemanal }) {
             ACTIVOS Y COSECHADOS
           </CustomText>
 
-          <View style={styles.donutWrapper}>
-            <View style={styles.donutChart}>
-              <View
-                style={[
-                  styles.donutActiveSegment,
-                  {
-                    width: `${porcentajeActivos}%`,
-                  },
-                ]}
+          <View style={styles.pastelChartContainer}>
+            <View style={styles.pastelChartBox}>
+              <GraficaPastelEstanques
+                activos={activos}
+                cosechados={cosechados}
+                porcentajeActivos={porcentajeActivos}
               />
 
-              <View
-                style={[
-                  styles.donutHarvestSegment,
-                  {
-                    width: `${porcentajeCosechados}%`,
-                  },
-                ]}
-              />
+              <View style={styles.pastelStatsBox}>
+                <View style={styles.pastelStatItem}>
+                  <View style={styles.legendBlue} />
 
-              <View style={styles.donutInner}>
-                <CustomText size={18} weight="800" color={COLORS.primary}>
-                  {totalGraficado}
-                </CustomText>
+                  <CustomText size={12} color={COLORS.textTertiary}>
+                    Activos: {activos}
+                  </CustomText>
+                </View>
 
-                <CustomText size={10} color={COLORS.textTertiary}>
-                  total
-                </CustomText>
+                <View style={styles.pastelStatItem}>
+                  <View style={styles.legendGray} />
+
+                  <CustomText size={12} color={COLORS.textTertiary}>
+                    Cosechados: {cosechados}
+                  </CustomText>
+                </View>
               </View>
-            </View>
-          </View>
-
-          <View style={styles.legendRow}>
-            <View style={styles.legendItem}>
-              <View style={styles.legendBlue} />
-
-              <CustomText size={11} color={COLORS.textTertiary}>
-                Activos: {activos}
-              </CustomText>
-            </View>
-
-            <View style={styles.legendItem}>
-              <View style={styles.legendGray} />
-
-              <CustomText size={11} color={COLORS.textTertiary}>
-                Cosechados: {cosechados}
-              </CustomText>
             </View>
           </View>
         </View>
@@ -612,7 +588,7 @@ function EstanquesPanel({ estanques, alimentacionSemanal }) {
             align="center"
             style={styles.panelSubtitle}
           >
-            ALIMENTACIÓN SEMANAL KG
+            ALIMENTACION SEMANAL KG
           </CustomText>
 
           <View style={styles.lineChart}>
@@ -699,6 +675,92 @@ function EstanquesPanel({ estanques, alimentacionSemanal }) {
         );
       })}
     </Card>
+  );
+}
+
+function GraficaPastelEstanques({ activos, cosechados, porcentajeActivos }) {
+  const total = activos + cosechados;
+  let porcentajeFinal = porcentajeActivos;
+
+  if (total === 0) {
+    porcentajeFinal = 0;
+  }
+
+  if (Platform.OS === "web") {
+    const estiloWeb = {
+      width: 150,
+      height: 150,
+      borderRadius: 75,
+      backgroundImage: `conic-gradient(${COLORS.primary} 0% ${porcentajeFinal}%, ${COLORS.textQuaternary} ${porcentajeFinal}% 100%)`,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      position: "relative",
+    };
+
+    const centroWeb = {
+      width: 78,
+      height: 78,
+      borderRadius: 39,
+      backgroundColor: COLORS.white,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      flexDirection: "column",
+    };
+
+    const totalWeb = {
+      fontSize: 22,
+      fontWeight: "800",
+      color: COLORS.primary,
+      lineHeight: "24px",
+    };
+
+    const labelWeb = {
+      fontSize: 11,
+      color: COLORS.textTertiary,
+    };
+
+    return (
+      <div style={estiloWeb}>
+        <div style={centroWeb}>
+          <span style={totalWeb}>{total}</span>
+          <span style={labelWeb}>total</span>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <View style={styles.donutChart}>
+      <View
+        style={[
+          styles.donutActiveSegment,
+          {
+            width: `${porcentajeFinal}%`,
+          },
+        ]}
+      />
+
+      <View
+        style={[
+          styles.donutHarvestSegment,
+          {
+            width: `${100 - porcentajeFinal}%`,
+          },
+        ]}
+      />
+
+      <View style={styles.donutInner}>
+        <CustomText size={18} weight="800" color={COLORS.primary}>
+          {total}
+        </CustomText>
+
+        <CustomText size={10} color={COLORS.textTertiary}>
+          total
+        </CustomText>
+      </View>
+    </View>
   );
 }
 

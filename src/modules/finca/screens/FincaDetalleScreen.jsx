@@ -7,12 +7,12 @@
  * junto con los estanques asociados.
  *
  * Cambios:
- * - Eliminar estanque abre modal de confirmacion.
- * - Si confirma, elimina el estanque de la lista local.
- * - Se guia por el flujo usado para eliminar fincas.
+ * - Usa el modal global ModalEliminar para eliminar estanques.
+ * - El flujo de eliminacion pregunta Si o No antes de eliminar.
+ * - La logica auxiliar se movio a FincaDetalleService.
  */
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ScrollView, View } from "react-native";
 import { useRouter } from "expo-router";
 
@@ -22,6 +22,10 @@ import { COLORS } from "../../../theme/colors";
 import { STYLE } from "../../../theme/style";
 
 import useFincaDetalle from "../hooks/useFincaDetalle";
+import {
+  detenerEvento,
+  obtenerDatoFinca,
+} from "../services/FincaDetalleService.js";
 
 import Alert from "../../../shared/components/Alert";
 import Card from "../../../shared/components/Card";
@@ -33,33 +37,21 @@ import Badge from "../../../shared/components/Badge";
 import NavbarRegistro from "../../../shared/components/NavbarRegistro";
 import ModalEliminar from "../../../shared/components/ModalEliminar";
 
-function detenerEvento(event) {
-  if (event && typeof event.stopPropagation === "function") {
-    event.stopPropagation();
-  }
-}
-
-export default function FincaDetalleScreen({
-  onEstanque,
-  onEstanqueDetalle,
-  onEstanqueEditar,
-}) {
+export default function FincaDetalleScreen({ onEstanque, onEstanqueDetalle }) {
   const router = useRouter();
 
-  const { finca, estanquesFinca, eliminarEstanque, haldleGenerar, loading } =
-    useFincaDetalle();
+  const {
+    finca,
+    estanquesFinca,
+    eliminarEstanque,
+    haldleGenerar,
+    loadingFincas,
+    loadingPdf,
+  } = useFincaDetalle();
 
-  const [estanquesMostrados, setEstanquesMostrados] = useState([]);
   const [modalEliminarVisible, setModalEliminarVisible] = useState(false);
   const [estanqueSeleccionado, setEstanqueSeleccionado] = useState(null);
   const [mensajeEliminado, setMensajeEliminado] = useState("");
-
-  useEffect(
-    function () {
-      setEstanquesMostrados(estanquesFinca || []);
-    },
-    [finca?.codigoInterno, estanquesFinca.length],
-  );
 
   function irANuevoEstanque() {
     if (onEstanque) {
@@ -87,11 +79,6 @@ export default function FincaDetalleScreen({
   function irAEditarEstanque(event, estanque) {
     detenerEvento(event);
 
-    if (onEstanqueEditar) {
-      onEstanqueEditar(estanque.codigo);
-      return;
-    }
-
     router.push({
       pathname: "/finca/editarEstanque",
       params: estanque,
@@ -117,18 +104,16 @@ export default function FincaDetalleScreen({
 
     eliminarEstanque(estanqueSeleccionado.codigo);
 
-    setEstanquesMostrados(function (listaActual) {
-      return listaActual.filter(function (item) {
-        return item.codigo !== estanqueSeleccionado.codigo;
-      });
-    });
-
     setMensajeEliminado(
       `El estanque ${estanqueSeleccionado.codigo} fue eliminado correctamente.`,
     );
 
     setModalEliminarVisible(false);
     setEstanqueSeleccionado(null);
+  }
+
+  if (loadingFincas) {
+    return <Text>Cargando...</Text>;
   }
 
   if (!finca) {
@@ -143,7 +128,7 @@ export default function FincaDetalleScreen({
         <ScrollView style={STYLE.container}>
           <View style={STYLE.contentWrapper}>
             <Alert
-              variant="warning"
+              variant="danger"
               message="No se encontro la finca seleccionada."
             />
           </View>
@@ -152,15 +137,41 @@ export default function FincaDetalleScreen({
     );
   }
 
+  const nombreFinca = obtenerDatoFinca(finca, "nombreFinca", "nombre", "");
+  const codigoFinca = obtenerDatoFinca(
+    finca,
+    "codigoCBO",
+    "codigoInterno",
+    "No registrado",
+  );
+  const responsable = obtenerDatoFinca(
+    finca,
+    "propietarioResponsable",
+    "responsable",
+    "No registrado",
+  );
+  const areaTotal = obtenerDatoFinca(finca, "areaTotal", "areaTotal", "0");
+  const espejoAgua = obtenerDatoFinca(finca, "espejosAgua", "espejoAgua", "0");
+
+  let telefonos = [];
+
+  if (Array.isArray(finca.telefonoParse) === true) {
+    telefonos = finca.telefonoParse;
+  }
+
+  if (telefonos.length === 0 && Array.isArray(finca.telefonos) === true) {
+    telefonos = finca.telefonos;
+  }
+
   return (
     <>
       <NavbarRegistro
         Titulo="Detalle de Finca"
-        Subtitulo={finca.nombre}
+        Subtitulo={nombreFinca}
         Icono="document"
       />
 
-      <ScrollView style={STYLE.container}>
+      <ScrollView showsVerticalScrollIndicator={false} style={STYLE.container}>
         <View style={STYLE.contentWrapper}>
           {mensajeEliminado !== "" && (
             <Alert
@@ -179,12 +190,12 @@ export default function FincaDetalleScreen({
 
             <View style={styles.filaDetalle}>
               <Text style={styles.etiqueta}>Nombre:</Text>
-              <Text style={styles.valor}>{finca.nombre}</Text>
+              <Text style={styles.valor}>{nombreFinca}</Text>
             </View>
 
             <View style={styles.filaDetalle}>
               <Text style={styles.etiqueta}>CBO:</Text>
-              <Text style={styles.valor}>{finca.codigoInterno}</Text>
+              <Text style={styles.valor}>{codigoFinca}</Text>
             </View>
 
             <View style={styles.filaDetalle}>
@@ -204,10 +215,10 @@ export default function FincaDetalleScreen({
 
             <View style={styles.filaDetalle}>
               <Text style={styles.etiqueta}>Responsable:</Text>
-              <Text style={styles.valor}>{finca.responsable}</Text>
+              <Text style={styles.valor}>{responsable}</Text>
             </View>
 
-            {finca.telefonos?.map(function (telefono, index) {
+            {telefonos.map(function (telefono, index) {
               return (
                 <View key={String(index)} style={styles.filaDetalle}>
                   <Text style={styles.etiqueta}>Telefono {index + 1}: </Text>
@@ -218,18 +229,18 @@ export default function FincaDetalleScreen({
 
             <View style={styles.filaDetalle}>
               <Text style={styles.etiqueta}>Area:</Text>
-              <Text style={styles.valor}>{finca.areaTotal}</Text>
+              <Text style={styles.valor}>{areaTotal}</Text>
             </View>
 
             <View style={styles.filaDetalle}>
               <Text style={styles.etiqueta}>Espejo Agua:</Text>
-              <Text style={styles.valor}>{finca.espejoAgua}</Text>
+              <Text style={styles.valor}>{espejoAgua}</Text>
             </View>
 
             <Button
               style={styles.buttonExport}
               onPress={haldleGenerar}
-              disabled={loading}
+              disabled={loadingPdf}
             >
               <Icon
                 icon={ICONS.document}
@@ -238,7 +249,7 @@ export default function FincaDetalleScreen({
               />
 
               <Text size={15}>
-                {loading ? "GENERANDO..." : "GENERAR REPORTE FINCA"}
+                {loadingPdf ? "GENERANDO..." : "GENERAR REPORTE FINCA"}
               </Text>
             </Button>
           </Card>
@@ -250,7 +261,7 @@ export default function FincaDetalleScreen({
             </Text>
           </Button>
 
-          {estanquesMostrados.length === 0 && (
+          {estanquesFinca.length === 0 && (
             <Card>
               <Text color={COLORS.textTertiary} align="center">
                 No hay estanques registrados para esta finca.
@@ -258,7 +269,7 @@ export default function FincaDetalleScreen({
             </Card>
           )}
 
-          {estanquesMostrados.map(function (estanque, index) {
+          {estanquesFinca.map(function (estanque, index) {
             return (
               <View key={`${estanque.codigo}-${index}`}>
                 <CardPress

@@ -62,8 +62,7 @@ export default function ParasitologiaScreen({ onBack, navigation }) {
   const router = useRouter();
   const { width } = useWindowDimensions();
 
-  const { registrosParasitologia, loading, error, guardarRegistro } =
-    useParasitologia();
+  const { loading, error, guardarRegistro } = useParasitologia();
 
   let esTablet = false;
   let esDesktop = false;
@@ -208,15 +207,6 @@ export default function ParasitologiaScreen({ onBack, navigation }) {
 
       <ScrollView style={styles.screen} showsVerticalScrollIndicator={false}>
         <View style={contentStyle}>
-          {mensaje !== "" && (
-            <Alert
-              variant={tipoMensaje}
-              message={mensaje}
-              style={styles.alert}
-              textStyle={styles.alertText}
-            />
-          )}
-
           {error !== "" && (
             <Alert
               variant="danger"
@@ -442,6 +432,15 @@ export default function ParasitologiaScreen({ onBack, navigation }) {
             </View>
           </Card>
 
+          {mensaje !== "" && (
+            <Alert
+              variant={tipoMensaje}
+              message={mensaje}
+              style={styles.alert}
+              textStyle={styles.alertText}
+            />
+          )}
+
           <Button
             variant="outline"
             onPress={registrarParasitologia}
@@ -461,25 +460,6 @@ export default function ParasitologiaScreen({ onBack, navigation }) {
             </View>
           </Button>
 
-          <Card>
-            <SectionTitle title="Detalles guardados" icon={ICONS.certificate} />
-
-            {registrosParasitologia.length === 0 && (
-              <CustomText
-                size={14}
-                color={COLORS.textTertiary}
-                style={styles.emptyText}
-              >
-                Aun no hay registros de parasitologia.
-              </CustomText>
-            )}
-
-            {registrosParasitologia.map(function (registro) {
-              return (
-                <RegistroParasitologia key={registro.id} registro={registro} />
-              );
-            })}
-          </Card>
         </View>
       </ScrollView>
     </>
@@ -499,85 +479,6 @@ function SectionTitle({ title, icon }) {
       >
         {title}
       </Title>
-    </View>
-  );
-}
-
-function RegistroParasitologia({ registro }) {
-  const colorGrado = obtenerColorGrado(registro.gradoInfeccion);
-
-  return (
-    <View style={styles.savedCase}>
-      <View style={styles.savedCaseHeader}>
-        <View style={styles.savedCaseTitleBox}>
-          <CustomText
-            size={15}
-            color={COLORS.textPrimary}
-            style={styles.savedCaseTitle}
-          >
-            {registro.fincaNombre} - {registro.estanque}
-          </CustomText>
-
-          <CustomText
-            size={12}
-            color={COLORS.textTertiary}
-            style={styles.savedCaseSubtitle}
-          >
-            {registro.parasitoNombre}
-          </CustomText>
-        </View>
-
-        <View style={styles.savedGradeBadge}>
-          <CustomText size={12} color={colorGrado} weight="800">
-            {registro.nombreGrado}
-          </CustomText>
-        </View>
-      </View>
-
-      <Info label="Fecha" value={registro.fechaReporte} />
-      <Info label="Responsable" value={registro.responsable} />
-      <Info label="Parasito" value={obtenerNombreParasito(registro.parasito)} />
-      <Info label="Muestreados" value={registro.camaronesMuestreados} />
-      <Info label="Infectados" value={registro.camaronesInfectados} />
-      <Info label="Porcentaje" value={`${registro.porcentajeInfeccion}%`} />
-      <Info label="Descripcion" value={registro.descripcionGrado} />
-      <Info label="Observaciones" value={registro.observaciones} />
-    </View>
-  );
-}
-
-function Info({ label, value }) {
-  let valorFinal = value;
-
-  if (valorFinal === "") {
-    valorFinal = "No registrado";
-  }
-
-  if (valorFinal === undefined) {
-    valorFinal = "No registrado";
-  }
-
-  if (valorFinal === null) {
-    valorFinal = "No registrado";
-  }
-
-  return (
-    <View style={styles.infoRow}>
-      <CustomText
-        size={13}
-        color={COLORS.textTertiary}
-        style={styles.infoLabel}
-      >
-        {label}
-      </CustomText>
-
-      <CustomText
-        size={14}
-        color={COLORS.textSecondary}
-        style={styles.infoValue}
-      >
-        {valorFinal}
-      </CustomText>
     </View>
   );
 }

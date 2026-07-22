@@ -105,22 +105,22 @@ export function validarFormularioEnfermedad(datos) {
   let resultado = {
     valido: true,
     tipoMensaje: "info",
-    mensaje: "",
+    mensaje: "Rellene los datos requeridos.",
   };
 
   if (datos.finca === "") {
     resultado = {
       valido: false,
-      tipoMensaje: "warning",
-      mensaje: "Debe seleccionar una finca.",
+      tipoMensaje: "danger",
+      mensaje: "Rellene los datos requeridos.",
     };
   }
 
   if (resultado.valido === true && datos.estanque === "") {
     resultado = {
       valido: false,
-      tipoMensaje: "warning",
-      mensaje: "Debe seleccionar un estanque.",
+      tipoMensaje: "danger",
+      mensaje: "Rellene los datos requeridos.",
     };
   }
 
@@ -130,32 +130,32 @@ export function validarFormularioEnfermedad(datos) {
   ) {
     resultado = {
       valido: false,
-      tipoMensaje: "warning",
-      mensaje: "Debe seleccionar al menos una enfermedad.",
+      tipoMensaje: "danger",
+      mensaje: "Rellene los datos requeridos.",
     };
   }
 
   if (resultado.valido === true && datos.severidad === "") {
     resultado = {
       valido: false,
-      tipoMensaje: "warning",
-      mensaje: "Debe seleccionar la severidad del caso.",
+      tipoMensaje: "danger",
+      mensaje: "Rellene los datos requeridos.",
     };
   }
 
   if (resultado.valido === true && datos.reporte.trim() === "") {
     resultado = {
       valido: false,
-      tipoMensaje: "warning",
-      mensaje: "Debe escribir un reporte del caso.",
+      tipoMensaje: "danger",
+      mensaje: "Rellene los datos requeridos.",
     };
   }
 
   if (resultado.valido === true && Number(datos.mortalidad) < 0) {
     resultado = {
       valido: false,
-      tipoMensaje: "warning",
-      mensaje: "La mortalidad no puede ser negativa.",
+      tipoMensaje: "danger",
+      mensaje: "Rellene los datos requeridos.",
     };
   }
 

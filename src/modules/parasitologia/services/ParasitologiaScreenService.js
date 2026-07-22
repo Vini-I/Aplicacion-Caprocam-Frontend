@@ -76,54 +76,54 @@ export function validarFormularioParasitologia(datos) {
   let resultado = {
     valido: true,
     tipoMensaje: "info",
-    mensaje: "",
+    mensaje: "Rellene los datos requeridos.",
   };
 
   if (datos.finca === "") {
     resultado = {
       valido: false,
-      tipoMensaje: "warning",
-      mensaje: "Debe seleccionar una finca.",
+      tipoMensaje: "danger",
+      mensaje: "Rellene los datos requeridos.",
     };
   }
 
   if (resultado.valido === true && datos.estanque === "") {
     resultado = {
       valido: false,
-      tipoMensaje: "warning",
-      mensaje: "Debe seleccionar un estanque.",
+      tipoMensaje: "danger",
+      mensaje: "Rellene los datos requeridos.",
     };
   }
 
   if (resultado.valido === true && datos.fechaReporte === "") {
     resultado = {
       valido: false,
-      tipoMensaje: "warning",
-      mensaje: "Debe seleccionar la fecha del reporte.",
+      tipoMensaje: "danger",
+      mensaje: "Rellene los datos requeridos.",
     };
   }
 
   if (resultado.valido === true && datos.parasito === "") {
     resultado = {
       valido: false,
-      tipoMensaje: "warning",
-      mensaje: "Debe seleccionar el parasito.",
+      tipoMensaje: "danger",
+      mensaje: "Rellene los datos requeridos.",
     };
   }
 
   if (resultado.valido === true && Number(datos.camaronesMuestreados) <= 0) {
     resultado = {
       valido: false,
-      tipoMensaje: "warning",
-      mensaje: "Debe ingresar la cantidad de camarones muestreados.",
+      tipoMensaje: "danger",
+      mensaje: "Rellene los datos requeridos.",
     };
   }
 
   if (resultado.valido === true && Number(datos.camaronesInfectados) < 0) {
     resultado = {
       valido: false,
-      tipoMensaje: "warning",
-      mensaje: "Los camarones infectados no pueden ser negativos.",
+      tipoMensaje: "danger",
+      mensaje: "Rellene los datos requeridos.",
     };
   }
 
@@ -133,8 +133,8 @@ export function validarFormularioParasitologia(datos) {
   ) {
     resultado = {
       valido: false,
-      tipoMensaje: "warning",
-      mensaje: "Los camarones infectados no pueden superar la muestra.",
+      tipoMensaje: "danger",
+      mensaje: "Rellene los datos requeridos.",
     };
   }
 

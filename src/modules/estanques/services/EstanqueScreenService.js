@@ -186,62 +186,62 @@ export function validarFormularioEstanque(datos) {
   let resultado = {
     valido: true,
     tipoMensaje: "info",
-    mensaje: "",
+    mensaje: "Rellene los datos requeridos.",
   };
 
   if (datos.codigo === "") {
     resultado = {
       valido: false,
-      tipoMensaje: "warning",
-      mensaje: "Debe ingresar el codigo del estanque.",
+      tipoMensaje: "danger",
+      mensaje: "Rellene los datos requeridos.",
     };
   }
 
   if (resultado.valido === true && datos.tipoEstanque === "") {
     resultado = {
       valido: false,
-      tipoMensaje: "warning",
-      mensaje: "Debe seleccionar el tipo de estanque.",
+      tipoMensaje: "danger",
+      mensaje: "Rellene los datos requeridos.",
     };
   }
 
   if (resultado.valido === true && datos.largo === "") {
     resultado = {
       valido: false,
-      tipoMensaje: "warning",
-      mensaje: "Debe ingresar el largo del estanque.",
+      tipoMensaje: "danger",
+      mensaje: "Rellene los datos requeridos.",
     };
   }
 
   if (resultado.valido === true && datos.ancho === "") {
     resultado = {
       valido: false,
-      tipoMensaje: "warning",
-      mensaje: "Debe ingresar el ancho del estanque.",
+      tipoMensaje: "danger",
+      mensaje: "Rellene los datos requeridos.",
     };
   }
 
   if (resultado.valido === true && datos.profundidad === "") {
     resultado = {
       valido: false,
-      tipoMensaje: "warning",
-      mensaje: "Debe ingresar la profundidad del estanque.",
+      tipoMensaje: "danger",
+      mensaje: "Rellene los datos requeridos.",
     };
   }
 
   if (resultado.valido === true && datos.fechaSiembra === "") {
     resultado = {
       valido: false,
-      tipoMensaje: "warning",
-      mensaje: "Debe seleccionar la fecha de siembra.",
+      tipoMensaje: "danger",
+      mensaje: "Rellene los datos requeridos.",
     };
   }
 
   if (resultado.valido === true && Number(datos.densidadSiembra) <= 0) {
     resultado = {
       valido: false,
-      tipoMensaje: "warning",
-      mensaje: "La densidad de siembra debe ser mayor a 0.",
+      tipoMensaje: "danger",
+      mensaje: "Rellene los datos requeridos.",
     };
   }
 
@@ -252,8 +252,8 @@ export function validarFormularioEstanque(datos) {
   ) {
     resultado = {
       valido: false,
-      tipoMensaje: "warning",
-      mensaje: "Debe seleccionar el codigo del aireador.",
+      tipoMensaje: "danger",
+      mensaje: "Rellene los datos requeridos.",
     };
   }
 

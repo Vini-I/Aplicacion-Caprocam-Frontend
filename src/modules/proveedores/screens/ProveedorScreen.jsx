@@ -54,7 +54,7 @@ export default function ProveedorScreen() {
   } = useProveedorScreen();
 
   return (
-    <ScrollView style={STYLE.container}>
+    <ScrollView style={STYLE.container} ScrollView showsVerticalScrollIndicator={false}>
       <View style={STYLE.contentWrapper}>
         <View style={styles.barraBusqueda}>
           <SearchBar

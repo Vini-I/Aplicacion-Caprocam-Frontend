@@ -11,6 +11,14 @@
  * - Maneja cambios de campos.
  * - Calcula progreso y etapa del cultivo.
  * - Valida y guarda modificaciones.
+ * - Al finalizar una Pre-Cría, además de los campos obligatorios de
+ *   cierre, valida coherencia: la cantidad final no puede ser mayor
+ *   a la inicial, y el PL final no puede ser un estadio menor al
+ *   PL inicial.
+ * - Al finalizar y navegar a crear la Siembra, usa router.replace
+ *   (no push) para no dejar la Pre-Cría ya finalizada en la pila de
+ *   navegación (evita que el botón "Volver" salte a una pantalla
+ *   vieja/incorrecta).
  *
  * La pantalla utiliza este hook para controlar el formulario
  * de detalle sin manejar lógica de negocio.
@@ -26,10 +34,12 @@ import {
 
 import { obtenerCamposObligatorios as obtenerCamposObligatoriosPorTipo } from "./siembraValidationRules";
 
-import { calcularCantidadSembrada, calcularProgresoCiclo } from "./siembraCalculos";
+import {
+  calcularCantidadSembrada,
+  calcularProgresoCiclo,
+} from "./siembraCalculos";
 
 import { obtenerFechaHoy } from "./dateUtils";
-
 
 import {
   obtenerSiembraPorId,
@@ -43,8 +53,56 @@ import {
   obtenerLaboratoriosLarva,
   obtenerProcedenciasLarva,
   obtenerPLLarva,
+  agregarProveedorLarva,
+  agregarLaboratorioLarva,
+  agregarProcedenciaLarva,
+  actualizarProveedorLarva,
+  actualizarLaboratorioLarva,
+  actualizarProcedenciaLarva,
+  eliminarProveedorLarva,
+  eliminarLaboratorioLarva,
+  eliminarProcedenciaLarva,
 } from "../services/SiembraService";
 
+function obtenerNumeroPL(pl) {
+  if (!pl) return NaN;
+  const coincidencia = String(pl).match(/\d+/);
+  return coincidencia ? parseInt(coincidencia[0], 10) : NaN;
+}
+/**
+ * Valida que los datos de cierre de una Pre-Cría sean coherentes con
+ * los datos iniciales: la cantidad final no puede ser mayor a la
+ * inicial, y el PL final no puede ser un estadio menor al inicial.
+ * Se usa tanto al "Guardar" (por si se editan estos campos sin pasar
+ * por "Finalizar") como al "Finalizar Pre-Cría".
+ */
+function validarCoherenciaCierrePrecria(formData) {
+  const errores = {};
+
+  const cantidadInicial = Number(formData.cantidadInicial);
+  const cantidadFinal = Number(formData.cantidadFinal);
+
+  if (
+    !Number.isNaN(cantidadInicial) &&
+    !Number.isNaN(cantidadFinal) &&
+    cantidadFinal > cantidadInicial
+  ) {
+    errores.cantidadFinal = "No puede ser mayor a la cantidad inicial.";
+  }
+
+  const plInicialNumero = obtenerNumeroPL(formData.plInicial);
+  const plFinalNumero = obtenerNumeroPL(formData.plFinal);
+
+  if (
+    !Number.isNaN(plInicialNumero) &&
+    !Number.isNaN(plFinalNumero) &&
+    plFinalNumero < plInicialNumero
+  ) {
+    errores.plFinal = "No puede ser un estadio menor al PL inicial.";
+  }
+
+  return errores;
+}
 function calcularEtapa(progreso) {
   if (progreso >= 66) return 3;
   if (progreso >= 33) return 2;
@@ -96,58 +154,54 @@ export default function useDetalleSiembra(id) {
     }));
   }, [formData, isEditing]);
 
+  const handleChange = useCallback(
+    (field, value) => {
+      setFormData((previousData) => {
+        const updatedData = {
+          ...previousData,
+          [field]: value,
+        };
 
-  const handleChange = useCallback((field, value) => {
-    setFormData((previousData) => {
+        if (field === "areaHectareas" || field === "densidadPoblacional") {
+          updatedData.cantidadSembrada = calcularCantidadSembrada(
+            updatedData.areaHectareas,
+            updatedData.densidadPoblacional,
+          );
+        }
 
-      const updatedData = {
-        ...previousData,
-        [field]: value,
-      };
+        if (submitted) {
+          const camposAValidar = Object.keys(errors).length
+            ? Array.from(
+                new Set([
+                  ...Object.keys(errors),
+                  ...obtenerCamposObligatoriosPorTipo(updatedData),
+                ]),
+              )
+            : obtenerCamposObligatoriosPorTipo(updatedData);
 
-      if (
-        field === "areaHectareas" ||
-        field === "densidadPoblacional"
-      ) {
-        updatedData.cantidadSembrada = calcularCantidadSembrada(
-          updatedData.areaHectareas,
-          updatedData.densidadPoblacional,
-        );
-      }
+          const erroresActualizados = validarCamposObligatorios(
+            updatedData,
+            camposAValidar,
+          );
 
-      if (submitted) {
+          setErrors((prev) => {
+            const filtrados = {};
 
-        const camposAValidar = Object.keys(errors).length
-          ? Array.from(
-            new Set([
-              ...Object.keys(errors),
-              ...obtenerCamposObligatoriosPorTipo(updatedData),
-            ]),
-          )
-          : obtenerCamposObligatoriosPorTipo(updatedData);
+            Object.keys(prev).forEach((k) => {
+              if (erroresActualizados[k]) {
+                filtrados[k] = erroresActualizados[k];
+              }
+            });
 
-        const erroresActualizados = validarCamposObligatorios(
-          updatedData,
-          camposAValidar,
-        );
-
-        setErrors((prev) => {
-          const filtrados = {};
-
-          Object.keys(prev).forEach((k) => {
-            if (erroresActualizados[k]) {
-              filtrados[k] = erroresActualizados[k];
-            }
+            return filtrados;
           });
+        }
 
-          return filtrados;
-        });
-      }
-
-      return updatedData;
-    });
-  }, [submitted, setErrors]);
-
+        return updatedData;
+      });
+    },
+    [submitted, setErrors],
+  );
 
   const handleChangeFinca = useCallback((value) => {
     setFormData((previousData) => ({
@@ -163,13 +217,9 @@ export default function useDetalleSiembra(id) {
     }));
   }, []);
 
-
   const handleChangeEstanque = useCallback(
     (value) => {
-      const estanque = obtenerEstanquePorCodigo(
-        formData.finca,
-        value,
-      );
+      const estanque = obtenerEstanquePorCodigo(formData.finca, value);
 
       const area = estanque?.areaHectareas ?? "";
 
@@ -189,17 +239,112 @@ export default function useDetalleSiembra(id) {
     [formData],
   );
 
-  const estanques = formData
-    ? obtenerEstanquesPorFinca(formData.finca)
-    : [];
-
+  const estanques = formData ? obtenerEstanquesPorFinca(formData.finca) : [];
 
   const fincas = useMemo(() => obtenerFincas(), []);
   const tecnicasCultivo = useMemo(() => obtenerTecnicasCultivo(), []);
-  const proveedoresLarva = useMemo(() => obtenerProveedoresLarva(), []);
-  const laboratoriosLarva = useMemo(() => obtenerLaboratoriosLarva(), []);
-  const procedenciasLarva = useMemo(() => obtenerProcedenciasLarva(), []);
+  const [proveedoresLarva, setProveedoresLarva] = useState(() =>
+    obtenerProveedoresLarva(),
+  );
+  const [laboratoriosLarva, setLaboratoriosLarva] = useState(() =>
+    obtenerLaboratoriosLarva(),
+  );
+  const [procedenciasLarva, setProcedenciasLarva] = useState(() =>
+    obtenerProcedenciasLarva(),
+  );
   const plLarva = useMemo(() => obtenerPLLarva(), []);
+
+  /**
+   * Agrega un ítem nuevo al catálogo correspondiente (proveedor,
+   * laboratorio o procedencia de larva) y lo deja seleccionado de
+   * una vez en el formulario, sin salir de esta pantalla.
+   */
+  const handleAgregarProveedorLarva = useCallback(
+    (nombre) => {
+      const nuevo = agregarProveedorLarva(nombre);
+      setProveedoresLarva((previo) => [...previo, nuevo]);
+      handleChange("proveedorLarva", nuevo.value);
+    },
+    [handleChange],
+  );
+
+  const handleAgregarLaboratorioLarva = useCallback(
+    (nombre) => {
+      const nuevo = agregarLaboratorioLarva(nombre);
+      setLaboratoriosLarva((previo) => [...previo, nuevo]);
+      handleChange("laboratorioLarva", nuevo.value);
+    },
+    [handleChange],
+  );
+
+  const handleAgregarProcedenciaLarva = useCallback(
+    (nombre) => {
+      const nuevo = agregarProcedenciaLarva(nombre);
+      setProcedenciasLarva((previo) => [...previo, nuevo]);
+      handleChange("procedenciaLarva", nuevo.value);
+    },
+    [handleChange],
+  );
+
+  const handleEditarProveedorLarva = useCallback((value, nombre) => {
+    const actualizado = actualizarProveedorLarva(value, nombre);
+    if (!actualizado) return;
+    setProveedoresLarva((previo) =>
+      previo.map((item) => (item.value === value ? actualizado : item)),
+    );
+  }, []);
+
+  const handleEditarLaboratorioLarva = useCallback((value, nombre) => {
+    const actualizado = actualizarLaboratorioLarva(value, nombre);
+    if (!actualizado) return;
+    setLaboratoriosLarva((previo) =>
+      previo.map((item) => (item.value === value ? actualizado : item)),
+    );
+  }, []);
+
+  const handleEditarProcedenciaLarva = useCallback((value, nombre) => {
+    const actualizado = actualizarProcedenciaLarva(value, nombre);
+    if (!actualizado) return;
+    setProcedenciasLarva((previo) =>
+      previo.map((item) => (item.value === value ? actualizado : item)),
+    );
+  }, []);
+
+  const handleEliminarProveedorLarva = useCallback((value) => {
+    eliminarProveedorLarva(value);
+    setProveedoresLarva((previo) =>
+      previo.filter((item) => item.value !== value),
+    );
+    setFormData((previo) =>
+      previo && previo.proveedorLarva === value
+        ? { ...previo, proveedorLarva: "" }
+        : previo,
+    );
+  }, []);
+
+  const handleEliminarLaboratorioLarva = useCallback((value) => {
+    eliminarLaboratorioLarva(value);
+    setLaboratoriosLarva((previo) =>
+      previo.filter((item) => item.value !== value),
+    );
+    setFormData((previo) =>
+      previo && previo.laboratorioLarva === value
+        ? { ...previo, laboratorioLarva: "" }
+        : previo,
+    );
+  }, []);
+
+  const handleEliminarProcedenciaLarva = useCallback((value) => {
+    eliminarProcedenciaLarva(value);
+    setProcedenciasLarva((previo) =>
+      previo.filter((item) => item.value !== value),
+    );
+    setFormData((previo) =>
+      previo && previo.procedenciaLarva === value
+        ? { ...previo, procedenciaLarva: "" }
+        : previo,
+    );
+  }, []);
 
   const obtenerCamposObligatorios = useCallback(
     (opciones) => obtenerCamposObligatoriosPorTipo(formData, opciones),
@@ -258,13 +403,16 @@ export default function useDetalleSiembra(id) {
         const hoy = obtenerFechaHoy();
 
         fechaCampos.forEach((f) => {
-          if ((siembraNorm[f] === undefined || siembraNorm[f] === "" || siembraNorm[f] === null) && formNorm[f] === hoy) {
+          if (
+            (siembraNorm[f] === undefined ||
+              siembraNorm[f] === "" ||
+              siembraNorm[f] === null) &&
+            formNorm[f] === hoy
+          ) {
             formNorm[f] = siembraNorm[f];
           }
         });
-      } catch (e) {
-
-      }
+      } catch (e) {}
 
       return JSON.stringify(siembraNorm) !== JSON.stringify(formNorm);
     } catch (e) {
@@ -282,20 +430,34 @@ export default function useDetalleSiembra(id) {
       return;
     }
 
-    const nuevosErrores = validarCamposObligatorios(
+    const erroresObligatorios = validarCamposObligatorios(
       formData,
       obtenerCamposObligatorios(),
     );
 
-    setErrors(nuevosErrores);
-
-    if (Object.keys(nuevosErrores).length > 0) {
+    if (Object.keys(erroresObligatorios).length > 0) {
+      setErrors(erroresObligatorios);
       setMensaje(
         "Revisa los campos obligatorios marcados con * antes de guardar.",
       );
       setMensajeVariant("danger");
       return;
     }
+
+    if (formData.tipoRegistro === "precria") {
+      const erroresCoherencia = validarCoherenciaCierrePrecria(formData);
+
+      if (Object.keys(erroresCoherencia).length > 0) {
+        setErrors(erroresCoherencia);
+        setMensaje(
+          "Revisa los datos de cierre: la cantidad final o el PL final no son coherentes con los datos iniciales de la Pre-Cría.",
+        );
+        setMensajeVariant("danger");
+        return;
+      }
+    }
+
+    setErrors({});
 
     const registroActualizado = actualizarSiembra(id, formData);
 
@@ -328,26 +490,23 @@ export default function useDetalleSiembra(id) {
    * ==========================================
    *
    * Valida los campos de cierre del ciclo (fecha de salida,
-   * cantidad final y PL final), guarda esos cambios y marca
-   * la Pre-Cría como "Finalizada".
+   * cantidad final y PL final), valida que sean coherentes con
+   * los datos iniciales, guarda esos cambios y marca la Pre-Cría
+   * como "Finalizada".
    *
    * Devuelve el registro actualizado si todo salió bien, o
-   * `null` si faltan campos obligatorios (en cuyo caso la
-   * pantalla no debe navegar a crear la siembra).
+   * `null` si faltan campos obligatorios o hay una incoherencia
+   * (en cuyo caso la pantalla no debe navegar a crear la siembra).
    */
   const finalizarPreCria = useCallback(() => {
     setSubmitted(true);
 
     const camposCierre = ["fechaFin", "cantidadFinal", "plFinal"];
 
-    const nuevosErrores = validarCamposObligatorios(
-      formData,
-      camposCierre,
-    );
+    const erroresCampos = validarCamposObligatorios(formData, camposCierre);
 
-    setErrors(nuevosErrores);
-
-    if (Object.keys(nuevosErrores).length > 0) {
+    if (Object.keys(erroresCampos).length > 0) {
+      setErrors(erroresCampos);
       setIsEditing(true);
 
       setMensaje(
@@ -356,6 +515,21 @@ export default function useDetalleSiembra(id) {
       setMensajeVariant("danger");
       return null;
     }
+
+    const erroresCoherencia = validarCoherenciaCierrePrecria(formData);
+
+    if (Object.keys(erroresCoherencia).length > 0) {
+      setErrors(erroresCoherencia);
+      setIsEditing(true);
+
+      setMensaje(
+        "Revisa los datos de cierre: la cantidad final o el PL final no son coherentes con los datos iniciales de la Pre-Cría.",
+      );
+      setMensajeVariant("danger");
+      return null;
+    }
+
+    setErrors({});
 
     const registroFinalizado = finalizarPreCriaEnServicio(id, formData);
 
@@ -371,13 +545,7 @@ export default function useDetalleSiembra(id) {
     setMensajeVariant("success");
 
     return registroFinalizado;
-  }, [
-    formData,
-    id,
-    obtenerCamposObligatorios,
-    setSubmitted,
-    setErrors,
-  ]);
+  }, [formData, id, setSubmitted, setErrors]);
 
   const { totalDias, diaActual, progreso } = calcularProgresoCiclo(formData);
 
@@ -395,37 +563,7 @@ export default function useDetalleSiembra(id) {
   );
 
   const construirParamsSiembraDesdePrecria = useCallback(
-    (datosPrecria) => ({
-      provieneDePrecriaId: id,
-      finca: datosPrecria.fincaId || datosPrecria.finca || "",
-      estanque: datosPrecria.estanque || "",
-      cantidadFinal:
-        datosPrecria.cantidadFinal ||
-        datosPrecria.cantidadSobrevivientePrecria ||
-        "",
-      cantidadSobrevivientePrecria:
-        datosPrecria.cantidadSobrevivientePrecria ||
-        datosPrecria.cantidadFinal ||
-        "",
-      duracionDias:
-        datosPrecria.duracionDias || datosPrecria.duracionPrecria || "",
-      duracionPrecria:
-        datosPrecria.duracionPrecria || datosPrecria.duracionDias || "",
-      fechaFin: datosPrecria.fechaFin || datosPrecria.fechaSalidaPrecria || "",
-      fechaSalidaPrecria:
-        datosPrecria.fechaSalidaPrecria || datosPrecria.fechaFin || "",
-      proveedorLarva: datosPrecria.proveedorLarva || "",
-      laboratorioLarva:
-        datosPrecria.laboratorioLarva || datosPrecria.laboratoriosLarva || "",
-      procedenciaLarva: datosPrecria.procedenciaLarva || "",
-      codigoLoteLarva: datosPrecria.codigoLoteLarva || "",
-      certificadoLarva: datosPrecria.certificadoLarva || "",
-      plLarva:
-        datosPrecria.plLarva ||
-        datosPrecria.plFinal ||
-        datosPrecria.plInicial ||
-        "",
-    }),
+    () => ({ provieneDePrecriaId: id }),
     [id],
   );
 
@@ -436,19 +574,18 @@ export default function useDetalleSiembra(id) {
       return;
     }
 
-    router.push({
+    router.replace({
       pathname: "/(drawer)/siembra/nueva",
-      params: construirParamsSiembraDesdePrecria(registroFinalizado),
+      params: construirParamsSiembraDesdePrecria(),
     });
   }, [finalizarPreCria, construirParamsSiembraDesdePrecria, router]);
-
 
   const handleCrearSiembraDesdePrecria = useCallback(() => {
     router.push({
       pathname: "/(drawer)/siembra/nueva",
-      params: construirParamsSiembraDesdePrecria(formData),
+      params: construirParamsSiembraDesdePrecria(),
     });
-  }, [construirParamsSiembraDesdePrecria, formData, router]);
+  }, [construirParamsSiembraDesdePrecria, router]);
 
   return {
     siembra,
@@ -500,6 +637,24 @@ export default function useDetalleSiembra(id) {
     handleCrearSiembraDesdePrecria,
 
     datosCierrePreCriaCompletos,
+
+    handleAgregarProveedorLarva,
+
+    handleAgregarLaboratorioLarva,
+
+    handleAgregarProcedenciaLarva,
+
+    handleEditarProveedorLarva,
+
+    handleEditarLaboratorioLarva,
+
+    handleEditarProcedenciaLarva,
+
+    handleEliminarProveedorLarva,
+
+    handleEliminarLaboratorioLarva,
+
+    handleEliminarProcedenciaLarva,
 
     fieldHelpers: {
       hasError,
