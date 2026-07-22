@@ -29,12 +29,25 @@ export default function useFincaDetalle() {
 
   useEffect(
     function () {
+      if (finca === undefined || finca === null) {
+        setEstanquesFinca([]);
+        return;
+      }
+
       setEstanquesFinca(obtenerEstanquesFinca(finca));
     },
-    [finca, fincas],
+    [finca],
   );
 
   function eliminarEstanque(codigoEstanque) {
+    if (
+      codigoEstanque === undefined ||
+      codigoEstanque === null ||
+      codigoEstanque === ""
+    ) {
+      return;
+    }
+
     eliminarEstanqueLocal(codigoEstanque);
 
     setEstanquesFinca(function (listaActual) {
@@ -45,6 +58,10 @@ export default function useFincaDetalle() {
   }
 
   function haldleGenerar() {
+    if (finca === undefined || finca === null) {
+      return;
+    }
+
     crearPDFFinca(finca, estanquesFinca);
   }
 
