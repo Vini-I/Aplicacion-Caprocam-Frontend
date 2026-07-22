@@ -114,6 +114,15 @@ export const styles = StyleSheet.create({
   },
 
 
+  buttonRow: {
+    marginTop: 12,
+  },
+
+  successText: {
+    color: COLORS.success,
+    marginBottom: 12,
+  },
+
   saveButton: {
     minHeight: 56,
     justifyContent: "center",
@@ -229,4 +238,45 @@ export const styles = StyleSheet.create({
     color: COLORS.textTertiary,
     textAlign: "center",
   },
+
+  buttonsCrud: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+
+  delete: {
+    backgroundColor: COLORS.white,
+    borderColor: COLORS.error,
+    borderWidth: 2,
+    marginBottom: "auto",
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 6,
+    marginHorizontal: 2,
+    paddingHorizontal: 6,
+    paddingVertical: 4,
+  },
+
+    deleteIcon: {
+    color: COLORS.error,
+  },
+
+    edit: {
+    backgroundColor: COLORS.white,
+    borderColor: COLORS.primary,
+    borderWidth: 2,
+    marginBottom: "auto",
+    flexDirection: "row",
+    alignItems: "center",
+    borderRadius: 6,
+    marginHorizontal: 2,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+  },
+  
+  editIcon: {
+    color: COLORS.primary,
+  },
+
 });

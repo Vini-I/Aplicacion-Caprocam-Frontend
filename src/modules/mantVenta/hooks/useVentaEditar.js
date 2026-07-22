@@ -1,0 +1,348 @@
+/**
+ * ============================================================
+ * HOOK DE EDICIÓN DE VENTA
+ * ============================================================
+ *
+ * Carga una venta existente por id y precarga el formulario con
+ * los mismos catálogos y validaciones que useVenta.js, pero
+ * guardando los cambios con updateVenta en vez de crear una
+ * venta nueva.
+ *
+ * NOTA: los nombres de campo de lectura (peso_promedio,
+ * tamano_promedio, colaborador_id, comprador_id) se infieren a
+ * partir de los ya confirmados en useDetalleVenta.js (finca_id,
+ * estanque_id, fecha, total, cantidad_vendida, precio_kilo).
+ * Verifica contra la respuesta real de GET /ventas/:id y ajusta
+ * si difiere.
+ */
+
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useWindowDimensions } from "react-native";
+
+import { getVentaById, updateVenta } from "../services/mantVentas.service.js";
+import { MantVentaDTO } from "../dtos/mantVenta.dto.js";
+
+import { colaboradorService } from "../../colaboradores/services/colaborador.service.js";
+import { fincaService } from "../../finca/services/finca.service.js";
+import { estanqueService } from "../../estanques/services/estanque.service.js";
+import { compradorService } from "../../compradores/services/comprador.service.js";
+
+import {
+  CLIENTE_GENERICO,
+  normalizarDecimal,
+  formatearFechaParaInput,
+  convertirFechaParaBackend,
+  validarVentaFormulario,
+} from "./useVenta.js";
+
+function formatearFechaDesdeBackend(fechaBackend) {
+  if (!fechaBackend) return "";
+  const soloFecha = String(fechaBackend).split("T")[0];
+  return formatearFechaParaInput(soloFecha);
+}
+
+export function useVentaEditar({ id, onGuardado } = {}) {
+  const { width } = useWindowDimensions();
+  const isWide = width >= 700;
+
+  const ventaId = id ?? null;
+
+  const [ventaOriginal, setVentaOriginal] = useState(null);
+  const [cargandoVenta, setCargandoVenta] = useState(true);
+
+  const [fincas, setFincas] = useState([]);
+  const [estanques, setEstanques] = useState([]);
+  const [colaboradores, setColaboradores] = useState([]);
+  const [compradoresData, setCompradoresData] = useState([]);
+
+  const [fincaSeleccionada, setFincaSeleccionadaState] = useState("");
+  const [estanqueSeleccionado, setEstanqueSeleccionado] = useState("");
+  const [pesoPromedio, setPesoPromedio] = useState("0.1");
+  const [tamanoPromedio, setTamanoPromedio] = useState("0.1");
+  const [kilosVendidos, setKilosVendidos] = useState("0");
+  const [precioKilo, setPrecioKilo] = useState("0");
+  const [fechaVenta, setFechaVenta] = useState("");
+  const [colaboradorSeleccionado, setColaboradorSeleccionado] = useState("");
+  const [compradorSeleccionado, setCompradorSeleccionado] = useState("");
+  const [mensaje, setMensaje] = useState("");
+  const [tipoMensaje, setTipoMensaje] = useState("");
+  const [errores, setErrores] = useState({});
+  const [guardando, setGuardando] = useState(false);
+
+  // Catálogos: finca, estanque, colaborador, comprador
+  useEffect(() => {
+    let activo = true;
+
+    async function cargarCatalogos() {
+      const [dataColaboradores, dataFincas, dataEstanques, dataCompradores] =
+        await Promise.all([
+          colaboradorService.getColaboradores({ activo: true }),
+          fincaService.getFincas(),
+          estanqueService.getEstanques(),
+          compradorService.getCompradores(),
+        ]);
+
+      if (activo) {
+        setColaboradores(dataColaboradores);
+        setFincas(dataFincas);
+        setEstanques(dataEstanques);
+        setCompradoresData(dataCompradores);
+      }
+    }
+
+    cargarCatalogos();
+
+    return () => {
+      activo = false;
+    };
+  }, []);
+
+  // Venta a editar: precarga el formulario
+  useEffect(() => {
+    let activo = true;
+
+    async function cargarVenta() {
+      if (!ventaId) {
+        setCargandoVenta(false);
+        return;
+      }
+
+      try {
+        const venta = await getVentaById(ventaId);
+
+        if (!activo) return;
+
+        setVentaOriginal(venta);
+        setFincaSeleccionadaState(venta?.finca_id ?? "");
+        setEstanqueSeleccionado(venta?.estanque_id ?? "");
+        setPesoPromedio(String(venta?.peso_promedio ?? "0.1"));
+        setTamanoPromedio(String(venta?.tamano_promedio ?? "0.1"));
+        setKilosVendidos(String(venta?.cantidad_vendida ?? "0"));
+        setPrecioKilo(String(venta?.precio_kilo ?? "0"));
+        setFechaVenta(formatearFechaDesdeBackend(venta?.fecha));
+        setColaboradorSeleccionado(venta?.colaborador_id ?? "");
+        setCompradorSeleccionado(venta?.comprador_id ?? CLIENTE_GENERICO);
+      } catch (error) {
+        console.error("No se pudo cargar la venta a editar:", error);
+      } finally {
+        if (activo) setCargandoVenta(false);
+      }
+    }
+
+    cargarVenta();
+
+    return () => {
+      activo = false;
+    };
+  }, [ventaId]);
+
+  const opcionesFincas = useMemo(
+    () =>
+      fincas.map((finca) => ({
+        label: finca.nombreFinca,
+        value: finca.id,
+      })),
+    [fincas],
+  );
+
+  const estanquesFiltrados = useMemo(() => {
+    if (!fincaSeleccionada) return [];
+
+    return estanques
+      .filter((estanque) => estanque.idFinca === Number(fincaSeleccionada))
+      .map((estanque) => ({
+        label: estanque.codigo,
+        value: estanque.id,
+      }));
+  }, [fincaSeleccionada, estanques]);
+
+  const opcionesColaboradores = useMemo(
+    () =>
+      colaboradores.map((colaborador) => ({
+        label: colaborador.nombre,
+        value: colaborador.id,
+      })),
+    [colaboradores],
+  );
+
+  const opcionesCompradores = useMemo(
+    () => [
+      { label: "Cliente genérico", value: CLIENTE_GENERICO },
+      ...compradoresData.map((comprador) => ({
+        label: comprador.nombre,
+        value: comprador.id,
+      })),
+    ],
+    [compradoresData],
+  );
+
+  const precioKiloNumero = Number(precioKilo || 0);
+  const totalVenta = Number(kilosVendidos || 0) * precioKiloNumero;
+
+  const limpiarError = useCallback((campo) => {
+    setErrores((actual) => {
+      if (!actual[campo]) return actual;
+      return { ...actual, [campo]: false };
+    });
+  }, []);
+
+  const handleFincaChange = useCallback(
+    (value) => {
+      setFincaSeleccionadaState(value);
+      setEstanqueSeleccionado("");
+      limpiarError("finca");
+    },
+    [limpiarError],
+  );
+
+  const handlePesoPromedioChange = useCallback(
+    (value) => {
+      setPesoPromedio(normalizarDecimal(value));
+      limpiarError("pesoPromedio");
+    },
+    [limpiarError],
+  );
+
+  const handleTamanoPromedioChange = useCallback(
+    (value) => {
+      setTamanoPromedio(normalizarDecimal(value));
+      limpiarError("tamanoPromedio");
+    },
+    [limpiarError],
+  );
+
+  const handleKilosVendidosChange = useCallback(
+    (value) => {
+      setKilosVendidos(normalizarDecimal(value));
+      limpiarError("kilosVendidos");
+    },
+    [limpiarError],
+  );
+
+  const handlePrecioChange = useCallback(
+    (value) => {
+      setPrecioKilo(String(Math.max(0, Math.round(Number(value) || 0))));
+      limpiarError("precioKilo");
+    },
+    [limpiarError],
+  );
+
+  const handleColaboradorChange = useCallback(
+    (value) => {
+      setColaboradorSeleccionado(value);
+      limpiarError("colaborador");
+    },
+    [limpiarError],
+  );
+
+  const handleCompradorChange = useCallback(
+    (value) => {
+      setCompradorSeleccionado(value);
+      limpiarError("comprador");
+    },
+    [limpiarError],
+  );
+
+  const guardarCambios = useCallback(async () => {
+    const nuevosErrores = validarVentaFormulario({
+      fincaSeleccionada,
+      estanqueSeleccionado,
+      pesoPromedio,
+      tamanoPromedio,
+      kilosVendidos,
+      precioKiloNumero,
+      colaboradorSeleccionado,
+      compradorSeleccionado,
+    });
+
+    setErrores(nuevosErrores);
+
+    if (Object.keys(nuevosErrores).length > 0) {
+      setTipoMensaje("error");
+      setMensaje("Completa los datos obligatorios para guardar los cambios.");
+      return;
+    }
+
+    if (!ventaId) {
+      setTipoMensaje("error");
+      setMensaje("No se encontró la venta que se quiere editar.");
+      return;
+    }
+
+    setGuardando(true);
+
+    const ventaDTO = new MantVentaDTO({
+      finca: Number(fincaSeleccionada),
+      estanque: Number(estanqueSeleccionado),
+      colaborador: Number(colaboradorSeleccionado),
+      comprador:
+        compradorSeleccionado === CLIENTE_GENERICO
+          ? null
+          : Number(compradorSeleccionado),
+      pesoPromedio: Number(pesoPromedio),
+      tamanoPromedio: Number(tamanoPromedio),
+      cantVendida: Number(kilosVendidos),
+      precioKilo: precioKiloNumero,
+      fecha: convertirFechaParaBackend(fechaVenta),
+    });
+
+    try {
+      await updateVenta(ventaId, ventaDTO);
+      setTipoMensaje("success");
+      setMensaje("Venta actualizada correctamente.");
+      onGuardado?.();
+    } catch (error) {
+      console.error("No se pudo actualizar la venta:", error);
+      setTipoMensaje("error");
+      setMensaje("No fue posible guardar los cambios.");
+    } finally {
+      setGuardando(false);
+    }
+  }, [
+    fincaSeleccionada,
+    estanqueSeleccionado,
+    pesoPromedio,
+    tamanoPromedio,
+    kilosVendidos,
+    precioKiloNumero,
+    colaboradorSeleccionado,
+    compradorSeleccionado,
+    fechaVenta,
+    ventaId,
+    onGuardado,
+  ]);
+
+  return {
+    ventaOriginal,
+    cargandoVenta,
+    fincaSeleccionada,
+    estanqueSeleccionado,
+    pesoPromedio,
+    tamanoPromedio,
+    kilosVendidos,
+    precioKilo,
+    fechaVenta,
+    colaboradorSeleccionado,
+    compradorSeleccionado,
+    mensaje,
+    tipoMensaje,
+    errores,
+    guardando,
+    isWide,
+    opcionesFincas,
+    estanquesFiltrados,
+    opcionesColaboradores,
+    opcionesCompradores,
+    totalVenta,
+    setEstanqueSeleccionado,
+    handleFincaChange,
+    handlePesoPromedioChange,
+    handleTamanoPromedioChange,
+    handleKilosVendidosChange,
+    handlePrecioChange,
+    handleCompradorChange,
+    handleColaboradorChange,
+    limpiarError,
+    guardarCambios,
+  };
+}

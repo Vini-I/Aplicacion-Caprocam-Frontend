@@ -13,6 +13,8 @@ import Card from "../../../shared/components/Card.jsx";
 import Icon from "../../../shared/components/Icons.jsx";
 import Select from "../../../shared/components/Select.jsx";
 import Text from "../../../shared/components/Text.jsx";
+import Button from "../../../shared/components/Button.jsx";
+import ModalEliminar from "../../../shared/components/ModalEliminar.jsx";
 
 import { COLORS } from "../../../theme/colors.js";
 import { ICONS } from "../../../theme/icons.js";
@@ -22,8 +24,7 @@ import { useDetalleVenta } from "../hooks/useDetalleVenta.js";
 import { styles } from "../styles/VentaStyles.js";
 import { STYLE } from "../../../theme/style.js";
 
-
-export default function DetalleVentasScreen() {
+export default function DetalleVentasScreen({ onEdit }) {
   const {
     SectionTitle,
     FilaDetalle,
@@ -35,9 +36,13 @@ export default function DetalleVentasScreen() {
     ventasFiltradas,
     mensajeDetalle,
     isWide,
+    modalVisible,
+    descripcionEliminar,
+    cancelarEliminar,
+    confirmarEliminar,
     handleFincaChange,
     handleEstanqueChange,
-  } = useDetalleVenta();
+  } = useDetalleVenta({ onEdit });
 
   const gridStyle = isWide ? styles.inputRow : styles.inputGrid;
 
@@ -88,6 +93,16 @@ export default function DetalleVentasScreen() {
             </Text>
           </View>
         )}
+
+        <ModalEliminar
+          visible={modalVisible}
+          title="esta venta"
+          message={descripcionEliminar}
+          confirmText="Sí, eliminar"
+          cancelText="Cancelar"
+          onConfirm={confirmarEliminar}
+          onCancel={cancelarEliminar}
+        />
       </Card>
     </ScrollView>
   );
