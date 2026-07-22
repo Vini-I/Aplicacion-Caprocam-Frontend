@@ -33,7 +33,7 @@ import api from "../../../api/api";
 
 export async function getProductosInventario() {
   try {
-    const response = await api.get("/inventarios");
+    const response = await api.get("/inventario");
 
     return response.data.data;
   } catch (error) {
@@ -45,7 +45,7 @@ export async function getProductosInventario() {
 
 export async function getProductoById(id) {
   try {
-    const response = await api.get(`/inventarios/${id}`);
+    const response = await api.get(`/inventario/${id}`);
 
     return response.data.data;
   } catch (error) {
@@ -58,9 +58,13 @@ export async function getProductoById(id) {
   }
 }
 
-export async function addProducto(producto) {
+export async function addProducto({ producto_id,proveedor_id, stock_minimo }) {
   try {
-    const response = await api.post("/inventarios", producto);
+    const response = await api.post("/inventario", {
+      producto_id,
+      proveedor_id,
+      stock_minimo,
+    });
 
     return response.data;
   } catch (error) {
@@ -73,9 +77,12 @@ export async function addProducto(producto) {
   }
 }
 
-export async function updateProducto(producto) {
+export async function updateProducto(id, { proveedor_id, stock_minimo }) {
   try {
-    const response = await api.put(`/inventarios/${producto.id}`, producto);
+    const response = await api.put(`/inventario/${id}`,{
+      proveedor_id,
+      stock_minimo,
+    });
 
     return response.data;
   } catch (error) {
@@ -90,7 +97,7 @@ export async function updateProducto(producto) {
 
 export async function deleteProducto(id) {
   try {
-    const response = await api.delete(`/inventarios/${id}`);
+    const response = await api.delete(`/inventario/${id}`);
 
     return response.data;
   } catch (error) {
