@@ -10,6 +10,7 @@
 import { ScrollView, View } from "react-native";
 
 import Card from "../../../shared/components/Card.jsx";
+import Alert from "../../../shared/components/Alert.jsx";
 import Icon from "../../../shared/components/Icons.jsx";
 import Select from "../../../shared/components/Select.jsx";
 import Text from "../../../shared/components/Text.jsx";
@@ -24,25 +25,30 @@ import { useDetalleVenta } from "../hooks/useDetalleVenta.js";
 import { styles } from "../styles/VentaStyles.js";
 import { STYLE } from "../../../theme/style.js";
 
-export default function DetalleVentasScreen({ onEdit }) {
+export default function DetalleVentasScreen({
+  onEdit,
+success,
+  message,
+}) {
+  
   const {
-    SectionTitle,
-    FilaDetalle,
-    TarjetaVenta,
-    fincaFiltro,
-    estanqueFiltro,
-    opcionesFincas,
-    opcionesEstanques,
-    ventasFiltradas,
-    mensajeDetalle,
-    isWide,
-    modalVisible,
-    descripcionEliminar,
-    cancelarEliminar,
-    confirmarEliminar,
-    handleFincaChange,
-    handleEstanqueChange,
-  } = useDetalleVenta({ onEdit });
+  SectionTitle,
+  FilaDetalle,
+  TarjetaVenta,
+  fincaFiltro,
+  estanqueFiltro,
+  opcionesFincas,
+  opcionesEstanques,
+  ventasFiltradas,
+  mensajeDetalle,
+  isWide,
+  modalVisible,
+  descripcionEliminar,
+  cancelarEliminar,
+  confirmarEliminar,
+  handleFincaChange,
+  handleEstanqueChange,
+} = useDetalleVenta({ onEdit });
 
   const gridStyle = isWide ? styles.inputRow : styles.inputGrid;
 
@@ -55,6 +61,15 @@ export default function DetalleVentasScreen({ onEdit }) {
 
         <SectionTitle icon={ICONS.filter} title="Filtrar ventas" />
         <Text style={styles.detalleHint}>{mensajeDetalle}</Text>
+
+        {success === "1" && message && (
+          <Alert
+            variant="success"
+            message={message}
+            style={styles.successAlert}
+            textStyle={styles.successAlertText}
+          />
+        )}
 
         <View style={gridStyle}>
           <View style={styles.inputItem}>

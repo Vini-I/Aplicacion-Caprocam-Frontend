@@ -290,7 +290,10 @@ export function useVentaEditar({ id, onGuardado } = {}) {
       await updateVenta(ventaId, ventaDTO);
       setTipoMensaje("success");
       setMensaje("Venta actualizada correctamente.");
-      onGuardado?.();
+      onGuardado?.({
+    success: true,
+    message: "Venta actualizada correctamente.",
+    });
     } catch (error) {
       console.error("No se pudo actualizar la venta:", error);
       setTipoMensaje("error");

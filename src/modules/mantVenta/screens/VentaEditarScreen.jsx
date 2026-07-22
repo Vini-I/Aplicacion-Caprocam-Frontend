@@ -101,10 +101,6 @@ export default function VentaEditarScreen({ id, onVenta }) {
             <Text style={styles.cardTitle}>Editar venta</Text>
           </View>
 
-          {tipoMensaje === "success" && mensaje !== "" && (
-            <Text style={styles.successText}>{mensaje}</Text>
-          )}
-
           <SectionTitle icon={ICONS.water} title="Finca y estanque" />
 
           <View style={gridStyle}>
@@ -238,18 +234,10 @@ export default function VentaEditarScreen({ id, onVenta }) {
               style={styles.saveButton}
             >
               <View style={styles.buttonContent}>
-                <Icon icon={ICONS.save} size={22} color={COLORS.white} />
+                <Icon icon={ICONS.save} size={22} color={COLORS.primary} />
                 <Text style={styles.buttonText}>
                   {guardando ? "Guardando..." : "Guardar cambios"}
                 </Text>
-              </View>
-            </Button>
-          </View>
-
-          <View style={styles.buttonRow}>
-            <Button onPress={onVenta} style={styles.saveButton}>
-              <View style={styles.buttonContent}>
-                <Text style={styles.buttonText}>Cancelar</Text>
               </View>
             </Button>
           </View>
