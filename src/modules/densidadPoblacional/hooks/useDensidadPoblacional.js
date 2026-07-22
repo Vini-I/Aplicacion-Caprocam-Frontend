@@ -56,6 +56,7 @@ import { useState,useEffect } from "react";
 import { useRouter } from "expo-router";
 import { useDatosConteo } from "./useDatosConteo";
 import densidadPoblacionalService from "../services/DensidadPoblacional.service";
+import { useCatalogos } from "./useCatalogos";
 
 function hoy() {
   const d = new Date();
@@ -75,24 +76,15 @@ export default function useDensidadPoblacional() {
   const router = useRouter();
   const datosConteo = useDatosConteo();
 
-  const fincas = [
-    { label: "Finca La Reina", value: "laReina" },
-    { label: "Finca La Esperanza", value: "laEsperanza" },
-    { label: "Finca La Villa", value: "laVilla" },
-    { label: "Finca El Paraíso", value: "elParaiso" },
-  ];
+  const { fincasOptions, estanquesOptions, recargarEstanques } = useCatalogos();
+  const fincas = fincasOptions;
+  const estanques = estanquesOptions;
 
-  const estanques = [
-    { label: "A01", value: "A01" },
-    { label: "A02", value: "A02" },
-    { label: "B01", value: "B01" },
-    { label: "B02", value: "B02" },
-    { label: "B03", value: "B03" },
-    { label: "E01", value: "E01" },
-    { label: "E02", value: "E02" },
-    { label: "V01", value: "V01" },
-    { label: "V02", value: "V02" },
-  ];
+  const setFincaYRecargarEstanques = (idFinca) => {
+    setFinca(idFinca);
+    setEstanque(null);
+    recargarEstanques(idFinca);
+  };
 
   const validarPrincipal = () => {
     const erroresPrincipales = {};
@@ -162,7 +154,7 @@ export default function useDensidadPoblacional() {
 
   return {
     finca,
-    setFinca,
+    setFinca: setFincaYRecargarEstanques,
     estanque,
     setEstanque,
     fecha,
