@@ -63,8 +63,8 @@ export default function FincasScreen({ onDetail, onNew, onEdit }) {
 
         {fincas.map((Finca) => (
           <CardPress
-            key={Finca.codigoInterno}
-            onPress={() => onDetail(Finca.codigoInterno)}
+            key={Finca.id}
+            onPress={() => onDetail(Finca.id)}
             style={styles.card}
           >
             <View style={styles.cardContent}>
@@ -74,13 +74,14 @@ export default function FincasScreen({ onDetail, onNew, onEdit }) {
 
               <View style={styles.flex}>
                 <Title level={4} numberOfLines={2}>
-                  {Finca.nombre}
+                  {Finca.nombreFinca}
+                  {Finca.codigoCBO}
                 </Title>
 
                 <Text numberOfLines={3} color={COLORS.textTertiary}>
                   {Finca.provincia}, {Finca.canton}, {Finca.distrito}
                 </Text>
-                <Text color={COLORS.primary}>{Finca.responsable}</Text>
+                <Text color={COLORS.primary}>{Finca.propietarioResponsable}</Text>
 
                 <View
                   style={[styles.details, isCompact && styles.detailsColumn]}
@@ -112,7 +113,7 @@ export default function FincasScreen({ onDetail, onNew, onEdit }) {
 
                 <Button
                   style={styles.edit}
-                  onPress={() => onEdit(Finca.codigoInterno)}
+                  onPress={() => onEdit(Finca.id)}
                 >
                   <Icon icon={ICONS.edit} style={styles.editIcon} size={20} />
                   <Text size={12} style={styles.editIcon}>

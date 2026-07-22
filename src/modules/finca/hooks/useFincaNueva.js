@@ -17,13 +17,14 @@
  */
 import Text from "../../../shared/components/Text.jsx";
 import Icon from "../../../shared/components/Icons.jsx";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Dimensions, View } from "react-native";
-import { provincias, ubicaciones } from "../screens/FincaNuevaData.js";
+import { ubicaciones } from "../screens/FincaNuevaData.js";
 import { styles } from "../styles/StylesFincaNueva.js";
 import { STYLE } from "../../../theme/style.js";
 import { COLORS } from "../../../theme/colors.js";
 import { useFinca } from "../context/FincaContext";
+import { fincaDTO } from "../dtos/finca.dto.js";
 
 const { width } = Dimensions.get("window");
 const isLargeScreen = width > 700;
@@ -32,11 +33,12 @@ export function useFincaNueva({ onFinca }) {
   const { crearFinca } = useFinca();
 
   const [formulario, setFormulario] = useState({
-    codigoInterno: "",
+    codigoCBO: "",
     nombre: "",
     provincia: "",
     canton: "",
     distrito: "",
+    otrasSenas: "",
     responsable: "",
     areaTotal: "",
     espejoAgua: "",
@@ -46,11 +48,21 @@ export function useFincaNueva({ onFinca }) {
   const [errores, setErrores] = useState({});
 
   function normalizarNumeroDecimal(valor) {
-    const valorLimpio = String(valor).replace(",", ".").replace(/[^0-9.]/g, "");
+    const valorLimpio = String(valor)
+      .replace(",", ".")
+      .replace(/[^0-9.]/g, "");
     const partes = valorLimpio.split(".");
-    return partes.length > 1
-      ? `${partes[0]}.${partes.slice(1).join("")}`
-      : valorLimpio;
+    let entero = partes[0] ?? "";
+    let decimal = partes.length > 1 ? partes.slice(1).join("") : null;
+
+    entero = entero.slice(0, 10);
+
+    if (decimal !== null) {
+      decimal = decimal.slice(0, 2);
+      return `${entero}.${decimal}`;
+    }
+
+    return entero;
   }
 
   const actualizarCampo = (campo, valor) => {
@@ -99,15 +111,21 @@ export function useFincaNueva({ onFinca }) {
     return !isNaN(numero) && numero >= 0;
   }
 
-  const registrarFinca = () => {
+  const registrarFinca = useCallback(async () => {
     const nuevosErrores = {};
+    const telefonosLimpios = telefonos.map((tel) => String(tel ?? "").trim()).filter((tel) => tel !== "");
 
-    if (!formulario.codigoInterno.trim()) nuevosErrores.codigoInterno = true;
+    if (!formulario.codigoCBO.trim()) nuevosErrores.codigoCBO = true;
     if (!formulario.nombre.trim()) nuevosErrores.nombre = true;
     if (!formulario.provincia) nuevosErrores.provincia = true;
     if (!formulario.canton) nuevosErrores.canton = true;
     if (!formulario.distrito) nuevosErrores.distrito = true;
     if (!formulario.responsable.trim()) nuevosErrores.responsable = true;
+    if (!formulario.otrasSenas.trim()) nuevosErrores.otrasSenas = true;
+
+    if (formulario.otrasSenas.trim().length < 10) {
+      nuevosErrores.otrasSenas = true;
+    }
 
     if (
       !String(formulario.areaTotal).trim() ||
@@ -138,9 +156,27 @@ export function useFincaNueva({ onFinca }) {
       return;
     }
 
-    crearFinca({ ...formulario, telefonos });
+    const nuevaFincaDTO = new fincaDTO({
+      codigoCBO: formulario.codigoCBO,
+      nombreFinca: formulario.nombre,
+      provincia: formulario.provincia,
+      canton: formulario.canton,
+      distrito: formulario.distrito,
+      otrasSenas: formulario.otrasSenas,
+      propietarioResponsable: formulario.responsable,
+      telefono: telefonosLimpios,
+      areaTotal: Number(formulario.areaTotal),
+      espejosAgua: Number(formulario.espejoAgua),
+    });
+
+    try {
+      await crearFinca(nuevaFincaDTO);
+    } catch (error) {
+      console.log(error);
+    }
+
     onFinca();
-  };
+  });
 
   const cantones =
     formulario.provincia !== ""

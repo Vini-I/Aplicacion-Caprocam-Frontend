@@ -10,6 +10,7 @@
 
 // Clave utilizada para guardar el token en localStorage
 const TOKEN_KEY = 'caprocam_auth_token';
+const USUARIO_KEY = 'caprocam_usuario';
 
 /**
  * Guarda el JWT en localStorage.
@@ -21,7 +22,7 @@ const TOKEN_KEY = 'caprocam_auth_token';
  */
 export const saveToken = (token) => {
   try {
-    localStorage.setItem(TOKEN_KEY, token);
+    if (token) localStorage.setItem(TOKEN_KEY, token);
   } catch (error) {
     console.error('[tokenStorage] Error al guardar el token:', error);
   }
@@ -44,6 +45,23 @@ export const getToken = () => {
   }
 };
 
+export const saveUsuario = (user) => {
+  try {
+    if (user) localStorage.setItem(USUARIO_KEY, JSON.stringify(user));
+  } catch (error) {
+    console.error('[tokenStorage] Error al guardar usuario:', error);
+  }
+};
+
+export const getUsuario = () => {
+  try {
+    const data = localStorage.getItem(USUARIO_KEY);
+    return data ? JSON.parse(data) : null;
+  } catch (error) {
+    return null;
+  }
+};
+
 /**
  * Elimina el JWT de localStorage.
  * Se llama cuando el usuario cierra sesión (logout).
@@ -53,6 +71,7 @@ export const getToken = () => {
 export const removeToken = () => {
   try {
     localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(USUARIO_KEY);
   } catch (error) {
     console.error('[tokenStorage] Error al eliminar el token:', error);
   }

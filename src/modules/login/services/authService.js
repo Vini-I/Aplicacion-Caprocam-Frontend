@@ -14,8 +14,7 @@ import { postAuth } from './httpAuthClient';
 /**
  * login(username, password)
  *
- * Envía las credenciales al backend y retorna el JWT si son
- * correctas.
+ * Envía las credenciales al backend y retorna el JWT si son correctas.
  *
  * @param {string} username
  * @param {string} password
@@ -24,8 +23,8 @@ import { postAuth } from './httpAuthClient';
  */
 export const login = (username, password) => {
   return postAuth(
-    '/api/auth/login',
-    { username: username.trim(), password },
+    '/login',
+    { usuario: username.trim(), contrasena: password },
     { 401: AUTH_MESSAGES.ERROR_INVALID_CREDENTIALS }
   );
 };
@@ -33,7 +32,7 @@ export const login = (username, password) => {
 /**
  * register(username, password, profileData)
  *
- * Registra un nuevo usuario en el sistema.
+ * Registra un nuevo administrador en el sistema.
  *
  * NOTA DE BACKEND PENDIENTE: la pantalla de registro
  * (WebRegisterScreen) captura nombre, apellidos y correo
@@ -51,12 +50,14 @@ export const login = (username, password) => {
  * @throws {Error}
  */
 export const register = (username, password, profileData = {}) => {
-  // eslint-disable-next-line no-unused-vars
-  const { nombre, apellidos, email } = profileData; // pendiente de backend, ver TODO arriba
+  const { nombre, apellidos, email } = profileData;
 
-  return postAuth('/api/auth/register', {
-    username: username.trim(),
-    password,
-    // nombre, apellidos, email: pendientes de soporte en el backend
+  return postAuth('/login/registro', {
+    nombre: nombre || '',
+    apellidos: apellidos || '',
+    correo: email || '',
+    usuario: username.trim(),
+    contrasena: password,
+    rolId: 1
   });
 };
