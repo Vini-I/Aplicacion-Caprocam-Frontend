@@ -196,7 +196,7 @@ export default function InventarioScreen({ onDetail, onNew, onBack }) {
 
   return (
     <View style={STYLE.container}>
-      <FlatList
+      <FlatList ScrollView showsVerticalScrollIndicator={false}
         ref={flatListRef}
         data={productosFiltrados}
         keyExtractor={(item) => item.id.toString()}
