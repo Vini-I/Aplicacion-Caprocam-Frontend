@@ -27,7 +27,7 @@ import { STYLE } from "../../../theme/style.js";
 
 export default function DetalleVentasScreen({
   onEdit,
-success,
+  success,
   message,
 }) {
   
@@ -54,15 +54,7 @@ success,
 
   return (
     <ScrollView style={STYLE.container} showsVerticalScrollIndicator={false}>
-      <Card style={STYLE.contentWrapper}>
-        <View style={styles.headerRow}>
-          <Text style={styles.cardTitle}>Detalle de ventas</Text>
-        </View>
-
-        <SectionTitle icon={ICONS.filter} title="Filtrar ventas" />
-        <Text style={styles.detalleHint}>{mensajeDetalle}</Text>
-
-        {success === "1" && message && (
+          {success === "1" && message && (
           <Alert
             variant="success"
             message={message}
@@ -71,6 +63,13 @@ success,
           />
         )}
 
+      <Card style={STYLE.contentWrapper}>
+        <View style={styles.headerRow}>
+          <Text style={styles.cardTitle}>Detalle de ventas</Text>
+        </View>
+
+        <SectionTitle icon={ICONS.filter} title="Filtrar ventas" />
+        <Text style={styles.detalleHint}>{mensajeDetalle}</Text>
         <View style={gridStyle}>
           <View style={styles.inputItem}>
             <Select
