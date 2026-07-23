@@ -2,7 +2,7 @@ import { useRouter, useLocalSearchParams  } from "expo-router";
 import FincaEditarScreen from "../../../../modules/finca/screens/FincaEditarScreen";
 
 export default function Editar() {
-  const { codigoInterno } = useLocalSearchParams();
+  const { id } = useLocalSearchParams();
   const router = useRouter();
 
   const handleFinca = () => {
@@ -11,6 +11,6 @@ export default function Editar() {
 
   return <FincaEditarScreen 
   onFinca={handleFinca}
-  codigoInterno={codigoInterno}
+  id={id}
   />;
 }

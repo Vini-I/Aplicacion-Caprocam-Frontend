@@ -9,10 +9,13 @@
 
 
 import { useLocalSearchParams } from "expo-router";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { fincas } from "../../finca/screens/FincaData.js";
-import { estanques, searchEstanqueById } from "../services/EstanqueData.js";
+import { fincaService } from "../../finca/services/finca.service.js";
+
+import { createCrecimiento } from "../services/mantCrecimiento.service.js";
+import { mantCrecmientoDTO } from "../dtos/mantCrecmiento.dto.js";
+import { estanqueService } from "../../estanques/services/estanque.service.js";
 
 function getFechaHoy() {
   const hoy = new Date();
@@ -23,6 +26,21 @@ function getFechaHoy() {
   return `${dia}/${mes}/${anio}`;
 }
 
+export function formatearFechaParaInput(hoy) {
+  if (!hoy) return getFechaHoy();
+
+  const [anio, mes, dia] = hoy.split("-");
+
+  if (!anio || !mes || !dia) return getFechaHoy();
+
+  return `${dia}/${mes}/${anio}`;
+}
+
+export function convertirFechaParaBackend(fechaDDMMYYYY) {
+  const [dia, mes, anio] = fechaDDMMYYYY.split("/");
+  return `${anio}-${mes}-${dia}`;
+}
+
 export function useFincaCrecimiento() {
   const { id } = useLocalSearchParams();
   const parsedId = useMemo(() => {
@@ -30,6 +48,11 @@ export function useFincaCrecimiento() {
     const parsed = parseInt(id, 10);
     return Number.isNaN(parsed) ? null : parsed;
   }, [id]);
+
+  const [fincas, setFincas] = useState([]);
+  const [estanques, setEstanques] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
 
   const [fincaSeleccionada, setFincaSeleccionada] = useState("");
   const [estanqueSeleccionado, setEstanqueSeleccionado] = useState("");
@@ -41,27 +64,62 @@ export function useFincaCrecimiento() {
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    const cargarDatos = async () => {
+      setIsLoading(true);
+      setLoadError("");
+
+      try {
+        const [fincasData, estanquesData] = await Promise.all([
+          fincaService.getFincas(),
+          estanqueService.getEstanques(),
+        ]);
+
+        console.log("fincasData:", fincasData);       
+        console.log("estanquesData:", estanquesData);
+
+        setFincas(fincasData);
+        setEstanques(estanquesData);
+
+      } catch (error) {
+        setLoadError("Ocurrio un error al cargar fincas y estanques");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    cargarDatos();
+    
+  }, []);
+
+  const searchEstanqueById = useCallback(
+    (targetId) => estanques.find((item) => item.id === targetId) ?? null,
+    [estanques],
+  );
+
   const estanque = useMemo(() => {
     if (parsedId !== null) {
       return searchEstanqueById(parsedId);
     }
 
     return searchEstanqueById(1);
-  }, [parsedId]);
+  }, [parsedId, searchEstanqueById]);
 
   const estanqueSeleccionadoObj = useMemo(() => {
     if (!estanqueSeleccionado) return null;
     const parsed = parseInt(estanqueSeleccionado, 10);
     return Number.isNaN(parsed) ? null : searchEstanqueById(parsed);
-  }, [estanqueSeleccionado]);
+  }, [estanqueSeleccionado, searchEstanqueById]);
 
   const opcionesFincas = useMemo(
     () =>
       fincas.map((finca) => ({
-        label: finca.nombre,
-        value: finca.codigoInterno,
+        label: finca.nombreFinca,
+        value: finca.id,
       })),
-    [],
+    [fincas],
   );
 
   const estanquesFiltrados = useMemo(() => {
@@ -69,18 +127,13 @@ export function useFincaCrecimiento() {
       return [];
     }
 
-    const finca = fincas.find((item) => item.codigoInterno === fincaSeleccionada);
-    if (!finca) {
-      return [];
-    }
-
     return estanques
-      .filter((estanqueItem) => estanqueItem.fincaNombre === finca.nombre)
+      .filter((estanqueItem) => estanqueItem.idFinca === Number(fincaSeleccionada))
       .map((estanqueItem) => ({
-        label: `${estanqueItem.codigo} - ${estanqueItem.nombre}`,
-        value: estanqueItem.id.toString(),
+        label: estanqueItem.codigo,
+        value: estanqueItem.id,
       }));
-  }, [fincaSeleccionada]);
+  }, [fincaSeleccionada, estanques]);
 
   const validarCampos = useCallback(() => {
     const nextErrors = {};
@@ -149,7 +202,7 @@ export function useFincaCrecimiento() {
     [submitted],
   );
 
-  const guardarDatos = useCallback(() => {
+  const guardarDatos = useCallback(async () => {
     setSubmitted(true);
     setSuccessMessage("");
     setErrorMessage("");
@@ -160,8 +213,26 @@ export function useFincaCrecimiento() {
     }
 
     setErrors({});
-    setSuccessMessage("Guardado exitoso.");
-  }, [validarCampos]);
+    setIsSaving(true);
+
+    try {
+      const crecimientoDTO = new mantCrecmientoDTO({
+        finca: Number(fincaSeleccionada),
+        estanque: Number(estanqueSeleccionado),
+        pesoActual: Number(pesoActual),
+        fechaRegistro: convertirFechaParaBackend(fechaRegistro),
+      });
+
+      await createCrecimiento(crecimientoDTO);
+
+      setSuccessMessage("Guarado exitosamente");
+
+    } catch (error) {
+      setErrorMessage("Ocurrio un error al guardar el crecimiento");
+    } finally {
+      setIsSaving(false);
+    }
+  }, [validarCampos, fincaSeleccionada, estanqueSeleccionado, pesoActual, fechaRegistro]);
 
   const pesoAnteriorLabel = useMemo(() => {
     const pesoSemanaAnterior = estanqueSeleccionadoObj?.pesoSemanaAnterior;
@@ -190,6 +261,7 @@ export function useFincaCrecimiento() {
     setFechaRegistro: handleFechaRegistroChange,
     handleFincaChange,
     guardarDatos,
+    isSaving,
     submitted,
     errors,
     successMessage,
