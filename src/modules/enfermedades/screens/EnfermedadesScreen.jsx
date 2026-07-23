@@ -8,6 +8,9 @@
  * Funcionalidad:
  * - Permite seleccionar finca y estanque.
  * - Permite seleccionar una o varias enfermedades.
+ * - Usa DateInput con calendario e icono.
+ * - Usa required/submitted estandarizado.
+ * - Usa botones outline.
  * - Guarda los registros usando useEnfermedades.
  * - Los registros quedan disponibles para el dashboard.
  *
@@ -17,7 +20,7 @@
  * - NHP queda aqui como enfermedad bacteriana asociada a Hepatobacter penaei.
  */
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ScrollView, View, useWindowDimensions } from "react-native";
 import { useRouter } from "expo-router";
 
@@ -33,98 +36,34 @@ import CustomText from "../../../shared/components/Text";
 import Title from "../../../shared/components/Title";
 import NavbarRegistro from "../../../shared/components/NavbarRegistro";
 
-import { FINCAS, ESTANQUES } from "../../registro/screens/RegistroData";
-
 import useEnfermedades from "../hooks/UseEnfermedades";
 import {
   ENFERMEDADES_CATALOGO,
   SEVERIDADES_ENFERMEDAD,
   obtenerNombreEnfermedad,
-  obtenerNombreSeveridad,
+  obtenerResponsableBackend,
 } from "../services/EnfermedadesService";
+import {
+  actualizarSeleccionEnfermedad,
+  construirCasoEnfermedad,
+  obtenerOpcionesEstanques,
+  obtenerOpcionesFincas,
+  validarFormularioEnfermedad,
+} from "../services/EnfermedadesScreenService";
 
 import { styles } from "../styles/EnfermedadesStyle";
 
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
 import { TYPOGRAPHY } from "../../../theme/typography";
-
-function obtenerFechaActual() {
-  const fecha = new Date();
-  const dia = String(fecha.getDate()).padStart(2, "0");
-  const mes = String(fecha.getMonth() + 1).padStart(2, "0");
-  const anio = fecha.getFullYear();
-
-  return `${dia}/${mes}/${anio}`;
-}
-
-function obtenerOpcionesFincas() {
-  const opciones = [];
-
-  FINCAS.forEach(function (finca) {
-    opciones.push({
-      label: finca.nombre,
-      value: finca.id,
-    });
-  });
-
-  return opciones;
-}
-
-function obtenerOpcionesEstanques(fincaId) {
-  let opciones = [];
-
-  if (fincaId !== "") {
-    const estanquesFinca = ESTANQUES[fincaId];
-
-    if (estanquesFinca !== undefined) {
-      estanquesFinca.forEach(function (estanque) {
-        opciones.push({
-          label: `${estanque.id} - ${estanque.especie}`,
-          value: estanque.id,
-        });
-      });
-    }
-  }
-
-  return opciones;
-}
-
-function obtenerNombreFinca(fincaId) {
-  let nombre = "";
-
-  FINCAS.forEach(function (finca) {
-    if (finca.id === fincaId) {
-      nombre = finca.nombre;
-    }
-  });
-
-  return nombre;
-}
-
-function obtenerTextoEnfermedades(enfermedades) {
-  let texto = "";
-
-  enfermedades.forEach(function (item, index) {
-    const nombre = obtenerNombreEnfermedad(item);
-
-    if (index === 0) {
-      texto = nombre;
-    }
-
-    if (index > 0) {
-      texto = `${texto}, ${nombre}`;
-    }
-  });
-
-  return texto;
-}
+import { STYLE } from "../../../theme/style";
+import { getCurrentDate } from "../../../shared/utils/dateUtils";
 
 export default function EnfermedadesScreen({ onBack, navigation }) {
   const router = useRouter();
   const { width } = useWindowDimensions();
 
-  const { enfermedades, loading, error, guardarEnfermedad } = useEnfermedades();
+  const { loading, error, guardarEnfermedad } = useEnfermedades();
 
   let esTablet = false;
   let esDesktop = false;
@@ -139,8 +78,8 @@ export default function EnfermedadesScreen({ onBack, navigation }) {
 
   const [finca, setFinca] = useState("");
   const [estanque, setEstanque] = useState("");
-  const [fechaReporte, setFechaReporte] = useState(obtenerFechaActual());
-  const [responsable, setResponsable] = useState("");
+  const [fechaReporte, setFechaReporte] = useState(getCurrentDate());
+  const [responsable, setResponsable] = useState("Cargando responsable...");
   const [enfermedadesSeleccionadas, setEnfermedadesSeleccionadas] = useState(
     [],
   );
@@ -149,22 +88,20 @@ export default function EnfermedadesScreen({ onBack, navigation }) {
   const [reporte, setReporte] = useState("");
   const [mensaje, setMensaje] = useState("");
   const [tipoMensaje, setTipoMensaje] = useState("info");
+  const [submitted, setSubmitted] = useState(false);
 
-  let headerStyle = [styles.header];
-  let contentStyle = [styles.content];
+  let contentStyle = [STYLE.contentWrapper, styles.content];
   let gridStyle = [styles.grid];
   let itemStyle = [styles.gridItem];
   let itemFullStyle = [styles.gridItem];
 
   if (esTablet === true) {
-    contentStyle.push(styles.contentTablet);
     gridStyle.push(styles.gridTablet);
     itemStyle.push(styles.gridItemTablet);
     itemFullStyle.push(styles.gridItemFull);
   }
 
   if (esDesktop === true) {
-    headerStyle.push(styles.headerDesktop);
     contentStyle.push(styles.contentDesktop);
     gridStyle.push(styles.gridDesktop);
     itemStyle.push(styles.gridItemDesktop);
@@ -173,6 +110,24 @@ export default function EnfermedadesScreen({ onBack, navigation }) {
 
   const opcionesFincas = obtenerOpcionesFincas();
   const opcionesEstanques = obtenerOpcionesEstanques(finca);
+
+  useEffect(function () {
+    let activo = true;
+
+    async function cargarResponsable() {
+      const responsableBackend = await obtenerResponsableBackend();
+
+      if (activo === true) {
+        setResponsable(responsableBackend);
+      }
+    }
+
+    cargarResponsable();
+
+    return function () {
+      activo = false;
+    };
+  }, []);
 
   function volver() {
     if (onBack) {
@@ -194,30 +149,10 @@ export default function EnfermedadesScreen({ onBack, navigation }) {
   }
 
   function cambiarEnfermedad(valor) {
-    let nuevasEnfermedades = [];
-    let yaExiste = false;
-
-    enfermedadesSeleccionadas.forEach(function (item) {
-      if (item === valor) {
-        yaExiste = true;
-      }
-    });
-
-    if (yaExiste === true) {
-      enfermedadesSeleccionadas.forEach(function (item) {
-        if (item !== valor) {
-          nuevasEnfermedades.push(item);
-        }
-      });
-    }
-
-    if (yaExiste === false) {
-      enfermedadesSeleccionadas.forEach(function (item) {
-        nuevasEnfermedades.push(item);
-      });
-
-      nuevasEnfermedades.push(valor);
-    }
+    const nuevasEnfermedades = actualizarSeleccionEnfermedad(
+      valor,
+      enfermedadesSeleccionadas,
+    );
 
     setEnfermedadesSeleccionadas(nuevasEnfermedades);
   }
@@ -225,54 +160,33 @@ export default function EnfermedadesScreen({ onBack, navigation }) {
   function limpiarFormulario() {
     setFinca("");
     setEstanque("");
-    setFechaReporte(obtenerFechaActual());
-    setResponsable("");
+    setFechaReporte(getCurrentDate());
+    setResponsable(responsable);
     setEnfermedadesSeleccionadas([]);
     setSeveridad("");
     setMortalidad("0");
     setReporte("");
+    setSubmitted(false);
   }
 
   function validarFormulario() {
-    let valido = true;
+    setSubmitted(true);
 
-    if (finca === "") {
-      setTipoMensaje("warning");
-      setMensaje("Debe seleccionar una finca.");
-      valido = false;
+    const resultado = validarFormularioEnfermedad({
+      finca: finca,
+      estanque: estanque,
+      enfermedadesSeleccionadas: enfermedadesSeleccionadas,
+      severidad: severidad,
+      mortalidad: mortalidad,
+      reporte: reporte,
+    });
+
+    if (resultado.valido === false) {
+      setTipoMensaje(resultado.tipoMensaje);
+      setMensaje(resultado.mensaje);
     }
 
-    if (valido === true && estanque === "") {
-      setTipoMensaje("warning");
-      setMensaje("Debe seleccionar un estanque.");
-      valido = false;
-    }
-
-    if (valido === true && enfermedadesSeleccionadas.length === 0) {
-      setTipoMensaje("warning");
-      setMensaje("Debe seleccionar al menos una enfermedad.");
-      valido = false;
-    }
-
-    if (valido === true && severidad === "") {
-      setTipoMensaje("warning");
-      setMensaje("Debe seleccionar la severidad del caso.");
-      valido = false;
-    }
-
-    if (valido === true && reporte.trim() === "") {
-      setTipoMensaje("warning");
-      setMensaje("Debe escribir un reporte del caso.");
-      valido = false;
-    }
-
-    if (valido === true && Number(mortalidad) < 0) {
-      setTipoMensaje("warning");
-      setMensaje("La mortalidad no puede ser negativa.");
-      valido = false;
-    }
-
-    return valido;
+    return resultado.valido;
   }
 
   async function registrarEnfermedad() {
@@ -280,17 +194,16 @@ export default function EnfermedadesScreen({ onBack, navigation }) {
       return;
     }
 
-    const nuevoCaso = {
+    const nuevoCaso = construirCasoEnfermedad({
       finca: finca,
-      fincaNombre: obtenerNombreFinca(finca),
       estanque: estanque,
       fechaReporte: fechaReporte,
       responsable: responsable,
-      enfermedades: enfermedadesSeleccionadas,
+      enfermedadesSeleccionadas: enfermedadesSeleccionadas,
       severidad: severidad,
       mortalidad: mortalidad,
-      reporte: reporte.trim(),
-    };
+      reporte: reporte,
+    });
 
     const guardado = await guardarEnfermedad(nuevoCaso);
 
@@ -308,170 +221,174 @@ export default function EnfermedadesScreen({ onBack, navigation }) {
 
   return (
     <>
-    <NavbarRegistro
+      <NavbarRegistro
         Titulo="Enfermedades"
         Subtitulo="Registro sanitario"
         Icono="shieldAlert"
       />
-    <ScrollView style={styles.screen} showsVerticalScrollIndicator={false}>
-      <View style={contentStyle}>
-        {mensaje !== "" && (
-          <Alert
-            variant={tipoMensaje}
-            message={mensaje}
-            style={styles.alert}
-            textStyle={styles.alertText}
-          />
-        )}
 
-        {error !== "" && (
-          <Alert
-            variant="danger"
-            message={error}
-            style={styles.alert}
-            textStyle={styles.alertText}
-          />
-        )}
-
-        <Card>
-          <SectionTitle title="Ubicacion del caso" icon={ICONS.document} />
-
-          <View style={gridStyle}>
-            <View style={itemStyle}>
-              <Select
-                label="Finca *"
-                options={opcionesFincas}
-                value={finca}
-                onChange={cambiarFinca}
-                placeholder="Seleccione la finca"
-                labelStyle={styles.label}
-              />
-            </View>
-
-            <View style={itemStyle}>
-              <Select
-                label="Estanque *"
-                options={opcionesEstanques}
-                value={estanque}
-                onChange={setEstanque}
-                placeholder="Seleccione el estanque"
-                labelStyle={styles.label}
-              />
-            </View>
-
-            <View style={itemStyle}>
-              <DateInput
-                label="Fecha del reporte *"
-                value={fechaReporte}
-                onChangeText={setFechaReporte}
-                labelStyle={styles.label}
-              />
-            </View>
-
-            <View style={itemStyle}>
-              <Input
-                label="Responsable"
-                value={responsable}
-                onChangeText={setResponsable}
-                placeholder="Nombre del responsable"
-                labelStyle={styles.label}
-              />
-            </View>
-          </View>
-        </Card>
-
-        <Card>
-          <SectionTitle title="Enfermedades que presenta" icon={ICONS.report} />
-
-          <View style={styles.optionsGrid}>
-            {ENFERMEDADES_CATALOGO.map(function (item) {
-              return (
-                <OptionButton
-                  key={item.value}
-                  label={item.label}
-                  value={item.value}
-                  selectedValues={enfermedadesSeleccionadas}
-                  onPress={cambiarEnfermedad}
-                />
-              );
-            })}
-          </View>
-        </Card>
-
-        <Card>
-          <SectionTitle title="Reporte sanitario" icon={ICONS.info} />
-
-          <View style={gridStyle}>
-            <View style={itemStyle}>
-              <Select
-                label="Severidad *"
-                options={SEVERIDADES_ENFERMEDAD}
-                value={severidad}
-                onChange={setSeveridad}
-                placeholder="Seleccione la severidad"
-                labelStyle={styles.label}
-              />
-            </View>
-
-            <View style={itemStyle}>
-              <NumberInput
-                label="Mortalidad registrada"
-                value={mortalidad}
-                onChangeText={setMortalidad}
-                min={0}
-                max={999999}
-                step={1}
-                labelStyle={styles.label}
-              />
-            </View>
-
-            <View style={itemFullStyle}>
-              <Input
-                label="Reporte *"
-                value={reporte}
-                onChangeText={setReporte}
-                placeholder="Describa sintomas, observaciones o acciones realizadas"
-                multiline={true}
-                labelStyle={styles.label}
-                style={styles.textArea}
-              />
-            </View>
-          </View>
-        </Card>
-
-        <Button
-          onPress={registrarEnfermedad}
-          style={styles.saveButton}
-          disabled={loading}
-        >
-          <View style={styles.inlineButtonContentCentered}>
-            <Icon icon={ICONS.save} size={18} color={COLORS.white} />
-
-            <CustomText size={16} color={COLORS.white} style={styles.saveText}>
-              Registrar enfermedad
-            </CustomText>
-          </View>
-        </Button>
-
-        <Card>
-          <SectionTitle title="Detalles guardados" icon={ICONS.certificate} />
-
-          {enfermedades.length === 0 && (
-            <CustomText
-              size={14}
-              color={COLORS.textTertiary}
-              style={styles.emptyText}
-            >
-              Aun no hay enfermedades registradas.
-            </CustomText>
+      <ScrollView style={STYLE.container} showsVerticalScrollIndicator={false}>
+        <View style={contentStyle}>
+          {error !== "" && (
+            <Alert
+              variant="danger"
+              message={error}
+              style={styles.alert}
+              textStyle={styles.alertText}
+            />
           )}
 
-          {enfermedades.map(function (caso) {
-            return <CasoRegistrado key={caso.id} caso={caso} />;
-          })}
-        </Card>
-      </View>
-    </ScrollView>
+          <Card>
+            <SectionTitle title="Ubicacion del caso" icon={ICONS.document} />
+
+            <View style={gridStyle}>
+              <View style={itemStyle}>
+                <Select
+                  label="Finca"
+                  required={true}
+                  submitted={submitted}
+                  options={opcionesFincas}
+                  value={finca}
+                  onChange={cambiarFinca}
+                  placeholder="Seleccione la finca"
+                  labelStyle={styles.label}
+                />
+              </View>
+
+              <View style={itemStyle}>
+                <Select
+                  label="Estanque"
+                  required={true}
+                  submitted={submitted}
+                  options={opcionesEstanques}
+                  value={estanque}
+                  onChange={setEstanque}
+                  placeholder="Seleccione el estanque"
+                  labelStyle={styles.label}
+                />
+              </View>
+
+              <View style={itemStyle}>
+                <DateInput
+                  label="Fecha del reporte"
+                  required={true}
+                  submitted={submitted}
+                  value={fechaReporte}
+                  onChangeText={setFechaReporte}
+                  labelStyle={styles.label}
+                />
+              </View>
+
+              <View style={itemStyle}>
+                <Input
+                  label="Persona encargada"
+                  value={responsable}
+                  onChangeText={setResponsable}
+                  placeholder="Responsable obtenido del backend"
+                  editable={false}
+                  labelStyle={styles.label}
+                  helperText="Este dato se obtiene desde backend."
+                />
+              </View>
+            </View>
+          </Card>
+
+          <Card>
+            <SectionTitle
+              title="Enfermedades que presenta"
+              icon={ICONS.report}
+            />
+
+            <View style={styles.optionsGrid}>
+              {ENFERMEDADES_CATALOGO.map(function (item) {
+                return (
+                  <OptionButton
+                    key={item.value}
+                    label={item.label}
+                    value={item.value}
+                    selectedValues={enfermedadesSeleccionadas}
+                    onPress={cambiarEnfermedad}
+                  />
+                );
+              })}
+            </View>
+          </Card>
+
+          <Card>
+            <SectionTitle title="Reporte sanitario" icon={ICONS.info} />
+
+            <View style={gridStyle}>
+              <View style={itemStyle}>
+                <Select
+                  label="Severidad"
+                  required={true}
+                  submitted={submitted}
+                  options={SEVERIDADES_ENFERMEDAD}
+                  value={severidad}
+                  onChange={setSeveridad}
+                  placeholder="Seleccione la severidad"
+                  labelStyle={styles.label}
+                />
+              </View>
+
+              <View style={itemStyle}>
+                <NumberInput
+                  label="Mortalidad registrada (U)"
+                  value={mortalidad}
+                  onChangeText={setMortalidad}
+                  min={0}
+                  max={999999}
+                  step={1}
+                  labelStyle={styles.label}
+                />
+              </View>
+
+              <View style={itemFullStyle}>
+                <Input
+                  label="Reporte"
+                  required={true}
+                  submitted={submitted}
+                  value={reporte}
+                  onChangeText={setReporte}
+                  placeholder="Describa sintomas, observaciones o acciones realizadas"
+                  multiline={true}
+                  labelStyle={styles.label}
+                  style={styles.textArea}
+                />
+              </View>
+            </View>
+          </Card>
+
+          {mensaje !== "" && (
+            <Alert
+              variant={tipoMensaje}
+              message={mensaje}
+              style={styles.alert}
+              textStyle={styles.alertText}
+            />
+          )}
+
+          <Button
+            variant="outline"
+            onPress={registrarEnfermedad}
+            style={styles.outlinePrimaryButton}
+            disabled={loading}
+          >
+            <View style={styles.inlineButtonContentCentered}>
+              <Icon icon={ICONS.save} size={18} color={COLORS.primary} />
+
+              <CustomText
+                size={16}
+                color={COLORS.primary}
+                style={styles.saveText}
+              >
+                Registrar enfermedad
+              </CustomText>
+            </View>
+          </Button>
+
+        </View>
+      </ScrollView>
     </>
   );
 }
@@ -527,65 +444,5 @@ function OptionButton({ label, value, selectedValues, onPress }) {
         {label}
       </CustomText>
     </Button>
-  );
-}
-
-function CasoRegistrado({ caso }) {
-  const enfermedadesTexto = obtenerTextoEnfermedades(caso.enfermedades);
-  const severidadTexto = obtenerNombreSeveridad(caso.severidad);
-
-  return (
-    <View style={styles.savedCase}>
-      <CustomText
-        size={15}
-        color={COLORS.textPrimary}
-        style={styles.savedCaseTitle}
-      >
-        {caso.fincaNombre} - {caso.estanque}
-      </CustomText>
-
-      <Info label="Fecha" value={caso.fechaReporte} />
-      <Info label="Responsable" value={caso.responsable} />
-      <Info label="Enfermedades" value={enfermedadesTexto} />
-      <Info label="Severidad" value={severidadTexto} />
-      <Info label="Mortalidad" value={caso.mortalidad} />
-      <Info label="Reporte" value={caso.reporte} />
-    </View>
-  );
-}
-
-function Info({ label, value }) {
-  let valorFinal = value;
-
-  if (value === "") {
-    valorFinal = "No registrado";
-  }
-
-  if (value === undefined) {
-    valorFinal = "No registrado";
-  }
-
-  if (value === null) {
-    valorFinal = "No registrado";
-  }
-
-  return (
-    <View style={styles.infoRow}>
-      <CustomText
-        size={13}
-        color={COLORS.textTertiary}
-        style={styles.infoLabel}
-      >
-        {label}
-      </CustomText>
-
-      <CustomText
-        size={14}
-        color={COLORS.textSecondary}
-        style={styles.infoValue}
-      >
-        {valorFinal}
-      </CustomText>
-    </View>
   );
 }

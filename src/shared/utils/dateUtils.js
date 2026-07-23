@@ -3,102 +3,249 @@
  * dateUtils.js
  * ============================================================
  *
- * Descripción:
+ * Descripcion:
  * Utilidades centralizadas para trabajar con fechas en formato
- * de texto "dd/mm/aaaa", el formato estándar usado en formularios
- * y componentes de fecha de la app (por ejemplo DateInput).
- * Evita que cada módulo escriba su propio parseo de fecha.
+ * dd/mm/aaaa. Este archivo evita que cada modulo tenga su propio
+ * parseo o validacion de fechas.
  *
- * Cómo utilizarlo:
- * Importar solo las funciones necesarias desde este archivo.
- * No duplicar esta lógica de parseo/formateo en hooks o
- * componentes de módulos individuales.
- *
- * Restricciones:
- * - Todas las funciones asumen el formato de texto "dd/mm/aaaa".
- * - parseDate no lanza errores; si el texto es inválido retorna null,
- *   quien la use debe manejar ese caso.
- * - parseDate rechaza fechas que no existen en el calendario (ej. 31/02/2026)
- *   y fechas con día/mes fuera de rango (día 1-31, mes 1-12).
- * - No depender de zona horaria del servidor; las fechas se arman
- *   con año/mes/día locales (new Date(anio, mes, dia)).
- *
- * Ejemplos de uso:
- * import { parseDate, formatDate, esFechaFutura, esFechaValida } from "../../../shared/utils/dateUtils";
- *
- * const fecha = parseDate("07/07/2026");      // Date | null
- * const texto = formatDate(new Date());       // "07/07/2026"
- * const futura = esFechaFutura("31/12/2026"); // true | false
- * const valida = esFechaValida("31/02/2026"); // false
+ * Reglas:
+ * - El formato oficial es dd/mm/aaaa.
+ * - getCurrentDate retorna la fecha actual en formato dd/mm/aaaa.
+ * - parseDate retorna Date si la fecha es valida o null si no lo es.
+ * - No usar regex de fecha dentro de los modulos.
  */
 
+const DIAS_SEMANA = [
+  "Domingo",
+  "Lunes",
+  "Martes",
+  "Miercoles",
+  "Jueves",
+  "Viernes",
+  "Sabado",
+];
+
+function padNumber(value) {
+  return String(value).padStart(2, "0");
+}
+
+function isDateObject(value) {
+  if (value instanceof Date === false) {
+    return false;
+  }
+
+  if (Number.isNaN(value.getTime()) === true) {
+    return false;
+  }
+
+  return true;
+}
+
+function formatDateObject(fecha) {
+  const dia = padNumber(fecha.getDate());
+  const mes = padNumber(fecha.getMonth() + 1);
+  const anio = fecha.getFullYear();
+
+  return dia + "/" + mes + "/" + anio;
+}
+
+export function getCurrentDate() {
+  return formatDateObject(new Date());
+}
+
 export function parseDate(fechaTexto) {
+  if (fechaTexto instanceof Date) {
+    if (isDateObject(fechaTexto) === true) {
+      return new Date(
+        fechaTexto.getFullYear(),
+        fechaTexto.getMonth(),
+        fechaTexto.getDate(),
+      );
+    }
+
+    return null;
+  }
+
   if (!fechaTexto) {
     return null;
   }
 
-  const partes = fechaTexto.split("/");
+  const texto = String(fechaTexto).trim();
 
-  if (partes.length !== 3) {
+  if (texto === "") {
     return null;
   }
 
-  const dia = Number(partes[0]);
-  const mesTexto = Number(partes[1]);
-  const anio = Number(partes[2]);
+  if (texto.includes("/")) {
+    const partes = texto.split("/");
 
-  if (
-    !Number.isInteger(dia) ||
-    !Number.isInteger(mesTexto) ||
-    !Number.isInteger(anio)
-  ) {
-    return null;
+    if (partes.length !== 3) {
+      return null;
+    }
+
+    const dia = Number(partes[0]);
+    const mesTexto = Number(partes[1]);
+    const anio = Number(partes[2]);
+
+    if (
+      Number.isInteger(dia) === false ||
+      Number.isInteger(mesTexto) === false ||
+      Number.isInteger(anio) === false
+    ) {
+      return null;
+    }
+
+    if (mesTexto < 1 || mesTexto > 12) {
+      return null;
+    }
+
+    if (dia < 1 || dia > 31) {
+      return null;
+    }
+
+    const mes = mesTexto - 1;
+    const fecha = new Date(anio, mes, dia);
+
+    if (Number.isNaN(fecha.getTime()) === true) {
+      return null;
+    }
+
+    if (
+      fecha.getDate() !== dia ||
+      fecha.getMonth() !== mes ||
+      fecha.getFullYear() !== anio
+    ) {
+      return null;
+    }
+
+    return fecha;
   }
 
-  if (mesTexto < 1 || mesTexto > 12) {
-    return null;
+  if (texto.includes("-")) {
+    const partes = texto.split("-");
+
+    if (partes.length !== 3) {
+      return null;
+    }
+
+    const anio = Number(partes[0]);
+    const mesTexto = Number(partes[1]);
+    const dia = Number(partes[2].slice(0, 2));
+
+    if (
+      Number.isInteger(dia) === false ||
+      Number.isInteger(mesTexto) === false ||
+      Number.isInteger(anio) === false
+    ) {
+      return null;
+    }
+
+    if (mesTexto < 1 || mesTexto > 12) {
+      return null;
+    }
+
+    if (dia < 1 || dia > 31) {
+      return null;
+    }
+
+    const fecha = new Date(anio, mesTexto - 1, dia);
+
+    if (Number.isNaN(fecha.getTime()) === true) {
+      return null;
+    }
+
+    if (
+      fecha.getDate() !== dia ||
+      fecha.getMonth() !== mesTexto - 1 ||
+      fecha.getFullYear() !== anio
+    ) {
+      return null;
+    }
+
+    return fecha;
   }
 
-  if (dia < 1 || dia > 31) {
-    return null;
+  return null;
+}
+
+export function formatDate(fecha) {
+  if (isDateObject(fecha) === true) {
+    return formatDateObject(fecha);
   }
 
-  const mes = mesTexto - 1;
-  const fecha = new Date(anio, mes, dia);
+  const parsed = parseDate(fecha);
 
-  if (Number.isNaN(fecha.getTime())) {
-    return null;
+  if (parsed === null) {
+    return "";
   }
 
-  // Detecta fechas que "se corrieron" de mes, ej. 31/02/2026 -> 03/03/2026
-  if (fecha.getDate() !== dia || fecha.getMonth() !== mes) {
-    return null;
-  }
-
-  return fecha;
+  return formatDateObject(parsed);
 }
 
 export function esFechaValida(fechaTexto) {
   return parseDate(fechaTexto) !== null;
 }
 
-export function formatDate(fecha) {
-  const dia = String(fecha.getDate()).padStart(2, "0");
-  const mes = String(fecha.getMonth() + 1).padStart(2, "0");
-  const anio = fecha.getFullYear();
-
-  return `${dia}/${mes}/${anio}`;
+export function isValidDate(fechaTexto) {
+  return esFechaValida(fechaTexto);
 }
 
 export function esFechaFutura(fechaTexto) {
   const fecha = parseDate(fechaTexto);
 
-  if (!fecha) {
+  if (fecha === null) {
     return false;
   }
 
   const hoy = new Date();
-  hoy.setHours(23, 59, 59, 999);
+  const hoyLimpio = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
 
-  return fecha.getTime() > hoy.getTime();
+  return fecha.getTime() > hoyLimpio.getTime();
+}
+
+export function isSameDate(fechaUno, fechaDos) {
+  const primera = parseDate(fechaUno);
+  const segunda = parseDate(fechaDos);
+
+  if (primera === null || segunda === null) {
+    return false;
+  }
+
+  if (primera.getFullYear() !== segunda.getFullYear()) {
+    return false;
+  }
+
+  if (primera.getMonth() !== segunda.getMonth()) {
+    return false;
+  }
+
+  if (primera.getDate() !== segunda.getDate()) {
+    return false;
+  }
+
+  return true;
+}
+
+export function getDayName(fechaTexto) {
+  const fecha = parseDate(fechaTexto);
+
+  if (fecha === null) {
+    return "";
+  }
+
+  return DIAS_SEMANA[fecha.getDay()];
+}
+
+export function toMysqlDate(fechaTexto) {
+  const fecha = parseDate(fechaTexto);
+
+  if (fecha === null) {
+    return "";
+  }
+
+  const anio = fecha.getFullYear();
+  const mes = padNumber(fecha.getMonth() + 1);
+  const dia = padNumber(fecha.getDate());
+
+  return anio + "-" + mes + "-" + dia;
 }

@@ -8,19 +8,21 @@
  */
 import { fincaService } from "../../finca/services/finca.service.js";
 import { estanqueService } from "../../estanques/services/estanque.service.js";
-import { getVentas } from "../services/mantVentas.service.js";
+import { getVentas, deleteVenta } from "../services/mantVentas.service.js";
 
 import Text from "../../../shared/components/Text.jsx";
 import Icon from "../../../shared/components/Icons.jsx";
 import Card from "../../../shared/components/Card.jsx";
+import Button from "../../../shared/components/Button.jsx";
+import { ICONS } from "../../../theme/icons";
 import { COLORS } from "../../../theme/colors.js";
 import { View } from "react-native";
-import { styles } from "../styles/VentaStyles.js"
+import { styles } from "../styles/VentaStyles.js";
 import { useMemo, useState, useCallback, useEffect } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { useWindowDimensions } from "react-native";
 
-export function useDetalleVenta() {
+export function useDetalleVenta({ onEdit  } = {}) {
   const params = useLocalSearchParams();
   const { width } = useWindowDimensions();
   const isWide = width >= 700;
@@ -51,6 +53,9 @@ export function useDetalleVenta() {
   }, []);
 
   const [ventas, setVentas] = useState([]);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [ventaSeleccionada, setVentaSeleccionada] = useState(null);
+  const [eliminando, setEliminando] = useState(false);
 
   useEffect(() => {
     let activo = true;
@@ -70,8 +75,10 @@ export function useDetalleVenta() {
     };
   }, []);
 
-const fincaInicial = typeof params.fincaFiltro === "string" ? params.fincaFiltro : "";
-const estanqueInicial = typeof params.estanqueFiltro === "string" ? params.estanqueFiltro : "";
+  const fincaInicial =
+    typeof params.fincaFiltro === "string" ? params.fincaFiltro : "";
+  const estanqueInicial =
+    typeof params.estanqueFiltro === "string" ? params.estanqueFiltro : "";
 
   const [fincaFiltro, setFincaFiltro] = useState(fincaInicial);
   const [estanqueFiltro, setEstanqueFiltro] = useState(estanqueInicial);
@@ -92,26 +99,37 @@ const estanqueInicial = typeof params.estanqueFiltro === "string" ? params.estan
       .filter((estanque) => estanque.idFinca === Number(fincaFiltro))
       .map((estanque) => ({
         label: estanque.codigo,
-        value: estanque.id
+        value: estanque.id,
       }));
   }, [fincaFiltro, estanques]);
 
   const ventasFiltradas = useMemo(() => {
-
     return (ventas || []).filter((venta) => {
-      
-      const coincideFinca = !fincaFiltro || venta.finca_id === Number(fincaFiltro);
-      const coincideEstanque = !estanqueFiltro || venta.estanque_id === Number(estanqueFiltro);
+      const coincideFinca =
+        !fincaFiltro || venta.finca_id === Number(fincaFiltro);
+      const coincideEstanque =
+        !estanqueFiltro || venta.estanque_id === Number(estanqueFiltro);
 
       return coincideFinca && coincideEstanque;
     });
   }, [ventas, fincaFiltro, estanqueFiltro]);
-  
-const hayFiltro = Boolean(fincaFiltro  && estanqueFiltro);
+
+  const hayFiltro = Boolean(fincaFiltro && estanqueFiltro);
 
   const mensajeDetalle = hayFiltro
     ? "Mostrando solo las ventas de la finca y estanque seleccionados."
     : "Seleccione una finca y un estanque para ver su historial de ventas.";
+
+  const descripcionEliminar = useMemo(() => {
+    if (!ventaSeleccionada) return "";
+
+    const finca = fincas.find((item) => item.id === ventaSeleccionada.finca_id);
+    const estanque = estanques.find(
+      (item) => item.id === ventaSeleccionada.estanque_id,
+    );
+
+    return `${finca?.nombreFinca ?? "Finca"} • ${estanque?.codigo ?? "Estanque"} (${ventaSeleccionada.fecha ?? ""})`;
+  }, [ventaSeleccionada, fincas, estanques]);
 
   const handleFincaChange = useCallback((value) => {
     setFincaFiltro(value);
@@ -125,28 +143,41 @@ const hayFiltro = Boolean(fincaFiltro  && estanqueFiltro);
   function SectionTitle({ icon, title }) {
     return (
       <View style={styles.sectionTitle}>
-        <Icon icon={icon} size={18} color={COLORS.primary} style={styles.sectionIcon} />
+        <Icon
+          icon={icon}
+          size={18}
+          color={COLORS.primary}
+          style={styles.sectionIcon}
+        />
         <Text style={styles.sectionText}>{title}</Text>
       </View>
     );
   }
-  
+
   function FilaDetalle({ etiqueta, valor }) {
     return (
       <View style={styles.filaDetalle}>
-        <Text size={12} color={COLORS.textTertiary} style={styles.etiquetaDetalle}>
+        <Text
+          size={12}
+          color={COLORS.textTertiary}
+          style={styles.etiquetaDetalle}
+        >
           {etiqueta}
         </Text>
-  
-        <Text size={14} weight="600" color={COLORS.textSecondary} style={styles.valorDetalle}>
+
+        <Text
+          size={14}
+          weight="600"
+          color={COLORS.textSecondary}
+          style={styles.valorDetalle}
+        >
           {valor}
         </Text>
       </View>
     );
   }
-  
-  function TarjetaVenta({ venta }) {
 
+  function TarjetaVenta({ venta }) {
     const finca = fincas.find((item) => item.id === venta.finca_id);
     const estanque = estanques.find((item) => item.id === venta.estanque_id);
 
@@ -156,18 +187,72 @@ const hayFiltro = Boolean(fincaFiltro  && estanqueFiltro);
           <Text style={styles.nombreProducto}>
             {finca?.nombreFinca ?? "Finca"} • {estanque?.codigo ?? "Estanque"}
           </Text>
+
+          <View style={styles.buttonsCrud}>
+            <Button
+              style={styles.delete}
+              onPress={() => abrirModalEliminar(venta)}>
+              <Icon icon={ICONS.delete} style={[styles.deleteIcon]} size={15} />
+              <Text size={15} style={{ color: COLORS.error }}>
+                Eliminar
+              </Text>
+            </Button>
+            <Button style={styles.edit} onPress={() => onEdit?.(venta.id)}>
+               <Icon icon={ICONS.edit} style={styles.editIcon} size={16} />
+              <Text size={15} style={{ color: COLORS.primary }}>
+                Editar
+              </Text>
+            </Button>
+          </View>
         </View>
-  
+
         <View style={styles.filasDetalle}>
           <FilaDetalle etiqueta="Fecha" valor={venta.fecha} />
-          <FilaDetalle etiqueta="Total" valor={formatearMontoColones(venta.total)} />
-          <FilaDetalle etiqueta="Kilos" valor={`${venta.cantidad_vendida} kg`} />
-          <FilaDetalle etiqueta="Precio/kg" valor={`₡ ${Number(venta.precio_kilo).toLocaleString("es-CR")}`} />
+          <FilaDetalle
+            etiqueta="Total"
+            valor={formatearMontoColones(venta.total)}
+          />
+          <FilaDetalle
+            etiqueta="Kilos"
+            valor={`${venta.cantidad_vendida} kg`}
+          />
+          <FilaDetalle
+            etiqueta="Precio/kg"
+            valor={`₡ ${Number(venta.precio_kilo).toLocaleString("es-CR")}`}
+          />
         </View>
       </Card>
     );
   }
-  
+
+  function abrirModalEliminar(venta) {
+    setVentaSeleccionada(venta);
+    setModalVisible(true);
+  }
+
+  function cancelarEliminar() {
+    setModalVisible(false);
+    setVentaSeleccionada(null);
+  }
+
+  async function confirmarEliminar() {
+    if (!ventaSeleccionada) return;
+
+    setEliminando(true);
+
+    try {
+      await deleteVenta(ventaSeleccionada.id);
+      setVentas((actual) =>
+        actual.filter((venta) => venta.id !== ventaSeleccionada.id),
+      );
+    } catch (error) {
+      console.error("No se pudo eliminar la venta:", error);
+    } finally {
+      setEliminando(false);
+      setModalVisible(false);
+      setVentaSeleccionada(null);
+    }
+  }
 
   return {
     SectionTitle,
@@ -182,6 +267,11 @@ const hayFiltro = Boolean(fincaFiltro  && estanqueFiltro);
     mensajeDetalle,
     hayFiltro,
     isWide,
+    modalVisible,
+    descripcionEliminar,
+    eliminando,
+    confirmarEliminar,
+    cancelarEliminar,
     handleFincaChange,
     handleEstanqueChange,
   };
