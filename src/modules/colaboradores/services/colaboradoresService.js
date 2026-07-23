@@ -143,6 +143,11 @@ async function getColaboradorById(id) {
  * Genera un PIN de 4 dígitos y lo envía en pinHash.
  * Devuelve el colaborador creado y el PIN en texto plano.
  */
+/**
+ * Crea un nuevo colaborador.
+ * Genera un PIN de 4 dígitos y lo envía en pinHash.
+ * Devuelve el colaborador creado y el PIN en texto plano.
+ */
 async function createColaborador(data) {
   try {
     const pin = String(Math.floor(1000 + Math.random() * 9000));
@@ -151,14 +156,22 @@ async function createColaborador(data) {
     const created = response.data.data;
     return {
       ...mapBackendToFrontend(created),
-      pin, // devuelve el PIN para mostrarlo al administrador
+      pin,
     };
   } catch (error) {
-    const message =
-      error.response?.data?.message ||
-      error.message ||
-      "Error al crear colaborador";
-    throw new Error(message);
+    
+    // Detectar errores de duplicado
+    const errorData = error.response?.data;
+    const errorMessage = errorData?.message || error.message || "Error al crear colaborador";
+    const errorDetail = errorData?.error || errorData?.errors;
+    
+    
+    // Si el backend devuelve un mensaje específico en error
+    if (typeof errorDetail === "string" && errorDetail.includes("cedula")) {
+      throw new Error("Colaborador ya existente.");
+    }
+    
+    throw new Error(errorMessage);
   }
 }
 
