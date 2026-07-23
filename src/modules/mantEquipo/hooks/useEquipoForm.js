@@ -5,9 +5,8 @@
  * Módulo: Mantenimiento de Equipos
  *
  * Hook que encapsula la lógica del formulario de equipos.
- * Maneja el estado del formulario, validaciones y envío.
- * Ahora expone errores específicos por campo y un mensaje
- * de validación detallado para mostrar en alertas.
+ * Refleja el modelo real del backend: ya no incluye
+ * marca, modelo, serie ni subcategoría.
  *
  * Parámetros:
  * - initialData: datos iniciales para edición
@@ -45,21 +44,6 @@ const validarDescripcion = (descripcion) => {
   return "";
 };
 
-const validarMarca = (marca) => {
-  if (!marca || !marca.trim()) return "La marca es obligatoria";
-  return "";
-};
-
-const validarModelo = (modelo) => {
-  if (!modelo || !modelo.trim()) return "El modelo es obligatorio";
-  return "";
-};
-
-const validarSerie = (serie) => {
-  if (!serie || !serie.trim()) return "El número de serie es obligatorio";
-  return "";
-};
-
 const validarFuncion = (funcion) => {
   if (!funcion || !funcion.trim()) return "La función del equipo es obligatoria";
   return "";
@@ -90,13 +74,8 @@ export function useEquipoForm({ initialData = {}, onSubmit, isEditing = false, o
     nombre: initialData.nombre || "",
     descripcion: initialData.descripcion || "",
     tipo: initialData.tipo || "",
-    subcategoria: initialData.subcategoria || "",
-    marca: initialData.marca || "",
-    modelo: initialData.modelo || "",
-    serie: initialData.serie || "",
     fechaInstalacion: initialData.fechaInstalacion || obtenerFechaActual(),
     funcionEquipo: initialData.funcionEquipo || "",
-    ubicacion: initialData.ubicacion || "",
     estanqueId: initialData.estanqueId || "",
     estado: initialData.estado || "activo",
     horasMantenimiento: initialData.horasMantenimiento || "",
@@ -113,13 +92,8 @@ export function useEquipoForm({ initialData = {}, onSubmit, isEditing = false, o
         nombre: initialData.nombre || "",
         descripcion: initialData.descripcion || "",
         tipo: initialData.tipo || "",
-        subcategoria: initialData.subcategoria || "",
-        marca: initialData.marca || "",
-        modelo: initialData.modelo || "",
-        serie: initialData.serie || "",
         fechaInstalacion: initialData.fechaInstalacion || "",
         funcionEquipo: initialData.funcionEquipo || "",
-        ubicacion: initialData.ubicacion || "",
         estanqueId: initialData.estanqueId || "",
         estado: initialData.estado || "activo",
         horasMantenimiento: initialData.horasMantenimiento || "",
@@ -147,15 +121,6 @@ export function useEquipoForm({ initialData = {}, onSubmit, isEditing = false, o
     if (descError) newErrors.descripcion = descError;
 
     if (!form.tipo) newErrors.tipo = "Debe seleccionar un tipo de equipo";
-
-    const marcaError = validarMarca(form.marca);
-    if (marcaError) newErrors.marca = marcaError;
-
-    const modeloError = validarModelo(form.modelo);
-    if (modeloError) newErrors.modelo = modeloError;
-
-    const serieError = validarSerie(form.serie);
-    if (serieError) newErrors.serie = serieError;
 
     if (!form.fechaInstalacion) newErrors.fechaInstalacion = "La fecha de instalación es obligatoria";
 
@@ -208,13 +173,8 @@ export function useEquipoForm({ initialData = {}, onSubmit, isEditing = false, o
       nombre: "",
       descripcion: "",
       tipo: "",
-      subcategoria: "",
-      marca: "",
-      modelo: "",
-      serie: "",
       fechaInstalacion: "",
       funcionEquipo: "",
-      ubicacion: "",
       estanqueId: "",
       estado: "activo",
       horasMantenimiento: "",
@@ -226,13 +186,9 @@ export function useEquipoForm({ initialData = {}, onSubmit, isEditing = false, o
   const isFormValid = useCallback(() => {
     const nombreError = validarNombre(form.nombre);
     const descError = validarDescripcion(form.descripcion);
-    const marcaError = validarMarca(form.marca);
-    const modeloError = validarModelo(form.modelo);
-    const serieError = validarSerie(form.serie);
     const funcionError = validarFuncion(form.funcionEquipo);
 
-    return !nombreError && !descError && form.tipo && !marcaError &&
-           !modeloError && !serieError && form.fechaInstalacion && !funcionError;
+    return !nombreError && !descError && form.tipo && form.fechaInstalacion && !funcionError;
   }, [form]);
 
   // --------------------------------------------------------

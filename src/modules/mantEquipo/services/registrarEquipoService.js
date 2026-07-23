@@ -16,7 +16,7 @@
  * ============================================================
  */
 
-import { equiposService } from './equiposService';
+import api from '../../../api/api';
 
 export const TIPOS_EQUIPO = [
   { label: 'Aireación', value: 'Aireacion' },
@@ -72,19 +72,25 @@ export function crearEquipoPayload(formulario, { isEditing, estadoActual, horasA
 
 export async function agregarEquipo(payload) {
   try {
-    const nuevoEquipo = await equiposService.createEquipo(payload);
-    return nuevoEquipo;
+    // NOTA: se llama a `api` directamente (no a equiposService.createEquipo)
+    // porque equiposService ahora espera datos en formato "frontend" (codigo,
+    // nombre, tipo en minúscula...) y los remapea con mapEquipoFrontendABackend
+    // antes de mandarlos. Este payload ya viene armado en el formato exacto
+    // del backend, así que pasar por ese mapeo duplicado lo rompía (identificador
+    // y nombreEquipo llegaban undefined).
+    const response = await api.post('/equipos', payload);
+    return response.data.data;
   } catch (error) {
     // Propaga el mensaje real del backend (ej. "Ya existe un equipo con ese identificador.")
-    throw new Error(error.message || 'No se pudo guardar el equipo. Intente nuevamente.');
+    throw new Error(error.response?.data?.message || 'No se pudo guardar el equipo. Intente nuevamente.');
   }
 }
 
 export async function actualizarEquipo(id, payload) {
   try {
-    const equipoActualizado = await equiposService.updateEquipo(id, payload);
-    return equipoActualizado;
+    const response = await api.put(`/equipos/${id}`, payload);
+    return response.data.data;
   } catch (error) {
-    throw new Error(error.message || 'No se pudo actualizar el equipo. Intente nuevamente.');
+    throw new Error(error.response?.data?.message || 'No se pudo actualizar el equipo. Intente nuevamente.');
   }
 }

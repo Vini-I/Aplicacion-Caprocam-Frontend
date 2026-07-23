@@ -12,22 +12,6 @@ import { COLORS } from '../../../theme/colors';
 import { TYPOGRAPHY } from '../../../theme/typography';
 
 const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: COLORS.surface,
-  },
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.surface,
-  },
-  content: {
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 24,
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
-  },
   heroCard: {
     alignItems: 'center',
     marginBottom: 16,
