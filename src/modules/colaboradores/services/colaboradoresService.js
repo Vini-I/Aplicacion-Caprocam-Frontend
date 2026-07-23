@@ -19,40 +19,36 @@
  * ============================================================
  */
 
-import api from '../../../api/api';
+// src/modules/colaboradores/services/colaboradoresService.js
+import api from "../../../api/api";
 
-// ─── MAPEO DE ROLES ─────────────────────────────────────────────
-
+// Mapeo de roles
 const rolMapToId = {
-  'camprocam_worker': 3,
-  'external_owner': 2,
-  'external_worker': 3,
+  camprocam_worker: 3,
+  external_owner: 2,
+  external_worker: 3,
 };
 
 const rolMapToTipo = {
-  'camprocam_worker': 'caprocam_collab',
-  'external_owner': 'external_owner',
-  'external_worker': 'external_collab',
+  camprocam_worker: "caprocam_collab",
+  external_owner: "external_owner",
+  external_worker: "external_collab",
 };
 
 const rolIdToRol = {
-  2: 'external_owner',
+  2: "external_owner",
   3: (tipo) => {
-    if (tipo === 'caprocam_collab') return 'camprocam_worker';
-    if (tipo === 'external_collab') return 'external_worker';
-    return 'external_worker';
+    if (tipo === "caprocam_collab") return "camprocam_worker";
+    if (tipo === "external_collab") return "external_worker";
+    return "external_worker";
   },
 };
 
-// ─── FUNCIONES DE MAPEO ─────────────────────────────────────────
-
-/**
- * Convierte un colaborador del backend al formato del frontend.
- */
+// Mapeo de backend a frontend
 function mapBackendToFrontend(data) {
-  let rol = 'camprocam_worker';
+  let rol = "camprocam_worker";
   if (data.rolId === 2) {
-    rol = 'external_owner';
+    rol = "external_owner";
   } else if (data.rolId === 3) {
     rol = rolIdToRol[3](data.tipoColaborador);
   }
@@ -64,31 +60,27 @@ function mapBackendToFrontend(data) {
     email: data.email,
     rol,
     fincaId: data.fincaId,
-    activo: data.activo,
+    activo: Boolean(data.activo), // ← Convierte 1/0 a true/false
   };
 }
 
-/**
- * Prepara los datos del frontend para enviar al backend.
- * @param {Object} data - Datos del formulario.
- * @param {string} [pinHash] - PIN en texto plano (se envía en el campo pinHash).
- */
+// Preparar payload para backend
 function prepareForBackend(data, pinHash = null) {
-  const [nombre, ...apellidosParts] = data.nombre.split(' ');
-  const apellidos = apellidosParts.join(' ') || '';
+  const [nombre, ...apellidosParts] = data.nombre.split(" ");
+  const apellidos = apellidosParts.join(" ") || "";
   const payload = {
-    nombre: nombre || '',
+    nombre: nombre || "",
     apellidos,
     nombreUsuario: data.cedula,
     rolId: rolMapToId[data.rol] || 3,
     fincaId: data.fincaId ? Number(data.fincaId) : null,
     telefono: data.telefono || null,
     email: data.email || null,
-    tipoColaborador: rolMapToTipo[data.rol] || 'external_collab',
-    grupoDatos: 1, // provisional hasta implementar autenticación
+    tipoColaborador: rolMapToTipo[data.rol] || "external_collab",
+    grupoDatos: 1, // temporal hasta autenticación
   };
   if (pinHash) {
-    payload.pinHash = pinHash; // se envía el PIN en texto plano en el campo esperado
+    payload.pinHash = pinHash;
   }
   return payload;
 }
@@ -97,11 +89,14 @@ function prepareForBackend(data, pinHash = null) {
 
 /**
  * Obtiene todos los colaboradores activos del backend.
+ * Filtra por fincaId, rol, activo si se pasan.
  */
 async function getColaboradores(filtros = {}) {
   try {
-    const response = await api.get('/colaboradores');
+    const response = await api.get("/api/v0/colaboradores");
     let data = response.data.data || [];
+    console.log("📦 Datos crudos del backend:", data); // ← Verifica que lleguen
+
     if (filtros.fincaId) {
       data = data.filter((c) => c.fincaId === Number(filtros.fincaId));
     }
@@ -112,11 +107,17 @@ async function getColaboradores(filtros = {}) {
       });
     }
     if (filtros.activo !== undefined) {
-      data = data.filter((c) => c.activo === filtros.activo);
+      // Convierte el valor del backend a booleano antes de comparar
+      data = data.filter((c) => Boolean(c.activo) === filtros.activo);
     }
+
+    console.log("📋 Datos después de filtrar:", data); // ← Verifica el resultado
     return data.map(mapBackendToFrontend);
   } catch (error) {
-    const message = error.response?.data?.message || error.message || 'Error al obtener colaboradores';
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Error al obtener colaboradores";
     throw new Error(message);
   }
 }
@@ -126,49 +127,58 @@ async function getColaboradores(filtros = {}) {
  */
 async function getColaboradorById(id) {
   try {
-    const response = await api.get(`/colaboradores/${id}`);
+    const response = await api.get(`/api/v0/colaboradores/${id}`);
     const data = response.data.data;
-    if (!data) throw new Error('Colaborador no encontrado');
+    if (!data) throw new Error("Colaborador no encontrado");
     return mapBackendToFrontend(data);
   } catch (error) {
-    const message = error.response?.data?.message || error.message || 'Error al obtener colaborador';
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Error al obtener colaborador";
     throw new Error(message);
   }
 }
 
 /**
- * Crea un nuevo colaborador en el backend.
- * Genera un PIN de 4 dígitos y lo envía en el campo 'pinHash' (en texto plano).
+ * Crea un nuevo colaborador.
+ * Genera un PIN de 4 dígitos y lo envía en pinHash.
  * Devuelve el colaborador creado y el PIN en texto plano.
  */
 async function createColaborador(data) {
   try {
     const pin = String(Math.floor(1000 + Math.random() * 9000));
     const payload = prepareForBackend(data, pin);
-    const response = await api.post('/colaboradores', payload);
+    const response = await api.post("/api/v0/colaboradores", payload);
     const created = response.data.data;
     return {
       ...mapBackendToFrontend(created),
-      pin, // se devuelve el PIN para mostrarlo al administrador
+      pin, // devuelve el PIN para mostrarlo al administrador
     };
   } catch (error) {
-    const message = error.response?.data?.message || error.message || 'Error al crear colaborador';
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Error al crear colaborador";
     throw new Error(message);
   }
 }
 
 /**
  * Actualiza un colaborador existente.
- * Si se proporciona un nuevo PIN, se envía en el campo 'pinHash' (texto plano).
+ * Si se proporciona un nuevo PIN, se envía en pinHash.
  */
 async function updateColaborador(id, data, newPin = null) {
   try {
     const payload = prepareForBackend(data, newPin);
-    if (!newPin) delete payload.pinHash; // si no hay nuevo PIN, no enviar el campo
-    const response = await api.put(`/colaboradores/${id}`, payload);
+    if (!newPin) delete payload.pinHash;
+    const response = await api.put(`/api/v0/colaboradores/${id}`, payload);
     return mapBackendToFrontend(response.data.data);
   } catch (error) {
-    const message = error.response?.data?.message || error.message || 'Error al actualizar colaborador';
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Error al actualizar colaborador";
     throw new Error(message);
   }
 }
@@ -178,17 +188,22 @@ async function updateColaborador(id, data, newPin = null) {
  */
 async function deleteColaborador(id) {
   try {
-    const response = await api.delete(`/colaboradores/${id}`);
+    const response = await api.delete(`/api/v0/colaboradores/${id}`);
     return response.data.data ? true : false;
   } catch (error) {
-    const message = error.response?.data?.message || error.message || 'Error al eliminar colaborador';
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Error al eliminar colaborador";
     throw new Error(message);
   }
 }
 
+// ─── FUNCIONES AUXILIARES (mock) ──────────────────────────────
+
 /**
  * Obtiene estadísticas de un colaborador (mock).
- * El backend no tiene este endpoint, se devuelven datos vacíos.
+ * (El backend no tiene este endpoint aún)
  */
 async function getEstadisticasColaborador(colaboradorId) {
   // TODO: implementar cuando el backend lo soporte
