@@ -10,6 +10,7 @@
  * - Soporta required, submitted, error y helperText.
  * - Muestra borde rojo solo luego del intento de guardado o error manual.
  * - Mantiene maxHeight en 140 para mostrar pocas opciones.
+ * - Muestra mensaje por defecto cuando no hay opciones.
  */
 
 import React, { useRef, useState } from "react";
@@ -25,8 +26,25 @@ import {
 import { COLORS } from "../../theme/colors";
 import { TYPOGRAPHY } from "../../theme/typography";
 
+const EMPTY_OPTIONS_MESSAGE = "No se encuentran opciones o valores";
+
+function getSafeOptions(options) {
+  let safeOptions = [];
+
+  if (Array.isArray(options) === true) {
+    safeOptions = options;
+  }
+
+  return safeOptions;
+}
+
 function getSelectedLabel(options, value, placeholder) {
   let selectedLabel = placeholder;
+
+  if (options.length === 0) {
+    selectedLabel = EMPTY_OPTIONS_MESSAGE;
+    return selectedLabel;
+  }
 
   for (let index = 0; index < options.length; index++) {
     if (String(options[index].value) === String(value)) {
@@ -75,6 +93,7 @@ export default function Select({
   });
 
   const selectRef = useRef(null);
+  const finalOptions = getSafeOptions(options);
 
   let showError = false;
   let finalHelperText = helperText;
@@ -137,6 +156,10 @@ export default function Select({
     selectedTextStyles.push(styles.placeholderText);
   }
 
+  if (finalOptions.length === 0) {
+    selectedTextStyles.push(styles.emptySelectedText);
+  }
+
   if (selectStyle) {
     selectStyles.push(selectStyle);
   }
@@ -162,7 +185,7 @@ export default function Select({
         accessibilityRole="button"
       >
         <Text style={selectedTextStyles} numberOfLines={1}>
-          {getSelectedLabel(options, value, placeholder)}
+          {getSelectedLabel(finalOptions, value, placeholder)}
         </Text>
 
         <Text style={styles.arrow}>▾</Text>
@@ -200,7 +223,15 @@ export default function Select({
               nestedScrollEnabled={true}
               showsVerticalScrollIndicator={true}
             >
-              {options.map(function (option) {
+              {finalOptions.length === 0 && (
+                <View style={styles.emptyOption}>
+                  <Text style={styles.emptyOptionText}>
+                    {EMPTY_OPTIONS_MESSAGE}
+                  </Text>
+                </View>
+              )}
+
+              {finalOptions.map(function (option) {
                 const optionStyles = [styles.option];
 
                 if (String(option.value) === String(value)) {
@@ -282,6 +313,10 @@ const styles = StyleSheet.create({
     color: COLORS.textQuaternary,
   },
 
+  emptySelectedText: {
+    color: COLORS.textTertiary,
+  },
+
   arrow: {
     marginLeft: 8,
     fontSize: 18,
@@ -344,6 +379,18 @@ const styles = StyleSheet.create({
   optionText: {
     fontSize: 15,
     color: COLORS.textPrimary,
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
+  },
+
+  emptyOption: {
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    backgroundColor: COLORS.white,
+  },
+
+  emptyOptionText: {
+    fontSize: 15,
+    color: COLORS.textTertiary,
     fontFamily: TYPOGRAPHY.fontFamily.regular,
   },
 });
