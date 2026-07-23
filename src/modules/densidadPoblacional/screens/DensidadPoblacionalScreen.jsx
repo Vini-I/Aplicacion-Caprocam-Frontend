@@ -33,6 +33,7 @@
 import React, {useState} from "react";
 import { ScrollView, View } from "react-native";
 import Title from "../../../shared/components/Title";
+import Text from "../../../shared/components/Text.jsx";
 import DatosConteo from "./DatosConteo";
 import InformacionEstanque from "./InformacionEstanque";
 import RegistroConteo from "./RegistroConteo";
@@ -89,15 +90,6 @@ export default function DensidadPoblacionalScreen({ onBack }) {
     />
 
 <View style={STYLE.container}>
-    <View style={STYLE.contentWrapper}>
-      {alerta.visible && (
-        <Alert
-          variant={alerta.variant}
-          message={alerta.mensaje}
-          style={styles.alert}
-        />
-      )}
-    </View>
 
     <ScrollView
       contentContainerStyle={STYLE.contentWrapper}
@@ -105,19 +97,7 @@ export default function DensidadPoblacionalScreen({ onBack }) {
     >
 
       <View style={styles.content}>
-        {/* Todo tu contenido actual */}
-
-        <View style={styles.sectionTitleRow}>
-          <Icon icon={ICONS.water} size={18} color={COLORS.primary} style={styles.sectionIcon} />
-          <Title
-            style={[
-              styles.subTitle,
-              { fontFamily: TYPOGRAPHY.fontFamily.medium },
-            ]}
-          >
-            Finca / Estanque
-          </Title>
-        </View>
+        {/* Todo el contenido actual */}
 
         <InformacionEstanque
           finca={finca}
@@ -133,18 +113,6 @@ export default function DensidadPoblacionalScreen({ onBack }) {
           submitted={submitted}
           errores={errores}
         />
-
-        <View style={styles.sectionTitleRow}>
-          <Icon icon={ICONS.calendar} size={18} color={COLORS.primary} style={styles.sectionIcon} />
-          <Title
-            style={[
-              styles.subTitle,
-              { fontFamily: TYPOGRAPHY.fontFamily.medium },
-            ]}
-          >
-            Registro de Conteo
-          </Title>
-        </View>
 
         <RegistroConteo
           fecha={fecha}
@@ -170,18 +138,24 @@ export default function DensidadPoblacionalScreen({ onBack }) {
           errores={errores}
         />
 
-        <Footer
-          fixedBottom
-          children={
-            <Button
-              variant="outline"
-              onPress={handleGuardar}
-              style={styles.addButton}
-            >
-              Guardar módulo
-            </Button>
-          }
+        <View style={STYLE.contentWrapper}>
+      {alerta.visible && (
+        <Alert
+          variant={alerta.variant}
+          message={alerta.mensaje}
+          style={styles.alert}
         />
+      )}
+    </View>
+          <Button variant="outline" onPress={handleGuardar} style={styles.submitButton}>
+            <View style={styles.buttonContent}>
+              <Icon icon={ICONS.save} size={24} color={COLORS.primary}/>
+              <Text style={styles.buttonText}>
+                Guardar
+              </Text>
+            </View>
+          </Button>
+
       </View>
     </ScrollView>
   </View>

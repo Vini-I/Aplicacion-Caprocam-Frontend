@@ -45,7 +45,7 @@ export default function FincasScreen({ onDetail, onNew, onEdit }) {
   } = useFincaScreen();
 
   return (
-    <ScrollView style={STYLE.container}>
+    <ScrollView style={STYLE.container} showsVerticalScrollIndicator={false}>
       <View style={STYLE.contentWrapper}>
         {alert === "edited" && (
           <Alert style={styles.alertCorrect}>Finca editada correctamente</Alert>
@@ -63,8 +63,8 @@ export default function FincasScreen({ onDetail, onNew, onEdit }) {
 
         {fincas.map((Finca) => (
           <CardPress
-            key={Finca.codigoInterno}
-            onPress={() => onDetail(Finca.codigoInterno)}
+            key={Finca.id}
+            onPress={() => onDetail(Finca.id)}
             style={styles.card}
           >
             <View style={styles.cardContent}>
@@ -74,13 +74,14 @@ export default function FincasScreen({ onDetail, onNew, onEdit }) {
 
               <View style={styles.flex}>
                 <Title level={4} numberOfLines={2}>
-                  {Finca.nombre}
+                  {Finca.nombreFinca}
+                  {Finca.codigoCBO}
                 </Title>
 
                 <Text numberOfLines={3} color={COLORS.textTertiary}>
                   {Finca.provincia}, {Finca.canton}, {Finca.distrito}
                 </Text>
-                <Text color={COLORS.primary}>{Finca.responsable}</Text>
+                <Text color={COLORS.primary}>{Finca.propietarioResponsable}</Text>
 
                 <View
                   style={[styles.details, isCompact && styles.detailsColumn]}
@@ -96,40 +97,41 @@ export default function FincasScreen({ onDetail, onNew, onEdit }) {
                 </View>
               </View>
               <View style={styles.buttonsCrud}>
-              <Button
-                style={styles.delete}
-                onPress={() => abrirModalEliminar(Finca)}
-              >
-                <Icon
-                  icon={ICONS.delete}
-                  style={[styles.deleteIcon]}
-                  size={20}
-                />
-                <Text size={12} style={styles.deleteIcon}>
-                  Eliminar
-                </Text>
-              </Button>
+                <Button
+                  style={styles.delete}
+                  onPress={() => abrirModalEliminar(Finca)}
+                >
+                  <Icon
+                    icon={ICONS.delete}
+                    style={[styles.deleteIcon]}
+                    size={20}
+                  />
+                  <Text size={12} style={styles.deleteIcon}>
+                    Eliminar
+                  </Text>
+                </Button>
 
-              <Button
-                style={styles.edit}
-                onPress={() => onEdit(Finca.codigoInterno)}
-              >
-                <Icon icon={ICONS.edit} style={styles.editIcon} size={20} />
-                <Text size={12} style={styles.editIcon}>
-                  Editar
-                </Text>
-              </Button>
+                <Button
+                  style={styles.edit}
+                  onPress={() => onEdit(Finca.id)}
+                >
+                  <Icon icon={ICONS.edit} style={styles.editIcon} size={20} />
+                  <Text size={12} style={styles.editIcon}>
+                    Editar
+                  </Text>
+                </Button>
+              </View>
             </View>
-            </View>
-            
           </CardPress>
         ))}
 
         <Button style={styles.addButton} onPress={() => onNew()}>
           <Icon style={styles.addButtonText} icon={ICONS.add} size={15} />
-          <Text style={styles.addButtonText} size={15}>REGISTRAR NUEVA FINCA</Text>
+          <Text style={styles.addButtonText} size={15}>
+            REGISTRAR NUEVA FINCA
+          </Text>
         </Button>
-        
+
         <ModalEliminar
           visible={ModalVisible}
           title="finca"

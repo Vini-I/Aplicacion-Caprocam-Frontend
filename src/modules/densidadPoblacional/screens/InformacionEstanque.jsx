@@ -42,12 +42,16 @@
  *   errores={errores}
  * />
  */
-
+import { View } from "react-native";
 import React from "react";
 import Card from "../../../shared/components/Card";
 import Input from "../../../shared/components/Input";
 import Select from "../../../shared/components/Select";
+import Icon from "../../../shared/components/Icons";
+import Text from "../../../shared/components/Text";
 import { COLORS } from "../../../theme/colors";
+import { ICONS } from "../../../theme/icons";
+import { styles } from "../styles/DensidadPoblacionalStyles";
 
 const bordeError = { borderColor: COLORS.error, borderWidth: 1.5 };
 
@@ -71,7 +75,14 @@ export default function InformacionEstanque({
   const invalidoAreaEstanque = submitted && !!errores.areaEstanque;
 
   return (
+    <View>
     <Card>
+      <View style={styles.sectionTitleRow}>
+        <Icon icon={ICONS.water} size={18} color={COLORS.primary} style={styles.sectionIcon} />
+          <Text size={18} weight="700" color={COLORS.textSecondary}>
+           Finca / Estanque
+          </Text>
+      </View>
       <Select
         label="Finca *"
         placeholder="Seleccione una finca"
@@ -108,5 +119,6 @@ export default function InformacionEstanque({
         style={invalidoAreaEstanque ? bordeError : null}
       />
     </Card>
+    </View>
   );
 }

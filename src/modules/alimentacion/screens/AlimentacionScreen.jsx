@@ -82,7 +82,7 @@ export default function AlimentacionScreen({ navigation, onBack }) {
     setErrores(erroresValidacion);
 
     if (!valido) {
-      setAlerta({ visible: true, variant: "danger", mensaje: "Por favor complete todos los campos obligatorios." });
+      setAlerta({ visible: true, variant: "danger", mensaje: "Rellenar campos obligatorios." });
       return;
     }
 
@@ -112,16 +112,6 @@ export default function AlimentacionScreen({ navigation, onBack }) {
     />
 
     <View style={STYLE.container}>
-      <View style={STYLE.contentWrapper}>
-        {alerta.visible && (
-          <Alert
-            variant={alerta.variant}
-            message={alerta.mensaje}
-            style={styles.alert}
-          />
-        )}
-      </View>
-
       <GestionAlimentacion
         alimentaciones={alimentaciones}
         form={form}
@@ -129,6 +119,7 @@ export default function AlimentacionScreen({ navigation, onBack }) {
         submitted={submitted}
         errores={errores}
         handleGuardar={handleGuardar}
+        alerta={alerta}
         onBack={onBack}
       />
     </View>

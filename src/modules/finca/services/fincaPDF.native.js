@@ -23,15 +23,15 @@ export const generarRegistroPDF = async (finca, estanquesFinca = []) => {
         <tr style="background-color:#285a3c; color:white;">
           <th colspan="2" style="text-align:left; padding:6px;">Datos de la finca</th>
         </tr>
-        ${filaTabla("Nombre", finca.nombre)}
-        ${filaTabla("Código", finca.codigoInterno)}
+        ${filaTabla("Nombre", finca.nombreFinca)}
+        ${filaTabla("Código", finca.codigoCBO)}
         ${filaTabla("Provincia", finca.provincia)}
         ${filaTabla("Cantón", finca.canton)}
         ${filaTabla("Distrito", finca.distrito)}
-        ${filaTabla("Responsable", finca.responsable)}
+        ${filaTabla("Responsable", finca.propietarioResponsable)}
         ${filaTabla("Teléfonos", (finca.telefonos || []).join(", "))}
         ${filaTabla("Área total", finca.areaTotal)}
-        ${filaTabla("Espejo de agua", finca.espejoAgua)}
+        ${filaTabla("Espejo de agua", finca.espejosAgua)}
         ${filaTabla("Cantidad de estanques", finca.estanques)}
       </table>
     `;
@@ -106,7 +106,7 @@ export const generarRegistroPDF = async (finca, estanquesFinca = []) => {
       throw new Error("printToFileAsync no devolvió contenido en base64");
     }
 
-    const nombreArchivo = `reporte_${finca.codigoInterno || "finca"}.pdf`;
+    const nombreArchivo = `reporte_${finca.codigoCBO || "finca"}.pdf`;
     const nuevaRuta = `${FileSystem.documentDirectory}${nombreArchivo}`;
 
     await FileSystem.writeAsStringAsync(nuevaRuta, result.base64, {
