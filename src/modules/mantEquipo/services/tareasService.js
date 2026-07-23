@@ -8,121 +8,178 @@
  * Todas las funciones son asíncronas y devuelven los datos
  * mapeados al formato usado por el frontend.
  *
- * Nota: Se envía un token falso en el header 'Authorization'
- * para evitar el error 401 mientras no se implemente JWT.
- *
  * Dependencias:
  * - api (axios) desde src/api/api.js
  * ============================================================
  */
 
-import api from '../../../api/api';
-
-// ─── TOKEN DE PRUEBA ──────────────────────────────────────────
-const FAKE_TOKEN = 'Bearer fake-token-para-pruebas';
-api.defaults.headers.common['Authorization'] = FAKE_TOKEN;
+import api from "../../../api/api";
 
 // ─── MAPEO DE DATOS ─────────────────────────────────────────────
 
 function mapBackendToFrontend(data) {
+  // Mapeo inverso de estados (backend → frontend)
+  const estadoMapInverso = {
+    'Pendiente': 'no_iniciada',
+    'En proceso': 'en_ejecucion',
+    'Finalizada': 'finalizada',
+    'Cancelada': 'cancelada',
+  };
+
+  const estadoFrontend = estadoMapInverso[data.estado] || data.estado || 'no_iniciada';
+
   return {
     id: data.id,
     nombre: data.nombre,
     descripcion: data.descripcion,
     categoria: data.categoria,
-    duracionEstimada: data.horas || data.duracionEstimada || 0,
-    estado: data.estado || 'no_iniciada',
+    duracionEstimada: Number(data.horas) || 0,
+    estado: estadoFrontend,  // ← Usar el valor mapeado
+    colaboradorId: data.colaborador_id,
+    equipoId: data.equipo_id,
     productos: data.productos || [],
-    createdAt: data.fechaCreacion || data.createdAt,
-    updatedAt: data.fechaActualizacion || data.updatedAt,
+    createdAt: data.fecha_creacion,
+    updatedAt: data.fecha_actualizacion,
   };
 }
 
 function prepareForBackend(data) {
+  // Mapeo de estados del frontend al backend
+  const estadoMap = {
+    'no_iniciada': 'Pendiente',
+    'pendiente': 'Pendiente',
+    'en_ejecucion': 'En proceso',
+    'en_proceso': 'En proceso',
+    'finalizada': 'Finalizada',
+    'cancelada': 'Cancelada',
+  };
+
+  // Generar código único para la tarea (ej: TAR-001)
+  const codigoTarea = data.codigo || `TAR-${String(Date.now()).slice(-6)}`;
+  
+  // Obtener el estado mapeado o usar el valor original si ya es válido
+  const estadoFrontend = data.estado || 'Pendiente';
+  const estadoBackend = estadoMap[estadoFrontend.toLowerCase()] || estadoFrontend;
+  
   return {
-    nombre: data.nombre?.trim() || '',
-    descripcion: data.descripcion?.trim() || '',
-    categoria: data.categoria || '',
-    horas: Number(data.duracionEstimada) || 0,
-    estado: data.estado || 'no_iniciada',
-    productos: data.productos || [],
-    grupoDatos: 1,
-    colaboradorId: data.colaboradorId || null,
-    equipoId: data.equipoId || null,
+    grupo_datos: data.grupoDatos || 1,
+    colaborador_id: data.colaboradorId || null,
+    equipo_id: data.equipoId || null,
+    nombre: data.nombre?.trim() || "",
+    descripcion: data.descripcion?.trim() || "",
+    categoria: data.categoria || "",
+    horas: Number(data.horas) || Number(data.duracionEstimada) || 0,
+    estado: estadoBackend,  // ← Usar el valor mapeado
+    codigo_tarea: codigoTarea,
   };
 }
 
 // ─── FUNCIONES PRINCIPALES ──────────────────────────────────────
 
-export async function getTareas(filtros = {}) {
+/**
+ * Obtiene todas las tareas activas del backend.
+ * Permite filtrar por categoría y estado.
+ */
+async function getTareas(filtros = {}) {
   try {
-    const response = await api.get('/tareas');
+    const response = await api.get("/api/v0/tareas");
     let data = response.data.data || [];
+    
     if (filtros.categoria) {
       data = data.filter((t) => t.categoria === filtros.categoria);
     }
     if (filtros.estado) {
       data = data.filter((t) => t.estado === filtros.estado);
     }
+    
     return data.map(mapBackendToFrontend);
   } catch (error) {
-    // Si el backend no existe (404) o no tiene datos, devolvemos array vacío
-    // y no lanzamos error para que la UI no muestre un mensaje de error.
-    // Esto es útil cuando el módulo de tareas aún no está implementado en backend.
+    // Si el endpoint no existe (404), devolvemos array vacío
     if (error.response && error.response.status === 404) {
-      console.warn('⚠️ El endpoint /tareas no está disponible. Retornando lista vacía.');
       return [];
     }
-    // Para otros errores (500, red, etc.) los lanzamos para que la UI los muestre.
-    throw error;
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Error al obtener tareas";
+    throw new Error(message);
   }
 }
 
-export async function getTareaById(id) {
+/**
+ * Obtiene una tarea por su ID.
+ */
+async function getTareaById(id) {
   try {
-    const response = await api.get(`/tareas/${id}`);
+    const response = await api.get(`/api/v0/tareas/${id}`);
     const data = response.data.data;
-    if (!data) throw new Error('Tarea no encontrada');
+    if (!data) throw new Error("Tarea no encontrada");
     return mapBackendToFrontend(data);
   } catch (error) {
-    throw error;
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Error al obtener tarea";
+    throw new Error(message);
   }
 }
 
-export async function createTarea(data) {
+/**
+ * Crea una nueva tarea.
+ */
+async function createTarea(data) {
   try {
     const payload = prepareForBackend(data);
-    const response = await api.post('/tareas', payload);
-    const created = response.data.data;
-    return mapBackendToFrontend(created);
-  } catch (error) {
-    // Para crear, si el endpoint no existe, lanzamos error para que el usuario sepa
-    throw error;
-  }
-}
-
-export async function updateTarea(id, data) {
-  try {
-    const payload = prepareForBackend(data);
-    const response = await api.put(`/tareas/${id}`, payload);
+    const response = await api.post("/api/v0/tareas", payload);
     return mapBackendToFrontend(response.data.data);
   } catch (error) {
-    throw error;
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Error al crear tarea";
+    throw new Error(message);
   }
 }
 
-export async function deleteTarea(id) {
+/**
+ * Actualiza una tarea existente.
+ */
+async function updateTarea(id, data) {
   try {
-    const response = await api.delete(`/tareas/${id}`);
+    const payload = prepareForBackend(data);
+    const response = await api.put(`/api/v0/tareas/${id}`, payload);
+    return mapBackendToFrontend(response.data.data);
+  } catch (error) {
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Error al actualizar tarea";
+    throw new Error(message);
+  }
+}
+
+/**
+ * Elimina (borrado lógico) una tarea.
+ */
+async function deleteTarea(id) {
+  try {
+    const response = await api.delete(`/api/v0/tareas/${id}`);
     return response.data.data ? true : false;
   } catch (error) {
-    throw error;
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Error al eliminar tarea";
+    throw new Error(message);
   }
 }
 
-export async function getCatalogoTareas() {
+/**
+ * Obtiene catálogo de tareas para selects.
+ */
+async function getCatalogoTareas() {
   try {
-    const response = await api.get('/tareas/catalogo');
+    const response = await api.get("/api/v0/tareas/catalogo");
     const data = response.data.data || [];
     return data.map((t) => ({
       id: t.id,
@@ -131,16 +188,14 @@ export async function getCatalogoTareas() {
       label: t.nombre,
     }));
   } catch (error) {
-    // Si el catálogo no existe, devolvemos array vacío
     if (error.response && error.response.status === 404) {
-      console.warn('⚠️ El endpoint /tareas/catalogo no está disponible. Retornando catálogo vacío.');
       return [];
     }
     throw error;
   }
 }
 
-// ─── EXPORTACIÓN COMPATIBLE ──────────────────────────────────
+// ─── EXPORTACIÓN ────────────────────────────────────────────────
 
 export const tareasService = {
   getTareas,
@@ -151,6 +206,7 @@ export const tareasService = {
   getCatalogoTareas,
 };
 
+// Alias para compatibilidad con código existente
 export const obtenerTareas = getTareas;
 export const obtenerTareaPorId = getTareaById;
 export const crearTarea = createTarea;

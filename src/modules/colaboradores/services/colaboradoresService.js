@@ -95,7 +95,6 @@ async function getColaboradores(filtros = {}) {
   try {
     const response = await api.get("/api/v0/colaboradores");
     let data = response.data.data || [];
-    console.log("📦 Datos crudos del backend:", data); // ← Verifica que lleguen
 
     if (filtros.fincaId) {
       data = data.filter((c) => c.fincaId === Number(filtros.fincaId));
@@ -111,7 +110,6 @@ async function getColaboradores(filtros = {}) {
       data = data.filter((c) => Boolean(c.activo) === filtros.activo);
     }
 
-    console.log("📋 Datos después de filtrar:", data); // ← Verifica el resultado
     return data.map(mapBackendToFrontend);
   } catch (error) {
     const message =

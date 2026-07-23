@@ -13,11 +13,9 @@
  * - setBusqueda: función para actualizar la búsqueda
  * - loading: boolean
  * - error: string | null
- * - cargarTareas: función para recargar datos (con flag force)
+ * - cargarTareas: función para recargar datos
  * - crearTarea, actualizarTarea, eliminarTarea: funciones asíncronas
- *
- * Ejemplo:
- * const { tareas, loading, crearTarea } = useTareas();
+ * ============================================================
  */
 
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -32,7 +30,6 @@ export const useTareas = () => {
   const initialLoadDone = useRef(false);
 
   const cargarTareas = useCallback(async (force = false) => {
-    // Evita recargas innecesarias si ya hay datos y no se fuerza
     if (!force && tareas.length > 0 && initialLoadDone.current) {
       return;
     }
@@ -50,16 +47,14 @@ export const useTareas = () => {
     }
   }, [tareas.length]);
 
-  // Carga inicial al montar el componente
+  // Carga inicial
   useEffect(() => {
     cargarTareas(true);
   }, []);
 
-  // Recarga al recibir foco (cuando la pantalla se vuelve visible)
-  // Esto asegura que después de crear/editar/eliminar, la lista se actualice
+  // Recarga al recibir foco
   useFocusEffect(
     useCallback(() => {
-      // Si ya se cargaron datos inicialmente, recarga forzada para obtener cambios
       if (initialLoadDone.current) {
         cargarTareas(true);
       }
@@ -77,7 +72,7 @@ export const useTareas = () => {
     );
   });
 
-  // Crear tarea
+  // CRUD
   const crearTarea = async (datos) => {
     setLoading(true);
     try {
@@ -92,7 +87,6 @@ export const useTareas = () => {
     }
   };
 
-  // Actualizar tarea
   const actualizarTarea = async (id, datos) => {
     setLoading(true);
     try {
@@ -107,7 +101,6 @@ export const useTareas = () => {
     }
   };
 
-  // Eliminar tarea
   const eliminarTarea = async (id) => {
     setLoading(true);
     try {
@@ -129,7 +122,7 @@ export const useTareas = () => {
     setBusqueda,
     loading,
     error,
-    cargarTareas, // ahora acepta un flag force
+    cargarTareas,
     crearTarea,
     actualizarTarea,
     eliminarTarea,
