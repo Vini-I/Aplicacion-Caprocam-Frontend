@@ -309,7 +309,7 @@ const styles = StyleSheet.create({
 
   optionsContainer: {
     position: "absolute",
-    maxHeight: 240,
+    maxHeight: 140,
     borderWidth: 1,
     borderColor: COLORS.inputBorder || COLORS.secondary,
     borderRadius: 8,
@@ -326,7 +326,7 @@ const styles = StyleSheet.create({
   },
 
   optionsScroll: {
-    maxHeight: 240,
+    maxHeight: 140,
   },
 
   option: {
