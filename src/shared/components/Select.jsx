@@ -9,6 +9,7 @@
  * - Usa Modal con ScrollView para no deformar las cards.
  * - Soporta required, submitted, error y helperText.
  * - Muestra borde rojo solo luego del intento de guardado o error manual.
+ * - Mantiene maxHeight en 140 para mostrar pocas opciones.
  */
 
 import React, { useRef, useState } from "react";
@@ -100,7 +101,7 @@ export default function Select({
 
     selectRef.current.measure(function (x, y, width, height, pageX, pageY) {
       setPosition({
-        top: pageY + height + 4,
+        top: pageY + height,
         left: pageX,
         width: width,
       });
