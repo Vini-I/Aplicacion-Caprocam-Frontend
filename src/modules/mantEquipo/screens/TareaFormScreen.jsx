@@ -1,53 +1,24 @@
-/**
- * ============================================================
- * PANTALLA: TareaFormScreen
- * ============================================================
- *
- * Responsabilidad:
- * Formulario para crear o editar una tarea de mantenimiento.
- *
- * Funcionalidad:
- * - Permite ingresar nombre, descripción, categoría, duración estimada y estado.
- * - Permite asociar productos al inventario mediante un Select con búsqueda.
- * - Muestra validaciones de campos obligatorios.
- * - Guarda la tarea (creación o edición) y navega de vuelta a la lista.
- *
- * Datos:
- * - Recibe un id opcional por parámetro de ruta para edición.
- *
- * Validaciones:
- * - Nombre, descripción, categoría y duración son obligatorios.
- * - Los productos son opcionales.
- *
- * Navegación:
- * - Al guardar o cancelar, navega a la lista de tareas ('/equipos/tareas').
- *
- * Dependencias:
- * - useTareaForm (hook)
- * - NavbarRegistro, Card, Input, Select, Button, Alert, NumberInput
- * - STYLE global, TareaFormStyles
- * ============================================================
- */
+// src/modules/mantEquipo/screens/TareaFormScreen.jsx
 
-import React from 'react';
-import { View, ScrollView } from 'react-native';
-import { STYLE } from '../../../theme/style';
-import { styles } from '../styles/TareaFormStyles';
+import React from "react";
+import { View, ScrollView } from "react-native";
+import { STYLE } from "../../../theme/style";
+import { styles } from "../styles/TareaFormStyles";
 
-import NavbarRegistro from '../../../shared/components/NavbarRegistro';
-import Card from '../../../shared/components/Card';
-import Input from '../../../shared/components/Input';
-import Select from '../../../shared/components/Select';
-import Button from '../../../shared/components/Button';
-import Alert from '../../../shared/components/Alert';
-import Icon from '../../../shared/components/Icons';
-import CustomText from '../../../shared/components/Text';
-import NumberInput from '../../../shared/components/NumberInput';
+import NavbarRegistro from "../../../shared/components/NavbarRegistro";
+import Card from "../../../shared/components/Card";
+import Input from "../../../shared/components/Input";
+import Select from "../../../shared/components/Select";
+import Button from "../../../shared/components/Button";
+import Alert from "../../../shared/components/Alert";
+import Icon from "../../../shared/components/Icons";
+import CustomText from "../../../shared/components/Text";
+import NumberInput from "../../../shared/components/NumberInput";
 
-import { useTareaForm } from '../hooks/useTareaForm';
-import { OPCIONES_CATEGORIA, OPCIONES_ESTADO } from '../constants/tareasMensajes';
-import { ICONS } from '../../../theme/icons';
-import { COLORS } from '../../../theme/colors';
+import { useTareaForm } from "../hooks/useTareaForm";
+import { OPCIONES_CATEGORIA, OPCIONES_ESTADO } from "../constants/tareasMensajes";
+import { ICONS } from "../../../theme/icons";
+import { COLORS } from "../../../theme/colors";
 
 export default function TareaFormScreen() {
   const {
@@ -65,7 +36,8 @@ export default function TareaFormScreen() {
     loading,
     cargandoDatos,
     isEditing,
-    productosFiltrados,
+    opcionesProductos,
+    hayResultados,
     handleChange,
     handleBusquedaProducto,
     seleccionarProducto,
@@ -80,16 +52,7 @@ export default function TareaFormScreen() {
     return <View style={STYLE.container} />;
   }
 
-  const tieneErrores = Object.keys(errores).some(k => k !== 'general' && errores[k]);
-
-  // ─── OPCIONES PARA EL SELECT DE PRODUCTOS ──────────────────
-  const opcionesProductos = productosFiltrados.map((p) => ({
-    label: `${p.nombre} (${p.unidad}) - Stock: ${p.cantidad}`,
-    value: p.id,
-  }));
-
-  // Si no hay productos que coincidan con la búsqueda, mostramos un mensaje
-  const hayResultados = opcionesProductos.length > 0;
+  const tieneErrores = Object.keys(errores).some(k => k !== "general" && errores[k]);
 
   return (
     <View style={STYLE.container}>
@@ -104,7 +67,7 @@ export default function TareaFormScreen() {
             <Input
               label="Nombre de la tarea *"
               value={nombre}
-              onChangeText={(v) => handleChange('nombre', v)}
+              onChangeText={(v) => handleChange("nombre", v)}
               placeholder="Ej: Cambio de aceite"
               style={submitted && errores.nombre ? styles.inputError : null}
               labelStyle={styles.label}
@@ -114,7 +77,7 @@ export default function TareaFormScreen() {
             <Input
               label="Descripción *"
               value={descripcion}
-              onChangeText={(v) => handleChange('descripcion', v)}
+              onChangeText={(v) => handleChange("descripcion", v)}
               placeholder="Describe la tarea en detalle"
               multiline
               style={[styles.textArea, submitted && errores.descripcion ? styles.inputError : null]}
@@ -126,7 +89,7 @@ export default function TareaFormScreen() {
               label="Categoría *"
               options={OPCIONES_CATEGORIA}
               value={categoria}
-              onChange={(v) => handleChange('categoria', v)}
+              onChange={(v) => handleChange("categoria", v)}
               placeholder="Seleccionar categoría"
               selectStyle={submitted && errores.categoria ? styles.inputError : null}
               labelStyle={styles.label}
@@ -136,7 +99,7 @@ export default function TareaFormScreen() {
             <NumberInput
               label="Duración estimada (horas) *"
               value={duracion}
-              onChangeText={(v) => handleChange('duracion', v)}
+              onChangeText={(v) => handleChange("duracion", v)}
               min={0.5}
               max={100}
               step={0.5}
@@ -149,7 +112,7 @@ export default function TareaFormScreen() {
               label="Estado"
               options={OPCIONES_ESTADO}
               value={estado}
-              onChange={(v) => handleChange('estado', v)}
+              onChange={(v) => handleChange("estado", v)}
               placeholder="Seleccionar estado"
               labelStyle={styles.label}
             />
@@ -160,7 +123,6 @@ export default function TareaFormScreen() {
                 Productos utilizados (opcional)
               </CustomText>
 
-              {/* Campo de búsqueda para productos */}
               <Input
                 label="Buscar producto"
                 placeholder="Escribe para buscar un producto..."
@@ -170,15 +132,17 @@ export default function TareaFormScreen() {
                 style={styles.searchInput}
               />
 
-              {/* Select con productos filtrados */}
               <Select
                 label="Seleccionar producto"
                 placeholder={hayResultados ? "Selecciona un producto" : "No hay productos que coincidan"}
                 options={opcionesProductos}
                 value={productoSeleccionado?.id || ""}
                 onChange={(value) => {
-                  const producto = productosFiltrados.find(p => p.id === value);
-                  if (producto) seleccionarProducto(producto);
+                  const producto = opcionesProductos.find(p => p.value === value);
+                  if (producto) {
+                    const prodCompleto = { id: producto.value, nombre: producto.label.split(" (")[0] };
+                    seleccionarProducto(prodCompleto);
+                  }
                 }}
                 containerStyle={styles.selectProductoContainer}
                 selectStyle={styles.selectProducto}
@@ -186,7 +150,6 @@ export default function TareaFormScreen() {
                 disabled={!hayResultados}
               />
 
-              {/* Formulario para agregar cantidad cuando se selecciona un producto */}
               {productoSeleccionado && (
                 <View style={styles.productoSeleccionadoContainer}>
                   <CustomText size={13} weight="600" color={COLORS.textSecondary}>
@@ -206,7 +169,7 @@ export default function TareaFormScreen() {
                       variant="outline"
                       onPress={() => {
                         seleccionarProducto(null);
-                        handleCantidadProducto('');
+                        handleCantidadProducto("");
                       }}
                       style={styles.btnCancelarProducto}
                     >
@@ -220,14 +183,13 @@ export default function TareaFormScreen() {
                     >
                       <View style={styles.contenidoBotonProducto}>
                         <Icon icon={ICONS.add} size={16} color={COLORS.primary} />
-                        <CustomText style={{ color: COLORS.primary, fontWeight: '600' }}>Agregar</CustomText>
+                        <CustomText style={{ color: COLORS.primary, fontWeight: "600" }}>Agregar</CustomText>
                       </View>
                     </Button>
                   </View>
                 </View>
               )}
 
-              {/* Lista de productos seleccionados */}
               <View style={styles.listaProductosSeleccionados}>
                 {productos.length === 0 ? (
                   <CustomText size={13} color={COLORS.textTertiary}>
@@ -235,7 +197,7 @@ export default function TareaFormScreen() {
                   </CustomText>
                 ) : (
                   productos.map((p) => {
-                    const producto = productosFiltrados.find(prod => prod.id === p.productoId) || { nombre: `ID: ${p.productoId}`, unidad: 'u' };
+                    const producto = productosDisponibles.find(prod => prod.id === p.productoId) || { nombre: `ID: ${p.productoId}`, unidad: "u" };
                     return (
                       <View key={p.productoId} style={styles.itemProductoSeleccionado}>
                         <CustomText style={styles.itemProductoSeleccionadoText}>
@@ -255,7 +217,6 @@ export default function TareaFormScreen() {
               </View>
             </View>
 
-            {/* Alerta de errores de validación */}
             {submitted && tieneErrores && (
               <Alert
                 variant="danger"
@@ -274,7 +235,6 @@ export default function TareaFormScreen() {
               />
             )}
 
-            {/* Botones */}
             <View style={styles.botonesContainer}>
               <Button
                 variant="outline"
@@ -284,8 +244,8 @@ export default function TareaFormScreen() {
               >
                 <View style={styles.contenidoBoton}>
                   <Icon icon={ICONS.save} size={18} color={COLORS.primary} />
-                  <CustomText style={{ color: COLORS.primary, fontWeight: '600' }}>
-                    {loading ? 'Guardando...' : 'Guardar'}
+                  <CustomText style={{ color: COLORS.primary, fontWeight: "600" }}>
+                    {loading ? "Guardando..." : "Guardar"}
                   </CustomText>
                 </View>
               </Button>
