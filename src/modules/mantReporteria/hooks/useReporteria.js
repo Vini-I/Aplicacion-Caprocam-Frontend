@@ -1,81 +1,82 @@
 import { useEffect, useState } from "react";
 
-import { obtenerDetalleRegistro } from "../services/Reporteria.service";
+import {
+  obtenerDetalleRegistro,
+  obtenerOpcionesEstanquesReporteria,
+  obtenerOpcionesFincasReporteria,
+} from "../services/Reporteria.service";
 
 export function useReporteria() {
+  const [registroTipo, setRegistroTipo] = useState(null);
+  const [finca, setFincaBase] = useState("");
+  const [estanque, setEstanque] = useState("");
+  const [registros, setRegistros] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-    const [registroTipo, setRegistroTipo] = useState(null);
-    const [finca, setFinca] = useState(null);
-    const [estanque, setEstanque] = useState(null);
+  const filtrosCompletos = !!registroTipo;
+  const opcionesFincas = obtenerOpcionesFincasReporteria();
+  const opcionesEstanques = obtenerOpcionesEstanquesReporteria(finca);
 
-    const [registros, setRegistros] = useState([]);
+  function setFinca(valor) {
+    setFincaBase(valor);
+    setEstanque("");
+  }
 
-    const [loading, setLoading] = useState(false);
+  useEffect(
+    function () {
+      let activo = true;
 
-
-    const filtrosCompletos =
-        !!registroTipo &&
-        !!finca &&
-        !!estanque;
-
-
-    useEffect(() => {
-
-        async function cargarRegistros() {
-
-            if (!filtrosCompletos) {
-                setRegistros([]);
-                return;
-            }
-
-
-            try {
-
-                setLoading(true);
-
-                const data = await obtenerDetalleRegistro({
-                    tipoRegistro: registroTipo,
-                    fincaId: finca,
-                    estanqueId: estanque,
-                });
-
-                setRegistros(data);
-
-            } catch (error) {
-
-                console.error(
-                    "Error cargando registros:",
-                    error
-                );
-
-                setRegistros([]);
-
-            } finally {
-
-                setLoading(false);
-
-            }
+      async function cargarRegistros() {
+        if (!filtrosCompletos) {
+          setRegistros([]);
+          return;
         }
 
-        cargarRegistros();
+        try {
+          setLoading(true);
 
-    }, [registroTipo, finca, estanque]);
+          const data = await obtenerDetalleRegistro({
+            tipoRegistro: registroTipo,
+            fincaId: finca,
+            estanqueId: estanque,
+          });
 
+          if (activo === true) {
+            setRegistros(data);
+          }
+        } catch (error) {
+          console.error("Error cargando registros:", error);
 
-    return {
+          if (activo === true) {
+            setRegistros([]);
+          }
+        } finally {
+          if (activo === true) {
+            setLoading(false);
+          }
+        }
+      }
 
-        registroTipo,
-        finca,
-        estanque,
+      cargarRegistros();
 
-        registros,
-        loading,
+      return function () {
+        activo = false;
+      };
+    },
+    [registroTipo, finca, estanque],
+  );
 
-        filtrosCompletos,
-
-        setRegistroTipo,
-        setFinca,
-        setEstanque,
-
-    };
+  return {
+    registroTipo,
+    finca,
+    estanque,
+    registros,
+    loading,
+    filtrosCompletos,
+    opcionesFincas,
+    opcionesEstanques,
+    setRegistroTipo,
+    setFinca,
+    setEstanque,
+  };
 }
