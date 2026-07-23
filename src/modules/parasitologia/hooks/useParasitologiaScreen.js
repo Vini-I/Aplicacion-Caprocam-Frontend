@@ -213,7 +213,6 @@ export default function useParasitologiaScreen(onBack, navigation) {
     itemFullStyle,
     setEstanque,
     setFechaReporte,
-    setResponsable,
     setParasito,
     setCamaronesMuestreados,
     setCamaronesInfectados,

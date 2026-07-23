@@ -100,15 +100,15 @@ export default function ParasitologiaScreen({ onBack, navigation }) {
                 />
               </View>
 
-              <View style={pantalla.itemStyle}>
+              <View style={pantalla.itemStyle} pointerEvents="none">
                 <Input
-                  label="Persona encargada"
+                  label="Responsable"
                   value={pantalla.responsable}
-                  onChangeText={pantalla.setResponsable}
                   placeholder="Responsable obtenido del backend"
                   editable={false}
+                  readOnly={true}
+                  selectTextOnFocus={false}
                   labelStyle={styles.label}
-                  helperText="Este dato se obtiene desde backend."
                 />
               </View>
             </View>
