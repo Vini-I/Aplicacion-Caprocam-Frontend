@@ -16,5 +16,19 @@ export const estanqueService  = {
 
         }
 
+    },
+
+    getEstanquesById: async (id) => {
+        try {
+            
+            const response = await api.get(`/estanques/${id}`);
+            
+            return response.data.data;
+
+        } catch (error) {
+
+            throw error;
+
+        }
     }
 }

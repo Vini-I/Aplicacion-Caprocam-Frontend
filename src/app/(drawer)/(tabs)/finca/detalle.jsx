@@ -9,12 +9,17 @@ export default function Detalle() {
     router.push("/finca/estanque");
   };
    
-  const handleDetalleEstanque = (codigo) => {
-    router.push(`/finca/detalleEstanque?id=${codigo}`);
+  const handleDetalleEstanque = (id) => {
+    router.push(`/finca/detalleEstanque?id=${id}`);
   };
 
-  const handleEditarEstanque = () => {
-    router.push("/finca/editarEstanque");
+  const handleEditarEstanque = (id) => {
+    router.push({
+      pathname: "/finca/editarEstanque",
+      params: {
+        id
+      }
+    });
   }
 
   return (

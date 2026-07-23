@@ -9,6 +9,8 @@ export default function VentaLayout() {
 
       <Stack.Screen name="detalleVenta" options={{ title: "Detalle Venta", headerShown: true }} />
 
+      <Stack.Screen name="editarVenta" options={{ title: "Editar Venta", headerShown: true }} />
+
     </Stack>
   );
 }
