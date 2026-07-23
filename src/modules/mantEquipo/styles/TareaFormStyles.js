@@ -154,4 +154,24 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
   },
+    searchInputContainer: {
+    marginBottom: 8,
+  },
+  searchInput: {
+    minHeight: 40,
+    borderRadius: 8,
+    borderColor: COLORS.secondary,
+    backgroundColor: COLORS.white,
+    paddingHorizontal: 12,
+    fontSize: 16,
+  },
+  selectProductoContainer: {
+    marginBottom: 12,
+  },
+  selectProducto: {
+    minHeight: 44,
+    borderRadius: 8,
+    borderColor: COLORS.secondary,
+    backgroundColor: COLORS.white,
+  },
 });

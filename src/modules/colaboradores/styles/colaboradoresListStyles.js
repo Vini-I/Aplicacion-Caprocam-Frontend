@@ -192,4 +192,12 @@ export const styles = StyleSheet.create({
     justifyContent: "center",
     padding: 16,
   },
+    emptyStateButton: {
+    marginTop: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    borderColor: COLORS.primary,
+    backgroundColor: 'transparent',
+  },
 });

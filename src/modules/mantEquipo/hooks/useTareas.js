@@ -1,3 +1,5 @@
+// src/modules/mantEquipo/hooks/useTareas.js
+
 /**
  * ============================================================
  * HOOK: useTareas
@@ -5,24 +7,21 @@
  *
  * Hook personalizado para gestionar las tareas de mantenimiento.
  * Proporciona estado, carga, filtrado y operaciones CRUD.
+ * También maneja los filtros de categoría y estado, y las opciones
+ * para los selects del FilterButton.
  *
  * Retorna:
- * - tareas: array completo de tareas
- * - tareasFiltradas: array filtrado según búsqueda
- * - busqueda: string para filtrar
- * - setBusqueda: función para actualizar la búsqueda
- * - loading: boolean
- * - error: string | null
- * - cargarTareas: función para recargar datos (con flag force)
- * - crearTarea, actualizarTarea, eliminarTarea: funciones asíncronas
- *
- * Ejemplo:
- * const { tareas, loading, crearTarea } = useTareas();
+ * - tareas, tareasFiltradas, busqueda, setBusqueda, loading, error
+ * - cargarTareas, crearTarea, actualizarTarea, eliminarTarea
+ * - filtros, setFiltros, opcionesCategoria, opcionesEstado
+ * - tareasFinales (ya filtradas por categoría y estado)
+ * ============================================================
  */
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useFocusEffect } from "expo-router";
 import * as tareasService from "../services/tareasService";
+import { OPCIONES_CATEGORIA, OPCIONES_ESTADO } from "../constants/tareasMensajes";
 
 export const useTareas = () => {
   const [tareas, setTareas] = useState([]);
@@ -31,8 +30,27 @@ export const useTareas = () => {
   const [error, setError] = useState(null);
   const initialLoadDone = useRef(false);
 
+  // ─── FILTROS ADICIONALES ──────────────────────────────────────
+  const [filtros, setFiltros] = useState({
+    categories: [],
+    suppliers: [],
+    units: [],
+    lowStock: false,
+    expiryDate: "",
+  });
+
+  // ─── OPCIONES PARA FILTERBUTTON ──────────────────────────────
+  const opcionesCategoria = useMemo(
+    () => OPCIONES_CATEGORIA.map((c) => ({ label: c.label, value: c.value })),
+    []
+  );
+  const opcionesEstado = useMemo(
+    () => OPCIONES_ESTADO.map((e) => ({ label: e.label, value: e.value })),
+    []
+  );
+
+  // ─── CARGA DE DATOS ────────────────────────────────────────────
   const cargarTareas = useCallback(async (force = false) => {
-    // Evita recargas innecesarias si ya hay datos y no se fuerza
     if (!force && tareas.length > 0 && initialLoadDone.current) {
       return;
     }
@@ -50,34 +68,46 @@ export const useTareas = () => {
     }
   }, [tareas.length]);
 
-  // Carga inicial al montar el componente
+  // Carga inicial
   useEffect(() => {
     cargarTareas(true);
   }, []);
 
-  // Recarga al recibir foco (cuando la pantalla se vuelve visible)
-  // Esto asegura que después de crear/editar/eliminar, la lista se actualice
+  // Recarga al recibir foco
   useFocusEffect(
     useCallback(() => {
-      // Si ya se cargaron datos inicialmente, recarga forzada para obtener cambios
       if (initialLoadDone.current) {
         cargarTareas(true);
       }
     }, [cargarTareas])
   );
 
-  // Filtrado local por búsqueda
-  const tareasFiltradas = tareas.filter((t) => {
-    if (!busqueda.trim()) return true;
-    const q = busqueda.toLowerCase().trim();
-    return (
-      t.nombre.toLowerCase().includes(q) ||
-      t.descripcion.toLowerCase().includes(q) ||
-      t.categoria.toLowerCase().includes(q)
-    );
-  });
+  // ─── FILTRADO LOCAL ────────────────────────────────────────────
+  // Filtro por búsqueda de texto
+  const tareasFiltradas = useMemo(() => {
+    return tareas.filter((t) => {
+      if (!busqueda.trim()) return true;
+      const q = busqueda.toLowerCase().trim();
+      return (
+        t.nombre.toLowerCase().includes(q) ||
+        t.descripcion.toLowerCase().includes(q) ||
+        t.categoria.toLowerCase().includes(q)
+      );
+    });
+  }, [tareas, busqueda]);
 
-  // Crear tarea
+  // Aplicar filtros adicionales (categoría y estado)
+  const tareasFinales = useMemo(() => {
+    return tareasFiltradas.filter((t) => {
+      if (filtros.categories.length > 0 && !filtros.categories.includes(t.categoria))
+        return false;
+      if (filtros.suppliers.length > 0 && !filtros.suppliers.includes(t.estado))
+        return false;
+      return true;
+    });
+  }, [tareasFiltradas, filtros]);
+
+  // ─── CRUD ──────────────────────────────────────────────────────
   const crearTarea = async (datos) => {
     setLoading(true);
     try {
@@ -92,7 +122,6 @@ export const useTareas = () => {
     }
   };
 
-  // Actualizar tarea
   const actualizarTarea = async (id, datos) => {
     setLoading(true);
     try {
@@ -107,7 +136,6 @@ export const useTareas = () => {
     }
   };
 
-  // Eliminar tarea
   const eliminarTarea = async (id) => {
     setLoading(true);
     try {
@@ -122,16 +150,22 @@ export const useTareas = () => {
     }
   };
 
+  // ─── RETORNO ──────────────────────────────────────────────────
   return {
     tareas,
     tareasFiltradas,
+    tareasFinales,
     busqueda,
     setBusqueda,
     loading,
     error,
-    cargarTareas, // ahora acepta un flag force
+    cargarTareas,
     crearTarea,
     actualizarTarea,
     eliminarTarea,
+    filtros,
+    setFiltros,
+    opcionesCategoria,
+    opcionesEstado,
   };
 };

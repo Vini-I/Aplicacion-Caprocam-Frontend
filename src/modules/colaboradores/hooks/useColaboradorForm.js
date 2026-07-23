@@ -4,8 +4,7 @@
  * ============================================================
  *
  * Encapsula la lógica del formulario de colaboradores:
- * estado del formulario, validaciones, consulta TSE simulada,
- * envío y manejo de errores.
+ * estado del formulario, validaciones, envío y manejo de errores.
  *
  * Parámetros:
  * - initialData: objeto con datos iniciales (para edición)
@@ -15,15 +14,16 @@
  * - onSubmit: función que recibe los datos al enviar
  *
  * Retorna:
- * - form, errors, submitted, validationMessage, loadingTSE, consultedCedula
- * - handleChange, handleCedulaBlur, handleSubmit
+ * - form, errors, submitted, validationMessage
+ * - handleChange, handleSubmit
  * - rolesDisponibles
+ * - handleCedulaChange, handleTelefonoChange, handleNombreChange, handleApellidosChange
+ * ============================================================
  */
 
 import { useState } from "react";
-import { Alert as RNAlert } from "react-native";
 
-// Constantes y validadores (igual que antes)
+// Constantes y validadores
 const ROLES_CAMPROCAM = [
   { label: "Trabajador Camprocam", value: "camprocam_worker" },
   { label: "Dueño Externo", value: "external_owner" },
@@ -35,20 +35,6 @@ const validarTelefono = (telefono) => /^\d{8}$/.test(telefono);
 const validarEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 const validarNombre = (nombre) => nombre.trim().length >= 2;
 const validarApellidos = (apellidos) => apellidos.trim().length >= 2;
-
-const consultarCedulaTSE = async (cedula) => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const mock = {
-        "123456789": { success: true, nombre: "Carlos", apellidos: "Rodríguez Pérez" },
-        "987654321": { success: true, nombre: "María", apellidos: "Fernández Gómez" },
-        "112233445": { success: true, nombre: "Juan", apellidos: "Pérez Solano" },
-        "301234567": { success: true, nombre: "Dueño", apellidos: "Externo S.A." },
-      };
-      resolve(mock[cedula] || { success: false, error: "Cédula no encontrada" });
-    }, 1000);
-  });
-};
 
 export function useColaboradorForm({ initialData, isEditing, userRole, fincaId, onSubmit }) {
   const [form, setForm] = useState({
@@ -64,10 +50,36 @@ export function useColaboradorForm({ initialData, isEditing, userRole, fincaId, 
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
   const [validationMessage, setValidationMessage] = useState("");
-  const [loadingTSE, setLoadingTSE] = useState(false);
-  const [consultedCedula, setConsultedCedula] = useState(false);
 
   const rolesDisponibles = userRole === "camprocam_admin" ? ROLES_CAMPROCAM : ROLES_EXTERNO;
+
+  // ─── FUNCIONES DE FILTRADO POR CAMPO ──────────────────────
+
+  // Cédula: solo números, máximo 9 dígitos
+  const handleCedulaChange = (value) => {
+    const soloNumeros = value.replace(/\D/g, "").slice(0, 9);
+    handleChange("cedula", soloNumeros);
+  };
+
+  // Teléfono: solo números, máximo 8 dígitos
+  const handleTelefonoChange = (value) => {
+    const soloNumeros = value.replace(/\D/g, "").slice(0, 8);
+    handleChange("telefono", soloNumeros);
+  };
+
+  // Nombre: solo letras (con acentos, ñ, espacios) - elimina números y caracteres especiales
+  const handleNombreChange = (value) => {
+    const soloLetras = value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, "");
+    handleChange("nombre", soloLetras);
+  };
+
+  // Apellidos: solo letras (con acentos, ñ, espacios) - elimina números y caracteres especiales
+  const handleApellidosChange = (value) => {
+    const soloLetras = value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, "");
+    handleChange("apellidos", soloLetras);
+  };
+
+  // ─── FUNCIONES EXISTENTES ──────────────────────────────────
 
   const handleChange = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -76,36 +88,6 @@ export function useColaboradorForm({ initialData, isEditing, userRole, fincaId, 
     }
     if (submitted && validationMessage) {
       setValidationMessage("");
-    }
-  };
-
-  const handleCedulaBlur = async () => {
-    const { cedula } = form;
-    if (!cedula || cedula.length !== 9 || consultedCedula || isEditing) return;
-
-    if (!validarCedula(cedula)) {
-      setErrors((prev) => ({ ...prev, cedula: "Cédula debe tener 9 dígitos" }));
-      return;
-    }
-
-    setLoadingTSE(true);
-    try {
-      const result = await consultarCedulaTSE(cedula);
-      if (result.success) {
-        setForm((prev) => ({
-          ...prev,
-          nombre: result.nombre,
-          apellidos: result.apellidos,
-        }));
-        setConsultedCedula(true);
-        RNAlert.alert("Éxito", "Datos cargados automáticamente");
-      } else {
-        RNAlert.alert("Advertencia", "Cédula no encontrada. Ingrese datos manualmente.");
-      }
-    } catch {
-      RNAlert.alert("Error", "No se pudo consultar la cédula");
-    } finally {
-      setLoadingTSE(false);
     }
   };
 
@@ -161,8 +143,7 @@ export function useColaboradorForm({ initialData, isEditing, userRole, fincaId, 
     const { hasError } = validateForm();
 
     if (hasError) {
-      // Mensaje genérico sin detalles de campos específicos
-      setValidationMessage("Revisa los campos obligatorios marcados con *:");
+      setValidationMessage("Revisa los campos obligatorios marcados con *");
       return;
     }
 
@@ -178,11 +159,12 @@ export function useColaboradorForm({ initialData, isEditing, userRole, fincaId, 
     errors,
     submitted,
     validationMessage,
-    loadingTSE,
-    consultedCedula,
     rolesDisponibles,
     handleChange,
-    handleCedulaBlur,
+    handleCedulaChange,
+    handleTelefonoChange,
+    handleNombreChange,
+    handleApellidosChange,
     handleSubmit,
   };
 }
