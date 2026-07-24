@@ -43,6 +43,7 @@ import Header   from '../../../shared/components/Header';
 import Separator from '../../../shared/components/Separator';
 import FormField from '../../../shared/components/FormField';
 import Alert     from '../../../shared/components/Alert';
+import Icon      from '../../../shared/components/Icons';
 
 import { useRegister } from '../hooks/useRegister';
 import { AUTH_MESSAGES as MSG } from '../constants/authMessages';
