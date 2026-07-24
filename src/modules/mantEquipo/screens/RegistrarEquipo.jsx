@@ -84,22 +84,22 @@ export default function RegistrarEquipoScreen() {
   }, [edit]);
 
   const {
-    formulario,
-    errores,
-    submitted,
-    guardando,
-    isEditing,
-    tiposEquipo,
-    estadosEquipo,
-    actualizarCampo,
-    guardarEquipo,
-  } = useRegistrarEquipo(equipoEdicion);
+  formulario,
+  errores,
+  submitted,
+  guardando,
+  isEditing,
+  tiposEquipo,
+  estadosOperativos,
+  actualizarCampo,
+  guardarEquipo,
+} = useRegistrarEquipo(equipoEdicion);
 
   const [estanquesDisponibles, setEstanquesDisponibles] = useState([]);
 
-useEffect(() => {
-  equiposService.getEstanquesDisponibles().then(setEstanquesDisponibles);
-}, []);
+  useEffect(() => {
+    equiposService.getEstanquesDisponibles().then(setEstanquesDisponibles);
+  }, []);
 
   // Estado para alertas
   const [alert, setAlert] = useState(null);
@@ -202,15 +202,6 @@ useEffect(() => {
             labelStyle={styles.labelMedium}
           />
 
-          <Input
-            label="Modelo *"
-            value={formulario.modelo}
-            onChangeText={(valor) => actualizarCampo('modelo', valor)}
-            placeholder="Ej: MX-2000"
-            style={submitted && errores.modelo ? styles.invalidField : undefined}
-            labelStyle={styles.labelMedium}
-          />
-
           {/* Fecha de instalación - solo lectura en edición */}
           <EquipoFechaInput
             label="Fecha de instalación *"
@@ -256,12 +247,12 @@ useEffect(() => {
           />
 
           <Select
-            label="Estado *"
-            value={formulario.estado}
-            onChange={(valor) => actualizarCampo('estado', valor)}
-            options={estadosEquipo}
-            placeholder="Seleccione el estado actual"
-            selectStyle={submitted && errores.estado ? styles.invalidField : undefined}
+            label="Estado operativo *"
+            value={formulario.estadoOperativo}
+            onChange={(valor) => actualizarCampo('estadoOperativo', valor)}
+            options={estadosOperativos}
+            placeholder="Seleccione el estado operativo"
+            selectStyle={submitted && errores.estadoOperativo ? styles.invalidField : undefined}
             labelStyle={styles.labelMedium}
           />
         </Card>

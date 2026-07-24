@@ -27,7 +27,7 @@ const mapColaborador = (colaborador) => ({
  * Retorna la lista de trabajadores desde la API.
  */
 export const getWorkers = async () => {
-    const response = await api.get("/colaboradores");
+    const response = await api.get("/login/sincronizar");
     return response.data.data.map(mapColaborador);
 };
 

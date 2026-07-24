@@ -25,6 +25,7 @@ import { LOGIN_MESSAGES } from '../constants/messages';
 import { useLoginFlow } from '../hooks/useLoginFlow';
 import WorkerSearchBar from '../components/WorkerSearchBar';
 import styles from '../styles/loginStyles';
+import { STYLE } from '../../../theme/style';
 
 /**
  * LoginScreen
@@ -35,8 +36,8 @@ export default function LoginScreen({ onLoginSuccess = () => {} }) {
   const loginFlow = useLoginFlow({ onLoginSuccess });
 
   return (
-    <View style={styles.screen}>
-      <ScrollView style={styles.container} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+    <View style={STYLE.container}>
+      <ScrollView contentContainerStyle={STYLE.contentWrapper} showsVerticalScrollIndicator={false}>
         <LoginHeader formattedDate={loginFlow.formattedDate} />
         <WorkerSection
           workers={loginFlow.filteredWorkers}
