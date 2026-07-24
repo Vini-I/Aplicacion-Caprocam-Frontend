@@ -25,15 +25,13 @@ export const useAuth = ({ onLoginSuccess = () => {} } = {}) => {
   // Los errores visibles solo aparecen si el usuario ya intentó enviar
   const errors = submitted ? validationErrors : { username: "", password: "" };
 
-  const { loading, serverError, submit } = useAuthRequest({
+  const { loading, serverError, setServerError, submit } = useAuthRequest({
     onSuccess: onLoginSuccess,
   });
 
   const handleLogin = () => {
-    // TODO: eliminar esta línea una vez que login() funcione con el backend
-    // setSubmitted(true);
+    setSubmitted(true);
     submit(() => login(username, password), isFormValid);
-    onLoginSuccess();
   };
 
   return {
@@ -46,6 +44,7 @@ export const useAuth = ({ onLoginSuccess = () => {} } = {}) => {
     buttonVariant: "primary",
     loading,
     serverError,
+    setServerError,
     handleLogin,
   };
 };

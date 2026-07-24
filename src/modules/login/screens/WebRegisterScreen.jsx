@@ -18,6 +18,7 @@ import Modal    from '../../../shared/components/Modal';
 import Header   from '../../../shared/components/Header';
 import Separator from '../../../shared/components/Separator';
 import FormField from '../../../shared/components/FormField';
+import Alert     from '../../../shared/components/Alert';
 
 import { useRegister } from '../hooks/useRegister';
 import { AUTH_MESSAGES as MSG } from '../constants/authMessages';
@@ -31,16 +32,21 @@ export default function WebRegisterScreen({
   const {
     nombre, setNombre, apellidos, setApellidos,
     email, setEmail, username, setUsername, password, setPassword,
-    errors, loading,
+    errors, loading, serverError, setServerError,
     handleRegister, showSuccessModal, handleModalClose,
   } = useRegister({ onRegisterSuccess });
 
+  const createChangeHandler = (setter) => (val) => {
+    if (serverError && setServerError) setServerError(null);
+    setter(val);
+  };
+
   const fields = [
-    { key: 'nombre',    label: MSG.LABEL_NOMBRE,    value: nombre,    onChangeText: setNombre,    placeholder: MSG.PLACEHOLDER_NOMBRE,    error: errors.nombre },
-    { key: 'apellidos', label: MSG.LABEL_APELLIDOS,  value: apellidos, onChangeText: setApellidos, placeholder: MSG.PLACEHOLDER_APELLIDOS,  error: errors.apellidos },
-    { key: 'email',     label: MSG.LABEL_EMAIL,      value: email,     onChangeText: setEmail,     placeholder: MSG.PLACEHOLDER_EMAIL,     error: errors.email,    autoCapitalize: 'none', autoCorrect: false, keyboardType: 'email-address' },
-    { key: 'username',  label: MSG.LABEL_USERNAME,   value: username,  onChangeText: setUsername,  placeholder: MSG.PLACEHOLDER_USERNAME,  error: errors.username, autoCapitalize: 'none', autoCorrect: false },
-    { key: 'password',  label: MSG.LABEL_PASSWORD,   value: password,  onChangeText: setPassword,  placeholder: MSG.PLACEHOLDER_PASSWORD,  error: errors.password, secureTextEntry: true },
+    { key: 'nombre',    label: MSG.LABEL_NOMBRE,    value: nombre,    onChangeText: createChangeHandler(setNombre),    placeholder: MSG.PLACEHOLDER_NOMBRE,    error: errors.nombre },
+    { key: 'apellidos', label: MSG.LABEL_APELLIDOS,  value: apellidos, onChangeText: createChangeHandler(setApellidos), placeholder: MSG.PLACEHOLDER_APELLIDOS,  error: errors.apellidos },
+    { key: 'email',     label: MSG.LABEL_EMAIL,      value: email,     onChangeText: createChangeHandler(setEmail),     placeholder: MSG.PLACEHOLDER_EMAIL,     error: errors.email,    autoCapitalize: 'none', autoCorrect: false, keyboardType: 'email-address' },
+    { key: 'username',  label: MSG.LABEL_USERNAME,   value: username,  onChangeText: createChangeHandler(setUsername),  placeholder: MSG.PLACEHOLDER_USERNAME,  error: errors.username, autoCapitalize: 'none', autoCorrect: false },
+    { key: 'password',  label: MSG.LABEL_PASSWORD,   value: password,  onChangeText: createChangeHandler(setPassword),  placeholder: MSG.PLACEHOLDER_PASSWORD,  error: errors.password, secureTextEntry: true },
   ];
 
   return (
@@ -73,9 +79,15 @@ export default function WebRegisterScreen({
             <FormField key={key} editable={!loading} error={error} {...fieldProps} />
           ))}
 
-          {loading && <Spinner text={MSG.LOADING_REGISTER} />}
+          {serverError ? (
+            <Alert variant="danger" message={serverError} style={{ marginBottom: 16 }} />
+          ) : null}
 
           {loading && <Spinner text={MSG.LOADING_REGISTER} />}
+
+          <Button disabled={loading} onPress={handleRegister}>
+            {MSG.BUTTON_SUBMIT_REGISTER}
+          </Button>
 
           <Separator text={MSG.SEPARATOR_TEXT_REGISTER} />
 

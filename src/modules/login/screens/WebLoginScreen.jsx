@@ -14,6 +14,7 @@ import Button    from '../../../shared/components/Button';
 import Header    from '../../../shared/components/Header';
 import Separator  from '../../../shared/components/Separator';
 import FormField  from '../../../shared/components/FormField';
+import Alert      from '../../../shared/components/Alert';
 
 import { useAuth } from '../hooks/useAuth';
 import { AUTH_MESSAGES as MSG } from '../constants/authMessages';
@@ -27,9 +28,19 @@ export default function WebLoginScreen({
   const {
     username, setUsername,
     password, setPassword,
-    errors, loading, serverError,
+    errors, loading, serverError, setServerError,
     handleLogin,
   } = useAuth({ onLoginSuccess });
+
+  const handleUsernameChange = (val) => {
+    if (serverError && setServerError) setServerError(null);
+    setUsername(val);
+  };
+
+  const handlePasswordChange = (val) => {
+    if (serverError && setServerError) setServerError(null);
+    setPassword(val);
+  };
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -46,7 +57,7 @@ export default function WebLoginScreen({
           <FormField
             label={MSG.LABEL_USERNAME}
             value={username}
-            onChangeText={setUsername}
+            onChangeText={handleUsernameChange}
             placeholder={MSG.PLACEHOLDER_USERNAME}
             editable={!loading}
             autoCapitalize="none"
@@ -57,18 +68,16 @@ export default function WebLoginScreen({
           <FormField
             label={MSG.LABEL_PASSWORD}
             value={password}
-            onChangeText={setPassword}
+            onChangeText={handlePasswordChange}
             placeholder={MSG.PLACEHOLDER_PASSWORD}
             editable={!loading}
             secureTextEntry
             error={errors.password}
           />
 
-          {serverError !== null && (
-            <View style={styles.serverErrorContainer}>
-              <CustomText size={14} color={COLORS.error} align="center">{serverError}</CustomText>
-            </View>
-          )}
+          {serverError ? (
+            <Alert variant="danger" message={serverError} style={{ marginBottom: 16 }} />
+          ) : null}
 
           {loading && <Spinner text={MSG.LOADING_LOGIN} />}
 
