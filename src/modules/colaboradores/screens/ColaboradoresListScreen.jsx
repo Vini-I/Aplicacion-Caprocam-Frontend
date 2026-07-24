@@ -32,7 +32,7 @@ import FilterButton from '../../inventarios/components/FilterButton';
 import Alert from '../../../shared/components/Alert';
 import Modal from '../../../shared/components/Modal';
 import Input from '../../../shared/components/Input';
-import EmptyState from '../../../shared/components/EmptyState';  // ← Agregar
+import EmptyState from '../../../shared/components/EmptyState';
 
 import { STYLE } from '../../../theme/style';
 import { ICONS } from '../../../theme/icons';
@@ -183,20 +183,6 @@ export default function ColaboradoresListScreen() {
           <EmptyState
             title={emptyTitle}
             description={emptyDescription}
-            action={
-              <Button
-                variant="outline"
-                onPress={handleAddNavigation}
-                style={styles.emptyStateButton}
-              >
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <Icon icon={ICONS.add} size={16} color={COLORS.primary} />
-                  <CustomText style={{ color: COLORS.primary, fontWeight: '600' }}>
-                    Agregar colaborador
-                  </CustomText>
-                </View>
-              </Button>
-            }
           />
         ) : (
           listaFiltrada.map((colab) => (
@@ -211,19 +197,17 @@ export default function ColaboradoresListScreen() {
         )}
       </ScrollView>
 
-      {/* Botón flotante "Agregar colaborador" (solo si hay colaboradores) */}
-      {listaFiltrada.length > 0 && (
-        <View style={styles.floatingButtonContainer}>
-          <Button
-            variant="outline"
-            onPress={handleAddNavigation}
-            style={styles.floatingButton}
-          >
-            <Icon icon={ICONS.add} size={16} color={COLORS.primary} />
-            <CustomText style={styles.floatingButtonText}>Agregar colaborador</CustomText>
-          </Button>
-        </View>
-      )}
+      {/* Botón flotante "Agregar colaborador" siempre visible */}
+      <View style={styles.floatingButtonContainer}>
+        <Button
+          variant="outline"
+          onPress={handleAddNavigation}
+          style={styles.floatingButton}
+        >
+          <Icon icon={ICONS.add} size={16} color={COLORS.primary} />
+          <CustomText style={styles.floatingButtonText}>Agregar colaborador</CustomText>
+        </Button>
+      </View>
 
       {/* Modal de confirmación de eliminación */}
       <Modal

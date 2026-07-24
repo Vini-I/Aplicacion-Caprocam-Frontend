@@ -15,11 +15,10 @@
  * generación/hasheo automático del PIN.
  *
  * Dependencias:
- * - api (axios) desde src/api/api.js
+ * - api (axios) desde src/api/api.js (ya incluye el interceptor de tokens)
  * ============================================================
  */
 
-// src/modules/colaboradores/services/colaboradoresService.js
 import api from "../../../api/api";
 
 // Mapeo de roles
@@ -60,7 +59,7 @@ function mapBackendToFrontend(data) {
     email: data.email,
     rol,
     fincaId: data.fincaId,
-    activo: Boolean(data.activo), // ← Convierte 1/0 a true/false
+    activo: Boolean(data.activo), // Convierte 1/0 a true/false
   };
 }
 
@@ -90,10 +89,11 @@ function prepareForBackend(data, pinHash = null) {
 /**
  * Obtiene todos los colaboradores activos del backend.
  * Filtra por fincaId, rol, activo si se pasan.
+ * Ruta corregida: /colaboradores (sin /api/v0)
  */
 async function getColaboradores(filtros = {}) {
   try {
-    const response = await api.get("/api/v0/colaboradores");
+    const response = await api.get("/colaboradores");
     let data = response.data.data || [];
 
     if (filtros.fincaId) {
@@ -106,7 +106,6 @@ async function getColaboradores(filtros = {}) {
       });
     }
     if (filtros.activo !== undefined) {
-      // Convierte el valor del backend a booleano antes de comparar
       data = data.filter((c) => Boolean(c.activo) === filtros.activo);
     }
 
@@ -122,10 +121,11 @@ async function getColaboradores(filtros = {}) {
 
 /**
  * Obtiene un colaborador por su ID.
+ * Ruta corregida: /colaboradores/${id}
  */
 async function getColaboradorById(id) {
   try {
-    const response = await api.get(`/api/v0/colaboradores/${id}`);
+    const response = await api.get(`/colaboradores/${id}`);
     const data = response.data.data;
     if (!data) throw new Error("Colaborador no encontrado");
     return mapBackendToFrontend(data);
@@ -142,35 +142,26 @@ async function getColaboradorById(id) {
  * Crea un nuevo colaborador.
  * Genera un PIN de 4 dígitos y lo envía en pinHash.
  * Devuelve el colaborador creado y el PIN en texto plano.
- */
-/**
- * Crea un nuevo colaborador.
- * Genera un PIN de 4 dígitos y lo envía en pinHash.
- * Devuelve el colaborador creado y el PIN en texto plano.
+ * Ruta corregida: /colaboradores
  */
 async function createColaborador(data) {
   try {
     const pin = String(Math.floor(1000 + Math.random() * 9000));
     const payload = prepareForBackend(data, pin);
-    const response = await api.post("/api/v0/colaboradores", payload);
+    const response = await api.post("/colaboradores", payload);
     const created = response.data.data;
     return {
       ...mapBackendToFrontend(created),
       pin,
     };
   } catch (error) {
-    
-    // Detectar errores de duplicado
     const errorData = error.response?.data;
     const errorMessage = errorData?.message || error.message || "Error al crear colaborador";
     const errorDetail = errorData?.error || errorData?.errors;
-    
-    
-    // Si el backend devuelve un mensaje específico en error
+
     if (typeof errorDetail === "string" && errorDetail.includes("cedula")) {
       throw new Error("Colaborador ya existente.");
     }
-    
     throw new Error(errorMessage);
   }
 }
@@ -178,12 +169,13 @@ async function createColaborador(data) {
 /**
  * Actualiza un colaborador existente.
  * Si se proporciona un nuevo PIN, se envía en pinHash.
+ * Ruta corregida: /colaboradores/${id}
  */
 async function updateColaborador(id, data, newPin = null) {
   try {
     const payload = prepareForBackend(data, newPin);
     if (!newPin) delete payload.pinHash;
-    const response = await api.put(`/api/v0/colaboradores/${id}`, payload);
+    const response = await api.put(`/colaboradores/${id}`, payload);
     return mapBackendToFrontend(response.data.data);
   } catch (error) {
     const message =
@@ -196,10 +188,11 @@ async function updateColaborador(id, data, newPin = null) {
 
 /**
  * Elimina (borrado lógico) un colaborador.
+ * Ruta corregida: /colaboradores/${id}
  */
 async function deleteColaborador(id) {
   try {
-    const response = await api.delete(`/api/v0/colaboradores/${id}`);
+    const response = await api.delete(`/colaboradores/${id}`);
     return response.data.data ? true : false;
   } catch (error) {
     const message =
