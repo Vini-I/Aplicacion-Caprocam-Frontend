@@ -25,4 +25,15 @@ export const styles = StyleSheet.create({
     borderColor: COLORS.error,
     borderWidth: 1.5,
   },
+    alertContainer: {
+    marginBottom: 12,
+    width: "100%",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  alertText: {
+    textAlign: "center",
+    fontSize: 13,
+    width: "100%",
+  },
 });

@@ -7,19 +7,20 @@
  * Responsabilidad:
  * Muestra el detalle completo de un equipo en una pantalla independiente.
  * Incluye información general, horas de uso, alerta de mantenimiento,
- * historial de encendidos, y acciones (editar, eliminar).
+ * y acciones (editar, eliminar).
  *
  * Datos:
  * - Obtiene el id del equipo desde los parámetros de ruta.
- * - Carga el equipo usando equiposService.getEquipoById.
- * - Obtiene el estanque asociado para mostrar enlace subrayado.
+ * - Carga el equipo usando equiposService.getEquipoById (conectado al backend real).
+ * - Si el equipo tiene estanqueId, resuelve el estanque asociado consultando
+ *   equiposService.getEstanquesDisponibles() (el backend no expone un
+ *   endpoint de estanque individual, así que se busca dentro de la lista).
  *
  * Validaciones:
  * - Si el equipo no existe, muestra mensaje de error.
  *
  * Navegación:
- * - Botón "Volver" (NavbarRegistro) regresa a la lista.
- * - Botón "Editar" abre el formulario de edición (modal o screen).
+ * - Botón "Editar" abre el formulario de registro/edición.
  * - Botón "Eliminar" abre ModalEliminar y, al confirmar, elimina y regresa.
  * - Clic en el estanque asociado navega a detalle del estanque.
  *
@@ -27,6 +28,11 @@
  * - equiposService
  * - shared/components (NavbarRegistro, Card, Icon, Button, ModalEliminar, Alert, etc.)
  * - styles/tareasStyles (reutiliza algunos estilos)
+ *
+ * NOTA: "marca", "modelo", "serie", "subcategoria", "ultimoMantenimiento"
+ * y "registrosEncendido" se quitaron de esta pantalla porque el backend
+ * real (equipo.dto.js / equipo.model.js) no tiene esos campos — eran
+ * parte del mock anterior y nunca van a llegar con datos reales.
  * ============================================================
  */
 
@@ -46,7 +52,7 @@ import Alert from '../../../shared/components/Alert';
 import { COLORS } from '../../../theme/colors';
 import { ICONS } from '../../../theme/icons';
 import { STYLE } from '../../../theme/style';
-import { equiposService, getEstanqueById, horasRestantesMantenimiento } from '../services/equiposService';
+import { equiposService } from '../services/equiposService';
 import { styles, detalleStyles, equipoDetalleStyles } from '../styles/tareasStyles';
 
 // Mapeo de tipos a iconos
@@ -79,6 +85,17 @@ const ESTADO_VARIANTS = {
   inactivo: 'danger',
   mantenimiento: 'warning',
 };
+
+// Calcula las horas restantes para el próximo mantenimiento.
+// (Antes vivía como export en equiposService.js; se quedó como función
+// interna ahí durante la reconexión, así que se recalcula aquí mismo
+// con los mismos campos que ya trae el equipo mapeado: horasMantenimiento
+// y horasUso.)
+function horasRestantesMantenimiento(equipo) {
+  if (!equipo.horasMantenimiento) return 0;
+  const restantes = equipo.horasMantenimiento - equipo.horasUso;
+  return restantes > 0 ? restantes : 0;
+}
 
 // Componente para fila con ícono alineado a la izquierda
 function FilaDetalleIcono({ icon, label, value, valueColor, onPress }) {
@@ -118,11 +135,17 @@ export default function DetalleEquipoScreen() {
   const cargarDatos = useCallback(async () => {
     try {
       setLoading(true);
+      setError(null);
+
       const data = await equiposService.getEquipoById(id);
       setEquipo(data);
+
       if (data.estanqueId) {
-        const est = getEstanqueById(data.estanqueId);
-        setEstanque(est);
+        // El backend no expone GET /estanques/:id, así que se busca
+        // dentro de la lista de estanques disponibles.
+        const estanques = await equiposService.getEstanquesDisponibles();
+        const encontrado = estanques.find((e) => e.value === String(data.estanqueId));
+        setEstanque(encontrado || null);
       } else {
         setEstanque(null);
       }
@@ -172,7 +195,7 @@ export default function DetalleEquipoScreen() {
 
   const handleEstanquePress = () => {
     if (estanque) {
-      router.push(`/estanques/detalle?id=${estanque.id}`);
+      router.push(`/estanques/detalle?id=${estanque.value}`);
     }
   };
 
@@ -257,14 +280,7 @@ export default function DetalleEquipoScreen() {
           </View>
 
           <FilaDetalleIcono icon={ICONS.water} label="Tipo" value={tipoLabel} />
-          {equipo.subcategoria && (
-            <FilaDetalleIcono icon={ICONS.info} label="Subcategoría" value={equipo.subcategoria} />
-          )}
-          <FilaDetalleIcono icon={ICONS.user} label="Marca" value={equipo.marca || '—'} />
-          <FilaDetalleIcono icon={ICONS.certificate} label="Modelo" value={equipo.modelo || '—'} />
-          <FilaDetalleIcono icon={ICONS.id} label="Serie" value={equipo.serie || '—'} />
           <FilaDetalleIcono icon={ICONS.calendar} label="Fecha de instalación" value={equipo.fechaInstalacion || '—'} />
-          <FilaDetalleIcono icon={ICONS.location} label="Ubicación" value={equipo.ubicacion || '—'} />
           <FilaDetalleIcono
             icon={ICONS.engine}
             label="Función"
@@ -273,13 +289,8 @@ export default function DetalleEquipoScreen() {
           <FilaDetalleIcono
             icon={ICONS.water}
             label="Estanque asociado"
-            value={estanque ? `${estanque.label} · ${estanque.finca}` : 'No asociado'}
+            value={estanque ? estanque.label : 'No asociado'}
             onPress={estanque ? handleEstanquePress : undefined}
-          />
-          <FilaDetalleIcono
-            icon={ICONS.tools}
-            label="Último mantenimiento"
-            value={equipo.ultimoMantenimiento || '—'}
           />
         </Card>
 
@@ -290,28 +301,6 @@ export default function DetalleEquipoScreen() {
               label="Descripción"
               value={equipo.descripcion}
             />
-          </Card>
-        )}
-
-        {equipo.registrosEncendido && equipo.registrosEncendido.length > 0 && (
-          <Card title="Historial de uso" titleStyle={equipoDetalleStyles.historialTitle}>
-            {equipo.registrosEncendido.slice(-5).reverse().map((registro, index) => {
-              const inicio = new Date(registro.inicio);
-              const fechaStr = inicio.toLocaleDateString('es-CR');
-              const horaStr = inicio.toLocaleTimeString('es-CR', { hour: '2-digit', minute: '2-digit' });
-              const horas = registro.horas || 0;
-              return (
-                <View key={index} style={equipoDetalleStyles.registroItem}>
-                  <CustomText style={equipoDetalleStyles.registroFecha}>
-                    {fechaStr} {horaStr}
-                    {!registro.fin && ' (En curso)'}
-                  </CustomText>
-                  <CustomText style={equipoDetalleStyles.registroHoras}>
-                    {horas > 0 ? `${horas} h` : '—'}
-                  </CustomText>
-                </View>
-              );
-            })}
           </Card>
         )}
 
