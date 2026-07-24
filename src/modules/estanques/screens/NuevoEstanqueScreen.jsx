@@ -32,6 +32,8 @@ import NavbarRegistro from "../../../shared/components/NavbarRegistro";
 import { getCurrentDate } from "../../../shared/utils/dateUtils";
 
 import { styles } from "../styles/EstanqueStyle";
+import { STYLE } from "../../../theme/style";
+
 import {
   obtenerOpcionesEstanqueSeleccionado,
 } from "../services/AireadoresEstanqueService";
@@ -176,8 +178,8 @@ export default function NuevoEstanqueScreen({ navigation }) {
         Icono="water"
       />
 
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-        <View style={styles.content}>
+      <ScrollView style={STYLE.container} showsVerticalScrollIndicator={false}>
+        <View style={STYLE.contentWrapper}>
           <Card>
             <SectionTitle title="Identificacion" icon={ICONS.document} />
 
@@ -238,6 +240,7 @@ export default function NuevoEstanqueScreen({ navigation }) {
                   onChangeText={setLargo}
                   placeholder="Ej: 100"
                   keyboardType="numeric"
+                  numericOnly
                   labelStyle={styles.label}
                 />
               </View>
@@ -251,6 +254,7 @@ export default function NuevoEstanqueScreen({ navigation }) {
                   onChangeText={setAncho}
                   placeholder="Ej: 80"
                   keyboardType="numeric"
+                  numericOnly
                   labelStyle={styles.label}
                 />
               </View>
@@ -264,6 +268,7 @@ export default function NuevoEstanqueScreen({ navigation }) {
               onChangeText={setProfundidad}
               placeholder="Ej: 0.80"
               keyboardType="numeric"
+              numericOnly
               labelStyle={styles.label}
             />
 

@@ -30,6 +30,8 @@ import Icon from "../../../shared/components/Icons";
 import Button from "../../../shared/components/Button";
 import Badge from "../../../shared/components/Badge";
 import NavbarRegistro from "../../../shared/components/NavbarRegistro";
+import ModalEliminar from "../../../shared/components/ModalEliminar";
+import Alert from "../../../shared/components/Alert";
 
 export default function FincaDetalleScreen({
   onEstanque,
@@ -43,7 +45,15 @@ export default function FincaDetalleScreen({
     handleGenerar, 
     loadingFincas, 
     loadingEstanques,
-    loadingPdf 
+    loadingPdf ,
+
+    alert,
+
+    modalVisible,
+    estanqueSeleccionado,
+    abrirModalEliminar,
+    cancelarEliminar,
+    confirmarEliminar,
   } = useFincaDetalle();
 
   if (loadingFincas || loadingEstanques) {
@@ -63,6 +73,21 @@ export default function FincaDetalleScreen({
       />
       <ScrollView showsVerticalScrollIndicator={false} style={STYLE.container}>
         <View style={STYLE.contentWrapper}>
+
+          {alert === "edited" && (
+            <Alert style={styles.alertCorrect}>Estanque editado correctamente</Alert>
+          )}
+          {alert === "created" && (
+            <Alert style={styles.alertCorrect}>
+            Estanque registrado correctamente
+            </Alert>
+          )}
+            {alert === "deleted" && (
+            <Alert style={styles.alertIncorrect}>
+            Estanque eliminado correctamente
+          </Alert>
+          )}
+
           <Card>
             <View>
               <Text color={COLORS.textTertiary} style={styles.titleText}>
@@ -209,6 +234,15 @@ export default function FincaDetalleScreen({
               </CardPress>
             </View>
           ))}
+
+          <ModalEliminar
+            visible={modalVisible}
+            title="estanque"
+            message={estanqueSeleccionado?.codigo}
+            onCancel={cancelarEliminar}
+            onConfirm={confirmarEliminar}
+          />
+
         </View>
       </ScrollView>
     </>
