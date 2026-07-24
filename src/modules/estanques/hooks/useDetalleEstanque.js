@@ -18,7 +18,7 @@ export default function useDetalleEstanque() {
 
         setLoading(true);
 
-        const data = await estanqueService.getEstanquesById(id);
+        const data = await estanqueService.getEstanqueById(id);
 
         setEstanque(data);
 

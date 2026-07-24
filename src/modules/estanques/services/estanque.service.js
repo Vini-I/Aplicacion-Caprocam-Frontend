@@ -15,6 +15,8 @@ export const estanqueService  = {
 
         } catch (error) {
 
+            console.error("Error al obtener estanque:", error.response?.data || error.message);
+
             throw error;
 
         }
@@ -25,7 +27,7 @@ export const estanqueService  = {
     OBTENER LOS ESTANQUES POR ID
     */
 
-    getEstanquesById: async (id) => {
+    getEstanqueById: async (id) => {
         try {
             
             const response = await api.get(`/estanques/${id}`);
@@ -33,6 +35,8 @@ export const estanqueService  = {
             return response.data.data;
 
         } catch (error) {
+
+            console.error("Error al obtener estanque:", error.response?.data || error.message);
 
             throw error;
 
@@ -63,7 +67,7 @@ export const estanqueService  = {
     ACTUALIZAR UN ESTANQUE
     */
 
-    actualizarEstanqe: async (id, estanqueDTO) => {
+    actualizarEstanque: async (id, estanqueDTO) => {
         try {
 
             const response = await api.put(`/estanques/${id}`, estanqueDTO);

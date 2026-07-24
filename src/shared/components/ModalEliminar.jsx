@@ -45,10 +45,8 @@ import Text from "./Text.jsx";
 
 export default function ModalEliminar({
   visible,
-  title = "Confirmar",
+  title = "valor",
   message,
-  confirmText = "Confirmar",
-  cancelText = "Cancelar",
   onConfirm,
   onCancel,
 }) {
@@ -56,7 +54,7 @@ export default function ModalEliminar({
     <Modal
       visible={visible}
       onClose={onCancel}
-      closeText={cancelText}
+      closeText={"Cancelar"}
       buttonStyle={styles.cancelButton}
       buttonTextStyle={styles.cancelButtonText}
       containerStyle={STYLE.contentWrapper}
@@ -70,7 +68,7 @@ export default function ModalEliminar({
       </Text>
 
       <Button style={styles.confirmButton} onPress={onConfirm}>
-        <Text style={styles.confirmButtonText}>{confirmText}</Text>
+        <Text style={styles.confirmButtonText}>{"Si, eliminar"}</Text>
       </Button>
     </Modal>
   );

@@ -48,6 +48,28 @@ export function EstanqueProvider({ children }) {
   
   }, []);
 
+  async function buscarEstanque(id) {
+    try {
+      const data = await estanqueService.getEstanqueById(id);
+      return data;
+    } catch (error) {
+      console.error("Error buscando estanque:", error);
+      throw error;
+    }
+  }
+
+  async function crearEstanque(nuevoEstanque) {
+    await estanqueService.createEstanque(nuevoEstanque);
+    await cargarEstanques();
+    setAlert("created");
+  }
+
+  async function editarEstanque(codigo, datosActualizados) {
+    await estanqueService.actualizarEstanque(codigo, datosActualizados);
+    await cargarEstanques();
+    setAlert("edited");
+  }
+
   async function eliminarEstanque(id) {
     await estanqueService.eliminarEstanque(id);
     await cargarEstanques();
@@ -78,6 +100,9 @@ export function EstanqueProvider({ children }) {
 
         // Acciones CRUD
         cargarEstanques,
+        buscarEstanque,
+        crearEstanque,
+        editarEstanque,
         eliminarEstanque,
 
         // Alert  

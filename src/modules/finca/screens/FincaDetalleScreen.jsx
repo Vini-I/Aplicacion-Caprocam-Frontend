@@ -162,7 +162,7 @@ export default function FincaDetalleScreen({
               </Text>
             </Button>
           </Card>
-          <Button style={styles.addButton} onPress={() => onEstanque()}>
+          <Button style={styles.addButton} onPress={() => onEstanque(finca.codigoCBO)}>
             <Icon style={styles.addButtonText} icon={ICONS.add} size={15} />
             <Text style={styles.addButtonText} size={15}>
               REGISTRAR NUEVO ESTANQUE
@@ -209,24 +209,24 @@ export default function FincaDetalleScreen({
                   >
                     <Icon
                       icon={ICONS.delete}
-                      style={{ color: COLORS.error }}
+                      color={COLORS.error}
                       size={20}
                     />
-                    <Text size={12} style={{ color: COLORS.error }}>
+                    <Text size={12} color={COLORS.error}>
                       Eliminar
                     </Text>
                   </Button>
 
                   <Button
                     style={styles.Editar}
-                    onPress={() => onEstanqueEditar(estanque.id)}
+                    onPress={() => onEstanqueEditar(finca.codigoCBO, estanque.id)}
                   >
                     <Icon
                       icon={ICONS.edit}
-                      style={{ color: COLORS.primary }}
+                      color={COLORS.primary}
                       size={20}
                     />
-                    <Text size={12} style={{ color: COLORS.primary }}>
+                    <Text size={12} color={COLORS.primary}>
                       Editar
                     </Text>
                   </Button>
@@ -242,7 +242,6 @@ export default function FincaDetalleScreen({
             onCancel={cancelarEliminar}
             onConfirm={confirmarEliminar}
           />
-
         </View>
       </ScrollView>
     </>

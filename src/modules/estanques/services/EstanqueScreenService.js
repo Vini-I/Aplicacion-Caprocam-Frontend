@@ -9,6 +9,7 @@
 
 import { getCurrentDate } from "../../../shared/utils/dateUtils";
 import { estanques } from "../../finca/screens/EstanqueData";
+import { estanqueDTO } from "../dtos/estanque.dto";
 import {
   obtenerCodigoAireadorDefault,
   obtenerEstanqueAireador,
@@ -110,23 +111,23 @@ export const AIREADORES_EXISTENTES = obtenerOpcionesAireadores();
 export const ESTADOS_ESTANQUE = [
   {
     label: "Activo",
-    value: "activo",
+    value: "Activo",
   },
   {
     label: "En preparacion",
-    value: "preparacion",
+    value: "En preparacion",
   },
   {
     label: "Mantenimiento",
-    value: "mantenimiento",
+    value: "Mantenimiento",
   },
   {
     label: "Engorde",
-    value: "engorde",
+    value: "Engorde",
   },
   {
     label: "Cosechado",
-    value: "cosechado",
+    value: "Cosechado",
   },
 ];
 
@@ -261,12 +262,11 @@ export function validarFormularioEstanque(datos) {
 }
 
 export function construirNuevoEstanque(datos) {
-  return {
-    id: String(Date.now()),
-    finca: "Finca La Reina",
+  const NuevoEstanqueDTO = new estanqueDTO({
+    idFinca: datos.idFinca,
     codigo: datos.codigo,
-    estado: datos.estado,
     tipoEstanque: datos.tipoEstanque,
+    estado: datos.estado,
     largo: datos.largo,
     ancho: datos.ancho,
     profundidad: datos.profundidad,
@@ -276,28 +276,21 @@ export function construirNuevoEstanque(datos) {
     fechaInicioEngorde: datos.fechaInicioEngorde,
     fechaMantenimiento: datos.fechaMantenimiento,
     densidadSiembra: datos.densidadSiembra,
-    precria: datos.precria,
+    usaPrecria: datos.precria,
     metodoAlimentacion: datos.metodoAlimentacion,
     proveedorAlimento: datos.proveedorAlimento,
     numeroAireadores: datos.numeroAireadores,
-    tieneAireadores: datos.tieneAireadores,
-    codigoAireador: datos.codigoAireador,
-    estanqueAireador: obtenerEstanqueAireador(
-      datos.tieneAireadores,
-      datos.codigo,
-      "Finca La Reina",
-    ),
     tieneAlimentadorAutomatico: datos.tieneAlimentadorAutomatico,
-  };
+  });
+  return {NuevoEstanqueDTO};
 }
 
 export function construirEstanqueEditado(datos, params) {
-  return {
-    id: obtenerParametro(params.id, String(Date.now())),
-    finca: obtenerParametro(params.finca, "Finca La Reina"),
+  const EstanqueEditadoDTO = new estanqueDTO({
+    idFinca: datos.idFinca,
     codigo: datos.codigo,
-    estado: datos.estado,
     tipoEstanque: datos.tipoEstanque,
+    estado: datos.estado,
     largo: datos.largo,
     ancho: datos.ancho,
     profundidad: datos.profundidad,
@@ -307,19 +300,13 @@ export function construirEstanqueEditado(datos, params) {
     fechaInicioEngorde: datos.fechaInicioEngorde,
     fechaMantenimiento: datos.fechaMantenimiento,
     densidadSiembra: datos.densidadSiembra,
-    precria: datos.precria,
+    usaprecria: datos.usaprecria,
     metodoAlimentacion: datos.metodoAlimentacion,
     proveedorAlimento: datos.proveedorAlimento,
     numeroAireadores: datos.numeroAireadores,
-    tieneAireadores: datos.tieneAireadores,
-    codigoAireador: datos.codigoAireador,
-    estanqueAireador: obtenerEstanqueAireador(
-      datos.tieneAireadores,
-      datos.codigo,
-      obtenerParametro(params.finca, "Finca La Reina"),
-    ),
     tieneAlimentadorAutomatico: datos.tieneAlimentadorAutomatico,
-  };
+  });
+  return {EstanqueEditadoDTO};
 }
 
 export function construirEstanqueDetalle(estanqueEncontrado, params) {
@@ -427,39 +414,6 @@ export function construirEstanqueDetalle(estanqueEncontrado, params) {
       params,
       "tieneAlimentadorAutomatico",
       "No registrado",
-    ),
-  };
-}
-
-export function obtenerValoresInicialesEditar(params) {
-  return {
-    codigo: obtenerParametro(params.codigo, "EST-01"),
-    estado: obtenerParametro(params.estado, "activo"),
-    tipoEstanque: obtenerParametro(params.tipoEstanque, ""),
-    largo: obtenerParametro(params.largo, ""),
-    ancho: obtenerParametro(params.ancho, ""),
-    profundidad: obtenerParametro(params.profundidad, ""),
-    fuenteAgua: obtenerParametro(params.fuenteAgua, ""),
-    especie: obtenerParametro(params.especie, "litopenaeus_vannamei"),
-    fechaSiembra: obtenerParametro(params.fechaSiembra, getCurrentDate()),
-    fechaInicioEngorde: obtenerParametro(
-      params.fechaInicioEngorde,
-      getCurrentDate(),
-    ),
-    fechaMantenimiento: obtenerParametro(
-      params.fechaMantenimiento,
-      getCurrentDate(),
-    ),
-    densidadSiembra: obtenerParametro(params.densidadSiembra, "12"),
-    precria: obtenerParametro(params.precria, ""),
-    metodoAlimentacion: obtenerParametro(params.metodoAlimentacion, ""),
-    proveedorAlimento: obtenerParametro(params.proveedorAlimento, "Biomar"),
-    numeroAireadores: obtenerParametro(params.numeroAireadores, "0"),
-    tieneAireadores: obtenerParametro(params.tieneAireadores, "no"),
-    codigoAireador: obtenerParametro(params.codigoAireador, ""),
-    tieneAlimentadorAutomatico: obtenerParametro(
-      params.tieneAlimentadorAutomatico,
-      "",
     ),
   };
 }
