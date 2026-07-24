@@ -42,8 +42,8 @@ import Modal    from '../../../shared/components/Modal';
 import Header   from '../../../shared/components/Header';
 import Separator from '../../../shared/components/Separator';
 import FormField from '../../../shared/components/FormField';
-import Icon     from '../../../shared/components/Icons';
-import Alert    from '../../../shared/components/Alert';
+import Alert     from '../../../shared/components/Alert';
+import Icon      from '../../../shared/components/Icons';
 
 import { useRegister } from '../hooks/useRegister';
 import { AUTH_MESSAGES as MSG } from '../constants/authMessages';
@@ -63,24 +63,17 @@ export default function WebRegisterScreen({
     handleRegister, showSuccessModal, handleModalClose,
   } = useRegister({ onRegisterSuccess });
 
-  const handleNombreChange = (text) => {
-    const cleaned = text.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, "");
-    setNombre(cleaned);
-    if (serverError) setServerError(null);
-  };
-
-  const handleApellidosChange = (text) => {
-    const cleaned = text.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, "");
-    setApellidos(cleaned);
-    if (serverError) setServerError(null);
+  const createChangeHandler = (setter) => (val) => {
+    if (serverError && setServerError) setServerError(null);
+    setter(val);
   };
 
   const fields = [
-    { key: 'nombre',    label: MSG.LABEL_NOMBRE,    value: nombre,    onChangeText: handleNombreChange,    placeholder: MSG.PLACEHOLDER_NOMBRE,    error: errors.nombre },
-    { key: 'apellidos', label: MSG.LABEL_APELLIDOS,  value: apellidos, onChangeText: handleApellidosChange, placeholder: MSG.PLACEHOLDER_APELLIDOS,  error: errors.apellidos },
-    { key: 'email',     label: MSG.LABEL_EMAIL,      value: email,     onChangeText: (v) => { setEmail(v); if (serverError) setServerError(null); },     placeholder: MSG.PLACEHOLDER_EMAIL,     error: errors.email,    autoCapitalize: 'none', autoCorrect: false, keyboardType: 'email-address' },
-    { key: 'username',  label: MSG.LABEL_USERNAME,   value: username,  onChangeText: (v) => { setUsername(v); if (serverError) setServerError(null); },  placeholder: MSG.PLACEHOLDER_USERNAME,  error: errors.username, autoCapitalize: 'none', autoCorrect: false },
-    { key: 'password',  label: MSG.LABEL_PASSWORD,   value: password,  onChangeText: (v) => { setPassword(v); if (serverError) setServerError(null); },  placeholder: MSG.PLACEHOLDER_PASSWORD,  error: errors.password, secureTextEntry: true },
+    { key: 'nombre',    label: MSG.LABEL_NOMBRE,    value: nombre,    onChangeText: createChangeHandler(setNombre),    placeholder: MSG.PLACEHOLDER_NOMBRE,    error: errors.nombre },
+    { key: 'apellidos', label: MSG.LABEL_APELLIDOS,  value: apellidos, onChangeText: createChangeHandler(setApellidos), placeholder: MSG.PLACEHOLDER_APELLIDOS,  error: errors.apellidos },
+    { key: 'email',     label: MSG.LABEL_EMAIL,      value: email,     onChangeText: createChangeHandler(setEmail),     placeholder: MSG.PLACEHOLDER_EMAIL,     error: errors.email,    autoCapitalize: 'none', autoCorrect: false, keyboardType: 'email-address' },
+    { key: 'username',  label: MSG.LABEL_USERNAME,   value: username,  onChangeText: createChangeHandler(setUsername),  placeholder: MSG.PLACEHOLDER_USERNAME,  error: errors.username, autoCapitalize: 'none', autoCorrect: false },
+    { key: 'password',  label: MSG.LABEL_PASSWORD,   value: password,  onChangeText: createChangeHandler(setPassword),  placeholder: MSG.PLACEHOLDER_PASSWORD,  error: errors.password, secureTextEntry: true },
   ];
 
   return (
@@ -133,19 +126,17 @@ export default function WebRegisterScreen({
               />
             ))}
 
-            {(Object.values(errors).some((e) => e !== "") || serverError) && (
-              <Alert
-                variant="danger"
-                message={serverError ? serverError : "Revisa los campos obligatorios marcados con * antes de guardar."}
-                style={styles.alertSpacing}
-              />
-            )}
+          {serverError ? (
+            <Alert variant="danger" message={serverError} style={{ marginBottom: 16 }} />
+          ) : null}
 
           {loading && <Spinner text={MSG.LOADING_REGISTER} />}
 
-          {loading && <Spinner text={MSG.LOADING_REGISTER} />}
+          <Button disabled={loading} onPress={handleRegister}>
+            {MSG.BUTTON_SUBMIT_REGISTER}
+          </Button>
 
-            <Separator text={MSG.SEPARATOR_TEXT_REGISTER} />
+          <Separator text={MSG.SEPARATOR_TEXT_REGISTER} />
 
             <Button variant="outline" disabled={loading} onPress={onBackToLogin}>
               {MSG.BUTTON_BACK_TO_LOGIN}
