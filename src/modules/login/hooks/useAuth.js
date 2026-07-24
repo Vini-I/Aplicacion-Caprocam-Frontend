@@ -74,6 +74,7 @@ export const useAuth = ({ onLoginSuccess = () => {} } = {}) => {
     buttonVariant: "primary",
     loading,
     serverError,
+    setServerError,
     handleLogin,
   };
 };

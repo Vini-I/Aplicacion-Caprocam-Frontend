@@ -55,9 +55,19 @@ export default function WebLoginScreen({
   const {
     username, setUsername,
     password, setPassword,
-    errors, loading, serverError,
+    errors, loading, serverError, setServerError,
     handleLogin,
   } = useAuth({ onLoginSuccess });
+
+  const handleUsernameChange = (val) => {
+    if (serverError && setServerError) setServerError(null);
+    setUsername(val);
+  };
+
+  const handlePasswordChange = (val) => {
+    if (serverError && setServerError) setServerError(null);
+    setPassword(val);
+  };
 
   return (
     <ScrollView style={styles.scrollView} contentContainerStyle={{ flexGrow: 1, backgroundColor: COLORS.white }} showsVerticalScrollIndicator={false}>
@@ -72,34 +82,30 @@ export default function WebLoginScreen({
         <View style={STYLE.contentWrapper}>
           <Card>
 
-            <FormField
-              label={`${MSG.LABEL_USERNAME} *`}
-              value={username}
-              onChangeText={setUsername}
-              placeholder={MSG.PLACEHOLDER_USERNAME}
-              editable={!loading}
-              autoCapitalize="none"
-              autoCorrect={false}
-              style={errors.username ? styles.errorField : null}
-            />
+          <FormField
+            label={MSG.LABEL_USERNAME}
+            value={username}
+            onChangeText={handleUsernameChange}
+            placeholder={MSG.PLACEHOLDER_USERNAME}
+            editable={!loading}
+            autoCapitalize="none"
+            autoCorrect={false}
+            error={errors.username}
+          />
 
-            <FormField
-              label={`${MSG.LABEL_PASSWORD} *`}
-              value={password}
-              onChangeText={setPassword}
-              placeholder={MSG.PLACEHOLDER_PASSWORD}
-              editable={!loading}
-              secureTextEntry
-              style={errors.password ? styles.errorField : null}
-            />
+          <FormField
+            label={MSG.LABEL_PASSWORD}
+            value={password}
+            onChangeText={handlePasswordChange}
+            placeholder={MSG.PLACEHOLDER_PASSWORD}
+            editable={!loading}
+            secureTextEntry
+            error={errors.password}
+          />
 
-            {serverError !== null && (
-              <Alert
-                variant="danger"
-                message={serverError}
-                style={styles.alertSpacing}
-              />
-            )}
+          {serverError ? (
+            <Alert variant="danger" message={serverError} style={{ marginBottom: 16 }} />
+          ) : null}
 
             {Object.values(errors).some((e) => e !== "") && (
               <Alert
