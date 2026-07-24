@@ -1,5 +1,4 @@
 /**
- * ============================================================
  * HOOK: useRegister
  *
  * Lógica de la pantalla de Registro Web.

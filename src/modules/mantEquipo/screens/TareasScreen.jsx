@@ -1,95 +1,42 @@
-/**
- * ============================================================
- * PANTALLA: TareasScreen
- * ============================================================
- * Módulo: Mantenimiento de Equipos
- *
- * Responsabilidad:
- * Vista principal del módulo de gestión de tareas. Muestra el listado
- * de tareas con búsqueda, filtros, y acción de detalle.
- *
- * Datos:
- * - Usa useTareas para obtener y manipular tareas.
- * - Estado local para alertas y modal de eliminación (desde detalle).
- *
- * Validaciones:
- * - Confirmación de eliminación con modal (no alert nativo).
- *
- * Navegación:
- * - Botón "Agregar tarea" navega a /equipos/tareaForm.
- * - Clic en fila navega a /equipos/detalleTarea?id={id}.
- *
- * Dependencias:
- * - hooks/useTareas
- * - components/FilaTarea
- * - shared/components (SearchBar, FilterButton, Alert, etc.)
- * - styles/tareasStyles
- * ============================================================
- */
+// src/modules/mantEquipo/screens/TareasScreen.jsx
 
-import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { View, FlatList } from 'react-native';
-import { useRouter } from 'expo-router';
+import React, { useState, useRef, useEffect } from "react";
+import { View, FlatList } from "react-native";
+import { useRouter } from "expo-router";
 
-import { useTareas } from '../hooks/useTareas';
-import FilaTarea from '../components/FilaTarea';
-import Spinner from '../../../shared/components/Spinner';
-import Button from '../../../shared/components/Button';
-import Icon from '../../../shared/components/Icons';
-import CustomText from '../../../shared/components/Text';
-import Alert from '../../../shared/components/Alert';
-import SearchBar from '../../inventarios/components/SearchBar';
-import FilterButton from '../../inventarios/components/FilterButton';
+import { useTareas } from "../hooks/useTareas";
+import FilaTarea from "../components/FilaTarea";
+import Spinner from "../../../shared/components/Spinner";
+import Button from "../../../shared/components/Button";
+import Icon from "../../../shared/components/Icons";
+import CustomText from "../../../shared/components/Text";
+import Alert from "../../../shared/components/Alert";
+import SearchBar from "../../inventarios/components/SearchBar";
+import FilterButton from "../../inventarios/components/FilterButton";
 
-import { COLORS } from '../../../theme/colors';
-import { ICONS } from '../../../theme/icons';
-import { STYLE } from '../../../theme/style';
-import {
-  TEXTOS_PANTALLA,
-  HEADERS_TABLA,
-  OPCIONES_CATEGORIA,
-  OPCIONES_ESTADO,
-} from '../constants/tareasMensajes';
-import { styles } from '../styles/tareasStyles';
+import { COLORS } from "../../../theme/colors";
+import { ICONS } from "../../../theme/icons";
+import { STYLE } from "../../../theme/style";
+import { TEXTOS_PANTALLA, HEADERS_TABLA } from "../constants/tareasMensajes";
+import { styles } from "../styles/tareasStyles";
 
 export default function TareasScreen() {
   const router = useRouter();
-  const { tareasFiltradas, busqueda, setBusqueda, loading, error } = useTareas();
+  const {
+    tareasFinales,
+    busqueda,
+    setBusqueda,
+    loading,
+    error,
+    filtros,
+    setFiltros,
+    opcionesCategoria,
+    opcionesEstado,
+  } = useTareas();
 
-  // Estados de alertas
   const [alert, setAlert] = useState(null);
   const alertTimeoutRef = useRef(null);
 
-  // Filtros adicionales (categoría y estado)
-  const [filtros, setFiltros] = useState({
-    categories: [],
-    suppliers: [],
-    units: [],
-    lowStock: false,
-    expiryDate: '',
-  });
-
-  const opcionesCategoria = OPCIONES_CATEGORIA.map((c) => ({
-    label: c.label,
-    value: c.value,
-  }));
-  const opcionesEstado = OPCIONES_ESTADO.map((e) => ({
-    label: e.label,
-    value: e.value,
-  }));
-
-  // Aplicar filtros adicionales a tareasFiltradas (que ya incluye búsqueda)
-  const tareasFinales = useMemo(() => {
-    return tareasFiltradas.filter((t) => {
-      if (filtros.categories.length > 0 && !filtros.categories.includes(t.categoria))
-        return false;
-      if (filtros.suppliers.length > 0 && !filtros.suppliers.includes(t.estado))
-        return false;
-      return true;
-    });
-  }, [tareasFiltradas, filtros]);
-
-  // Limpiar timeout al desmontar
   useEffect(() => {
     return () => {
       if (alertTimeoutRef.current) clearTimeout(alertTimeoutRef.current);
@@ -102,12 +49,10 @@ export default function TareasScreen() {
     alertTimeoutRef.current = setTimeout(() => setAlert(null), 4000);
   };
 
-  // Handlers de navegación
-  const handleAgregar = () => router.push('/equipos/tareaForm');
+  const handleAgregar = () => router.push("/equipos/tareaForm");
   const abrirDetalle = (tarea) => router.push(`/equipos/detalleTarea?id=${tarea.id}`);
 
-  // Estados de carga y error
-  if (loading && tareasFiltradas.length === 0) {
+  if (loading && tareasFinales.length === 0) {
     return (
       <View style={[STYLE.container, styles.centerContainer]}>
         <Spinner />
@@ -143,7 +88,7 @@ export default function TareasScreen() {
               suppliers: f.suppliers || [],
               units: [],
               lowStock: false,
-              expiryDate: '',
+              expiryDate: "",
             })
           }
           showLowStock={false}
@@ -152,7 +97,6 @@ export default function TareasScreen() {
         />
       </View>
 
-      {/* Alerta global */}
       {alert && (
         <View style={styles.alertWrapper}>
           <Alert variant={alert.type} message={alert.message} />
@@ -173,7 +117,7 @@ export default function TareasScreen() {
             ].map((col, i) => (
               <View key={i} style={col}>
                 <CustomText style={styles.headerCell}>
-                  {HEADERS_TABLA[i] || ''}
+                  {HEADERS_TABLA[i] || ""}
                 </CustomText>
               </View>
             ))}
@@ -183,12 +127,7 @@ export default function TareasScreen() {
         <FlatList
           data={tareasFinales}
           keyExtractor={(item, index) => `${item.id}_${index}`}
-          renderItem={({ item }) => (
-            <FilaTarea
-              tarea={item}
-              onPressFila={abrirDetalle}
-            />
-          )}
+          renderItem={({ item }) => <FilaTarea tarea={item} onPressFila={abrirDetalle} />}
           scrollEnabled
           style={styles.flatList}
           contentContainerStyle={styles.flatListContent}
@@ -200,7 +139,7 @@ export default function TareasScreen() {
         />
       </View>
 
-      {/* Botón flotante "Agregar tarea" con el mismo ancho que la tabla */}
+      {/* Botón flotante */}
       <View style={styles.floatingButtonContainer}>
         <Button variant="outline" onPress={handleAgregar} style={styles.floatingButton}>
           <Icon icon={ICONS.add} size={16} color={COLORS.primary} />
