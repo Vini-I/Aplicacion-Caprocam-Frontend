@@ -26,7 +26,7 @@ import useEnfermedadesScreen from "../../enfermedades/hooks/useEnfermedadesScree
 import {
   ENFERMEDADES_CATALOGO,
   SEVERIDADES_ENFERMEDAD,
-} from "../services/EnfermedadesService";
+} from "../../enfermedades/services/EnfermedadesService";
 
 import { styles } from "../styles/EnfermedadesStyle";
 
