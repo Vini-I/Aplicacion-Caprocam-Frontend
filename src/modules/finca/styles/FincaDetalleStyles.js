@@ -170,4 +170,24 @@ export const styles = StyleSheet.create({
     paddingVertical: 4,
   },
 
+  alertCorrect: {
+    alignItems: "center",
+    backgroundColor: COLORS.successLight,
+    borderWidth: 1.5,
+    borderColor: COLORS.success,
+    paddingVertical: 10,
+    borderRadius: 10,
+    marginBottom: 10,
+  },
+
+  alertIncorrect: {
+    alignItems: "center",
+    backgroundColor: COLORS.errorLight,
+    borderWidth: 1.5,
+    borderColor: COLORS.error,
+    paddingVertical: 10,
+    borderRadius: 10,
+    marginBottom: 10,
+  },
+
 });

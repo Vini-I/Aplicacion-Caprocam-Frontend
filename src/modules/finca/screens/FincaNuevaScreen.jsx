@@ -16,7 +16,6 @@
  * - Utiliza componentes reutilizables para mantener la estructura visual.
  */
 import { ScrollView, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 import Button from "../../../shared/components/Button.jsx";
 import Card from "../../../shared/components/Card.jsx";
@@ -27,7 +26,7 @@ import Icon from "../../../shared/components/Icons.jsx";
 import NavbarRegistro from "../../../shared/components/NavbarRegistro.jsx";
 import CustomAlert from "../../../shared/components/Alert.jsx"; 
 
-import { provincias, ubicaciones } from "../screens/FincaNuevaData.js";
+import { provincias } from "../screens/FincaNuevaData.js";
 import { useFincaNueva} from "../hooks/useFincaNueva.js"
 import { ICONS } from "../../../theme/icons.js";
 import { COLORS } from "../../../theme/colors.js";
@@ -39,11 +38,8 @@ export default function FincaNuevaScreen({onFinca}) {
     SectionTitle,
     ContentWrapper,
     formulario,
-    setFormulario,
     telefonos,
-    setTelefonos,
     errores,
-    setErrores,
 
     actualizarCampo,
     actualizarTelefono,
@@ -51,8 +47,6 @@ export default function FincaNuevaScreen({onFinca}) {
     eliminarTelefono,
     registrarFinca,
 
-    cantones,
-    distritos,
     opcionesCantones,
     opcionesDistritos,
 
@@ -81,10 +75,10 @@ export default function FincaNuevaScreen({onFinca}) {
             <View style={styles.column}>
               <Input
                 label="Código CVO *"
-                value={formulario.codigoInterno}
-                onChangeText={(valor) => actualizarCampo("codigoInterno", valor)}
+                value={formulario.codigoCBO}
+                onChangeText={(valor) => actualizarCampo("codigoCBO", valor)}
                 placeholder="Ej: CVO-01"
-                style={errores.codigoInterno ? [ styles.errorInput] : null}
+                style={errores.codigoCBO ? [ styles.errorInput] : null}
               />
             </View>
             <View style={styles.column}>
@@ -141,6 +135,18 @@ export default function FincaNuevaScreen({onFinca}) {
                 disabled={formulario.canton === ""}
                 onChange={(valor) => actualizarCampo("distrito", valor)}
                 selectStyle={errores.distrito ? [ styles.errorInput] : null}
+              />
+            </View>
+          </View>
+
+          <View style={styles.row}>
+            <View style={styles.column}>
+              <Input
+                label="Otras señas *"
+                value={formulario.otrasSenas}
+                placeholder="Seleccione un distrito"
+                onChangeText={(valor) => actualizarCampo("otrasSenas", valor)}
+                style={errores.otrasSenas ? [ styles.errorInput] : null}
               />
             </View>
           </View>

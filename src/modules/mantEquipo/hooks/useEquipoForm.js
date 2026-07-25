@@ -2,35 +2,31 @@
  * ============================================================
  * HOOK PERSONALIZADO: useEquipoForm
  * ============================================================
+ * Módulo: Mantenimiento de Equipos
  *
  * Hook que encapsula la lógica del formulario de equipos.
- * Maneja el estado del formulario, validaciones y envío.
+ * Refleja el modelo real del backend: ya no incluye
+ * marca, modelo, serie ni subcategoría.
  *
  * Parámetros:
  * - initialData: datos iniciales para edición
  * - onSubmit: función a ejecutar al enviar el formulario
  * - isEditing: booleano que indica si es edición
+ * - onValidationError: callback para notificar errores de validación
  *
  * Retorna:
  * - form: objeto con los datos del formulario
- * - errors: objeto con los errores de validación
+ * - errors: objeto con mensajes de error por campo
  * - loading: booleano de carga
  * - handleChange: función para actualizar un campo
  * - handleSubmit: función para validar y enviar el formulario
  * - resetForm: función para reiniciar el formulario
  * - isFormValid: booleano que indica si el formulario es válido
- *
- * Ejemplo:
- * const { form, handleChange, handleSubmit } = useEquipoForm({
- *   initialData: equipo,
- *   onSubmit: guardarEquipo,
- *   isEditing: true,
- * });
+ * - getValidationMessage: función que devuelve mensaje detallado de errores
+ * - submitted: booleano que indica si ya se intentó guardar
+ * ============================================================
  */
 
-// ============================================================
-// IMPORTS
-// ============================================================
 import { useState, useEffect, useCallback } from "react";
 
 // ============================================================
@@ -48,21 +44,6 @@ const validarDescripcion = (descripcion) => {
   return "";
 };
 
-const validarMarca = (marca) => {
-  if (!marca || !marca.trim()) return "La marca es obligatoria";
-  return "";
-};
-
-const validarModelo = (modelo) => {
-  if (!modelo || !modelo.trim()) return "El modelo es obligatorio";
-  return "";
-};
-
-const validarSerie = (serie) => {
-  if (!serie || !serie.trim()) return "El número de serie es obligatorio";
-  return "";
-};
-
 const validarFuncion = (funcion) => {
   if (!funcion || !funcion.trim()) return "La función del equipo es obligatoria";
   return "";
@@ -74,10 +55,18 @@ const validarHorasMantenimiento = (horas) => {
   return "";
 };
 
+function obtenerFechaActual() {
+  const fecha = new Date();
+  const dia = String(fecha.getDate()).padStart(2, "0");
+  const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+  const anio = fecha.getFullYear();
+  return `${dia}/${mes}/${anio}`;
+}
+
 // ============================================================
 // HOOK
 // ============================================================
-export function useEquipoForm({ initialData = {}, onSubmit, isEditing = false }) {
+export function useEquipoForm({ initialData = {}, onSubmit, isEditing = false, onValidationError }) {
   // --------------------------------------------------------
   // ESTADOS
   // --------------------------------------------------------
@@ -85,13 +74,8 @@ export function useEquipoForm({ initialData = {}, onSubmit, isEditing = false })
     nombre: initialData.nombre || "",
     descripcion: initialData.descripcion || "",
     tipo: initialData.tipo || "",
-    subcategoria: initialData.subcategoria || "",
-    marca: initialData.marca || "",
-    modelo: initialData.modelo || "",
-    serie: initialData.serie || "",
-    fechaInstalacion: initialData.fechaInstalacion || "",
+    fechaInstalacion: initialData.fechaInstalacion || obtenerFechaActual(),
     funcionEquipo: initialData.funcionEquipo || "",
-    ubicacion: initialData.ubicacion || "",
     estanqueId: initialData.estanqueId || "",
     estado: initialData.estado || "activo",
     horasMantenimiento: initialData.horasMantenimiento || "",
@@ -108,13 +92,8 @@ export function useEquipoForm({ initialData = {}, onSubmit, isEditing = false })
         nombre: initialData.nombre || "",
         descripcion: initialData.descripcion || "",
         tipo: initialData.tipo || "",
-        subcategoria: initialData.subcategoria || "",
-        marca: initialData.marca || "",
-        modelo: initialData.modelo || "",
-        serie: initialData.serie || "",
         fechaInstalacion: initialData.fechaInstalacion || "",
         funcionEquipo: initialData.funcionEquipo || "",
-        ubicacion: initialData.ubicacion || "",
         estanqueId: initialData.estanqueId || "",
         estado: initialData.estado || "activo",
         horasMantenimiento: initialData.horasMantenimiento || "",
@@ -134,40 +113,49 @@ export function useEquipoForm({ initialData = {}, onSubmit, isEditing = false })
 
   const validateForm = useCallback(() => {
     const newErrors = {};
-    
+
     const nombreError = validarNombre(form.nombre);
     if (nombreError) newErrors.nombre = nombreError;
-    
+
     const descError = validarDescripcion(form.descripcion);
     if (descError) newErrors.descripcion = descError;
-    
+
     if (!form.tipo) newErrors.tipo = "Debe seleccionar un tipo de equipo";
-    
-    const marcaError = validarMarca(form.marca);
-    if (marcaError) newErrors.marca = marcaError;
-    
-    const modeloError = validarModelo(form.modelo);
-    if (modeloError) newErrors.modelo = modeloError;
-    
-    const serieError = validarSerie(form.serie);
-    if (serieError) newErrors.serie = serieError;
-    
+
     if (!form.fechaInstalacion) newErrors.fechaInstalacion = "La fecha de instalación es obligatoria";
-    
+
     const funcionError = validarFuncion(form.funcionEquipo);
     if (funcionError) newErrors.funcionEquipo = funcionError;
-    
+
     const horasError = validarHorasMantenimiento(form.horasMantenimiento);
     if (horasError) newErrors.horasMantenimiento = horasError;
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return newErrors;
   }, [form]);
+
+  const getValidationMessage = useCallback(() => {
+    const erroresActuales = validateForm();
+    const mensajes = Object.values(erroresActuales).filter((msg) => msg !== "");
+    if (mensajes.length === 0) return "";
+    return (
+      "Revisa los campos obligatorios marcados con *:\n" +
+      mensajes.map((m) => `- ${m}`).join("\n")
+    );
+  }, [validateForm]);
 
   const handleSubmit = useCallback(async () => {
     setSubmitted(true);
-    if (!validateForm()) return;
-    
+    const erroresActuales = validateForm();
+    const hasErrors = Object.values(erroresActuales).some((msg) => msg !== "");
+
+    if (hasErrors) {
+      if (onValidationError) {
+        onValidationError(getValidationMessage());
+      }
+      return;
+    }
+
     setLoading(true);
     try {
       const submitData = {
@@ -178,20 +166,15 @@ export function useEquipoForm({ initialData = {}, onSubmit, isEditing = false })
     } finally {
       setLoading(false);
     }
-  }, [form, validateForm, onSubmit]);
+  }, [form, validateForm, getValidationMessage, onSubmit, onValidationError]);
 
   const resetForm = useCallback(() => {
     setForm({
       nombre: "",
       descripcion: "",
       tipo: "",
-      subcategoria: "",
-      marca: "",
-      modelo: "",
-      serie: "",
       fechaInstalacion: "",
       funcionEquipo: "",
-      ubicacion: "",
       estanqueId: "",
       estado: "activo",
       horasMantenimiento: "",
@@ -203,13 +186,9 @@ export function useEquipoForm({ initialData = {}, onSubmit, isEditing = false })
   const isFormValid = useCallback(() => {
     const nombreError = validarNombre(form.nombre);
     const descError = validarDescripcion(form.descripcion);
-    const marcaError = validarMarca(form.marca);
-    const modeloError = validarModelo(form.modelo);
-    const serieError = validarSerie(form.serie);
     const funcionError = validarFuncion(form.funcionEquipo);
-    
-    return !nombreError && !descError && form.tipo && !marcaError && 
-           !modeloError && !serieError && form.fechaInstalacion && !funcionError;
+
+    return !nombreError && !descError && form.tipo && form.fechaInstalacion && !funcionError;
   }, [form]);
 
   // --------------------------------------------------------
@@ -224,5 +203,6 @@ export function useEquipoForm({ initialData = {}, onSubmit, isEditing = false })
     handleSubmit,
     resetForm,
     isFormValid: isFormValid(),
+    getValidationMessage,
   };
 }

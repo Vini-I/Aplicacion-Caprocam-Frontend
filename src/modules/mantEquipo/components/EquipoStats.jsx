@@ -4,8 +4,11 @@
  * ============================================================
  *
  * Muestra estadísticas de actividad de un equipo
- * (horas de uso, mantenimiento, registros de encendido, etc.).
- * Diseñado para ser usado dentro de tarjetas o pantallas de detalle.
+ * (horas de uso, mantenimiento, estado operativo y encendido).
+ *
+ * Nota: el backend no registra un historial de encendidos
+ * (no existe "registrosEncendido"), por lo que este componente
+ * ya no cuenta eventos individuales, solo el estado actual.
  *
  * Props:
  * - equipo: objeto con los datos del equipo
@@ -25,6 +28,12 @@ import CustomText from "../../../shared/components/Text";
 import { styles } from "../styles/equiposListStyles";
 import { COLORS } from "../../../theme/colors";
 
+const ESTADO_OPERATIVO_LABELS = {
+  activo: "Activo",
+  inactivo: "Inactivo",
+  mantenimiento: "Mantenimiento",
+};
+
 // ============================================================
 // COMPONENTE
 // ============================================================
@@ -38,9 +47,7 @@ export default function EquipoStats({ equipo, estadisticas }) {
   const horasRestantes = Math.max(0, Math.round(equipo.horasMantenimiento - equipo.horasUso));
   const necesitaMant = horasRestantes === 0;
 
-  // Contar registros de encendido
-  const totalEncendidos = equipo.registrosEncendido?.length || 0;
-  const encendidosActivos = equipo.registrosEncendido?.filter(r => !r.fin).length || 0;
+  const estadoOperativoLabel = ESTADO_OPERATIVO_LABELS[equipo.estado] || equipo.estado;
 
   return (
     <Card title="Estadísticas del equipo" style={styles.statsCard}>
@@ -58,15 +65,15 @@ export default function EquipoStats({ equipo, estadisticas }) {
           </CustomText>
         </View>
         <View style={styles.statItem}>
-          <CustomText style={styles.statValue}>{totalEncendidos}</CustomText>
-          <CustomText style={styles.statLabel}>Registros de uso</CustomText>
+          <CustomText style={styles.statValue}>{estadoOperativoLabel}</CustomText>
+          <CustomText style={styles.statLabel}>Estado operativo</CustomText>
         </View>
         <View style={styles.statItem}>
-          <CustomText style={[styles.statValue, encendidosActivos > 0 && styles.statValueEncendido]}>
-            {encendidosActivos > 0 ? "🔴" : "⚪"}
+          <CustomText style={[styles.statValue, equipo.encendido && styles.statValueEncendido]}>
+            {equipo.encendido ? "🔴" : "⚪"}
           </CustomText>
           <CustomText style={styles.statLabel}>
-            {encendidosActivos > 0 ? "En uso" : "Apagado"}
+            {equipo.encendido ? "Encendido" : "Apagado"}
           </CustomText>
         </View>
       </View>
