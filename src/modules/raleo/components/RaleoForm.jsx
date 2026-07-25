@@ -41,34 +41,18 @@ import Icon from "../../../shared/components/Icons";
 import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
 import { ICONS } from "../../../theme/icons";
+import { useCatalogos } from "../hooks/useCatalogos.js";
 
-const FINCAS = [
-  { label: "Finca La Reina", value: "laReina" },
-  { label: "Finca La Esperanza", value: "laEsperanza" },
-  { label: "Finca La Villa", value: "laVilla" },
-  { label: "Finca El Paraíso", value: "elParaiso" },
-];
-const ESTANQUES = [
-  { label: "A01", value: "A01" },
-  { label: "A02", value: "A02" },
-  { label: "B01", value: "B01" },
-  { label: "B02", value: "B02" },
-  { label: "B03", value: "B03" },
-  { label: "E01", value: "E01" },
-  { label: "E02", value: "E02" },
-  { label: "V01", value: "V01" },
-  { label: "V02", value: "V02" },
-];
 const OBJETIVOS = [
-  { label: "Comercialización", value: "comercializacion" },
-  { label: "Reducción de densidad", value: "reduccion_densidad" },
-  { label: "Resiembra en otro estanque", value: "resiembra" },
+  { label: "Comercialización", value: "Comercialización" },
+  { label: "Reducción de densidad", value: "Reducción de densidad" },
+  { label: "Resiembra en otro estanque", value: "Resiembra en otro estanque" },
 ];
 const METODOS = [
-  { label: "Atarraya", value: "atarraya" },
-  { label: "Red de arrastre", value: "red_arrastre" },
-  { label: "Boleo", value: "boleo" },
-  { label: "Trampa selectiva", value: "trampa" },
+  { label: "Atarraya", value: "Atarraya" },
+  { label: "Red de arrastre", value: "Red de arrastre" },
+  { label: "Boleo", value: "Boleo" },
+  { label: "Trampa selectiva", value: "Trampa selectiva" },
 ];
 
 const bordeError = { borderColor: COLORS.error, borderWidth: 1.5 };
@@ -93,6 +77,14 @@ export default function RaleoForm({
   const invalidoResponsable = submitted && !!errores.responsable;
   const invalidoObservaciones = submitted && !!errores.observaciones;
 
+  const { fincasOptions, estanquesOptions, recargarEstanques } = useCatalogos();
+
+  const handleFincaChange = (idFinca) => {
+    updateField("finca", idFinca);
+    updateField("estanque", "");
+    recargarEstanques(idFinca);
+  };
+
   return (
     <View>
       <Card>
@@ -114,8 +106,8 @@ export default function RaleoForm({
         <Select
           label="Finca *"
           value={form.finca}
-          onChange={(v) => updateField("finca", v)}
-          options={FINCAS}
+          onChange={handleFincaChange}
+          options={fincasOptions}
           placeholder="Seleccionar finca"
           selectStyle={invalidoFinca ? bordeError : null}
         />
@@ -124,7 +116,7 @@ export default function RaleoForm({
           label="Estanque *"
           value={form.estanque}
           onChange={(v) => updateField("estanque", v)}
-          options={ESTANQUES}
+          options={estanquesOptions}
           placeholder="Seleccionar estanque"
           selectStyle={invalidoEstanque ? bordeError : null}
         />
