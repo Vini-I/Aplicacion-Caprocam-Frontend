@@ -40,14 +40,29 @@ export function useDetalleMantenimiento({ id, alertaTipo, alertaMensaje, onNavig
     setEquipo(eq);
 
     const list = getProductosInventario() || [];
-    if (t.productos) {
+    if (t.productos && t.productos.length > 0) {
       const mapped = t.productos
-        .map(tp => list.find(p => String(p.id) === String(tp.id)))
+        .map(tp => {
+          const inv = list.find(p => String(p.id) === String(tp.id));
+          const cant = parseInt(tp.cantidad || 1, 10);
+          const pu = parseFloat(tp.precioUnidad || tp.precio || inv?.precioUnidad || inv?.precio || 0);
+          const subtotal = tp.subtotal !== undefined ? parseFloat(tp.subtotal) : (cant * pu);
+          return {
+            ...(inv || {}),
+            ...tp,
+            id: tp.id,
+            nombre: tp.nombre || inv?.nombre || "Producto",
+            cantidad: cant,
+            precioUnidad: pu,
+            precio: pu,
+            subtotal: subtotal,
+          };
+        })
         .filter(Boolean);
       setProductosSeleccionados(mapped);
     } else if (t.productoId) {
       const prod = getProductoById(t.productoId);
-      setProductosSeleccionados(prod ? [prod] : []);
+      setProductosSeleccionados(prod ? [{ ...prod, cantidad: 1, subtotal: prod.precioUnidad || prod.precio || 0 }] : []);
     } else {
       setProductosSeleccionados([]);
     }

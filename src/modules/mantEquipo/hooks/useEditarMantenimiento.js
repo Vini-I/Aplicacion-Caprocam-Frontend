@@ -38,6 +38,7 @@ export function useEditarMantenimiento({ id, onNavigateToDetail, onNavigateToMai
   // ── Productos / insumos ──────────────────────────────────────
   const [productosSeleccionados, setProductosSeleccionados] = useState([]);
   const [productosList, setProductosList]                   = useState([]);
+  const [alertaStock, setAlertaStock]                       = useState('');
 
   // ── Validación ───────────────────────────────────────────────
   const [errores, setErrores]     = useState({});
@@ -45,7 +46,11 @@ export function useEditarMantenimiento({ id, onNavigateToDetail, onNavigateToMai
 
   // ── Carga inicial de productos ────────────────────────────────
   useEffect(() => {
-    setProductosList(getProductosInventario() || []);
+    const list = (getProductosInventario() || []).map(p => ({
+      ...p,
+      stockMaximo: p.cantidad !== undefined ? p.cantidad : 999,
+    }));
+    setProductosList(list);
   }, []);
 
   // ── Precarga de datos del ticket ──────────────────────────────
@@ -69,22 +74,40 @@ export function useEditarMantenimiento({ id, onNavigateToDetail, onNavigateToMai
     }
 
     // Precarga de productos
-    const prodList = getProductosInventario() || [];
+    const prodList = (getProductosInventario() || []).map(p => ({
+      ...p,
+      stockMaximo: p.cantidad !== undefined ? p.cantidad : 999,
+    }));
     if (ticketOriginal.productos) {
       const mapped = ticketOriginal.productos
-        .map(tp => prodList.find(p => String(p.id) === String(tp.id)))
+        .map(tp => {
+          const found = prodList.find(p => String(p.id) === String(tp.id));
+          const pu = parseFloat(tp.precioUnidad || tp.precio || found?.precioUnidad || found?.precio || 0);
+          const cant = parseInt(tp.cantidad || 1, 10);
+          return {
+            ...(found || {}),
+            ...tp,
+            id: tp.id,
+            nombre: tp.nombre || found?.nombre || "Producto",
+            stockMaximo: found?.stockMaximo !== undefined ? found.stockMaximo : 999,
+            cantidad: cant,
+            precioUnidad: pu,
+            precio: pu,
+            subtotal: tp.subtotal !== undefined ? parseFloat(tp.subtotal) : (cant * pu),
+          };
+        })
         .filter(Boolean);
       setProductosSeleccionados(mapped);
     } else if (ticketOriginal.productoId) {
       const prod = prodList.find(p => String(p.id) === String(ticketOriginal.productoId));
-      if (prod) setProductosSeleccionados([prod]);
+      if (prod) setProductosSeleccionados([{ ...prod, stockMaximo: prod.stockMaximo !== undefined ? prod.stockMaximo : 999, cantidad: 1 }]);
     }
   }, [id]);
 
   // ── Cálculo reactivo del costo total ─────────────────────────
   const numManoObra   = parseFloat(costoManoObra) || 0;
   const precioInsumos = productosSeleccionados.reduce(
-    (sum, p) => sum + (parseFloat(p.precioUnidad) || 0), 0
+    (sum, p) => sum + ((parseInt(p.cantidad || 1, 10)) * (parseFloat(p.precioUnidad) || 0)), 0
   );
   const costoTotal = numManoObra + precioInsumos;
 
@@ -106,12 +129,36 @@ export function useEditarMantenimiento({ id, onNavigateToDetail, onNavigateToMai
   };
 
   // ── Handlers de productos ─────────────────────────────────────
-  const seleccionarProducto = (prodId) => {
-    if (!prodId) return;
-    const prod = productosList.find(p => String(p.id) === String(prodId));
-    if (prod && !productosSeleccionados.some(x => x.id === prod.id)) {
-      setProductosSeleccionados(prev => [...prev, prod]);
+  const agregarProducto = (prodConCantidad) => {
+    if (!prodConCantidad) return;
+    setAlertaStock('');
+    setProductosSeleccionados(prev => {
+      const existe = prev.some(x => x.id === prodConCantidad.id);
+      if (existe) {
+        return prev.map(x => x.id === prodConCantidad.id ? { ...x, cantidad: x.cantidad + prodConCantidad.cantidad } : x);
+      }
+      return [...prev, prodConCantidad];
+    });
+  };
+
+  const cambiarCantidadProducto = (prodId, nuevaCantidad) => {
+    setAlertaStock('');
+    const prod = productosSeleccionados.find(x => String(x.id) === String(prodId));
+    const stockMax = prod?.stockMaximo !== undefined ? prod.stockMaximo : 999;
+
+    const val = String(nuevaCantidad).replace(/[^0-9]/g, '');
+    let qty = val === '' ? 1 : parseInt(val, 10) || 1;
+
+    if (qty > stockMax) {
+      qty = stockMax;
+      setAlertaStock(`No hay más stock disponible para "${prod?.nombre}". (Stock máximo en inventario: ${stockMax})`);
     }
+
+    qty = Math.max(1, qty);
+
+    setProductosSeleccionados(prev =>
+      prev.map(p => (String(p.id) === String(prodId) ? { ...p, cantidad: qty } : p))
+    );
   };
 
   const quitarProducto = (prodId) => {
@@ -136,7 +183,7 @@ export function useEditarMantenimiento({ id, onNavigateToDetail, onNavigateToMai
   };
 
   // ── Submit ────────────────────────────────────────────────────
-  const handleGuardar = () => {
+  const handleGuardar = async () => {
     setSubmitted(true);
     if (!validar()) return;
 
@@ -154,10 +201,21 @@ export function useEditarMantenimiento({ id, onNavigateToDetail, onNavigateToMai
       costoMiscelaneo: 0,
       costoManoObra:   parseFloat(costoManoObra) || 0,
       costoTotal,
-      productos:       productosSeleccionados.map(p => ({ id: p.id, precio: p.precioUnidad })),
+      productos:       productosSeleccionados.map(p => {
+        const cant = parseInt(p.cantidad || 1, 10);
+        const pu = parseFloat(p.precioUnidad || p.precio || 0);
+        return {
+          id: p.id,
+          nombre: p.nombre,
+          precio: pu,
+          precioUnidad: pu,
+          cantidad: cant,
+          subtotal: cant * pu,
+        };
+      }),
     };
 
-    MantService.actualizarTicket(ticketActualizado);
+    await MantService.actualizarTicket(ticketActualizado);
     if (estadoEquipo) MantService.actualizarEstadoEquipo(equipoId, estadoEquipo);
     if (estadoTicket === 'Terminado') MantService.reiniciarHorasEquipo(equipoId);
 
@@ -181,13 +239,15 @@ export function useEditarMantenimiento({ id, onNavigateToDetail, onNavigateToMai
     estadoTicket, setEstadoTicket,
     productosList,
     productosSeleccionados,
+    alertaStock, setAlertaStock,
     costoTotal,
     errores, setErrores,
     submitted,
     seleccionarEquipoById,
     quitarEquipo,
-    seleccionarProducto,
+    agregarProducto,
     quitarProducto,
+    cambiarCantidadProducto,
     handleGuardar,
   };
 }

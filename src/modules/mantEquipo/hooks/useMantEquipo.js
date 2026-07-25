@@ -3,22 +3,18 @@
  * HOOK: useMantEquipo
  * ============================================================
  * 
- * Responsabilidad: Maneja el estado global de la lista de tickets,
- * obtención inicial, filtrado general y operaciones de CRUD
- * en memoria (demo).
+ * Responsabilidad: Maneja el estado de la lista de tickets:
+ * obtención inicial, sincronización al enfocar la pantalla y
+ * el texto de búsqueda reactivo.
  * 
  * Datos:
  * - tickets: Lista completa de tickets.
- * 
- * Validaciones:
- * - Filtra tickets en base al criterio seleccionado de forma segura.
  * 
  * Navegación:
  * - Ninguna.
  * 
  * Dependencias:
  * - mantEquipoService.js
- * - mantEquipoUtils.js
  */
 
 import { useState, useEffect } from "react";
@@ -50,30 +46,9 @@ export function useMantEquipo() {
     return unsubscribe;
   }, [navigation]);
 
-  function agregarTicket(t) {
-    MantService.agregarTicket(t);
-    setTickets([...MantService.TICKETS_MOCK]);
-  }
-
-  function eliminarTicket(id) {
-    MantService.eliminarTicket(id);
-    setTickets([...MantService.TICKETS_MOCK]);
-  }
-
-  function actualizarTicket(upd) {
-    MantService.actualizarTicket(upd);
-    setTickets([...MantService.TICKETS_MOCK]);
-  }
-
-  // Cambia el estadoEquipo en el mock de equipos (demo sin backend)
-  function actualizarEstadoEquipo(equipoId, nuevoEstado) {
-    MantService.actualizarEstadoEquipo(equipoId, nuevoEstado);
-  }
-
   return {
     tickets,
     busqueda, setBusqueda,
     cargando,
-    agregarTicket, eliminarTicket, actualizarTicket, actualizarEstadoEquipo,
   };
 }

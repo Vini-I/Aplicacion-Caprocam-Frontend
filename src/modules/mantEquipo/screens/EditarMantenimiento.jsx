@@ -50,20 +50,18 @@ import { COLORS } from "../../../theme/colors.js";
 import { STYLE } from "../../../theme/style.js";
 import { styles } from "../styles/mantEquipoStyles.js";
 
-import { TEXTOS_MODAL_AGREGAR, LISTA_ESTADOS_TICKET, LISTA_TIPOS_PERSONAL } from "../constants/mantEquipoMensajes.js";
+import { TEXTOS_MODAL_AGREGAR, USUARIO_SESION, LISTA_ESTADOS_TICKET, LISTA_TIPOS_PERSONAL } from "../constants/mantEquipoMensajes.js";
 import * as MantService from "../services/mantEquipoService.js";
 import MantenimientoEquipoSelect from "../components/MantenimientoEquipoSelect.jsx";
 import MantenimientoTareaSelect from "../components/MantenimientoTareaSelect.jsx";
 import EquipoDetail from "../components/EquipoDetailTicket.jsx";
 import SelectorPills from "../components/SelectorPills.jsx";
 import TareasSeleccionadasList from "../components/TareasSeleccionadasList.jsx";
-import Select from "../../../shared/components/Select.jsx";
-import ProductosSeleccionadosList from "../components/ProductosSeleccionadosList.jsx";
 import DateInput from "../../../shared/components/DateInput.jsx";
+import MantenimientoProductoSelect from "../components/MantenimientoProductoSelect.jsx";
+import ProductosSeleccionadosList from "../components/ProductosSeleccionadosList.jsx";
 
 import { useEditarMantenimiento } from "../hooks/useEditarMantenimiento.js";
-
-
 export default function EditarMantenimientoScreen({ id, onNavigateToDetail = () => { }, onNavigateToMain = () => { } }) {
 
   const {
@@ -80,13 +78,15 @@ export default function EditarMantenimientoScreen({ id, onNavigateToDetail = () 
     estadoTicket, setEstadoTicket,
     productosList,
     productosSeleccionados,
+    alertaStock, setAlertaStock,
     costoTotal,
     errores, setErrores,
     submitted,
     seleccionarEquipoById,
     quitarEquipo,
-    seleccionarProducto,
+    agregarProducto,
     quitarProducto,
+    cambiarCantidadProducto,
     handleGuardar,
   } = useEditarMantenimiento({ id, onNavigateToDetail, onNavigateToMain });
 
@@ -237,29 +237,20 @@ export default function EditarMantenimientoScreen({ id, onNavigateToDetail = () 
             opciones={LISTA_TIPOS_PERSONAL}
           />
 
-          {/* Selector de Producto / Insumo */}
-          <Select
-            label="Productos utilizados"
-            value=""
-            options={[
-              ...productosList
-                .filter(p => !productosSeleccionados.some(x => x.id === p.id))
-                .map(p => ({
-                  label: `${p.nombre} (Precio: ₡${p.precioUnidad})`,
-                  value: String(p.id)
-                }))
-            ]}
-            onChange={seleccionarProducto}
-            placeholder="Seleccione productos..."
-            containerStyle={{ marginBottom: 12 }}
-            selectStyle={[styles.comboInput, styles.selectMinHeight]}
-            labelStyle={styles.comboLabel}
-            showsVerticalScrollIndicator={false}
+          {/* Selector de Producto / Insumo con cantidad */}
+          <MantenimientoProductoSelect
+            productosList={productosList}
+            productosSeleccionados={productosSeleccionados}
+            onAgregarProducto={agregarProducto}
+            alertaStock={alertaStock}
+            setAlertaStock={setAlertaStock}
           />
 
+          {/* Lista de productos seleccionados */}
           <ProductosSeleccionadosList
             productosSeleccionados={productosSeleccionados}
             onQuitar={quitarProducto}
+            onCambiarCantidad={cambiarCantidadProducto}
           />
 
           {/* Costo de Mano de Obra */}

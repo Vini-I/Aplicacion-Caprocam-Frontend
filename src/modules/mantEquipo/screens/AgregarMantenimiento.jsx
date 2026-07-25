@@ -58,13 +58,11 @@ import MantenimientoTareaSelect from "../components/MantenimientoTareaSelect.jsx
 import EquipoDetail from "../components/EquipoDetailTicket.jsx";
 import SelectorPills from "../components/SelectorPills.jsx";
 import TareasSeleccionadasList from "../components/TareasSeleccionadasList.jsx";
-import Select from "../../../shared/components/Select.jsx";
-import ProductosSeleccionadosList from "../components/ProductosSeleccionadosList.jsx";
 import DateInput from "../../../shared/components/DateInput.jsx";
+import MantenimientoProductoSelect from "../components/MantenimientoProductoSelect.jsx";
+import ProductosSeleccionadosList from "../components/ProductosSeleccionadosList.jsx";
 
 import { useAgregarMantenimiento } from "../hooks/useAgregarMantenimiento.js";
-
-
 export default function AgregarMantenimientoScreen({ onNavigateToMain = () => { } }) {
 
   const {
@@ -80,13 +78,15 @@ export default function AgregarMantenimientoScreen({ onNavigateToMain = () => { 
     estadoTicket, setEstadoTicket,
     productosList,
     productosSeleccionados,
+    alertaStock, setAlertaStock,
     costoTotal,
     errores, setErrores,
     submitted,
     seleccionarEquipoById,
     quitarEquipo,
-    seleccionarProducto,
+    agregarProducto,
     quitarProducto,
+    cambiarCantidadProducto,
     handleCrear,
   } = useAgregarMantenimiento({ onNavigateToMain });
 
@@ -220,29 +220,20 @@ export default function AgregarMantenimientoScreen({ onNavigateToMain = () => { 
             opciones={LISTA_TIPOS_PERSONAL}
           />
 
-          {/* Selector de Producto / Insumo */}
-          <Select
-            label="Productos utilizados"
-            value=""
-            options={[
-              ...productosList
-                .filter(p => !productosSeleccionados.some(x => x.id === p.id))
-                .map(p => ({
-                  label: `${p.nombre} (Precio: ₡${p.precioUnidad})`,
-                  value: String(p.id)
-                }))
-            ]}
-            onChange={seleccionarProducto}
-            placeholder="Seleccione productos..."
-            containerStyle={{ marginBottom: 12 }}
-            selectStyle={[styles.comboInput, styles.selectMinHeight]}
-            labelStyle={styles.comboLabel}
-            showsVerticalScrollIndicator={false}
+          {/* Selector de Producto / Insumo con cantidad */}
+          <MantenimientoProductoSelect
+            productosList={productosList}
+            productosSeleccionados={productosSeleccionados}
+            onAgregarProducto={agregarProducto}
+            alertaStock={alertaStock}
+            setAlertaStock={setAlertaStock}
           />
 
+          {/* Lista de productos seleccionados */}
           <ProductosSeleccionadosList
             productosSeleccionados={productosSeleccionados}
             onQuitar={quitarProducto}
+            onCambiarCantidad={cambiarCantidadProducto}
           />
 
           {/* Costo de Mano de Obra */}
@@ -293,7 +284,7 @@ export default function AgregarMantenimientoScreen({ onNavigateToMain = () => { 
             onPress={handleCrear}
             style={[styles.btnAccept, { flex: 1 }]}
           >
-            <Icon icon={ICONS.check} size={15} color={COLORS.primary} />
+            <Icon icon={ICONS.add} size={15} color={COLORS.primary} />
             <CustomText style={styles.btnTextPrimary}>
               {TEXTOS_MODAL_AGREGAR.btnAceptar}
             </CustomText>

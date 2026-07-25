@@ -201,30 +201,52 @@ export default function DetalleMantenimientoScreen({
         <Card style={[styles.card, styles.cardSection]}>
           <SectionTitle icon={ICONS.money} title="COSTOS DEL TICKET" />
 
-          <View style={styles.costoBox}>
-            {productosSeleccionados.length > 0 ? (
-              productosSeleccionados.map((p) => (
-                <View key={p.id} style={[styles.equipoDetailRow, styles.costoProductoRow]}>
-                  <CustomText style={styles.equipoDetailLabel}>Producto: {p.nombre}</CustomText>
-                  <CustomText style={styles.equipoDetailVal}>₡{(p.precioUnidad || 0).toLocaleString("es-CR")}</CustomText>
-                </View>
-              ))
-            ) : (
-              <View style={[styles.equipoDetailRow, styles.costoProductoRow]}>
-                <CustomText style={styles.equipoDetailLabel}>Productos utilizados:</CustomText>
-                <CustomText style={[styles.equipoDetailVal, styles.costoItalic]}>Ninguno</CustomText>
-              </View>
-            )}
+          {(() => {
+            const costoManoObraVal = parseFloat(ticket.costoManoObra) || 0;
+            const costoProductosTotal = productosSeleccionados.reduce((sum, p) => {
+              const cant = parseInt(p.cantidad || 1, 10);
+              const pu = parseFloat(p.precioUnidad || p.precio || 0);
+              const sub = p.subtotal !== undefined ? parseFloat(p.subtotal) : (cant * pu);
+              return sum + sub;
+            }, 0);
 
-            <View style={styles.equipoDetailRow}>
-              <CustomText style={styles.equipoDetailLabel}>Costo de Mano de Obra:</CustomText>
-              <CustomText style={styles.equipoDetailVal}>₡{(ticket.costoManoObra || 0).toLocaleString("es-CR")}</CustomText>
-            </View>
-            <View style={[styles.equipoDetailRow, styles.costoTotalRow]}>
-              <CustomText style={[styles.equipoDetailLabel, styles.costoTotalRowLabel]}>Costo Total:</CustomText>
-              <CustomText style={[styles.equipoDetailVal, styles.costoTotalRowValor]}>₡{(ticket.costoTotal || 0).toLocaleString("es-CR")}</CustomText>
-            </View>
-          </View>
+            const costoTotalCalculado = costoManoObraVal + costoProductosTotal;
+            const costoTotalFinal = (ticket.costoTotal !== undefined && ticket.costoTotal >= costoTotalCalculado)
+              ? ticket.costoTotal
+              : costoTotalCalculado;
+
+            return (
+              <View style={styles.costoBox}>
+                {productosSeleccionados.length > 0 ? (
+                  productosSeleccionados.map((p) => {
+                    const cant = parseInt(p.cantidad || 1, 10);
+                    const pu = parseFloat(p.precioUnidad || p.precio || 0);
+                    const subtotal = p.subtotal !== undefined ? parseFloat(p.subtotal) : (cant * pu);
+                    return (
+                      <View key={p.id} style={[styles.equipoDetailRow, styles.costoProductoRow]}>
+                        <CustomText style={styles.equipoDetailLabel}>Producto: {p.nombre} {cant > 1 ? `(x${cant})` : ""}</CustomText>
+                        <CustomText style={styles.equipoDetailVal}>₡{subtotal.toLocaleString("es-CR")}</CustomText>
+                      </View>
+                    );
+                  })
+                ) : (
+                  <View style={[styles.equipoDetailRow, styles.costoProductoRow]}>
+                    <CustomText style={styles.equipoDetailLabel}>Productos utilizados:</CustomText>
+                    <CustomText style={[styles.equipoDetailVal, styles.costoItalic]}>Ninguno</CustomText>
+                  </View>
+                )}
+
+                <View style={styles.equipoDetailRow}>
+                  <CustomText style={styles.equipoDetailLabel}>Costo de Mano de Obra:</CustomText>
+                  <CustomText style={styles.equipoDetailVal}>₡{costoManoObraVal.toLocaleString("es-CR")}</CustomText>
+                </View>
+                <View style={[styles.equipoDetailRow, styles.costoTotalRow]}>
+                  <CustomText style={[styles.equipoDetailLabel, styles.costoTotalRowLabel]}>Costo Total:</CustomText>
+                  <CustomText style={[styles.equipoDetailVal, styles.costoTotalRowValor]}>₡{costoTotalFinal.toLocaleString("es-CR")}</CustomText>
+                </View>
+              </View>
+            );
+          })()}
         </Card>
 
         {/* Botones de Acción */}

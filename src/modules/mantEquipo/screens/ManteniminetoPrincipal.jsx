@@ -23,6 +23,10 @@
  * VALIDACIONES / REGLAS:
  * - Filtrado en memoria reactivo.
  * - Búsqueda insensible a mayúsculas/minúsculas.
+ * - El encabezado y las filas de la tabla se arman una sola vez (tableContent)
+ *   y se reutilizan tanto en móvil (con scroll horizontal) como en PC (estático),
+ *   para evitar que ambas versiones se desincronicen entre sí.
+ * - Ningún estilo va inline: todo vive en mantEquipoStyles.js.
  * 
  * NAVEGACIÓN:
  * - "Ver detalles" redirige a /equipos/DetalleMantenimiento?id={id}.
@@ -36,30 +40,8 @@
  */
 
 import React, { useState, useMemo, useEffect } from "react";
-import { View, ScrollView } from "react-native";
+import { View, ScrollView, useWindowDimensions } from "react-native";
 
-// Monkey patch de ScrollView para forzar la ocultación de scrollbars en todo el módulo
-if (ScrollView.prototype && ScrollView.prototype.render) {
-  const originalRender = ScrollView.prototype.render;
-  ScrollView.prototype.render = function () {
-    this.props = {
-      ...this.props,
-      showsVerticalScrollIndicator: false,
-      showsHorizontalScrollIndicator: false,
-    };
-    return originalRender.apply(this, arguments);
-  };
-} else if (ScrollView.render) {
-  const originalRender = ScrollView.render;
-  ScrollView.render = function (props, ref) {
-    const newProps = {
-      ...props,
-      showsVerticalScrollIndicator: false,
-      showsHorizontalScrollIndicator: false,
-    };
-    return originalRender(newProps, ref);
-  };
-}
 
 import Spinner from "../../../shared/components/Spinner.jsx";
 import CustomText from "../../../shared/components/Text.jsx";
@@ -79,11 +61,18 @@ import FilaTicket from "../components/TablaTicket.jsx";
 import {
   TEXTOS_PANTALLA,
   HEADERS_TABLA,
-  LISTA_ESTADOS_EQUIPO,
   LISTA_ESTADOS_TICKET,
 } from "../constants/mantEquipoMensajes.js";
 import { obtenerTareas } from "../services/tareasService.js";
 import * as MantService from "../services/mantEquipoService.js";
+
+const TABLE_COLS_DESKTOP = [
+  "colTicket", "colDue", "colStatus", "colTitle", "colDesc", "colBy", "colActions",
+];
+
+const TABLE_COLS_MOBILE = [
+  "colTicket", "colDue", "colStatus", "colTitleMobile", "colDescMobile", "colBy", "colActions",
+];
 
 export default function ManteniminetoPrincipal({
   onNavigateToCreate = () => {},
@@ -93,6 +82,9 @@ export default function ManteniminetoPrincipal({
   alertaTipo,
   alertaMensaje
 }) {
+
+  const { width } = useWindowDimensions();
+  const isMobile = width < 768;
 
   const {
     tickets,
@@ -174,6 +166,38 @@ export default function ManteniminetoPrincipal({
     );
   }
 
+  // Encabezado + filas de la tabla: se arma UNA sola vez y se reutiliza
+  // tanto en la versión móvil (dentro del ScrollView horizontal) como en
+  // la versión de escritorio (estática), para que nunca queden desincronizadas.
+const cols = isMobile ? TABLE_COLS_MOBILE : TABLE_COLS_DESKTOP;
+
+  const tableContent = (
+    <View style={styles.tableContentInner}>
+      <View style={styles.tableHeader}>
+        {[...HEADERS_TABLA, "Acciones"].map((h, i) => (
+          <View key={i} style={styles[cols[i]]}>
+            <CustomText style={styles.headerCell}>{h}</CustomText>
+          </View>
+        ))}
+      </View>
+
+      {ticketsFiltrados.length === 0 ? (
+        <View style={styles.emptyState}>
+          <CustomText style={styles.emptyStateText}>{TEXTOS_PANTALLA.sinTickets}</CustomText>
+        </View>
+      ) : (
+        ticketsFiltrados.map((item) => (
+          <FilaTicket
+            key={item.id}
+            ticket={item}
+            isMobile={isMobile}
+            onVerDetalle={(t) => onNavigateToDetail(t.id)}
+          />
+        ))
+      )}
+    </View>
+  );
+
   return (
     <View style={styles.screenRoot}>
       <ScrollView style={STYLE.container} contentContainerStyle={styles.screenScrollContent} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
@@ -185,7 +209,7 @@ export default function ManteniminetoPrincipal({
               variant={alerta.tipo}
               message={alerta.mensaje}
               style={styles.alertBottom}
-              textStyle={{ color: COLORS.black }}
+              textStyle={styles.alertTextDark}
             />
           )}
 
@@ -199,7 +223,7 @@ export default function ManteniminetoPrincipal({
             />
             <FilterButton
               categories={LISTA_ESTADOS_TICKET}
-              suppliers={LISTA_ESTADOS_EQUIPO}
+              suppliers={MantService.ESTADOS_EQUIPO}
               activeFilters={{
                 categories: filtros.estadosTicket,
                 suppliers: filtros.estadosEquipo,
@@ -209,7 +233,7 @@ export default function ManteniminetoPrincipal({
               }}
               showLowStock={false}
               showExpiryDate={false}
-              buttonStyle={{ paddingVertical: 12, paddingHorizontal: 20, marginTop: 0 }}
+              buttonStyle={styles.filterButtonSpacing}
               onApply={(pending) => {
                 setFiltros({
                   estadosTicket: pending.categories || [],
@@ -220,41 +244,16 @@ export default function ManteniminetoPrincipal({
             />
           </View>
 
-          {/* Tabla de tickets */}
+          {/* Tabla de tickets: Estática en PC, scroll en Móvil */}
           <View style={styles.tableWrapper}>
-            {/* Encabezado */}
-            <View style={styles.tableHeader}>
-              {[...HEADERS_TABLA, "Acciones"].map((h, i) => {
-                const cols = [
-                  styles.colTicket,
-                  styles.colDue,
-                  styles.colStatus,
-                  styles.colTitle,
-                  styles.colDesc,
-                  styles.colBy,
-                  styles.colActions
-                ];
-                return (
-                  <View key={i} style={cols[i]}>
-                    <CustomText style={styles.headerCell}>{h}</CustomText>
-                  </View>
-                );
-              })}
-            </View>
-
-            {/* Filas */}
-            {ticketsFiltrados.length === 0 ? (
-              <View style={styles.emptyState}>
-                <CustomText style={styles.emptyStateText}>{TEXTOS_PANTALLA.sinTickets}</CustomText>
-              </View>
+            {isMobile ? (
+              <ScrollView horizontal showsHorizontalScrollIndicator={true} persistentScrollbar={true}>
+                <View style={styles.tableMobileScroll}>
+                  {tableContent}
+                </View>
+              </ScrollView>
             ) : (
-              ticketsFiltrados.map((item) => (
-                <FilaTicket
-                  key={item.id}
-                  ticket={item}
-                  onVerDetalle={(t) => onNavigateToDetail(t.id)}
-                />
-              ))
+              tableContent
             )}
           </View>
 

@@ -1,30 +1,4 @@
-/**
- * ============================================================
- * SERVICIO: mantEquipoService
- * ============================================================
- * 
- * Responsabilidad: Centraliza los datos mock, constantes de estado
- * y funciones de consulta y persistencia en memoria para el módulo
- * de Mantenimiento de Equipos.
- * 
- * Datos:
- * - ESTADOS: Estados válidos para los tickets de mantenimiento.
- * - ESTADOS_EQUIPO: Estados válidos de funcionamiento de los equipos.
- * - EQUIPOS_MOCK: Listado inicial de equipos de la organización.
- * - EMPLEADOS_MOCK: Mapeo de empleados creadores de tickets a sus IDs.
- * - TICKETS_INICIALES: Listado inicial de tickets de mantenimiento.
- * 
- * Validaciones:
- * - Simulación de retardo de red con promesas resueltas.
- * - Actualización de estado del equipo mutando el mock local.
- * 
- * Navegación:
- * - Ninguna navegación directa. Utilizado por los hooks y pantallas.
- * 
- * Dependencias:
- * - Ninguna dependencia externa.
- */
-
+import api from "../../../api/api.js";
 import { equiposService } from "./equiposService.js";
 
 export const ESTADOS = {
@@ -70,44 +44,113 @@ const TICKETS_INICIALES = [
 
 export let TICKETS_MOCK = [...TICKETS_INICIALES];
 
-const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+function adaptBackendTicket(item) {
+  return {
+    id: item.codigoTicket || (item.id ? `A${String(item.id).padStart(3, "0")}` : "A001"),
+    dbId: item.id,
+    equipoId: item.equipoId || item.equipo_id,
+    herramienta: item.herramienta || (item.equipoId ? `Equipo ${item.equipoId}` : "Equipo General"),
+    titulo: item.tituloTicket || item.titulo || "Mantenimiento",
+    descripcion: item.descripcionTicket || item.descripcion || "",
+    tareas: item.tareas || [],
+    estado: item.estadoTicket || item.estado || ESTADOS.EN_ESPERA,
+    creadoPor: item.creadoPor || "Usuario",
+    fechaCreacion: item.fechaCreacion ? new Date(item.fechaCreacion) : new Date(),
+    tipoPersonal: item.tipoPersonal || item.tipo_personal || "interno",
+    costoManoObra: Number(item.costoManoObra || item.costo_mano_obra || 0),
+    costoTotal: Number(item.costoTotalEstimado || item.costoTotal || item.costo_total_estimado || 0),
+    productos: item.productos || [],
+  };
+}
 
 export async function obtenerTickets() {
-  await delay(1200); // Retardo reducido para agilizar flujo
+  try {
+    const response = await api.get("/mantenimientos");
+    const data = response.data?.datos || response.data?.data || response.data;
+    if (Array.isArray(data) && data.length > 0) {
+      const adaptados = data.map(adaptBackendTicket);
+      TICKETS_MOCK = adaptados;
+      return adaptados;
+    }
+  } catch (e) {
+    // Si no responde la API o falla la conexión, retorna la lista en memoria de respaldo
+  }
   return [...TICKETS_MOCK];
 }
 
 // Muta EQUIPOS_MOCK en memoria y sincroniza con el catálogo de equipos general
 export function actualizarEstadoEquipo(equipoId, nuevoEstado) {
-  // 1. Actualizar en el mock local de mantEquipo
   EQUIPOS_MOCK = EQUIPOS_MOCK.map((e) =>
     e.id === equipoId ? { ...e, estado: nuevoEstado } : e
   );
-
-  // 2. Actualizar en el catálogo de equipos general llamando a la API pública oficial
   equiposService.updateEquipo(equipoId, { estado: nuevoEstado }).catch(() => {});
 }
 
 // Reinicia el contador de horas de uso de un equipo (cuando el ticket se completa a Terminado)
 export function reiniciarHorasEquipo(equipoId) {
-  // 1. Reiniciar en el mock local de mantEquipo
   EQUIPOS_MOCK = EQUIPOS_MOCK.map((e) =>
     e.id === equipoId ? { ...e, horasUso: 0, estado: "activo" } : e
   );
-
-  // 2. Reiniciar en el catálogo de equipos general llamando a la API pública oficial
   equiposService.updateEquipo(equipoId, { horasUso: 0, estado: "activo" }).catch(() => {});
 }
 
-// Funciones CRUD para TICKETS_MOCK
-export function agregarTicket(ticket) {
+// Funciones CRUD para TICKETS_MOCK con llamadas a la API
+export async function agregarTicket(ticket) {
   TICKETS_MOCK = [ticket, ...TICKETS_MOCK];
+  try {
+    const payload = {
+      tituloTicket: ticket.titulo,
+      descripcionTicket: ticket.descripcion,
+      equipoId: ticket.equipoId,
+      estadoTicket: ticket.estado,
+      estadoEquipo: ticket.estadoEquipo,
+      tipoPersonal: ticket.tipoPersonal,
+      costoManoObra: ticket.costoManoObra,
+      costoTotalEstimado: ticket.costoTotal,
+      tareas: ticket.tareas,
+      productos: ticket.productos,
+    };
+    const res = await api.post("/mantenimientos", payload);
+    const backendData = res.data?.datos || res.data?.data || res.data;
+    if (backendData && backendData.id) {
+      ticket.dbId = backendData.id;
+    }
+  } catch (e) {
+    // Si el backend no responde, se conserva localmente
+  }
+  return ticket;
 }
 
-export function actualizarTicket(ticket) {
+export async function actualizarTicket(ticket) {
   TICKETS_MOCK = TICKETS_MOCK.map((t) => (t.id === ticket.id ? { ...t, ...ticket } : t));
+  try {
+    const targetId = ticket.dbId || ticket.id;
+    const payload = {
+      tituloTicket: ticket.titulo,
+      descripcionTicket: ticket.descripcion,
+      equipoId: ticket.equipoId,
+      estadoTicket: ticket.estado,
+      estadoEquipo: ticket.estadoEquipo,
+      tipoPersonal: ticket.tipoPersonal,
+      costoManoObra: ticket.costoManoObra,
+      costoTotalEstimado: ticket.costoTotal,
+      tareas: ticket.tareas,
+      productos: ticket.productos,
+    };
+    await api.put(`/mantenimientos/${targetId}`, payload);
+  } catch (e) {
+    // Si el backend no responde, se conserva localmente
+  }
+  return ticket;
 }
 
-export function eliminarTicket(id) {
+export async function eliminarTicket(id) {
+  const target = TICKETS_MOCK.find((t) => t.id === id);
   TICKETS_MOCK = TICKETS_MOCK.filter((t) => t.id !== id);
+  try {
+    const targetId = target?.dbId || id;
+    await api.delete(`/mantenimientos/${targetId}`);
+  } catch (e) {
+    // Si el backend no responde, se elimina localmente
+  }
 }

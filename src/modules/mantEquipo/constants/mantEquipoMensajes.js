@@ -8,10 +8,9 @@
  * de Mantenimiento de Equipos.
  * 
  * Datos:
- * - OPCIONES_FILTRO: Opciones para filtrar los tickets.
  * - TEXTOS_MODAL_AGREGAR: Etiquetas y placeholders del formulario.
- * - OPCIONES_ESTADO_TICKET: Opciones de estado estandarizadas para el ticket.
- * - TAREAS_DEMO: Tareas disponibles sincronizadas con el servicio de tareas.
+ * - LISTA_ESTADOS_TICKET: Opciones de estado estandarizadas para el ticket.
+ * - LABELS_EQUIPO_DETALLE: Etiquetas de campos del detalle de equipo.
  * 
  * Validaciones:
  * - Los campos obligatorios están marcados con asterisco (*).
@@ -30,21 +29,10 @@ export const TEXTOS_PANTALLA = {
   placeholderBuscar: "Buscar ticket, equipo, tarea, descripción...",
   btnAgregarMant: "Agregar Mantenimiento",
   btnAgregarTarea: "Ver Tareas",
-  btnVerEquipos: "Ver Equipos",
-  filtrarPor: "Filtrar por...",
 };
 
 export const HEADERS_TABLA = [
   "Ticket ID#", "Fecha creación", "Estado", "Título", "Descripción", "Creado por",
-];
-
-export const OPCIONES_FILTRO = [
-  { label: "Todos los campos", value: "" },
-  { label: "TicketID", value: "id" },
-  { label: "Estado", value: "estado" },
-  { label: "Equipo / Tool", value: "herramienta" },
-  { label: "Descripción", value: "descripcion" },
-  { label: "Creado por", value: "creadoPor" },
 ];
 
 export const TEXTOS_MODAL_AGREGAR = {
@@ -61,27 +49,11 @@ export const TEXTOS_MODAL_AGREGAR = {
   labelDescripcion: "Descripción *",
   placeholderDesc: "Describe el mantenimiento requerido",
   labelEstado: "Estado del ticket",
-  btnCancelar: "Cancelar",
-  btnAceptar: "Aceptar",
+  btnAceptar: "Crear Mantenimiento",
   btnActualizar: "Actualizar",
   btnEliminar: "Eliminar",
   tituloEdicion: "Modificar Mantenimiento",
   errorValidacion: "Revisa los campos obligatorios marcados con * antes de guardar.",
-};
-
-
-export const TEXTOS_MODAL_DETALLE = {
-  titulo: "Detalle del Ticket",
-  btnModificar: "Modificar Ticket",
-  btnCancelar: "Cancelar Ticket",
-  campoTicketId: "TicketID",
-  campoTitulo: "Título",
-  campoEquipo: "Equipo",
-  campoEstado: "Estado",
-  campoTareas: "Tareas",
-  campoDesc: "Descripción",
-  campoCreadoPor: "Creado por",
-  campoFechaC: "Fecha creación",
 };
 
 export const LABELS_EQUIPO_DETALLE = [
@@ -93,7 +65,6 @@ export const LABELS_EQUIPO_DETALLE = [
   ["funcionEquipo", "Función"],
   ["horasUso", "Horas de uso actual"],
 ];
-
 
 // NOTA: Los estados de equipo se definen en mantEquipoService.js como ESTADOS_EQUIPO
 

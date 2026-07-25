@@ -36,6 +36,7 @@ export function useAgregarMantenimiento({ onNavigateToMain }) {
   // ── Productos / insumos ──────────────────────────────────────
   const [productosSeleccionados, setProductosSeleccionados] = useState([]);
   const [productosList, setProductosList]                   = useState([]);
+  const [alertaStock, setAlertaStock]                       = useState('');
 
   // ── Validación ───────────────────────────────────────────────
   const [errores, setErrores]     = useState({});
@@ -43,13 +44,17 @@ export function useAgregarMantenimiento({ onNavigateToMain }) {
 
   // ── Carga inicial de productos ────────────────────────────────
   useEffect(() => {
-    setProductosList(getProductosInventario() || []);
+    const list = (getProductosInventario() || []).map(p => ({
+      ...p,
+      stockMaximo: p.cantidad !== undefined ? p.cantidad : 999,
+    }));
+    setProductosList(list);
   }, []);
 
   // ── Cálculo reactivo del costo total ─────────────────────────
   const numManoObra   = parseFloat(costoManoObra) || 0;
   const precioInsumos = productosSeleccionados.reduce(
-    (sum, p) => sum + (parseFloat(p.precioUnidad) || 0), 0
+    (sum, p) => sum + ((parseInt(p.cantidad || 1, 10)) * (parseFloat(p.precioUnidad) || 0)), 0
   );
   const costoTotal = numManoObra + precioInsumos;
 
@@ -70,15 +75,40 @@ export function useAgregarMantenimiento({ onNavigateToMain }) {
   };
 
   // ── Handlers de productos ─────────────────────────────────────
-  const seleccionarProducto = (prodId) => {
-    if (!prodId) return;
-    const prod = productosList.find(p => String(p.id) === String(prodId));
-    if (prod && !productosSeleccionados.some(x => x.id === prod.id)) {
-      setProductosSeleccionados(prev => [...prev, prod]);
+  const agregarProducto = (prodConCantidad) => {
+    if (!prodConCantidad) return;
+    setAlertaStock('');
+    setProductosSeleccionados(prev => {
+      const existe = prev.some(x => x.id === prodConCantidad.id);
+      if (existe) {
+        return prev.map(x => x.id === prodConCantidad.id ? { ...x, cantidad: x.cantidad + prodConCantidad.cantidad } : x);
+      }
+      return [...prev, prodConCantidad];
+    });
+  };
+
+  const cambiarCantidadProducto = (prodId, nuevaCantidad) => {
+    setAlertaStock('');
+    const prod = productosSeleccionados.find(x => String(x.id) === String(prodId));
+    const stockMax = prod?.stockMaximo !== undefined ? prod.stockMaximo : 999;
+
+    const val = String(nuevaCantidad).replace(/[^0-9]/g, '');
+    let qty = val === '' ? 1 : parseInt(val, 10) || 1;
+
+    if (qty > stockMax) {
+      qty = stockMax;
+      setAlertaStock(`No hay más stock disponible para "${prod?.nombre}". (Stock máximo en inventario: ${stockMax})`);
     }
+
+    qty = Math.max(1, qty);
+
+    setProductosSeleccionados(prev =>
+      prev.map(p => (String(p.id) === String(prodId) ? { ...p, cantidad: qty } : p))
+    );
   };
 
   const quitarProducto = (prodId) => {
+    setAlertaStock('');
     setProductosSeleccionados(prev => prev.filter(p => p.id !== prodId));
   };
 
@@ -100,7 +130,7 @@ export function useAgregarMantenimiento({ onNavigateToMain }) {
   };
 
   // ── Submit ────────────────────────────────────────────────────
-  const handleCrear = () => {
+  const handleCrear = async () => {
     setSubmitted(true);
     if (!validar()) return;
 
@@ -119,10 +149,21 @@ export function useAgregarMantenimiento({ onNavigateToMain }) {
       costoMiscelaneo: 0,
       costoManoObra:   parseFloat(costoManoObra) || 0,
       costoTotal,
-      productos:       productosSeleccionados.map(p => ({ id: p.id, precio: p.precioUnidad })),
+      productos:       productosSeleccionados.map(p => {
+        const cant = parseInt(p.cantidad || 1, 10);
+        const pu = parseFloat(p.precioUnidad || p.precio || 0);
+        return {
+          id: p.id,
+          nombre: p.nombre,
+          precio: pu,
+          precioUnidad: pu,
+          cantidad: cant,
+          subtotal: cant * pu,
+        };
+      }),
     };
 
-    MantService.agregarTicket(nuevo);
+    await MantService.agregarTicket(nuevo);
     if (estadoEquipo) MantService.actualizarEstadoEquipo(equipoId, estadoEquipo);
     if (estadoTicket === 'Terminado') MantService.reiniciarHorasEquipo(equipoId);
 
@@ -142,13 +183,15 @@ export function useAgregarMantenimiento({ onNavigateToMain }) {
     estadoTicket, setEstadoTicket,
     productosList,
     productosSeleccionados,
+    alertaStock, setAlertaStock,
     costoTotal,
     errores, setErrores,
     submitted,
     seleccionarEquipoById,
     quitarEquipo,
-    seleccionarProducto,
+    agregarProducto,
     quitarProducto,
+    cambiarCantidadProducto,
     handleCrear,
   };
 }
