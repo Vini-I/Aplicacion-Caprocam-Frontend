@@ -92,7 +92,7 @@ export function useInventario() {
     ? [...new Set(productos.map((p) => p.categoria).filter(Boolean))]
     : [];
   const proveedores = Array.isArray(productos)
-    ? [...new Set(productos.map((p) => p.proveedor).filter(Boolean))]
+    ? [...new Set(productos.map((p) => p.nombreProveedor).filter(Boolean))]
     : [];
   const unidades = Array.isArray(productos)
     ? [...new Set(productos.map((p) => p.unidad).filter(Boolean))]
@@ -102,7 +102,7 @@ export function useInventario() {
     ? productos.filter((p) => {
         const texto = busqueda.toLowerCase();
         const nombre = (p.nombre || "").toLowerCase();
-        const proveedor = (p.proveedor || "").toLowerCase();
+        const proveedor = (p.nombreProveedor || "").toLowerCase();
         const categoria = (p.categoria || "").toLowerCase();
         const codigo = (p.codigo || "").toLowerCase();
 
@@ -118,7 +118,7 @@ export function useInventario() {
 
         const coincideProveedor =
           filtros.suppliers.length === 0 ||
-          filtros.suppliers.includes(p.proveedor);
+          filtros.suppliers.includes(p.nombreProveedor);
 
         const coincideUnidad =
           filtros.units.length === 0 || filtros.units.includes(p.unidad);
