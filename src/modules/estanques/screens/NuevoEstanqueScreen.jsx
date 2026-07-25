@@ -151,10 +151,7 @@ export default function NuevoEstanqueScreen({ navigation, codigoCBO }) {
     if (validarFormulario() === false) {
       return;
     }
-
-    const finca = await buscarFinca(codigoCBO);
-      setFincaNombre(finca.fincaNombre);
-
+    
     const { NuevoEstanqueDTO } = construirNuevoEstanque({
       idFinca: finca.id,
       codigo: codigo,
