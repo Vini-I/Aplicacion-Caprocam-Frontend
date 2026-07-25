@@ -94,23 +94,12 @@ export default function DrawerLayout() {
       />
 
        <Drawer.Screen
-        name="mantEquipo"
+        name="equipos"
         options={{
-          drawerLabel: "Mantenimiento de Equipos",
-          title: "Mantenimiento de Equipos",
+          drawerLabel: "Equipos",
+          title: "Equipos",
           drawerIcon: ({ color, size }) => (
             <Icon icon={ICONS.tools} size={23} />
-          )
-        }}
-      />
-
-       <Drawer.Screen
-        name="registrarEquipo"
-        options={{
-          drawerLabel: "Registrar Equipo",
-          title: "Registrar Equipo",
-          drawerIcon: ({ color, size }) => (
-            <Icon icon={ICONS.engine} size={24} />
           )
         }}
       />
