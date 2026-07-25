@@ -154,7 +154,7 @@ export default function InventarioScreen({ onDetail, onNew, onBack }) {
   return (
     <View style={STYLE.container}>
       {/* Zona de filtros y búsqueda fija arriba (fuera de la FlatList para que no pierda el foco) */}
-      <View style={styles.zonaFiltros}>
+      <View style={[STYLE.contentWrapper, styles.zonaFiltros]}>
         <View style={styles.barraBusqueda}>
           <SearchBar
             value={busqueda}
