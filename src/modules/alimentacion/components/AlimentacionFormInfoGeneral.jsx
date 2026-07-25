@@ -27,7 +27,7 @@ import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
 import { ICONS } from "../../../theme/icons";
 import { HORAS } from "../constants/alimentacionOpciones";
-import { useCatalogos } from "../../../modules/densidadPoblacional/hooks/useCatalogo.js";
+import { useCatalogos } from "../../../modules/densidadPoblacional/hooks/useCatalogos.js";
 
 const bordeError = { borderColor: COLORS.error, borderWidth: 1.5 };
 const sectionTitleRow = { flexDirection: "row", alignItems: "center", marginBottom: 10 };
