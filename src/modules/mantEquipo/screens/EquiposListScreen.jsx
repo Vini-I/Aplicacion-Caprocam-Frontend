@@ -18,6 +18,8 @@
  * - Alertas de éxito/error al crear, editar o eliminar.
  * - Botón "Agregar equipo" fijo en la parte inferior de la lista,
  *   independiente del scroll (mismo estándar de ancho que en Tareas).
+ * - Muestra EmptyState cuando no hay equipos o no hay coincidencias,
+ *   con mensaje diferenciado y botón de acción cuando no hay filtros.
  *
  * Dependencias:
  * - useEquipos hook para manejar datos y operaciones CRUD
@@ -42,6 +44,7 @@ import Input from "../../../shared/components/Input";
 import CustomText from "../../../shared/components/Text";
 import Icon from "../../../shared/components/Icons";
 import Alert from "../../../shared/components/Alert";
+import EmptyState from "../../../shared/components/EmptyState";
 import SearchBar from "../../inventarios/components/SearchBar";
 import FilterButton from "../../inventarios/components/FilterButton";
 import { STYLE } from "../../../theme/style";
@@ -66,6 +69,22 @@ export default function EquiposListScreen() {
   const [codigoConfirmacion, setCodigoConfirmacion] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+
+  // Estanques disponibles para asociar en el formulario.
+  // getEstanquesDisponibles() es async (llama al backend), por lo
+  // que se resuelve aquí y se guarda en estado en vez de pasar
+  // la Promise directamente al EquipoForm.
+  const [estanquesDisponibles, setEstanquesDisponibles] = useState([]);
+
+  useEffect(() => {
+    let activo = true;
+    equiposService.getEstanquesDisponibles().then((data) => {
+      if (activo) setEstanquesDisponibles(data);
+    });
+    return () => {
+      activo = false;
+    };
+  }, []);
 
   // Filtros adicionales (tipo de equipo y estado), aplicados sobre la
   // búsqueda por texto ya resuelta en equiposFiltrados
@@ -134,8 +153,6 @@ export default function EquiposListScreen() {
       equipo.nombre.toLowerCase().includes(q) ||
       equipo.codigo.toLowerCase().includes(q) ||
       equipo.descripcion.toLowerCase().includes(q) ||
-      equipo.marca.toLowerCase().includes(q) ||
-      equipo.modelo.toLowerCase().includes(q) ||
       (equipo.estado && equipo.estado.toLowerCase().includes(q));
 
     const palabrasClave = ["mantenimiento", "requiere", "necesita"];
@@ -163,14 +180,24 @@ export default function EquiposListScreen() {
         !filtros.categories.includes(equipo.tipo)
       )
         return false;
-      if (
-        filtros.suppliers.length > 0 &&
-        !filtros.suppliers.includes((equipo.estado || "").toLowerCase())
-      )
-        return false;
+
+      // El filtro de "estado" en FilterButton usa los valores
+      // encendido/apagado, que corresponden al booleano equipo.encendido
+      // (no al estadoOperativo activo/inactivo/mantenimiento).
+      if (filtros.suppliers.length > 0) {
+        const valorEncendido = equipo.encendido ? "encendido" : "apagado";
+        if (!filtros.suppliers.includes(valorEncendido)) return false;
+      }
+
       return true;
     });
   }, [equiposFiltrados, filtros]);
+
+  // Determinar si hay filtros activos (para mensajes de EmptyState)
+  const hayFiltrosActivos =
+    searchText.trim() !== "" ||
+    filtros.categories.length > 0 ||
+    filtros.suppliers.length > 0;
 
   // --------------------------------------------------------
   // MANEJADORES
@@ -268,7 +295,7 @@ export default function EquiposListScreen() {
           <SearchBar
             value={searchText}
             onChangeText={setSearchText}
-            placeholder="Buscar por nombre, código, marca o modelo"
+            placeholder="Buscar por nombre, código o descripción"
             containerStyle={styles.searchInput}
           />
           <FilterButton
@@ -304,16 +331,28 @@ export default function EquiposListScreen() {
           </View>
         )}
 
-        <ScrollView style={styles.scrollView} contentContainerStyle={styles.list}>
-          {equiposFinales.map((equipo) => (
-            <EquipoCard
-              key={equipo.id}
-              equipo={equipo}
-              onPress={openDetail}
-              onToggle={handleToggle}
-            />
-          ))}
-        </ScrollView>
+        {/* Lista o EmptyState */}
+        {equiposFinales.length === 0 ? (
+          <EmptyState
+            title={hayFiltrosActivos ? "Sin resultados" : "No hay equipos registrados"}
+            description={
+              hayFiltrosActivos
+                ? "No se encontraron equipos con los criterios de búsqueda seleccionados."
+                : "Comienza agregando tu primer equipo."
+            }
+          />
+        ) : (
+          <ScrollView style={styles.scrollView} contentContainerStyle={styles.list}>
+            {equiposFinales.map((equipo) => (
+              <EquipoCard
+                key={equipo.id}
+                equipo={equipo}
+                onPress={openDetail}
+                onToggle={handleToggle}
+              />
+            ))}
+          </ScrollView>
+        )}
 
         <View style={styles.floatingButtonContainer}>
           <Button variant="outline" onPress={handleAdd} style={styles.floatingButton}>
@@ -348,8 +387,7 @@ export default function EquiposListScreen() {
                 isEditing={!!editingEquipo}
                 hideSubmitButton={true}
                 tiposEquipo={equiposService.getTiposEquipo()}
-                subcategorias={equiposService.getSubcategorias}
-                estanquesDisponibles={equiposService.getEstanquesDisponibles()}
+                estanquesDisponibles={estanquesDisponibles}
                 onValidationError={(msg) => setValidationError(msg)}
               />
             </ScrollView>

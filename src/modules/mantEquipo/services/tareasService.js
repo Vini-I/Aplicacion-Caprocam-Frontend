@@ -2,121 +2,219 @@
  * ============================================================
  * SERVICIO: tareasService
  * ============================================================
+ * Módulo: Mantenimiento de Equipos - Tareas
  *
- * Datos y funciones mock para la gestión de tareas.
- * TODO backend: reemplazar TAREAS_MOCK y las funciones exportadas
- * por llamadas reales al API REST.
+ * Servicio que conecta con el backend real mediante la API.
+ * Todas las funciones son asíncronas y devuelven los datos
+ * mapeados al formato usado por el frontend.
  *
- * Funciones:
- * - obtenerTareas() -> Promise<Array>
- * - obtenerTareaPorId(id) -> Promise<Object>
- * - crearTarea(tarea) -> Promise<Object>
- * - actualizarTarea(id, datosActualizados) -> Promise<Object>
- * - eliminarTarea(id) -> Promise<boolean>
- *
- * Ejemplo:
- * const tareas = await tareasService.obtenerTareas();
+ * Dependencias:
+ * - api (axios) desde src/api/api.js (ya incluye interceptor de tokens)
+ * ============================================================
  */
 
-// ============================================================
-// DATOS MOCK
-// ============================================================
-let TAREAS_MOCK = [
-  {
-    id: "T001",
-    nombre: "Cambio de aceite y filtros",
-    descripcion: "Realizar cambio de aceite y filtros de los motores de bombeo.",
-    categoria: "preventivo",
-    duracionEstimada: 2.5,
-    estado: "no_iniciada",           // <-- nuevo
-productos: [
-  { productoId: 1, nombre: "Alimento Biomar 35%", cantidad: 2 },
-  { productoId: 3, nombre: "Cal agrícola", cantidad: 1 },
-    ],
-  },
-  {
-    id: "T002",
-    nombre: "Cambio de aceite y filtros",
-    descripcion: "Realizar cambio de aceite y filtros de los motores de bombeo.",
-    categoria: "preventivo",
-    duracionEstimada: 2.5,
-    estado: "no_iniciada",           // <-- nuevo
-productos: [
-  { productoId: 1, nombre: "Alimento Biomar 35%", cantidad: 2 },
-  { productoId: 3, nombre: "Cal agrícola", cantidad: 1 },
-    ],
-  },
-    {
-    id: "T003",
-    nombre: "Nuevo de aceite y filtros",
-    descripcion: "Realizar cambio de aceite y filtros de los motores de bombeo.",
-    categoria: "preventivo",
-    duracionEstimada: 2.5,
-    estado: "en_ejecucion",           // <-- nuevo
-productos: [
-  { productoId: 1, nombre: "Alimento Biomar 35%", cantidad: 2 },
-  { productoId: 3, nombre: "Cal agrícola", cantidad: 1 },
-    ],
-  },
-  {
-    id: "T005",
-    nombre: "Reparación de bomba de agua",
-    descripcion: "Diagnóstico y reparación de la bomba de agua principal.",
-    categoria: "emergencia",
-    duracionEstimada: 6.0,
-  },
-];
+import api from "../../../api/api";
+
+// ─── MAPEO DE DATOS ─────────────────────────────────────────────
+
+function mapBackendToFrontend(data) {
+  // Mapeo inverso de estados (backend → frontend)
+  const estadoMapInverso = {
+    'Pendiente': 'no_iniciada',
+    'En proceso': 'en_ejecucion',
+    'Finalizada': 'finalizada',
+    'Cancelada': 'cancelada',
+  };
+
+  const estadoFrontend = estadoMapInverso[data.estado] || data.estado || 'no_iniciada';
+
+  return {
+    id: data.id,
+    nombre: data.nombre,
+    descripcion: data.descripcion,
+    categoria: data.categoria,
+    duracionEstimada: Number(data.horas) || 0,
+    estado: estadoFrontend,
+    colaboradorId: data.colaborador_id,
+    equipoId: data.equipo_id,
+    productos: data.productos || [],
+    createdAt: data.fecha_creacion,
+    updatedAt: data.fecha_actualizacion,
+  };
+}
+
+function prepareForBackend(data) {
+  // Mapeo de estados del frontend al backend
+  const estadoMap = {
+    'no_iniciada': 'Pendiente',
+    'pendiente': 'Pendiente',
+    'en_ejecucion': 'En proceso',
+    'en_proceso': 'En proceso',
+    'finalizada': 'Finalizada',
+    'cancelada': 'Cancelada',
+  };
+
+  // Generar código único para la tarea (ej: TAR-001)
+  const codigoTarea = data.codigo || `TAR-${String(Date.now()).slice(-6)}`;
+  
+  const estadoFrontend = data.estado || 'no_iniciada';
+  const estadoBackend = estadoMap[estadoFrontend.toLowerCase()] || 'Pendiente';
+  
+  return {
+    grupo_datos: data.grupoDatos || 1,
+    colaborador_id: data.colaboradorId || null,
+    equipo_id: data.equipoId || null,
+    nombre: data.nombre?.trim() || "",
+    descripcion: data.descripcion?.trim() || "",
+    categoria: data.categoria || "",
+    horas: Number(data.horas) || Number(data.duracionEstimada) || 0,
+    estado: estadoBackend,
+    codigo_tarea: codigoTarea,
+  };
+}
+
+// ─── FUNCIONES PRINCIPALES ──────────────────────────────────────
 
 /**
- * TAREAS_DEMO: Vista sincronizada de TAREAS_MOCK con los campos
- * value (= id) y label (= nombre) para uso en selectores y búsquedas.
- * Importar desde aquí en todo el módulo en lugar de mantEquipoMensajes.
+ * Obtiene todas las tareas activas del backend.
+ * Permite filtrar por categoría y estado.
+ * Ruta corregida: /tareas (sin /api/v0)
  */
-export const TAREAS_DEMO = TAREAS_MOCK.map((t) => ({
-  ...t,
-  value: t.id,
-  label: t.nombre,
-}));
+async function getTareas(filtros = {}) {
+  try {
+    const response = await api.get("/tareas");
+    let data = response.data.data || [];
+    
+    if (filtros.categoria) {
+      data = data.filter((t) => t.categoria === filtros.categoria);
+    }
+    if (filtros.estado) {
+      data = data.filter((t) => t.estado === filtros.estado);
+    }
+    
+    return data.map(mapBackendToFrontend);
+  } catch (error) {
+    // Si el endpoint no existe (404), devolvemos array vacío
+    if (error.response && error.response.status === 404) {
+      return [];
+    }
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Error al obtener tareas";
+    throw new Error(message);
+  }
+}
 
-const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+/**
+ * Obtiene una tarea por su ID.
+ * Ruta corregida: /tareas/${id}
+ */
+async function getTareaById(id) {
+  try {
+    const response = await api.get(`/tareas/${id}`);
+    const data = response.data.data;
+    if (!data) throw new Error("Tarea no encontrada");
+    return mapBackendToFrontend(data);
+  } catch (error) {
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Error al obtener tarea";
+    throw new Error(message);
+  }
+}
 
-// ============================================================
-// EXPORTACIÓN DE FUNCIONES
-// ============================================================
-export const obtenerTareas = async () => {
-  await delay(300);
-  return [...TAREAS_MOCK];
+/**
+ * Crea una nueva tarea.
+ * Ruta corregida: /tareas
+ */
+async function createTarea(data) {
+  try {
+    const payload = prepareForBackend(data);
+    const response = await api.post("/tareas", payload);
+    return mapBackendToFrontend(response.data.data);
+  } catch (error) {
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Error al crear tarea";
+    throw new Error(message);
+  }
+}
+
+/**
+ * Actualiza una tarea existente.
+ * Ruta corregida: /tareas/${id}
+ */
+async function updateTarea(id, data) {
+  try {
+    const payload = prepareForBackend(data);
+    const response = await api.put(`/tareas/${id}`, payload);
+    return mapBackendToFrontend(response.data.data);
+  } catch (error) {
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Error al actualizar tarea";
+    throw new Error(message);
+  }
+}
+
+/**
+ * Elimina (borrado lógico) una tarea.
+ * Ruta corregida: /tareas/${id}
+ */
+async function deleteTarea(id) {
+  try {
+    const response = await api.delete(`/tareas/${id}`);
+    return response.data.data ? true : false;
+  } catch (error) {
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Error al eliminar tarea";
+    throw new Error(message);
+  }
+}
+
+/**
+ * Obtiene catálogo de tareas para selects.
+ * Ruta corregida: /tareas/catalogo
+ */
+async function getCatalogoTareas() {
+  try {
+    const response = await api.get("/tareas/catalogo");
+    const data = response.data.data || [];
+    return data.map((t) => ({
+      id: t.id,
+      nombre: t.nombre,
+      value: t.id,
+      label: t.nombre,
+    }));
+  } catch (error) {
+    if (error.response && error.response.status === 404) {
+      return [];
+    }
+    throw error;
+  }
+}
+
+// ─── EXPORTACIÓN ────────────────────────────────────────────────
+
+export const tareasService = {
+  getTareas,
+  getTareaById,
+  createTarea,
+  updateTarea,
+  deleteTarea,
+  getCatalogoTareas,
 };
 
-export const obtenerTareaPorId = async (id) => {
-  await delay(200);
-  const tarea = TAREAS_MOCK.find((t) => t.id === id);
-  if (!tarea) throw new Error("Tarea no encontrada");
-  return { ...tarea };
-};
-
-export const crearTarea = async (tarea) => {
-  await delay(500);
-  const nuevaTarea = {
-    id: `T${String(TAREAS_MOCK.length + 1).padStart(3, "0")}`,
-    ...tarea,
-  };
-  TAREAS_MOCK = [...TAREAS_MOCK, nuevaTarea];
-  return { ...nuevaTarea };
-};
-
-export const actualizarTarea = async (id, datosActualizados) => {
-  await delay(500);
-  const index = TAREAS_MOCK.findIndex((t) => t.id === id);
-  if (index === -1) throw new Error("Tarea no encontrada");
-  TAREAS_MOCK[index] = { ...TAREAS_MOCK[index], ...datosActualizados };
-  return { ...TAREAS_MOCK[index] };
-};
-
-export const eliminarTarea = async (id) => {
-  await delay(500);
-  const index = TAREAS_MOCK.findIndex((t) => t.id === id);
-  if (index === -1) throw new Error("Tarea no encontrada");
-  TAREAS_MOCK = TAREAS_MOCK.filter((t) => t.id !== id);
-  return true;
-};
+// Alias para compatibilidad con código existente
+export const obtenerTareas = getTareas;
+export const obtenerTareaPorId = getTareaById;
+export const crearTarea = createTarea;
+export const actualizarTarea = updateTarea;
+export const eliminarTarea = deleteTarea;
+export const obtenerCatalogoTareas = getCatalogoTareas;

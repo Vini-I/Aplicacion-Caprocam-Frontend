@@ -1,3 +1,5 @@
+// src/modules/mantEquipo/hooks/useTareaForm.js
+
 /**
  * ============================================================
  * HOOK: useTareaForm
@@ -13,6 +15,7 @@
  * - Permite agregar/eliminar productos de la lista.
  * - Valida campos obligatorios (nombre, descripción, categoría, duración).
  * - Guarda la tarea (crear o actualizar) y navega de vuelta a la lista.
+ * - Prepara opciones para el Select de productos (con búsqueda).
  *
  * Datos:
  * - id: string | undefined (id de la tarea a editar, opcional)
@@ -33,25 +36,25 @@
  * - getProductosInventario de InventarioService
  */
 
-import { useState, useEffect } from 'react';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import * as tareasService from '../services/tareasService';
-import { getProductosInventario } from '../../inventarios/services/InventarioService';
+import { useState, useEffect, useMemo } from "react";
+import { useRouter, useLocalSearchParams } from "expo-router";
+import * as tareasService from "../services/tareasService";
+import { getProductosInventario } from "../../inventarios/services/InventarioService";
 
 export function useTareaForm() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
   const isEditing = !!id;
 
-  const [nombre, setNombre] = useState('');
-  const [descripcion, setDescripcion] = useState('');
-  const [categoria, setCategoria] = useState('');
-  const [duracion, setDuracion] = useState('');
-  const [estado, setEstado] = useState('no_iniciada');
+  const [nombre, setNombre] = useState("");
+  const [descripcion, setDescripcion] = useState("");
+  const [categoria, setCategoria] = useState("");
+  const [duracion, setDuracion] = useState("");
+  const [estado, setEstado] = useState("no_iniciada");
   const [productos, setProductos] = useState([]);
-  const [busquedaProducto, setBusquedaProducto] = useState('');
+  const [busquedaProducto, setBusquedaProducto] = useState("");
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
-  const [cantidadProducto, setCantidadProducto] = useState('');
+  const [cantidadProducto, setCantidadProducto] = useState("");
   const [errores, setErrores] = useState({});
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -65,14 +68,14 @@ export function useTareaForm() {
       const cargarTarea = async () => {
         try {
           const tarea = await tareasService.obtenerTareaPorId(id);
-          setNombre(tarea.nombre || '');
-          setDescripcion(tarea.descripcion || '');
-          setCategoria(tarea.categoria || '');
-          setDuracion(String(tarea.duracionEstimada || ''));
-          setEstado(tarea.estado || 'no_iniciada');
+          setNombre(tarea.nombre || "");
+          setDescripcion(tarea.descripcion || "");
+          setCategoria(tarea.categoria || "");
+          setDuracion(String(tarea.duracionEstimada || ""));
+          setEstado(tarea.estado || "no_iniciada");
           setProductos(tarea.productos || []);
         } catch (error) {
-          console.error('Error al cargar tarea:', error);
+          console.error("Error al cargar tarea:", error);
         } finally {
           setCargandoDatos(false);
         }
@@ -81,28 +84,56 @@ export function useTareaForm() {
     }
   }, [isEditing, id]);
 
-  // Handlers para campos simples
+  // ─── FILTRADO DE PRODUCTOS ────────────────────────────────────
+  const productosFiltrados = useMemo(() => {
+    const busqueda = busquedaProducto.trim().toLowerCase();
+    if (!busqueda) return productosDisponibles;
+    return productosDisponibles.filter((p) =>
+      p.nombre.toLowerCase().includes(busqueda)
+    );
+  }, [productosDisponibles, busquedaProducto]);
+
+  // ─── OPCIONES PARA EL SELECT ──────────────────────────────────
+  const opcionesProductos = useMemo(() => {
+    return productosFiltrados.map((p) => ({
+      label: `${p.nombre} (${p.unidad}) - Stock: ${p.cantidad}`,
+      value: p.id,
+    }));
+  }, [productosFiltrados]);
+
+  const hayResultados = opcionesProductos.length > 0;
+
+  // ─── HANDLERS ──────────────────────────────────────────────────
   const handleChange = (campo, valor) => {
     switch (campo) {
-      case 'nombre': setNombre(valor); break;
-      case 'descripcion': setDescripcion(valor); break;
-      case 'categoria': setCategoria(valor); break;
-      case 'duracion': setDuracion(valor); break;
-      case 'estado': setEstado(valor); break;
-      default: break;
+      case "nombre":
+        setNombre(valor);
+        break;
+      case "descripcion":
+        setDescripcion(valor);
+        break;
+      case "categoria":
+        setCategoria(valor);
+        break;
+      case "duracion":
+        setDuracion(valor);
+        break;
+      case "estado":
+        setEstado(valor);
+        break;
+      default:
+        break;
     }
-    // Limpiar error del campo si existe
     if (errores[campo]) {
-      setErrores(prev => ({ ...prev, [campo]: undefined }));
+      setErrores((prev) => ({ ...prev, [campo]: undefined }));
     }
   };
 
-  // Manejo de productos
   const handleBusquedaProducto = (text) => setBusquedaProducto(text);
 
   const seleccionarProducto = (producto) => {
     setProductoSeleccionado(producto);
-    setCantidadProducto('1');
+    if (producto) setCantidadProducto("1");
   };
 
   const handleCantidadProducto = (text) => setCantidadProducto(text);
@@ -112,10 +143,10 @@ export function useTareaForm() {
     const cantidadNum = Number(cantidadProducto);
     if (!cantidadProducto || isNaN(cantidadNum) || cantidadNum <= 0) return;
 
-    setProductos(prev => {
-      const existe = prev.some(p => p.productoId === productoSeleccionado.id);
+    setProductos((prev) => {
+      const existe = prev.some((p) => p.productoId === productoSeleccionado.id);
       if (existe) {
-        return prev.map(p =>
+        return prev.map((p) =>
           p.productoId === productoSeleccionado.id
             ? { ...p, cantidad: p.cantidad + cantidadNum }
             : p
@@ -124,31 +155,30 @@ export function useTareaForm() {
       return [...prev, { productoId: productoSeleccionado.id, cantidad: cantidadNum }];
     });
 
-    // Limpiar selección
     setProductoSeleccionado(null);
-    setCantidadProducto('');
-    setBusquedaProducto('');
+    setCantidadProducto("");
+    setBusquedaProducto("");
   };
 
   const eliminarProducto = (productoId) => {
-    setProductos(prev => prev.filter(p => p.productoId !== productoId));
+    setProductos((prev) => prev.filter((p) => p.productoId !== productoId));
   };
 
-  // Validación
+  // ─── VALIDACIÓN ─────────────────────────────────────────────────
   const validar = () => {
     const e = {};
-    if (!nombre.trim()) e.nombre = 'El nombre es requerido';
-    if (!descripcion.trim()) e.descripcion = 'La descripción es requerida';
-    if (!categoria) e.categoria = 'Debe seleccionar una categoría';
+    if (!nombre.trim()) e.nombre = "El nombre es requerido";
+    if (!descripcion.trim()) e.descripcion = "La descripción es requerida";
+    if (!categoria) e.categoria = "Debe seleccionar una categoría";
     const duracionNum = Number(duracion);
     if (!duracion.trim() || isNaN(duracionNum) || duracionNum <= 0) {
-      e.duracion = 'Debe ingresar una duración válida (mayor a 0)';
+      e.duracion = "Debe ingresar una duración válida (mayor a 0)";
     }
     setErrores(e);
     return Object.keys(e).length === 0;
   };
 
-  // Guardar
+  // ─── GUARDAR ────────────────────────────────────────────────────
   const guardar = async () => {
     setSubmitted(true);
     if (!validar()) return;
@@ -170,26 +200,19 @@ export function useTareaForm() {
         await tareasService.crearTarea(datos);
       }
 
-      // Éxito: navegar de vuelta
-router.back();
+      router.back();
     } catch (error) {
-      setErrores({ general: error.message || 'Ocurrió un error al guardar la tarea.' });
+      setErrores({ general: error.message || "Ocurrió un error al guardar la tarea." });
     } finally {
       setLoading(false);
     }
   };
 
   const cancelar = () => {
-router.back();
+    router.back();
   };
 
-  // Filtrado de productos para búsqueda
-  const productosFiltrados = productosDisponibles.filter(p =>
-    p.nombre.toLowerCase().includes(busquedaProducto.toLowerCase().trim())
-  );
-
   return {
-    // Estado
     nombre,
     descripcion,
     categoria,
@@ -204,10 +227,9 @@ router.back();
     loading,
     cargandoDatos,
     isEditing,
-    productosDisponibles,
     productosFiltrados,
-
-    // Handlers
+    opcionesProductos,
+    hayResultados,
     handleChange,
     handleBusquedaProducto,
     seleccionarProducto,

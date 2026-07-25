@@ -14,13 +14,14 @@
  * - userRole: "camprocam_admin" o "external_owner" - define roles disponibles
  * - fincaId: ID de finca (se asigna automáticamente para external_owner)
  * - onCancel: función para cerrar el modal sin guardar
+ * - serverError: mensaje de error del servidor (opcional)
  */
 
 // ============================================================
 // IMPORTS
 // ============================================================
 import React from "react";
-import { View, ActivityIndicator } from "react-native";
+import { View } from "react-native";
 import Input from "../../../shared/components/Input";
 import Select from "../../../shared/components/Select";
 import Button from "../../../shared/components/Button";
@@ -42,69 +43,69 @@ export default function ColaboradorForm({
   userRole,
   fincaId,
   onCancel,
+  serverError = "",
 }) {
   const {
     form,
     errors,
     submitted,
     validationMessage,
-    loadingTSE,
-    consultedCedula,
     rolesDisponibles,
     handleChange,
-    handleCedulaBlur,
+    handleCedulaChange,
+    handleTelefonoChange,
+    handleNombreChange,
+    handleApellidosChange,
     handleSubmit,
   } = useColaboradorForm({ initialData, isEditing, userRole, fincaId, onSubmit });
 
-  // --------------------------------------------------------
-  // RENDER
-  // --------------------------------------------------------
+  // Prioridad: validación de campos obligatorios (local) > error del servidor
+  const mensajeMostrar = (submitted && validationMessage) || serverError;
+
   return (
     <View style={styles.container}>
+      {/* Cédula - Solo números, máximo 9 dígitos */}
       <Input
         label="Cédula *"
         value={form.cedula}
-        onChangeText={(v) => handleChange("cedula", v)}
-        onBlur={handleCedulaBlur}
+        onChangeText={handleCedulaChange}
         placeholder="Ej: 123456789"
         keyboardType="numeric"
-        error={errors.cedula}
         editable={!isEditing}
-          style={submitted && errors.cedula ? styles.inputError : null} 
-
+        style={submitted && errors.cedula ? styles.inputError : null}
       />
-      {loadingTSE && <ActivityIndicator style={styles.loader} color="#009EF5" />}
 
+      {/* Nombre - Solo letras */}
       <Input
         label="Nombre *"
         value={form.nombre}
-        onChangeText={(v) => handleChange("nombre", v)}
+        onChangeText={handleNombreChange}
         placeholder="Ej: Juan"
-        error={errors.nombre}
-        editable={!consultedCedula}
-                  style={submitted && errors.nombre ? styles.inputError : null} 
+        editable={!isEditing}
+        style={submitted && errors.nombre ? styles.inputError : null}
       />
 
+      {/* Apellidos - Solo letras */}
       <Input
         label="Apellidos *"
         value={form.apellidos}
-        onChangeText={(v) => handleChange("apellidos", v)}
+        onChangeText={handleApellidosChange}
         placeholder="Ej: Pérez Solano"
-        error={errors.apellidos}
-        editable={!consultedCedula}
-                  style={submitted && errors.apellidos ? styles.inputError : null} 
-
+        editable={!isEditing}
+        style={submitted && errors.apellidos ? styles.inputError : null}
       />
 
+      {/* Teléfono - Solo números, máximo 8 dígitos */}
       <Input
         label="Teléfono (8 dígitos)"
         value={form.telefono}
-        onChangeText={(v) => handleChange("telefono", v)}
+        onChangeText={handleTelefonoChange}
         placeholder="Ej: 88881234"
         keyboardType="numeric"
-        error={errors.telefono}
+        style={submitted && errors.telefono ? styles.inputError : null}
       />
 
+      {/* Correo electrónico */}
       <Input
         label="Correo electrónico"
         value={form.email}
@@ -112,9 +113,10 @@ export default function ColaboradorForm({
         placeholder="Ej: juan@example.com"
         keyboardType="email-address"
         autoCapitalize="none"
-        error={errors.email}
+        style={submitted && errors.email ? styles.inputError : null}
       />
 
+      {/* Rol */}
       <Select
         label="Rol"
         options={rolesDisponibles}
@@ -122,28 +124,31 @@ export default function ColaboradorForm({
         onChange={(v) => handleChange("rol", v)}
       />
 
+      {/* ID de Finca (solo para dueños externos) */}
       {userRole === "camprocam_admin" && form.rol === "external_owner" && (
         <Input
           label="ID de Finca *"
           value={form.fincaId}
           onChangeText={(v) => handleChange("fincaId", v)}
           placeholder="Ej: finca1, finca2, finca3"
-          error={errors.fincaId}
+          style={submitted && errors.fincaId ? styles.inputError : null}
         />
       )}
 
-      {submitted && validationMessage !== "" && (
-        <Alert
-          variant="danger"
-          message={validationMessage}
-          style={{ marginBottom: 12 }}
-          textStyle={{ textAlign: "left", fontSize: 13 }}
-        />
+      {/* ─── MENSAJE DE ERROR (validación local o servidor, excluyente) ─── */}
+      {mensajeMostrar !== "" && (
+        <View style={{ marginBottom: 12 }}>
+          <Alert
+            variant="danger"
+            message={mensajeMostrar}
+            style={styles.alertContainer}
+            textStyle={styles.alertText}
+          />
+        </View>
       )}
 
+      {/* Botón de acción */}
       <View style={styles.buttonContainer}>
-
-
         <Button
           variant="outline"
           onPress={handleSubmit}

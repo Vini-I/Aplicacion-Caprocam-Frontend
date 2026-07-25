@@ -15,6 +15,8 @@
  * ============================================================
  */
 
+// src/modules/colaboradores/screens/ColaboradoresListScreen.jsx
+
 import React, { useCallback, useState, useMemo } from 'react';
 import { View, ScrollView } from 'react-native';
 import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
@@ -30,6 +32,7 @@ import FilterButton from '../../inventarios/components/FilterButton';
 import Alert from '../../../shared/components/Alert';
 import Modal from '../../../shared/components/Modal';
 import Input from '../../../shared/components/Input';
+import EmptyState from '../../../shared/components/EmptyState';
 
 import { STYLE } from '../../../theme/style';
 import { ICONS } from '../../../theme/icons';
@@ -77,7 +80,7 @@ export default function ColaboradoresListScreen() {
     expiryDate: '',
   });
 
-  // Aplicar búsqueda y filtros a la lista
+  // ─── FILTRADO DE BÚSQUEDA CON MANEJO DE NULL ──────────────
   const listaFiltrada = useMemo(() => {
     let result = colaboradores;
 
@@ -85,10 +88,10 @@ export default function ColaboradoresListScreen() {
     if (searchText.trim()) {
       const q = searchText.toLowerCase().trim();
       result = result.filter((c) =>
-        c.nombre.toLowerCase().includes(q) ||
-        c.cedula.includes(q) ||
-        c.telefono.includes(q) ||
-        c.email.toLowerCase().includes(q)
+        (c.nombre?.toLowerCase() || '').includes(q) ||
+        (c.cedula?.toLowerCase() || '').includes(q) ||
+        (c.telefono?.toLowerCase() || '').includes(q) ||
+        (c.email?.toLowerCase() || '').includes(q)
       );
     }
 
@@ -135,6 +138,13 @@ export default function ColaboradoresListScreen() {
   if (loading) return <Spinner text="Cargando colaboradores..." />;
   if (error) return <CustomText style={styles.error}>Error: {error}</CustomText>;
 
+  // ─── DETERMINAR MENSAJE DEL EMPTY STATE ────────────────────
+  const hayFiltrosActivos = searchText.trim() !== '' || filtros.categories.length > 0;
+  const emptyTitle = hayFiltrosActivos ? 'Sin resultados' : 'No hay colaboradores registrados';
+  const emptyDescription = hayFiltrosActivos
+    ? 'No se encontraron colaboradores con los criterios de búsqueda seleccionados.'
+    : 'Comienza agregando tu primer colaborador.';
+
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.white }}>
       {/* Barra de búsqueda y filtro */}
@@ -147,7 +157,7 @@ export default function ColaboradoresListScreen() {
         />
         <FilterButton
           categories={CATEGORIAS}
-          suppliers={[]} // Por ahora no hay filtro por estado
+          suppliers={[]}
           activeFilters={filtros}
           onApply={setFiltros}
           showLowStock={false}
@@ -163,24 +173,31 @@ export default function ColaboradoresListScreen() {
         </View>
       )}
 
-      {/* Lista de colaboradores */}
+      {/* Lista de colaboradores o EmptyState */}
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={true}
       >
-        {listaFiltrada.map((colab) => (
-          <ColaboradorCard
-            key={colab.id}
-            colaborador={colab}
-            onPress={() => openDetail(colab.id)}
-            onEdit={handleEditNavigation}
-            onDelete={() => handleDeletePress(colab.id)}
+        {listaFiltrada.length === 0 ? (
+          <EmptyState
+            title={emptyTitle}
+            description={emptyDescription}
           />
-        ))}
+        ) : (
+          listaFiltrada.map((colab) => (
+            <ColaboradorCard
+              key={colab.id}
+              colaborador={colab}
+              onPress={() => openDetail(colab.id)}
+              onEdit={handleEditNavigation}
+              onDelete={() => handleDeletePress(colab.id)}
+            />
+          ))
+        )}
       </ScrollView>
 
-      {/* Botón flotante "Agregar colaborador" */}
+      {/* Botón flotante "Agregar colaborador" siempre visible */}
       <View style={styles.floatingButtonContainer}>
         <Button
           variant="outline"

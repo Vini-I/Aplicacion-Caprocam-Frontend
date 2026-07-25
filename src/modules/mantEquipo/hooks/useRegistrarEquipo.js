@@ -27,7 +27,7 @@
  *
  * Dependencias:
  * - registrarEquipoService (crearEquipoPayload, agregarEquipo, actualizarEquipo)
- * - TIPOS_EQUIPO, ESTADOS_EQUIPO desde el servicio
+ * - TIPOS_EQUIPO, ESTADOS_OPERATIVOS_EQUIPO desde el servicio
  * ============================================================
  */
 
@@ -36,7 +36,7 @@ import {
   agregarEquipo,
   actualizarEquipo,
   crearEquipoPayload,
-  ESTADOS_EQUIPO,
+  ESTADOS_OPERATIVOS_EQUIPO,
   TIPOS_EQUIPO,
 } from '../services/registrarEquipoService';
 
@@ -54,12 +54,11 @@ const formularioInicial = {
   nombre: '',
   descripcion: '',
   tipo: '',
-  modelo: '',
   fechaInstalacion: obtenerFechaActual(),
   funcionEquipo: '',
   estanqueId: '',
   horasMantenimiento: '500',
-  estado: '',
+  estadoOperativo: '',
 };
 
 const MENSAJES_REQUERIDOS = {
@@ -67,11 +66,10 @@ const MENSAJES_REQUERIDOS = {
   nombre: 'El nombre del equipo es obligatorio.',
   descripcion: 'La descripción es obligatoria.',
   tipo: 'Debe seleccionar el tipo de equipo.',
-  modelo: 'El modelo es obligatorio.',
   fechaInstalacion: 'La fecha de instalación es obligatoria.',
   fechaInstalacionFormato: 'La fecha debe tener formato dd/mm/aaaa.',
   funcionEquipo: 'La función del equipo es obligatoria.',
-  estado: 'Debe seleccionar el estado del equipo.',
+  estadoOperativo: 'Debe seleccionar el estado operativo del equipo.',
 };
 
 function esFechaValidaDDMMAAAA(valor) {
@@ -98,10 +96,9 @@ function validarFormulario(formulario) {
     nombre: '',
     descripcion: '',
     tipo: '',
-    modelo: '',
     fechaInstalacion: '',
     funcionEquipo: '',
-    estado: '',
+    estadoOperativo: '',
   };
 
   if (!formulario.codigoInterno.trim()) {
@@ -116,9 +113,6 @@ function validarFormulario(formulario) {
   if (!formulario.tipo) {
     nuevosErrores.tipo = MENSAJES_REQUERIDOS.tipo;
   }
-  if (!formulario.modelo.trim()) {
-    nuevosErrores.modelo = MENSAJES_REQUERIDOS.modelo;
-  }
   if (!formulario.fechaInstalacion.trim()) {
     nuevosErrores.fechaInstalacion = MENSAJES_REQUERIDOS.fechaInstalacion;
   } else if (!esFechaValidaDDMMAAAA(formulario.fechaInstalacion.trim())) {
@@ -127,8 +121,8 @@ function validarFormulario(formulario) {
   if (!formulario.funcionEquipo.trim()) {
     nuevosErrores.funcionEquipo = MENSAJES_REQUERIDOS.funcionEquipo;
   }
-  if (!formulario.estado) {
-    nuevosErrores.estado = MENSAJES_REQUERIDOS.estado;
+  if (!formulario.estadoOperativo) {
+    nuevosErrores.estadoOperativo = MENSAJES_REQUERIDOS.estadoOperativo;
   }
 
   return nuevosErrores;
@@ -145,12 +139,11 @@ export function useRegistrarEquipo(initialData = null) {
         nombre: initialData.nombre || '',
         descripcion: initialData.descripcion || '',
         tipo: initialData.tipo || '',
-        modelo: initialData.modelo || '',
         fechaInstalacion: initialData.fechaInstalacion || obtenerFechaActual(),
         funcionEquipo: initialData.funcionEquipo || '',
         estanqueId: initialData.estanqueId || '',
         horasMantenimiento: String(initialData.horasMantenimiento || '500'),
-        estado: initialData.estado || '',
+        estadoOperativo: initialData.estadoOperativo || '',
       };
     }
     return { ...formularioInicial };
@@ -164,12 +157,11 @@ export function useRegistrarEquipo(initialData = null) {
         nombre: initialData.nombre || '',
         descripcion: initialData.descripcion || '',
         tipo: initialData.tipo || '',
-        modelo: initialData.modelo || '',
         fechaInstalacion: initialData.fechaInstalacion || obtenerFechaActual(),
         funcionEquipo: initialData.funcionEquipo || '',
         estanqueId: initialData.estanqueId || '',
         horasMantenimiento: String(initialData.horasMantenimiento || '500'),
-        estado: initialData.estado || '',
+        estadoOperativo: initialData.estadoOperativo || '',
       });
     } else {
       setFormulario({ ...formularioInicial });
@@ -211,13 +203,17 @@ export function useRegistrarEquipo(initialData = null) {
     if (mensajes.length > 0) {
       setErrores(nuevosErrores);
       // Mensaje genérico sin lista de errores específicos
-      throw new Error('Revisa los campos obligatorios marcados con *:');
+      throw new Error('Revisa los campos obligatorios marcados con *');
     }
 
     setGuardando(true);
 
     try {
-      const payload = crearEquipoPayload(formulario);
+      const payload = crearEquipoPayload(formulario, {
+        isEditing,
+        estadoActual: initialData?.estado,
+        horasActualesActual: initialData?.horasActuales,
+      });
 
       if (isEditing) {
         await actualizarEquipo(initialData.id, payload);
@@ -227,7 +223,7 @@ export function useRegistrarEquipo(initialData = null) {
 
       resetFormulario();
     } catch (error) {
-      throw new Error('No se pudo guardar el equipo. Intente nuevamente.');
+      throw new Error(error.message || 'No se pudo guardar el equipo. Intente nuevamente.');
     } finally {
       setGuardando(false);
     }
@@ -240,7 +236,7 @@ export function useRegistrarEquipo(initialData = null) {
     guardando,
     isEditing,
     tiposEquipo: TIPOS_EQUIPO,
-    estadosEquipo: ESTADOS_EQUIPO,
+    estadosOperativos: ESTADOS_OPERATIVOS_EQUIPO,
     actualizarCampo,
     guardarEquipo,
     resetFormulario,

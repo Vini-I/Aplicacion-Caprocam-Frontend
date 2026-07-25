@@ -28,17 +28,18 @@ export const styles = StyleSheet.create({
   },
 
   // Barra de herramientas (búsqueda + filtros)
-  toolbar: {
-    flexDirection: 'row',
-    alignItems: 'center',
+toolbar: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 0,
+    paddingVertical: 12,
+    backgroundColor: COLORS.white,
+    marginTop: 8,
     gap: 8,
-    marginBottom: 14,
-    flexWrap: 'wrap',
-    width: '100%',
+    width: "100%",
     maxWidth: 900,
-    alignSelf: 'center',
-    paddingHorizontal: 16,
-  },
+    alignSelf: "center",
+},
 
   searchBarContainer: {
     flex: 1,
@@ -48,7 +49,7 @@ export const styles = StyleSheet.create({
     height: 42,
     borderColor: COLORS.textTertiary,
     marginTop: 0,
-    alignSelf: 'center',
+    alignSelf: "center",
   },
 
   // Alerta global
@@ -61,24 +62,31 @@ export const styles = StyleSheet.create({
   },
 
   // Tabla
-  tableWrapper: {
-    flex: 1,
-    width: '100%',
-  },
+tableWrapper: {
+  flex: 1,
+  width: '100%',
+  maxWidth: 900,          // ← Agregar para que calce con la barra de búsqueda
+  alignSelf: 'center',    // ← Centrar horizontalmente
+  borderWidth: 1,
+  borderColor: COLORS.secondary,
+  borderRadius: 10,
+  overflow: 'hidden',
+  backgroundColor: COLORS.white,
+},
 
   rowInner: {
     maxWidth: 900,
     alignSelf: 'center',
     width: '100%',
-    paddingHorizontal: 16,
   },
 
-  tableHeader: {
-    flexDirection: 'row',
-    backgroundColor: COLORS.secondary,
-    paddingVertical: 10,
-    paddingHorizontal: 8,
-  },
+tableHeader: {
+  flexDirection: 'row',
+  backgroundColor: COLORS.secondary,
+  paddingVertical: 10,
+  paddingHorizontal: 12,
+  gap: 12,
+},
 
   headerCell: {
     fontSize: 12,
@@ -96,14 +104,15 @@ export const styles = StyleSheet.create({
   colAcciones: { width: 180 },
 
   // Fila
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 8,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.secondary,
-  },
+row: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  paddingVertical: 12,
+  paddingHorizontal: 12,
+  gap: 12,
+  borderTopWidth: 1,
+  borderTopColor: COLORS.secondary,
+},
 
   cellText: {
     fontSize: 12,
@@ -151,9 +160,12 @@ export const styles = StyleSheet.create({
     width: '100%',
   },
 
-  flatListContent: {
-    flexGrow: 1,
-  },
+flatListContent: {
+  flexGrow: 1,
+  maxWidth: 900,          // ← Agregar para que las filas tengan el mismo ancho
+  alignSelf: 'center',    // ← Centrar
+  width: '100%',          // ← Asegurar que ocupe todo el ancho dentro del maxWidth
+},
 
   emptyContainer: {
     padding: 24,
