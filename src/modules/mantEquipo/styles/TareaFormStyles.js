@@ -23,7 +23,7 @@ export const styles = StyleSheet.create({
   },
   card: {
     padding: 16,
-    marginBottom: 12,
+    marginBottom: 0,
     borderRadius: 12,
     backgroundColor: COLORS.white,
     borderWidth: 1,
@@ -129,7 +129,7 @@ export const styles = StyleSheet.create({
     borderColor: COLORS.error,
   },
   alert: {
-    marginTop: 12,
+    marginBottom: 0,
   },
   alertText: {
     textAlign: 'center',

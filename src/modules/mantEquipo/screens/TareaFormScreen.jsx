@@ -52,7 +52,8 @@ export default function TareaFormScreen() {
     return <View style={STYLE.container} />;
   }
 
-  const tieneErrores = Object.keys(errores).some(k => k !== "general" && errores[k]);
+  // Determinar qué mensaje mostrar: prioridad al error del servidor
+  const mensajeError = errores.general || (submitted && Object.keys(errores).some(k => k !== "general" && errores[k]) ? "Revisa los campos obligatorios marcados con *" : "");
 
   return (
     <View style={STYLE.container}>
@@ -62,6 +63,7 @@ export default function TareaFormScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <View style={STYLE.contentWrapper}>
+          {/* Formulario dentro del Card */}
           <Card style={styles.card}>
             {/* Nombre */}
             <Input
@@ -117,7 +119,7 @@ export default function TareaFormScreen() {
               labelStyle={styles.label}
             />
 
-            {/* ─── PRODUCTOS UTILIZADOS ──────────────────────────── */}
+            {/* Productos utilizados */}
             <View style={styles.productosSection}>
               <CustomText size={14} weight="600" color={COLORS.textSecondary} style={styles.sectionLabel}>
                 Productos utilizados (opcional)
@@ -216,20 +218,14 @@ export default function TareaFormScreen() {
                 )}
               </View>
             </View>
+          </Card>
 
-            {submitted && tieneErrores && (
+          {/* ─── MENSAJES DE ERROR Y BOTÓN FUERA DEL CARD ─── */}
+          <View style={{ marginTop: 16 }}>
+            {mensajeError !== "" && (
               <Alert
                 variant="danger"
-                message="Revisa los campos obligatorios marcados con * antes de guardar."
-                style={styles.alert}
-                textStyle={styles.alertText}
-              />
-            )}
-
-            {errores.general && (
-              <Alert
-                variant="danger"
-                message={errores.general}
+                message={mensajeError}
                 style={styles.alert}
                 textStyle={styles.alertText}
               />
@@ -245,12 +241,12 @@ export default function TareaFormScreen() {
                 <View style={styles.contenidoBoton}>
                   <Icon icon={ICONS.save} size={18} color={COLORS.primary} />
                   <CustomText style={{ color: COLORS.primary, fontWeight: "600" }}>
-                    {loading ? "Guardando..." : "Guardar"}
+                    {loading ? "Guardando..." : "Guardar Tarea"}
                   </CustomText>
                 </View>
               </Button>
             </View>
-          </Card>
+          </View>
         </View>
       </ScrollView>
     </View>

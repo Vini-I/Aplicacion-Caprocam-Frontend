@@ -66,17 +66,19 @@ export default function ColaboradorFormScreen() {
 
   // Manejador de envío del formulario
   const handleSubmit = async (formData) => {
+    // Limpiar alert anterior
+    setAlert(null);
     try {
       let result;
       if (isEditing) {
         result = await colaboradoresService.updateColaborador(id, formData);
         setAlert({ type: 'success', message: 'Colaborador actualizado correctamente.' });
+        setTimeout(() => router.replace('/(drawer)/colaboradores'), 1500);
       } else {
         result = await colaboradoresService.createColaborador(formData);
         setAlert({ type: 'success', message: 'Colaborador creado correctamente.' });
+        setTimeout(() => router.replace('/(drawer)/colaboradores'), 1500);
       }
-      // Volver a la lista después de un breve momento para que se vea el alert
-      setTimeout(() => router.replace('/(drawer)/colaboradores'), 1500);
     } catch (err) {
       setAlert({ type: 'danger', message: err.message || 'No se pudo guardar el colaborador.' });
     }
@@ -85,6 +87,9 @@ export default function ColaboradorFormScreen() {
   const handleCancel = () => {
     router.back();
   };
+
+  // Extraer mensaje de error del servidor desde alert (si es de tipo danger)
+  const serverError = alert && alert.type === 'danger' ? alert.message : '';
 
   if (loading) {
     return (
@@ -109,11 +114,11 @@ export default function ColaboradorFormScreen() {
 
   return (
     <>
-
       <ScrollView style={STYLE.container} contentContainerStyle={STYLE.contentWrapper}>
-        {alert && (
+        {/* Solo mostrar alerta de éxito (los errores se manejan dentro del formulario) */}
+        {alert && alert.type === 'success' && (
           <View style={{ marginBottom: 12 }}>
-            <Alert variant={alert.type} message={alert.message} />
+            <Alert variant="success" message={alert.message} />
           </View>
         )}
         <ColaboradorForm
@@ -123,6 +128,7 @@ export default function ColaboradorFormScreen() {
           fincaId={fincaId}
           onSubmit={handleSubmit}
           onCancel={handleCancel}
+          serverError={serverError}
         />
       </ScrollView>
     </>

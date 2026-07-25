@@ -203,7 +203,7 @@ export function useRegistrarEquipo(initialData = null) {
     if (mensajes.length > 0) {
       setErrores(nuevosErrores);
       // Mensaje genérico sin lista de errores específicos
-      throw new Error('Revisa los campos obligatorios marcados con *:');
+      throw new Error('Revisa los campos obligatorios marcados con *');
     }
 
     setGuardando(true);

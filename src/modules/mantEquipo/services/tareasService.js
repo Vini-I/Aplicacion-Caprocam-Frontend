@@ -9,7 +9,7 @@
  * mapeados al formato usado por el frontend.
  *
  * Dependencias:
- * - api (axios) desde src/api/api.js
+ * - api (axios) desde src/api/api.js (ya incluye interceptor de tokens)
  * ============================================================
  */
 
@@ -34,7 +34,7 @@ function mapBackendToFrontend(data) {
     descripcion: data.descripcion,
     categoria: data.categoria,
     duracionEstimada: Number(data.horas) || 0,
-    estado: estadoFrontend,  // ← Usar el valor mapeado
+    estado: estadoFrontend,
     colaboradorId: data.colaborador_id,
     equipoId: data.equipo_id,
     productos: data.productos || [],
@@ -57,9 +57,8 @@ function prepareForBackend(data) {
   // Generar código único para la tarea (ej: TAR-001)
   const codigoTarea = data.codigo || `TAR-${String(Date.now()).slice(-6)}`;
   
-  // Obtener el estado mapeado o usar el valor original si ya es válido
-  const estadoFrontend = data.estado || 'Pendiente';
-  const estadoBackend = estadoMap[estadoFrontend.toLowerCase()] || estadoFrontend;
+  const estadoFrontend = data.estado || 'no_iniciada';
+  const estadoBackend = estadoMap[estadoFrontend.toLowerCase()] || 'Pendiente';
   
   return {
     grupo_datos: data.grupoDatos || 1,
@@ -69,7 +68,7 @@ function prepareForBackend(data) {
     descripcion: data.descripcion?.trim() || "",
     categoria: data.categoria || "",
     horas: Number(data.horas) || Number(data.duracionEstimada) || 0,
-    estado: estadoBackend,  // ← Usar el valor mapeado
+    estado: estadoBackend,
     codigo_tarea: codigoTarea,
   };
 }
@@ -79,10 +78,11 @@ function prepareForBackend(data) {
 /**
  * Obtiene todas las tareas activas del backend.
  * Permite filtrar por categoría y estado.
+ * Ruta corregida: /tareas (sin /api/v0)
  */
 async function getTareas(filtros = {}) {
   try {
-    const response = await api.get("/api/v0/tareas");
+    const response = await api.get("/tareas");
     let data = response.data.data || [];
     
     if (filtros.categoria) {
@@ -108,10 +108,11 @@ async function getTareas(filtros = {}) {
 
 /**
  * Obtiene una tarea por su ID.
+ * Ruta corregida: /tareas/${id}
  */
 async function getTareaById(id) {
   try {
-    const response = await api.get(`/api/v0/tareas/${id}`);
+    const response = await api.get(`/tareas/${id}`);
     const data = response.data.data;
     if (!data) throw new Error("Tarea no encontrada");
     return mapBackendToFrontend(data);
@@ -126,11 +127,12 @@ async function getTareaById(id) {
 
 /**
  * Crea una nueva tarea.
+ * Ruta corregida: /tareas
  */
 async function createTarea(data) {
   try {
     const payload = prepareForBackend(data);
-    const response = await api.post("/api/v0/tareas", payload);
+    const response = await api.post("/tareas", payload);
     return mapBackendToFrontend(response.data.data);
   } catch (error) {
     const message =
@@ -143,11 +145,12 @@ async function createTarea(data) {
 
 /**
  * Actualiza una tarea existente.
+ * Ruta corregida: /tareas/${id}
  */
 async function updateTarea(id, data) {
   try {
     const payload = prepareForBackend(data);
-    const response = await api.put(`/api/v0/tareas/${id}`, payload);
+    const response = await api.put(`/tareas/${id}`, payload);
     return mapBackendToFrontend(response.data.data);
   } catch (error) {
     const message =
@@ -160,10 +163,11 @@ async function updateTarea(id, data) {
 
 /**
  * Elimina (borrado lógico) una tarea.
+ * Ruta corregida: /tareas/${id}
  */
 async function deleteTarea(id) {
   try {
-    const response = await api.delete(`/api/v0/tareas/${id}`);
+    const response = await api.delete(`/tareas/${id}`);
     return response.data.data ? true : false;
   } catch (error) {
     const message =
@@ -176,10 +180,11 @@ async function deleteTarea(id) {
 
 /**
  * Obtiene catálogo de tareas para selects.
+ * Ruta corregida: /tareas/catalogo
  */
 async function getCatalogoTareas() {
   try {
-    const response = await api.get("/api/v0/tareas/catalogo");
+    const response = await api.get("/tareas/catalogo");
     const data = response.data.data || [];
     return data.map((t) => ({
       id: t.id,

@@ -14,6 +14,7 @@
  * - userRole: "camprocam_admin" o "external_owner" - define roles disponibles
  * - fincaId: ID de finca (se asigna automáticamente para external_owner)
  * - onCancel: función para cerrar el modal sin guardar
+ * - serverError: mensaje de error del servidor (opcional)
  */
 
 // ============================================================
@@ -42,6 +43,7 @@ export default function ColaboradorForm({
   userRole,
   fincaId,
   onCancel,
+  serverError = "",
 }) {
   const {
     form,
@@ -56,6 +58,9 @@ export default function ColaboradorForm({
     handleApellidosChange,
     handleSubmit,
   } = useColaboradorForm({ initialData, isEditing, userRole, fincaId, onSubmit });
+
+  // Prioridad: validación de campos obligatorios (local) > error del servidor
+  const mensajeMostrar = (submitted && validationMessage) || serverError;
 
   return (
     <View style={styles.container}>
@@ -130,14 +135,16 @@ export default function ColaboradorForm({
         />
       )}
 
-      {/* Mensaje de validación general */}
-      {submitted && validationMessage !== "" && (
-        <Alert
-          variant="danger"
-          message={validationMessage}
-          style={styles.alertContainer}
-          textStyle={styles.alertText}
-        />
+      {/* ─── MENSAJE DE ERROR (validación local o servidor, excluyente) ─── */}
+      {mensajeMostrar !== "" && (
+        <View style={{ marginBottom: 12 }}>
+          <Alert
+            variant="danger"
+            message={mensajeMostrar}
+            style={styles.alertContainer}
+            textStyle={styles.alertText}
+          />
+        </View>
       )}
 
       {/* Botón de acción */}
