@@ -171,7 +171,7 @@ export default function FincaDetalleScreen({
 
           {estanquesFinca?.map((estanque, index) => (
             <View key={index}>
-              <CardPress onPress={() => onEstanqueDetalle(estanque.id)}>
+              <CardPress onPress={() => onEstanqueDetalle(estanque.id, finca)}>
                 <View style={styles.header}>
                   <View style={styles.icon}>
                     <Icon icon={ICONS.waterFlow} color={COLORS.primary} />

@@ -12,8 +12,15 @@ export default function Detalle() {
     });
   };
    
-  const handleDetalleEstanque = (id) => {
-    router.push(`/finca/detalleEstanque?id=${id}`);
+  const handleDetalleEstanque = (id, finca) => {
+    router.push({
+      pathname: "/finca/detalleEstanque",
+      params: {
+        id,
+        fincaId: finca.id,
+        fincaNombre: finca.nombreFinca,
+      }
+    });
   };
 
   const handleEditarEstanque = (codigoCBO, id) => {

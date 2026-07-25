@@ -76,7 +76,7 @@ export default function Input({
     let newValue = text;
 
     if (numericOnly) {
-      newValue = text.replace(/[^0-9]/g, "");
+      newValue = text.replace(/[^0-9.]/g, "");
     }
 
     onChangeText(newValue);

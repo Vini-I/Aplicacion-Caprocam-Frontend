@@ -10,6 +10,12 @@ export default function useDetalleEstanque() {
   const [estanque, setEstanque] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  function primeraMayuscula(texto) {
+    if (!texto) return "";
+
+    return texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase();
+  }
+
   useEffect(() => {
 
     const cargarEstanque = async () => {
@@ -41,6 +47,8 @@ export default function useDetalleEstanque() {
 
   return {
     estanque,
-    loading
+    loading,
+    
+    primeraMayuscula
   };
 }
