@@ -64,19 +64,6 @@ export default function FincaCrecimientoScreen() {
     mostrarErrorColaborador
   } = useFincaCrecimiento();
 
-  if (!estanque) {
-    return (
-      <ScrollView
-        style={STYLE.container}
-        contentContainerStyle={styles.contentScroll}
-      >
-        <Card style={STYLE.contentWrapper}>
-          <Text>No se encontró un estanque válido.</Text>
-        </Card>
-      </ScrollView>
-    );
-  }
-
   return (
     <View style={styles.screenContainer}>
       <NavbarRegistro
