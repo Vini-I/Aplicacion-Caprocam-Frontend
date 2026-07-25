@@ -10,6 +10,7 @@
  */
 
 import React from "react";
+// Watcher trigger
 import { Platform } from "react-native";
 
 import DateInput from "../../../shared/components/DateInput.jsx";
@@ -19,7 +20,7 @@ export default function EquipoFechaInput({
   label = "",
   value = "",
   onChangeText,
-  placeholder = "Seleccione la fecha de instalación",
+  placeholder = "Seleccione la fecha de instalacaaión",
   inputStyle,
   labelStyle,
 }) {

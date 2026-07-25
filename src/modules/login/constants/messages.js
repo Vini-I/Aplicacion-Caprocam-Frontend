@@ -20,11 +20,11 @@ export const LOGIN_MESSAGES = {
   WORKER_SUBTITLE: 'Toca tu nombre para comenzar',
 
   // Estados de Carga
-  LOADING: 'Cargando trabajadores...',
+  LOADING: 'Cargando colaboradores...',
   ERROR_PREFIX: 'Error: ',
-  NO_WORKERS_FOUND: 'No se encontraron trabajadores.',
+  NO_WORKERS_FOUND: 'No se encontraron colaboradores.',
   SEARCH_PLACEHOLDER: 'Buscar por nombre',
-  SYNC_BUTTON_TEXT: 'Sincronizar Datos',
+  SYNC_BUTTON_TEXT: 'Sincronizar Usuarios',
 
   // Botón
   BUTTON_TEXT: 'Continuar',

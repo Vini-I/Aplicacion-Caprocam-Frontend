@@ -43,6 +43,11 @@ export const styles = StyleSheet.create({
     color: COLORS.textTertiary,
     marginBottom: 2,
   },
+  detailRow: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  marginBottom: 4,
+},
   actions: {
     flexDirection: "row",
     justifyContent: "flex-end",

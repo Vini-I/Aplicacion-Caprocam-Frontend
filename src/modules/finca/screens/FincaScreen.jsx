@@ -75,7 +75,6 @@ export default function FincasScreen({ onDetail, onNew, onEdit }) {
               <View style={styles.flex}>
                 <Title level={4} numberOfLines={2}>
                   {Finca.nombreFinca}
-                  {Finca.codigoCBO}
                 </Title>
 
                 <Text numberOfLines={3} color={COLORS.textTertiary}>
