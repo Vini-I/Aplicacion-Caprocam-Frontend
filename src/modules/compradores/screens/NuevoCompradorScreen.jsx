@@ -66,6 +66,7 @@ export default function NuevoCompradorScreen() {
     errorCorreo,
     mensajeError,  
     guardadoExitoso,
+    guardando,
     handleCedulaChange,
     handleTelefonoChange,
     handleSubmit,
@@ -155,10 +156,12 @@ export default function NuevoCompradorScreen() {
           />
 
           {/* Botón para guardar, dispara la validación */}
-          <Button variant="outline" onPress={handleSubmit} style={styles.saveButton}>
+          <Button variant="outline" onPress={handleSubmit} disabled={guardando} style={styles.saveButton}>
             <View style={styles.buttonContent}>
                <Icon icon={ICONS.save} size={ICON_SIZES.save} color={COLORS.primary} />
-               <Text style={styles.saveButtonText}>Guardar comprador</Text>
+               <Text style={styles.saveButtonText}>
+                 {guardando ? "Guardando..." : "Guardar comprador"}
+               </Text>
             </View>
           </Button>
 

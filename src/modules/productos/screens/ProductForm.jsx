@@ -70,6 +70,8 @@ export default function ProductForm() {
   const {
     form,
     opcionesProveedores,
+    cargandoProveedores,
+    errorProveedores,
     isEditMode,
     canSave,
     validationMessage,
@@ -82,6 +84,8 @@ export default function ProductForm() {
     errorStockMinimo,
     errorPrecio,
     guardadoExitoso,
+    guardando,
+    errorGuardado,
     handleField,
     handleCategoriaChange,
     handleSubmit,
@@ -140,7 +144,7 @@ export default function ProductForm() {
 
           {/* Proveedor */}
           <Select
-            label="Proveedor *"
+            label={cargandoProveedores ? "Proveedor * (cargando...)" : "Proveedor *"}
             value={form.proveedor}
             options={opcionesProveedores}
             onChange={(v) => handleField("proveedor", v)}
@@ -148,6 +152,14 @@ export default function ProductForm() {
             selectStyle={[styles.select, errorProveedor && styles.inputError]}
             labelStyle={styles.label}
           />
+
+          {!!errorProveedores && (
+            <Alert
+              variant="danger"
+              message={errorProveedores}
+              style={styles.alertBox}
+            />
+          )}
 
           {/* Cantidad */}
           <NumberInput
@@ -209,7 +221,7 @@ export default function ProductForm() {
 
           {(form.categoria === "Alimentación" || form.categoria === "Tratamiento") && (
             <DateInput
-              key={form.categoria}              // ← esto es lo que fuerza el remount
+              key={form.categoria}              
               label="Fecha de caducidad"
               value={form.expirationDate}
               onChangeText={(val) => handleField("expirationDate", val)}
@@ -223,12 +235,20 @@ export default function ProductForm() {
           <Button
             variant="outline"
             onPress={handleSubmit}
-            disabled={(isEditMode && !canSave) || guardadoExitoso}
+            disabled={(isEditMode && !canSave) || guardadoExitoso || guardando}
             style={[styles.saveButton, isEditMode && !canSave && styles.saveButtonDisabled]}
             textStyle={styles.saveButtonText}
           >
-            {isEditMode ? "Guardar cambios" : "Guardar producto"}
+            {guardando ? "Guardando..." : isEditMode ? "Guardar cambios" : "Guardar producto"}
           </Button>
+
+          {!!errorGuardado && (
+            <Alert
+              variant="danger"
+              message={errorGuardado}
+              style={styles.alertBox}
+            />
+          )}
 
           {guardadoExitoso && (
             <Alert
