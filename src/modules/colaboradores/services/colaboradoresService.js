@@ -23,9 +23,9 @@ import api from "../../../api/api";
 
 // Mapeo de roles
 const rolMapToId = {
-  camprocam_worker: 3,
-  external_owner: 2,
-  external_worker: 3,
+  camprocam_worker: 1,  // CORREGIR CUANDO HAYAN MAS ROLES (ADMIN TEMP)
+  external_owner: 1,    // CORREGIR CUANDO HAYAN MAS ROLES (ADMIN TEMP)
+  external_worker: 1,   // CORREGIR CUANDO HAYAN MAS ROLES (ADMIN TEMP)
 };
 
 const rolMapToTipo = {
@@ -35,10 +35,10 @@ const rolMapToTipo = {
 };
 
 const rolIdToRol = {
-  2: "external_owner",
-  3: (tipo) => {
-    if (tipo === "caprocam_collab") return "camprocam_worker";
-    if (tipo === "external_collab") return "external_worker";
+  1: (tipo) => {
+    if (tipo === "caprocam_collab") return "camprocam_worker";// CORREGIR CUANDO HAYAN MAS ROLES (ADMIN TEMP)
+    if (tipo === "external_collab") return "external_worker"; // CORREGIR CUANDO HAYAN MAS ROLES (ADMIN TEMP)
+    if (tipo === "external_owner") return "external_owner";   // CORREGIR CUANDO HAYAN MAS ROLES (ADMIN TEMP)
     return "external_worker";
   },
 };
@@ -46,20 +46,18 @@ const rolIdToRol = {
 // Mapeo de backend a frontend
 function mapBackendToFrontend(data) {
   let rol = "camprocam_worker";
-  if (data.rolId === 2) {
-    rol = "external_owner";
-  } else if (data.rolId === 3) {
-    rol = rolIdToRol[3](data.tipoColaborador);
+  if (data.rolId === 1) {
+    rol = rolIdToRol[1](data.tipoColaborador);
   }
   return {
     id: data.id,
     nombre: `${data.nombre} ${data.apellidos}`,
-    cedula: data.nombreUsuario,
+    cedula: data.nombreUsuario,  // NOMBRE  DE DATO DIFERENTE CORREGIRRRR
     telefono: data.telefono,
     email: data.email,
     rol,
     fincaId: data.fincaId,
-    activo: Boolean(data.activo), // Convierte 1/0 a true/false
+    activo: Boolean(data.activo),
   };
 }
 
