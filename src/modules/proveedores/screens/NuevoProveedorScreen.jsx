@@ -45,7 +45,7 @@ import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
 import { STYLE } from "../../../theme/style";
 import { styles } from "../styles/NuevoProveedorStyles.js";
-import { tiposProducto } from "../services/ProveedorData";
+import { tiposProducto } from "../services/proveedor.service.js";
 
 import {
   useNuevoProveedorScreen,

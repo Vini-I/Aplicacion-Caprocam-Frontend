@@ -10,6 +10,14 @@
  * Recibe los 3 catálogos y los 9 handlers (onAgregarX/onEditarX/
  * onEliminarX) que ya le llegan a DatosLarvaSection por props, y
  * devuelve el estado del modal + las funciones para manejarlo.
+ *
+ * CONTRATO IMPORTANTE:
+ * abrirEditar(item) no recibe ni establece "campoActivo" - asume
+ * que ya se llamó antes a abrirLista(campo) para ese mismo
+ * catálogo (el flujo normal es: abrir lista -> elegir "editar" de
+ * un ítem dentro de ella). Llamar abrirEditar sin haber abierto
+ * antes la lista deja campoActivo en null y guardarFormulario
+ * falla silenciosamente.
  */
 import { useState } from "react";
 
@@ -27,10 +35,7 @@ export function useCatalogoModal({
   onEliminarLaboratorio,
   onEliminarProcedencia,
 }) {
-  // Campo sobre el que se está trabajando ("proveedorLarva",
-  // "laboratorioLarva" o "procedenciaLarva"), o null si todo está cerrado.
   const [campoActivo, setCampoActivo] = useState(null);
-  // "lista" | "formulario" | "eliminar" | null (null = modal cerrado)
   const [vistaModal, setVistaModal] = useState(null);
 
   const [itemEnEdicionValue, setItemEnEdicionValue] = useState(null);
@@ -38,6 +43,7 @@ export function useCatalogoModal({
   const [nombreConError, setNombreConError] = useState(false);
   const [mensaje, setMensaje] = useState("");
   const [mensajeVariant, setMensajeVariant] = useState("info");
+  const [guardando, setGuardando] = useState(false);
 
   const [itemAEliminar, setItemAEliminar] = useState(null);
 
@@ -106,7 +112,7 @@ export function useCatalogoModal({
     setVistaModal("lista");
   }
 
-  function guardarFormulario() {
+  async function guardarFormulario() {
     if (!nombreForm.trim()) {
       setNombreConError(true);
       setMensaje("Debes completar los campos obligatorios.");
@@ -126,23 +132,30 @@ export function useCatalogoModal({
         setMensajeVariant("danger");
         return;
       }
-
-      const handler = handlersEditar[campoActivo];
-      if (handler) {
-        handler(itemEnEdicionValue, nombreForm);
-      }
-    } else {
-      const handler = handlersAgregar[campoActivo];
-      if (handler) {
-        handler(nombreForm);
-      }
     }
 
-    setItemEnEdicionValue(null);
-    setNombreForm("");
-    setVistaModal("lista");
-    setMensaje("Registrado correctamente.");
-    setMensajeVariant("success");
+    setGuardando(true);
+    try {
+      if (itemEnEdicionValue) {
+        const handler = handlersEditar[campoActivo];
+        if (handler) await handler(itemEnEdicionValue, nombreForm);
+      } else {
+        const handler = handlersAgregar[campoActivo];
+        if (handler) await handler(nombreForm);
+      }
+
+      setItemEnEdicionValue(null);
+      setNombreForm("");
+      setVistaModal("lista");
+      setMensaje("Registrado correctamente.");
+      setMensajeVariant("success");
+    } catch (err) {
+      const mensajeBackend = err.response?.data?.message;
+      setMensaje(mensajeBackend || "No fue posible guardar el registro.");
+      setMensajeVariant("danger");
+    } finally {
+      setGuardando(false);
+    }
   }
 
   function pedirConfirmacionEliminar(item) {
@@ -150,12 +163,25 @@ export function useCatalogoModal({
     setVistaModal("eliminar");
   }
 
-  function confirmarEliminar() {
+  async function confirmarEliminar() {
     const handler = handlersEliminar[campoActivo];
-    if (handler && itemAEliminar) {
-      handler(itemAEliminar.value);
+    if (!handler || !itemAEliminar) {
+      volverALista();
+      return;
     }
-    volverALista();
+
+    setGuardando(true);
+    try {
+      await handler(itemAEliminar.value);
+      volverALista();
+    } catch (err) {
+      const mensajeBackend = err.response?.data?.message;
+      setMensaje(mensajeBackend || "No fue posible eliminar el registro.");
+      setMensajeVariant("danger");
+      setVistaModal("lista");
+    } finally {
+      setGuardando(false);
+    }
   }
 
   return {
@@ -168,6 +194,7 @@ export function useCatalogoModal({
     mensaje,
     mensajeVariant,
     itemAEliminar,
+    guardando,
 
     opcionesPorCampo,
     handlersAgregar,
