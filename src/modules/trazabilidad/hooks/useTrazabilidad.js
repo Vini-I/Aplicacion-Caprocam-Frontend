@@ -31,10 +31,12 @@ import { useRouter } from "expo-router";
 import { initialForm } from "../screens/TrazabilidadData";
 import {
   obtenerEstanquesPorFinca,
+  obtenerEstanquesPreCriaPorFinca,
+  obtenerEstanquesEngordePorFinca,
   obtenerFincas,
   obtenerColaboradorSesion,
   obtenerColaboradorSesionActual,
-  obtenerSiembraPorEstanque,
+  obtenerSiembraActivaPorEstanque,
 } from "../services/TrazabilidadServices";
 import { crearRegistroTrazabilidad } from "../services/AgregarTrazabilidadService";
 import { esFechaFutura, esFechaValida } from "../../../shared/utils/dateUtils";
@@ -96,11 +98,14 @@ export function useTrazabilidad() {
       };
     }
 
-    obtenerEstanquesPorFinca(formData.fincaId)
-      .then((lista) => {
+    Promise.all([
+      obtenerEstanquesPreCriaPorFinca(formData.fincaId),
+      obtenerEstanquesEngordePorFinca(formData.fincaId),
+    ])
+      .then(([listaOrigen, listaDestino]) => {
         if (!mounted) return;
-        setEstanquesOrigen(lista || []);
-        setEstanquesDestino(lista || []);
+        setEstanquesOrigen(listaOrigen || []);
+        setEstanquesDestino(listaDestino || []);
       })
       .catch(() => {
         if (!mounted) return;
@@ -113,18 +118,31 @@ export function useTrazabilidad() {
     };
   }, [formData.fincaId]);
 
+  // Evita que la respuesta de una consulta vieja (usuario cambió de
+  // estanque rápido) sobrescriba el pl/dias del estanque seleccionado
+  // actualmente.
+  const siembraRequestIdRef = useRef(0);
+
   function manejarCambio(field, value) {
     if (field === "estanqueOrigenId") {
-      const siembra = obtenerSiembraPorEstanque(value);
-
       setFormData((previousData) => ({
         ...previousData,
         [field]: value,
-        pl: siembra ? String(siembra.cantidadSembrada ?? "") : "",
       }));
-
-      setPlAutocompletado(Boolean(siembra));
       setMensajeError("");
+
+      const requestId = ++siembraRequestIdRef.current;
+
+      obtenerSiembraActivaPorEstanque(value).then((siembra) => {
+        if (siembraRequestIdRef.current !== requestId) return; // respuesta obsoleta
+
+        setFormData((previousData) => ({
+          ...previousData,
+          pl: siembra ? String(siembra.pl_siembra ?? "") : "",
+          dias: siembra ? String(siembra.dias ?? "") : "",
+        }));
+        setPlAutocompletado(Boolean(siembra));
+      });
       return;
     }
 
@@ -136,12 +154,15 @@ export function useTrazabilidad() {
   }
 
   function manejarCambioFinca(value) {
+    siembraRequestIdRef.current += 1; // invalida cualquier consulta de siembra en vuelo
+
     setFormData((previousData) => ({
       ...previousData,
       fincaId: value,
       estanqueOrigenId: "",
       estanqueDestinoId: "",
       pl: "",
+      dias: "",
     }));
 
     setPlAutocompletado(false);

@@ -14,8 +14,7 @@
  * - Permite navegar al registro y detalle de estanques.
  * - Utiliza componentes reutilizables para mantener el diseño.
  */
-import { ScrollView, View, TouchableOpacity } from "react-native";
-import { Color, useRouter } from "expo-router";
+import { ScrollView, View } from "react-native";
 
 import { styles } from "../styles/FincaDetalleStyles";
 import { ICONS } from "../../../theme/icons";
@@ -30,7 +29,6 @@ import Text from "../../../shared/components/Text";
 import Icon from "../../../shared/components/Icons";
 import Button from "../../../shared/components/Button";
 import Badge from "../../../shared/components/Badge";
-import Avatar from "../../../shared/components/Avatar";
 import NavbarRegistro from "../../../shared/components/NavbarRegistro";
 
 export default function FincaDetalleScreen({
@@ -38,15 +36,22 @@ export default function FincaDetalleScreen({
   onEstanqueDetalle,
   onEstanqueEditar,
 }) {
-  const router = useRouter();
 
-  const { finca, estanquesFinca, haldleGenerar, loading } = useFincaDetalle();
+  const { finca, estanquesFinca, haldleGenerar, loadingFincas, loadingPdf } = useFincaDetalle();
 
+  if (loadingFincas) {
+    return <Text>Cargando...</Text>;
+  }
+
+  if (!finca) {
+    return <Text>Finca no encontrada</Text>;
+  }
+  
   return (
     <>
       <NavbarRegistro
         Titulo="Detalle de Finca"
-        Subtitulo={finca.nombre}
+        Subtitulo={finca.nombreFinca}
         Icono="document"
       />
       <ScrollView showsVerticalScrollIndicator={false} style={STYLE.container}>
@@ -60,12 +65,12 @@ export default function FincaDetalleScreen({
 
             <View style={styles.filaDetalle}>
               <Text style={styles.etiqueta}>Nombre:</Text>
-              <Text style={styles.valor}>{finca.nombre}</Text>
+              <Text style={styles.valor}>{finca.nombreFinca}</Text>
             </View>
 
             <View style={styles.filaDetalle}>
               <Text style={styles.etiqueta}>CBO:</Text>
-              <Text style={styles.valor}>{finca.codigoInterno}</Text>
+              <Text style={styles.valor}>{finca.codigoCBO}</Text>
             </View>
 
             <View style={styles.filaDetalle}>
@@ -84,11 +89,16 @@ export default function FincaDetalleScreen({
             </View>
 
             <View style={styles.filaDetalle}>
-              <Text style={styles.etiqueta}>Responsable:</Text>
-              <Text style={styles.valor}>{finca.responsable}</Text>
+              <Text style={styles.etiqueta}>Otras Señas:</Text>
+              <Text numberOfLines={3} style={styles.valor}>{finca.otrasSenas}</Text>
             </View>
 
-            {finca.telefonos?.map((telefono, index) => (
+            <View style={styles.filaDetalle}>
+              <Text style={styles.etiqueta}>Responsable:</Text>
+              <Text style={styles.valor}>{finca.propietarioResponsable}</Text>
+            </View>
+
+            {finca.telefonoParse?.map((telefono, index) => (
               <View key={index} style={styles.filaDetalle}>
                 <Text style={styles.etiqueta}>Teléfono {index + 1}: </Text>
                 <Text style={styles.valor}>{telefono}</Text>
@@ -102,13 +112,13 @@ export default function FincaDetalleScreen({
 
             <View style={styles.filaDetalle}>
               <Text style={styles.etiqueta}>Espejo Agua:</Text>
-              <Text style={styles.valor}>{finca.espejoAgua}</Text>
+              <Text style={styles.valor}>{finca.espejosAgua}</Text>
             </View>
 
             <Button
               style={styles.buttonExport}
               onPress={haldleGenerar}
-              disabled={loading}
+              disabled={loadingPdf}
             >
               <Icon
                 icon={ICONS.document}
@@ -116,7 +126,7 @@ export default function FincaDetalleScreen({
                 size={18}
               />
               <Text size={15}>
-                {loading ? "GENERANDO..." : "GENERAR REPORTE FINCA"}
+                {loadingPdf ? "GENERANDO..." : "GENERAR REPORTE FINCA"}
               </Text>
             </Button>
           </Card>

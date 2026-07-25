@@ -63,7 +63,8 @@ export const styles = StyleSheet.create({
     margin: 0,
     marginTop: 0,
     borderRadius: 0,
-    
+    borderWidth: 0,
+    borderColor: "transparent",
   },
 
   card: {

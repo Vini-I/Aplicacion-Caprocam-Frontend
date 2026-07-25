@@ -71,6 +71,56 @@ export async function guardarLectura(datos) {
   return crearLectura(datos);
 }
 
+function normalizarLecturas(valor) {
+  if (Array.isArray(valor)) {
+    return valor;
+  }
+
+  if (valor === undefined || valor === null || valor === "") {
+    return [];
+  }
+
+  if (typeof valor === "number") {
+    return [valor];
+  }
+
+  if (typeof valor === "string") {
+    const numero = Number(valor);
+    return Number.isNaN(numero) ? [valor] : [numero];
+  }
+
+  return [valor];
+}
+
+export async function obtenerLecturasPorEstanque(estanqueId, fecha = null) {
+  if (!estanqueId) {
+    return null;
+  }
+
+  const fechaConsulta = fecha ?? new Date().toISOString().slice(0, 10);
+
+  try {
+    const response = await api.get(`/lecturasFisicoQuimicas/estanque/${estanqueId}`, {
+      params: { fecha: fechaConsulta },
+    });
+
+    const datos = response.data?.data ?? null;
+
+    if (!datos) {
+      return null;
+    }
+
+    return {
+      ph: normalizarLecturas(datos.ph),
+      ox: normalizarLecturas(datos.ox ?? datos.oxigenoDisuelto),
+      temperatura: normalizarLecturas(datos.temperatura),
+      salinidad: normalizarLecturas(datos.salinidad),
+    };
+  } catch (error) {
+    return null;
+  }
+}
+
 export async function obtenerOpcionesFincas() {
   const fincas = await fincaService.getFincas();
   return fincas.map((finca) => ({ label: finca.nombreFinca, value: finca.id }));
