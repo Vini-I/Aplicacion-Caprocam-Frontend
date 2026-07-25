@@ -28,7 +28,7 @@ import {
   SEVERIDADES_ENFERMEDAD,
 } from "../../enfermedades/services/EnfermedadesService";
 
-import { styles } from "../styles/EnfermedadesStyle";
+import { styles } from "../../enfermedades/styles/EnfermedadesStyle";
 
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
