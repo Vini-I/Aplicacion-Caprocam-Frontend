@@ -297,4 +297,13 @@ export const styles = StyleSheet.create({
   infoValue: {
     fontFamily: TYPOGRAPHY.fontFamily.regular,
   },
+
+  outlinePrimaryButton: {
+    minHeight: 50,
+    borderRadius: 14,
+    marginBottom: 18,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    backgroundColor: COLORS.white,
+  },
 });
