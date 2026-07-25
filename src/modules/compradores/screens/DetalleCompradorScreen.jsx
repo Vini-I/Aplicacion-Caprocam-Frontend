@@ -26,7 +26,7 @@
  */
 
 import { useState } from "react";
-import { View, ScrollView } from "react-native";
+import { View, ScrollView, ActivityIndicator } from "react-native";
 
 import Icon from "../../../shared/components/Icons";
 import Card from "../../../shared/components/Card";
@@ -49,20 +49,30 @@ import { useDetalleCompradorScreen } from "../hooks/useDetalleCompradorScreen";
 export default function DetalleCompradorScreen() {
   const {
     comprador,
+    cargando,
+    error,
     modalVisible,
     setModalVisible,
     eliminado,
+    eliminando,
     irAtras,
     irAEditar,
-    getTipoProductoSelect,
   } = useDetalleCompradorScreen();
+
+  if (cargando) {
+    return (
+      <View style={[styles.container, { justifyContent: "center" }]}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+      </View>
+    );
+  }
 
   if (!comprador) {
     return (
       <View style={styles.contenedor}>
         <EmptyState
           title="Comprador no encontrado"
-          description="El comprador que buscas no existe."
+          description={error || "El comprador que buscas no existe."}
         />
       </View>
     );
@@ -147,6 +157,15 @@ export default function DetalleCompradorScreen() {
         <Alert
           variant="danger"
           message="Comprador eliminado correctamente."
+          style={styles.alertEliminado}
+        />
+      )}
+
+      {/* Si falla la desactivación en el back, se muestra el error aquí */}
+      {!!error && !eliminado && (
+        <Alert
+          variant="danger"
+          message={error}
           style={styles.alertEliminado}
         />
       )}

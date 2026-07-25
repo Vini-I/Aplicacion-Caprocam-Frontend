@@ -23,32 +23,49 @@
  */
 
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "expo-router";
-import { compradoresMock } from "../services/CompradorData";
+import { compradorService, mapComprador } from "../services/comprador.service";
 
 export function useCompradorScreen() {
   const router = useRouter();
 
-  const [compradores] = useState(compradoresMock);
+  const [compradores, setCompradores] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState(null);
   const [busqueda, setBusqueda] = useState("");
   const [filtros, setFiltros] = useState({ tipos: [] });
 
-  // Extrae los tipos únicos de producto para mostrarlos como opciones de filtro
-  const TIPOS = [...new Set(compradores.map((c) => c.tipoProducto))];
+  // Carga los compradores activos desde la API
+  const cargarCompradores = useCallback(async () => {
+    setCargando(true);
+    setError(null);
+    try {
+      const data = await compradorService.getCompradores();
+      setCompradores((data || []).map(mapComprador));
+    } catch (err) {
+      setError("No se pudieron cargar los compradores. Intenta de nuevo.");
+    } finally {
+      setCargando(false);
+    }
+  }, []);
 
-  // Filtra los compradores según el texto ingresado y los tipos seleccionados
+  useEffect(() => {
+    cargarCompradores();
+  }, [cargarCompradores]);
+
+  
+  const TIPOS = [];
+
+  // Filtra los compradores según el texto ingresado
   const compradoresFiltrados = compradores.filter((c) => {
     const texto = busqueda.toLowerCase();
     const coincideTexto =
-      c.nombre.toLowerCase().includes(texto) ||
-      c.cedula.toLowerCase().includes(texto) ||
-      c.tipoProducto.toLowerCase().includes(texto) ||
-      c.telefono.toLowerCase().includes(texto) ||
-      c.correo.toLowerCase().includes(texto);
-    const coincideTipo =
-      filtros.tipos.length === 0 || filtros.tipos.includes(c.tipoProducto);
-    return coincideTexto && coincideTipo;
+      (c.nombre || "").toLowerCase().includes(texto) ||
+      (c.cedula || "").toLowerCase().includes(texto) ||
+      (c.telefono || "").toLowerCase().includes(texto) ||
+      (c.correo || "").toLowerCase().includes(texto);
+    return coincideTexto;
   });
 
   // Navega a la pantalla de detalle pasando el id del comprador como parámetro
@@ -69,6 +86,9 @@ export function useCompradorScreen() {
 
   return {
     compradoresFiltrados,
+    cargando,
+    error,
+    recargar: cargarCompradores,
     busqueda,
     setBusqueda,
     filtros,

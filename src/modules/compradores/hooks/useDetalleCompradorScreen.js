@@ -23,38 +23,61 @@
 
 
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { compradoresMock, tiposProducto } from "../services/CompradorData";
-
-// Busca la etiqueta legible del tipo de producto según su value
-function getTipoProductoSelect(value) {
-  const tipo = tiposProducto.find((t) => t.value === value);
-  return tipo ? tipo.label : value;
-}
-
-// Busca un comprador en el mock por su id numérico
-function getCompradorMockById(id) {
-  return compradoresMock.find((c) => c.id === Number(id));
-}
+import { compradorService, mapComprador } from "../services/comprador.service";
 
 export function useDetalleCompradorScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
 
+  const [comprador, setComprador] = useState(null);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState(null);
+
   // Controla la visibilidad del modal de confirmación de eliminación
   const [modalVisible, setModalVisible] = useState(false);
   // Controla si ya se confirmó la eliminación, para mostrar el alert de éxito
   const [eliminado, setEliminado] = useState(false);
+  const [eliminando, setEliminando] = useState(false);
 
-  const comprador = getCompradorMockById(id);
+  // Busca el comprador activo en la API por su id
+  const cargarComprador = useCallback(async () => {
+    setCargando(true);
+    setError(null);
+    try {
+      const data = await compradorService.getCompradorPorId(id);
+      setComprador(mapComprador(data));
+    } catch (err) {
+      setComprador(null);
+      setError("No se pudo cargar el comprador.");
+    } finally {
+      setCargando(false);
+    }
+  }, [id]);
 
-  function irAtras() {
-    setModalVisible(false);
-    setEliminado(true);
-    setTimeout(() => {
-      router.replace("/(drawer)/compradores/compradorScreen");
-    }, 900);
+  useEffect(() => {
+    if (id) cargarComprador();
+  }, [id, cargarComprador]);
+
+  // Confirma la eliminación: desactiva el comprador en el back y vuelve a la lista
+  async function irAtras() {
+    if (!comprador) return;
+    setEliminando(true);
+    setError(null);
+    try {
+      await compradorService.desactivarComprador(comprador.id);
+      setModalVisible(false);
+      setEliminado(true);
+      setTimeout(() => {
+        router.replace("/(drawer)/compradores/compradorScreen");
+      }, 900);
+    } catch (err) {
+      setModalVisible(false);
+      setError("No se pudo eliminar el comprador. Intenta de nuevo.");
+    } finally {
+      setEliminando(false);
+    }
   }
 
   function irAEditar() {
@@ -66,11 +89,13 @@ export function useDetalleCompradorScreen() {
 
   return {
     comprador,
+    cargando,
+    error,
     modalVisible,
     setModalVisible,
     eliminado,
+    eliminando,
     irAtras,
     irAEditar,
-    getTipoProductoSelect,
   };
 }

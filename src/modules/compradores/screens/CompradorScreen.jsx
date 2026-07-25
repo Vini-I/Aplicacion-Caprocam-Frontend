@@ -28,7 +28,7 @@
  */
 
 import React from "react";
-import { View, FlatList } from "react-native";
+import { View, FlatList, ActivityIndicator } from "react-native";
 
 import Card from "../../../shared/components/Card";
 import Button from "../../../shared/components/Button";
@@ -37,7 +37,9 @@ import Text from "../../../shared/components/Text";
 import SearchBar from "../../inventarios/components/SearchBar";
 import FilterButton from "../../inventarios/components/FilterButton";
 import EmptyState from "../../../shared/components/EmptyState";
+import Alert from "../../../shared/components/Alert";
 
+import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
 import { STYLE } from "../../../theme/style";
 import { styles, ICON_STYLES } from "../styles/CompradorStyles";
@@ -48,6 +50,9 @@ import { useCompradorScreen } from "../hooks/useCompradorScreen";
 export default function CompradorScreen() {
   const {
     compradoresFiltrados,
+    cargando,
+    error,
+    recargar,
     busqueda,
     setBusqueda,
     filtros,
@@ -135,29 +140,49 @@ export default function CompradorScreen() {
         />
       </View>
 
+      {/* Alerta de error al cargar, con botón para reintentar */}
+      {!!error && (
+        <View style={[STYLE.contentWrapper, styles.barraBusqueda]}>
+          <Alert variant="danger" message={error} style={{ flex: 1 }} />
+          <Button variant="outline" onPress={recargar} style={styles.btnVerDetalle}>
+            <Text style={styles.btnVerDetalleText}>Reintentar</Text>
+          </Button>
+        </View>
+      )}
+
       {/* Contenedor con flex:1 para que la lista ocupe el espacio disponible
           y el botón de agregar quede siempre anclado al fondo de la pantalla */}
       <View style={styles.listaContainer}>
-        <FlatList
-          data={compradoresFiltrados}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => renderComprador(item)}
-          contentContainerStyle={[styles.lista, STYLE.contentWrapper]}
-          ListHeaderComponent={
-            <Text style={styles.contadorResultados}>
-              {compradoresFiltrados.length}{" "}
-              {compradoresFiltrados.length === 1
-                ? "comprador encontrado"
-                : "compradores encontrados"}
-            </Text>
-          }
-          ListEmptyComponent={
-            <EmptyState
-              title="Sin compradores"
-              description="No se encontraron compradores con esa búsqueda."
-            />
-          }
-        />
+        {cargando ? (
+          <ActivityIndicator
+            size="large"
+            color={COLORS.primary}
+            style={{ marginTop: 32 }}
+          />
+        ) : (
+          <FlatList
+            data={compradoresFiltrados}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={({ item }) => renderComprador(item)}
+            contentContainerStyle={[styles.lista, STYLE.contentWrapper]}
+            refreshing={cargando}
+            onRefresh={recargar}
+            ListHeaderComponent={
+              <Text style={styles.contadorResultados}>
+                {compradoresFiltrados.length}{" "}
+                {compradoresFiltrados.length === 1
+                  ? "comprador encontrado"
+                  : "compradores encontrados"}
+              </Text>
+            }
+            ListEmptyComponent={
+              <EmptyState
+                title="Sin compradores"
+                description="No se encontraron compradores con esa búsqueda."
+              />
+            }
+          />
+        )}
       </View>
 
       {/* Botón de agregar fijo en la parte inferior */}

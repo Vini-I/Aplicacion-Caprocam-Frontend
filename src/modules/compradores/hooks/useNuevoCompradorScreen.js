@@ -38,6 +38,7 @@
 
 import { useState } from "react";
 import { useRouter } from "expo-router";
+import { compradorService } from "../services/comprador.service";
 
 // Regex para validar teléfonos con o sin código de país +506
 const TELEFONO_REGEX = /^(\+?506[\s-]?)?\d{4}[\s-]?\d{4}$/;
@@ -55,6 +56,7 @@ function esCorreoValido(valor) {
 }
 
 const MENSAJE_ERROR_GENERAL = "Revisa los campos obligatorios marcados con * antes de guardar.";
+const MENSAJE_ERROR_GUARDADO = "No se pudo guardar el comprador. Intenta de nuevo.";
 
 export function useNuevoCompradorScreen() {
   const router = useRouter();
@@ -74,6 +76,7 @@ export function useNuevoCompradorScreen() {
   const [errorCorreo, setErrorCorreo] = useState(false);
   const [mensajeError, setMensajeError] = useState("");
   const [guardadoExitoso, setGuardadoExitoso] = useState(false);
+  const [guardando, setGuardando] = useState(false);
 
   // Permite solo dígitos, espacios, guiones y el símbolo + en el teléfono
   const handleTelefonoChange = (valor) => {
@@ -86,7 +89,7 @@ export function useNuevoCompradorScreen() {
   };
 
   // Valida los campos y guarda el comprador si no hay errores
-  function handleSubmit() {
+  async function handleSubmit() {
     const errNombre = nombre.trim() === "";
     const errCedula = cedula.trim() === "";
     const errTel = !esTelefonoValido(telefono);
@@ -103,9 +106,6 @@ export function useNuevoCompradorScreen() {
       return;
     }
 
-    setMensajeError("");
-    setGuardadoExitoso(true);
-
     const comprador = {
       nombre: nombre.trim(),
       cedula: cedula.trim(),
@@ -115,7 +115,20 @@ export function useNuevoCompradorScreen() {
       notas: notas.trim(),
     };
 
-    console.log("Comprador guardado:", comprador);
+    setGuardando(true);
+    try {
+      await compradorService.crearComprador(comprador);
+    } catch (error) {
+      setMensajeError(MENSAJE_ERROR_GUARDADO);
+      setGuardadoExitoso(false);
+      setGuardando(false);
+      return;
+    }
+    setGuardando(false);
+
+    setMensajeError("");
+    setGuardadoExitoso(true);
+
     setTimeout(() => {
       router.replace("/(drawer)/compradores/compradorScreen");
     }, 900);
@@ -142,6 +155,7 @@ export function useNuevoCompradorScreen() {
     errorCorreo,
     mensajeError, 
     guardadoExitoso,
+    guardando,
     handleCedulaChange,
     handleTelefonoChange,
     handleSubmit,
