@@ -41,7 +41,7 @@ import Icon from "../../../shared/components/Icons";
 import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
 import { ICONS } from "../../../theme/icons";
-import { useCatalogos } from "../hooks/useCatalogos.js";
+import { useCatalogos } from "../../../modules/densidadPoblacional/hooks/useCatalogos.js";
 
 const FINCAS = [
   { label: "Finca La Reina", value: 1 },
