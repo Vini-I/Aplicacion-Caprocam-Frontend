@@ -21,50 +21,95 @@
  * ============================================================
  */
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { getProductoById, deleteProducto } from "../../inventarios/services/InventarioService";
+import { productoService, mapProducto } from "../services/producto.service";
+import { getProveedorPorId } from "../services/proveedoresLookup";
 
 import { colorCategoria, colorCategoriaDefault } from "../styles/DetalleProductScreenStyles";
 
 export function useDetalleProducto() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
-  const productoActual = getProductoById(id);
+
+  const [producto, setProducto] = useState(null);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState(null);
+
   const [modalEliminarVisible, setModalEliminarVisible] = useState(false);
   const [eliminado, setEliminado] = useState(false);
-  const [productoEliminado, setProductoEliminado] = useState(null);
+  const [eliminando, setEliminando] = useState(false);
 
-  // Mientras se muestra el alert de "eliminado", el producto ya no existe
-  // en el store (deleteProducto lo borra de verdad). Usamos la copia
-  // guardada justo antes de borrar para no perder los datos en pantalla.
-  const producto = productoActual || productoEliminado;
+  // Carga el producto activo desde la API por su id, y resuelve el
+  // nombre real del proveedor a partir de su proveedorId.
+  const cargarProducto = useCallback(async () => {
+    setCargando(true);
+    setError(null);
+    try {
+      const data = await productoService.getProductoPorId(id);
+      const productoMapeado = mapProducto(data);
+
+      if (productoMapeado?.proveedorId) {
+        try {
+          const proveedor = await getProveedorPorId(productoMapeado.proveedorId);
+          productoMapeado.proveedor = proveedor?.nombre ?? "Sin proveedor asignado";
+        } catch {
+          // Si /proveedores no está disponible, no bloqueamos el
+          // detalle del producto por eso -- solo se muestra vacío.
+          productoMapeado.proveedor = "";
+        }
+      } else if (productoMapeado) {
+        productoMapeado.proveedor = "Sin proveedor asignado";
+      }
+
+      setProducto(productoMapeado);
+    } catch (err) {
+      setProducto(null);
+      setError("No se pudo cargar el producto.");
+    } finally {
+      setCargando(false);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    if (id) cargarProducto();
+  }, [id, cargarProducto]);
 
   const tieneStockBajo = producto ? producto.cantidad < producto.stockMinimo : false;
-  const colores = producto ? colorCategoria[producto.categoria] || colorCategoriaDefault: colorCategoriaDefault;
+  const colores = producto ? colorCategoria[producto.categoria] || colorCategoriaDefault : colorCategoriaDefault;
   const precioFormateado = producto ? `₡${producto.precioUnidad.toLocaleString("es-CR")}` : "";
-  const stockTotalFormateado = producto ? `₡${(producto.precioUnidad * producto.cantidad).toLocaleString("es-CR")}`  : "";
+  const stockTotalFormateado = producto ? `₡${(producto.precioUnidad * producto.cantidad).toLocaleString("es-CR")}` : "";
 
   function handleEditar() {
-    router.replace({ pathname: "/(drawer)/inventarios/productForm", params: {productoParam: JSON.stringify(producto)}, });
+    router.replace({ pathname: "/(drawer)/inventarios/productForm", params: { productoParam: JSON.stringify(producto) } });
   }
 
   function handleEliminar() {
     setModalEliminarVisible(true);
   }
 
-  function confirmarEliminar() {
-    setProductoEliminado(producto);
-    deleteProducto(producto.id);
-    setModalEliminarVisible(false);
-    setEliminado(true);
-    setTimeout(() => {
-      router.replace("/(drawer)/inventarios");
-    }, 900);
+  // Confirma la eliminación: desactiva el producto en el back y vuelve al listado
+  async function confirmarEliminar() {
+    if (!producto) return;
+    setEliminando(true);
+    setError(null);
+    try {
+      await productoService.desactivarProducto(producto.id);
+      setModalEliminarVisible(false);
+      setEliminado(true);
+      setTimeout(() => {
+        router.replace("/(drawer)/inventarios");
+      }, 900);
+    } catch (err) {
+      setModalEliminarVisible(false);
+      setError("No se pudo eliminar el producto. Intenta de nuevo.");
+    } finally {
+      setEliminando(false);
+    }
   }
 
   function handleBack() {
-    router.replace("/(drawer)/inventarios");//00000000000000000000000000000000000000000000000
+    router.replace("/(drawer)/inventarios");
   }
 
   function handleCerrarModal() {
@@ -73,12 +118,15 @@ export function useDetalleProducto() {
 
   return {
     producto,
+    cargando,
+    error,
     tieneStockBajo,
     colores,
     precioFormateado,
     stockTotalFormateado,
     modalEliminarVisible,
     eliminado,
+    eliminando,
     handleEditar,
     handleEliminar,
     confirmarEliminar,

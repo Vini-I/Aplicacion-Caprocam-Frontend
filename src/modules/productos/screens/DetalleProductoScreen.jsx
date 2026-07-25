@@ -25,9 +25,9 @@
 
 
 
-import { View, ScrollView } from "react-native";
+import { View, ScrollView, ActivityIndicator } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { getProductoById, deleteProducto } from "../../inventarios/services/InventarioService.js";
+
 
 import Navbar from "../../../shared/components/Navbar";
 import Icon from "../../../shared/components/Icons";
@@ -68,6 +68,9 @@ function FilaDetalle({ etiqueta, valor, resaltado = false }) {
 export default function DetalleProductoScreen() {
   const {
     producto,
+    cargando,
+    error,
+    eliminando,
     tieneStockBajo,
     colores,
     precioFormateado,
@@ -80,6 +83,14 @@ export default function DetalleProductoScreen() {
     handleCerrarModal,
     eliminado,
   } = useDetalleProducto();
+
+  if (cargando) {
+    return (
+      <View style={[STYLE.container, { justifyContent: "center" }]}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+      </View>
+    );
+  }
 
   if (!producto) {
     return (
@@ -98,7 +109,7 @@ export default function DetalleProductoScreen() {
           }
         />
         <View style={styles.emptyContainer}>
-          <Text>El producto no existe</Text>
+          <Text>{error || "El producto no existe"}</Text>
         </View>
       </View>
     );
@@ -175,6 +186,15 @@ export default function DetalleProductoScreen() {
                     <Alert
                         variant="danger"
                         message="Producto eliminado correctamente."
+                        style={styles.alertEliminado}
+                    />
+                )}
+
+                {/* Si falla la desactivación en el back, se muestra el error aquí */}
+                {!!error && !eliminado && (
+                    <Alert
+                        variant="danger"
+                        message={error}
                         style={styles.alertEliminado}
                     />
                 )}
