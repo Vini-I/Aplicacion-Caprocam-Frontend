@@ -38,88 +38,25 @@
 
 import api from "../../../api/api.js";
 
-/*
-Convierte el "form" que arma useRaleo.js/RaleoScreen.jsx a los
-campos reales que espera el backend (dtos/raleo.dto.js).
-*/
-function aBody(form) {
-    return {
-        idFinca: form.finca,
-        idEstanque: form.estanque,
-        fecha: form.fecha,
-        porcentaje: form.porcentajeRaleo,
-        pesoEstimado: form.pesoPromedio !== "" ? Number(form.pesoPromedio) : undefined,
-        biomasaEstimada: form.biomasaActual !== "" ? Number(form.biomasaActual) : undefined,
-        objetivo: form.objetivo,
-        metodo: form.metodo,
-        responsable: form.responsable || undefined,
-        observaciones: form.observaciones || undefined,
-    };
-}
-
-/*
-Convierte un raleo devuelto por el backend (camelCase, con
-idFinca/idEstanque/porcentaje/pesoEstimado/biomasaEstimada) a la
-forma que ya usaba la pantalla, agregando alias (finca/estanque/
-porcentajeRaleo/pesoPromedio/biomasaActual) sin quitar los
-nombres reales.
-*/
-function aFrontend(registro) {
-    if (!registro) return registro;
-    return {
-        ...registro,
-        finca: registro.idFinca,
-        estanque: registro.idEstanque,
-        porcentajeRaleo: registro.porcentaje,
-        pesoPromedio: registro.pesoEstimado,
-        biomasaActual: registro.biomasaEstimada,
-    };
-}
-
 const raleoService = {
-    getAll: async (filtros = {}) => {
-        try {
-            const response = await api.get("/raleo", { params: filtros });
-            return (response.data.data || []).map(aFrontend);
-        } catch (error) {
-            throw error;
-        }
+    getAll: async () => {
+        const respuesta = await api.get(`/raleos`);
+        return respuesta.data;
     },
 
     getById: async (id) => {
-        try {
-            const response = await api.get(`/raleo/${id}`);
-            return aFrontend(response.data.data);
-        } catch (error) {
-            throw error;
-        }
+        const respuesta = await api.get(`/raleos/${id}`);
+        return respuesta.data;
     },
 
-    create: async (form) => {
-        try {
-            const response = await api.post("/raleo", aBody(form));
-            return aFrontend(response.data.data);
-        } catch (error) {
-            throw error;
-        }
-    },
-
-    update: async (id, form) => {
-        try {
-            const response = await api.put(`/raleo/${id}`, aBody(form));
-            return aFrontend(response.data.data);
-        } catch (error) {
-            throw error;
-        }
+    create: async (registro) => {
+        const respuesta = await api.post(`/raleos`, registro);
+        return respuesta.data;
     },
 
     deleteById: async (id) => {
-        try {
-            const response = await api.delete(`/raleo/${id}`);
-            return aFrontend(response.data.data);
-        } catch (error) {
-            throw error;
-        }
+        const respuesta = await api.delete(`/raleos/${id}`)
+        return respuesta.data;
     },
 };
 
