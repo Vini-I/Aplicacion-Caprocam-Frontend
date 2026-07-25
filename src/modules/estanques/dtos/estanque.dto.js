@@ -3,7 +3,6 @@ export class estanqueDTO {
     constructor({
 
         idFinca,
-        grupoDatos,
         codigo, 
         tipoEstanque,
         estado, 
@@ -25,7 +24,6 @@ export class estanqueDTO {
     }) {
 
         this.idFinca = idFinca;
-        this.grupoDatos = 1;
         this.codigo = codigo;
         this.tipoEstanque = tipoEstanque;
         this.estado = estado;
