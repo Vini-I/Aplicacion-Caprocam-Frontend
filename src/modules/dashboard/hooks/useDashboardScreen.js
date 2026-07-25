@@ -22,7 +22,7 @@ import CustomText from "../../../shared/components/Text";
 import Title from "../../../shared/components/Title";
 import NavbarRegistro from "../../../shared/components/NavbarRegistro";
 
-import useEnfermedadesScreen from "../hooks/useEnfermedadesScreen";
+import useEnfermedadesScreen from "../hooks/useEnfermedadesScreen.js";
 import {
   ENFERMEDADES_CATALOGO,
   SEVERIDADES_ENFERMEDAD,
