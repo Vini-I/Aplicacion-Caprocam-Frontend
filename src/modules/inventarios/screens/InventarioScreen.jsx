@@ -128,7 +128,7 @@ function TarjetaProducto({ producto, onVerDetalle }) {
         />
         <FilaDetalle 
           etiqueta="Proveedor" 
-          valor={producto.proveedor || producto.proveedorId || "—"} 
+          valor={producto.nombreProveedor ||  "—"} 
         />
         <FilaDetalle etiqueta="Precio/unidad" valor={precioFormateado} />
         <FilaDetalle etiqueta="Fecha de caducidad" valor={producto.fechaCaducidad || "—"} />
