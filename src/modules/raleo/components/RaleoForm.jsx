@@ -41,6 +41,7 @@ import Icon from "../../../shared/components/Icons";
 import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
 import { ICONS } from "../../../theme/icons";
+import { useCatalogos } from "../hooks/useCatalogos.js";
 
 const FINCAS = [
   { label: "Finca La Reina", value: 1 },
@@ -93,6 +94,14 @@ export default function RaleoForm({
   const invalidoResponsable = submitted && !!errores.responsable;
   const invalidoObservaciones = submitted && !!errores.observaciones;
 
+  const { fincasOptions, estanquesOptions, recargarEstanques } = useCatalogos();
+
+  const handleFincaChange = (idFinca) => {
+    updateField("finca", idFinca);
+    updateField("estanque", "");
+    recargarEstanques(idFinca);
+  };
+
   return (
     <View>
       <Card>
@@ -114,8 +123,8 @@ export default function RaleoForm({
         <Select
           label="Finca *"
           value={form.finca}
-          onChange={(v) => updateField("finca", v)}
-          options={FINCAS}
+          onChange={handleFincaChange}
+          options={fincasOptions}
           placeholder="Seleccionar finca"
           selectStyle={invalidoFinca ? bordeError : null}
         />
@@ -124,7 +133,7 @@ export default function RaleoForm({
           label="Estanque *"
           value={form.estanque}
           onChange={(v) => updateField("estanque", v)}
-          options={ESTANQUES}
+          options={estanquesOptions}
           placeholder="Seleccionar estanque"
           selectStyle={invalidoEstanque ? bordeError : null}
         />
