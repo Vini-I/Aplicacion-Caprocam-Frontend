@@ -35,7 +35,15 @@ import { ICONS } from "../../../theme/icons";
 import { TYPOGRAPHY } from "../../../theme/typography";
 import { STYLE } from "../../../theme/style";
 
-export default function EnfermedadesScreen({ onBack, navigation }) {
+export default function EnfermedadesScreen(props) {
+  let onBack = null;
+  let navigation = null;
+
+  if (props !== undefined && props !== null) {
+    onBack = props.onBack;
+    navigation = props.navigation;
+  }
+
   const pantalla = useEnfermedadesScreen(onBack, navigation);
 
   const opcionesGridStyle = [styles.optionsGrid];
@@ -106,13 +114,14 @@ export default function EnfermedadesScreen({ onBack, navigation }) {
                 />
               </View>
 
-              <View style={pantalla.itemStyle}>
+              <View style={pantalla.itemStyle} pointerEvents="none">
                 <Input
                   label="Persona encargada"
                   value={pantalla.responsable}
-                  onChangeText={pantalla.setResponsable}
                   placeholder="Responsable obtenido del backend"
                   editable={false}
+                  readOnly={true}
+                  selectTextOnFocus={false}
                   labelStyle={styles.label}
                   helperText="Este dato se obtiene desde backend."
                 />
