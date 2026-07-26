@@ -124,7 +124,6 @@ export const styles = StyleSheet.create({
   },
 
   contadorResultados: {
-    marginHorizontal: 16,
     marginTop: 10,
     marginBottom: 4,
     fontSize: 13,
