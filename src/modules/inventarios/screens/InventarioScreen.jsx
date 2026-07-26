@@ -206,7 +206,7 @@ export default function InventarioScreen({ onDetail, onNew, onBack }) {
         renderItem={({ item }) => (
           <TarjetaProducto
             producto={item}
-            onVerDetalle={() => onDetail(item.id)}
+            onVerDetalle={() => onDetail(item.productoId)}
           />
         )}
         ListEmptyComponent={
