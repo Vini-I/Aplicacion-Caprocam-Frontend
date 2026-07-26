@@ -15,11 +15,19 @@ import api from "../../../api/api";
  *
  * ============================================================
  */
+function mapProveedor(apiProveedor) {
+  if (!apiProveedor) return null;
+  return {
+    id: apiProveedor.id,
+    nombre: apiProveedor.nombreEmpresa,
+    tipoProducto: apiProveedor.tipoProducto ?? "",
+  };
+}
 
 export async function getProveedores() {
   try {
     const response = await api.get("/proveedores");
-    return response.data.data;
+    return (response.data.data || []).map(mapProveedor);
   } catch (error) {
     throw error;
   }
@@ -28,7 +36,7 @@ export async function getProveedores() {
 export async function getProveedorPorId(id) {
   try {
     const response = await api.get(`/proveedores/${id}`);
-    return response.data.data;
+    return mapProveedor(response.data.data);
   } catch (error) {
     throw error;
   }
@@ -44,11 +52,11 @@ function normalizar(texto) {
 }
 
 // Filtra proveedores cuyo tipoProducto "se parece" a la categoría de
-// producto elegida . Si no hay ninguna coincidencia,
+// producto elegida (best effort). Si no hay ninguna coincidencia,
 // devuelve la lista completa para no dejar el select vacío por un
 // simple desacuerdo de nombres entre back y front.
 export function filtrarProveedoresPorCategoria(proveedores, categoria) {
-  const categoriaNorm = normalizar(categoria).slice(0, 5); 
+  const categoriaNorm = normalizar(categoria).slice(0, 5); // ej. "alime", "antib"
   const filtrados = proveedores.filter((p) =>
     normalizar(p.tipoProducto).includes(categoriaNorm) ||
     categoriaNorm.includes(normalizar(p.tipoProducto).slice(0, 5))
