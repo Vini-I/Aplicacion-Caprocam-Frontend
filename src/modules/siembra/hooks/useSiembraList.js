@@ -12,10 +12,12 @@
  * - Traduce los campos crudos del backend (snake_case: finca_id,
  *   fecha_siembra, pl_siembra, etc.) al formato que espera
  *   SiembraCard (camelCase, PL como "PL8", fechas en dd/mm/aaaa)
- * - Enriquece cada registro con el nombre real de finca y estanque
- *   (fincaLabel/estanqueLabel) usando el catálogo de
- *   fincaEstanqueLocal, ya que el backend solo devuelve los ids.
- * - Administra el texto de búsqueda y los filtros aplicados.
+ * - Enriquece cada registro con el nombre real de finca, estanque,
+ *   lote y proveedor de larva (fincaLabel/estanqueLabel/loteLabel/
+ *   proveedorLabel), consultando los services reales del backend,
+ *   ya que el backend solo devuelve los ids.
+ * - Administra el texto de búsqueda (por finca, estanque, lote y
+ *   proveedor de larva) y los filtros aplicados.
  * - Calcula el listado final a mostrar (siembrasFiltradas).
  * - Oculta del listado principal las siembras y pre-crías que ya
  *   completaron su ciclo, para que no se acumulen tarjetas de
@@ -35,7 +37,9 @@ import { useNavigation, useRouter } from "expo-router";
 import { calcularProgresoCiclo } from "./siembraCalculos";
 import { getSiembras } from "../services/siembra.service";
 import { getPrecrias } from "../services/precria.service";
-import { obtenerFincas, obtenerEstanquesPorFinca } from "./fincaEstanqueLocal";
+import { fincaService } from "../../finca/services/finca.service";
+import { getEstanquesPorFinca } from "../services/estanquePorFinca.service";
+import { getLotes } from "../services/lote.service";
 import { formatearFechaDesdeISO } from "./dateUtils";
 
 function haFinalizado(registro) {
@@ -59,20 +63,41 @@ export default function useSiembraList() {
     { label: "Pre-Cría", value: "precria" },
   ];
 
-  const fincas = useMemo(() => obtenerFincas(), []);
+  const [fincas, setFincas] = useState([]);
+  const [estanques, setEstanques] = useState([]);
 
+  useEffect(() => {
+    fincaService
+      .getFincas()
+      .then((data) =>
+        setFincas(data.map((f) => ({ label: f.nombreFinca, value: f.id }))),
+      )
+      .catch(() => setFincas([]));
+  }, []);
+
+  useEffect(() => {
+    getEstanquesPorFinca()
+      .then(setEstanques)
+      .catch(() => setEstanques([]));
+  }, []);
   function obtenerNombresFincaEstanque(registro) {
     const finca = fincas.find((f) => f.value === registro.finca_id);
-    // Los estanques están indexados por finca en el mock - buscamos
-    // dentro de los del finca_id correspondiente.
-    const estanque = obtenerEstanquesPorFinca(registro.finca_id).find(
-      (e) => e.value === registro.estanque_id,
-    );
+    const estanque = estanques.find((e) => e.value === registro.estanque_id);
+    const lote = lotes.find((l) => l.id === registro.lote_larva_id);
     return {
       fincaLabel: finca?.label || "Sin finca",
       estanqueLabel: estanque?.label || "Sin estanque",
+      loteLabel: lote?.codigo_lote || "",
+      proveedorLabel: lote?.nombre_proveedor || "",
+      codigoLoteLarva: lote?.codigo_lote || "",
     };
   }
+  const [lotes, setLotes] = useState([]);
+  useEffect(() => {
+    getLotes()
+      .then(setLotes)
+      .catch(() => setLotes([]));
+  }, []);
 
   function mapSiembraParaCard(s) {
     const base = {
@@ -136,11 +161,13 @@ export default function useSiembraList() {
       .filter((r) => !haFinalizado(r))
       .map((r) => ({ ...r, ...obtenerNombresFincaEstanque(r) }))
       .filter((r) => {
-        const texto = busqueda.toLowerCase();
+        const texto = busqueda.trim().toLowerCase();
         const coincideTexto =
           !texto ||
           r.estanqueLabel.toLowerCase().includes(texto) ||
-          r.fincaLabel.toLowerCase().includes(texto);
+          r.fincaLabel.toLowerCase().includes(texto) ||
+          r.loteLabel.toLowerCase().includes(texto) ||
+          r.proveedorLabel.toLowerCase().includes(texto);
 
         const registroTipo = r.tipoRegistro || "siembra";
         const coincideTipo =
@@ -149,7 +176,7 @@ export default function useSiembraList() {
 
         return coincideTexto && coincideTipo;
       });
-  }, [busqueda, filtros, registros, fincas]);
+  }, [busqueda, filtros, registros, fincas, estanques, lotes]);
 
   const handleNuevaSiembra = useCallback(
     () => router.push("/siembra/nueva"),
