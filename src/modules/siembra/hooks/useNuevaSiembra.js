@@ -41,11 +41,9 @@ import {
 import { obtenerCamposObligatorios as obtenerCamposObligatoriosPorTipo } from "./siembraValidationRules";
 import { calcularCantidadSembrada } from "./siembraCalculos";
 import { obtenerFechaHoy, formatearFechaDesdeISO } from "./dateUtils";
-import {
-  obtenerEstanquePorCodigo,
-  obtenerEstanquesPorFinca,
-  obtenerFincas,
-} from "./fincaEstanqueLocal";
+
+import { fincaService } from "../../finca/services/finca.service";
+import { getEstanquesPorFinca } from "../services/estanquePorFinca.service";
 
 import {
   getPrecrias,
@@ -145,8 +143,28 @@ export default function useNuevaSiembra() {
     }));
   }, []);
 
-  const estanques = obtenerEstanquesPorFinca(formData.finca);
-  const fincas = useMemo(() => obtenerFincas(), []);
+  const [fincas, setFincas] = useState([]);
+  const [estanques, setEstanques] = useState([]);
+
+  useEffect(() => {
+    fincaService
+      .getFincas()
+      .then((data) =>
+        setFincas(data.map((f) => ({ label: f.nombreFinca, value: f.id }))),
+      )
+      .catch(() => setFincas([]));
+  }, []);
+
+  useEffect(() => {
+    if (!formData.finca) {
+      setEstanques([]);
+      return;
+    }
+    getEstanquesPorFinca(formData.finca)
+      .then(setEstanques)
+      .catch(() => setEstanques([]));
+  }, [formData.finca]);
+
   const tecnicasCultivo = useMemo(
     () => [
       { label: "Extensiva", value: "extensiva" },
@@ -249,7 +267,7 @@ export default function useNuevaSiembra() {
   }
 
   function handleChangeEstanque(value) {
-    const estanque = obtenerEstanquePorCodigo(formData.finca, value);
+    const estanque = estanques.find((e) => e.value === value);
     const area = estanque?.areaHectareas ?? "";
 
     setFormData((previousData) => {
