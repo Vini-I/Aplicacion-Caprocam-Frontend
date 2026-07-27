@@ -44,3 +44,13 @@ export function formatearFechaDesdeISO(fechaISO) {
   if (Number.isNaN(fecha.getTime())) return "";
   return formatearFecha(fecha);
 }
+
+// Compara dos fechas en formato dd/mm/aaaa. Devuelve true si fechaA
+// es anterior a fechaB. Compara como texto "aaaa-mm-dd" en vez de
+// new Date() para evitar el desfase de horas que sí afecta al backend.
+export function esFechaAnterior(fechaA, fechaB) {
+  if (!fechaA || !fechaB) return false;
+  const aISO = fechaA.split("/").reverse().join("-");
+  const bISO = fechaB.split("/").reverse().join("-");
+  return aISO < bISO;
+}
