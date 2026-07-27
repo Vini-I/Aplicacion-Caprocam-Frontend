@@ -95,13 +95,13 @@ export default function InformacionGeneralSection({
 
       <NumberInput
         label={requiredLabel("Duración estimada del ciclo")}
-        value={formData.diasMaduracion}
-        onChangeText={(value) => onChange("diasMaduracion", value)}
+        value={formData.duracionCiclo}
+        onChangeText={(value) => onChange("duracionCiclo", value)}
         min={1}
         max={120}
         step={1}
         labelStyle={styles.requiredLabel}
-        style={hasError("diasMaduracion") ? styles.inputError : null}
+        style={hasError("duracionCiclo") ? styles.inputError : null}
         editable={!isViewMode}
       />
     </Card>

@@ -89,5 +89,6 @@ export class SiembraDTO {
     this.cantidad_sembrada = Number(formData.cantidadSembrada || 0);
     this.pl_siembra = numeroDesdePL(formData.plSiembra);
     this.estado = formData.estado === "Finalizada" ? "FINALIZADA" : "ACTIVA";
+    this.duracion_ciclo = formData.duracionCiclo ? Number(formData.duracionCiclo) : null;
   }
 }
