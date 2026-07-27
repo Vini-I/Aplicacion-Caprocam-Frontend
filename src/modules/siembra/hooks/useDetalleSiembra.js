@@ -40,7 +40,11 @@ import {
   calcularCantidadSembrada,
   calcularProgresoCiclo,
 } from "./siembraCalculos";
-import { obtenerFechaHoy, formatearFechaDesdeISO } from "./dateUtils";
+import {
+  obtenerFechaHoy,
+  formatearFechaDesdeISO,
+  esFechaAnterior,
+} from "./dateUtils";
 
 import { fincaService } from "../../finca/services/finca.service";
 import { getEstanquesPorFinca } from "../services/estanquePorFinca.service";
@@ -51,7 +55,7 @@ import {
   updatePrecria,
   finalizarPrecria,
 } from "../services/precria.service";
-import { getLoteById } from "../services/lote.service";
+import { getLoteById, updateLote } from "../services/lote.service";
 import {
   getProveedoresLarva,
   createProveedorLarva,
@@ -74,6 +78,7 @@ import {
   SiembraDTO,
   PrecriaDTO,
   FinalizarPrecriaDTO,
+  LoteLarvaDTO,
 } from "../dtos/siembra.dto";
 
 function mapCatalogo(items) {
@@ -91,6 +96,7 @@ function mapLoteAFormData(lote) {
     laboratorioLarva: lote.laboratorio_id || "",
     procedenciaLarva: lote.procedencia_id || "",
     certificadoLarva: lote.certificado_larva || "",
+    estadoLote: lote.estado_lote || "",
   };
 }
 
@@ -346,6 +352,17 @@ export default function useDetalleSiembra(id) {
       .catch(() => setEstanques([]));
   }, [formData?.finca]);
 
+  useEffect(() => {
+    if (!formData || formData.areaHectareas || !formData.estanque) return;
+    const estanqueActual = estanques.find((e) => e.value === formData.estanque);
+    if (estanqueActual) {
+      setFormData((prev) => ({
+        ...prev,
+        areaHectareas: estanqueActual.areaHectareas,
+      }));
+    }
+  }, [estanques, formData]);
+
   const tecnicasCultivo = useMemo(
     () => [
       { label: "Extensiva", value: "extensiva" },
@@ -565,29 +582,48 @@ export default function useDetalleSiembra(id) {
         return;
       }
     }
-
+    if (
+      formData.tipoRegistro === "siembra" &&
+      formData.pasoPorPrecria === "si" &&
+      Number(formData.cantidadSembrada) >
+        Number(formData.cantidadSobrevivientePrecria)
+    ) {
+      setErrors({
+        cantidadSembrada: "No puede superar los sobrevivientes de la Pre-Cría.",
+      });
+      setMensaje(
+        "La cantidad sembrada no puede ser mayor a la cantidad de sobrevivientes de la Pre-Cría.",
+      );
+      setMensajeVariant("danger");
+      return;
+    }
     setErrors({});
     setGuardando(true);
     try {
       let actualizado;
+      const loteActualizado = await updateLote(
+        formData.loteId,
+        new LoteLarvaDTO(formData),
+      );
+
       if (formData.tipoRegistro === "precria") {
         actualizado = await updatePrecria(
           id,
           new PrecriaDTO(formData, formData.loteId),
         );
-        actualizado = mapPrecriaAFormData(actualizado, null);
       } else {
         actualizado = await updateSiembra(
           id,
           new SiembraDTO(formData, formData.loteId),
         );
-        actualizado = mapSiembraAFormData(actualizado, null);
       }
+      const mapeado =
+        formData.tipoRegistro === "precria"
+          ? mapPrecriaAFormData(actualizado, loteActualizado)
+          : mapSiembraAFormData(actualizado, loteActualizado);
 
-      // El lote no cambia al actualizar siembra/pre-cría, así que se
-      // conservan sus datos (proveedor/laboratorio/etc.) del formData actual.
-      const conLote = {
-        ...actualizado,
+      const conHerencia = {
+        ...mapeado,
         ...(formData.pasoPorPrecria === "si"
           ? {
               duracionPrecria: formData.duracionPrecria,
@@ -596,17 +632,10 @@ export default function useDetalleSiembra(id) {
                 formData.cantidadSobrevivientePrecria,
             }
           : {}),
-        ...mapLoteAFormData({
-          codigo_lote: formData.codigoLoteLarva,
-          proveedor_id: formData.proveedorLarva,
-          laboratorio: formData.laboratorioLarva,
-          procedencia: formData.procedenciaLarva,
-          certificado_larva: formData.certificadoLarva,
-        }),
       };
 
-      setSiembra(conLote);
-      setFormData(conLote);
+      setSiembra(conHerencia);
+      setFormData(conHerencia);
       setIsEditing(false);
       setSubmitted(false);
       setMensaje("Registro actualizado correctamente.");
@@ -652,7 +681,13 @@ export default function useDetalleSiembra(id) {
       setMensajeVariant("danger");
       return null;
     }
-
+    if (esFechaAnterior(formData.fechaFin, formData.fechaInicio)) {
+      setErrors({ fechaFin: "No puede ser anterior a la fecha de inicio." });
+      setIsEditing(true);
+      setMensaje("La fecha de fin no puede ser menor a la fecha de inicio.");
+      setMensajeVariant("danger");
+      return null;
+    }
     setErrors({});
     setGuardando(true);
     try {
@@ -660,25 +695,21 @@ export default function useDetalleSiembra(id) {
         id,
         new FinalizarPrecriaDTO(formData),
       );
-      const mapeado = mapPrecriaAFormData(registro, null);
-      const conLote = {
-        ...mapeado,
-        ...mapLoteAFormData({
-          codigo_lote: formData.codigoLoteLarva,
-          proveedor_id: formData.proveedorLarva,
-          laboratorio: formData.laboratorioLarva,
-          procedencia: formData.procedenciaLarva,
-          certificado_larva: formData.certificadoLarva,
-        }),
-      };
 
-      setSiembra(conLote);
-      setFormData(conLote);
+      const loteActualizado = await updateLote(
+        formData.loteId,
+        new LoteLarvaDTO(formData),
+      );
+
+      const mapeado = mapPrecriaAFormData(registro, loteActualizado);
+
+      setSiembra(mapeado);
+      setFormData(mapeado);
       setIsEditing(false);
       setSubmitted(false);
       setMensaje("Pre-Cría finalizada correctamente.");
       setMensajeVariant("success");
-      return conLote;
+      return mapeado;
     } catch (err) {
       const mensajeBackend = err.response?.data?.message;
       setMensaje(mensajeBackend || "No fue posible finalizar la Pre-Cría.");

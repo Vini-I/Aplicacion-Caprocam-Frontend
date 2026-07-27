@@ -48,6 +48,7 @@ export class LoteLarvaDTO {
     this.pl_inicial = Number(formData.plInicial || formData.plSiembra || 0);
     this.cantidad_inicial = Number(formData.cantidadInicial || formData.cantidadSembrada || 0);
     this.fecha_ingreso = aFechaISO(formData.fechaInicio || formData.fechaSiembra || "");
+    this.estado_lote = formData.estadoLote || undefined;
   }
 }
 

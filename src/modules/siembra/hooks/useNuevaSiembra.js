@@ -479,7 +479,18 @@ export default function useNuevaSiembra() {
       setMensajeVariant("danger");
       return;
     }
-
+    if (
+      formData.tipoRegistro === "siembra" &&
+      formData.pasoPorPrecria === "si" &&
+      Number(formData.cantidadSembrada) >
+        Number(formData.cantidadSobrevivientePrecria)
+    ) {
+      setMensaje(
+        "La cantidad sembrada no puede ser mayor a la cantidad de sobrevivientes de la Pre-Cría.",
+      );
+      setMensajeVariant("danger");
+      return;
+    }
     setGuardando(true);
     try {
       let loteId;
