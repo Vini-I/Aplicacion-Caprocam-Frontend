@@ -117,8 +117,8 @@ export function useVenta() {
 
   const [fincaSeleccionada, setFincaSeleccionada] = useState("");
   const [estanqueSeleccionado, setEstanqueSeleccionado] = useState("");
-  const [pesoPromedio, setPesoPromedio] = useState("0.1");
-  const [tamanoPromedio, setTamanoPromedio] = useState("0.1");
+  const [pesoPromedio, setPesoPromedio] = useState("0.0");
+  const [tamanoPromedio, setTamanoPromedio] = useState("0.0");
   const [kilosVendidos, setKilosVendidos] = useState("0");
   const [precioKilo, setPrecioKilo] = useState("0");
   const [fechaVenta, setFechaVenta] = useState(obtenerFechaActual());
