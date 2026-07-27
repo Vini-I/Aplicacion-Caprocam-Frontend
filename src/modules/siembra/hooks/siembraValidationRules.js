@@ -24,7 +24,7 @@ export const camposSiembraObligatorios = [
   "finca",
   "estanque",
   "tecnicaCultivo",
-  "diasMaduracion",
+  "duracionCiclo",
   "proveedorLarva",
   "laboratorioLarva",
   "procedenciaLarva",

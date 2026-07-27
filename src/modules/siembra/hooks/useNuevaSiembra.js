@@ -93,7 +93,7 @@ const initialFormData = {
   densidadPoblacional: "8",
   cantidadSembrada: "",
   plSiembra: "",
-  diasMaduracion: "90",
+  duracionCiclo: "90",
   areaHectareas: "",
 
   fechaInicio: "",

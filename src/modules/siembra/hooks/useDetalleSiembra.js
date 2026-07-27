@@ -122,6 +122,7 @@ function mapSiembraAFormData(siembra, lote, precriaOrigen) {
     plSiembra: siembra.pl_siembra != null ? `PL${siembra.pl_siembra}` : "",
     // Heredado de la Pre-Cría de origen - antes nunca se llenaba.
     duracionPrecria: precriaOrigen?.duracion_dias ?? "",
+    duracionCiclo: siembra.duracion_ciclo != null ? String(siembra.duracion_ciclo) : "",
     fechaSalidaPrecria: precriaOrigen
       ? formatearFechaDesdeISO(precriaOrigen.fecha_fin)
       : "",

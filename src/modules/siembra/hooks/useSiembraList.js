@@ -108,7 +108,7 @@ export default function useSiembraList() {
       fechaSiembra: formatearFechaDesdeISO(s.fecha_siembra),
       cantidadSembrada: s.cantidad_sembrada,
       plSiembra: s.pl_siembra != null ? `PL${s.pl_siembra}` : "",
-      diasMaduracion: s.duracion_dias ?? 90, // no hay columna real en "siembras"; se usa el default del formulario
+      duracionCiclo: s.duracion_ciclo ?? 90, // columna real en "siembras" una vez que el backend la agregue
     };
     const { diaActual, totalDias } = calcularProgresoCiclo(base);
     return { ...base, diasCultivo: diaActual, duracionDias: totalDias };

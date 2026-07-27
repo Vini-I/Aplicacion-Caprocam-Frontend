@@ -126,7 +126,7 @@ export default function SiembraCard({ registro, fincaLabel, estanqueLabel, onVer
                 <Text style={styles.infoLabel}>Día de cultivo:</Text>
               </View>
               <Text style={styles.infoValue}>
-                {registro.diasCultivo} de {registro.diasMaduracion}
+                {registro.diasCultivo} de {registro.duracionCiclo}
               </Text>
             </View>
 
