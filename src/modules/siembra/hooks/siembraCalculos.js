@@ -45,7 +45,7 @@ export function calcularProgresoCiclo(registro) {
     Number(
       registro.tipoRegistro === "precria"
         ? registro.duracionDias
-        : registro.diasMaduracion,
+        : registro.duracionCiclo,
     ) || 0;
 
   const diaActual = Number(registro.diasCultivo) || 0;
