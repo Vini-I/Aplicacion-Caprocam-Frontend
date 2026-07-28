@@ -17,28 +17,66 @@
  */
 import { useLocalSearchParams } from "expo-router";
 import { useFinca } from "../context/FincaContext.js";
-import { estanques } from "../screens/EstanqueData";
+import { useEffect, useState } from "react";
+
+import { estanqueService } from "../../estanques/services/estanque.service.js";
+import { useEstanque } from "../../estanques/context/EstanqueContext.js";
+
 import { usePdf } from "../hooks/usePdf";
 
 export default function useFincaDetalle() {
   const { fincas, loading: loadingFincas } = useFinca();
+
+  const {
+    estanques,
+    alert,
+    eliminarEstanque,
+    loading: loadingEstanques,
+  } = useEstanque();
+
   const { id } = useLocalSearchParams();
 
   const finca = fincas.find((f) => f.id === Number(id));
 
-  const estanquesFinca = finca
-    ? estanques.filter((e) => e.finca === finca.nombreFinca)
-    : [];
+  const estanquesFinca = estanques.filter((e) => e.idFinca === finca?.id);
+
+  const [modalVisible, setModalVisible] = useState(false);
+  const [estanqueSeleccionado, setEstanqueSeleccionado] = useState(null);
 
   const { crearPDFFinca, loading: loadingPdf } = usePdf();
 
-  const haldleGenerar = () => crearPDFFinca(finca, estanquesFinca);
+  const handleGenerar = () => crearPDFFinca(finca, estanquesFinca);
+
+  function abrirModalEliminar(estanque) {
+    setEstanqueSeleccionado(estanque);
+    setModalVisible(true);
+  }
+
+  function cancelarEliminar() {
+    setModalVisible(false);;
+    setEstanqueSeleccionado(null);
+  }
+
+  function confirmarEliminar() {
+    eliminarEstanque(estanqueSeleccionado.id);
+    setModalVisible(false);
+    setEstanqueSeleccionado(null);
+  }
 
   return {
     finca,
     estanquesFinca,
-    haldleGenerar,
+    alert,
+    handleGenerar,
     loadingFincas,
+    loadingEstanques,
     loadingPdf,
+
+    modalVisible,
+    estanqueSeleccionado,
+
+    abrirModalEliminar,
+    cancelarEliminar,
+    confirmarEliminar,
   };
 }

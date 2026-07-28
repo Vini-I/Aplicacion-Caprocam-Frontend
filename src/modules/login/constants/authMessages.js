@@ -1,14 +1,22 @@
 /**
  * ============================================================
- * CONSTANTES: Mensajes de Autenticación Web (Login + Registro)
+ * CONSTANTES: authMessages
  * ============================================================
- *
- * Placeholders en formato oración ("Ingresa tu usuario"), no ALL CAPS.
- *
- * Mensajes de obligatoriedad consolidados: los campos simples
- * (nombre, apellidos, correo, usuario) usan un mensaje único
- * "Campo obligatorio" en lugar de mensajes individuales por campo.
- * La contraseña mantiene sus mensajes detallados por requisito.
+ * 
+ * Responsabilidad: Centralizar los textos estáticos, etiquetas, placeholders
+ * y mensajes de error para la autenticación y registro Web.
+ * 
+ * FUNCIONALIDAD:
+ * - Define textos para WebLoginScreen y WebRegisterScreen.
+ * 
+ * DATOS:
+ * - AUTH_MESSAGES: Objeto con los textos estandarizados del flujo.
+ * 
+ * VALIDACIONES:
+ * - Contiene los mensajes de error para campos vacíos, correos inválidos y contraseñas.
+ * 
+ * DEPENDENCIAS:
+ * - Ninguna.
  */
 
 export const AUTH_MESSAGES = {
@@ -20,6 +28,7 @@ export const AUTH_MESSAGES = {
   PLACEHOLDER_PASSWORD:      'Ingresa tu contraseña',
   ERROR_REQUIRED:            'Campo obligatorio',
   ERROR_EMAIL_INVALID:       'Ingresa un correo electrónico válido',
+  ERROR_EMAIL_TAKEN:         'El correo electrónico ya está registrado',
   ERROR_PASSWORD_REQUIRED:   'La contraseña es obligatoria',
   ERROR_PASSWORD_LENGTH:     'Mínimo 8 caracteres',
   ERROR_PASSWORD_UPPERCASE:  'Debe incluir al menos una mayúscula',

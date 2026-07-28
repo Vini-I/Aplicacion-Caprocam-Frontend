@@ -2,37 +2,33 @@
  * ============================================================
  * ESTILOS: equiposListStyles
  * ============================================================
+ * Módulo: Mantenimiento de Equipos
  *
- * Estilos para la pantalla EquiposListScreen.
+ * Estilos para la pantalla EquiposListScreen y componentes asociados.
  * Utiliza la paleta de COLORS del tema central.
  *
  * Dependencias:
  * - COLORS desde theme/colors
- *
- * Ejemplo de uso:
- * import { styles } from './equiposListStyles';
- * <View style={styles.container}>...</View>
+ * ============================================================
  */
 
-// ============================================================
-// IMPORTS
-// ============================================================
 import { StyleSheet } from "react-native";
 import { COLORS } from "../../../theme/colors";
 
-// ============================================================
-// EXPORTACIÓN DE ESTILOS
-// ============================================================
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.white,
   },
 
+  mainFlex: {
+    flex: 1,
+  },
+
   searchRow: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 16,
+    paddingHorizontal: 0,
     paddingVertical: 12,
     backgroundColor: COLORS.white,
     marginTop: 8,
@@ -47,35 +43,42 @@ export const styles = StyleSheet.create({
     marginBottom: 0,
   },
 
-  filterButton: {
-    height: 43,
-    marginTop: 0,
-  },
-
-  addButtonContainer: {
-    alignSelf: "center",
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 8,
-    backgroundColor: COLORS.primary,
-    borderWidth: 0,
-  },
-
-  addButtonContent: {
+  btnAction: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
     gap: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+    borderWidth: 1,
+    backgroundColor: "transparent",
+    height: 42,
+    marginTop: 0,
+    borderColor: COLORS.primary,
   },
 
-  addButtonText: {
-    color: COLORS.white,
+  btnActionText: {
+    color: COLORS.primary,
     fontWeight: "600",
-    fontSize: 14,
+    fontSize: 13,
+  },
+
+  filterButtonStyle: {
+    height: 42,
+    borderColor: COLORS.textTertiary,
+    marginTop: 0,
+    alignSelf: "center",
+  },
+
+  scrollView: {
+    flex: 1,
   },
 
   list: {
     padding: 16,
-    paddingBottom: 80,
+    paddingBottom: 110,
+    left: 0,
   },
 
   error: {
@@ -84,15 +87,170 @@ export const styles = StyleSheet.create({
     marginTop: 20,
   },
 
-  // Modal de confirmación
-  modalConfirmContainer: {
+  floatingButtonContainer: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 15,
+    backgroundColor: COLORS.white,
+  },
+
+  floatingButton: {
+    width: "100%",
+    maxWidth: 900,
+    alignSelf: "center",
+    backgroundColor: "transparent",
+    borderColor: COLORS.primary,
+    borderWidth: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 6,
+  },
+
+  floatingButtonText: {
+    color: COLORS.primary,
+    fontWeight: "600",
+    fontSize: 13,
+  },
+
+  // ----- Estilos de EquipoCard -----
+  card: {
+    marginBottom: 12,
     width: "100%",
     maxWidth: 900,
     alignSelf: "center",
   },
 
-  modalConfirmCancelButton: {
-    backgroundColor: COLORS.textTertiary,
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+
+  iconContainer: {
+    width: 45,
+    height: 45,
+    borderRadius: 22,
+    backgroundColor: COLORS.secondary,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+
+  info: {
+    flex: 1,
+  },
+
+  nameRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+
+  nombre: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: COLORS.textSecondary,
+    flex: 1,
+    marginRight: 8,
+  },
+
+  estadoBadge: {
+    alignSelf: "flex-start",
+  },
+
+  details: {
+    marginTop: 2,
+  },
+
+  detailText: {
+    fontSize: 13,
+    color: COLORS.textTertiary,
+  },
+
+  infoRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginVertical: 8,
+  },
+
+  infoItem: {
+    flex: 1,
+  },
+
+  infoLabelContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 2,
+  },
+
+  infoIcon: {
+    marginRight: 4,
+  },
+
+  infoLabel: {
+    fontSize: 12,
+    color: COLORS.textTertiary,
+  },
+
+  infoValue: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: COLORS.textSecondary,
+  },
+
+  infoValueCritico: {
+    color: COLORS.error,
+  },
+
+  actions: {
+    marginTop: 8,
+  },
+
+  toggleBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingVertical: 10,
+    borderRadius: 8,
+    marginTop: 0,
+    borderWidth: 0,
+  },
+
+  toggleBtnOn: {
+    backgroundColor: COLORS.error,
+  },
+
+  toggleBtnOff: {
+    backgroundColor: COLORS.success,
+  },
+
+  toggleBtnText: {
+    color: COLORS.white,
+    fontWeight: "600",
+    fontSize: 14,
+  },
+touchableContainer: {
+  width: '100%',
+  maxWidth: 900,
+  alignSelf: 'center',
+},
+
+  // ----- Modal de confirmación -----
+  modalConfirmContainer: {
+    width: "100%",
+    maxWidth: 900,
+    alignSelf: "center",
+    maxHeight: "80%",
+    padding: 16,
   },
 
   modalTitle: {
@@ -144,253 +302,175 @@ export const styles = StyleSheet.create({
   },
 
   modalCancelBtn: {
-    marginTop: 0,
     flex: 1,
+    marginTop: 0,
+    borderColor: COLORS.primary,
+    borderWidth: 1,
+    backgroundColor: "transparent",
+  },
+
+  modalCancelBtnText: {
+    color: COLORS.primary,
+    fontWeight: "600",
   },
 
   modalDeleteBtn: {
-    marginTop: 0,
     flex: 1,
+    marginTop: 0,
+    borderColor: COLORS.error,
+    borderWidth: 1,
+    backgroundColor: "transparent",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
   },
 
+  modalDeleteBtnText: {
+    color: COLORS.error,
+    fontWeight: "600",
+  },
+
+  alertWrapper: {
+    marginBottom: 12,
+    paddingHorizontal: 16,
+    width: '100%',
+    maxWidth: 900,
+    alignSelf: 'center',
+  },
+
+  // ----- Modal de detalle -----
   modalDetalleContainer: {
     width: "100%",
     maxWidth: 900,
     alignSelf: "center",
+    maxHeight: "92%",
+    padding: 0,
+    backgroundColor: COLORS.surface,
+    borderRadius: 16,
+    overflow: "hidden",
   },
 
   modalDetalleOverlay: {
     backgroundColor: "rgba(0,0,0,0.6)",
+    justifyContent: "center",
+    padding: 16,
   },
 
-  // Tab bar para filtros rápidos
-  tabBar: {
-    flexDirection: "row",
-    backgroundColor: COLORS.white,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.secondary,
-  },
-
-  tab: {
-    flex: 1,
-    paddingVertical: 12,
-    alignItems: "center",
-    borderBottomWidth: 2,
-    borderBottomColor: "transparent",
-  },
-
-  activeTab: {
-    borderBottomColor: COLORS.primary,
-  },
-
-  tabText: {
-    fontWeight: "600",
-    color: COLORS.textSecondary,
-  },
-
-  // Alertas de mantenimiento
-  alertasContainer: {
-    paddingHorizontal: 16,
-    paddingTop: 8,
+  // ----- Estadísticas -----
+  statsCard: {
+    marginBottom: 16,
     width: "100%",
     maxWidth: 900,
     alignSelf: "center",
   },
 
-  alertaCard: {
-    backgroundColor: COLORS.warningLight,
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 8,
-    borderWidth: 1,
-    borderColor: COLORS.warning,
+  statsGrid: {
     flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
+    flexWrap: "wrap",
+    justifyContent: "space-between",
   },
 
-  alertaCardCritica: {
-    backgroundColor: COLORS.errorLight,
-    borderColor: COLORS.error,
+  statsExtra: {
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.secondary,
   },
 
-  alertaIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: COLORS.warning,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  alertaIconCritica: {
-    backgroundColor: COLORS.error,
-  },
-
-  alertaContent: {
-    flex: 1,
-  },
-
-  alertaTitle: {
-    fontWeight: "600",
+  statsExtraText: {
     fontSize: 13,
+    color: COLORS.textTertiary,
+    marginBottom: 4,
+  },
+
+  statItem: {
+    alignItems: "center",
+    flex: 1,
+    minWidth: 70,
+    paddingVertical: 4,
+  },
+
+  statValue: {
+    fontSize: 20,
+    fontWeight: "700",
     color: COLORS.textSecondary,
   },
 
-  alertaDescription: {
-    fontSize: 12,
-    color: COLORS.textTertiary,
-  },
-
-  alertaHoras: {
-    fontWeight: "700",
-    color: COLORS.warning,
-    fontSize: 13,
-  },
-
-  alertaHorasCritica: {
+  statValueCritico: {
     color: COLORS.error,
   },
-  // Estilos para EquipoStats
-statsCard: {
-  marginBottom: 16,
-  width: "100%",
-  maxWidth: 900,
-  alignSelf: "center",
-},
 
-statsGrid: {
-  flexDirection: "row",
-  flexWrap: "wrap",
-  justifyContent: "space-between",
-},
+  statValueEncendido: {
+    color: COLORS.success,
+  },
 
-statsExtra: {
-  marginTop: 12,
-  paddingTop: 12,
-  borderTopWidth: 1,
-  borderTopColor: COLORS.secondary,
-},
+  statLabel: {
+    fontSize: 11,
+    color: COLORS.textTertiary,
+    marginTop: 2,
+    textAlign: "center",
+  },
 
-statsExtraText: {
-  fontSize: 13,
-  color: COLORS.textTertiary,
-  marginBottom: 4,
-},
+  // ----- Otros -----
+  modalContainer: {
+    width: "100%",
+    maxWidth: 900,
+    alignSelf: "center",
+    maxHeight: "92%",
+    padding: 16,
+  },
 
-statItem: {
-  alignItems: "center",
-  flex: 1,
-  minWidth: 70,
-  paddingVertical: 4,
-},
+  modalContentContainer: {
+    flex: 1,
+    flexDirection: "column",
+  },
 
-statValue: {
-  fontSize: 20,
-  fontWeight: "700",
-  color: COLORS.textSecondary,
-},
+  modalTitleHeader: {
+    padding: 16,
+    paddingBottom: 0,
+  },
 
-statValueCritico: {
-  color: COLORS.error,
-},
+  modalScrollForm: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+  },
 
-statValueEncendido: {
-  color: COLORS.success,
-},
+  modalScrollFormContent: {
+    paddingBottom: 16,
+  },
 
-statLabel: {
-  fontSize: 11,
-  color: COLORS.textTertiary,
-  marginTop: 2,
-  textAlign: "center",
-},
-// Agregar o actualizar estos estilos:
+  modalFooterButtons: {
+    flexDirection: "row",
+    padding: 16,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.secondary,
+    backgroundColor: COLORS.white,
+    gap: 12,
+  },
 
-modalContainer: {
-  width: "100%",
-  maxWidth: 900,
-  alignSelf: "center",
-  maxHeight: "92%",
-  padding: 16,
-},
-
-modalConfirmContainer: {
-  width: "100%",
-  maxWidth: 900,
-  alignSelf: "center",
-  maxHeight: "80%",
-  padding: 16,
-},
-
-modalDetalleContainer: {
-  width: "100%",
-  maxWidth: 900,
-  alignSelf: "center",
-  maxHeight: "92%",
-  padding: 0,
-  backgroundColor: COLORS.surface,
-  borderRadius: 16,
-  overflow: "hidden",
-},
-
-modalDetalleOverlay: {
-  backgroundColor: "rgba(0,0,0,0.6)",
-  justifyContent: "center",
-  padding: 16,
-},
-
-// Asegurar que el contenido del modal de detalle sea scrolleable
-detalleScrollContent: {
-  flexGrow: 1,
-  padding: 16,
-  paddingBottom: 40,
-},
-
-  toggleBtn: {
+  modalFooterButton: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 8,
-    paddingVertical: 10,
-    borderRadius: 8,
-    marginTop: 0,
-    borderWidth: 0,
+    gap: 6,
+    borderColor: COLORS.primary,
+    backgroundColor: "transparent",
   },
 
-  toggleBtnOn: {
-    backgroundColor: COLORS.error, // Rojo cuando está encendido (para apagar)
-  },
-
-  toggleBtnOff: {
-    backgroundColor: COLORS.success, // Verde cuando está apagado (para encender)
-  },
-
-  toggleBtnText: {
-    color: COLORS.white,
+  modalFooterButtonText: {
+    color: COLORS.primary,
     fontWeight: "600",
-    fontSize: 14,
-  },  navbar: {
-    backgroundColor: COLORS.primary,
-    borderBottomWidth: 0,
   },
 
-  navbarTitle: {
-    color: COLORS.white,
-    fontSize: 18,
-    fontWeight: "700",
-    textAlign: "left",
+  modalErrorAlert: {
+    marginBottom: 12,
   },
 
-  backButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 12,
-    backgroundColor: "rgba(255,255,255,0.2)",
-    borderWidth: 0,
-    paddingHorizontal: 0,
-    paddingVertical: 0,
-    marginTop: 0,
+  errorInput: {
+    borderColor: COLORS.error,
+    borderWidth: 1.5,
   },
 });

@@ -12,22 +12,6 @@ import { COLORS } from '../../../theme/colors';
 import { TYPOGRAPHY } from '../../../theme/typography';
 
 const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: COLORS.surface,
-  },
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.surface,
-  },
-  content: {
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 24,
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
-  },
   heroCard: {
     alignItems: 'center',
     marginBottom: 16,
@@ -79,6 +63,12 @@ const styles = StyleSheet.create({
   },
   workersList: {
     marginTop: 6,
+  },
+  workersScroll: {
+    height: 392, // ~5 items de ~72px cada uno
+  },
+  workersScrollCompressed: {
+    height: 336, // reducido ~56px cuando el alert de sync es visible
   },
   workerButton: {
     marginTop: 0,
@@ -132,6 +122,14 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     fontFamily: TYPOGRAPHY.fontFamily.medium,
   },
+  cancelButtonOutline: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+  },
+  cancelButtonTextOutline: {
+    color: COLORS.primary,
+  },
   pinInputContainer: {
     width: '100%',
   },
@@ -148,10 +146,15 @@ const styles = StyleSheet.create({
     color: COLORS.textPrimary,
     backgroundColor: COLORS.white,
   },
-  pinErrorText: {
+  pinErrorAlert: {
     marginTop: 10,
     marginBottom: 8,
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
+  },
+  syncAlert: {
+    width: '100%',
+    maxWidth: 450,
+    alignSelf: 'center',
+    marginBottom: 12,
   },
 });
 

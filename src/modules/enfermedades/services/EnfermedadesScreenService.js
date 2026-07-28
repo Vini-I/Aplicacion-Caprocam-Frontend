@@ -162,6 +162,47 @@ export function validarFormularioEnfermedad(datos) {
   return resultado;
 }
 
+export function obtenerErroresFormularioEnfermedad(datos, submitted) {
+  const errores = {
+    finca: "",
+    estanque: "",
+    enfermedades: "",
+    severidad: "",
+    mortalidad: "",
+    reporte: "",
+  };
+
+  if (submitted !== true) {
+    return errores;
+  }
+
+  if (datos.finca === "") {
+    errores.finca = "Este campo es obligatorio.";
+  }
+
+  if (datos.estanque === "") {
+    errores.estanque = "Este campo es obligatorio.";
+  }
+
+  if (datos.enfermedadesSeleccionadas.length === 0) {
+    errores.enfermedades = "Seleccione al menos una enfermedad.";
+  }
+
+  if (datos.severidad === "") {
+    errores.severidad = "Este campo es obligatorio.";
+  }
+
+  if (datos.reporte.trim() === "") {
+    errores.reporte = "Este campo es obligatorio.";
+  }
+
+  if (Number(datos.mortalidad) < 0) {
+    errores.mortalidad = "La mortalidad no puede ser negativa.";
+  }
+
+  return errores;
+}
+
 export function construirCasoEnfermedad(datos) {
   return {
     finca: datos.finca,
