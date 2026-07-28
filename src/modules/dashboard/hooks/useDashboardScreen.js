@@ -1,292 +1,206 @@
 /**
  * ============================================================
- * SCREEN: ENFERMEDADES
+ * HOOK: DASHBOARD SCREEN
  * ============================================================
  *
- * Modulo para registrar enfermedades por finca y estanque.
- * La logica del formulario vive en hooks/useEnfermedadesScreen.
+ * Centraliza carga de datos, seleccion de cards, alertas y
+ * navegacion del DashboardScreen.
  */
 
-import React from "react";
-import { ScrollView, View } from "react-native";
+import { useEffect, useState } from "react";
+import { useWindowDimensions } from "react-native";
+import { useRouter } from "expo-router";
 
-import Alert from "../../../shared/components/Alert";
-import Button from "../../../shared/components/Button";
-import Card from "../../../shared/components/Card";
-import DateInput from "../../../shared/components/DateInput";
-import Icon from "../../../shared/components/Icons";
-import Input from "../../../shared/components/Input";
-import NumberInput from "../../../shared/components/NumberInput";
-import Select from "../../../shared/components/Select";
-import CustomText from "../../../shared/components/Text";
-import Title from "../../../shared/components/Title";
-import NavbarRegistro from "../../../shared/components/NavbarRegistro";
-
-import useEnfermedadesScreen from "../../enfermedades/hooks/useEnfermedadesScreen";
+import { fincas as fincasModulo } from "../../finca/screens/FincaData";
+import { estanques as estanquesModulo } from "../../mantCrecimiento/services/EstanqueData";
+import { obtenerSiembras } from "../../siembra/services/SiembraService";
+import useAlimentacion from "../../alimentacion/hooks/useAlimentacion";
+import { getProductosInventario } from "../../inventarios/services/InventarioService";
+import { EQUIPOS_MOCK } from "../../mantEquipo/services/mantEquipoService";
+import enfermedadesService from "../../enfermedades/services/EnfermedadesService";
+import parasitologiaService from "../../parasitologia/services/ParasitologiaService";
 import {
-  ENFERMEDADES_CATALOGO,
-  SEVERIDADES_ENFERMEDAD,
-} from "../../enfermedades/services/EnfermedadesService";
+  construirAlertasOperativas,
+  descartarAlerta,
+  filtrarAlertasDescartadas,
+  obtenerAlertasDescartadas,
+} from "../../alertas/services/AlertasServices.js";
+import {
+  construirFincasDashboard,
+  obtenerAlimentacionSemanal,
+  obtenerMortalidadTotal,
+  obtenerResumenEnfermedadesVacio,
+  obtenerResumenParasitologiaVacio,
+  obtenerTotalCasosSanitarios,
+  obtenerUltimosRegistros,
+} from "../services/DashboardService";
 
-import { styles } from "../../enfermedades/styles/EnfermedadesStyle";
+export default function useDashboardScreen() {
+  const router = useRouter();
+  const dimensiones = useWindowDimensions();
 
-import { COLORS } from "../../../theme/colors";
-import { ICONS } from "../../../theme/icons";
-import { TYPOGRAPHY } from "../../../theme/typography";
-import { STYLE } from "../../../theme/style";
+  const [selectedCard, setSelectedCard] = useState(null);
+  const [alertasDescartadas, setAlertasDescartadas] = useState([]);
+  const [alertasAbiertas, setAlertasAbiertas] = useState({
+    critica: true,
+    advertencia: true,
+    info: false,
+  });
+  const [fincasData, setFincasData] = useState([]);
+  const [estanquesData, setEstanquesData] = useState([]);
+  const [siembrasData, setSiembrasData] = useState([]);
+  const [productosInventario, setProductosInventario] = useState([]);
+  const [equiposData, setEquiposData] = useState([]);
+  const [registrosEnfermedades, setRegistrosEnfermedades] = useState([]);
+  const [registrosParasitologia, setRegistrosParasitologia] = useState([]);
+  const [resumenEnfermedades, setResumenEnfermedades] = useState(
+    obtenerResumenEnfermedadesVacio(),
+  );
+  const [resumenParasitologia, setResumenParasitologia] = useState(
+    obtenerResumenParasitologiaVacio(),
+  );
 
-export default function EnfermedadesScreen(props) {
-  let onBack = null;
-  let navigation = null;
+  const { alimentaciones, recargar } = useAlimentacion();
 
-  if (props !== undefined && props !== null) {
-    onBack = props.onBack;
-    navigation = props.navigation;
+  let isTablet = false;
+
+  if (dimensiones.width >= 720) {
+    isTablet = true;
   }
 
-  const pantalla = useEnfermedadesScreen(onBack, navigation);
+  const fincasDashboard = construirFincasDashboard(fincasData, estanquesData);
+  const alimentacionSemanal = obtenerAlimentacionSemanal(alimentaciones);
 
-  const opcionesGridStyle = [styles.optionsGrid];
-
-  if (pantalla.erroresFormulario.enfermedades !== "") {
-    opcionesGridStyle.push(styles.optionsGridError);
-  }
-
-  return (
-    <>
-      <NavbarRegistro
-        Titulo="Enfermedades"
-        Subtitulo="Registro sanitario"
-        Icono="shieldAlert"
-      />
-
-      <ScrollView style={STYLE.container} showsVerticalScrollIndicator={false}>
-        <View style={pantalla.contentStyle}>
-          {pantalla.error !== "" && (
-            <Alert
-              variant="danger"
-              message={pantalla.error}
-              style={styles.alert}
-              textStyle={styles.alertText}
-            />
-          )}
-
-          <Card>
-            <SectionTitle title="Ubicacion del caso" icon={ICONS.document} />
-
-            <View style={pantalla.gridStyle}>
-              <View style={pantalla.itemStyle}>
-                <Select
-                  label="Finca"
-                  required={true}
-                  submitted={pantalla.submitted}
-                  error={pantalla.erroresFormulario.finca}
-                  options={pantalla.opcionesFincas}
-                  value={pantalla.finca}
-                  onChange={pantalla.cambiarFinca}
-                  placeholder="Seleccione la finca"
-                  labelStyle={styles.label}
-                />
-              </View>
-
-              <View style={pantalla.itemStyle}>
-                <Select
-                  label="Estanque"
-                  required={true}
-                  submitted={pantalla.submitted}
-                  error={pantalla.erroresFormulario.estanque}
-                  options={pantalla.opcionesEstanques}
-                  value={pantalla.estanque}
-                  onChange={pantalla.setEstanque}
-                  placeholder="Seleccione el estanque"
-                  labelStyle={styles.label}
-                />
-              </View>
-
-              <View style={pantalla.itemStyle}>
-                <DateInput
-                  label="Fecha del reporte"
-                  required={true}
-                  submitted={pantalla.submitted}
-                  value={pantalla.fechaReporte}
-                  onChangeText={pantalla.setFechaReporte}
-                  labelStyle={styles.label}
-                />
-              </View>
-
-              <View style={pantalla.itemStyle} pointerEvents="none">
-                <Input
-                  label="Persona encargada"
-                  value={pantalla.responsable}
-                  placeholder="Responsable obtenido del backend"
-                  editable={false}
-                  readOnly={true}
-                  selectTextOnFocus={false}
-                  labelStyle={styles.label}
-                  helperText="Este dato se obtiene desde backend."
-                />
-              </View>
-            </View>
-          </Card>
-
-          <Card>
-            <SectionTitle
-              title="Enfermedades que presenta"
-              icon={ICONS.report}
-            />
-
-            <View style={opcionesGridStyle}>
-              {ENFERMEDADES_CATALOGO.map(function (item) {
-                return (
-                  <OptionButton
-                    key={item.value}
-                    label={item.label}
-                    value={item.value}
-                    selectedValues={pantalla.enfermedadesSeleccionadas}
-                    onPress={pantalla.cambiarEnfermedad}
-                  />
-                );
-              })}
-            </View>
-
-            {pantalla.erroresFormulario.enfermedades !== "" && (
-              <CustomText size={12} color={COLORS.error} style={styles.errorText}>
-                {pantalla.erroresFormulario.enfermedades}
-              </CustomText>
-            )}
-          </Card>
-
-          <Card>
-            <SectionTitle title="Reporte sanitario" icon={ICONS.info} />
-
-            <View style={pantalla.gridStyle}>
-              <View style={pantalla.itemStyle}>
-                <Select
-                  label="Severidad"
-                  required={true}
-                  submitted={pantalla.submitted}
-                  error={pantalla.erroresFormulario.severidad}
-                  options={SEVERIDADES_ENFERMEDAD}
-                  value={pantalla.severidad}
-                  onChange={pantalla.setSeveridad}
-                  placeholder="Seleccione la severidad"
-                  labelStyle={styles.label}
-                />
-              </View>
-
-              <View style={pantalla.itemStyle}>
-                <NumberInput
-                  label="Mortalidad registrada (U)"
-                  value={pantalla.mortalidad}
-                  onChangeText={pantalla.setMortalidad}
-                  min={0}
-                  max={999999}
-                  step={1}
-                  error={pantalla.erroresFormulario.mortalidad}
-                  labelStyle={styles.label}
-                />
-              </View>
-
-              <View style={pantalla.itemFullStyle}>
-                <Input
-                  label="Reporte"
-                  required={true}
-                  submitted={pantalla.submitted}
-                  error={pantalla.erroresFormulario.reporte}
-                  value={pantalla.reporte}
-                  onChangeText={pantalla.setReporte}
-                  placeholder="Describa sintomas, observaciones o acciones realizadas"
-                  multiline={true}
-                  labelStyle={styles.label}
-                  style={styles.textArea}
-                />
-              </View>
-            </View>
-          </Card>
-
-          {pantalla.mensaje !== "" && (
-            <Alert
-              variant={pantalla.tipoMensaje}
-              message={pantalla.mensaje}
-              style={styles.alert}
-              textStyle={styles.alertText}
-            />
-          )}
-
-          <Button
-            variant="outline"
-            onPress={pantalla.registrarEnfermedad}
-            style={styles.outlinePrimaryButton}
-            disabled={pantalla.loading}
-          >
-            <View style={styles.inlineButtonContentCentered}>
-              <Icon icon={ICONS.save} size={18} color={COLORS.primary} />
-
-              <CustomText
-                size={16}
-                color={COLORS.primary}
-                style={styles.saveText}
-              >
-                Registrar enfermedad
-              </CustomText>
-            </View>
-          </Button>
-        </View>
-      </ScrollView>
-    </>
+  const totalCasosSanitarios = obtenerTotalCasosSanitarios(
+    resumenEnfermedades,
+    resumenParasitologia,
   );
-}
 
-function SectionTitle({ title, icon }) {
-  return (
-    <View style={styles.sectionTitleRow}>
-      <Icon icon={icon} size={18} color={COLORS.primary} />
+  const totalMortalidad = obtenerMortalidadTotal(resumenEnfermedades);
 
-      <Title
-        level={5}
-        color={COLORS.textSecondary}
-        fuente={TYPOGRAPHY.fontFamily.bold}
-        style={styles.sectionTitle}
-      >
-        {title}
-      </Title>
-    </View>
-  );
-}
-
-function OptionButton({ label, value, selectedValues, onPress }) {
-  let seleccionado = false;
-
-  selectedValues.forEach(function (item) {
-    if (item === value) {
-      seleccionado = true;
-    }
+  const alertasBase = construirAlertasOperativas({
+    productosInventario: productosInventario,
+    siembras: siembrasData,
+    alimentaciones: alimentaciones,
+    estanques: estanquesData,
+    equipos: equiposData,
+    registrosEnfermedades: registrosEnfermedades,
+    registrosParasitologia: registrosParasitologia,
   });
 
-  const buttonStyle = [styles.optionButton];
-  let textColor = COLORS.textSecondary;
-  let textFont = TYPOGRAPHY.fontFamily.medium;
+  const alertasDashboard = filtrarAlertasDescartadas(
+    alertasBase,
+    alertasDescartadas,
+  ).slice(0, 10);
 
-  if (seleccionado === true) {
-    buttonStyle.push(styles.optionButtonSelected);
-    textColor = COLORS.primary;
-    textFont = TYPOGRAPHY.fontFamily.bold;
-  }
-
-  function handlePress() {
-    onPress(value);
-  }
-
-  return (
-    <Button variant="outline" onPress={handlePress} style={buttonStyle}>
-      <CustomText
-        size={13}
-        color={textColor}
-        align="center"
-        style={{ fontFamily: textFont }}
-      >
-        {label}
-      </CustomText>
-    </Button>
+  const ultimosRegistros = obtenerUltimosRegistros(
+    alimentaciones,
+    siembrasData,
+    registrosEnfermedades,
+    registrosParasitologia,
   );
+
+  function manejarSeleccionCard(cardId) {
+    if (selectedCard === cardId) {
+      setSelectedCard(null);
+    }
+
+    if (selectedCard !== cardId) {
+      setSelectedCard(cardId);
+    }
+  }
+
+  function irAMareas() {
+    router.push("/mareas/");
+  }
+
+  function irAAlertas() {
+    router.push("/alertas");
+  }
+
+  function alternarAlertas(tipo) {
+    setAlertasAbiertas(function (actual) {
+      return {
+        ...actual,
+        [tipo]: !actual[tipo],
+      };
+    });
+  }
+
+  async function descartarAlertaDashboard(id) {
+    const ids = await descartarAlerta(id);
+    setAlertasDescartadas(ids);
+  }
+
+  useEffect(function () {
+    let activo = true;
+    let intervalo = null;
+
+    async function cargarDatos() {
+      const enfermedades = await enfermedadesService.getAll();
+      const resumenEnfermedad = await enfermedadesService.getResumenDashboard();
+
+      const parasitos = await parasitologiaService.getAll();
+      const resumenParasitos = await parasitologiaService.getResumenDashboard();
+
+      if (activo === true) {
+        setFincasData([...fincasModulo]);
+        setEstanquesData([...estanquesModulo]);
+        setSiembrasData(obtenerSiembras());
+        setProductosInventario(getProductosInventario());
+        setEquiposData([...EQUIPOS_MOCK]);
+        setRegistrosEnfermedades(enfermedades);
+        setResumenEnfermedades(resumenEnfermedad);
+        setRegistrosParasitologia(parasitos);
+        setResumenParasitologia(resumenParasitos);
+      }
+    }
+
+    async function cargarDescartadas() {
+      const ids = await obtenerAlertasDescartadas();
+
+      if (activo === true) {
+        setAlertasDescartadas(ids);
+      }
+    }
+
+    recargar();
+    cargarDatos();
+    cargarDescartadas();
+
+    intervalo = setInterval(function () {
+      recargar();
+      cargarDatos();
+    }, 5000);
+
+    return function () {
+      activo = false;
+
+      if (intervalo !== null) {
+        clearInterval(intervalo);
+      }
+    };
+  }, []);
+
+  return {
+    selectedCard,
+    alertasAbiertas,
+    fincasDashboard,
+    estanquesData,
+    registrosEnfermedades,
+    registrosParasitologia,
+    resumenEnfermedades,
+    resumenParasitologia,
+    alimentacionSemanal,
+    totalCasosSanitarios,
+    totalMortalidad,
+    alertasDashboard,
+    ultimosRegistros,
+    isTablet,
+    manejarSeleccionCard,
+    irAMareas,
+    irAAlertas,
+    alternarAlertas,
+    descartarAlertaDashboard,
+  };
 }
