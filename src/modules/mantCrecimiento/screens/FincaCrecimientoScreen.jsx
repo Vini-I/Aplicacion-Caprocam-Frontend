@@ -41,11 +41,18 @@ export default function FincaCrecimientoScreen() {
     estanquesFiltrados,
     estanqueSeleccionadoObj,
     estanque,
+
+    opcionesColaboradores,
+    colaboradorSeleccionado,
+
     setEstanqueSeleccionado,
     setPesoActual,
     setFechaRegistro,
     handleFincaChange,
     guardarDatos,
+
+    handleColaboradorChange,
+
     submitted,
     successMessage,
     errorMessage,
@@ -54,20 +61,8 @@ export default function FincaCrecimientoScreen() {
     mostrarErrorEstanque,
     mostrarErrorPeso,
     mostrarErrorFecha,
+    mostrarErrorColaborador
   } = useFincaCrecimiento();
-
-  if (!estanque) {
-    return (
-      <ScrollView
-        style={STYLE.container}
-        contentContainerStyle={styles.contentScroll}
-      >
-        <Card style={STYLE.contentWrapper}>
-          <Text>No se encontró un estanque válido.</Text>
-        </Card>
-      </ScrollView>
-    );
-  }
 
   return (
     <View style={styles.screenContainer}>
@@ -112,6 +107,16 @@ export default function FincaCrecimientoScreen() {
             selectStyle={mostrarErrorEstanque ? styles.inputError : null}
           />
 
+          <Select
+            label="Colaborador asignado *"
+            placeholder="Seleccione colaborador"
+            options={opcionesColaboradores}
+            value={colaboradorSeleccionado}
+            onChange={handleColaboradorChange}
+            selectStyle={mostrarErrorColaborador.colaborador ? errorInputStyle : null}
+          />
+
+
           <View style={styles.badgeRow}>
             <BadgeLabel
               label={`Días de cultivo: ${estanqueSeleccionadoObj?.diasCultivo ?? "-"}`}
@@ -126,7 +131,7 @@ export default function FincaCrecimientoScreen() {
           </View>
 
           <View style={styles.inputColumn}>
-              <Calendario
+            <Calendario
               label="Fecha de registro *"
               value={fechaRegistro}
               onChangeText={setFechaRegistro}
@@ -134,7 +139,7 @@ export default function FincaCrecimientoScreen() {
             />
             <View>
               <NumberInput
-              label="Peso actual (g) *"
+                label="Peso actual (g) *"
                 style={[styles.sameInput, mostrarErrorPeso && styles.inputError]}
                 value={pesoActual}
                 onChangeText={setPesoActual}

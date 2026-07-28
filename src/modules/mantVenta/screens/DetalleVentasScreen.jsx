@@ -110,10 +110,8 @@ export default function DetalleVentasScreen({
 
         <ModalEliminar
           visible={modalVisible}
-          title="esta venta"
+          title="venta"
           message={descripcionEliminar}
-          confirmText="Sí, eliminar"
-          cancelText="Cancelar"
           onConfirm={confirmarEliminar}
           onCancel={cancelarEliminar}
         />

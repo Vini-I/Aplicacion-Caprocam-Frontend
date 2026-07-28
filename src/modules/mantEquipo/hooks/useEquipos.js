@@ -4,8 +4,8 @@
  * ============================================================
  *
  * Hook que encapsula la lógica de obtención y manipulación
- * de equipos. Utiliza el servicio equiposService y mantiene
- * estado local (lista, loading, error).
+ * de equipos. Utiliza el servicio equiposService (ya conectado
+ * al backend real) y mantiene estado local (lista, loading, error).
  *
  * Parámetros:
  * - initialFilters: objeto con filtros iniciales
@@ -147,7 +147,14 @@ export function useEquipos(initialFilters = {}) {
   const toggleEquipo = async (id) => {
     setLoading(true);
     try {
-      const actualizado = await equiposService.toggleEquipoEstado(id);
+      // El backend exige el body completo en el PUT, así que
+      // se envía el equipo actual junto con el nuevo estado.
+      const equipoActual = equipos.find(e => e.id === id);
+      if (!equipoActual) {
+        throw new Error("Equipo no encontrado");
+      }
+
+      const actualizado = await equiposService.toggleEquipoEstado(id, equipoActual);
       setEquipos(prev => prev.map(e => (e.id === id ? actualizado : e)));
       await fetchProximosMantenimiento();
       await fetchEstadisticas();

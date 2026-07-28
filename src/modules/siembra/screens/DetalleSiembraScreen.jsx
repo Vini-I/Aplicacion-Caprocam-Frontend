@@ -82,7 +82,7 @@ import Alert from "../../../shared/components/Alert";
 import Icon from "../../../shared/components/Icons";
 import NavbarRegistro from "../../../shared/components/NavbarRegistro";
 import Text from "../../../shared/components/Text";
-import Title from "../../../shared/components/Title";
+
 
 // Secciones del formulario
 
@@ -149,6 +149,8 @@ export default function DetalleSiembraScreen() {
 
     guardar,
 
+    guardando,
+
     handleFinalizarPreCria,
 
     handleCrearSiembraDesdePrecria,
@@ -188,6 +190,14 @@ export default function DetalleSiembraScreen() {
     );
   }
 
+  // NUEVO: busca el nombre real en los catálogos, con fallback si no
+  // se encuentra (ej. mientras cargan, o si el id no calza con nada).
+  const fincaLabel =
+    fincas.find((f) => f.value === formData.finca)?.label || "Sin finca";
+  const estanqueLabel =
+    estanques.find((e) => e.value === formData.estanque)?.label ||
+    "Sin estanque";
+
   return (
     <>
       <NavbarRegistro
@@ -196,7 +206,7 @@ export default function DetalleSiembraScreen() {
             ? "Detalle de Pre-Cría"
             : "Detalle de Siembra"
         }
-        Subtitulo={`${formData.estanque || "Sin estanque"} – ${formData.finca || "Sin finca"}`}
+        Subtitulo={`${estanqueLabel} – ${fincaLabel}`}
         Icono="shrimp"
       />
       <ScrollView
@@ -221,7 +231,7 @@ export default function DetalleSiembraScreen() {
 
                 <Text style={styles.siembraTitle}>
                   {formData.tipoRegistro === "precria" ? "Pre-Cría" : "Siembra"}{" "}
-                  #{siembra.siembraId}
+                  #{id}
                 </Text>
               </View>
             </View>
@@ -409,12 +419,15 @@ export default function DetalleSiembraScreen() {
                   <Button
                     style={styles.button}
                     onPress={handleFinalizarPreCria}
+                    disabled={guardando}
                     textStyle={styles.textoBoton}
                     variant="outline"
                   >
                     <View style={styles.buttonContent}>
                       <Icon icon={ICONS.check} color={COLORS.primary} />
-                      <Text style={styles.textoBoton}>Finalizar Pre-Cría</Text>
+                      <Text style={styles.textoBoton}>
+                        {guardando ? "Finalizando..." : "Finalizar Precria"}
+                      </Text>
                     </View>
                   </Button>
                 )}
@@ -425,12 +438,15 @@ export default function DetalleSiembraScreen() {
               <Button
                 style={styles.button}
                 onPress={guardar}
+                disabled={guardando}
                 textStyle={styles.textoBoton}
                 variant="outline"
               >
                 <View style={styles.buttonContent}>
                   <Icon icon={ICONS.save} color={COLORS.primary} />
-                  <Text style={styles.textoBoton}>Guardar</Text>
+                  <Text style={styles.textoBoton}>
+                    {guardando ? "Guardando..." : "Guardar"}
+                  </Text>
                 </View>
               </Button>
 

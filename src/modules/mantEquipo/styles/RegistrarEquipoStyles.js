@@ -2,15 +2,16 @@
  * ============================================================
  * ESTILOS: RegistrarEquipo
  * ============================================================
+ * Módulo: Mantenimiento de Equipos
  *
  * Contiene la maquetación y la jerarquía visual del formulario
  * de registro de equipos.
- * Ruta: src/modules/mantEquipo/styles/RegistrarEquipoStyles.js
+ * ============================================================
  */
 
 import { StyleSheet } from "react-native";
-
-import { COLORS } from "../../../theme/colors.js";
+import { COLORS } from "../../../theme/colors";
+import { TYPOGRAPHY } from "../../../theme/typography";
 
 export const styles = StyleSheet.create({
   container: {
@@ -95,19 +96,71 @@ export const styles = StyleSheet.create({
     color: COLORS.error,
     fontWeight: "600",
   },
-  saveButton: {
-    marginTop: 4,
-    minHeight: 52,
+
+  // Pantalla de carga
+  loadingContainer: {
+    justifyContent: "center",
+    alignItems: "center",
   },
-  buttonContent: {
+
+  // Padding del ScrollView según tamaño de pantalla
+  contentPaddingSmall: {
+    paddingHorizontal: 16,
+  },
+  contentPaddingLarge: {
+    paddingHorizontal: 40,
+  },
+
+  // Label de campos del formulario
+  labelMedium: {
+    fontFamily: TYPOGRAPHY.fontFamily.medium,
+  },
+
+  // Wrapper del Alert de resultado
+  alertWrapper: {
+    marginBottom: 12,
+  },
+
+  // Botones
+  buttonRow: {
+    flexDirection: "row",
+    gap: 12,
+    marginTop: 4,
+  },
+  botonesContainer: {
+    marginTop: 4,
+  },
+  saveButtonOutline: {
+    flex: 1,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 10,
+    gap: 8,
+    borderColor: COLORS.primary,
+    backgroundColor: "transparent",
+    paddingVertical: 12,
+    borderRadius: 8,
+    borderWidth: 1,
   },
-  buttonText: {
-    color: COLORS.white,
-    fontSize: 16,
+  saveButtonText: {
+    color: COLORS.primary,
     fontWeight: "600",
+  },
+  saveButton: {
+    flex: 1,
+    minHeight: 52,
+    backgroundColor: COLORS.primary,
+    borderWidth: 0,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  cancelButton: {
+    flex: 1,
+    minHeight: 52,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    backgroundColor: "transparent",
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

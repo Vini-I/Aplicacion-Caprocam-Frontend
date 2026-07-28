@@ -20,6 +20,7 @@ import { TYPOGRAPHY } from "../../theme/typography";
 
 export default function Input({
   label = "",
+  numericOnly = false,
   value = "",
   onChangeText,
   placeholder = "",
@@ -71,6 +72,16 @@ export default function Input({
     containerStyles.push(containerStyle);
   }
 
+  const handleChangeText = (text) => {
+    let newValue = text;
+
+    if (numericOnly) {
+      newValue = text.replace(/[^0-9.]/g, "");
+    }
+
+    onChangeText(newValue);
+  };
+
   return (
     <View style={containerStyles}>
       {label !== "" && (
@@ -84,7 +95,7 @@ export default function Input({
       <TextInput
         style={inputStyles}
         value={value}
-        onChangeText={onChangeText}
+        onChangeText={handleChangeText}
         placeholder={placeholder}
         placeholderTextColor={COLORS.textQuaternary}
         multiline={multiline}
