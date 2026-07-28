@@ -331,6 +331,14 @@ export function obtenerEstanquesCosechados(estanques) {
 }
 
 export function obtenerAlimentacionSemanal(alimentaciones) {
+  const registros = [];
+
+  if (Array.isArray(alimentaciones) === true) {
+    alimentaciones.forEach(function (registro) {
+      registros.push(registro);
+    });
+  }
+
   const dias = [
     { id: 1, dia: "Lun", kg: 0 },
     { id: 2, dia: "Mar", kg: 0 },
@@ -341,7 +349,7 @@ export function obtenerAlimentacionSemanal(alimentaciones) {
     { id: 7, dia: "Dom", kg: 0 },
   ];
 
-  alimentaciones.forEach(function (registro) {
+  registros.forEach(function (registro) {
     const diaRegistro = obtenerDiaSemana(registro.fecha);
 
     dias.forEach(function (dia) {

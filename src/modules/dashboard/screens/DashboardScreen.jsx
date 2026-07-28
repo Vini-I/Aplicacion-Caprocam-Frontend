@@ -5,22 +5,14 @@
  *
  * Responsabilidad:
  * - Muestra resumen operativo del proyecto Caprocam.
- * - Usa dateUtils para manejo de fechas.
- * - Muestra acceso outline al modulo de Mareas.
- * - Muestra cards desplegables para fincas, estanques, casos sanitarios y mortalidad.
- * - Muestra alertas con tokens suaves del theme.
- *
- * Reglas aplicadas:
- * - No modifica login.
- * - No modifica rutas existentes.
- * - No usa helpers locales de fecha.
- * - Los accesos a modulos usan boton outline si no son icon cards.
+ * - La carga de datos y los estados viven en hooks/useDashboardScreen.
+ * - Mantiene cards desplegables para fincas, estanques, casos y mortalidad.
+ * - Mantiene grafica de estanques activos/cosechados y alimentacion semanal.
  */
 
-import React, { useEffect, useState } from "react";
-import { ScrollView, View, useWindowDimensions, Platform } from "react-native";
+import React from "react";
+import { Platform, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
 
 import Button from "../../../shared/components/Button";
 import Card from "../../../shared/components/Card";
@@ -32,78 +24,29 @@ import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
 import { STYLE } from "../../../theme/style";
 
-import { fincas as fincasModulo } from "../../finca/screens/FincaData";
-import { estanques as estanquesModulo } from "../../mantCrecimiento/services/EstanqueData";
-import { obtenerSiembras } from "../../siembra/services/SiembraService";
-import useAlimentacion from "../../alimentacion/hooks/useAlimentacion";
-import { getProductosInventario } from "../../inventarios/services/InventarioService";
-import { EQUIPOS_MOCK } from "../../mantEquipo/services/mantEquipoService";
-
-import enfermedadesService from "../../enfermedades/services/EnfermedadesService";
-
-import parasitologiaService from "../../parasitologia/services/ParasitologiaService";
-
+import useDashboardScreen from "../hooks/useDashboardScreen";
 import {
-  obtenerTextoSeguro,
-  obtenerNumeroSeguro,
-  formatearNumero,
-  convertirFecha,
-  formatearFechaCorta,
-  obtenerDiaSemana,
-  esMismaFecha,
-  obtenerMinutosHora,
-  obtenerHoraNumero,
-  obtenerResumenEnfermedadesVacio,
-  obtenerResumenParasitologiaVacio,
-  agregarAlerta,
-  construirFincasDashboard,
   contarEstanquesPorFinca,
-  obtenerTotalEstanquesFinca,
-  obtenerMayorEstanquesFinca,
-  obtenerPorcentaje,
+  formatearFechaCorta,
+  formatearNumero,
+  obtenerCategoriasAlertas,
+  obtenerColorEstado,
+  obtenerColorSeveridad,
   obtenerEstanquesActivos,
   obtenerEstanquesCosechados,
-  obtenerAlimentacionSemanal,
-  obtenerMayorKgSemanal,
-  obtenerTotalCasosSanitarios,
-  obtenerMortalidadTotal,
-  obtenerColorEstado,
-  obtenerEstiloSeveridad,
-  obtenerColorSeveridad,
-  obtenerPrimerNombreEnfermedad,
-  obtenerCasosSanitarios,
-  obtenerRegistrosMortalidad,
-  obtenerAlertasInventario,
-  obtenerAlertasCosecha,
-  obtenerAlertasEstanques,
-  existeAlimentacionRegistrada,
-  obtenerAlertasAlimentacion,
-  obtenerEquiposPorTipo,
-  obtenerNombresEquipos,
-  obtenerHorarioBombeoActivo,
-  obtenerSiguienteHorarioBombeo,
-  obtenerAlertasBombeo,
-  calcularHorasUsoAireador,
-  obtenerHorasRestantesMantenimiento,
-  obtenerAlertasAireadores,
-  obtenerAlertasSanitarias,
-  obtenerAlertasDashboard,
   obtenerEstiloAlerta,
-  obtenerTextoTipoAlerta,
-  obtenerFechaSiembraSegura,
-  obtenerUltimosRegistros,
+  obtenerEstiloSeveridad,
+  obtenerMayorEstanquesFinca,
+  obtenerMayorKgSemanal,
+  obtenerMortalidadTotal,
+  obtenerPorcentaje,
+  obtenerRegistrosMortalidad,
+  obtenerTotalEstanquesFinca,
   obtenerResumenAlertas,
-  obtenerCategoriasAlertas,
+  obtenerCasosSanitarios,
 } from "../services/DashboardService";
 
 import { styles } from "../styles/DashboardStyle";
-
-import {
-  construirAlertasOperativas,
-  descartarAlerta,
-  filtrarAlertasDescartadas,
-  obtenerAlertasDescartadas,
-} from "../../alertas/services/AlertasServices.js";
 
 function SectionHeader({ icon, title, color }) {
   return (
@@ -136,7 +79,7 @@ function MareasAccessCard({ onPress }) {
 
       <View style={styles.mareasAccessText}>
         <CustomText size={16} weight="800" color={COLORS.primary}>
-          Mareas del Pacífico
+          Mareas del Pacifico
         </CustomText>
 
         <CustomText size={12} color={COLORS.textTertiary} numberOfLines={1}>
@@ -288,7 +231,7 @@ function AlertasPanel({ alertas, abiertos, onToggle, onDismiss, onViewAll }) {
                                 >
                                   <Icon
                                     icon={ICONS.close}
-                                    size={15}
+                                    size={16}
                                     color={COLORS.textTertiary}
                                   />
                                 </Button>
@@ -330,7 +273,7 @@ function AlertasPanel({ alertas, abiertos, onToggle, onDismiss, onViewAll }) {
         onPress={onViewAll}
       >
         <View style={styles.inlineButtonContentCentered}>
-          <Icon icon={ICONS.notification} size={17} color={COLORS.primary} />
+          <Icon icon={ICONS.notification} size={18} color={COLORS.primary} />
 
           <CustomText
             size={14}
@@ -355,10 +298,11 @@ function StatCard({
   cardStyle,
   iconStyle,
   iconColor,
-  danger,
-  isTablet,
+  danger = false,
+  isTablet = false,
 }) {
   const cardStyles = [styles.statCard, cardStyle];
+  const valueStyles = [styles.statValue];
 
   if (isTablet === true) {
     cardStyles.push(styles.statCardTablet);
@@ -368,40 +312,24 @@ function StatCard({
     cardStyles.push(styles.statCardActive);
   }
 
-  const iconBoxStyles = [styles.statIconBox, iconStyle];
-  const valueStyles = [styles.statValue];
-
   if (danger === true) {
     valueStyles.push(styles.statValueDanger);
   }
 
-  let chevronIcon = ICONS.chevronDown;
-
-  if (selectedId === id) {
-    chevronIcon = ICONS.chevronUp;
-  }
-
   return (
-    <Button style={cardStyles} onPress={onPress}>
+    <Button variant="ghost" style={cardStyles} onPress={onPress}>
       <View style={styles.statTopRow}>
-        <View style={iconBoxStyles}>
+        <View style={[styles.statIconBox, iconStyle]}>
           <Icon icon={icon} size={22} color={iconColor} />
         </View>
 
-        <Icon icon={chevronIcon} size={20} color={COLORS.textQuaternary} />
+        <Icon icon={ICONS.chevronDown} size={18} color={COLORS.textTertiary} />
       </View>
 
       <View style={styles.statBottom}>
-        <CustomText style={valueStyles} numberOfLines={1}>
-          {value}
-        </CustomText>
+        <CustomText style={valueStyles}>{value}</CustomText>
 
-        <CustomText
-          size={13}
-          color={COLORS.textTertiary}
-          style={styles.statLabel}
-          numberOfLines={1}
-        >
+        <CustomText size={12} color={COLORS.textTertiary} style={styles.statLabel}>
           {label}
         </CustomText>
       </View>
@@ -410,7 +338,7 @@ function StatCard({
 }
 
 function FincasPanel({ fincas, estanques }) {
-  const mayorEstanques = obtenerMayorEstanquesFinca(fincas, estanques);
+  const mayor = obtenerMayorEstanquesFinca(fincas, estanques);
 
   return (
     <Card style={styles.detailCard}>
@@ -421,14 +349,6 @@ function FincasPanel({ fincas, estanques }) {
       />
 
       <View style={styles.divider} />
-
-      <CustomText
-        size={13}
-        color={COLORS.textTertiary}
-        style={styles.panelSubtitle}
-      >
-        ESTANQUES POR FINCA
-      </CustomText>
 
       <View style={styles.barChart}>
         <View style={styles.chartGridLines}>
@@ -441,10 +361,7 @@ function FincasPanel({ fincas, estanques }) {
         <View style={styles.barChartContent}>
           {fincas.map(function (finca) {
             const totalEstanques = obtenerTotalEstanquesFinca(finca, estanques);
-            const porcentaje = obtenerPorcentaje(
-              totalEstanques,
-              mayorEstanques,
-            );
+            const porcentaje = obtenerPorcentaje(totalEstanques, mayor);
 
             return (
               <View key={finca.id} style={styles.barItem}>
@@ -475,12 +392,17 @@ function FincasPanel({ fincas, estanques }) {
       </View>
 
       {fincas.map(function (finca) {
-        const totalEstanques = obtenerTotalEstanquesFinca(finca, estanques);
+        const totalEstanques = contarEstanquesPorFinca(finca.nombre, estanques);
+        let totalVisible = totalEstanques;
+
+        if (totalVisible === 0) {
+          totalVisible = finca.estanques;
+        }
 
         return (
           <View key={finca.id} style={styles.infoRowBlue}>
             <View style={styles.rowIconBoxBlue}>
-              <Icon icon={ICONS.home} size={20} color={COLORS.primary} />
+              <Icon icon={ICONS.location} size={20} color={COLORS.primary} />
             </View>
 
             <View style={styles.rowContent}>
@@ -496,8 +418,8 @@ function FincasPanel({ fincas, estanques }) {
               <CustomText
                 size={12}
                 color={COLORS.textTertiary}
-                numberOfLines={1}
                 style={styles.rowDescription}
+                numberOfLines={1}
               >
                 {finca.ubicacion} · {finca.area} ha
               </CustomText>
@@ -505,7 +427,7 @@ function FincasPanel({ fincas, estanques }) {
 
             <View style={styles.rowRight}>
               <CustomText size={18} weight="800" color={COLORS.primary}>
-                {totalEstanques}
+                {totalVisible}
               </CustomText>
 
               <CustomText size={11} color={COLORS.textTertiary}>
@@ -516,6 +438,87 @@ function FincasPanel({ fincas, estanques }) {
         );
       })}
     </Card>
+  );
+}
+
+function GraficaPastelEstanques({ activos, cosechados, porcentajeActivos }) {
+  const total = activos + cosechados;
+  let porcentajeFinal = porcentajeActivos;
+
+  if (total === 0) {
+    porcentajeFinal = 0;
+  }
+
+  if (Platform.OS === "web") {
+    const estiloWeb = {
+      width: 150,
+      height: 150,
+      borderRadius: 75,
+      backgroundImage: `conic-gradient(${COLORS.primary} 0% ${porcentajeFinal}%, ${COLORS.textQuaternary} ${porcentajeFinal}% 100%)`,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      position: "relative",
+    };
+
+    const centroWeb = {
+      width: 82,
+      height: 82,
+      borderRadius: 41,
+      backgroundColor: COLORS.white,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      flexDirection: "column",
+    };
+
+    return (
+      <div style={estiloWeb}>
+        <div style={centroWeb}>
+          <span
+            style={{
+              color: COLORS.textSecondary,
+              fontSize: 26,
+              fontWeight: 900,
+              lineHeight: "28px",
+            }}
+          >
+            {total}
+          </span>
+          <span
+            style={{
+              color: COLORS.textTertiary,
+              fontSize: 11,
+              lineHeight: "14px",
+            }}
+          >
+            total
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  const anchoActivo = `${porcentajeFinal}%`;
+  const anchoCosechado = `${100 - porcentajeFinal}%`;
+
+  return (
+    <View style={styles.donutWrapper}>
+      <View style={styles.donutChart}>
+        <View style={[styles.donutActiveSegment, { width: anchoActivo }]} />
+        <View style={[styles.donutHarvestSegment, { width: anchoCosechado }]} />
+
+        <View style={styles.donutInner}>
+          <CustomText size={26} weight="900" color={COLORS.textSecondary}>
+            {total}
+          </CustomText>
+
+          <CustomText size={11} color={COLORS.textTertiary}>
+            total
+          </CustomText>
+        </View>
+      </View>
+    </View>
   );
 }
 
@@ -678,92 +681,6 @@ function EstanquesPanel({ estanques, alimentacionSemanal }) {
   );
 }
 
-function GraficaPastelEstanques({ activos, cosechados, porcentajeActivos }) {
-  const total = activos + cosechados;
-  let porcentajeFinal = porcentajeActivos;
-
-  if (total === 0) {
-    porcentajeFinal = 0;
-  }
-
-  if (Platform.OS === "web") {
-    const estiloWeb = {
-      width: 150,
-      height: 150,
-      borderRadius: 75,
-      backgroundImage: `conic-gradient(${COLORS.primary} 0% ${porcentajeFinal}%, ${COLORS.textQuaternary} ${porcentajeFinal}% 100%)`,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      position: "relative",
-    };
-
-    const centroWeb = {
-      width: 78,
-      height: 78,
-      borderRadius: 39,
-      backgroundColor: COLORS.white,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      flexDirection: "column",
-    };
-
-    const totalWeb = {
-      fontSize: 22,
-      fontWeight: "800",
-      color: COLORS.primary,
-      lineHeight: "24px",
-    };
-
-    const labelWeb = {
-      fontSize: 11,
-      color: COLORS.textTertiary,
-    };
-
-    return (
-      <div style={estiloWeb}>
-        <div style={centroWeb}>
-          <span style={totalWeb}>{total}</span>
-          <span style={labelWeb}>total</span>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <View style={styles.donutChart}>
-      <View
-        style={[
-          styles.donutActiveSegment,
-          {
-            width: `${porcentajeFinal}%`,
-          },
-        ]}
-      />
-
-      <View
-        style={[
-          styles.donutHarvestSegment,
-          {
-            width: `${100 - porcentajeFinal}%`,
-          },
-        ]}
-      />
-
-      <View style={styles.donutInner}>
-        <CustomText size={18} weight="800" color={COLORS.primary}>
-          {total}
-        </CustomText>
-
-        <CustomText size={10} color={COLORS.textTertiary}>
-          total
-        </CustomText>
-      </View>
-    </View>
-  );
-}
-
 function CasosPanel({
   resumenEnfermedades,
   resumenParasitologia,
@@ -790,7 +707,7 @@ function CasosPanel({
         color={COLORS.textTertiary}
         style={styles.panelSubtitle}
       >
-        CASOS MÁS FRECUENTES
+        CASOS MAS FRECUENTES
       </CustomText>
 
       {resumenEnfermedades.enfermedadesFrecuentes.length === 0 &&
@@ -865,11 +782,11 @@ function CasosPanel({
         color={COLORS.textTertiary}
         style={styles.panelSubtitleSecondary}
       >
-        ÚLTIMOS CASOS
+        ULTIMOS CASOS
       </CustomText>
 
       {casos.length === 0 && (
-        <EmptyMessage text="Aún no hay registros de enfermedades o parasitología." />
+        <EmptyMessage text="Aun no hay registros de enfermedades o parasitologia." />
       )}
 
       {casos.map(function (caso) {
@@ -1006,7 +923,7 @@ function UltimosRegistros({ registros }) {
         color={COLORS.textTertiary}
         style={styles.panelSubtitle}
       >
-        ÚLTIMOS REGISTROS
+        ULTIMOS REGISTROS
       </CustomText>
 
       {registros.length === 0 && (
@@ -1055,157 +972,12 @@ function UltimosRegistros({ registros }) {
 }
 
 export default function DashboardScreen() {
-  const router = useRouter();
-
-  const [selectedCard, setSelectedCard] = useState(null);
-  const [alertasDescartadas, setAlertasDescartadas] = useState([]);
-  const [alertasAbiertas, setAlertasAbiertas] = useState({
-    critica: true,
-    advertencia: true,
-    info: false,
-  });
-  const [fincasData, setFincasData] = useState([]);
-  const [estanquesData, setEstanquesData] = useState([]);
-  const [siembrasData, setSiembrasData] = useState([]);
-  const [productosInventario, setProductosInventario] = useState([]);
-  const [equiposData, setEquiposData] = useState([]);
-  const [registrosEnfermedades, setRegistrosEnfermedades] = useState([]);
-  const [registrosParasitologia, setRegistrosParasitologia] = useState([]);
-  const [resumenEnfermedades, setResumenEnfermedades] = useState(
-    obtenerResumenEnfermedadesVacio(),
-  );
-  const [resumenParasitologia, setResumenParasitologia] = useState(
-    obtenerResumenParasitologiaVacio(),
-  );
-
-  const { alimentaciones, recargar } = useAlimentacion();
-  const dimensiones = useWindowDimensions();
-
-  const fincasDashboard = construirFincasDashboard(fincasData, estanquesData);
-  const alimentacionSemanal = obtenerAlimentacionSemanal(alimentaciones);
-
-  const totalCasosSanitarios = obtenerTotalCasosSanitarios(
-    resumenEnfermedades,
-    resumenParasitologia,
-  );
-
-  const totalMortalidad = obtenerMortalidadTotal(resumenEnfermedades);
-
-  const alertasBase = construirAlertasOperativas({
-    productosInventario: productosInventario,
-    siembras: siembrasData,
-    alimentaciones: alimentaciones,
-    estanques: estanquesData,
-    equipos: equiposData,
-    registrosEnfermedades: registrosEnfermedades,
-    registrosParasitologia: registrosParasitologia,
-  });
-
-  const alertasDashboard = filtrarAlertasDescartadas(
-    alertasBase,
-    alertasDescartadas,
-  ).slice(0, 10);
-
-  const ultimosRegistros = obtenerUltimosRegistros(
-    alimentaciones,
-    siembrasData,
-    registrosEnfermedades,
-    registrosParasitologia,
-  );
-
-  let isTablet = false;
-
-  if (dimensiones.width >= 720) {
-    isTablet = true;
-  }
-
+  const pantalla = useDashboardScreen();
   const gridStyles = [styles.statsGrid];
 
-  if (isTablet === true) {
+  if (pantalla.isTablet === true) {
     gridStyles.push(styles.statsGridTablet);
   }
-
-  function manejarSeleccionCard(cardId) {
-    if (selectedCard === cardId) {
-      setSelectedCard(null);
-    }
-
-    if (selectedCard !== cardId) {
-      setSelectedCard(cardId);
-    }
-  }
-
-  function irAMareas() {
-    router.push("/mareas/");
-  }
-
-  function irAAlertas() {
-    router.push("/alertas");
-  }
-
-  function alternarAlertas(tipo) {
-    setAlertasAbiertas(function (actual) {
-      return {
-        ...actual,
-        [tipo]: !actual[tipo],
-      };
-    });
-  }
-
-  async function descartarAlertaDashboard(id) {
-    const ids = await descartarAlerta(id);
-    setAlertasDescartadas(ids);
-  }
-
-  useEffect(function () {
-    let activo = true;
-    let intervalo = null;
-
-    async function cargarDatos() {
-      const enfermedades = await enfermedadesService.getAll();
-      const resumenEnfermedad = await enfermedadesService.getResumenDashboard();
-
-      const parasitos = await parasitologiaService.getAll();
-      const resumenParasitos = await parasitologiaService.getResumenDashboard();
-
-      if (activo === true) {
-        setFincasData([...fincasModulo]);
-        setEstanquesData([...estanquesModulo]);
-        setSiembrasData(obtenerSiembras());
-        setProductosInventario(getProductosInventario());
-        setEquiposData([...EQUIPOS_MOCK]);
-        setRegistrosEnfermedades(enfermedades);
-        setResumenEnfermedades(resumenEnfermedad);
-        setRegistrosParasitologia(parasitos);
-        setResumenParasitologia(resumenParasitos);
-      }
-    }
-
-    async function cargarDescartadas() {
-      const ids = await obtenerAlertasDescartadas();
-
-      if (activo === true) {
-        setAlertasDescartadas(ids);
-      }
-    }
-
-    recargar();
-    cargarDatos();
-    cargarDescartadas();
-
-    intervalo = setInterval(function () {
-      recargar();
-      cargarDatos();
-    }, 5000);
-
-    return function () {
-      activo = false;
-
-      if (intervalo !== null) {
-        clearInterval(intervalo);
-      }
-    };
-  }, []);
 
   return (
     <SafeAreaView style={STYLE.container}>
@@ -1234,107 +1006,110 @@ export default function DashboardScreen() {
           </View>
         </View>
 
-        <MareasAccessCard onPress={irAMareas} />
+        <MareasAccessCard onPress={pantalla.irAMareas} />
 
         <AlertasPanel
-          alertas={alertasDashboard}
-          abiertos={alertasAbiertas}
-          onToggle={alternarAlertas}
-          onDismiss={descartarAlertaDashboard}
-          onViewAll={irAAlertas}
+          alertas={pantalla.alertasDashboard}
+          abiertos={pantalla.alertasAbiertas}
+          onToggle={pantalla.alternarAlertas}
+          onDismiss={pantalla.descartarAlertaDashboard}
+          onViewAll={pantalla.irAAlertas}
         />
 
         <View style={gridStyles}>
           <StatCard
             id="fincas"
-            selectedId={selectedCard}
+            selectedId={pantalla.selectedCard}
             onPress={function () {
-              manejarSeleccionCard("fincas");
+              pantalla.manejarSeleccionCard("fincas");
             }}
             icon={ICONS.home}
-            value={fincasDashboard.length}
+            value={pantalla.fincasDashboard.length}
             label="Fincas registradas"
             cardStyle={styles.cardBlue}
             iconStyle={styles.iconBlue}
             iconColor={COLORS.primary}
-            isTablet={isTablet}
+            isTablet={pantalla.isTablet}
           />
 
           <StatCard
             id="estanques"
-            selectedId={selectedCard}
+            selectedId={pantalla.selectedCard}
             onPress={function () {
-              manejarSeleccionCard("estanques");
+              pantalla.manejarSeleccionCard("estanques");
             }}
             icon={ICONS.waterFlow}
-            value={estanquesData.length}
+            value={pantalla.estanquesData.length}
             label="Estanques registrados"
             cardStyle={styles.cardIndigo}
             iconStyle={styles.iconIndigo}
             iconColor={COLORS.primary}
-            isTablet={isTablet}
+            isTablet={pantalla.isTablet}
           />
 
           <StatCard
             id="casos"
-            selectedId={selectedCard}
+            selectedId={pantalla.selectedCard}
             onPress={function () {
-              manejarSeleccionCard("casos");
+              pantalla.manejarSeleccionCard("casos");
             }}
             icon={ICONS.shieldAlert}
-            value={totalCasosSanitarios}
+            value={pantalla.totalCasosSanitarios}
             label="Casos sanitarios"
             cardStyle={styles.cardYellow}
             iconStyle={styles.iconYellow}
             iconColor={COLORS.warning}
-            isTablet={isTablet}
+            isTablet={pantalla.isTablet}
           />
 
           <StatCard
             id="mortalidad"
-            selectedId={selectedCard}
+            selectedId={pantalla.selectedCard}
             onPress={function () {
-              manejarSeleccionCard("mortalidad");
+              pantalla.manejarSeleccionCard("mortalidad");
             }}
             icon={ICONS.mortality}
-            value={formatearNumero(totalMortalidad)}
+            value={formatearNumero(pantalla.totalMortalidad)}
             label="Mortalidad total"
             cardStyle={styles.cardRed}
             iconStyle={styles.iconRed}
             iconColor={COLORS.error}
             danger={true}
-            isTablet={isTablet}
+            isTablet={pantalla.isTablet}
           />
         </View>
 
-        {selectedCard === "fincas" && (
-          <FincasPanel fincas={fincasDashboard} estanques={estanquesData} />
+        {pantalla.selectedCard === "fincas" && (
+          <FincasPanel
+            fincas={pantalla.fincasDashboard}
+            estanques={pantalla.estanquesData}
+          />
         )}
 
-        {selectedCard === "estanques" && (
+        {pantalla.selectedCard === "estanques" && (
           <EstanquesPanel
-            estanques={estanquesData}
-            alimentacionSemanal={alimentacionSemanal}
+            estanques={pantalla.estanquesData}
+            alimentacionSemanal={pantalla.alimentacionSemanal}
           />
         )}
 
-        {selectedCard === "casos" && (
+        {pantalla.selectedCard === "casos" && (
           <CasosPanel
-            resumenEnfermedades={resumenEnfermedades}
-            resumenParasitologia={resumenParasitologia}
-            registrosEnfermedades={registrosEnfermedades}
-            registrosParasitologia={registrosParasitologia}
+            resumenEnfermedades={pantalla.resumenEnfermedades}
+            resumenParasitologia={pantalla.resumenParasitologia}
+            registrosEnfermedades={pantalla.registrosEnfermedades}
+            registrosParasitologia={pantalla.registrosParasitologia}
           />
         )}
 
-        {selectedCard === "mortalidad" && (
+        {pantalla.selectedCard === "mortalidad" && (
           <MortalidadPanel
-            resumenEnfermedades={resumenEnfermedades}
-            registrosEnfermedades={registrosEnfermedades}
+            resumenEnfermedades={pantalla.resumenEnfermedades}
+            registrosEnfermedades={pantalla.registrosEnfermedades}
           />
         )}
 
-        <UltimosRegistros registros={ultimosRegistros} />
+        <UltimosRegistros registros={pantalla.ultimosRegistros} />
       </ScrollView>
     </SafeAreaView>
   );
