@@ -3,19 +3,43 @@
  * HOOK: PARASITOLOGIA SCREEN
  * ============================================================
  *
- * Centraliza el estado y la logica del formulario de
- * parasitologia para que la pantalla solo renderice la interfaz.
+ * Centraliza el estado y la logica del formulario.
  */
 
-import { useEffect, useState } from "react";
-import { useWindowDimensions } from "react-native";
-import { useRouter } from "expo-router";
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
-import useParasitologia from "./useParasitologia";
-import { STYLE } from "../../../theme/style";
-import { getCurrentDate } from "../../../shared/utils/dateUtils";
-import { calcularGradoInfeccion } from "../services/ParasitologiaService";
-import { obtenerResponsableBackend } from "../../enfermedades/services/EnfermedadesService";
+import {
+  useWindowDimensions,
+} from "react-native";
+
+import {
+  useRouter,
+} from "expo-router";
+
+import useParasitologia from
+  "./useParasitologia";
+
+import { fincaService } from
+  "../../finca/services/finca.service.js";
+
+import { estanqueService } from
+  "../../estanques/services/estanque.service.js";
+
+import { STYLE } from
+  "../../../theme/style";
+
+import { getCurrentDate } from
+  "../../../shared/utils/dateUtils";
+
+import {
+  calcularGradoInfeccion,
+  obtenerResponsableSesion,
+} from "../services/ParasitologiaService";
+
 import {
   construirRegistroParasitologia,
   obtenerColorGrado,
@@ -24,24 +48,104 @@ import {
   obtenerOpcionesFincas,
   validarFormularioParasitologia,
 } from "../services/ParasitologiaScreenService";
-import { styles } from "../styles/ParasitologiaStyle";
 
-export default function useParasitologiaScreen(onBack, navigation) {
+import { styles } from
+  "../styles/ParasitologiaStyle";
+
+export default function useParasitologiaScreen(
+  onBack,
+  navigation,
+) {
   const router = useRouter();
-  const { width } = useWindowDimensions();
-  const { loading, error, guardarRegistro } = useParasitologia();
 
-  const [finca, setFinca] = useState("");
-  const [estanque, setEstanque] = useState("");
-  const [fechaReporte, setFechaReporte] = useState(getCurrentDate());
-  const [responsable, setResponsable] = useState("Cargando responsable...");
-  const [parasito, setParasito] = useState("");
-  const [camaronesMuestreados, setCamaronesMuestreados] = useState("0");
-  const [camaronesInfectados, setCamaronesInfectados] = useState("0");
-  const [observaciones, setObservaciones] = useState("");
-  const [mensaje, setMensaje] = useState("");
-  const [tipoMensaje, setTipoMensaje] = useState("info");
-  const [submitted, setSubmitted] = useState(false);
+  const { width } =
+    useWindowDimensions();
+
+  const {
+    loading: loadingParasitologia,
+    error: errorParasitologia,
+    catalogoParasitos,
+    guardarRegistro,
+  } = useParasitologia();
+
+  const [
+    fincas,
+    setFincas,
+  ] = useState([]);
+
+  const [
+    estanques,
+    setEstanques,
+  ] = useState([]);
+
+  const [
+    loadingOpciones,
+    setLoadingOpciones,
+  ] = useState(true);
+
+  const [
+    errorOpciones,
+    setErrorOpciones,
+  ] = useState("");
+
+  const [
+    finca,
+    setFinca,
+  ] = useState("");
+
+  const [
+    estanque,
+    setEstanque,
+  ] = useState("");
+
+  const [
+    fechaReporte,
+    setFechaReporte,
+  ] = useState(
+    getCurrentDate(),
+  );
+
+  const [
+    responsable,
+    setResponsable,
+  ] = useState(
+    obtenerResponsableSesion(),
+  );
+
+  const [
+    parasito,
+    setParasito,
+  ] = useState("");
+
+  const [
+    camaronesMuestreados,
+    setCamaronesMuestreados,
+  ] = useState("0");
+
+  const [
+    camaronesInfectados,
+    setCamaronesInfectados,
+  ] = useState("0");
+
+  const [
+    observaciones,
+    setObservaciones,
+  ] = useState("");
+
+  const [
+    mensaje,
+    setMensaje,
+  ] = useState("");
+
+  const [
+    tipoMensaje,
+    setTipoMensaje,
+  ] = useState("info");
+
+  const [
+    submitted,
+    setSubmitted,
+  ] = useState(false);
 
   let esTablet = false;
   let esDesktop = false;
@@ -54,66 +158,226 @@ export default function useParasitologiaScreen(onBack, navigation) {
     esDesktop = true;
   }
 
-  const contentStyle = [STYLE.contentWrapper, styles.content];
-  const gridStyle = [styles.grid];
-  const itemStyle = [styles.gridItem];
-  const itemFullStyle = [styles.gridItem];
+  const contentStyle = [
+    STYLE.contentWrapper,
+    styles.content,
+  ];
+
+  const gridStyle = [
+    styles.grid,
+  ];
+
+  const itemStyle = [
+    styles.gridItem,
+  ];
+
+  const itemFullStyle = [
+    styles.gridItem,
+  ];
 
   if (esTablet === true) {
-    contentStyle.push(styles.contentTablet);
-    gridStyle.push(styles.gridTablet);
-    itemStyle.push(styles.gridItemTablet);
-    itemFullStyle.push(styles.gridItemFull);
+    contentStyle.push(
+      styles.contentTablet,
+    );
+
+    gridStyle.push(
+      styles.gridTablet,
+    );
+
+    itemStyle.push(
+      styles.gridItemTablet,
+    );
+
+    itemFullStyle.push(
+      styles.gridItemFull,
+    );
   }
 
   if (esDesktop === true) {
-    contentStyle.push(styles.contentDesktop);
-    gridStyle.push(styles.gridDesktop);
-    itemStyle.push(styles.gridItemDesktop);
-    itemFullStyle.push(styles.gridItemFull);
+    contentStyle.push(
+      styles.contentDesktop,
+    );
+
+    gridStyle.push(
+      styles.gridDesktop,
+    );
+
+    itemStyle.push(
+      styles.gridItemDesktop,
+    );
+
+    itemFullStyle.push(
+      styles.gridItemFull,
+    );
   }
 
-  const opcionesFincas = obtenerOpcionesFincas();
-  const opcionesEstanques = obtenerOpcionesEstanques(finca);
-
-  const gradoCalculado = calcularGradoInfeccion(
-    camaronesMuestreados,
-    camaronesInfectados,
+  const opcionesFincas = useMemo(
+    function () {
+      return obtenerOpcionesFincas(
+        fincas,
+      );
+    },
+    [
+      fincas,
+    ],
   );
 
-  const colorGrado = obtenerColorGrado(gradoCalculado.grado);
+  const opcionesEstanques = useMemo(
+    function () {
+      return obtenerOpcionesEstanques(
+        estanques,
+        finca,
+      );
+    },
+    [
+      estanques,
+      finca,
+    ],
+  );
+
+  const gradoCalculado =
+    calcularGradoInfeccion(
+      camaronesMuestreados,
+      camaronesInfectados,
+    );
+
+  const colorGrado =
+    obtenerColorGrado(
+      gradoCalculado.grado,
+    );
 
   const datosFormulario = {
     finca: finca,
     estanque: estanque,
     fechaReporte: fechaReporte,
     parasito: parasito,
-    camaronesMuestreados: camaronesMuestreados,
-    camaronesInfectados: camaronesInfectados,
+    camaronesMuestreados:
+      camaronesMuestreados,
+    camaronesInfectados:
+      camaronesInfectados,
   };
 
-  const erroresFormulario = obtenerErroresFormularioParasitologia(
-    datosFormulario,
-    submitted,
-  );
+  const erroresFormulario =
+    obtenerErroresFormularioParasitologia(
+      datosFormulario,
+      submitted,
+    );
 
-  useEffect(function () {
-    let activo = true;
+  let loading =
+    loadingParasitologia;
 
-    async function cargarResponsable() {
-      const responsableBackend = await obtenerResponsableBackend();
+  if (loadingOpciones === true) {
+    loading = true;
+  }
 
-      if (activo === true) {
-        setResponsable(responsableBackend);
+  let error =
+    errorParasitologia;
+
+  if (
+    error === "" &&
+    errorOpciones !== ""
+  ) {
+    error = errorOpciones;
+  }
+
+  let placeholderFinca =
+    "Seleccione la finca";
+
+  if (
+    loadingOpciones === false &&
+    opcionesFincas.length === 0
+  ) {
+    placeholderFinca =
+      "No se encuentran opciones o valores";
+  }
+
+  let placeholderEstanque =
+    "Seleccione el estanque";
+
+  if (
+    finca !== "" &&
+    opcionesEstanques.length === 0
+  ) {
+    placeholderEstanque =
+      "No se encuentran opciones o valores";
+  }
+
+  let placeholderParasito =
+    "Seleccione el parasito";
+
+  if (
+    catalogoParasitos.length === 0
+  ) {
+    placeholderParasito =
+      "No se encuentran opciones o valores";
+  }
+
+  useEffect(
+    function () {
+      let activo = true;
+
+      async function cargarOpciones() {
+        setLoadingOpciones(true);
+        setErrorOpciones("");
+
+        try {
+          const respuestas =
+            await Promise.all([
+              fincaService.getFincas(),
+              estanqueService
+                .getEstanques(),
+            ]);
+
+          if (activo === true) {
+            if (
+              Array.isArray(
+                respuestas[0],
+              )
+            ) {
+              setFincas(
+                respuestas[0],
+              );
+            } else {
+              setFincas([]);
+            }
+
+            if (
+              Array.isArray(
+                respuestas[1],
+              )
+            ) {
+              setEstanques(
+                respuestas[1],
+              );
+            } else {
+              setEstanques([]);
+            }
+          }
+        } catch {
+          if (activo === true) {
+            setErrorOpciones(
+              "No se pudieron cargar las fincas y estanques.",
+            );
+          }
+        } finally {
+          if (activo === true) {
+            setLoadingOpciones(false);
+          }
+        }
       }
-    }
 
-    cargarResponsable();
+      setResponsable(
+        obtenerResponsableSesion(),
+      );
 
-    return function () {
-      activo = false;
-    };
-  }, []);
+      cargarOpciones();
+
+      return function () {
+        activo = false;
+      };
+    },
+    [],
+  );
 
   function volver() {
     if (onBack) {
@@ -132,15 +396,27 @@ export default function useParasitologiaScreen(onBack, navigation) {
   function cambiarFinca(valor) {
     setFinca(valor);
     setEstanque("");
+    setMensaje("");
   }
 
   function limpiarFormulario() {
     setFinca("");
     setEstanque("");
-    setFechaReporte(getCurrentDate());
+
+    setFechaReporte(
+      getCurrentDate(),
+    );
+
     setParasito("");
-    setCamaronesMuestreados("0");
-    setCamaronesInfectados("0");
+
+    setCamaronesMuestreados(
+      "0",
+    );
+
+    setCamaronesInfectados(
+      "0",
+    );
+
     setObservaciones("");
     setSubmitted(false);
   }
@@ -148,42 +424,69 @@ export default function useParasitologiaScreen(onBack, navigation) {
   function validarFormulario() {
     setSubmitted(true);
 
-    const resultado = validarFormularioParasitologia(datosFormulario);
+    const resultado =
+      validarFormularioParasitologia(
+        datosFormulario,
+      );
 
-    if (resultado.valido === false) {
-      setTipoMensaje(resultado.tipoMensaje);
-      setMensaje(resultado.mensaje);
+    if (
+      resultado.valido === false
+    ) {
+      setTipoMensaje(
+        resultado.tipoMensaje,
+      );
+
+      setMensaje(
+        resultado.mensaje,
+      );
     }
 
     return resultado.valido;
   }
 
   async function registrarParasitologia() {
-    if (validarFormulario() === false) {
+    setMensaje("");
+
+    if (
+      validarFormulario() === false
+    ) {
       return;
     }
 
-    const nuevoRegistro = construirRegistroParasitologia({
-      finca: finca,
-      estanque: estanque,
-      fechaReporte: fechaReporte,
-      responsable: responsable,
-      parasito: parasito,
-      camaronesMuestreados: camaronesMuestreados,
-      camaronesInfectados: camaronesInfectados,
-      observaciones: observaciones,
-    });
+    const nuevoRegistro =
+      construirRegistroParasitologia({
+        finca: finca,
+        estanque: estanque,
+        fechaReporte: fechaReporte,
+        parasito: parasito,
+        camaronesMuestreados:
+          camaronesMuestreados,
+        camaronesInfectados:
+          camaronesInfectados,
+        observaciones:
+          observaciones,
+      });
 
-    const guardado = await guardarRegistro(nuevoRegistro);
+    const guardado =
+      await guardarRegistro(
+        nuevoRegistro,
+      );
 
     if (guardado === null) {
       setTipoMensaje("danger");
-      setMensaje("No se pudo guardar el registro de parasitologia.");
+
+      setMensaje(
+        "No se pudo guardar el registro de parasitologia.",
+      );
+
       return;
     }
 
     setTipoMensaje("success");
-    setMensaje("Registro de parasitologia guardado correctamente.");
+
+    setMensaje(
+      "Registro de parasitologia guardado correctamente.",
+    );
 
     limpiarFormulario();
   }
@@ -191,6 +494,7 @@ export default function useParasitologiaScreen(onBack, navigation) {
   return {
     loading,
     error,
+
     finca,
     estanque,
     fechaReporte,
@@ -199,24 +503,36 @@ export default function useParasitologiaScreen(onBack, navigation) {
     camaronesMuestreados,
     camaronesInfectados,
     observaciones,
+
     mensaje,
     tipoMensaje,
     submitted,
+
     opcionesFincas,
     opcionesEstanques,
+    opcionesParasitos:
+      catalogoParasitos,
+
+    placeholderFinca,
+    placeholderEstanque,
+    placeholderParasito,
+
     gradoCalculado,
     colorGrado,
     erroresFormulario,
+
     contentStyle,
     gridStyle,
     itemStyle,
     itemFullStyle,
+
     setEstanque,
     setFechaReporte,
     setParasito,
     setCamaronesMuestreados,
     setCamaronesInfectados,
     setObservaciones,
+
     volver,
     cambiarFinca,
     registrarParasitologia,
