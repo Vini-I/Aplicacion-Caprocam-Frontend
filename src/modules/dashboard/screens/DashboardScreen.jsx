@@ -329,7 +329,11 @@ function StatCard({
       <View style={styles.statBottom}>
         <CustomText style={valueStyles}>{value}</CustomText>
 
-        <CustomText size={12} color={COLORS.textTertiary} style={styles.statLabel}>
+        <CustomText
+          size={12}
+          color={COLORS.textTertiary}
+          style={styles.statLabel}
+        >
           {label}
         </CustomText>
       </View>
@@ -692,6 +696,25 @@ function CasosPanel({
     registrosParasitologia,
   );
 
+  let enfermedadesFrecuentes = [];
+  let parasitosFrecuentes = [];
+
+  if (
+    resumenEnfermedades !== undefined &&
+    resumenEnfermedades !== null &&
+    Array.isArray(resumenEnfermedades.enfermedadesFrecuentes) === true
+  ) {
+    enfermedadesFrecuentes = resumenEnfermedades.enfermedadesFrecuentes;
+  }
+
+  if (
+    resumenParasitologia !== undefined &&
+    resumenParasitologia !== null &&
+    Array.isArray(resumenParasitologia.parasitosFrecuentes) === true
+  ) {
+    parasitosFrecuentes = resumenParasitologia.parasitosFrecuentes;
+  }
+
   return (
     <Card style={styles.detailCard}>
       <SectionHeader
@@ -710,14 +733,20 @@ function CasosPanel({
         CASOS MAS FRECUENTES
       </CustomText>
 
-      {resumenEnfermedades.enfermedadesFrecuentes.length === 0 &&
-        resumenParasitologia.parasitosFrecuentes.length === 0 && (
+      {enfermedadesFrecuentes.length === 0 &&
+        parasitosFrecuentes.length === 0 && (
           <EmptyMessage text="No hay casos sanitarios registrados." />
         )}
 
-      {resumenEnfermedades.enfermedadesFrecuentes.map(function (item) {
+      {enfermedadesFrecuentes.map(function (item, index) {
+        let key = item.id;
+
+        if (key === undefined || key === null || String(key).trim() === "") {
+          key = "enfermedad-" + String(item.enfermedad) + "-" + index;
+        }
+
         return (
-          <View key={item.enfermedad} style={styles.diseaseRow}>
+          <View key={key} style={styles.diseaseRow}>
             <View style={styles.diseaseDotRed} />
 
             <View style={styles.rowContent}>
@@ -746,9 +775,15 @@ function CasosPanel({
         );
       })}
 
-      {resumenParasitologia.parasitosFrecuentes.map(function (item) {
+      {parasitosFrecuentes.map(function (item, index) {
+        let key = item.id;
+
+        if (key === undefined || key === null || String(key).trim() === "") {
+          key = "parasito-" + String(item.parasito) + "-" + index;
+        }
+
         return (
-          <View key={item.parasito} style={styles.diseaseRow}>
+          <View key={key} style={styles.diseaseRow}>
             <View style={styles.diseaseDotViolet} />
 
             <View style={styles.rowContent}>
@@ -789,9 +824,15 @@ function CasosPanel({
         <EmptyMessage text="Aun no hay registros de enfermedades o parasitologia." />
       )}
 
-      {casos.map(function (caso) {
+      {casos.map(function (caso, index) {
+        let key = caso.id;
+
+        if (key === undefined || key === null || String(key).trim() === "") {
+          key = "caso-sanitario-" + index;
+        }
+
         return (
-          <View key={caso.id} style={styles.caseRow}>
+          <View key={key} style={styles.caseRow}>
             <Icon icon={ICONS.alertTriangle} size={20} color={COLORS.warning} />
 
             <View style={styles.rowContent}>
@@ -810,7 +851,9 @@ function CasosPanel({
                 style={styles.rowDescription}
                 numberOfLines={1}
               >
-                {caso.estanque} · {caso.finca}
+                {caso.estanque}
+                {" · "}
+                {caso.finca}
               </CustomText>
 
               <CustomText size={12} color={COLORS.textQuaternary}>
