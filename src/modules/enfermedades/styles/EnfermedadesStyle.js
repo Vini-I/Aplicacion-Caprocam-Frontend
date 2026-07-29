@@ -1,117 +1,76 @@
 /**
  * ============================================================
- * ESTILOS DEL MODULO ENFERMEDADES
+ * STYLES: ENFERMEDADES
  * ============================================================
  *
- * Estilos para el formulario de registro de enfermedades
- * y los detalles guardados.
+ * Descripcion:
+ * Estilos de EnfermedadesScreen.
  */
 
-import { StyleSheet } from "react-native";
-import { COLORS } from "../../../theme/colors";
-import { TYPOGRAPHY } from "../../../theme/typography";
+import {
+  StyleSheet,
+} from "react-native";
+
+import {
+  COLORS,
+} from "../../../theme/colors";
+
+import {
+  TYPOGRAPHY,
+} from "../../../theme/typography";
+
+const BORDER_COLOR =
+  COLORS.border ||
+  COLORS.inputBorder ||
+  "#E5E7EB";
+
+const SURFACE_COLOR =
+  COLORS.surface ||
+  "#F8FAFC";
+
+const PRIMARY_LIGHT =
+  COLORS.primaryLight ||
+  "#EAF6FF";
+
+const ERROR_LIGHT =
+  COLORS.errorLight ||
+  "#FEECEC";
 
 export const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    width: "100%",
-    backgroundColor: COLORS.surface,
+    backgroundColor: SURFACE_COLOR,
   },
 
-  header: {
-    width: "100%",
-    backgroundColor: COLORS.primary,
-    paddingTop: 24,
-    paddingHorizontal: 24,
-    paddingBottom: 28,
-    borderBottomLeftRadius: 22,
-    borderBottomRightRadius: 22,
-  },
-
-  headerDesktop: {
-    paddingHorizontal: 48,
-  },
-
-  cancelButton: {
-    alignSelf: "flex-start",
-    backgroundColor: "transparent",
-    borderWidth: 0,
-    paddingHorizontal: 0,
-    paddingVertical: 0,
-    marginTop: 0,
-    marginBottom: 20,
-  },
-
-  cancelText: {
-    marginLeft: 8,
-    fontFamily: TYPOGRAPHY.fontFamily.medium,
-  },
-
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-
-  headerIcon: {
-    width: 54,
-    height: 54,
-    borderRadius: 18,
-    backgroundColor: COLORS.white,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 14,
-  },
-
-  headerTextBox: {
-    flex: 1,
-  },
-
-  headerSubtitle: {
-    marginTop: 2,
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 32,
   },
 
   content: {
-    paddingVertical: 18,
+    width: "100%",
+    paddingHorizontal: 14,
+    paddingTop: 14,
+    paddingBottom: 28,
   },
 
   contentTablet: {
-    paddingVertical: 18,
+    maxWidth: 900,
+    alignSelf: "center",
+    paddingHorizontal: 20,
   },
 
   contentDesktop: {
-    maxWidth: 900,
-    alignSelf: "center",
+    maxWidth: 1100,
+    paddingHorizontal: 24,
+  },
+
+  card: {
     width: "100%",
-  },
-
-  alert: {
-    marginBottom: 16,
-  },
-
-  alertText: {
-    fontFamily: TYPOGRAPHY.fontFamily.medium,
-  },
-
-  errorText: {
-    marginTop: 6,
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
-  },
-
-  sectionTitleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 14,
-  },
-
-  sectionTitle: {
-    marginLeft: 8,
-    textTransform: "uppercase",
-  },
-
-  label: {
-    color: COLORS.textPrimary,
-    fontFamily: TYPOGRAPHY.fontFamily.medium,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: BORDER_COLOR,
+    borderRadius: 14,
   },
 
   grid: {
@@ -125,8 +84,6 @@ export const styles = StyleSheet.create({
   },
 
   gridDesktop: {
-    flexDirection: "row",
-    flexWrap: "wrap",
     columnGap: 14,
   },
 
@@ -135,44 +92,41 @@ export const styles = StyleSheet.create({
   },
 
   gridItemTablet: {
-    width: "48.5%",
+    flexGrow: 1,
+    flexBasis: "46%",
+    minWidth: 240,
   },
 
   gridItemDesktop: {
-    width: "32%",
+    flexBasis: "31%",
+    minWidth: 260,
   },
 
   gridItemFull: {
     width: "100%",
+    flexBasis: "100%",
   },
 
-  optionsGrid: {
+  sectionTitleRow: {
     flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-    borderWidth: 1,
-    borderColor: "transparent",
-    borderRadius: 12,
-    padding: 4,
+    alignItems: "center",
+    marginBottom: 12,
   },
 
-  optionsGridError: {
-    borderColor: COLORS.error,
+  sectionTitle: {
+    marginLeft: 8,
+    textTransform: "uppercase",
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
   },
 
-  optionButton: {
-    minWidth: "30%",
-    flexGrow: 1,
-    paddingVertical: 10,
-    paddingHorizontal: 10,
-    marginTop: 0,
-    borderColor: COLORS.secondary,
-    backgroundColor: COLORS.white,
+  label: {
+    fontFamily: TYPOGRAPHY.fontFamily.medium,
+    color: COLORS.textPrimary,
   },
 
-  optionButtonSelected: {
-    borderColor: COLORS.primary,
-    backgroundColor: COLORS.secondary,
+  disabledInput: {
+    backgroundColor: SURFACE_COLOR,
+    color: COLORS.textTertiary,
   },
 
   textArea: {
@@ -180,59 +134,146 @@ export const styles = StyleSheet.create({
     textAlignVertical: "top",
   },
 
-  inlineButtonContent: {
-    flexDirection: "row",
-    alignItems: "center",
+  alert: {
+    width: "100%",
+    marginBottom: 12,
+  },
+
+  alertText: {
+    lineHeight: 18,
+  },
+
+  actions: {
+    width: "100%",
+    marginBottom: 12,
+    gap: 10,
+  },
+
+  outlinePrimaryButton: {
+    width: "100%",
+    minHeight: 46,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    backgroundColor: COLORS.white,
+    borderRadius: 10,
+  },
+
+  cancelEditButton: {
+    width: "100%",
+    minHeight: 44,
+    borderWidth: 1,
+    borderColor: BORDER_COLOR,
+    backgroundColor: COLORS.white,
+    borderRadius: 10,
   },
 
   inlineButtonContentCentered: {
+    width: "100%",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
+    gap: 8,
   },
 
   saveText: {
-    marginLeft: 8,
     fontFamily: TYPOGRAPHY.fontFamily.bold,
   },
 
+  savedHeader: {
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    gap: 10,
+  },
+
+  reloadButton: {
+    minHeight: 32,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    backgroundColor: COLORS.white,
+  },
+
   emptyText: {
+    paddingVertical: 12,
     fontFamily: TYPOGRAPHY.fontFamily.regular,
   },
 
   savedCase: {
+    width: "100%",
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: COLORS.secondary,
-    backgroundColor: COLORS.surface,
-    borderRadius: 14,
-    padding: 14,
-    marginBottom: 12,
+    borderColor: BORDER_COLOR,
+    backgroundColor: COLORS.white,
+    padding: 12,
+    marginTop: 10,
+  },
+
+  savedCaseHeader: {
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    gap: 10,
+    marginBottom: 10,
+  },
+
+  savedCaseHeaderText: {
+    flex: 1,
+    minWidth: 0,
   },
 
   savedCaseTitle: {
-    marginBottom: 10,
     fontFamily: TYPOGRAPHY.fontFamily.bold,
+    marginBottom: 2,
+  },
+
+  caseActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+
+  caseActionButton: {
+    minHeight: 32,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    backgroundColor: PRIMARY_LIGHT,
+  },
+
+  deleteButton: {
+    minHeight: 32,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: COLORS.error,
+    backgroundColor: ERROR_LIGHT,
   },
 
   infoRow: {
-    marginBottom: 8,
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "flex-start",
+    paddingVertical: 5,
+    borderBottomWidth: 1,
+    borderBottomColor: BORDER_COLOR,
   },
 
   infoLabel: {
-    marginBottom: 2,
+    width: 110,
+    paddingRight: 8,
     fontFamily: TYPOGRAPHY.fontFamily.medium,
   },
 
   infoValue: {
+    flex: 1,
     fontFamily: TYPOGRAPHY.fontFamily.regular,
-  },
-
-  outlinePrimaryButton: {
-    minHeight: 50,
-    borderRadius: 14,
-    marginBottom: 18,
-    borderWidth: 1,
-    borderColor: COLORS.primary,
-    backgroundColor: COLORS.white,
   },
 });
