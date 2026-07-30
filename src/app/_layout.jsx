@@ -1,6 +1,7 @@
 import { Stack } from "expo-router";
 import React from "react";
 import { useFonts, Roboto_400Regular, Roboto_500Medium, Roboto_700Bold } from "@expo-google-fonts/roboto";
+import SessionMonitor from '../shared/components/ModalTokenExpired';
 
 export default function RootLayout() {
 
@@ -15,6 +16,7 @@ export default function RootLayout() {
   }
 
   return (
+  <SessionMonitor>
     <Stack screenOptions={{ headerShown: false }}>
 
       <Stack.Screen name="loginWeb" />
@@ -28,5 +30,6 @@ export default function RootLayout() {
 
 
     </Stack>
+    </SessionMonitor>
   );
 }
