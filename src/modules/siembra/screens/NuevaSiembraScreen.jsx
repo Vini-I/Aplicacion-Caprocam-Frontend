@@ -10,6 +10,7 @@
  *
  * 1. Renderiza el formulario dividido en secciones reutilizables:
  *      - Información general.
+ *      - Origen de la siembra (Directa / A partir de Pre-Cría).
  *      - Datos de larva.
  *      - Cálculo de población.
  *
@@ -27,6 +28,12 @@
  *    global Alert (no un Modal), centrado y ubicado arriba del botón
  *    de guardar, tal como lo define el estándar de interfaz del proyecto.
  *
+ * 5. Selector "Origen de esta siembra" (solo si NO se llegó
+ *    automáticamente desde "Finalizar Pre-Cría"): Directa o A partir
+ *    de Pre-Cría. Al elegir "A partir de Pre-Cría" aparece un Select
+ *    con las Pre-Crías finalizadas y disponibles; al elegirla se
+ *    autocompletan y bloquean (mode="view") los campos heredados en
+ *    "Información de Pre-Cría" y "Datos de larva".
  *
  * DEPENDENCIAS PRINCIPALES:
  *
@@ -91,6 +98,16 @@ export default function NuevaSiembraScreen() {
 
     plLarva,
 
+    vinoAutomaticoDePrecria,
+
+    preCriasDisponibles,
+
+    origenSiembra,
+
+    handleCambiarOrigenSiembra,
+
+    handleSeleccionarPreCria,
+
     mensaje,
 
     mensajeVariant,
@@ -102,6 +119,25 @@ export default function NuevaSiembraScreen() {
     handleChangeEstanque,
 
     handleCrearSiembra,
+    guardando,
+
+    handleAgregarProveedorLarva,
+
+    handleAgregarLaboratorioLarva,
+
+    handleAgregarProcedenciaLarva,
+
+    handleEditarProveedorLarva,
+
+    handleEditarLaboratorioLarva,
+
+    handleEditarProcedenciaLarva,
+
+    handleEliminarProveedorLarva,
+
+    handleEliminarLaboratorioLarva,
+
+    handleEliminarProcedenciaLarva,
 
     fieldHelpers,
   } = useNuevaSiembra();
@@ -124,15 +160,12 @@ export default function NuevaSiembraScreen() {
         contentContainerStyle={styles.scrollContent}
       >
         <View style={STYLE.contentWrapper}>
-
           {!formData.precriaId && (
             <Card>
               <SectionTitle icon={ICONS.clipboard} title="Tipo de registro" />
 
               <Select
-                label={fieldHelpers.requiredLabel(
-                  "¿Qué desea registrar?",
-                )}
+                label={fieldHelpers.requiredLabel("¿Qué desea registrar?")}
                 placeholder="Seleccione una opción"
                 options={[
                   { label: "Siembra", value: "siembra" },
@@ -142,7 +175,9 @@ export default function NuevaSiembraScreen() {
                 onChange={(value) => handleChange("tipoRegistro", value)}
                 labelStyle={styles.requiredLabel}
                 selectStyle={
-                  fieldHelpers.hasError("tipoRegistro") ? styles.inputError : null
+                  fieldHelpers.hasError("tipoRegistro")
+                    ? styles.inputError
+                    : null
                 }
               />
             </Card>
@@ -169,10 +204,55 @@ export default function NuevaSiembraScreen() {
                 procedenciasLarva={procedenciasLarva}
                 plLarva={plLarva}
                 fieldHelpers={fieldHelpers}
+                onAgregarProveedor={handleAgregarProveedorLarva}
+                onAgregarLaboratorio={handleAgregarLaboratorioLarva}
+                onAgregarProcedencia={handleAgregarProcedenciaLarva}
+                onEditarProveedor={handleEditarProveedorLarva}
+                onEditarLaboratorio={handleEditarLaboratorioLarva}
+                onEditarProcedencia={handleEditarProcedenciaLarva}
+                onEliminarProveedor={handleEliminarProveedorLarva}
+                onEliminarLaboratorio={handleEliminarLaboratorioLarva}
+                onEliminarProcedencia={handleEliminarProcedenciaLarva}
               />
             </>
           ) : (
             <>
+              {!vinoAutomaticoDePrecria && (
+                <Card>
+                  <SectionTitle
+                    icon={ICONS.growth}
+                    title="Origen de esta siembra"
+                  />
+
+                  <Select
+                    label="¿Cómo se origina esta siembra?"
+                    placeholder="Seleccione una opción"
+                    options={[
+                      { label: "Directa", value: "directa" },
+                      { label: "A partir de Pre-Cría", value: "precria" },
+                    ]}
+                    value={origenSiembra}
+                    onChange={handleCambiarOrigenSiembra}
+                  />
+
+                  {origenSiembra === "precria" && (
+                    <Select
+                      label={fieldHelpers.requiredLabel("Pre-Cría finalizada")}
+                      placeholder="Seleccionar Pre-Cría"
+                      options={preCriasDisponibles}
+                      value={formData.precriaId}
+                      onChange={handleSeleccionarPreCria}
+                      labelStyle={styles.requiredLabel}
+                      selectStyle={
+                        fieldHelpers.hasError("precriaId")
+                          ? styles.inputError
+                          : null
+                      }
+                    />
+                  )}
+                </Card>
+              )}
+
               <InformacionGeneralSection
                 formData={formData}
                 onChange={handleChange}
@@ -190,6 +270,7 @@ export default function NuevaSiembraScreen() {
                   onChange={handleChange}
                   fieldHelpers={fieldHelpers}
                   isAutonomous={false}
+                  mode="view"
                 />
               )}
 
@@ -200,7 +281,17 @@ export default function NuevaSiembraScreen() {
                 laboratoriosLarva={laboratoriosLarva}
                 procedenciasLarva={procedenciasLarva}
                 plLarva={plLarva}
+                mode={formData.pasoPorPrecria === "si" ? "view" : "edit"}
                 fieldHelpers={fieldHelpers}
+                onAgregarProveedor={handleAgregarProveedorLarva}
+                onAgregarLaboratorio={handleAgregarLaboratorioLarva}
+                onAgregarProcedencia={handleAgregarProcedenciaLarva}
+                onEditarProveedor={handleEditarProveedorLarva}
+                onEditarLaboratorio={handleEditarLaboratorioLarva}
+                onEditarProcedencia={handleEditarProcedenciaLarva}
+                onEliminarProveedor={handleEliminarProveedorLarva}
+                onEliminarLaboratorio={handleEliminarLaboratorioLarva}
+                onEliminarProcedencia={handleEliminarProcedenciaLarva}
               />
 
               <CalculoPoblacionSection
@@ -224,6 +315,7 @@ export default function NuevaSiembraScreen() {
 
           <Button
             onPress={handleCrearSiembra}
+            disabled={guardando}
             style={styles.createButton}
             textStyle={styles.createButtonText}
             variant="outline"
@@ -231,9 +323,11 @@ export default function NuevaSiembraScreen() {
             <View style={styles.createButtonContent}>
               <Icon icon={ICONS.save} color={COLORS.primary} />
               <Text style={styles.createButtonText}>
-                {formData.tipoRegistro === "precria"
-                  ? "Guardar Pre-Cría"
-                  : "Guardar Siembra"}
+                {guardando
+                  ? "Guardando..."
+                  : formData.tipoRegistro === "precria"
+                    ? "Guardar Pre-Cría"
+                    : "Guardar Siembra"}
               </Text>
             </View>
           </Button>

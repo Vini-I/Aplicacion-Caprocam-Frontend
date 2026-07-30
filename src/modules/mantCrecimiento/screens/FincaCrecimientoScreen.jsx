@@ -20,6 +20,7 @@ import Alert from "../../../shared/components/Alert.jsx";
 import BadgeLabel from "../../../shared/components/Badge.jsx";
 import Button from "../../../shared/components/Button.jsx";
 import Card from "../../../shared/components/Card.jsx";
+import Calendario from "../../../shared/components/DateInput.jsx";
 import Icon from "../../../shared/components/Icons.jsx";
 import NavbarRegistro from "../../../shared/components/NavbarRegistro.jsx";
 import NumberInput from "../../../shared/components/NumberInput.jsx";
@@ -35,14 +36,23 @@ export default function FincaCrecimientoScreen() {
     fincaSeleccionada,
     estanqueSeleccionado,
     pesoActual,
+    fechaRegistro,
     opcionesFincas,
     estanquesFiltrados,
     estanqueSeleccionadoObj,
     estanque,
+
+    opcionesColaboradores,
+    colaboradorSeleccionado,
+
     setEstanqueSeleccionado,
     setPesoActual,
+    setFechaRegistro,
     handleFincaChange,
     guardarDatos,
+
+    handleColaboradorChange,
+
     submitted,
     successMessage,
     errorMessage,
@@ -50,22 +60,21 @@ export default function FincaCrecimientoScreen() {
     mostrarErrorFinca,
     mostrarErrorEstanque,
     mostrarErrorPeso,
+    mostrarErrorFecha,
+    mostrarErrorColaborador
   } = useFincaCrecimiento();
-
-  if (!estanque) {
-    return (
-      <ScrollView style={STYLE.container} contentContainerStyle={styles.contentScroll}>
-        <Card style={STYLE.contentWrapper}>
-          <Text>No se encontró un estanque válido.</Text>
-        </Card>
-      </ScrollView>
-    );
-  }
 
   return (
     <View style={styles.screenContainer}>
-      <NavbarRegistro Titulo="Crecimiento" Subtitulo="Registro de peso" Icono="growth" />
-      <ScrollView style={STYLE.container} contentContainerStyle={styles.contentScroll}>
+      <NavbarRegistro
+        Titulo="Crecimiento"
+        Subtitulo="Registro de peso"
+        Icono="growth"
+      />
+      <ScrollView
+        style={STYLE.container}
+        contentContainerStyle={styles.contentScroll}
+      >
         <Card style={STYLE.contentWrapper}>
           <View style={styles.headerRow}>
             <Icon
@@ -92,9 +101,21 @@ export default function FincaCrecimientoScreen() {
             options={estanquesFiltrados}
             value={estanqueSeleccionado}
             onChange={setEstanqueSeleccionado}
-            disabled={estanqueSeleccionado !== "" && estanquesFiltrados.length === 0}
+            disabled={
+              estanqueSeleccionado !== "" && estanquesFiltrados.length === 0
+            }
             selectStyle={mostrarErrorEstanque ? styles.inputError : null}
           />
+
+          <Select
+            label="Colaborador asignado *"
+            placeholder="Seleccione colaborador"
+            options={opcionesColaboradores}
+            value={colaboradorSeleccionado}
+            onChange={handleColaboradorChange}
+            selectStyle={mostrarErrorColaborador ? styles.inputError : null}
+          />
+
 
           <View style={styles.badgeRow}>
             <BadgeLabel
@@ -102,13 +123,23 @@ export default function FincaCrecimientoScreen() {
               variant="success"
               style={styles.badgeItem}
             />
-            <BadgeLabel label={pesoAnteriorLabel} variant="warning" style={styles.badgeItem} />
+            <BadgeLabel
+              label={pesoAnteriorLabel}
+              variant="warning"
+              style={styles.badgeItem}
+            />
           </View>
 
           <View style={styles.inputColumn}>
-            <View style={styles.inputItem}>
-              <Title level={5}>Peso actual (g) *</Title>
+            <Calendario
+              label="Fecha de registro *"
+              value={fechaRegistro}
+              onChangeText={setFechaRegistro}
+              inputStyle={mostrarErrorFecha ? styles.inputError : null}
+            />
+            <View>
               <NumberInput
+                label="Peso actual (g) *"
                 style={[styles.sameInput, mostrarErrorPeso && styles.inputError]}
                 value={pesoActual}
                 onChangeText={setPesoActual}
@@ -119,17 +150,21 @@ export default function FincaCrecimientoScreen() {
             </View>
           </View>
 
-          {submitted && errorMessage ? <Alert variant="danger" message={errorMessage} /> : null}
+          {submitted && errorMessage ? (
+            <Alert variant="danger" message={errorMessage} />
+          ) : null}
           {submitted && successMessage ? (
             <Alert variant="success" message={successMessage} />
           ) : null}
 
-          <Button variant="outline" onPress={guardarDatos} style={styles.submitButton}>
+          <Button
+            variant="outline"
+            onPress={guardarDatos}
+            style={styles.submitButton}
+          >
             <View style={styles.buttonContent}>
-              <Icon icon={ICONS.save} size={24} color={COLORS.primary}/>
-              <Text style={styles.buttonText}>
-                Guardar
-              </Text>
+              <Icon icon={ICONS.save} size={24} color={COLORS.primary} />
+              <Text style={styles.buttonText}>Guardar</Text>
             </View>
           </Button>
         </Card>

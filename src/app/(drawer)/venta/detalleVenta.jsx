@@ -1,5 +1,20 @@
-import DetalleVenta from '../../../modules/mantVenta/screens/DetalleVentasScreen';
+import { useRouter, useLocalSearchParams } from "expo-router";
+import DetalleVenta from "../../../modules/mantVenta/screens/DetalleVentasScreen";
 
 export default function DetalleVentaScreen() {
-  return <DetalleVenta />;
+  const router = useRouter();
+  const { success, message } = useLocalSearchParams();
+
+  return (
+    <DetalleVenta
+      success={success}
+      message={message}
+      onEdit={(id) =>
+        router.push({
+          pathname: "/(drawer)/venta/editarVenta",
+          params: { id },
+        })
+      }
+    />
+  );
 }

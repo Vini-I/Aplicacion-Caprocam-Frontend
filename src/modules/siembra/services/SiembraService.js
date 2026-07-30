@@ -3,18 +3,24 @@
  * SERVICIO DE SIEMBRA
  * ============================================================
  *
- * Gestiona temporalmente la información utilizada por el módulo
- * de Siembra mediante datos simulados en memoria.
+ * ARCHIVO OBSOLETO - MANTENIDO TEMPORALMENTE POR COMPATIBILIDAD
  *
- * FUNCIONALIDAD:
- * - Proporciona registros de siembras existentes.
- * - Consulta siembras por identificador.
- * - Obtiene catálogos de fincas, estanques y datos de larva.
- * - Proporciona opciones utilizadas en los formularios.
+ * Este archivo quedó inutilizado dentro del módulo de Siembra: todo
+ * lo que expone es información simulada en memoria (mock), sin
+ * ninguna conexión real a la base de datos. El módulo de Siembra ya
+ * NO lo usa - fue reemplazado por servicios reales conectados al
+ * backend (src/modules/siembra/services/siembra.service.js,
+ * precria.service.js, lote.service.js, proveedorLarva.service.js,
+ * laboratorio.service.js, procedencia.service.js).
  *
- * NOTA:
- * Actualmente utiliza información local de prueba.
- * Posteriormente deberá conectarse con la base de datos.
+ * Se conserva por ahora únicamente porque otros módulos (Dashboard,
+ * Trazabilidad) todavía lo importan directamente y dejarían de
+ * compilar si se elimina. Esos módulos deben migrar a los servicios
+ * reales de arriba - por ejemplo, en vez de la función mock de este
+ * archivo, usar getSiembras() de siembra.service.js, que sí hace la
+ * petición real al backend (GET /siembras) y devuelve datos reales,
+ * no simulados.
+ *
  */
 const siembras = [
   {
@@ -170,6 +176,55 @@ export function finalizarPreCria(siembraId, formData) {
   return actualizarSiembra(siembraId, { ...formData, estado: "Finalizada" });
 }
 
+/**
+ * Pre-Crías finalizadas que todavía NO tienen una Siembra creada
+ * a partir de ellas (para el Select "Siembra a partir de Pre-Cría").
+ * Se recalcula siempre a partir del array vivo, así que cualquier
+ * Pre-Cría recién finalizada aparece automáticamente disponible.
+ */
+export function obtenerPreCriasFinalizadasDisponibles() {
+  const idsYaUsados = new Set(
+    siembras
+      .filter(
+        (registro) => registro.tipoRegistro !== "precria" && registro.precriaId,
+      )
+      .map((registro) => Number(registro.precriaId)),
+  );
+
+  return siembras
+    .filter(
+      (registro) =>
+        registro.tipoRegistro === "precria" &&
+        registro.estado === "Finalizada" &&
+        !idsYaUsados.has(registro.siembraId),
+    )
+    .map((registro) => ({
+      label: `Pre-Cría #${registro.siembraId}`,
+      value: String(registro.siembraId),
+    }));
+}
+
+export function mapearPreCriaASiembra(precria) {
+  if (!precria) {
+    return {};
+  }
+
+  return {
+    finca: precria.fincaId || precria.finca || "",
+    estanque: precria.estanque || "",
+    cantidadSobrevivientePrecria:
+      precria.cantidadSobrevivientePrecria || precria.cantidadFinal || "",
+    duracionPrecria: precria.duracionPrecria || precria.duracionDias || "",
+    fechaSalidaPrecria: precria.fechaSalidaPrecria || precria.fechaFin || "",
+    proveedorLarva: precria.proveedorLarva || "",
+    laboratorioLarva: precria.laboratorioLarva || "",
+    procedenciaLarva: precria.procedenciaLarva || "",
+    codigoLoteLarva: precria.codigoLoteLarva || "",
+    certificadoLarva: precria.certificadoLarva || "",
+    plSiembra: precria.plLarva || precria.plFinal || precria.plInicial || "",
+  };
+}
+
 export function obtenerFincas() {
   return [
     { label: "Finca La Reina", value: "laReina" },
@@ -188,29 +243,124 @@ export function obtenerEstanquePorCodigo(finca, codigoEstanque) {
   return estanques.find((estanque) => estanque.value === codigoEstanque);
 }
 
+const proveedoresLarva = [
+  { label: "Larvas del Pacífico", value: "pacifico" },
+  { label: "AquaLarva", value: "aqua" },
+  { label: "Maricultura CR", value: "maricultura" },
+];
+
+const laboratoriosLarva = [
+  { label: "Laboratorio Pacífico Norte", value: "pacificoNorte" },
+  { label: "AquaLab Costa Rica", value: "aqualabCr" },
+  { label: "MarLarva Guanacaste", value: "marlarvaGuanacaste" },
+];
+
+const procedenciasLarva = [
+  { label: "Puntarenas", value: "puntarenas" },
+  { label: "Golfo de Nicoya", value: "golfoNicoya" },
+  { label: "Laboratorio nacional", value: "laboratorioNacional" },
+  { label: "Importada", value: "importada" },
+];
+
+function generarValorDesdeNombre(lista, nombre) {
+  const base = nombre
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+
+  let value = base || "item";
+  let contador = 1;
+
+  while (lista.some((opcion) => opcion.value === value)) {
+    contador += 1;
+    value = `${base}-${contador}`;
+  }
+
+  return value;
+}
+
 export function obtenerProveedoresLarva() {
-  return [
-    { label: "Larvas del Pacífico", value: "pacifico" },
-    { label: "AquaLarva", value: "aqua" },
-    { label: "Maricultura CR", value: "maricultura" },
-  ];
+  return [...proveedoresLarva];
 }
 
 export function obtenerLaboratoriosLarva() {
-  return [
-    { label: "Laboratorio Pacífico Norte", value: "pacificoNorte" },
-    { label: "AquaLab Costa Rica", value: "aqualabCr" },
-    { label: "MarLarva Guanacaste", value: "marlarvaGuanacaste" },
-  ];
+  return [...laboratoriosLarva];
 }
 
 export function obtenerProcedenciasLarva() {
-  return [
-    { label: "Puntarenas", value: "puntarenas" },
-    { label: "Golfo de Nicoya", value: "golfoNicoya" },
-    { label: "Laboratorio nacional", value: "laboratorioNacional" },
-    { label: "Importada", value: "importada" },
-  ];
+  return [...procedenciasLarva];
+}
+
+export function agregarProveedorLarva(nombre) {
+  const nuevaOpcion = {
+    label: nombre.trim(),
+    value: generarValorDesdeNombre(proveedoresLarva, nombre),
+  };
+  proveedoresLarva.push(nuevaOpcion);
+  return nuevaOpcion;
+}
+
+export function agregarLaboratorioLarva(nombre) {
+  const nuevaOpcion = {
+    label: nombre.trim(),
+    value: generarValorDesdeNombre(laboratoriosLarva, nombre),
+  };
+  laboratoriosLarva.push(nuevaOpcion);
+  return nuevaOpcion;
+}
+
+export function agregarProcedenciaLarva(nombre) {
+  const nuevaOpcion = {
+    label: nombre.trim(),
+    value: generarValorDesdeNombre(procedenciasLarva, nombre),
+  };
+  procedenciasLarva.push(nuevaOpcion);
+  return nuevaOpcion;
+}
+
+export function actualizarProveedorLarva(value, nombre) {
+  const opcion = proveedoresLarva.find((item) => item.value === value);
+  if (!opcion) return null;
+  opcion.label = nombre.trim();
+  return { ...opcion };
+}
+
+export function actualizarLaboratorioLarva(value, nombre) {
+  const opcion = laboratoriosLarva.find((item) => item.value === value);
+  if (!opcion) return null;
+  opcion.label = nombre.trim();
+  return { ...opcion };
+}
+
+export function actualizarProcedenciaLarva(value, nombre) {
+  const opcion = procedenciasLarva.find((item) => item.value === value);
+  if (!opcion) return null;
+  opcion.label = nombre.trim();
+  return { ...opcion };
+}
+
+export function eliminarProveedorLarva(value) {
+  const indice = proveedoresLarva.findIndex((item) => item.value === value);
+  if (indice === -1) return false;
+  proveedoresLarva.splice(indice, 1);
+  return true;
+}
+
+export function eliminarLaboratorioLarva(value) {
+  const indice = laboratoriosLarva.findIndex((item) => item.value === value);
+  if (indice === -1) return false;
+  laboratoriosLarva.splice(indice, 1);
+  return true;
+}
+
+export function eliminarProcedenciaLarva(value) {
+  const indice = procedenciasLarva.findIndex((item) => item.value === value);
+  if (indice === -1) return false;
+  procedenciasLarva.splice(indice, 1);
+  return true;
 }
 
 export function obtenerTecnicasCultivo() {

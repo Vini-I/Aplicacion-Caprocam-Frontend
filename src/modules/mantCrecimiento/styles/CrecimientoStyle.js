@@ -44,7 +44,7 @@ export const styles = StyleSheet.create({
   },
   inputColumn: {
     flexDirection: "column",
-    marginTop: 14,
+
   },
   inputWrapper: {
     flex: 1,
@@ -67,7 +67,7 @@ export const styles = StyleSheet.create({
   },
   badgeItem: {
     marginRight: 8,
-    marginBottom: 6,
+    marginBottom: 5,
   },
   badgeContainer: {
     backgroundColor: COLORS.secondary,

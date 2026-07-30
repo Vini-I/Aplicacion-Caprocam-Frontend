@@ -15,7 +15,6 @@
  * - Adapta el comportamiento visual según el tamaño de pantalla.
  */
 import { useWindowDimensions } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import { useFinca } from "../context/FincaContext.js";
 
@@ -30,25 +29,25 @@ export function useFincaScreen() {
   } = useFinca();
   const [ModalVisible, setModalVisible] = useState(false);
   const [FincaNombreSeleccionada, setFincaNombreSeleccionada] = useState(null);
-  const [FincaCodigoInternoSeleccionada, setFincaCodigoInternoSeleccionada] =
+  const [FincaCodigoCBOSeleccionada, setFincaCodigoCBOSeleccionada] =
     useState(null);
 
   function abrirModalEliminar(Finca) {
-    setFincaCodigoInternoSeleccionada(Finca.codigoInterno);
-    setFincaNombreSeleccionada(Finca.nombre);
+    setFincaCodigoCBOSeleccionada(Finca.codigoCBO);
+    setFincaNombreSeleccionada(Finca.nombreFinca);
     setModalVisible(true);
   }
 
   function cancelarEliminar() {
     setModalVisible(false);
-    setFincaCodigoInternoSeleccionada(null);
+    setFincaCodigoCBOSeleccionada(null);
     setFincaNombreSeleccionada(null);
   }
 
   function confirmarEliminar() {
-    eliminarFinca(FincaCodigoInternoSeleccionada);
+    eliminarFinca(FincaCodigoCBOSeleccionada);
     setModalVisible(false);
-    setFincaCodigoInternoSeleccionada(null);
+    setFincaCodigoCBOSeleccionada(null);
     setFincaNombreSeleccionada(null);
   }
 

@@ -29,8 +29,8 @@ export const ICONS = {
     name: "moon",
   },
   calendar: {
-    provider: "FontAwesome5",
-    name: "calendar-week",
+    provider: "MaterialCommunityIcons",
+    name: "calendar-month-outline",
   },
   clock: {
     provider: "MaterialCommunityIcons",
@@ -250,12 +250,12 @@ export const ICONS = {
   },
 
   // Parasitologia
-    parasite: {
+  parasite: {
     provider: "MaterialCommunityIcons",
     name: "bacteria-outline",
   },
-  
-   microscope: {
+
+  microscope: {
     provider: "MaterialCommunityIcons",
     name: "microscope",
   },
@@ -267,7 +267,7 @@ export const ICONS = {
   },
 
   //Trazabilidad
-    transfer: {
+  transfer: {
     provider: "MaterialCommunityIcons",
     name: "transfer-right",
   },
@@ -294,11 +294,11 @@ export const ICONS = {
   gear: {
     provider: "FontAwesome",
     name: "gear",
-  }, 
+  },
   dropbox: {
     provider: "AntDesign",
     name: "dropbox",
-  }, 
+  },
   truck: {
     provider: "FontAwesome6",
     name: "truck-arrow-right",
@@ -310,7 +310,7 @@ export const ICONS = {
   tools: {
     provider: "MaterialCommunityIcons",
     name: "tools",
-  }, 
+  },
   aerator: {
     provider: "MaterialCommunityIcons",
     name: "pinwheel",
@@ -322,5 +322,11 @@ export const ICONS = {
   link: {
     provider: "Entypo",
     name: "link",
+  },
+
+  //WhatsApp
+  whatsApp: {
+    provider: "FontAwesome5",
+    name: "whatsapp"
   }
 };

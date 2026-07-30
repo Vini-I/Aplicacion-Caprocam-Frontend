@@ -22,6 +22,12 @@
  *
  * 4. Permite editar, guardar y cancelar cambios realizados en la siembra.
  *
+ * 5. Cuando la Siembra viene de una Pre-Cría (pasoPorPrecria === "si"),
+ *    el resumen embebido de Pre-Cría y la sección "Datos de larva"
+ *    quedan siempre en modo lectura (mode="view"), sin importar si el
+ *    resto del formulario está en edición — son datos heredados, no
+ *    propios de esta Siembra.
+ *
  * LÓGICA:
  * - La gestión del estado, validaciones y acciones se realiza mediante:
  *  -useDetalleSiembra.
@@ -76,7 +82,7 @@ import Alert from "../../../shared/components/Alert";
 import Icon from "../../../shared/components/Icons";
 import NavbarRegistro from "../../../shared/components/NavbarRegistro";
 import Text from "../../../shared/components/Text";
-import Title from "../../../shared/components/Title";
+
 
 // Secciones del formulario
 
@@ -143,11 +149,31 @@ export default function DetalleSiembraScreen() {
 
     guardar,
 
+    guardando,
+
     handleFinalizarPreCria,
 
     handleCrearSiembraDesdePrecria,
 
     datosCierrePreCriaCompletos,
+
+    handleAgregarProveedorLarva,
+
+    handleAgregarLaboratorioLarva,
+
+    handleAgregarProcedenciaLarva,
+
+    handleEditarProveedorLarva,
+
+    handleEditarLaboratorioLarva,
+
+    handleEditarProcedenciaLarva,
+
+    handleEliminarProveedorLarva,
+
+    handleEliminarLaboratorioLarva,
+
+    handleEliminarProcedenciaLarva,
 
     fieldHelpers,
   } = useDetalleSiembra(id);
@@ -164,6 +190,14 @@ export default function DetalleSiembraScreen() {
     );
   }
 
+  // NUEVO: busca el nombre real en los catálogos, con fallback si no
+  // se encuentra (ej. mientras cargan, o si el id no calza con nada).
+  const fincaLabel =
+    fincas.find((f) => f.value === formData.finca)?.label || "Sin finca";
+  const estanqueLabel =
+    estanques.find((e) => e.value === formData.estanque)?.label ||
+    "Sin estanque";
+
   return (
     <>
       <NavbarRegistro
@@ -172,7 +206,7 @@ export default function DetalleSiembraScreen() {
             ? "Detalle de Pre-Cría"
             : "Detalle de Siembra"
         }
-        Subtitulo={`${formData.estanque || "Sin estanque"} – ${formData.finca || "Sin finca"}`}
+        Subtitulo={`${estanqueLabel} – ${fincaLabel}`}
         Icono="shrimp"
       />
       <ScrollView
@@ -185,10 +219,7 @@ export default function DetalleSiembraScreen() {
           <Card>
             <View style={styles.resumenHeader}>
               <View style={styles.iconContainer}>
-                <Icon
-                  icon={ICONS.shrimp}
-                  style={styles.summaryIcon}
-                />
+                <Icon icon={ICONS.shrimp} style={styles.summaryIcon} />
               </View>
 
               <View style={styles.resumenInfo}>
@@ -200,7 +231,7 @@ export default function DetalleSiembraScreen() {
 
                 <Text style={styles.siembraTitle}>
                   {formData.tipoRegistro === "precria" ? "Pre-Cría" : "Siembra"}{" "}
-                  #{siembra.siembraId}
+                  #{id}
                 </Text>
               </View>
             </View>
@@ -264,6 +295,15 @@ export default function DetalleSiembraScreen() {
                 plLarva={plLarva}
                 mode={isEditing ? "edit" : "view"}
                 fieldHelpers={fieldHelpers}
+                onAgregarProveedor={handleAgregarProveedorLarva}
+                onAgregarLaboratorio={handleAgregarLaboratorioLarva}
+                onAgregarProcedencia={handleAgregarProcedenciaLarva}
+                onEditarProveedor={handleEditarProveedorLarva}
+                onEditarLaboratorio={handleEditarLaboratorioLarva}
+                onEditarProcedencia={handleEditarProcedenciaLarva}
+                onEliminarProveedor={handleEliminarProveedorLarva}
+                onEliminarLaboratorio={handleEliminarLaboratorioLarva}
+                onEliminarProcedencia={handleEliminarProcedenciaLarva}
               />
             </>
           ) : (
@@ -286,7 +326,7 @@ export default function DetalleSiembraScreen() {
                 <PreCriaSection
                   formData={formData}
                   onChange={handleChange}
-                  mode={isEditing ? "edit" : "view"}
+                  mode="view"
                   fieldHelpers={fieldHelpers}
                 />
               )}
@@ -300,8 +340,21 @@ export default function DetalleSiembraScreen() {
                 laboratoriosLarva={laboratoriosLarva}
                 procedenciasLarva={procedenciasLarva}
                 plLarva={plLarva}
-                mode={isEditing ? "edit" : "view"}
+                mode={
+                  isEditing && formData.pasoPorPrecria !== "si"
+                    ? "edit"
+                    : "view"
+                }
                 fieldHelpers={fieldHelpers}
+                onAgregarProveedor={handleAgregarProveedorLarva}
+                onAgregarLaboratorio={handleAgregarLaboratorioLarva}
+                onAgregarProcedencia={handleAgregarProcedenciaLarva}
+                onEditarProveedor={handleEditarProveedorLarva}
+                onEditarLaboratorio={handleEditarLaboratorioLarva}
+                onEditarProcedencia={handleEditarProcedenciaLarva}
+                onEliminarProveedor={handleEliminarProveedorLarva}
+                onEliminarLaboratorio={handleEliminarLaboratorioLarva}
+                onEliminarProcedencia={handleEliminarProcedenciaLarva}
               />
 
               {/* Cálculo de población */}
@@ -366,12 +419,15 @@ export default function DetalleSiembraScreen() {
                   <Button
                     style={styles.button}
                     onPress={handleFinalizarPreCria}
+                    disabled={guardando}
                     textStyle={styles.textoBoton}
                     variant="outline"
                   >
                     <View style={styles.buttonContent}>
                       <Icon icon={ICONS.check} color={COLORS.primary} />
-                      <Text style={styles.textoBoton}>Finalizar Pre-Cría</Text>
+                      <Text style={styles.textoBoton}>
+                        {guardando ? "Finalizando..." : "Finalizar Precria"}
+                      </Text>
                     </View>
                   </Button>
                 )}
@@ -382,12 +438,15 @@ export default function DetalleSiembraScreen() {
               <Button
                 style={styles.button}
                 onPress={guardar}
+                disabled={guardando}
                 textStyle={styles.textoBoton}
                 variant="outline"
               >
                 <View style={styles.buttonContent}>
                   <Icon icon={ICONS.save} color={COLORS.primary} />
-                  <Text style={styles.textoBoton}>Guardar</Text>
+                  <Text style={styles.textoBoton}>
+                    {guardando ? "Guardando..." : "Guardar"}
+                  </Text>
                 </View>
               </Button>
 

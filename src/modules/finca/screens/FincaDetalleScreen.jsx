@@ -14,8 +14,7 @@
  * - Permite navegar al registro y detalle de estanques.
  * - Utiliza componentes reutilizables para mantener el diseño.
  */
-import { ScrollView, View, TouchableOpacity } from "react-native";
-import { Color, useRouter } from "expo-router";
+import { ScrollView, View } from "react-native";
 
 import { styles } from "../styles/FincaDetalleStyles";
 import { ICONS } from "../../../theme/icons";
@@ -30,27 +29,65 @@ import Text from "../../../shared/components/Text";
 import Icon from "../../../shared/components/Icons";
 import Button from "../../../shared/components/Button";
 import Badge from "../../../shared/components/Badge";
-import Avatar from "../../../shared/components/Avatar";
 import NavbarRegistro from "../../../shared/components/NavbarRegistro";
+import ModalEliminar from "../../../shared/components/ModalEliminar";
+import Alert from "../../../shared/components/Alert";
 
 export default function FincaDetalleScreen({
   onEstanque,
   onEstanqueDetalle,
   onEstanqueEditar,
 }) {
-  const router = useRouter();
 
-  const { finca, estanquesFinca, haldleGenerar, loading } = useFincaDetalle();
+  const { 
+    finca, 
+    estanquesFinca, 
+    handleGenerar, 
+    loadingFincas, 
+    loadingEstanques,
+    loadingPdf ,
 
+    alert,
+
+    modalVisible,
+    estanqueSeleccionado,
+    abrirModalEliminar,
+    cancelarEliminar,
+    confirmarEliminar,
+  } = useFincaDetalle();
+
+  if (loadingFincas || loadingEstanques) {
+    return <Text>Cargando...</Text>;
+  }
+
+  if (!finca) {
+    return <Text>Finca no encontrada</Text>;
+  }
+  
   return (
     <>
       <NavbarRegistro
         Titulo="Detalle de Finca"
-        Subtitulo={finca.nombre}
+        Subtitulo={finca.nombreFinca}
         Icono="document"
       />
-      <ScrollView style={STYLE.container}>
+      <ScrollView showsVerticalScrollIndicator={false} style={STYLE.container}>
         <View style={STYLE.contentWrapper}>
+
+          {alert === "edited" && (
+            <Alert style={styles.alertCorrect}>Estanque editado correctamente</Alert>
+          )}
+          {alert === "created" && (
+            <Alert style={styles.alertCorrect}>
+            Estanque registrado correctamente
+            </Alert>
+          )}
+            {alert === "deleted" && (
+            <Alert style={styles.alertIncorrect}>
+            Estanque eliminado correctamente
+          </Alert>
+          )}
+
           <Card>
             <View>
               <Text color={COLORS.textTertiary} style={styles.titleText}>
@@ -60,12 +97,12 @@ export default function FincaDetalleScreen({
 
             <View style={styles.filaDetalle}>
               <Text style={styles.etiqueta}>Nombre:</Text>
-              <Text style={styles.valor}>{finca.nombre}</Text>
+              <Text style={styles.valor}>{finca.nombreFinca}</Text>
             </View>
 
             <View style={styles.filaDetalle}>
               <Text style={styles.etiqueta}>CBO:</Text>
-              <Text style={styles.valor}>{finca.codigoInterno}</Text>
+              <Text style={styles.valor}>{finca.codigoCBO}</Text>
             </View>
 
             <View style={styles.filaDetalle}>
@@ -84,11 +121,16 @@ export default function FincaDetalleScreen({
             </View>
 
             <View style={styles.filaDetalle}>
-              <Text style={styles.etiqueta}>Responsable:</Text>
-              <Text style={styles.valor}>{finca.responsable}</Text>
+              <Text style={styles.etiqueta}>Otras Señas:</Text>
+              <Text numberOfLines={3} style={styles.valor}>{finca.otrasSenas}</Text>
             </View>
 
-            {finca.telefonos?.map((telefono, index) => (
+            <View style={styles.filaDetalle}>
+              <Text style={styles.etiqueta}>Responsable:</Text>
+              <Text style={styles.valor}>{finca.propietarioResponsable}</Text>
+            </View>
+
+            {finca.telefonoParse?.map((telefono, index) => (
               <View key={index} style={styles.filaDetalle}>
                 <Text style={styles.etiqueta}>Teléfono {index + 1}: </Text>
                 <Text style={styles.valor}>{telefono}</Text>
@@ -102,13 +144,13 @@ export default function FincaDetalleScreen({
 
             <View style={styles.filaDetalle}>
               <Text style={styles.etiqueta}>Espejo Agua:</Text>
-              <Text style={styles.valor}>{finca.espejoAgua}</Text>
+              <Text style={styles.valor}>{finca.espejosAgua}</Text>
             </View>
 
             <Button
               style={styles.buttonExport}
-              onPress={haldleGenerar}
-              disabled={loading}
+              onPress={handleGenerar}
+              disabled={loadingPdf}
             >
               <Icon
                 icon={ICONS.document}
@@ -116,25 +158,27 @@ export default function FincaDetalleScreen({
                 size={18}
               />
               <Text size={15}>
-                {loading ? "GENERANDO..." : "GENERAR REPORTE FINCA"}
+                {loadingPdf ? "GENERANDO..." : "GENERAR REPORTE FINCA"}
               </Text>
             </Button>
           </Card>
-          <Button style={styles.addButton} onPress={() => onEstanque()}>
+          <Button style={styles.addButton} onPress={() => onEstanque(finca.codigoCBO)}>
             <Icon style={styles.addButtonText} icon={ICONS.add} size={15} />
-            <Text style={styles.addButtonText} size={15}>REGISTRAR NUEVO ESTANQUE</Text>
+            <Text style={styles.addButtonText} size={15}>
+              REGISTRAR NUEVO ESTANQUE
+            </Text>
           </Button>
 
           {estanquesFinca?.map((estanque, index) => (
             <View key={index}>
-              <CardPress onPress={() => onEstanqueDetalle(estanque.codigo)}>
+              <CardPress onPress={() => onEstanqueDetalle(estanque.id, finca)}>
                 <View style={styles.header}>
                   <View style={styles.icon}>
                     <Icon icon={ICONS.waterFlow} color={COLORS.primary} />
                   </View>
 
                   <View>
-                    <Text style={styles.finca}>{estanque.finca}</Text>
+                    <Text style={styles.finca}>{finca.nombreFinca}</Text>
                     <Text style={styles.codigo}>{estanque.codigo}</Text>
                   </View>
 
@@ -161,28 +205,28 @@ export default function FincaDetalleScreen({
                 <View style={styles.Buttons}>
                   <Button
                     style={styles.Eliminar}
-                    onPress={() => abrirModalEliminar(Finca)}
+                    onPress={() => abrirModalEliminar(estanque)}
                   >
                     <Icon
                       icon={ICONS.delete}
-                      style={{ color: COLORS.error }}
+                      color={COLORS.error}
                       size={20}
                     />
-                    <Text size={12} style={{ color: COLORS.error }}>
+                    <Text size={12} color={COLORS.error}>
                       Eliminar
                     </Text>
                   </Button>
 
                   <Button
                     style={styles.Editar}
-                    onPress={() => onEstanqueEditar()}
+                    onPress={() => onEstanqueEditar(finca.codigoCBO, estanque.id)}
                   >
                     <Icon
                       icon={ICONS.edit}
-                      style={{ color: COLORS.primary }}
+                      color={COLORS.primary}
                       size={20}
                     />
-                    <Text size={12} style={{ color: COLORS.primary }}>
+                    <Text size={12} color={COLORS.primary}>
                       Editar
                     </Text>
                   </Button>
@@ -190,6 +234,14 @@ export default function FincaDetalleScreen({
               </CardPress>
             </View>
           ))}
+
+          <ModalEliminar
+            visible={modalVisible}
+            title="estanque"
+            message={estanqueSeleccionado?.codigo}
+            onCancel={cancelarEliminar}
+            onConfirm={confirmarEliminar}
+          />
         </View>
       </ScrollView>
     </>

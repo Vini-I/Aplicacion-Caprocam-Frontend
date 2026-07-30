@@ -16,36 +16,62 @@
  * - Limpia automáticamente las alertas después de un tiempo definido.
  */
 import { createContext, useContext, useState, useEffect } from "react";
-import { fincas as fincasIniciales } from "../screens/FincaData.js";
+import { fincaService } from "../services/finca.service.js";
+import { useError } from "../../../shared/context/ErrorContext.js";
 
 const FincaContext = createContext();
 
 export function FincaProvider({ children }) {
-  const [fincas, setFincas] = useState(fincasIniciales);
+  const [fincas, setFincas] = useState([]);
   const [alert, setAlert] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const { mostrarError } = useError();
 
-  function crearFinca(nuevaFinca) {
-    setFincas((prev) => [...prev, nuevaFinca]);
+  async function cargarFincas() {
+    try {
+      setLoading(true);
+      const data = await fincaService.getFincas();
+      setFincas(data);
+    } catch (error) {
+      mostrarError(error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    cargarFincas();
+  }, []);
+
+  async function buscarFinca(codigoCBO) {
+    try {
+      const data = await fincaService.getFincasById(codigoCBO);
+      return data;
+    } catch (error) {
+      mostrarError(error);
+      throw error;
+    }
+  }
+
+  async function crearFinca(nuevaFinca) {
+    await fincaService.createFincas(nuevaFinca);
+    await cargarFincas();
     setAlert("created");
   }
 
-  function editarFinca(codigoInterno, datosActualizados) {
-    setFincas((prev) =>
-      prev.map((finca) =>
-        finca.codigoInterno === codigoInterno
-          ? { ...finca, ...datosActualizados }
-          : finca,
-      ),
-    );
-
+  async function editarFinca(codigoCBO, datosActualizados) {
+    await fincaService.updateFincas(datosActualizados, codigoCBO);
+    await cargarFincas();
     setAlert("edited");
   }
 
-  function eliminarFinca(codigoInterno) {
-    setFincas((prev) =>
-      prev.filter((finca) => finca.codigoInterno !== codigoInterno),
-    );
-
+  async function eliminarFinca(codigoCBO) {
+    try {
+      await fincaService.deleteFincas(codigoCBO);
+      await cargarFincas();
+    } catch (error) {
+      mostrarError(error);
+    }
     setAlert("deleted");
   }
 
@@ -69,8 +95,11 @@ export function FincaProvider({ children }) {
         // Estado
         fincas,
         alert,
+        loading,
 
         // Acciones CRUD
+        cargarFincas,
+        buscarFinca,
         crearFinca,
         editarFinca,
         eliminarFinca,

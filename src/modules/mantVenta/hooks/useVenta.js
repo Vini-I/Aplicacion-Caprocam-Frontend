@@ -35,13 +35,21 @@ import { compradorService } from "../../compradores/services/comprador.service.j
 import { styles } from "../styles/VentaStyles.js";
 import { COLORS } from "../../../theme/colors.js";
 
-export const CLIENTE_GENERICO = "cliente-generico";
-
 export function obtenerFechaActual() {
   const fecha = new Date();
   const dia = String(fecha.getDate()).padStart(2, "0");
   const mes = String(fecha.getMonth() + 1).padStart(2, "0");
   const anio = fecha.getFullYear();
+
+  return `${dia}/${mes}/${anio}`;
+}
+
+export function formatearFechaParaInput(fecha) {
+  if (!fecha) return obtenerFechaActual();
+
+  const [anio, mes, dia] = fecha.split("-");
+
+  if (!anio || !mes || !dia) return obtenerFechaActual();
 
   return `${dia}/${mes}/${anio}`;
 }
@@ -107,8 +115,8 @@ export function useVenta() {
 
   const [fincaSeleccionada, setFincaSeleccionada] = useState("");
   const [estanqueSeleccionado, setEstanqueSeleccionado] = useState("");
-  const [pesoPromedio, setPesoPromedio] = useState("0.1");
-  const [tamanoPromedio, setTamanoPromedio] = useState("0.1");
+  const [pesoPromedio, setPesoPromedio] = useState("0.0");
+  const [tamanoPromedio, setTamanoPromedio] = useState("0.0");
   const [kilosVendidos, setKilosVendidos] = useState("0");
   const [precioKilo, setPrecioKilo] = useState("0");
   const [fechaVenta, setFechaVenta] = useState(obtenerFechaActual());
@@ -122,6 +130,7 @@ export function useVenta() {
   const [tipoMensaje, setTipoMensaje] = useState("");
   const [errores, setErrores] = useState({});
   const [guardando, setGuardando] = useState(false);
+  const [ventas, setVentas] = useState([]);
 
   useEffect(() => {
     let activo = true;
@@ -181,7 +190,6 @@ export function useVenta() {
 
   const opcionesCompradores = useMemo(
     () => [
-      { label: "Cliente genérico", value: CLIENTE_GENERICO },
       ...compradoresData.map((comprador) => ({
         label: comprador.nombre,
         value: comprador.id,
@@ -284,6 +292,18 @@ export function useVenta() {
     [limpiarError],
   );
 
+  const handleFechaChange = useCallback(
+    (value) => {
+      if (!value) {
+        setFechaVenta(obtenerFechaActual());
+        return;
+      }
+
+      setFechaVenta(value);
+    },
+    [],
+  );
+
   const limpiarFormulario = useCallback(() => {
     setFincaSeleccionada("");
     setEstanqueSeleccionado("");
@@ -323,10 +343,7 @@ export function useVenta() {
       finca: Number(fincaSeleccionada),
       estanque: Number(estanqueSeleccionado),
       colaborador: Number(colaboradorSeleccionado),
-      comprador:
-        compradorSeleccionado === CLIENTE_GENERICO
-          ? null
-          : Number(compradorSeleccionado),
+      comprador: Number(compradorSeleccionado),
       pesoPromedio: Number(pesoPromedio),
       tamanoPromedio: Number(tamanoPromedio),
       cantVendida: Number(kilosVendidos),
@@ -338,6 +355,7 @@ export function useVenta() {
 
       await createVenta(ventaDTO);
 
+      setVentas((actual) => [ventaDTO, ...actual]);
       setTipoMensaje("success");
 
       setMensaje("Venta guardada correctamente.")
@@ -405,7 +423,9 @@ export function useVenta() {
     opcionesCompradores,
     precioKiloNumero,
     totalVenta,
+    ventas,
     // setters directos
+    setFechaVenta,
     setEstanqueSeleccionado,
     handleFincaChange,
     handlePesoPromedioChange,
@@ -414,6 +434,7 @@ export function useVenta() {
     handlePrecioChange,
     handleCompradorChange,
     handleColaboradorChange,
+    handleFechaChange,
     limpiarError,
     guardarVenta,
   };

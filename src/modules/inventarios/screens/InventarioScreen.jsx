@@ -126,7 +126,10 @@ function TarjetaProducto({ producto, onVerDetalle }) {
           etiqueta="Stock mínimo"
           valor={`${producto.stockMinimo} ${producto.unidad}`}
         />
-        <FilaDetalle etiqueta="Proveedor" valor={producto.proveedor} />
+        <FilaDetalle 
+          etiqueta="Proveedor" 
+          valor={producto.proveedor || producto.proveedorId || "—"} 
+        />
         <FilaDetalle etiqueta="Precio/unidad" valor={precioFormateado} />
         <FilaDetalle etiqueta="Fecha de caducidad" valor={producto.fechaCaducidad || "—"} />
       </View>
@@ -148,65 +151,64 @@ export default function InventarioScreen({ onDetail, onNew, onBack }) {
     cantidadStockBajo,
   } = useInventario();
 
-  const renderZonaFiltros = () => (
-    <View style={styles.zonaFiltros}>
-      <View style={styles.barraBusqueda}>
-        <SearchBar
-          value={busqueda}
-          onChangeText={setBusqueda}
-          placeholder="Buscar producto, código, categoría, proveedor..."
-          containerStyle={styles.searchBarContainer}
-        />
-        <FilterButton
-          categories={categorias}
-          suppliers={proveedores}
-          units={unidades}
-          activeFilters={filtros}
-          onApply={setFiltros}
-          showLowStock
-          showExpiryDate
-          buttonStyle={styles.filterButton}
-        />
-      </View>
-
-      {cantidadStockBajo > 0 && (
-        <View style={styles.alertaBanner}>
-          <Icon icon={ICONS.notification} color={COLORS.error} />
-          <CustomText size={13} weight="600" color={COLORS.error} style={styles.alertaTexto}>
-            {cantidadStockBajo}{" "}
-            {cantidadStockBajo === 1 ? "producto" : "productos"} con stock bajo
-          </CustomText>
-        </View>
-      )}
-
-      <View style={styles.filaContadorBoton}>
-        <CustomText size={13} color={COLORS.textTertiary} style={styles.contadorResultados}>
-          {productosFiltrados.length}{" "}
-          {productosFiltrados.length === 1 ? "producto encontrado" : "productos encontrados"}
-        </CustomText>
-        <Button variant="outline" onPress={onNew} style={styles.botonAgregar}>
-          <Icon icon={ICONS.add} color={COLORS.primary} />
-          <CustomText size={13} weight="600" color={COLORS.primary}>
-            Agregar producto
-          </CustomText>
-        </Button>
-      </View>
-    </View>
-  );
-
   return (
     <View style={STYLE.container}>
+      {/* Zona de filtros y búsqueda fija arriba (fuera de la FlatList para que no pierda el foco) */}
+      <View style={[STYLE.contentWrapper, styles.zonaFiltros]}>
+        <View style={styles.barraBusqueda}>
+          <SearchBar
+            value={busqueda}
+            onChangeText={setBusqueda}
+            placeholder="Buscar producto, código, categoría, proveedor..."
+            containerStyle={styles.searchBarContainer}
+          />
+          <FilterButton
+            categories={categorias}
+            suppliers={proveedores}
+            units={unidades}
+            activeFilters={filtros}
+            onApply={setFiltros}
+            showLowStock
+            showExpiryDate
+            buttonStyle={styles.filterButton}
+          />
+        </View>
+
+        {cantidadStockBajo > 0 && (
+          <View style={styles.alertaBanner}>
+            <Icon icon={ICONS.notification} color={COLORS.error} />
+            <CustomText size={13} weight="600" color={COLORS.error} style={styles.alertaTexto}>
+              {cantidadStockBajo}{" "}
+              {cantidadStockBajo === 1 ? "producto" : "productos"} con stock bajo
+            </CustomText>
+          </View>
+        )}
+
+        <View style={styles.filaContadorBoton}>
+          <CustomText size={13} color={COLORS.textTertiary} style={styles.contadorResultados}>
+            {productosFiltrados.length}{" "}
+            {productosFiltrados.length === 1 ? "producto encontrado" : "productos encontrados"}
+          </CustomText>
+          <Button variant="outline" onPress={onNew} style={styles.botonAgregar}>
+            <Icon icon={ICONS.add} color={COLORS.primary} />
+            <CustomText size={13} weight="600" color={COLORS.primary}>
+              Agregar producto
+            </CustomText>
+          </Button>
+        </View>
+      </View>
+
       <FlatList
         ref={flatListRef}
         data={productosFiltrados}
         keyExtractor={(item) => item.id.toString()}
+        showsVerticalScrollIndicator={false}
         renderItem={({ item }) => (
           <TarjetaProducto
             producto={item}
             onVerDetalle={() => onDetail(item.id)}
           />
         )}
-        ListHeaderComponent={renderZonaFiltros}
         ListEmptyComponent={
           <EmptyState
             title="Sin productos"

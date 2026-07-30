@@ -17,25 +17,66 @@
  */
 import { useLocalSearchParams } from "expo-router";
 import { useFinca } from "../context/FincaContext.js";
-import { estanques } from "../screens/EstanqueData";
+import { useEffect, useState } from "react";
+
+import { estanqueService } from "../../estanques/services/estanque.service.js";
+import { useEstanque } from "../../estanques/context/EstanqueContext.js";
+
 import { usePdf } from "../hooks/usePdf";
 
 export default function useFincaDetalle() {
-    const { fincas } = useFinca();
-    const { id } = useLocalSearchParams();
+  const { fincas, loading: loadingFincas } = useFinca();
 
-    const finca = fincas.find((f) => f.codigoInterno === id);
+  const {
+    estanques,
+    alert,
+    eliminarEstanque,
+    loading: loadingEstanques,
+  } = useEstanque();
 
-    const estanquesFinca = finca? estanques.filter((e) => e.finca === finca.nombre) : [];
+  const { id } = useLocalSearchParams();
 
-    const { crearPDFFinca, loading } = usePdf();
+  const finca = fincas.find((f) => f.id === Number(id));
 
-    const haldleGenerar = () => crearPDFFinca(finca, estanquesFinca);
+  const estanquesFinca = estanques.filter((e) => e.idFinca === finca?.id);
 
-    return {
-        finca,
-        estanquesFinca, 
-        haldleGenerar, 
-        loading,
-    }
+  const [modalVisible, setModalVisible] = useState(false);
+  const [estanqueSeleccionado, setEstanqueSeleccionado] = useState(null);
+
+  const { crearPDFFinca, loading: loadingPdf } = usePdf();
+
+  const handleGenerar = () => crearPDFFinca(finca, estanquesFinca);
+
+  function abrirModalEliminar(estanque) {
+    setEstanqueSeleccionado(estanque);
+    setModalVisible(true);
+  }
+
+  function cancelarEliminar() {
+    setModalVisible(false);;
+    setEstanqueSeleccionado(null);
+  }
+
+  function confirmarEliminar() {
+    eliminarEstanque(estanqueSeleccionado.id);
+    setModalVisible(false);
+    setEstanqueSeleccionado(null);
+  }
+
+  return {
+    finca,
+    estanquesFinca,
+    alert,
+    handleGenerar,
+    loadingFincas,
+    loadingEstanques,
+    loadingPdf,
+
+    modalVisible,
+    estanqueSeleccionado,
+
+    abrirModalEliminar,
+    cancelarEliminar,
+    confirmarEliminar,
+  };
 }
