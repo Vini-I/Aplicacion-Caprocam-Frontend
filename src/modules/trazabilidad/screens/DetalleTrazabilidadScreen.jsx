@@ -18,6 +18,7 @@
  * - Card: agrupación visual de las secciones del detalle.
  * - Input, Select, DateInput: campos en modo solo lectura.
  */
+import { useEffect, useState } from "react";
 import { View, ScrollView } from "react-native";
 import {useLocalSearchParams } from "expo-router";
 import Text from "../../../shared/components/Text";
@@ -29,13 +30,29 @@ import Input from "../../../shared/components/Input";
 import Select from "../../../shared/components/Select";
 
 
-import { obtenerRegistroTrazabilidadPorId } from "../services/TrazabilidadServices";
+import { getRegistroPorId } from "../services/TrazabilidadServices";
 
 export default function DetalleTrazabilidadScreen() {
   const { id } = useLocalSearchParams();
 
-  const registro = obtenerRegistroTrazabilidadPorId(Number(id));
+  const [registro, setRegistro] = useState(null);
+  const [cargando, setCargando] = useState(true);
 
+  useEffect(() => {
+    // TODO: confirmar con API el tipo real de id (hoy se manda tal cual llega de la ruta)
+    getRegistroPorId(id)
+      .then(setRegistro)
+      .catch(() => setRegistro(null))
+      .finally(() => setCargando(false));
+  }, [id]);
+
+  if (cargando) {
+    return (
+      <View style={STYLE.container}>
+        <Text style={styles.notFoundText}>Cargando...</Text>
+      </View>
+    );
+  }
 
   if (!registro) {
     return (
@@ -104,7 +121,7 @@ export default function DetalleTrazabilidadScreen() {
           <Card title="Datos del traslado" titleStyle={styles.cardTitle}>
             <Input
               label="Tamaño (gramos)"
-              value={`${registro.tamaño}g`}
+              value={`${registro.tamano}g`}
               editable={false}
               style={styles.inputLectura}
               labelStyle={styles.labelLectura}

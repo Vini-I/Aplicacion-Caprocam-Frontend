@@ -56,6 +56,7 @@ export default function FisicoQuimicaScreen({ onBack }) {
     submitted,
     errorMessage,
     tieneMedicionesExistentes,
+    puedeAgregarMediciones,
     opcionesFincas,
     estanquesFiltrados,
     estanqueSeleccionadoObj,
@@ -67,6 +68,7 @@ export default function FisicoQuimicaScreen({ onBack }) {
     handleTempChange,
     handleOxChange,
     handleGuardarClick,
+    handleIntentoAgregarSinSeleccion,
     alEditar,
   } = useFisicoQuimica();
 
@@ -92,38 +94,26 @@ export default function FisicoQuimicaScreen({ onBack }) {
                 <Text style={styles.cardTitle}>Finca y estanque</Text>
               </View>
 
-              <View style={[styles.selectWrapper, styles.selectWrapperFinca]}>
-                <View style={styles.selectContainer}>
-                  <Select
-                    label="Seleccione la finca *"
-                    placeholder="Seleccione una finca"
-                    options={opcionesFincas}
-                    value={fincaSeleccionada}
-                    onChange={handleFincaChange}
-                    containerStyle={styles.selectField}
-                    labelStyle={[styles.label, styles.selectLabel]}
-                    selectStyle={submitted && !fincaSeleccionada ? [styles.selectButton, styles.errorInput] : styles.selectButton}
-                  />
-                </View>
-                <View style={styles.selectPlaceholder} />
-              </View>
+              <Select
+                label="Seleccione la finca *"
+                placeholder="Seleccione una finca"
+                options={opcionesFincas}
+                value={fincaSeleccionada}
+                onChange={handleFincaChange}
+                labelStyle={styles.label}
+                selectStyle={submitted && !fincaSeleccionada ? styles.errorInput : undefined}
+              />
 
-              <View style={[styles.selectWrapper, styles.selectWrapperEstanque]}>
-                <View style={styles.selectContainer}>
-                  <Select
-                    label="Seleccione el estanque *"
-                    placeholder="Seleccione un estanque"
-                    options={estanquesFiltrados}
-                    value={estanqueSeleccionado}
-                    onChange={handleEstanqueChange}
-                    disabled={!fincaSeleccionada}
-                    containerStyle={styles.selectField}
-                    labelStyle={[styles.label, styles.selectLabel]}
-                    selectStyle={submitted && !estanqueSeleccionado ? [styles.selectButton, styles.errorInput] : styles.selectButton}
-                  />
-                </View>
-                <View style={styles.selectPlaceholder} />
-              </View>
+              <Select
+                label="Seleccione el estanque *"
+                placeholder="Seleccione un estanque"
+                options={estanquesFiltrados}
+                value={estanqueSeleccionado}
+                onChange={handleEstanqueChange}
+                disabled={!fincaSeleccionada}
+                labelStyle={styles.label}
+                selectStyle={submitted && !estanqueSeleccionado ? styles.errorInput : undefined}
+              />
 
               {estanqueSeleccionadoObj && (
                 <Text style={styles.estanqueInfo}>
@@ -133,6 +123,7 @@ export default function FisicoQuimicaScreen({ onBack }) {
             </Card>
 
             <RangeCard
+              key={`ph-${estanqueSeleccionado}`}
               title="pH" unit="pH"
               icon={<Icon icon={ICONS.chemicalContainer} color={COLORS.primary} size={18} />}
               idealMin={7.5} idealMax={8.5}
@@ -141,9 +132,12 @@ export default function FisicoQuimicaScreen({ onBack }) {
               maxLecturas={2} labelStyle="daynight"
               initialValues={medicionesPorEstanque.ph}
               onChange={handlePhChange}
+              puedeAgregar={puedeAgregarMediciones}
+              onIntentoAgregarBloqueado={handleIntentoAgregarSinSeleccion}
             />
 
             <RangeCard
+              key={`salinidad-${estanqueSeleccionado}`}
               title="Salinidad" unit="ppt"
               icon={<Icon icon={ICONS.frequency} color={COLORS.primary} size={18} />}
               idealMin={15} idealMax={35}
@@ -152,9 +146,12 @@ export default function FisicoQuimicaScreen({ onBack }) {
               maxLecturas={2} labelStyle="daynight"
               initialValues={medicionesPorEstanque.salinidad}
               onChange={handleSalinidadChange}
+              puedeAgregar={puedeAgregarMediciones}
+              onIntentoAgregarBloqueado={handleIntentoAgregarSinSeleccion}
             />
 
             <RangeCard
+              key={`temperatura-${estanqueSeleccionado}`}
               title="Temperatura" unit="°C"
               icon={<Icon icon={ICONS.temperature} color={COLORS.primary} size={18} />}
               idealMin={28} idealMax={30}
@@ -163,9 +160,12 @@ export default function FisicoQuimicaScreen({ onBack }) {
               maxLecturas={2} labelStyle="daynight"
               initialValues={medicionesPorEstanque.temperatura}
               onChange={handleTempChange}
+              puedeAgregar={puedeAgregarMediciones}
+              onIntentoAgregarBloqueado={handleIntentoAgregarSinSeleccion}
             />
 
             <RangeCard
+              key={`oxigeno-${estanqueSeleccionado}`}
               title="Oxígeno Disuelto" unit="mg/L"
               icon={<Icon icon={ICONS.water} color={COLORS.primary} size={18} />}
               idealMin={5} idealMax={7}
@@ -174,6 +174,8 @@ export default function FisicoQuimicaScreen({ onBack }) {
               maxLecturas={5} labelStyle="numeric"
               initialValues={medicionesPorEstanque.ox}
               onChange={handleOxChange}
+              puedeAgregar={puedeAgregarMediciones}
+              onIntentoAgregarBloqueado={handleIntentoAgregarSinSeleccion}
             />
 
             <View style={{ height: 24 }} />
@@ -203,18 +205,18 @@ export default function FisicoQuimicaScreen({ onBack }) {
               </View>
 
               {Boolean(fincaSeleccionada && estanqueSeleccionado) && (
-              <View style={styles.footerActions}>
-                {tieneMedicionesExistentes ? (
-                  <Button variant="outline" onPress={alEditar}>
-                    Actualizar módulo
-                  </Button>
-                ) : (
-                  <Button variant="outline" onPress={handleGuardarClick}>
-                    Guardar módulo
-                  </Button>
-                )}
-              </View>
-            )}
+                <View style={styles.footerActions}>
+                  {tieneMedicionesExistentes ? (
+                    <Button variant="outline" onPress={alEditar}>
+                      Actualizar módulo
+                    </Button>
+                  ) : (
+                    <Button variant="outline" onPress={handleGuardarClick}>
+                      Guardar módulo
+                    </Button>
+                  )}
+                </View>
+              )}
             </View>
           }
         />

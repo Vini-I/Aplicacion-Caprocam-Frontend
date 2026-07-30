@@ -48,7 +48,7 @@ import { esFechaValida, esFechaFutura } from "../../../shared/utils/dateUtils";
 export default function TrazabilidadForm({
   formData,
   fincas,
-  colaboradores,
+  colaboradorSesion,
   estanquesOrigen,
   estanquesDestino,
   onChange,
@@ -56,7 +56,7 @@ export default function TrazabilidadForm({
   plAutocompletado = false,
   submitted = false,
 }) {
-const opcionesOrigen = estanquesOrigen.filter(
+  const opcionesOrigen = estanquesOrigen.filter(
     (estanque) => estanque.value !== formData.estanqueDestinoId,
   );
 
@@ -78,7 +78,6 @@ const opcionesOrigen = estanquesOrigen.filter(
     (!formData.fecha ||
       !esFechaValida(formData.fecha) ||
       esFechaFutura(formData.fecha));
-  const mostrarErrorColaborador = submitted && !formData.colaboradorId;
   const mostrarErrorTamano = submitted && (!formData.tamaño || Number(formData.tamaño) <= 0);
   const mostrarErrorDias = submitted && (!formData.dias || Number(formData.dias) <= 0);
   const mostrarErrorPl = submitted && (!formData.pl || Number(formData.pl) <= 0);
@@ -112,88 +111,53 @@ const opcionesOrigen = estanquesOrigen.filter(
   }
 
   return (
-    
+
     <View style={[STYLE.contentWrapper]}>
-      <Card title="Movimiento" titleStyle={styles.cardTitle} style={styles.movimientoCard}>
-        <View style={[styles.selectWrapper, styles.selectWrapperFinca]}>
-          <View style={styles.selectContainer}>
-            <Select
-              label="Finca *"
-              placeholder="Seleccionar finca"
-              options={fincas}
-              value={formData.fincaId}
-              onChange={onChangeFinca}
-              containerStyle={styles.selectField}
-              labelStyle={[styles.label, styles.selectLabel]}
-              selectStyle={[
-                styles.selectButton,
-                mostrarErrorFinca ? styles.errorInput : undefined,
-              ]}
-            />
-          </View>
-          <View style={styles.selectPlaceholder} />
-        </View>
+      <Card title="Movimiento" titleStyle={styles.cardTitle}>
+        <Select
+          label="Finca *"
+          placeholder="Seleccionar finca"
+          options={fincas}
+          value={formData.fincaId}
+          onChange={onChangeFinca}
+          containerStyle={styles.field}
+          labelStyle={styles.label}
+          selectStyle={mostrarErrorFinca ? styles.errorInput : undefined}
+        />
 
-        <View style={[styles.selectWrapper, styles.selectWrapperOrigen]}>
-          <View style={styles.selectContainer}>
-            <Select
-              label="Estanque de origen (Pre-cría) *"
-              placeholder="Seleccionar estanque de origen"
-              options={opcionesOrigen}
-              value={formData.estanqueOrigenId}
-              onChange={(value) => onChange("estanqueOrigenId", value)}
-              disabled={formData.fincaId === ""}
-              containerStyle={styles.selectField}
-              labelStyle={[styles.label, styles.selectLabel]}
-              selectStyle={[
-                styles.selectButton,
-                mostrarErrorOrigen ? styles.errorInput : undefined,
-              ]}
-            />
-          </View>
-          <View style={styles.selectPlaceholder} />
-        </View>
+        <Select
+          label="Estanque de origen (Pre-cría) *"
+          placeholder="Seleccionar estanque de origen"
+          options={opcionesOrigen}
+          value={formData.estanqueOrigenId}
+          onChange={(value) => onChange("estanqueOrigenId", value)}
+          disabled={formData.fincaId === ""}
+          containerStyle={styles.field}
+          labelStyle={styles.label}
+          selectStyle={mostrarErrorOrigen ? styles.errorInput : undefined}
+        />
 
-        <View style={[styles.selectWrapper, styles.selectWrapperDestino]}>
-          <View style={styles.selectContainer}>
-            <Select
-              label="Estanque de destino (Engorde) *"
-              placeholder="Seleccionar estanque de destino"
-              options={opcionesDestino}
-              value={formData.estanqueDestinoId}
-              onChange={(value) => onChange("estanqueDestinoId", value)}
-              disabled={formData.fincaId === ""}
-              containerStyle={styles.selectField}
-              labelStyle={[styles.label, styles.selectLabel]}
-              selectStyle={[
-                styles.selectButton,
-                mostrarErrorDestino ? styles.errorInput : undefined,
-              ]}
-            />
-          </View>
-          <View style={styles.selectPlaceholder} />
-        </View>
+        <Select
+          label="Estanque de destino (Engorde) *"
+          placeholder="Seleccionar estanque de destino"
+          options={opcionesDestino}
+          value={formData.estanqueDestinoId}
+          onChange={(value) => onChange("estanqueDestinoId", value)}
+          disabled={formData.fincaId === ""}
+          containerStyle={styles.field}
+          labelStyle={styles.label}
+          selectStyle={mostrarErrorDestino ? styles.errorInput : undefined}
+        />
 
         {renderFecha()}
 
-        <View style={[styles.selectWrapper, styles.selectWrapperColaborador]}>
-          <View style={styles.selectAbsoluteWrapper}>
-            <Select
-              label="Colaborador responsable *"
-              placeholder="Seleccionar colaborador"
-              options={colaboradores}
-              value={formData.colaboradorId}
-              onChange={(value) => onChange("colaboradorId", value)}
-              containerStyle={styles.selectField}
-              labelStyle={[styles.label, styles.selectLabel]}
-              selectStyle={[
-                styles.selectButton,
-                mostrarErrorColaborador ? styles.errorInput : undefined,
-              ]}
-            />
-          </View>
-          <View style={styles.selectPlaceholder} />
-        </View>
+        <Input
+          label="Colaborador responsable"
+          value={colaboradorSesion?.label ?? ""}
+          editable={false}
+          containerStyle={styles.field}
+          labelStyle={styles.label}
+        />
       </Card>
 
       <Card title="Datos del traslado" titleStyle={styles.cardTitle}>
@@ -213,6 +177,7 @@ const opcionesOrigen = estanquesOrigen.filter(
           label="Días de siembra *"
           value={formData.dias}
           onChangeText={(value) => onChange("dias", value)}
+          editable={!plAutocompletado}
           min={0}
           max={365}
           step={1}
@@ -235,7 +200,7 @@ const opcionesOrigen = estanquesOrigen.filter(
         />
         {plAutocompletado && (
           <Text style={styles.plNote}>
-            Valor autocompletado desde la siembra del estanque de origen.
+            PL y días autocompletados desde la siembra activa del estanque de origen.
           </Text>
         )}
       </Card>

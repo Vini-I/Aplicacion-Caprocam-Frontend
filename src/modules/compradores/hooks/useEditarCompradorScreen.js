@@ -28,9 +28,9 @@
  */
 
 
-import { useState } from "react";
-import { useRouter } from "expo-router";
-import { compradoresMock } from "../services/CompradorData";
+import { useState, useEffect, useCallback } from "react";
+import { useRouter, useLocalSearchParams } from "expo-router";
+import { compradorService, mapComprador } from "../services/comprador.service";
 
 // Regex para validar teléfonos con o sin código de país +506
 const TELEFONO_REGEX = /^(\+?506[\s-]?)?\d{4}[\s-]?\d{4}$/;
@@ -57,44 +57,70 @@ function validarCorreo(valor) {
 
 export function useEditarCompradorScreen() {
   const router = useRouter();
+  const { id } = useLocalSearchParams();
 
-  // Carga los datos actuales del comprador como valores iniciales del formulario
-  const base = compradoresMock[0];
+  // Estado de carga inicial del comprador
+  const [cargando, setCargando] = useState(true);
+  const [errorCarga, setErrorCarga] = useState(null);
+  const [guardando, setGuardando] = useState(false);
 
   // Campos del formulario
-  const [nombre, setNombre] = useState(base.nombre);
-  // La cédula no se puede editar: se carga desde el comprador base y no se
+  const [nombre, setNombre] = useState("");
+  // La cédula no se puede editar: se carga desde el comprador y no se
   // expone ningún setter hacia la pantalla.
-  const [cedula] = useState(base.cedula);
-  const [telefono, setTelefono] = useState(base.telefono);
-  const [correo, setCorreo] = useState(base.correo);
-  const [direccion, setDireccion] = useState(base.direccion);
-  const [notas, setNotas] = useState(base.notas);
+  const [cedula, setCedula] = useState("");
+  const [telefono, setTelefono] = useState("");
+  const [correo, setCorreo] = useState("");
+  const [direccion, setDireccion] = useState("");
+  const [notas, setNotas] = useState("");
 
   // Errores por campo y alerta general del formulario
   const [errorTelefono, setErrorTelefono] = useState("");
   const [errorCorreo, setErrorCorreo] = useState("");
   const [alerta, setAlerta] = useState(null);
 
-  // Valida el teléfono en tiempo real mientras el usuario escribe
+  // Carga el comprador desde la API y precarga el formulario
+  const cargarComprador = useCallback(async () => {
+    setCargando(true);
+    setErrorCarga(null);
+    try {
+      const data = await compradorService.getCompradorPorId(id);
+      const comprador = mapComprador(data);
+      setNombre(comprador.nombre);
+      setCedula(comprador.cedula);
+      setTelefono(comprador.telefono);
+      setCorreo(comprador.correo);
+      setDireccion(comprador.direccion);
+      setNotas(comprador.notas);
+    } catch (err) {
+      setErrorCarga("No se pudo cargar el comprador.");
+    } finally {
+      setCargando(false);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    if (id) cargarComprador();
+  }, [id, cargarComprador]);
+
+  // Solo actualizan el valor: no validan mientras se escribe
   function handleTelefonoChange(valor) {
-   setTelefono(valor);
+    setTelefono(valor);
   }
 
-  // Valida el correo en tiempo real mientras el usuario escribe
   function handleCorreoChange(valor) {
-   setCorreo(valor);
+    setCorreo(valor);
   }
 
   function volverADetalle() {
     router.replace({
       pathname: "/(drawer)/compradores/detalleComprador",
-      params: { id: base.id.toString() },
+      params: { id: id?.toString() },
     });
   }
 
-  // Valida todos los campos y guarda si no hay errores
-  function guardar() {
+  // Valida todos los campos y guarda en la API si no hay errores
+  async function guardar() {
     const errorTel = validarTelefono(telefono);
     const errorCorr = validarCorreo(correo);
     setErrorTelefono(errorTel);
@@ -116,20 +142,43 @@ export function useEditarCompradorScreen() {
       return;
     }
 
+    setGuardando(true);
+    try {
+      await compradorService.actualizarComprador(id, {
+        nombre,
+        cedula,
+        telefono,
+        correo,
+        direccion,
+        notas,
+      });
+    } catch (err) {
+      setGuardando(false);
+      setAlerta({
+        variant: "danger",
+        message: "No se pudo actualizar el comprador. Intenta de nuevo.",
+      });
+      return;
+    }
+    setGuardando(false);
+
     setAlerta({
       variant: "success",
       message: "Comprador actualizado correctamente.",
     });
-    
+
     setTimeout(() => {
       router.replace({
         pathname: "/(drawer)/compradores/detalleComprador",
-        params: { id: base.id.toString() },
+        params: { id: id?.toString() },
       });
     }, 900);
   }
 
   return {
+    cargando,
+    errorCarga,
+    guardando,
     nombre,
     cedula,
     telefono,

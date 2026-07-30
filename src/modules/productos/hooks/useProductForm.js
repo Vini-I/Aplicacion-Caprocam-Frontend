@@ -36,8 +36,8 @@
 import { useState, useEffect } from "react";
 import { useRouter, useLocalSearchParams } from "expo-router";
 
-import { addProducto, updateProducto } from "../../inventarios/services/InventarioService";
-import { getProveedoresByCategoria } from "../../proveedores/services/ProveedorData";
+import { productoService } from "../services/producto.service";
+import { getProveedores, filtrarProveedoresPorCategoria } from "../services/proveedoresLookup";
 import { initialForm } from "../services/DataProductForm";
 
 
@@ -52,22 +52,61 @@ export function useProductForm() {
   const [originalForm, setOriginalForm] = useState(initialForm);
   const [intentoGuardar, setIntentoGuardar] = useState(false);
   const [productoId, setProductoId] = useState(null);
+  const [proveedoresTodos, setProveedoresTodos] = useState([]);
   const [opcionesProveedores, setOpcionesProveedores] = useState([]);
+  const [cargandoProveedores, setCargandoProveedores] = useState(true);
+  const [errorProveedores, setErrorProveedores] = useState("");
   const [guardadoExitoso, setGuardadoExitoso] = useState(false);
+  const [guardando, setGuardando] = useState(false);
+  const [errorGuardado, setErrorGuardado] = useState("");
 
-  // ── Actualiza proveedores cuando cambia la categoría ──
+  // ── Carga los proveedores reales una sola vez (GET /proveedores) ──
   useEffect(() => {
-    const lista = getProveedoresByCategoria(form.categoria).map((p) => ({
-      label: p.nombre,
-      value: p.nombre,
-    }));
+    let activo = true;
+    async function cargarProveedores() {
+      setCargandoProveedores(true);
+      setErrorProveedores("");
+      try {
+        const data = await getProveedores();
+        if (activo) setProveedoresTodos(data || []);
+      } catch (err) {
+        if (activo) {
+          setErrorProveedores(
+            "No se pudieron cargar los proveedores. Verifica que el back tenga montada la ruta /proveedores."
+          );
+          setProveedoresTodos([]);
+        }
+      } finally {
+        if (activo) setCargandoProveedores(false);
+      }
+    }
+    cargarProveedores();
+    return () => {
+      activo = false;
+    };
+  }, []);
+
+  
+  useEffect(() => {
+    const filtrados = filtrarProveedoresPorCategoria(proveedoresTodos, form.categoria);
+    const lista = [
+      // Siempre disponible, incluso si todavía no hay proveedores
+      // dados de alta en el sistema -- así el formulario nunca queda
+      // bloqueado por falta de proveedores. Al guardar, esta opción
+      // manda proveedorId: null (ver handleSubmit).
+      { label: "Sin proveedor asignado", value: "none" },
+      ...filtrados.map((p) => ({
+        label: p.nombre,
+        value: String(p.id),
+      })),
+    ];
     setOpcionesProveedores(lista);
 
     // Si el proveedor seleccionado ya no pertenece a la lista, lo limpia
     if (form.proveedor && !lista.find((p) => p.value === form.proveedor)) {
       setForm((prev) => ({ ...prev, proveedor: "" }));
     }
-  }, [form.categoria]);
+  }, [form.categoria, proveedoresTodos]);
 
   // ── Carga datos si viene un producto para editar ──
   useEffect(() => {
@@ -76,9 +115,16 @@ export function useProductForm() {
         const producto = JSON.parse(params.productoParam);
 
         const cargado = {
+          codigo: producto.codigo ?? "", 
           nombre: producto.nombre ?? "",
           categoria: producto.categoria ?? "",
-          proveedor: producto.proveedor ?? "",
+          // El producto que llega desde el detalle trae proveedorId
+          // (id real) -- lo usamos como value del select. Si no tiene
+          // proveedor asignado (null), preseleccionamos "none" para
+          // que se vea "Sin proveedor asignado" en vez de quedar vacío.
+          proveedor: producto.proveedorId !== null && producto.proveedorId !== undefined
+            ? String(producto.proveedorId)
+            : "none",
           cantidad: producto.cantidad !== undefined ? String(producto.cantidad) : "",
           unidad: producto.unidad ?? "kg",
           stockMinimo: producto.stockMinimo !== undefined ? String(producto.stockMinimo) : "",
@@ -91,7 +137,6 @@ export function useProductForm() {
         setOriginalForm(cargado);
         setProductoId(producto.id);
       } catch {
-        // param malformado → modo crear
         setForm(initialForm);
         setOriginalForm(initialForm);
         setProductoId(null);
@@ -111,6 +156,7 @@ export function useProductForm() {
   const hasChanges = JSON.stringify(form) !== JSON.stringify(originalForm);
 
   const hasRequiredData =
+    form.codigo.trim() !== "" && 
     form.nombre.trim() !== "" &&
     form.categoria !== "" &&
     form.proveedor !== "" &&
@@ -124,6 +170,7 @@ export function useProductForm() {
      : isEditMode && !hasChanges ? "Realice algún cambio para guardar la actualización." : "";
  
   const errorNombre = intentoGuardar && form.nombre.trim() === "";
+  const errorCodigo = intentoGuardar && form.codigo.trim() === "";
   const errorCategoria = intentoGuardar && form.categoria === "";
   const errorProveedor = intentoGuardar && form.proveedor === "";
   const errorCantidad = intentoGuardar && form.cantidad === "";
@@ -150,15 +197,21 @@ export function useProductForm() {
     }));
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     setIntentoGuardar(true);
 
-   if (!canSave) return;
+    if (!canSave) return;
 
     const producto = {
+      codigo: form.codigo.trim(), 
       nombre: form.nombre.trim(),
       categoria: form.categoria,
-      proveedor: form.proveedor,
+      // form.proveedor guarda el id real del proveedor elegido, o el
+      // valor especial "none" si el usuario eligió explícitamente
+      // "Sin proveedor asignado" (por ejemplo, porque todavía no hay
+      // proveedores dados de alta). En ambos casos "sin proveedor"
+      // se traduce a null.
+      proveedorId: form.proveedor && form.proveedor !== "none" ? Number(form.proveedor) : null,
       cantidad: Number(form.cantidad),
       unidad: form.unidad,
       stockMinimo: Number(form.stockMinimo),
@@ -167,11 +220,20 @@ export function useProductForm() {
       expirationDate: form.expirationDate,
     };
 
-    if (isEditMode) {
-      updateProducto({ ...producto, id: productoId });
-    } else {
-      addProducto(producto);
+    setGuardando(true);
+    setErrorGuardado("");
+    try {
+      if (isEditMode) {
+        await productoService.actualizarProducto(productoId, producto);
+      } else {
+        await productoService.crearProducto(producto);
+      }
+    } catch (error) {
+      setGuardando(false);
+      setErrorGuardado("No se pudo guardar el producto. Intenta de nuevo.");
+      return;
     }
+    setGuardando(false);
 
     // Muestra la alerta de éxito antes de navegar, para que el usuario
     // tenga retroalimentación visual clara de que el guardado ocurrió.
@@ -184,7 +246,7 @@ export function useProductForm() {
           params: { id: productoId.toString() },
         });
       } else {
-        router.replace("/(drawer)/inventarios");//000000000000000000000000000000000000000000000000000
+        router.replace("/(drawer)/inventarios");
       }
     }, 900);
   }
@@ -196,7 +258,7 @@ export function useProductForm() {
         params: { id: productoId.toString() },
       });
     } else {
-      router.replace("/(drawer)/inventarios");//00000000000000000000000000000000000000000000000
+      router.replace("/(drawer)/inventarios");
     }
   }
 
@@ -207,10 +269,13 @@ export function useProductForm() {
     form,
     productoId,
     opcionesProveedores,
+    cargandoProveedores,
+    errorProveedores,
     isEditMode,
     canSave,
     validationMessage,
     showExpirationDate,
+    errorCodigo,
     errorNombre,
     errorProveedor,
     errorCategoria,
@@ -218,6 +283,8 @@ export function useProductForm() {
     errorStockMinimo,
     errorPrecio,
     guardadoExitoso,
+    guardando,
+    errorGuardado,
     handleField,
     handleCategoriaChange,
     handleSubmit,

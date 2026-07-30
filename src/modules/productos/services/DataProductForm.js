@@ -45,6 +45,7 @@ export const UNIDADES = [
 // Estado inicial limpio
 // ─────────────────────────────────────────────
 export const initialForm = {
+  codigo: "",   
   nombre: "",
   categoria: "",
   proveedor: "",

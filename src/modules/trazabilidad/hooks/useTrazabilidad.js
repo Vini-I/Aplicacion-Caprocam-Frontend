@@ -31,9 +31,12 @@ import { useRouter } from "expo-router";
 import { initialForm } from "../screens/TrazabilidadData";
 import {
   obtenerEstanquesPorFinca,
+  obtenerEstanquesPreCriaPorFinca,
+  obtenerEstanquesEngordePorFinca,
   obtenerFincas,
-  obtenerColaboradores,
-  obtenerSiembraPorEstanque,
+  obtenerColaboradorSesion,
+  obtenerColaboradorSesionActual,
+  obtenerSiembraActivaPorEstanque,
 } from "../services/TrazabilidadServices";
 import { crearRegistroTrazabilidad } from "../services/AgregarTrazabilidadService";
 import { esFechaFutura, esFechaValida } from "../../../shared/utils/dateUtils";
@@ -43,11 +46,17 @@ import { esFechaFutura, esFechaValida } from "../../../shared/utils/dateUtils";
 export function useTrazabilidad() {
   const router = useRouter();
 
-  const [formData, setFormData] = useState(initialForm);
+  const [colaboradorSesion, setColaboradorSesion] = useState(obtenerColaboradorSesion);
+
+  const [formData, setFormData] = useState(() => ({
+    ...initialForm,
+    colaboradorId: colaboradorSesion.value,
+  }));
   const [mensajeError, setMensajeError] = useState("");
   const [plAutocompletado, setPlAutocompletado] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [mostrarAlerta, setMostrarAlerta] = useState(false);
+  const [fincas, setFincas] = useState([]);
 
   const timerAlertaRef = useRef(null);
 
@@ -57,23 +66,83 @@ export function useTrazabilidad() {
     };
   }, []);
 
-  const fincas = obtenerFincas();
-  const colaboradores = obtenerColaboradores();
-  const estanquesOrigen = obtenerEstanquesPorFinca(formData.fincaId);
-  const estanquesDestino = obtenerEstanquesPorFinca(formData.fincaId);
+  useEffect(() => {
+    obtenerFincas().then(setFincas).catch(() => setFincas([]));
+  }, []);
+
+  // Resuelve el nombre real del colaborador de sesión contra la API
+  // (el id ya es correcto desde el montaje, esto solo actualiza el label).
+  useEffect(() => {
+    let cancelado = false;
+    obtenerColaboradorSesionActual().then((real) => {
+      if (cancelado) return;
+      setColaboradorSesion(real);
+      setFormData((previousData) => ({ ...previousData, colaboradorId: real.value }));
+    });
+    return () => {
+      cancelado = true;
+    };
+  }, []);
+
+  const [estanquesOrigen, setEstanquesOrigen] = useState([]);
+  const [estanquesDestino, setEstanquesDestino] = useState([]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    if (!formData.fincaId) {
+      setEstanquesOrigen([]);
+      setEstanquesDestino([]);
+      return () => {
+        mounted = false;
+      };
+    }
+
+    Promise.all([
+      obtenerEstanquesPreCriaPorFinca(formData.fincaId),
+      obtenerEstanquesEngordePorFinca(formData.fincaId),
+    ])
+      .then(([listaOrigen, listaDestino]) => {
+        if (!mounted) return;
+        setEstanquesOrigen(listaOrigen || []);
+        setEstanquesDestino(listaDestino || []);
+      })
+      .catch(() => {
+        if (!mounted) return;
+        setEstanquesOrigen([]);
+        setEstanquesDestino([]);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, [formData.fincaId]);
+
+  // Evita que la respuesta de una consulta vieja (usuario cambió de
+  // estanque rápido) sobrescriba el pl/dias del estanque seleccionado
+  // actualmente.
+  const siembraRequestIdRef = useRef(0);
 
   function manejarCambio(field, value) {
     if (field === "estanqueOrigenId") {
-      const siembra = obtenerSiembraPorEstanque(value);
-
       setFormData((previousData) => ({
         ...previousData,
         [field]: value,
-        pl: siembra ? String(siembra.cantidadSembrada ?? "") : "",
       }));
-
-      setPlAutocompletado(Boolean(siembra));
       setMensajeError("");
+
+      const requestId = ++siembraRequestIdRef.current;
+
+      obtenerSiembraActivaPorEstanque(value).then((siembra) => {
+        if (siembraRequestIdRef.current !== requestId) return; // respuesta obsoleta
+
+        setFormData((previousData) => ({
+          ...previousData,
+          pl: siembra ? String(siembra.pl_siembra ?? "") : "",
+          dias: siembra ? String(siembra.dias ?? "") : "",
+        }));
+        setPlAutocompletado(Boolean(siembra));
+      });
       return;
     }
 
@@ -85,12 +154,15 @@ export function useTrazabilidad() {
   }
 
   function manejarCambioFinca(value) {
+    siembraRequestIdRef.current += 1; // invalida cualquier consulta de siembra en vuelo
+
     setFormData((previousData) => ({
       ...previousData,
       fincaId: value,
       estanqueOrigenId: "",
       estanqueDestinoId: "",
       pl: "",
+      dias: "",
     }));
 
     setPlAutocompletado(false);
@@ -153,7 +225,7 @@ export function useTrazabilidad() {
     return true;
   }
 
-  function manejarEnvio() {
+  async function manejarEnvio() {
     setSubmitted(true);
 
     const esValido = validarFormulario();
@@ -162,7 +234,17 @@ export function useTrazabilidad() {
       return;
     }
 
-    crearRegistroTrazabilidad(formData);
+    try {
+      await crearRegistroTrazabilidad(formData);
+    } catch (error) {
+      const mensajeApi = error?.response?.data?.message;
+      setMensajeError(
+        error?.response?.status === 400 && mensajeApi
+          ? mensajeApi
+          : "No se pudo guardar el registro. Intenta de nuevo."
+      );
+      return;
+    }
     setMensajeError("");
     setMostrarAlerta(true);
 
@@ -181,7 +263,7 @@ export function useTrazabilidad() {
   return {
     formData,
     fincas,
-    colaboradores,
+    colaboradorSesion,
     estanquesOrigen,
     estanquesDestino,
     plAutocompletado,

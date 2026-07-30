@@ -26,7 +26,7 @@
  */
 
 import { useState } from "react";
-import { View, ScrollView } from "react-native";
+import { View, ScrollView, ActivityIndicator } from "react-native";
 
 import Icon from "../../../shared/components/Icons";
 import Card from "../../../shared/components/Card";
@@ -34,6 +34,7 @@ import Button from "../../../shared/components/Button";
 import Text from "../../../shared/components/Text";
 import Title from "../../../shared/components/Title";
 import Modal from "../../../shared/components/Modal";
+import ModalEliminar from "../../../shared/components/ModalEliminar";
 import EmptyState from "../../../shared/components/EmptyState";
 import Alert from "../../../shared/components/Alert";
 
@@ -48,20 +49,30 @@ import { useDetalleCompradorScreen } from "../hooks/useDetalleCompradorScreen";
 export default function DetalleCompradorScreen() {
   const {
     comprador,
+    cargando,
+    error,
     modalVisible,
     setModalVisible,
     eliminado,
+    eliminando,
     irAtras,
     irAEditar,
-    getTipoProductoSelect,
   } = useDetalleCompradorScreen();
+
+  if (cargando) {
+    return (
+      <View style={[styles.container, { justifyContent: "center" }]}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+      </View>
+    );
+  }
 
   if (!comprador) {
     return (
       <View style={styles.contenedor}>
         <EmptyState
           title="Comprador no encontrado"
-          description="El comprador que buscas no existe."
+          description={error || "El comprador que buscas no existe."}
         />
       </View>
     );
@@ -150,28 +161,24 @@ export default function DetalleCompradorScreen() {
         />
       )}
 
+      {/* Si falla la desactivación en el back, se muestra el error aquí */}
+      {!!error && !eliminado && (
+        <Alert
+          variant="danger"
+          message={error}
+          style={styles.alertEliminado}
+        />
+      )}
+
       </ScrollView>
 
-      <Modal
+      <ModalEliminar
         visible={modalVisible}
-        onClose={() => setModalVisible(false)}
-        closeText="Cancelar"
-        buttonStyle={styles.modalCancelButton}
-        overlayStyle={styles.modalOverlay}
-        containerStyle={styles.modalContainer}
-      >
-        <Title level={3} style={styles.modalTitle}>
-          ¿Eliminar comprador?
-        </Title>
-        <Text style={styles.modalMessage}>
-          ¿Estás seguro que deseas eliminar{" "}
-          <Text style={styles.modalNombreNegrita}>{comprador.nombre}</Text>?
-        </Text>
-        <Button style={styles.modalConfirmButton} onPress={irAtras}>
-          <Icon icon={ICONS.delete} size={ICON_SIZE.modal} color={COLORS.white} />
-          <Text style={styles.modalConfirmTexto}>Sí, eliminar</Text>
-        </Button>
-      </Modal>
+        title="comprador"
+        message={comprador.nombre}
+        onCancel={() => setModalVisible(false)}
+        onConfirm={irAtras}
+    />
 
       
 
