@@ -35,6 +35,10 @@ export default function LinksPrueba() {
                     Go to Alertas
                 </Link>
 
+                <Link href="/landing/" push style={{ marginTop: 10, color: 'blue' }}>
+                    Go to Landing
+                </Link>
+
             </View>
     );
 }
