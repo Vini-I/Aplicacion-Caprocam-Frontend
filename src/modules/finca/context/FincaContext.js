@@ -13,10 +13,11 @@
  * - Permite editar la información de una finca existente.
  * - Permite eliminar fincas mediante su código interno.
  * - Gestiona alertas para indicar el resultado de las acciones.
- * - Limpia automáticamente las alertas después de un tiempo definido. 
+ * - Limpia automáticamente las alertas después de un tiempo definido.
  */
 import { createContext, useContext, useState, useEffect } from "react";
 import { fincaService } from "../services/finca.service.js";
+import { useError } from "../../../shared/context/ErrorContext.js";
 
 const FincaContext = createContext();
 
@@ -24,6 +25,7 @@ export function FincaProvider({ children }) {
   const [fincas, setFincas] = useState([]);
   const [alert, setAlert] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { mostrarError } = useError();
 
   async function cargarFincas() {
     try {
@@ -31,7 +33,7 @@ export function FincaProvider({ children }) {
       const data = await fincaService.getFincas();
       setFincas(data);
     } catch (error) {
-      console.error("Error cargando fincas:", error);
+      mostrarError(error);
     } finally {
       setLoading(false);
     }
@@ -41,16 +43,16 @@ export function FincaProvider({ children }) {
     cargarFincas();
   }, []);
 
-  async function buscarFinca(codigoCBO){
+  async function buscarFinca(codigoCBO) {
     try {
       const data = await fincaService.getFincasById(codigoCBO);
       return data;
     } catch (error) {
-      console.error("Error cargando finca:", error);
+      mostrarError(error);
       throw error;
     }
   }
-  
+
   async function crearFinca(nuevaFinca) {
     await fincaService.createFincas(nuevaFinca);
     await cargarFincas();
@@ -64,8 +66,12 @@ export function FincaProvider({ children }) {
   }
 
   async function eliminarFinca(codigoCBO) {
-    await fincaService.deleteFincas(codigoCBO);
-    await cargarFincas();
+    try {
+      await fincaService.deleteFincas(codigoCBO);
+      await cargarFincas();
+    } catch (error) {
+      mostrarError(error);
+    }
     setAlert("deleted");
   }
 
@@ -89,7 +95,7 @@ export function FincaProvider({ children }) {
         // Estado
         fincas,
         alert,
-        loading,  
+        loading,
 
         // Acciones CRUD
         cargarFincas,
@@ -98,7 +104,7 @@ export function FincaProvider({ children }) {
         editarFinca,
         eliminarFinca,
 
-        // Alert  
+        // Alert
         setAlert,
         limpiarAlert,
       }}
