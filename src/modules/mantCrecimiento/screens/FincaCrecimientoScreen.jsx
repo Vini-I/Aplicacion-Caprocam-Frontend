@@ -113,7 +113,7 @@ export default function FincaCrecimientoScreen() {
             options={opcionesColaboradores}
             value={colaboradorSeleccionado}
             onChange={handleColaboradorChange}
-            selectStyle={mostrarErrorColaborador.colaborador ? errorInputStyle : null}
+            selectStyle={mostrarErrorColaborador ? styles.inputError : null}
           />
 
 
