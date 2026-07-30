@@ -166,10 +166,11 @@ export default function DetalleProveedorScreen() {
         title="proveedor"
         message={proveedor.nombre}
         onCancel={cerrarModal}
-        onConfirm={() => {
-          confirmarEliminar();
+        onConfirm={async () => {
+          await confirmarEliminar();
           router.replace("/(drawer)/proveedores/proveedorScreen");
         }}
+
       />
     </View>
   );

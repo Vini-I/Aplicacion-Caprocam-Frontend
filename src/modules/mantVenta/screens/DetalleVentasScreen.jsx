@@ -10,9 +10,12 @@
 import { ScrollView, View } from "react-native";
 
 import Card from "../../../shared/components/Card.jsx";
+import Alert from "../../../shared/components/Alert.jsx";
 import Icon from "../../../shared/components/Icons.jsx";
 import Select from "../../../shared/components/Select.jsx";
 import Text from "../../../shared/components/Text.jsx";
+import Button from "../../../shared/components/Button.jsx";
+import ModalEliminar from "../../../shared/components/ModalEliminar.jsx";
 
 import { COLORS } from "../../../theme/colors.js";
 import { ICONS } from "../../../theme/icons.js";
@@ -22,27 +25,44 @@ import { useDetalleVenta } from "../hooks/useDetalleVenta.js";
 import { styles } from "../styles/VentaStyles.js";
 import { STYLE } from "../../../theme/style.js";
 
-
-export default function DetalleVentasScreen() {
+export default function DetalleVentasScreen({
+  onEdit,
+  success,
+  message,
+}) {
+  
   const {
-    SectionTitle,
-    FilaDetalle,
-    TarjetaVenta,
-    fincaFiltro,
-    estanqueFiltro,
-    opcionesFincas,
-    opcionesEstanques,
-    ventasFiltradas,
-    mensajeDetalle,
-    isWide,
-    handleFincaChange,
-    handleEstanqueChange,
-  } = useDetalleVenta();
+  SectionTitle,
+  FilaDetalle,
+  TarjetaVenta,
+  fincaFiltro,
+  estanqueFiltro,
+  opcionesFincas,
+  opcionesEstanques,
+  ventasFiltradas,
+  mensajeDetalle,
+  isWide,
+  modalVisible,
+  descripcionEliminar,
+  cancelarEliminar,
+  confirmarEliminar,
+  handleFincaChange,
+  handleEstanqueChange,
+} = useDetalleVenta({ onEdit });
 
   const gridStyle = isWide ? styles.inputRow : styles.inputGrid;
 
   return (
     <ScrollView style={STYLE.container} showsVerticalScrollIndicator={false}>
+          {success === "1" && message && (
+          <Alert
+            variant="success"
+            message={message}
+            style={styles.successAlert}
+            textStyle={styles.successAlertText}
+          />
+        )}
+
       <Card style={STYLE.contentWrapper}>
         <View style={styles.headerRow}>
           <Text style={styles.cardTitle}>Detalle de ventas</Text>
@@ -50,7 +70,6 @@ export default function DetalleVentasScreen() {
 
         <SectionTitle icon={ICONS.filter} title="Filtrar ventas" />
         <Text style={styles.detalleHint}>{mensajeDetalle}</Text>
-
         <View style={gridStyle}>
           <View style={styles.inputItem}>
             <Select
@@ -88,6 +107,14 @@ export default function DetalleVentasScreen() {
             </Text>
           </View>
         )}
+
+        <ModalEliminar
+          visible={modalVisible}
+          title="venta"
+          message={descripcionEliminar}
+          onConfirm={confirmarEliminar}
+          onCancel={cancelarEliminar}
+        />
       </Card>
     </ScrollView>
   );

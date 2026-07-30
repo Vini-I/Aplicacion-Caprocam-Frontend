@@ -41,6 +41,15 @@ export function FincaProvider({ children }) {
     cargarFincas();
   }, []);
 
+  async function buscarFinca(codigoCBO){
+    try {
+      const data = await fincaService.getFincasById(codigoCBO);
+      return data;
+    } catch (error) {
+      console.error("Error cargando finca:", error);
+      throw error;
+    }
+  }
   
   async function crearFinca(nuevaFinca) {
     await fincaService.createFincas(nuevaFinca);
@@ -84,6 +93,7 @@ export function FincaProvider({ children }) {
 
         // Acciones CRUD
         cargarFincas,
+        buscarFinca,
         crearFinca,
         editarFinca,
         eliminarFinca,

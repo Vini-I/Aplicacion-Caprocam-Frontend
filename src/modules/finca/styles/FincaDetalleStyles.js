@@ -170,102 +170,24 @@ export const styles = StyleSheet.create({
     paddingVertical: 4,
   },
 
-
-  alertMensaje: {
-    marginBottom: 12,
-  },
-
-  iconEliminar: {
-    color: COLORS.error,
-    marginRight: 6,
-  },
-
-  textEliminar: {
-    color: COLORS.error,
-    fontWeight: "700",
-  },
-
-  iconEditar: {
-    color: COLORS.primary,
-    marginRight: 6,
-  },
-
-  textEditar: {
-    color: COLORS.primary,
-    fontWeight: "700",
-  },
-
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(15, 23, 42, 0.45)",
+  alertCorrect: {
     alignItems: "center",
-    justifyContent: "center",
-    padding: 18,
+    backgroundColor: COLORS.successLight,
+    borderWidth: 1.5,
+    borderColor: COLORS.success,
+    paddingVertical: 10,
+    borderRadius: 10,
+    marginBottom: 10,
   },
 
-  modalCard: {
-    width: "100%",
-    maxWidth: 380,
-    backgroundColor: COLORS.white,
-    borderRadius: 18,
-    padding: 20,
+  alertIncorrect: {
     alignItems: "center",
-    borderWidth: 1,
-    borderColor: COLORS.errorLight,
-  },
-
-  modalIconContainer: {
-    width: 62,
-    height: 62,
-    borderRadius: 31,
     backgroundColor: COLORS.errorLight,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 14,
-  },
-
-  modalTitle: {
-    color: COLORS.textPrimary,
-    fontWeight: "800",
-    textAlign: "center",
-    marginBottom: 8,
-  },
-
-  modalMessage: {
-    color: COLORS.textTertiary,
-    textAlign: "center",
-    lineHeight: 22,
-    marginBottom: 14,
-  },
-
-  modalActions: {
-    width: "100%",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    gap: 10,
-  },
-
-  modalNoButton: {
-    flex: 1,
-    borderColor: COLORS.textTertiary,
-    backgroundColor: COLORS.white,
-  },
-
-  modalYesButton: {
-    flex: 1,
+    borderWidth: 1.5,
     borderColor: COLORS.error,
-    backgroundColor: COLORS.white,
-  },
-
-  modalNoText: {
-    color: COLORS.textTertiary,
-    fontWeight: "800",
-  },
-
-  modalYesText: {
-    color: COLORS.error,
-    fontWeight: "800",
+    paddingVertical: 10,
+    borderRadius: 10,
+    marginBottom: 10,
   },
 
 });

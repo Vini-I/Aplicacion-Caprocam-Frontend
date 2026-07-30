@@ -18,6 +18,23 @@ export const fincaService = {
     }
   },
 
+  getFincasById: async (codigoCBO) => {
+    try {
+
+    const response = await api.get(`/fincas/${codigoCBO}`);
+
+    return {
+      ...response.data.data,
+        telefonoParse: parseTelefonos(response.data.data.telefono),
+      };
+
+    } catch (error) {
+
+    throw error;
+
+    }
+  },
+
   createFincas: async (fincaDTO) => {
     try {
       const response = await api.post("/fincas", fincaDTO);

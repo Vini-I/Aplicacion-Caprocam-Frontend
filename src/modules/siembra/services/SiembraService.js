@@ -3,31 +3,24 @@
  * SERVICIO DE SIEMBRA
  * ============================================================
  *
- * Gestiona temporalmente la información utilizada por el módulo
- * de Siembra mediante datos simulados en memoria.
+ * ARCHIVO OBSOLETO - MANTENIDO TEMPORALMENTE POR COMPATIBILIDAD
  *
- * FUNCIONALIDAD:
- * - Proporciona registros de siembras existentes.
- * - Consulta siembras por identificador.
- * - Obtiene catálogos de fincas, estanques y datos de larva.
- * - Proporciona opciones utilizadas en los formularios.
+ * Este archivo quedó inutilizado dentro del módulo de Siembra: todo
+ * lo que expone es información simulada en memoria (mock), sin
+ * ninguna conexión real a la base de datos. El módulo de Siembra ya
+ * NO lo usa - fue reemplazado por servicios reales conectados al
+ * backend (src/modules/siembra/services/siembra.service.js,
+ * precria.service.js, lote.service.js, proveedorLarva.service.js,
+ * laboratorio.service.js, procedencia.service.js).
  *
- * NOTA:
- * Actualmente utiliza información local de prueba.
- * Posteriormente deberá conectarse con la base de datos.
+ * Se conserva por ahora únicamente porque otros módulos (Dashboard,
+ * Trazabilidad) todavía lo importan directamente y dejarían de
+ * compilar si se elimina. Esos módulos deben migrar a los servicios
+ * reales de arriba - por ejemplo, en vez de la función mock de este
+ * archivo, usar getSiembras() de siembra.service.js, que sí hace la
+ * petición real al backend (GET /siembras) y devuelve datos reales,
+ * no simulados.
  *
- * NOTA - CATÁLOGOS DE LARVA (proveedor / laboratorio / procedencia):
- * Antes eran arrays fijos sin forma de agregarles nada desde la app.
- * Ahora agregarProveedorLarva/agregarLaboratorioLarva/agregarProcedenciaLarva
- * permiten sumar un ítem nuevo a esos catálogos (lo usa el modal de
- * "Agregar nuevo" que aparece junto a esos Select en DatosLarvaSection).
- *
- * NOTA - PRE-CRÍA -> SIEMBRA:
- * obtenerPreCriasFinalizadasDisponibles() y mapearPreCriaASiembra()
- * centralizan cómo se traspasan los datos de una Pre-Cría finalizada
- * hacia una Siembra nueva, para que el botón "Registrar Siembra" (desde
- * el Detalle de una Pre-Cría) y el Select "Siembra a partir de Pre-Cría"
- * (en Nueva Siembra) usen exactamente la misma lógica.
  */
 const siembras = [
   {
