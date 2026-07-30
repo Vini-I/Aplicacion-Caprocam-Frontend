@@ -1,151 +1,100 @@
 /**
  * ============================================================
- * HOOK: useParasitologia
+ * HOOK DE PARASITOLOGIA
  * ============================================================
  *
- * Gestiona los registros reales del backend.
+ * Centraliza el estado y las operaciones del backend
+ * correspondientes al modulo de parasitologia.
  */
 
-import {
-  useEffect,
-  useState,
-} from "react";
+import { useEffect, useState } from "react";
 
-import parasitologiaService, {
-  construirResumenParasitologia,
-  obtenerMensajeError,
-  PARASITOS_CATALOGO,
-} from "../services/ParasitologiaService";
+import { useError } from "../../../shared/context/ErrorContext";
+import parasitologiaService from "../services/ParasitologiaService";
+
+const RESUMEN_INICIAL = {
+  totalRegistros: 0,
+  totalMuestreados: 0,
+  totalInfectados: 0,
+  totalCamaronesMuestreados: 0,
+  totalCamaronesInfectados: 0,
+  porcentajePromedio: 0,
+  promedioInfeccion: 0,
+  gradoPromedio: 0,
+  parasitosFrecuentes: [],
+  gradosFrecuentes: [],
+};
 
 export default function useParasitologia() {
-  const [
-    registrosParasitologia,
-    setRegistrosParasitologia,
-  ] = useState([]);
+  const { mostrarError } = useError();
 
-  const [
-    resumen,
-    setResumen,
-  ] = useState(
-    construirResumenParasitologia([]),
-  );
+  const [registrosParasitologia, setRegistrosParasitologia] = useState([]);
+  const [resumen, setResumen] = useState(RESUMEN_INICIAL);
+  const [catalogoParasitos, setCatalogoParasitos] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const [
-    catalogoParasitos,
-    setCatalogoParasitos,
-  ] = useState(
-    PARASITOS_CATALOGO,
-  );
-
-  const [
-    loading,
-    setLoading,
-  ] = useState(false);
-
-  const [
-    error,
-    setError,
-  ] = useState("");
-
-  async function recargar() {
-    setLoading(true);
-    setError("");
-
+  async function cargarDatos() {
     try {
-      const respuestas =
-        await Promise.all([
-          parasitologiaService.getAll(),
-          parasitologiaService
-            .getResumenDashboard(),
-        ]);
+      setLoading(true);
 
-      setRegistrosParasitologia(
-        respuestas[0],
-      );
+      const [registros, resumenBackend, catalogo] = await Promise.all([
+        parasitologiaService.getAll(),
+        parasitologiaService.getResumenDashboard(),
+        parasitologiaService.getCatalogo(),
+      ]);
 
-      setResumen(
-        respuestas[1],
-      );
-
-      try {
-        const catalogo =
-          await parasitologiaService
-            .getCatalogo();
-
-        setCatalogoParasitos(
-          catalogo,
-        );
-      } catch {
-        setCatalogoParasitos(
-          PARASITOS_CATALOGO,
-        );
-      }
-    } catch (errorCarga) {
-      setError(
-        obtenerMensajeError(
-          errorCarga,
-          "No se pudieron cargar los registros de parasitologia.",
-        ),
-      );
+      setRegistrosParasitologia(Array.isArray(registros) ? registros : []);
+      setResumen(resumenBackend && typeof resumenBackend === "object" ? resumenBackend : RESUMEN_INICIAL);
+      setCatalogoParasitos(Array.isArray(catalogo) ? catalogo : []);
+    } catch (error) {
+      console.error("Error al cargar parasitologias", error);
+      mostrarError(error);
     } finally {
       setLoading(false);
     }
   }
 
-  async function guardarRegistro(
-    registro,
-  ) {
-    setLoading(true);
-    setError("");
-
+  async function buscarRegistro(id) {
     try {
-      const nuevoRegistro =
-        await parasitologiaService.create(
-          registro,
-        );
-
-      await recargar();
-
-      return nuevoRegistro;
-    } catch (errorGuardado) {
-      setError(
-        obtenerMensajeError(
-          errorGuardado,
-          "No se pudo guardar el registro de parasitologia.",
-        ),
-      );
-
+      setLoading(true);
+      return await parasitologiaService.getById(id);
+    } catch (error) {
+      console.error("Error al buscar parasitologia", error);
+      mostrarError(error);
       return null;
     } finally {
       setLoading(false);
     }
   }
 
-  async function actualizarRegistro(
-    id,
-    registro,
-  ) {
-    setLoading(true);
-    setError("");
-
+  async function guardarRegistro(registro) {
     try {
-      const actualizado =
-        await parasitologiaService.update(
-          id,
-          registro,
-        );
+      setLoading(true);
 
-      await recargar();
+      const nuevoRegistro = await parasitologiaService.create(registro);
+      await cargarDatos();
 
-      return actualizado;
-    } catch (errorActualizacion) {
-      setError(
-        obtenerMensajeError(
-          errorActualizacion,
-          "No se pudo actualizar el registro de parasitologia.",
-        ),
-      );
+      return nuevoRegistro;
+    } catch (error) {
+      console.error("Error al guardar parasitologia", error);
+      mostrarError(error);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }
 
+  async function actualizarRegistro(id, registro) {
+    try {
+      setLoading(true);
+
+      const registroActualizado = await parasitologiaService.update(id, registro);
+      await cargarDatos();
+
+      return registroActualizado;
+    } catch (error) {
+      console.error("Error al actualizar parasitologia", error);
+      mostrarError(error);
       return null;
     } finally {
       setLoading(false);
@@ -153,66 +102,32 @@ export default function useParasitologia() {
   }
 
   async function eliminarRegistro(id) {
-    setLoading(true);
-    setError("");
-
     try {
-      const eliminado =
-        await parasitologiaService
-          .deleteById(id);
+      setLoading(true);
 
-      await recargar();
+      const registroEliminado = await parasitologiaService.deleteById(id);
+      await cargarDatos();
 
-      return eliminado;
-    } catch (errorEliminacion) {
-      setError(
-        obtenerMensajeError(
-          errorEliminacion,
-          "No se pudo eliminar el registro de parasitologia.",
-        ),
-      );
-
+      return registroEliminado;
+    } catch (error) {
+      console.error("Error al eliminar parasitologia", error);
+      mostrarError(error);
       return null;
     } finally {
       setLoading(false);
     }
   }
 
-  async function buscarRegistro(id) {
-    setLoading(true);
-    setError("");
-
-    try {
-      return await parasitologiaService
-        .getById(id);
-    } catch (errorBusqueda) {
-      setError(
-        obtenerMensajeError(
-          errorBusqueda,
-          "No se pudo obtener el registro de parasitologia.",
-        ),
-      );
-
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(
-    function () {
-      recargar();
-    },
-    [],
-  );
+  useEffect(() => {
+    cargarDatos();
+  }, []);
 
   return {
     registrosParasitologia,
     resumen,
     catalogoParasitos,
     loading,
-    error,
-    recargar,
+    recargar: cargarDatos,
     buscarRegistro,
     guardarRegistro,
     actualizarRegistro,
