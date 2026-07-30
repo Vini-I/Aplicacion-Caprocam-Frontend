@@ -30,6 +30,8 @@ import Icon from "../../../shared/components/Icons";
 import Button from "../../../shared/components/Button";
 import Badge from "../../../shared/components/Badge";
 import NavbarRegistro from "../../../shared/components/NavbarRegistro";
+import ModalEliminar from "../../../shared/components/ModalEliminar";
+import Alert from "../../../shared/components/Alert";
 
 export default function FincaDetalleScreen({
   onEstanque,
@@ -37,9 +39,24 @@ export default function FincaDetalleScreen({
   onEstanqueEditar,
 }) {
 
-  const { finca, estanquesFinca, haldleGenerar, loadingFincas, loadingPdf } = useFincaDetalle();
+  const { 
+    finca, 
+    estanquesFinca, 
+    handleGenerar, 
+    loadingFincas, 
+    loadingEstanques,
+    loadingPdf ,
 
-  if (loadingFincas) {
+    alert,
+
+    modalVisible,
+    estanqueSeleccionado,
+    abrirModalEliminar,
+    cancelarEliminar,
+    confirmarEliminar,
+  } = useFincaDetalle();
+
+  if (loadingFincas || loadingEstanques) {
     return <Text>Cargando...</Text>;
   }
 
@@ -56,6 +73,21 @@ export default function FincaDetalleScreen({
       />
       <ScrollView showsVerticalScrollIndicator={false} style={STYLE.container}>
         <View style={STYLE.contentWrapper}>
+
+          {alert === "edited" && (
+            <Alert style={styles.alertCorrect}>Estanque editado correctamente</Alert>
+          )}
+          {alert === "created" && (
+            <Alert style={styles.alertCorrect}>
+            Estanque registrado correctamente
+            </Alert>
+          )}
+            {alert === "deleted" && (
+            <Alert style={styles.alertIncorrect}>
+            Estanque eliminado correctamente
+          </Alert>
+          )}
+
           <Card>
             <View>
               <Text color={COLORS.textTertiary} style={styles.titleText}>
@@ -117,7 +149,7 @@ export default function FincaDetalleScreen({
 
             <Button
               style={styles.buttonExport}
-              onPress={haldleGenerar}
+              onPress={handleGenerar}
               disabled={loadingPdf}
             >
               <Icon
@@ -130,7 +162,7 @@ export default function FincaDetalleScreen({
               </Text>
             </Button>
           </Card>
-          <Button style={styles.addButton} onPress={() => onEstanque()}>
+          <Button style={styles.addButton} onPress={() => onEstanque(finca.codigoCBO)}>
             <Icon style={styles.addButtonText} icon={ICONS.add} size={15} />
             <Text style={styles.addButtonText} size={15}>
               REGISTRAR NUEVO ESTANQUE
@@ -139,14 +171,14 @@ export default function FincaDetalleScreen({
 
           {estanquesFinca?.map((estanque, index) => (
             <View key={index}>
-              <CardPress onPress={() => onEstanqueDetalle(estanque.codigo)}>
+              <CardPress onPress={() => onEstanqueDetalle(estanque.id, finca)}>
                 <View style={styles.header}>
                   <View style={styles.icon}>
                     <Icon icon={ICONS.waterFlow} color={COLORS.primary} />
                   </View>
 
                   <View>
-                    <Text style={styles.finca}>{estanque.finca}</Text>
+                    <Text style={styles.finca}>{finca.nombreFinca}</Text>
                     <Text style={styles.codigo}>{estanque.codigo}</Text>
                   </View>
 
@@ -173,28 +205,28 @@ export default function FincaDetalleScreen({
                 <View style={styles.Buttons}>
                   <Button
                     style={styles.Eliminar}
-                    onPress={() => abrirModalEliminar(Finca)}
+                    onPress={() => abrirModalEliminar(estanque)}
                   >
                     <Icon
                       icon={ICONS.delete}
-                      style={{ color: COLORS.error }}
+                      color={COLORS.error}
                       size={20}
                     />
-                    <Text size={12} style={{ color: COLORS.error }}>
+                    <Text size={12} color={COLORS.error}>
                       Eliminar
                     </Text>
                   </Button>
 
                   <Button
                     style={styles.Editar}
-                    onPress={() => onEstanqueEditar()}
+                    onPress={() => onEstanqueEditar(finca.codigoCBO, estanque.id)}
                   >
                     <Icon
                       icon={ICONS.edit}
-                      style={{ color: COLORS.primary }}
+                      color={COLORS.primary}
                       size={20}
                     />
-                    <Text size={12} style={{ color: COLORS.primary }}>
+                    <Text size={12} color={COLORS.primary}>
                       Editar
                     </Text>
                   </Button>
@@ -202,6 +234,14 @@ export default function FincaDetalleScreen({
               </CardPress>
             </View>
           ))}
+
+          <ModalEliminar
+            visible={modalVisible}
+            title="estanque"
+            message={estanqueSeleccionado?.codigo}
+            onCancel={cancelarEliminar}
+            onConfirm={confirmarEliminar}
+          />
         </View>
       </ScrollView>
     </>

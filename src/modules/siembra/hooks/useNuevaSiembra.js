@@ -22,6 +22,10 @@
  *   caso, seleccionar una Pre-Cría finalizada y disponible de un
  *   Select (handleSeleccionarPreCria) — esto autocompleta y deja
  *   bloqueados los campos heredados (ver mode="view" en la screen).
+ *   En este caso, se reutiliza el mismo Lote de Larva de la
+ *   Pre-Cría de origen (formData.loteId) en vez de crear uno nuevo -
+ *   crear uno nuevo con el mismo código de lote falla en el backend
+ *   ("Ya existe un lote con ese codigo").
  *
  * La pantalla únicamente consume este hook para renderizar
  * la interfaz y ejecutar acciones.
@@ -34,36 +38,47 @@ import {
   useFieldValidation,
   validarCamposObligatorios,
 } from "./useFieldValidation";
-
 import { obtenerCamposObligatorios as obtenerCamposObligatoriosPorTipo } from "./siembraValidationRules";
-
 import { calcularCantidadSembrada } from "./siembraCalculos";
-
-import { obtenerFechaHoy } from "./dateUtils";
-
+import { obtenerFechaHoy, formatearFechaDesdeISO } from "./dateUtils";
 import {
   obtenerEstanquePorCodigo,
   obtenerEstanquesPorFinca,
-  crearRegistro,
   obtenerFincas,
-  obtenerTecnicasCultivo,
-  obtenerProveedoresLarva,
-  obtenerLaboratoriosLarva,
-  obtenerProcedenciasLarva,
-  obtenerPLLarva,
-  agregarProveedorLarva,
-  agregarLaboratorioLarva,
-  agregarProcedenciaLarva,
-  actualizarProveedorLarva,
-  actualizarLaboratorioLarva,
-  actualizarProcedenciaLarva,
+} from "./fincaEstanqueLocal";
+
+import {
+  getPrecrias,
+  getPrecriaById,
+  createPrecria,
+} from "../services/precria.service";
+import { createSiembra } from "../services/siembra.service";
+import { getLoteById, createLote } from "../services/lote.service";
+import {
+  getProveedoresLarva,
+  createProveedorLarva,
+  updateProveedorLarva,
   eliminarProveedorLarva,
-  eliminarLaboratorioLarva,
-  eliminarProcedenciaLarva,
-  obtenerSiembraPorId,
-  obtenerPreCriasFinalizadasDisponibles,
-  mapearPreCriaASiembra,
-} from "../services/SiembraService";
+} from "../services/proveedorLarva.service";
+import {
+  getLaboratorios,
+  createLaboratorio,
+  updateLaboratorio,
+  eliminarLaboratorio,
+} from "../services/laboratorio.service";
+import {
+  getProcedencias,
+  createProcedencia,
+  updateProcedencia,
+  eliminarProcedencia,
+} from "../services/procedencia.service";
+import { LoteLarvaDTO, PrecriaDTO, SiembraDTO } from "../dtos/siembra.dto";
+
+// El backend devuelve {id, nombre}; los Select del proyecto esperan
+// {label, value} - este mapeo se repite igual en useDetalleSiembra.
+function mapCatalogo(items) {
+  return (items || []).map((item) => ({ label: item.nombre, value: item.id }));
+}
 
 const initialFormData = {
   tipoRegistro: "siembra",
@@ -106,30 +121,10 @@ export default function useNuevaSiembra() {
 
   const [mensaje, setMensaje] = useState("");
   const [mensajeVariant, setMensajeVariant] = useState("info");
+  const [guardando, setGuardando] = useState(false);
 
   const [formData, setFormData] = useState(initialFormData);
   const params = useLocalSearchParams();
-
-  useEffect(() => {
-    if (!params.provieneDePrecriaId) {
-      return;
-    }
-
-    handleSeleccionarPreCria(params.provieneDePrecriaId);
-  }, [params.provieneDePrecriaId]);
-
-  useEffect(() => {
-    const formatted = obtenerFechaHoy();
-
-    setFormData((prev) => ({
-      ...prev,
-
-      fechaSiembra: prev.fechaSiembra || formatted,
-
-      fechaInicio: prev.fechaInicio || formatted,
-      fechaSalidaPrecria: prev.fechaSalidaPrecria || formatted,
-    }));
-  }, []);
 
   const {
     submitted,
@@ -140,13 +135,96 @@ export default function useNuevaSiembra() {
     requiredLabel,
   } = useFieldValidation();
 
+  useEffect(() => {
+    const formatted = obtenerFechaHoy();
+    setFormData((prev) => ({
+      ...prev,
+      fechaSiembra: prev.fechaSiembra || formatted,
+      fechaInicio: prev.fechaInicio || formatted,
+      fechaSalidaPrecria: prev.fechaSalidaPrecria || formatted,
+    }));
+  }, []);
+
+  const estanques = obtenerEstanquesPorFinca(formData.finca);
+  const fincas = useMemo(() => obtenerFincas(), []);
+  const tecnicasCultivo = useMemo(
+    () => [
+      { label: "Extensiva", value: "extensiva" },
+      { label: "Semi-intensiva", value: "semi" },
+      { label: "Intensiva", value: "intensiva" },
+    ],
+    [],
+  );
+  const plLarva = useMemo(
+    () =>
+      Array.from({ length: 12 }, (_, i) => ({
+        label: `PL${i + 1}`,
+        value: `PL${i + 1}`,
+      })),
+    [],
+  );
+
+  // Catálogos de larva reales - se cargan del backend, ya no son
+  // arrays en memoria.
+  const [proveedoresLarva, setProveedoresLarva] = useState([]);
+  const [laboratoriosLarva, setLaboratoriosLarva] = useState([]);
+  const [procedenciasLarva, setProcedenciasLarva] = useState([]);
+  const [cargandoCatalogos, setCargandoCatalogos] = useState(true);
+
+  useEffect(() => {
+    async function cargarCatalogos() {
+      try {
+        setCargandoCatalogos(true);
+        const [proveedores, laboratorios, procedencias] = await Promise.all([
+          getProveedoresLarva(),
+          getLaboratorios(),
+          getProcedencias(),
+        ]);
+        setProveedoresLarva(mapCatalogo(proveedores));
+        setLaboratoriosLarva(mapCatalogo(laboratorios));
+        setProcedenciasLarva(mapCatalogo(procedencias));
+      } catch (err) {
+        setMensaje("No fue posible cargar los catálogos de larva.");
+        setMensajeVariant("danger");
+      } finally {
+        setCargandoCatalogos(false);
+      }
+    }
+    cargarCatalogos();
+  }, []);
+
+  const vinoAutomaticoDePrecria = Boolean(params.provieneDePrecriaId);
+  const [origenSiembra, setOrigenSiembra] = useState("directa");
+
+  // Pre-crías finalizadas disponibles para armar una Siembra a
+  // partir de ellas.
+  const [preCriasDisponibles, setPreCriasDisponibles] = useState([]);
+
+  useEffect(() => {
+    async function cargarPrecriasDisponibles() {
+      try {
+        const precrias = await getPrecrias();
+        setPreCriasDisponibles(
+          precrias
+            .filter((p) => p.estado === "Finalizada")
+            .map((p) => ({ label: `Pre-Cría #${p.id}`, value: String(p.id) })),
+        );
+      } catch (err) {
+        // No bloquea el formulario si esto falla - la siembra directa
+        // sigue funcionando igual.
+      }
+    }
+    cargarPrecriasDisponibles();
+  }, []);
+
+  useEffect(() => {
+    if (!params.provieneDePrecriaId) return;
+    handleSeleccionarPreCria(params.provieneDePrecriaId);
+  }, [params.provieneDePrecriaId]);
+
   function handleChange(field, value) {
     setFormData((previousData) => {
-      const updatedData = {
-        ...previousData,
-        [field]: value,
-      };
-
+      const updatedData = { ...previousData, [field]: value };
       if (
         updatedData.tipoRegistro === "siembra" &&
         (field === "areaHectareas" || field === "densidadPoblacional")
@@ -156,7 +234,6 @@ export default function useNuevaSiembra() {
           updatedData.densidadPoblacional,
         );
       }
-
       return updatedData;
     });
   }
@@ -164,28 +241,19 @@ export default function useNuevaSiembra() {
   function handleChangeFinca(value) {
     setFormData((previousData) => ({
       ...previousData,
-
       finca: value,
-
       estanque: "",
-
       areaHectareas: "",
-
       cantidadSembrada: "",
     }));
   }
 
   function handleChangeEstanque(value) {
     const estanque = obtenerEstanquePorCodigo(formData.finca, value);
-
     const area = estanque?.areaHectareas ?? "";
 
     setFormData((previousData) => {
-      const updatedData = {
-        ...previousData,
-        estanque: value,
-      };
-
+      const updatedData = { ...previousData, estanque: value };
       if (previousData.tipoRegistro === "siembra") {
         updatedData.areaHectareas = area;
         updatedData.cantidadSembrada = calcularCantidadSembrada(
@@ -196,29 +264,6 @@ export default function useNuevaSiembra() {
       return updatedData;
     });
   }
-
-  const estanques = obtenerEstanquesPorFinca(formData.finca);
-
-  const fincas = useMemo(() => obtenerFincas(), []);
-  const tecnicasCultivo = useMemo(() => obtenerTecnicasCultivo(), []);
-  const [proveedoresLarva, setProveedoresLarva] = useState(() =>
-    obtenerProveedoresLarva(),
-  );
-  const [laboratoriosLarva, setLaboratoriosLarva] = useState(() =>
-    obtenerLaboratoriosLarva(),
-  );
-  const [procedenciasLarva, setProcedenciasLarva] = useState(() =>
-    obtenerProcedenciasLarva(),
-  );
-  const plLarva = useMemo(() => obtenerPLLarva(), []);
-
-  const vinoAutomaticoDePrecria = Boolean(params.provieneDePrecriaId);
-
-  const [preCriasDisponibles] = useState(() =>
-    obtenerPreCriasFinalizadasDisponibles(),
-  );
-
-  const [origenSiembra, setOrigenSiembra] = useState("directa");
 
   const camposHeredadosDePrecria = [
     "duracionPrecria",
@@ -232,7 +277,7 @@ export default function useNuevaSiembra() {
     "plSiembra",
   ];
 
-  function handleSeleccionarPreCria(precriaId) {
+  async function handleSeleccionarPreCria(precriaId) {
     if (!precriaId) {
       setFormData((previo) => {
         const limpio = { ...previo, pasoPorPrecria: "no", precriaId: "" };
@@ -244,90 +289,114 @@ export default function useNuevaSiembra() {
       return;
     }
 
-    const precria = obtenerSiembraPorId(precriaId);
-    if (!precria) {
-      return;
+    try {
+      const precria = await getPrecriaById(precriaId);
+      if (!precria) return;
+
+      const lote = precria.lote_larva_id
+        ? await getLoteById(precria.lote_larva_id)
+        : null;
+
+      setFormData((previo) => {
+        const densidad = previo.densidadPoblacional || "8";
+        const area = previo.areaHectareas || "";
+        const actualizado = {
+          ...previo,
+          finca: precria.finca_id || previo.finca,
+          estanque: precria.estanque_id || previo.estanque,
+          cantidadSobrevivientePrecria: precria.cantidad_final || "",
+          duracionPrecria: precria.duracion_dias || "",
+          fechaSalidaPrecria: formatearFechaDesdeISO(precria.fecha_fin),
+          pasoPorPrecria: "si",
+          precriaId: String(precriaId),
+          densidadPoblacional: densidad,
+          areaHectareas: area,
+          cantidadSembrada: calcularCantidadSembrada(area, densidad),
+          loteId: precria.lote_larva_id,
+          codigoLoteLarva: lote?.codigo_lote || "",
+          proveedorLarva: lote?.proveedor_larva_id || "",
+          laboratorioLarva: lote?.laboratorio_id || "",
+          procedenciaLarva: lote?.procedencia_id || "",
+          certificadoLarva: lote?.certificado_larva || "",
+          plSiembra: precria.pl_final != null ? `PL${precria.pl_final}` : "",
+        };
+        return actualizado;
+      });
+    } catch (err) {
+      setMensaje("No fue posible cargar la Pre-Cría seleccionada.");
+      setMensajeVariant("danger");
     }
-
-    const datosMapeados = mapearPreCriaASiembra(precria);
-    const estanqueInfo = obtenerEstanquePorCodigo(
-      datosMapeados.finca,
-      datosMapeados.estanque,
-    );
-    const area = estanqueInfo?.areaHectareas ?? "";
-
-    setFormData((previo) => {
-      const densidad = previo.densidadPoblacional || "8";
-
-      return {
-        ...previo,
-        ...datosMapeados,
-        pasoPorPrecria: "si",
-        precriaId: String(precriaId),
-        densidadPoblacional: densidad,
-        areaHectareas: area,
-        cantidadSembrada: calcularCantidadSembrada(area, densidad),
-      };
-    });
   }
 
   function handleCambiarOrigenSiembra(nuevoOrigen) {
     setOrigenSiembra(nuevoOrigen);
-
     if (nuevoOrigen === "directa") {
       handleSeleccionarPreCria("");
     }
   }
 
-  /**
-   * Agrega un ítem nuevo al catálogo correspondiente (proveedor,
-   * laboratorio o procedencia de larva) y lo deja seleccionado de
-   * una vez en el formulario, sin salir de esta pantalla.
-   */
-  function handleAgregarProveedorLarva(nombre) {
-    const nuevo = agregarProveedorLarva(nombre);
-    setProveedoresLarva((previo) => [...previo, nuevo]);
-    handleChange("proveedorLarva", nuevo.value);
+  async function handleAgregarProveedorLarva(nombre) {
+    const nuevo = await createProveedorLarva(nombre);
+    setProveedoresLarva((previo) => [
+      ...previo,
+      { label: nuevo.nombre, value: nuevo.id },
+    ]);
+    handleChange("proveedorLarva", nuevo.id);
   }
 
-  function handleAgregarLaboratorioLarva(nombre) {
-    const nuevo = agregarLaboratorioLarva(nombre);
-    setLaboratoriosLarva((previo) => [...previo, nuevo]);
-    handleChange("laboratorioLarva", nuevo.value);
+  async function handleAgregarLaboratorioLarva(nombre) {
+    const nuevo = await createLaboratorio(nombre);
+    setLaboratoriosLarva((previo) => [
+      ...previo,
+      { label: nuevo.nombre, value: nuevo.id },
+    ]);
+    handleChange("laboratorioLarva", nuevo.id);
   }
 
-  function handleAgregarProcedenciaLarva(nombre) {
-    const nuevo = agregarProcedenciaLarva(nombre);
-    setProcedenciasLarva((previo) => [...previo, nuevo]);
-    handleChange("procedenciaLarva", nuevo.value);
+  async function handleAgregarProcedenciaLarva(nombre) {
+    const nuevo = await createProcedencia(nombre);
+    setProcedenciasLarva((previo) => [
+      ...previo,
+      { label: nuevo.nombre, value: nuevo.id },
+    ]);
+    handleChange("procedenciaLarva", nuevo.id);
   }
 
-  function handleEditarProveedorLarva(value, nombre) {
-    const actualizado = actualizarProveedorLarva(value, nombre);
-    if (!actualizado) return;
+  async function handleEditarProveedorLarva(value, nombre) {
+    const actualizado = await updateProveedorLarva(value, nombre);
     setProveedoresLarva((previo) =>
-      previo.map((item) => (item.value === value ? actualizado : item)),
+      previo.map((item) =>
+        item.value === value
+          ? { label: actualizado.nombre, value: actualizado.id }
+          : item,
+      ),
     );
   }
 
-  function handleEditarLaboratorioLarva(value, nombre) {
-    const actualizado = actualizarLaboratorioLarva(value, nombre);
-    if (!actualizado) return;
+  async function handleEditarLaboratorioLarva(value, nombre) {
+    const actualizado = await updateLaboratorio(value, nombre);
     setLaboratoriosLarva((previo) =>
-      previo.map((item) => (item.value === value ? actualizado : item)),
+      previo.map((item) =>
+        item.value === value
+          ? { label: actualizado.nombre, value: actualizado.id }
+          : item,
+      ),
     );
   }
 
-  function handleEditarProcedenciaLarva(value, nombre) {
-    const actualizado = actualizarProcedenciaLarva(value, nombre);
-    if (!actualizado) return;
+  async function handleEditarProcedenciaLarva(value, nombre) {
+    const actualizado = await updateProcedencia(value, nombre);
     setProcedenciasLarva((previo) =>
-      previo.map((item) => (item.value === value ? actualizado : item)),
+      previo.map((item) =>
+        item.value === value
+          ? { label: actualizado.nombre, value: actualizado.id }
+          : item,
+      ),
     );
   }
 
-  function handleEliminarProveedorLarva(value) {
-    eliminarProveedorLarva(value);
+  async function handleEliminarProveedorLarva(value) {
+    await eliminarProveedorLarva(value);
     setProveedoresLarva((previo) =>
       previo.filter((item) => item.value !== value),
     );
@@ -338,8 +407,8 @@ export default function useNuevaSiembra() {
     );
   }
 
-  function handleEliminarLaboratorioLarva(value) {
-    eliminarLaboratorioLarva(value);
+  async function handleEliminarLaboratorioLarva(value) {
+    await eliminarLaboratorio(value);
     setLaboratoriosLarva((previo) =>
       previo.filter((item) => item.value !== value),
     );
@@ -350,8 +419,8 @@ export default function useNuevaSiembra() {
     );
   }
 
-  function handleEliminarProcedenciaLarva(value) {
-    eliminarProcedenciaLarva(value);
+  async function handleEliminarProcedenciaLarva(value) {
+    await eliminarProcedencia(value);
     setProcedenciasLarva((previo) =>
       previo.filter((item) => item.value !== value),
     );
@@ -363,15 +432,11 @@ export default function useNuevaSiembra() {
   }
 
   function obtenerCamposObligatorios() {
-    if (!formData.tipoRegistro) {
-      return ["tipoRegistro"];
-    }
-
+    if (!formData.tipoRegistro) return ["tipoRegistro"];
     const campos = [
       "tipoRegistro",
       ...obtenerCamposObligatoriosPorTipo(formData),
     ];
-
     if (
       formData.tipoRegistro === "siembra" &&
       !vinoAutomaticoDePrecria &&
@@ -379,14 +444,12 @@ export default function useNuevaSiembra() {
     ) {
       campos.push("precriaId");
     }
-
     return campos;
   }
 
-  function handleCrearSiembra() {
+  async function handleCrearSiembra() {
     setSubmitted(true);
     const camposAValidar = obtenerCamposObligatorios();
-
     const nuevosErrores = validarCamposObligatorios(formData, camposAValidar);
     setErrors(nuevosErrores);
 
@@ -399,78 +462,69 @@ export default function useNuevaSiembra() {
       return;
     }
 
-    crearRegistro(formData);
+    setGuardando(true);
+    try {
+      let loteId;
+      if (formData.pasoPorPrecria === "si" && formData.loteId) {
+        loteId = formData.loteId;
+      } else {
+        const lote = await createLote(new LoteLarvaDTO(formData));
+        loteId = lote.id;
+      }
 
-    setMensaje(
-      formData.tipoRegistro === "precria"
-        ? "Pre-Cría registrada correctamente."
-        : "Siembra registrada correctamente.",
-    );
-    setMensajeVariant("success");
+      if (formData.tipoRegistro === "precria") {
+        await createPrecria(new PrecriaDTO(formData, loteId));
+      } else {
+        await createSiembra(new SiembraDTO(formData, loteId));
+      }
 
-    setSubmitted(false);
+      setMensaje(
+        formData.tipoRegistro === "precria"
+          ? "Pre-Cría registrada correctamente."
+          : "Siembra registrada correctamente.",
+      );
+      setMensajeVariant("success");
+      setSubmitted(false);
+    } catch (err) {
+      const mensajeBackend = err.response?.data?.message;
+      setMensaje(mensajeBackend || "No fue posible registrar el ciclo.");
+      setMensajeVariant("danger");
+    } finally {
+      setGuardando(false);
+    }
   }
 
   return {
     formData,
-
     estanques,
-
     fincas,
-
     tecnicasCultivo,
-
     proveedoresLarva,
-
     laboratoriosLarva,
-
     procedenciasLarva,
-
     plLarva,
-
     vinoAutomaticoDePrecria,
-
     preCriasDisponibles,
-
     origenSiembra,
-
     handleCambiarOrigenSiembra,
-
     handleSeleccionarPreCria,
-
     mensaje,
-
     mensajeVariant,
-
+    cargandoCatalogos,
+    guardando,
     handleChange,
-
     handleChangeFinca,
-
     handleChangeEstanque,
-
     handleCrearSiembra,
-
     handleAgregarProveedorLarva,
-
     handleAgregarLaboratorioLarva,
-
     handleAgregarProcedenciaLarva,
-
     handleEditarProveedorLarva,
-
     handleEditarLaboratorioLarva,
-
     handleEditarProcedenciaLarva,
-
     handleEliminarProveedorLarva,
-
     handleEliminarLaboratorioLarva,
-
     handleEliminarProcedenciaLarva,
-
-    fieldHelpers: {
-      hasError,
-      requiredLabel,
-    },
+    fieldHelpers: { hasError, requiredLabel },
   };
 }

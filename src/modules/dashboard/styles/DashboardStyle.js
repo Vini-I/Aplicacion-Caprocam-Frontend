@@ -327,15 +327,20 @@ export const styles = StyleSheet.create({
     width: "100%",
     gap: 12,
     marginBottom: 14,
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   statsGridTablet: {
     flexDirection: "row",
     flexWrap: "wrap",
+    justifyContent: "center",
+    alignItems: "center",
   },
 
   statCard: {
     width: "100%",
+    alignSelf: "center",
     minHeight: 118,
     borderRadius: 18,
     padding: 16,
