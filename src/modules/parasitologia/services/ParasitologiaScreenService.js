@@ -141,6 +141,53 @@ export function validarFormularioParasitologia(datos) {
   return resultado;
 }
 
+export function obtenerErroresFormularioParasitologia(datos, submitted) {
+  const errores = {
+    finca: "",
+    estanque: "",
+    fechaReporte: "",
+    parasito: "",
+    camaronesMuestreados: "",
+    camaronesInfectados: "",
+  };
+
+  if (submitted !== true) {
+    return errores;
+  }
+
+  if (datos.finca === "") {
+    errores.finca = "Este campo es obligatorio.";
+  }
+
+  if (datos.estanque === "") {
+    errores.estanque = "Este campo es obligatorio.";
+  }
+
+  if (datos.fechaReporte === "") {
+    errores.fechaReporte = "Este campo es obligatorio.";
+  }
+
+  if (datos.parasito === "") {
+    errores.parasito = "Este campo es obligatorio.";
+  }
+
+  if (Number(datos.camaronesMuestreados) <= 0) {
+    errores.camaronesMuestreados = "Debe ser mayor que cero.";
+  }
+
+  if (Number(datos.camaronesInfectados) < 0) {
+    errores.camaronesInfectados = "No puede ser negativo.";
+  }
+
+  if (
+    Number(datos.camaronesInfectados) > Number(datos.camaronesMuestreados)
+  ) {
+    errores.camaronesInfectados = "No puede ser mayor que los muestreados.";
+  }
+
+  return errores;
+}
+
 export function construirRegistroParasitologia(datos) {
   return {
     finca: datos.finca,

@@ -179,12 +179,12 @@ export function useFincaCrecimiento() {
     }
 
     if (!colaboradorSeleccionado) {
-      nextErrors.colaborador = true;
+      nextErrors.colaborador = "Seleccione un colaborador";
     }
 
     setErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
-  }, [fincaSeleccionada, estanqueSeleccionado, pesoActual, fechaRegistro], colaboradorSeleccionado);
+  }, [fincaSeleccionada, estanqueSeleccionado, pesoActual, fechaRegistro, colaboradorSeleccionado]);
 
   const handleFincaChange = useCallback((value) => {
     setFincaSeleccionada(value);
