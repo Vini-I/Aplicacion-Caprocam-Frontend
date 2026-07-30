@@ -122,7 +122,7 @@ export default function DetalleEstanqueScreen() {
               label="Densidad de siembra"
               value={`${estanque.densidadSiembra} ind/m2`}
             />
-            <Info label="Precria" value={estanque.precria ? "Sí":"No"} />
+            <Info label="Precria" value={estanque.precria === true || estanque.precria === "true" ? "Sí":"No"} />
           </Card>
 
           <Card>

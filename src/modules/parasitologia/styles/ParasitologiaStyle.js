@@ -76,15 +76,15 @@ export const styles = StyleSheet.create({
   },
 
   content: {
-    padding: 18,
+    paddingVertical: 18,
   },
 
   contentTablet: {
-    paddingHorizontal: 28,
+    paddingVertical: 18,
   },
 
   contentDesktop: {
-    maxWidth: 1100,
+    maxWidth: 900,
     alignSelf: "center",
     width: "100%",
   },

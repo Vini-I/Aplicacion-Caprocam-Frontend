@@ -99,7 +99,6 @@ export default function Button({
 
 const styles = StyleSheet.create({
   button: {
-    minHeight: 44,
     paddingVertical: 11,
     paddingHorizontal: 18,
     borderRadius: 10,
