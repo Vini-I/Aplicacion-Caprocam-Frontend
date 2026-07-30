@@ -114,7 +114,7 @@ export default function EditarEstanqueScreen({ navigation, codigoCBO, id }) {
         setFechaInicioEngorde(data.fechaInicioEngorde ?? "");
         setFechaMantenimiento(data.fechaMantenimiento ?? "");
         setDensidadSiembra(String(data.densidadSiembra ?? ""));
-        setPrecria(data.usaPrecria ? "si" : "no");
+        setPrecria(data.precria ? "si" : "no");
         setMetodoAlimentacion(data.metodoAlimentacion ?? "");
         setProveedorAlimento(data.proveedorAlimento ?? "");
         setNumeroAireadores(String(data.numeroAireadores ?? "0"));

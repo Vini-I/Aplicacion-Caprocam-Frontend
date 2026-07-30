@@ -15,7 +15,7 @@ export class estanqueDTO {
         fechaInicioEngorde, 
         fechaMantenimiento, 
         densidadSiembra, 
-        usaPrecria, 
+        precria, 
         metodoAlimentacion, 
         proveedorAlimento, 
         numeroAireadores, 
@@ -36,7 +36,7 @@ export class estanqueDTO {
         this.fechaInicioEngorde = fechaInicioEngorde;
         this.fechaMantenimiento = fechaMantenimiento;
         this.densidadSiembra = densidadSiembra;
-        this.usaPrecria = usaPrecria;
+        this.precria = precria;
         this.metodoAlimentacion = metodoAlimentacion;
         this.proveedorAlimento = proveedorAlimento;
         this.numeroAireadores = numeroAireadores;
