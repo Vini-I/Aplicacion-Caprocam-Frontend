@@ -16,7 +16,7 @@ import Select from "../../../shared/components/Select.jsx";
 import Text from "../../../shared/components/Text.jsx";
 import NavbarRegistro from "../../../shared/components/NavbarRegistro.jsx"
 
-import { useDetalleRegistro } from "../hooks/useDetalleReporte.js";
+import { useDetalleReporte } from "../hooks/useDetalleReporte.js";
 import { TIPOS_REGISTRO } from "../constants/tipoReporte.js";
 
 import { COLORS } from "../../../theme/colors.js";
@@ -25,12 +25,15 @@ import { ICONS } from "../../../theme/icons.js";
 import { STYLE } from "../../../theme/style.js";
 import { styles } from "../styles/DetalleReporteStyle.js";
 
-export default function DetalleRegistroScreen() {
+export default function DetalleReporteScreen() {
 
   const {
     registroTipo,
     finca,
     estanque,
+
+    fincas, 
+    estanques,
 
     registros,
     loading,
@@ -39,7 +42,7 @@ export default function DetalleRegistroScreen() {
     setRegistroTipo,
     setFinca,
     setEstanque,
-  } = useDetalleRegistro();
+  } = useDetalleReporte();
 
   return (
     <View style={styles.background}>
@@ -84,6 +87,7 @@ export default function DetalleRegistroScreen() {
                   <Select
                     label="Seleccione Finca"
                     placeholder="Todas las fincas"
+                    options={fincas}
                     value={finca}
                     onChange={setFinca}
                   />
@@ -93,6 +97,7 @@ export default function DetalleRegistroScreen() {
                   <Select
                     label="Seleccione Estanque"
                     placeholder="Todos los estanques"
+                    options={estanques}
                     value={estanque}
                     onChange={setEstanque}
                   />

@@ -1,12 +1,19 @@
 import { useEffect, useState } from "react";
 
-import { obtenerDetalleRegistro } from "../services/detalleReporte.service";
+import  obtenerDetalleReporte  from "../services/detalleReporte.service";
 
-export function useDetalleRegistro() {
+import { fincaService } from "../../finca/services/finca.service.js";
+import { estanqueService } from "../../estanques/services/estanque.service.js";
+
+export function useDetalleReporte() {
 
   const [registroTipo, setRegistroTipo] = useState(null);
+
   const [finca, setFinca] = useState(null);
   const [estanque, setEstanque] = useState(null);
+  
+  const [fincas, setFincas] = useState([]); 
+  const [estanques, setEstanques] = useState([]);   
 
   const [registros, setRegistros] = useState([]);
 
@@ -20,53 +27,99 @@ export function useDetalleRegistro() {
 
 
   useEffect(() => {
+    let activo = true;
 
-    async function cargarRegistros() {
-
-      if (!filtrosCompletos) {
-        setRegistros([]);
-        return;
-      }
-
-
+    async function cargarCatalogos() {
       try {
 
-        setLoading(true);
+        const [fincasData, estanquesData] = await Promise.all([
+          fincaService.getFincas(),
+          estanqueService.getEstanques(),
+        ]);
 
-        const data = await obtenerDetalleRegistro({
-          tipoRegistro: registroTipo,
-          fincaId: finca,
-          estanqueId: estanque,
-        });
+        const fincasOptions = fincasData.map((finca) => ({
+          label: finca.nombreFinca,
+          value: finca.id
+        }));
 
-        setRegistros(data);
+        const estanquesOptions = estanquesData.map((estanque) => ({
+          label: estanque.codigo, 
+          value: estanque.id
+        }));
+
+        if (activo) {
+          setFincas(fincasOptions);
+          setEstanques(estanquesOptions);
+        }
 
       } catch (error) {
 
         console.error(
           "Error cargando registros:",
           error
-        );
+        )
+      }
+    }
+   
+    cargarCatalogos();
 
+
+    return () => {
+      activo = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let activo = true;
+
+    async function cargarRegistros() {
+      if (!filtrosCompletos) {
         setRegistros([]);
+        return;
+      }
 
+      try {
+        setLoading(true);
+
+        const registrosData = await obtenerDetalleReporte({
+          tipoRegistro: registroTipo,
+          fincaId: finca,
+          estanqueId: estanque,
+        });
+
+        if (activo) {
+          setRegistros(registrosData);
+        }
+      } catch (error) {
+        console.error("Error cargando registros:", error);
+
+        if (activo) {
+          setRegistros([]);
+        }
       } finally {
-
-        setLoading(false);
-
+        if (activo) {
+          setLoading(false);
+        }
       }
     }
 
     cargarRegistros();
 
+    return () => {
+      activo = false;
+    };
   }, [registroTipo, finca, estanque]);
 
 
   return {
 
     registroTipo,
+
     finca,
     estanque,
+
+    fincas, 
+    estanques,
 
     registros,
     loading,

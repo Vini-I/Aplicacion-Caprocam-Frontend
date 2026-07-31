@@ -11,8 +11,8 @@ export const TIPOS_REGISTRO = [
   },
 
   {
-    label: "Fisio-Químico",
-    value: "fisio_quimico",
+    label: "Fisico-Químico",
+    value: "fisico_quimico",
   },
 
   {
