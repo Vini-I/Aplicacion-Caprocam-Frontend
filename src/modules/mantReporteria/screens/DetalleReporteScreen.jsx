@@ -16,14 +16,14 @@ import Select from "../../../shared/components/Select.jsx";
 import Text from "../../../shared/components/Text.jsx";
 import NavbarRegistro from "../../../shared/components/NavbarRegistro.jsx"
 
-import { useDetalleRegistro } from "../hooks/useDetalleRegistro.js";
-import { TIPOS_REGISTRO } from "../constants/tipoRegistro.js";
+import { useDetalleRegistro } from "../hooks/useDetalleReporte.js";
+import { TIPOS_REGISTRO } from "../constants/tipoReporte.js";
 
 import { COLORS } from "../../../theme/colors.js";
 import { ICONS } from "../../../theme/icons.js";
 
 import { STYLE } from "../../../theme/style.js";
-import { styles } from "../styles/DetalleRegistroStyle.js";
+import { styles } from "../styles/DetalleReporteStyle.js";
 
 export default function DetalleRegistroScreen() {
 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { obtenerDetalleRegistro } from "../services/detalleRegistro.service";
+import { obtenerDetalleRegistro } from "../services/detalleReporte.service";
 
 export function useDetalleRegistro() {
 
