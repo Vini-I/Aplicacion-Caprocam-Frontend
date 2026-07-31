@@ -230,19 +230,8 @@ export default function ProductForm() {
               labelStyle={styles.label}
             />
           )}
-
-          {/* Botón guardar */}
-          <Button
-            variant="outline"
-            onPress={handleSubmit}
-            disabled={(isEditMode && !canSave) || guardadoExitoso || guardando}
-            style={[styles.saveButton, isEditMode && !canSave && styles.saveButtonDisabled]}
-            textStyle={styles.saveButtonText}
-          >
-            {guardando ? "Guardando..." : isEditMode ? "Guardar cambios" : "Guardar producto"}
-          </Button>
-
-          {!!errorGuardado && (
+          
+         {!!errorGuardado && (
             <Alert
               variant="danger"
               message={errorGuardado}
@@ -265,6 +254,19 @@ export default function ProductForm() {
               style={styles.alertBox}
             />
           )}
+
+          {/* Botón guardar */}
+          <Button
+            variant="outline"
+            onPress={handleSubmit}
+            disabled={(isEditMode && !canSave) || guardadoExitoso || guardando}
+            style={[styles.saveButton, isEditMode && !canSave && styles.saveButtonDisabled]}
+            textStyle={styles.saveButtonText}
+          >
+            {guardando ? "Guardando..." : isEditMode ? "Guardar cambios" : "Guardar producto"}
+          </Button>
+
+         
         </Card>
       </ScrollView>
       </View>

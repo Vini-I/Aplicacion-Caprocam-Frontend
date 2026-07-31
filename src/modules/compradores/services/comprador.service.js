@@ -12,7 +12,7 @@ export const compradorService = {
     } catch (error) {
 
       throw error; 
-
+      
     }
   },
 
@@ -25,8 +25,7 @@ export const compradorService = {
     }
   },
 
-  
-  
+
   crearComprador: async (datos) => {
     try {
       const response = await api.post("/compradores", {
@@ -59,17 +58,16 @@ export const compradorService = {
     }
   },
 
-  
+  // CORREGIDO: Se cambia de api.put('/compradores/:id/activo') a api.delete('/compradores/:id')
   desactivarComprador: async (id) => {
     try {
-      const response = await api.put(`/compradores/${id}/activo`);
+      const response = await api.delete(`/compradores/${id}`);
       return response.data.data;
     } catch (error) {
       throw error;
     }
   },
 }
-
 
 export function mapComprador(apiComprador) {
   if (!apiComprador) return null;

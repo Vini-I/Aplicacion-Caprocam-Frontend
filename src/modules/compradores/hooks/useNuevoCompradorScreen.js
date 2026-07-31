@@ -36,7 +36,7 @@
 
 
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
 import { compradorService } from "../services/comprador.service";
 
@@ -77,6 +77,14 @@ export function useNuevoCompradorScreen() {
   const [mensajeError, setMensajeError] = useState("");
   const [guardadoExitoso, setGuardadoExitoso] = useState(false);
   const [guardando, setGuardando] = useState(false);
+
+  // el alert de error se autolimpia a los 6 segundos
+  useEffect(() => {
+    if (mensajeError) {
+      const t = setTimeout(() => setMensajeError(""), 6000);
+      return () => clearTimeout(t);
+    }
+  }, [mensajeError]);
 
   // Permite solo dígitos, espacios, guiones y el símbolo + en el teléfono
   const handleTelefonoChange = (valor) => {

@@ -79,6 +79,14 @@ export function useEditarCompradorScreen() {
   const [errorCorreo, setErrorCorreo] = useState("");
   const [alerta, setAlerta] = useState(null);
 
+  //se autolimpia a los 6 segundos
+  useEffect(() => {
+    if (alerta && (alerta.variant === "danger" || alerta.variant === "warning")) {
+      const t = setTimeout(() => setAlerta(null), 6000);
+      return () => clearTimeout(t);
+    }
+  }, [alerta]);
+
   // Carga el comprador desde la API y precarga el formulario
   const cargarComprador = useCallback(async () => {
     setCargando(true);

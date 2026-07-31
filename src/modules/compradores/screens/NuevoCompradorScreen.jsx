@@ -155,15 +155,7 @@ export default function NuevoCompradorScreen() {
             labelStyle={styles.label}
           />
 
-          {/* Botón para guardar, dispara la validación */}
-          <Button variant="outline" onPress={handleSubmit} disabled={guardando} style={styles.saveButton}>
-            <View style={styles.buttonContent}>
-               <Icon icon={ICONS.save} size={ICON_SIZES.save} color={COLORS.primary} />
-               <Text style={styles.saveButtonText}>
-                 {guardando ? "Guardando..." : "Guardar comprador"}
-               </Text>
-            </View>
-          </Button>
+          
 
           {guardadoExitoso && (
             <Alert
@@ -182,6 +174,18 @@ export default function NuevoCompradorScreen() {
               textStyle={styles.alertText}
             />
           )}
+
+
+          {/* Botón para guardar, dispara la validación */}
+          <Button variant="outline" onPress={handleSubmit} disabled={guardando} style={styles.saveButton}>
+            <View style={styles.buttonContent}>
+               <Icon icon={ICONS.save} size={ICON_SIZES.save} color={COLORS.primary} />
+               <Text style={styles.saveButtonText}>
+                 {guardando ? "Guardando..." : "Guardar comprador"}
+               </Text>
+            </View>
+          </Button>
+          
         </Card>
       </ScrollView>
     </View>
