@@ -6,15 +6,15 @@
  * Responsabilidad:
  * Estilos visuales de la pantalla de Inventarios (screens/InventarioScreen.jsx).
  *
- * Datos:
- * No aplica, solo estilos.
- *
- * Validaciones:
- * No aplica.
- *
- * Navegación:
- * No aplica.
- *
+ * Estilos principales:
+ *  zonaFiltros: Contenedor de filtros y búsqueda
+ *  barraBusqueda: Fila con SearchBar y botón de filtros
+ *  alertaBanner: Banner de productos con stock bajo
+ *  botonAgregar: Botón para registrar un nuevo producto
+ *  tarjeta: Tarjeta de cada producto
+ *  tarjetaStockBajo: Variante de tarjeta cuando hay stock bajo
+ *  filasDetalle: Grid de información del producto
+ * 
  * Dependencias:
  * theme/colors.js, theme/typography.js, theme/style.js.
  */
@@ -38,6 +38,7 @@ export const styles = StyleSheet.create({
 
   searchBarContainer: {
     flex: 1,
+    marginBottom: 0,
   },
 
   filterButton: {
@@ -64,14 +65,6 @@ export const styles = StyleSheet.create({
     flex: 1,
   },
 
-  filaContadorBoton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 4,
-    gap: 8,
-  },
-
   contadorResultados: {
     fontFamily: TYPOGRAPHY.fontFamily.regular,
     flexShrink: 1,
@@ -90,6 +83,8 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 0,
     flexShrink: 0,
+    shadowColor: COLORS.black,
+  
   },
 
   lista: {
@@ -151,24 +146,13 @@ export const styles = StyleSheet.create({
 
   badgeCategoria: {
     fontFamily: TYPOGRAPHY.fontFamily.medium,
-    flexShrink: 1,
+    alignSelf: "flex-start",
+    marginBottom: 12,
+    marginTop: 2,
   },
 
   badgeTexto: {
     fontFamily: TYPOGRAPHY.fontFamily.medium,
-  },
-
-  botonDetalle: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    borderWidth: 1,
-    borderColor: COLORS.primary,
-    borderRadius: 8,
-    paddingVertical: 6,
-    paddingHorizontal: 14,
-    backgroundColor: COLORS.white,
-    flexShrink: 0,
   },
 
   filasDetalle: {
@@ -189,4 +173,5 @@ export const styles = StyleSheet.create({
   valorDetalle: {
     fontFamily: TYPOGRAPHY.fontFamily.medium,
   },
+
 });

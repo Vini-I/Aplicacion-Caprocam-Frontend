@@ -7,17 +7,19 @@
  * Maneja el estado de la pantalla de Inventarios: carga de productos desde la API,
  * texto de búsqueda, filtros activos (categoría, proveedor, unidad,
  * stock bajo, caducidad) y el cálculo de la lista filtrada final.
- * El filtro de caducidad muestra los productos cuya fechaCaducidad
- * sea igual o anterior a la fecha elegida en FilterButton (es decir,
- * "productos que caducan en o antes de esta fecha"), que es el uso
- * esperado para revisar próximos vencimientos.
  *
  * Datos:
- * Lee los productos mediante la llamada asíncronica a InventarioService.getProductosInventario(),
- * que ya devuelve el producto más reciente de primero. Cada producto
- * incluye fechaCaducidad como string dd/mm/aaaa (mismo formato que
- * entrega el DateInput compartido); es un dato real que ya existe en
- * el módulo de Productos, aquí solo se consume para el filtro.
+ * Lee los productos mediante InventarioService.getProductosInventario().
+ * Cada producto incluye: id, productoId, codigo, nombre, categoria,
+ * cantidad, unidad, stockMinimo, nombreProveedor, precioUnidad y
+ * fechaCaducidad (dd/mm/aaaa).
+ * 
+ * Filtros:
+ *  categories: Filtra por categoría del producto
+ *  suppliers: Filtra por nombre del proveedor
+ *  units: Filtra por unidad de medida
+ *  lowStock: Muestra solo productos con stock bajo
+ *  expiryDate: Muestra productos que caducan en o antes de la fecha
  *
  * Validaciones:
  * No aplica validación de formulario; solo filtra sobre datos ya
@@ -29,18 +31,16 @@
  *
  * Dependencias:
  * services/InventarioService.js.
+ * shared/context/ErrorContext.js
  */
 
 import { useCallback, useRef, useState } from "react";
 import { useFocusEffect } from "expo-router";
 
 import { getProductosInventario } from "../services/InventarioService.js";
+import { useError } from "../../../shared/context/ErrorContext.js";
 
-/**
- * Convierte un string "dd/mm/aaaa" a Date para poder comparar fechas.
- * No usa regex, solo split. Devuelve null si el string viene vacío o
- * mal formado (así el filtro simplemente no aplica en vez de romper).
- */
+
 function parsearFechaDDMMAAAA(fecha) {
   if (!fecha) return null;
   const partes = fecha.split("/");
@@ -54,6 +54,7 @@ function parsearFechaDDMMAAAA(fecha) {
 
 export function useInventario() {
   const flatListRef = useRef(null);
+  const { mostrarError } = useError();
 
   const [productos, setProductos] = useState([]);
   const [busqueda, setBusqueda] = useState("");
@@ -77,7 +78,7 @@ export function useInventario() {
             setProductos(data);
           }
         } catch (error) {
-          console.error("Error al cargar productos de inventario:", error);
+          if (isActive) mostrarError(error);
         }
       };
       loadData();
@@ -123,7 +124,8 @@ export function useInventario() {
         const coincideUnidad =
           filtros.units.length === 0 || filtros.units.includes(p.unidad);
 
-        const coincideStock = !filtros.lowStock || Number(p.cantidad) < Number(p.stockMinimo);
+        const coincideStock =
+          !filtros.lowStock || Number(p.cantidad) < Number(p.stockMinimo);
 
         const fechaFiltro = parsearFechaDDMMAAAA(filtros.expiryDate);
         const fechaProducto = parsearFechaDDMMAAAA(p.fechaCaducidad);

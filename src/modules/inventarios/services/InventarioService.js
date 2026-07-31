@@ -11,22 +11,29 @@
  * CRUD (leer, agregar, actualizar y eliminar) de los productos del inventario.
  *
  * Datos:
- * Cada producto: { id, codigo, nombre, categoria, cantidad, unidad,
- * stockMinimo, proveedor, precioUnidad, fechaCaducidad }.
- * fechaCaducidad ya existe como dato real del producto (se define y
- * se guarda desde el módulo de Productos); aquí solo se refleja para
- * que el filtro de "Fecha de caducidad" de FilterButton.jsx pueda
- * usarlo. Formato dd/mm/aaaa, igual al que entrega el DateInput
- * compartido.
+ * Cada producto del inventario contiene:
+ *  id: ID del registro en inventario
+ *  productoId: ID del producto en el módulo de Productos
+ *  codigo: Código del producto
+ *  nombre: Nombre del producto
+ *  categoria: Categoría del producto
+ *  cantidad: Cantidad actual en stock
+ *  unidad: Unidad de medida (kg, litros, unidades)
+ *  stockMinimo: Límite mínimo de stock para alerta
+ *  nombreProveedor: Nombre del proveedor (desde módulo Proveedores)
+ *  precioUnidad: Precio por unidad (puede ser null)
+ *  fechaCaducidad: Fecha de caducidad en formato dd/mm/aaaa
  *
  * Validaciones:
  * No aplica validación de campos aquí (se realiza en el formulario que
- * consume este servicio). El id se autogenera de forma incremental.
- *
+ * consume este servicio). El manejo de valores nulos (como precioUnidad)
+ * se realiza en la capa de presentación (TarjetaProducto).
+ * 
  * Navegación:
  * No aplica, es una capa de datos sin UI.
  *
  * Dependencias:
+ * Instancia de Axios (src/api/api.js)
  * Es consumido por hooks/useInventario.js.
  */
 import api from "../../../api/api";
@@ -37,9 +44,10 @@ export async function getProductosInventario() {
 
     return response.data.data;
   } catch (error) {
-    console.error("Error al obtener productos de inventario:", error);
-
-    throw error;
+    if(error.response){
+      throw error;
+    }
+    throw new Error("No se pudieron obtener los productos del inventario")
   }
 }
 
@@ -49,12 +57,10 @@ export async function getProductoById(id) {
 
     return response.data.data;
   } catch (error) {
-    console.error(
-      "Error al obtener producto:",
-      error.response?.data || error.message,
-    );
-
-    throw error;
+   if(error.response){
+      throw error;
+    }
+    throw new Error("No se pudo obtener el producto del inventario")
   }
 }
 
@@ -68,12 +74,10 @@ export async function addProducto({ producto_id,proveedor_id, stock_minimo }) {
 
     return response.data;
   } catch (error) {
-    console.error(
-      "Error al crear producto:",
-      error.response?.data || error.message,
-    );
-    
-    throw error;
+   if(error.response){
+      throw error;
+    }
+    throw new Error("No se pudo registrar el producto en el inventario")
   }
 }
 
@@ -86,12 +90,10 @@ export async function updateProducto(id, { proveedor_id, stock_minimo }) {
 
     return response.data;
   } catch (error) {
-    console.error(
-      "Error al actualizar producto:",
-      error.response?.data || error.message,
-    );
-
-    throw error;
+    if(error.response){
+      throw error;
+    }
+    throw new Error("No se pudo actualizar el producto del inventario")
   }
 }
 
@@ -101,11 +103,9 @@ export async function deleteProducto(id) {
 
     return response.data;
   } catch (error) {
-    console.error(
-      "Error al eliminar producto:",
-      error.response?.data || error.message,
-    );
-
-    throw error;
+     if(error.response){
+      throw error;
+    }
+    throw new Error("No se pudo eliminar el producto del inventario")
   }
 }
