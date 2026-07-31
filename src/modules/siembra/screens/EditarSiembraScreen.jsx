@@ -1,187 +1,166 @@
 /**
  * =========================================================================
- * PANTALLA NUEVA SIEMBRA
+ * PANTALLA EDITAR SIEMBRA
  * =========================================================================
  *
- * Pantalla encargada del registro de nuevas siembras dentro del módulo
- * de Siembra.
+ * Pantalla encargada de mostrar el formulario editable de una siembra
+ * o pre-cría existente, y de guardar o finalizar los cambios.
  *
  * FUNCIONALIDAD:
  *
- * 1. Renderiza el formulario dividido en secciones reutilizables:
+ * 1. Carga la información de una siembra o pre-cría seleccionada
+ *    (mediante el mismo hook que usa el detalle, useDetalleSiembra).
+ *
+ * 2. Renderiza las secciones del formulario en modo edición:
  *      - Información general.
- *      - Origen de la siembra (Directa / A partir de Pre-Cría).
  *      - Datos de larva.
  *      - Cálculo de población.
  *
- * 2. Recibe del hook los catálogos necesarios para completar los
- *    campos (fincas, técnicas de cultivo, proveedores de larva,
- *    laboratorios, procedencias y PL de larva). La screen ya no
- *    los solicita directamente a SiembraService.
+ * 3. Permite guardar o cancelar los cambios realizados.
  *
- * 3. Administra la interacción del formulario mediante el hook:
- *      - useNuevaSiembra.
+ * 4. Si la pantalla recibe el param "finalizar" (llega desde el botón
+ *    "Finalizar Pre-Cría" del Detalle), el botón de guardar ejecuta
+ *    handleFinalizarPreCria en vez de guardar - mismo formulario,
+ *    distinta acción de submit.
  *
- * 4. Muestra mensajes de validación cuando existen campos obligatorios
- *    incompletos antes de crear la siembra, y de confirmación cuando el
- *    registro se guarda correctamente. Ambos casos usan el componente
- *    global Alert (no un Modal), centrado y ubicado arriba del botón
- *    de guardar, tal como lo define el estándar de interfaz del proyecto.
+ * 5. Cuando la Siembra viene de una Pre-Cría (pasoPorPrecria === "si"),
+ *    el resumen embebido de Pre-Cría y la sección "Datos de larva"
+ *    quedan siempre en modo lectura, sin importar que el resto del
+ *    formulario esté en edición — son datos heredados, no propios de
+ *    esta Siembra.
  *
- * 5. Selector "Origen de esta siembra" (solo si NO se llegó
- *    automáticamente desde "Finalizar Pre-Cría"): Directa o A partir
- *    de Pre-Cría. Al elegir "A partir de Pre-Cría" aparece un Select
- *    con las Pre-Crías finalizadas y disponibles; al elegirla se
- *    autocompletan y bloquean (mode="view") los campos heredados en
- *    "Información de Pre-Cría" y "Datos de larva".
+ * 6. Al guardar o finalizar con éxito, o al cancelar, vuelve a la
+ *    pantalla anterior (router.back(), vía cancelarEdicion o dentro
+ *    de guardar/handleFinalizarPreCria).
+ *
+ * LÓGICA:
+ * - La gestión del estado, validaciones y acciones se realiza mediante:
+ *  -useDetalleSiembra.
+ *
+ * COMPONENTES UTILIZADOS:
+ *
+ * - Card.
+ * - Button.
+ * - Alert.
+ * - Componentes de sección del módulo Siembra.
+ *
+ * NAVEGACIÓN:
+ * - Pantalla anterior (router.back())
+ *      Se vuelve aquí al guardar/finalizar con éxito, o al cancelar.
  *
  * DEPENDENCIAS PRINCIPALES:
  *
- * - useNuevaSiembra.
- * - SiembraService.
+ * - useDetalleSiembra.
  * - InformacionGeneralSection.
  * - DatosLarvaSection.
  * - CalculoPoblacionSection.
+ * - PreCriaSection.
  * - Componentes compartidos:
- *      - Button.
- *      - Alert.
- *      - NavbarRegistro.
+ *      - Card, Button, Alert, Icon, NavbarRegistro.
  *
  * IMPORTANTE:
  *
  * - No contiene reglas de negocio.
  * - No realiza cálculos directamente.
- * - No accede directamente a datos persistentes.
- * - Mantiene la separación entre presentación y lógica.
+ * - Comparte el hook con DetalleSiembraScreen: separar en dos pantallas
+ *   evita combinar "editar" y "detalle" en un mismo screen, según el
+ *   estándar de una ventana por operación CRUD.
  *
  * =========================================================================
  */
 import React from "react";
-import { View, ScrollView, Text } from "react-native";
+import { useLocalSearchParams } from "expo-router";
+import { View, ScrollView } from "react-native";
 
-import { STYLE } from "../../../theme/style";
-import { styles } from "../styles/NuevaSiembraStyles";
-
-import Alert from "../../../shared/components/Alert";
-import Button from "../../../shared/components/Button";
 import Card from "../../../shared/components/Card";
+import Button from "../../../shared/components/Button";
+import Alert from "../../../shared/components/Alert";
 import Icon from "../../../shared/components/Icons";
 import NavbarRegistro from "../../../shared/components/NavbarRegistro";
-import Select from "../../../shared/components/Select";
+import Text from "../../../shared/components/Text";
 
 import InformacionGeneralSection from "../components/InformacionGeneralSection";
 import DatosLarvaSection from "../components/DatosLarvaSection";
 import CalculoPoblacionSection from "../components/CalculoPoblacionSection";
 import PreCriaSection from "../components/PreCriaSection";
-import SectionTitle from "../components/SectionTitle";
 
 import { ICONS } from "../../../theme/icons";
 import { COLORS } from "../../../theme/colors";
+import { styles } from "../styles/DetalleSiembraStyles";
+import { STYLE } from "../../../theme/style";
 
-import useNuevaSiembra from "../hooks/useNuevaSiembra";
+import useDetalleSiembra from "../hooks/useDetalleSiembra";
 
-export default function NuevaSiembraScreen() {
+export default function EditarSiembraScreen() {
+  const { id, finalizar } = useLocalSearchParams();
+  const esFinalizar = finalizar === "1";
+
   const {
+    siembra,
     formData,
-
-    estanques,
-
     fincas,
-
-    tecnicasCultivo,
-
+    estanques,
     proveedoresLarva,
-
     laboratoriosLarva,
-
     procedenciasLarva,
-
     plLarva,
-
-    vinoAutomaticoDePrecria,
-
-    preCriasDisponibles,
-
-    origenSiembra,
-
-    handleCambiarOrigenSiembra,
-
-    handleSeleccionarPreCria,
-
+    tecnicasCultivo,
     mensaje,
-
     mensajeVariant,
-
     handleChange,
-
     handleChangeFinca,
-
     handleChangeEstanque,
-
-    handleCrearSiembra,
+    guardar,
+    handleFinalizarPreCria,
     guardando,
-
+    cancelarEdicion,
     handleAgregarProveedorLarva,
-
     handleAgregarLaboratorioLarva,
-
     handleAgregarProcedenciaLarva,
-
     handleEditarProveedorLarva,
-
     handleEditarLaboratorioLarva,
-
     handleEditarProcedenciaLarva,
-
     handleEliminarProveedorLarva,
-
     handleEliminarLaboratorioLarva,
-
     handleEliminarProcedenciaLarva,
-
     fieldHelpers,
-  } = useNuevaSiembra();
+  } = useDetalleSiembra(id);
+
+  if (!siembra || !formData) {
+    return (
+      <NavbarRegistro
+        Titulo="Editar"
+        Subtitulo="Cargando información..."
+        Icono="shrimp"
+      />
+    );
+  }
+
+  const fincaLabel =
+    fincas.find((f) => f.value === formData.finca)?.label || "Sin finca";
+  const estanqueLabel =
+    estanques.find((e) => e.value === formData.estanque)?.label ||
+    "Sin estanque";
+
+  const onGuardar = esFinalizar ? handleFinalizarPreCria : guardar;
 
   return (
     <>
       <NavbarRegistro
         Titulo={
           formData.tipoRegistro === "precria"
-            ? "Nueva Pre-Cría"
-            : "Nueva Siembra"
+            ? "Editar Pre-Cría"
+            : "Editar Siembra"
         }
-        Subtitulo="Registrar siembra"
-        Icono="add"
+        Subtitulo={`${estanqueLabel} – ${fincaLabel}`}
+        Icono="shrimp"
       />
-
       <ScrollView
         style={STYLE.container}
+        contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
       >
         <View style={STYLE.contentWrapper}>
-          {!formData.precriaId && (
-            <Card>
-              <SectionTitle icon={ICONS.clipboard} title="Tipo de registro" />
-
-              <Select
-                label={fieldHelpers.requiredLabel("¿Qué desea registrar?")}
-                placeholder="Seleccione una opción"
-                options={[
-                  { label: "Siembra", value: "siembra" },
-                  { label: "Pre-Cría", value: "precria" },
-                ]}
-                value={formData.tipoRegistro}
-                onChange={(value) => handleChange("tipoRegistro", value)}
-                labelStyle={styles.requiredLabel}
-                selectStyle={
-                  fieldHelpers.hasError("tipoRegistro")
-                    ? styles.inputError
-                    : null
-                }
-              />
-            </Card>
-          )}
           {formData.tipoRegistro === "precria" ? (
             <>
               <PreCriaSection
@@ -191,9 +170,9 @@ export default function NuevaSiembraScreen() {
                 onChangeEstanque={handleChangeEstanque}
                 fincas={fincas}
                 estanques={estanques}
+                mode="edit"
                 fieldHelpers={fieldHelpers}
                 isAutonomous={true}
-                isCreating={true}
                 plOptions={plLarva}
               />
               <DatosLarvaSection
@@ -203,6 +182,7 @@ export default function NuevaSiembraScreen() {
                 laboratoriosLarva={laboratoriosLarva}
                 procedenciasLarva={procedenciasLarva}
                 plLarva={plLarva}
+                mode="edit"
                 fieldHelpers={fieldHelpers}
                 onAgregarProveedor={handleAgregarProveedorLarva}
                 onAgregarLaboratorio={handleAgregarLaboratorioLarva}
@@ -217,42 +197,6 @@ export default function NuevaSiembraScreen() {
             </>
           ) : (
             <>
-              {!vinoAutomaticoDePrecria && (
-                <Card>
-                  <SectionTitle
-                    icon={ICONS.growth}
-                    title="Origen de esta siembra"
-                  />
-
-                  <Select
-                    label="¿Cómo se origina esta siembra?"
-                    placeholder="Seleccione una opción"
-                    options={[
-                      { label: "Directa", value: "directa" },
-                      { label: "A partir de Pre-Cría", value: "precria" },
-                    ]}
-                    value={origenSiembra}
-                    onChange={handleCambiarOrigenSiembra}
-                  />
-
-                  {origenSiembra === "precria" && (
-                    <Select
-                      label={fieldHelpers.requiredLabel("Pre-Cría finalizada")}
-                      placeholder="Seleccionar Pre-Cría"
-                      options={preCriasDisponibles}
-                      value={formData.precriaId}
-                      onChange={handleSeleccionarPreCria}
-                      labelStyle={styles.requiredLabel}
-                      selectStyle={
-                        fieldHelpers.hasError("precriaId")
-                          ? styles.inputError
-                          : null
-                      }
-                    />
-                  )}
-                </Card>
-              )}
-
               <InformacionGeneralSection
                 formData={formData}
                 onChange={handleChange}
@@ -261,19 +205,16 @@ export default function NuevaSiembraScreen() {
                 fincas={fincas}
                 estanques={estanques}
                 tecnicasCultivo={tecnicasCultivo}
+                mode="edit"
                 fieldHelpers={fieldHelpers}
               />
-
-              {formData.pasoPorPrecria === "si" && (
+              {formData.pasoPorPrecria === "si" && formData.precriaId && (
                 <PreCriaSection
                   formData={formData}
-                  onChange={handleChange}
-                  fieldHelpers={fieldHelpers}
-                  isAutonomous={false}
                   mode="view"
+                  fieldHelpers={fieldHelpers}
                 />
               )}
-
               <DatosLarvaSection
                 formData={formData}
                 onChange={handleChange}
@@ -293,14 +234,15 @@ export default function NuevaSiembraScreen() {
                 onEliminarLaboratorio={handleEliminarLaboratorioLarva}
                 onEliminarProcedencia={handleEliminarProcedenciaLarva}
               />
-
               <CalculoPoblacionSection
                 formData={formData}
                 onChange={handleChange}
+                mode="edit"
                 fieldHelpers={fieldHelpers}
               />
             </>
           )}
+
           {mensaje !== "" && (
             <Alert
               message={mensaje}
@@ -313,24 +255,45 @@ export default function NuevaSiembraScreen() {
             />
           )}
 
-          <Button
-            onPress={handleCrearSiembra}
-            disabled={guardando}
-            style={styles.createButton}
-            textStyle={styles.createButtonText}
-            variant="outline"
-          >
-            <View style={styles.createButtonContent}>
-              <Icon icon={ICONS.save} color={COLORS.primary} />
-              <Text style={styles.createButtonText}>
-                {guardando
-                  ? "Guardando..."
-                  : formData.tipoRegistro === "precria"
-                    ? "Registar Pre-Cría"
-                    : "Registrar Siembra"}
-              </Text>
-            </View>
-          </Button>
+          <View style={styles.actions}>
+            <Button
+              style={styles.button}
+              onPress={onGuardar}
+              disabled={guardando}
+              textStyle={styles.textoBoton}
+              variant="outline"
+            >
+              <View style={styles.buttonContent}>
+                <Icon
+                  icon={esFinalizar ? ICONS.check : ICONS.save}
+                  color={COLORS.primary}
+                />
+                <Text style={styles.textoBoton}>
+                  {guardando
+                    ? esFinalizar
+                      ? "Finalizando..."
+                      : "Actualizando..."
+                    : esFinalizar
+                      ? "Finalizar Pre-Cría"
+                      : formData.tipoRegistro === "precria"
+                        ? "Actualizar Pre-Cría"
+                        : "Actualizar Siembra"}
+                </Text>
+              </View>
+            </Button>
+
+            <Button
+              variant="outline"
+              style={styles.button}
+              onPress={cancelarEdicion}
+              textStyle={styles.textoBoton}
+            >
+              <View style={styles.buttonContent}>
+                <Icon icon={ICONS.close} color={COLORS.primary} />
+                <Text style={styles.textoBoton}>Cancelar</Text>
+              </View>
+            </Button>
+          </View>
         </View>
       </ScrollView>
     </>

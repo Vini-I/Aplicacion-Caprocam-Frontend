@@ -23,13 +23,18 @@
  *   (no push) para no dejar la Pre-Cría ya finalizada en la pila de
  *   navegación (evita que el botón "Volver" salte a una pantalla
  *   vieja/incorrecta).
+ * - "mensaje"/"mensajeVariant" pasan por mostrarMensaje(), que agrega
+ *   auto-dismiss (3s éxito / 6s error), según el estándar.
+ * - Errores de carga (cargarDetalle, catálogos de larva) usan
+ *   mostrarError() del ErrorContext global (ModalError), en vez del
+ *   Alert de formulario, ya que no son errores de validación.
  *
  * La pantalla utiliza este hook para controlar el formulario
  * de detalle sin manejar lógica de negocio.
  */
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useCallback, useEffect, useMemo, useState, useRef } from "react";
+import { useRouter, useLocalSearchParams, useNavigation } from "expo-router";
 
 import {
   useFieldValidation,
@@ -46,8 +51,10 @@ import {
   esFechaAnterior,
 } from "./dateUtils";
 
+import { useError } from "../../../shared/context/ErrorContext";
+
 import { fincaService } from "../../finca/services/finca.service";
-import { getEstanquesPorFinca } from "../services/estanquePorFinca.service";
+import { estanqueService } from "../../estanques/services/estanque.service";
 
 import { getSiembraById, updateSiembra } from "../services/siembra.service";
 import {
@@ -122,7 +129,8 @@ function mapSiembraAFormData(siembra, lote, precriaOrigen) {
     plSiembra: siembra.pl_siembra != null ? `PL${siembra.pl_siembra}` : "",
     // Heredado de la Pre-Cría de origen - antes nunca se llenaba.
     duracionPrecria: precriaOrigen?.duracion_dias ?? "",
-    duracionCiclo: siembra.duracion_ciclo != null ? String(siembra.duracion_ciclo) : "",
+    duracionCiclo:
+      siembra.duracion_ciclo != null ? String(siembra.duracion_ciclo) : "",
     fechaSalidaPrecria: precriaOrigen
       ? formatearFechaDesdeISO(precriaOrigen.fecha_fin)
       : "",
@@ -193,16 +201,38 @@ function calcularEtapa(progreso) {
 
 export default function useDetalleSiembra(id) {
   const router = useRouter();
+  const navigation = useNavigation();
   const { tipoRegistro: tipoRegistroParam } = useLocalSearchParams();
 
   const [siembra, setSiembra] = useState(null);
   const [formData, setFormData] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
   const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
 
   const [mensaje, setMensaje] = useState("");
   const [mensajeVariant, setMensajeVariant] = useState("info");
+  const { mostrarError } = useError();
+
+  const mensajeTimeoutRef = useRef(null);
+
+  function mostrarMensaje(texto, variant) {
+    if (mensajeTimeoutRef.current) {
+      clearTimeout(mensajeTimeoutRef.current);
+    }
+    setMensaje(texto);
+    setMensajeVariant(variant);
+
+    const duracion = variant === "success" ? 3000 : 6000;
+    mensajeTimeoutRef.current = setTimeout(() => {
+      setMensaje("");
+    }, duracion);
+  }
+
+  useEffect(() => {
+    return () => {
+      if (mensajeTimeoutRef.current) clearTimeout(mensajeTimeoutRef.current);
+    };
+  }, []);
 
   const {
     submitted,
@@ -242,8 +272,7 @@ export default function useDetalleSiembra(id) {
       setSiembra(mapeado);
       setFormData(mapeado);
     } catch (err) {
-      setMensaje("No fue posible cargar el registro.");
-      setMensajeVariant("danger");
+      mostrarError(err);
     } finally {
       setCargando(false);
     }
@@ -254,12 +283,17 @@ export default function useDetalleSiembra(id) {
   }, [cargarDetalle]);
 
   useEffect(() => {
-    if (!isEditing || !formData || formData.tipoRegistro !== "precria") return;
+    const unsubscribe = navigation.addListener("focus", cargarDetalle);
+    return unsubscribe;
+  }, [navigation, cargarDetalle]);
+
+  useEffect(() => {
+    if (!formData || formData.tipoRegistro !== "precria") return;
     if (formData.fechaFin && formData.fechaFin.trim() !== "") return;
 
     const formattedToday = obtenerFechaHoy();
     setFormData((prev) => ({ ...prev, fechaFin: formattedToday }));
-  }, [formData, isEditing]);
+  }, [formData]);
 
   const handleChange = useCallback(
     (field, value) => {
@@ -348,8 +382,19 @@ export default function useDetalleSiembra(id) {
       setEstanques([]);
       return;
     }
-    getEstanquesPorFinca(formData.finca)
-      .then(setEstanques)
+    estanqueService
+      .getEstanques()
+      .then((todos) => {
+        const filtrados = todos.filter(
+          (estanque) => String(estanque.idFinca) === String(formData.finca),
+        );
+        const mapeados = filtrados.map((estanque) => ({
+          label: estanque.codigo,
+          value: estanque.id,
+          areaHectareas: (estanque.largo * estanque.ancho) / 10000,
+        }));
+        setEstanques(mapeados);
+      })
       .catch(() => setEstanques([]));
   }, [formData?.finca]);
 
@@ -361,6 +406,9 @@ export default function useDetalleSiembra(id) {
         ...prev,
         areaHectareas: estanqueActual.areaHectareas,
       }));
+      setSiembra((prev) =>
+        prev ? { ...prev, areaHectareas: estanqueActual.areaHectareas } : prev,
+      );
     }
   }, [estanques, formData]);
 
@@ -397,7 +445,7 @@ export default function useDetalleSiembra(id) {
         setLaboratoriosLarva(mapCatalogo(laboratorios));
         setProcedenciasLarva(mapCatalogo(procedencias));
       } catch (err) {
-        // no bloquea el detalle si esto falla
+        mostrarError(err);
       }
     }
     cargarCatalogos();
@@ -513,32 +561,9 @@ export default function useDetalleSiembra(id) {
     [formData],
   );
 
-  const iniciarEdicion = useCallback(() => {
-    setIsEditing(true);
-    setMensaje("");
-
-    setFormData((prev) => {
-      if (!prev) return prev;
-      const formattedToday = obtenerFechaHoy();
-      return {
-        ...prev,
-        fechaSiembra: prev.fechaSiembra || formattedToday,
-        fechaInicio: prev.fechaInicio || formattedToday,
-        fechaFin: prev.fechaFin || formattedToday,
-      };
-    });
-
-    setSubmitted(false);
-    setErrors({});
-  }, [setSubmitted, setErrors]);
-
   const cancelarEdicion = useCallback(() => {
-    setFormData(siembra);
-    setSubmitted(false);
-    setErrors({});
-    setIsEditing(false);
-    setMensaje("");
-  }, [siembra, setSubmitted, setErrors]);
+    router.back();
+  }, [router]);
 
   const huboCambios = useCallback(() => {
     if (!siembra || !formData) return false;
@@ -554,8 +579,7 @@ export default function useDetalleSiembra(id) {
 
     if (!huboCambios()) {
       setErrors({});
-      setMensaje("No hay cambios para guardar.");
-      setMensajeVariant("danger");
+      mostrarMensaje("No hay cambios para guardar.", "danger");
       return;
     }
 
@@ -565,10 +589,10 @@ export default function useDetalleSiembra(id) {
     );
     if (Object.keys(erroresObligatorios).length > 0) {
       setErrors(erroresObligatorios);
-      setMensaje(
+      mostrarMensaje(
         "Revisa los campos obligatorios marcados con * antes de guardar.",
+        "danger",
       );
-      setMensajeVariant("danger");
       return;
     }
 
@@ -576,10 +600,10 @@ export default function useDetalleSiembra(id) {
       const erroresCoherencia = validarCoherenciaCierrePrecria(formData);
       if (Object.keys(erroresCoherencia).length > 0) {
         setErrors(erroresCoherencia);
-        setMensaje(
+        mostrarMensaje(
           "Revisa los datos de cierre: la cantidad final o el PL final no son coherentes con los datos iniciales de la Pre-Cría.",
+          "danger",
         );
-        setMensajeVariant("danger");
         return;
       }
     }
@@ -592,10 +616,10 @@ export default function useDetalleSiembra(id) {
       setErrors({
         cantidadSembrada: "No puede superar los sobrevivientes de la Pre-Cría.",
       });
-      setMensaje(
+      mostrarMensaje(
         "La cantidad sembrada no puede ser mayor a la cantidad de sobrevivientes de la Pre-Cría.",
+        "danger",
       );
-      setMensajeVariant("danger");
       return;
     }
     setErrors({});
@@ -637,14 +661,15 @@ export default function useDetalleSiembra(id) {
 
       setSiembra(conHerencia);
       setFormData(conHerencia);
-      setIsEditing(false);
       setSubmitted(false);
-      setMensaje("Registro actualizado correctamente.");
-      setMensajeVariant("success");
+      mostrarMensaje("Registro actualizado correctamente.", "success");
+      router.back();
     } catch (err) {
       const mensajeBackend = err.response?.data?.message;
-      setMensaje(mensajeBackend || "No fue posible guardar los cambios.");
-      setMensajeVariant("danger");
+      mostrarMensaje(
+        mensajeBackend || "No fue posible guardar los cambios.",
+        "danger",
+      );
     } finally {
       setGuardando(false);
     }
@@ -664,29 +689,28 @@ export default function useDetalleSiembra(id) {
 
     if (Object.keys(erroresCampos).length > 0) {
       setErrors(erroresCampos);
-      setIsEditing(true);
-      setMensaje(
+      mostrarMensaje(
         "Debes llenar los tres datos finales de Pre-Cría para poder finalizar.",
+        "danger",
       );
-      setMensajeVariant("danger");
       return null;
     }
 
     const erroresCoherencia = validarCoherenciaCierrePrecria(formData);
     if (Object.keys(erroresCoherencia).length > 0) {
       setErrors(erroresCoherencia);
-      setIsEditing(true);
-      setMensaje(
+      mostrarMensaje(
         "Revisa los datos de cierre: la cantidad final o el PL final no son coherentes con los datos iniciales de la Pre-Cría.",
+        "danger",
       );
-      setMensajeVariant("danger");
       return null;
     }
     if (esFechaAnterior(formData.fechaFin, formData.fechaInicio)) {
       setErrors({ fechaFin: "No puede ser anterior a la fecha de inicio." });
-      setIsEditing(true);
-      setMensaje("La fecha de fin no puede ser menor a la fecha de inicio.");
-      setMensajeVariant("danger");
+      mostrarMensaje(
+        "La fecha de fin no puede ser menor a la fecha de inicio.",
+        "danger",
+      );
       return null;
     }
     setErrors({});
@@ -706,15 +730,16 @@ export default function useDetalleSiembra(id) {
 
       setSiembra(mapeado);
       setFormData(mapeado);
-      setIsEditing(false);
       setSubmitted(false);
-      setMensaje("Pre-Cría finalizada correctamente.");
-      setMensajeVariant("success");
+      mostrarMensaje("Pre-Cría finalizada correctamente.", "success");
+      router.back();
       return mapeado;
     } catch (err) {
       const mensajeBackend = err.response?.data?.message;
-      setMensaje(mensajeBackend || "No fue posible finalizar la Pre-Cría.");
-      setMensajeVariant("danger");
+      mostrarMensaje(
+        mensajeBackend || "No fue posible finalizar la Pre-Cría.",
+        "danger",
+      );
       return null;
     } finally {
       setGuardando(false);
@@ -768,7 +793,6 @@ export default function useDetalleSiembra(id) {
     laboratoriosLarva,
     procedenciasLarva,
     plLarva,
-    isEditing,
     mensaje,
     mensajeVariant,
     cargando,
@@ -780,7 +804,6 @@ export default function useDetalleSiembra(id) {
     handleChange,
     handleChangeFinca,
     handleChangeEstanque,
-    iniciarEdicion,
     cancelarEdicion,
     guardar,
     handleFinalizarPreCria,

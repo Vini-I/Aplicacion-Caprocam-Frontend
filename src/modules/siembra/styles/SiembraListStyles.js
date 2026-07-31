@@ -21,7 +21,7 @@ import { TYPOGRAPHY } from "../../../theme/typography";
 
 export const styles = StyleSheet.create({
   scrollContent: {
-    paddingBottom: 24,
+    paddingBottom: 90,
   },
   contentHeader: {
     paddingTop: 18,
@@ -37,14 +37,12 @@ export const styles = StyleSheet.create({
     fontFamily: TYPOGRAPHY.fontFamily.bold,
     flex: 1,
   },
-  newButton: {
-    width: "100%",
-    borderRadius: 14,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    marginTop: 0,
-    alignSelf: "stretch",
-  },
+  newButtonContent: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 8,
+},
   newButtonText: {
     color: COLORS.primary,
     fontSize: 14,
@@ -52,45 +50,54 @@ export const styles = StyleSheet.create({
     textAlign: "center",
     flexShrink: 0,
   },
-  newButtonContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
+  searchBarContainer: {
+    flex: 1,
+    minHeight: 44,
   },
-  newButtonCompact: {
-    minHeight: 36,
-    paddingVertical: 8,
-    paddingHorizontal: 10,
+  filtroChipsRow: {
+    flexDirection: "row",
+    gap: 8,
   },
   barraBusqueda: {
     flexDirection: "row",
     alignItems: "flex-start",
     gap: 8,
     marginBottom: 12,
-    width: "100%",
   },
-  searchBarContainer: {
-    flex: 1,
-    minHeight: 44,
-  },
-  filterColumn: {
-    width: 160,
-    flexDirection: "column",
-    alignItems: "stretch",
-    justifyContent: "flex-start",
-    marginTop: 0,
-    gap: 8,
-  },
-  filterButton: {
-    alignSelf: "stretch",
+  filtroToggleButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
     minHeight: 44,
     marginTop: 0,
+    paddingHorizontal: 14,
   },
-  buttonRow: {
-    width: "100%",
-    alignItems: "flex-end",
+  filtroToggleText: {
+    color: COLORS.primary,
+    fontSize: 14,
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
+  },
+  filtroPanelWrapper: {
     marginBottom: 12,
+  },
+  searchInputSinFoco: {
+  outlineStyle: "none",
+},
+  buttonWrapper: {
+    position: "absolute",
+    bottom: 16,
+    left: 0,
+    right: 0,
+    alignItems: "center",
+  },
+  addButton: {
+    width: "100%",
+    maxWidth: 900,
+    marginTop: 0,
+    borderRadius: 14,
+    paddingVertical: 12,
+    backgroundColor: COLORS.white,
   },
   contadorResultados: {
     marginBottom: 12,
@@ -171,21 +178,5 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: TYPOGRAPHY.fontFamily.bold,
     textAlign: "right",
-  },
-  detailButton: {
-    borderRadius: 14,
-    paddingVertical: 11,
-    marginTop: 0,
-  },
-  detailButtonContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 10,
-  },
-  detailButtonText: {
-    color: COLORS.primary,
-    fontSize: 14,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
   },
 });

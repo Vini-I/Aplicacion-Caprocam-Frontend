@@ -15,7 +15,8 @@
  * - Expone "mensaje"/"mensajeVariant" para el Alert global del estándar
  *   (ya no se usa un Modal): la screen lo muestra centrado y arriba del
  *   botón de guardar. Usa "danger" (no "error") como variant porque es
- *   el nombre que reconoce shared/components/Alert.jsx.
+ *   el nombre que reconoce shared/components/Alert.jsx. El helper
+ *   mostrarMensaje() se encarga de la duración (3s éxito / 6s error).
  * - Maneja el flujo "Siembra a partir de Pre-Cría": si el usuario NO
  *   llegó automáticamente desde "Finalizar Pre-Cría", puede elegir
  *   manualmente el origen (Directa / A partir de Pre-Cría) y, en ese
@@ -31,7 +32,7 @@
  * la interfaz y ejecutar acciones.
  */
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useRouter, useLocalSearchParams } from "expo-router";
 
 import {
@@ -43,7 +44,9 @@ import { calcularCantidadSembrada } from "./siembraCalculos";
 import { obtenerFechaHoy, formatearFechaDesdeISO } from "./dateUtils";
 
 import { fincaService } from "../../finca/services/finca.service";
-import { getEstanquesPorFinca } from "../services/estanquePorFinca.service";
+import { estanqueService } from "../../estanques/services/estanque.service";
+
+import { useError } from "../../../shared/context/ErrorContext";
 
 import {
   getPrecrias,
@@ -121,6 +124,29 @@ export default function useNuevaSiembra() {
   const [mensajeVariant, setMensajeVariant] = useState("info");
   const [guardando, setGuardando] = useState(false);
 
+  const { mostrarError } = useError();
+
+  const mensajeTimeoutRef = useRef(null);
+
+  function mostrarMensaje(texto, variant) {
+    if (mensajeTimeoutRef.current) {
+      clearTimeout(mensajeTimeoutRef.current);
+    }
+    setMensaje(texto);
+    setMensajeVariant(variant);
+
+    const duracion = variant === "success" ? 3000 : 6000;
+    mensajeTimeoutRef.current = setTimeout(() => {
+      setMensaje("");
+    }, duracion);
+  }
+
+  useEffect(() => {
+    return () => {
+      if (mensajeTimeoutRef.current) clearTimeout(mensajeTimeoutRef.current);
+    };
+  }, []);
+
   const [formData, setFormData] = useState(initialFormData);
   const params = useLocalSearchParams();
 
@@ -160,8 +186,19 @@ export default function useNuevaSiembra() {
       setEstanques([]);
       return;
     }
-    getEstanquesPorFinca(formData.finca)
-      .then(setEstanques)
+    estanqueService
+      .getEstanques()
+      .then((todos) => {
+        const filtrados = todos.filter(
+          (estanque) => String(estanque.idFinca) === String(formData.finca),
+        );
+        const mapeados = filtrados.map((estanque) => ({
+          label: estanque.codigo,
+          value: estanque.id,
+          areaHectareas: (estanque.largo * estanque.ancho) / 10000,
+        }));
+        setEstanques(mapeados);
+      })
       .catch(() => setEstanques([]));
   }, [formData.finca]);
 
@@ -202,8 +239,7 @@ export default function useNuevaSiembra() {
         setLaboratoriosLarva(mapCatalogo(laboratorios));
         setProcedenciasLarva(mapCatalogo(procedencias));
       } catch (err) {
-        setMensaje("No fue posible cargar los catálogos de larva.");
-        setMensajeVariant("danger");
+        mostrarError(err);
       } finally {
         setCargandoCatalogos(false);
       }
@@ -341,8 +377,10 @@ export default function useNuevaSiembra() {
         return actualizado;
       });
     } catch (err) {
-      setMensaje("No fue posible cargar la Pre-Cría seleccionada.");
-      setMensajeVariant("danger");
+      mostrarMensaje(
+        "No fue posible cargar la Pre-Cría seleccionada.",
+        "danger",
+      );
     }
   }
 
@@ -473,10 +511,10 @@ export default function useNuevaSiembra() {
 
     if (Object.keys(nuevosErrores).length > 0) {
       const tipo = formData.tipoRegistro === "precria" ? "Pre-Cría" : "Siembra";
-      setMensaje(
+      mostrarMensaje(
         `Debe completar todos los campos obligatorios para registrar esta ${tipo}.`,
+        "danger",
       );
-      setMensajeVariant("danger");
       return;
     }
     if (
@@ -485,10 +523,10 @@ export default function useNuevaSiembra() {
       Number(formData.cantidadSembrada) >
         Number(formData.cantidadSobrevivientePrecria)
     ) {
-      setMensaje(
+      mostrarMensaje(
         "La cantidad sembrada no puede ser mayor a la cantidad de sobrevivientes de la Pre-Cría.",
+        "danger",
       );
-      setMensajeVariant("danger");
       return;
     }
     setGuardando(true);
@@ -506,18 +544,22 @@ export default function useNuevaSiembra() {
       } else {
         await createSiembra(new SiembraDTO(formData, loteId));
       }
-
-      setMensaje(
-        formData.tipoRegistro === "precria"
-          ? "Pre-Cría registrada correctamente."
-          : "Siembra registrada correctamente.",
-      );
-      setMensajeVariant("success");
       setSubmitted(false);
+      router.push({
+        pathname: "/siembra",
+        params: {
+          mensajeExito:
+            formData.tipoRegistro === "precria"
+              ? "Pre-Cría registrada correctamente."
+              : "Siembra registrada correctamente.",
+        },
+      });
     } catch (err) {
       const mensajeBackend = err.response?.data?.message;
-      setMensaje(mensajeBackend || "No fue posible registrar el ciclo.");
-      setMensajeVariant("danger");
+      mostrarMensaje(
+        mensajeBackend || "No fue posible registrar el ciclo.",
+        "danger",
+      );
     } finally {
       setGuardando(false);
     }

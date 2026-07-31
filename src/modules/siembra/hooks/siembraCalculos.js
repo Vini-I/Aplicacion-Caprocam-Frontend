@@ -12,6 +12,8 @@
  *
  * No depende de React ni componentes visuales.
  */
+import { diasTranscurridosDesde } from "./dateUtils";
+
 export function calcularCantidadSembrada(
   areaHectareas,
   densidadPoblacional,
@@ -41,14 +43,18 @@ export function calcularProgresoCiclo(registro) {
     return { totalDias: 0, diaActual: 0, progreso: 0 };
   }
 
-  const totalDias =
-    Number(
-      registro.tipoRegistro === "precria"
-        ? registro.duracionDias
-        : registro.duracionCiclo,
-    ) || 0;
+  const esPrecria = registro.tipoRegistro === "precria";
 
-  const diaActual = Number(registro.diasCultivo) || 0;
+  const totalDias =
+    Number(esPrecria ? registro.duracionDias : registro.duracionCiclo) || 0;
+
+  const fechaInicioStr = esPrecria
+    ? registro.fechaInicio
+    : registro.fechaSiembra;
+
+  const diasCalculados = diasTranscurridosDesde(fechaInicioStr);
+  const diaActual =
+    totalDias > 0 ? Math.min(diasCalculados, totalDias) : diasCalculados;
 
   const progreso =
     totalDias > 0 ? Math.round((diaActual / totalDias) * 100) : 0;
