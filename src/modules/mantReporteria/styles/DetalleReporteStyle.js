@@ -80,6 +80,83 @@ export const styles = StyleSheet.create({
         textAlign: "center",
         color: COLORS.textTertiary,
         lineHeight: 20,
-    }
+    },
 
-})
+    cardRegistro: {
+        paddingVertical: 12,
+        paddingHorizontal: 16,
+        marginBottom: 12,
+        borderRadius: 12,
+        backgroundColor: COLORS.white,
+        shadowColor: COLORS.black,
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.05,
+        shadowRadius: 4,
+        elevation: 2,
+    },
+
+    cardHeader: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: 10,
+    },
+
+    cardTitle: {
+        fontSize: 15,
+        fontWeight: "700",
+        color: COLORS.textPrimary,
+    },
+
+    actionButtons: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 12,
+    },
+
+    mainContent: {
+        flexDirection: "column",
+    },
+
+    infoGrid: {
+        flexDirection: "row",
+        flexWrap: "wrap",
+        justifyContent: "space-between",
+    },
+
+    infoItem: {
+        width: "48%",
+        marginBottom: 8,
+    },
+
+    label: {
+        fontSize: 11,
+        color: COLORS.textTertiary,
+        marginBottom: 1,
+    },
+
+    value: {
+        fontSize: 14,
+        fontWeight: "600",
+        color: COLORS.textSecondary,
+    },
+
+    pesoContainer: {
+        marginTop: 6,
+        paddingTop: 8,
+        alignItems: "center",
+        borderTopWidth: 1,
+        borderTopColor: COLORS.surface,
+    },
+
+    pesoLabel: {
+        fontSize: 11,
+        color: COLORS.textTertiary,
+    },
+
+    peso: {
+        fontSize: 20,
+        fontWeight: "800",
+        color: COLORS.Crecimiento,
+    },
+});

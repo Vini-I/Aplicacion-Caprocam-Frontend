@@ -15,6 +15,7 @@ import Icon from "../../../shared/components/Icons.jsx";
 import Select from "../../../shared/components/Select.jsx";
 import Text from "../../../shared/components/Text.jsx";
 import NavbarRegistro from "../../../shared/components/NavbarRegistro.jsx"
+import CardCrecimiento from "../components/CardCrecimiento.jsx";
 
 import { useDetalleReporte } from "../hooks/useDetalleReporte.js";
 import { TIPOS_REGISTRO } from "../constants/tipoReporte.js";
@@ -160,6 +161,14 @@ export default function DetalleReporteScreen() {
               ) : (
 
                 <View style={styles.lista}>
+
+                  {
+                    registroTipo === "crecimiento" && (
+                      <CardCrecimiento
+                        data={registros}
+                      />
+                    )
+                  }
 
                 </View>
 

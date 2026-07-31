@@ -7,11 +7,13 @@ export async function obtenerDetalleReporte({
 }) {
 
   switch(tipoRegistro){
+    
     case "crecimiento": 
       return getCrecimiento({
         fincaId,
         estanqueId
       })
+      
     default: 
       return [];
   }
