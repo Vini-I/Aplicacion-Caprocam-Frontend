@@ -1,12 +1,22 @@
 import { useEffect, useState } from "react";
 
-import { obtenerDetalleRegistro } from "../services/detalleReporte.service";
+import  {obtenerDetalleReporte}  from "../services/detalleReporte.service";
 
-export function useDetalleRegistro() {
+import { fincaService } from "../../finca/services/finca.service.js";
+import { estanqueService } from "../../estanques/services/estanque.service.js";
+import { colaboradorService } from "../../colaboradores/services/colaborador.service.js";
+
+export function useDetalleReporte() {
 
   const [registroTipo, setRegistroTipo] = useState(null);
+
   const [finca, setFinca] = useState(null);
   const [estanque, setEstanque] = useState(null);
+  
+  const [fincas, setFincas] = useState([]); 
+  const [estanques, setEstanques] = useState([]);  
+  const [colaboradores, setColaboradores] = useState([]);
+  const [estanquesFiltrados, setEstanquesFiltrados] = useState([]);
 
   const [registros, setRegistros] = useState([]);
 
@@ -20,53 +30,151 @@ export function useDetalleRegistro() {
 
 
   useEffect(() => {
+    let activo = true;
 
-    async function cargarRegistros() {
-
-      if (!filtrosCompletos) {
-        setRegistros([]);
-        return;
-      }
-
-
+    async function cargarCatalogos() {
       try {
 
-        setLoading(true);
+        const [fincasData, estanquesData, colaboradoresData] = await Promise.all([
+          fincaService.getFincas(),
+          estanqueService.getEstanques(),
+          colaboradorService.getColaboradores(),
+        ]);
 
-        const data = await obtenerDetalleRegistro({
-          tipoRegistro: registroTipo,
-          fincaId: finca,
-          estanqueId: estanque,
-        });
+        const fincasOptions = fincasData.map((finca) => ({
+          label: finca.nombreFinca,
+          value: finca.id
+        }));
 
-        setRegistros(data);
+        const estanquesOptions = estanquesData.map((estanque) => ({
+          label: estanque.codigo, 
+          value: estanque.id,
+          fincaId: estanque.idFinca,
+        }));
+
+        const colaboradoresOptions = colaboradoresData.map((colaborador) => ({
+          value: colaborador.id,
+          label: colaborador.nombre,
+        }));
+
+        if (activo) {
+          setFincas(fincasOptions);
+          setEstanques(estanquesOptions);
+          setColaboradores(colaboradoresOptions);
+        }
 
       } catch (error) {
 
         console.error(
           "Error cargando registros:",
           error
-        );
+        )
+      }
+    }
+   
+    cargarCatalogos();
 
+
+    return () => {
+      activo = false;
+    };
+  }, []);
+
+  useEffect(() => {
+
+    if (!finca) {
+      setEstanquesFiltrados([]);
+      setEstanque(null);
+      return;
+    }
+
+
+    const filtrados = estanques.filter(
+      (item) => item.fincaId == finca
+    );
+
+
+    setEstanquesFiltrados(filtrados);
+
+    setEstanque(null);
+
+
+  }, [finca, estanques]);
+
+  useEffect(() => {
+    let activo = true;
+
+    async function cargarRegistros() {
+      if (!filtrosCompletos) {
         setRegistros([]);
+        return;
+      }
 
+      try {
+        setLoading(true);
+
+        const registrosData = await obtenerDetalleReporte({
+          tipoRegistro: registroTipo,
+          fincaId: finca,
+          estanqueId: estanque,
+        });
+
+        if (activo) {
+          const registrosConNombres = registrosData.map((registro) => {
+          const fincaEncontrada = fincas.find(
+            f => Number(f.value) === Number(registro.finca_id)
+          );
+
+          const estanqueEncontrado = estanques.find(
+            e => Number(e.value) === Number(registro.estanque_id)
+          );
+
+          const colaboradorEncontrado = colaboradores.find(
+            c => Number(c.value) === Number(registro.colaborador_id)
+          );
+
+            return {
+              ...registro,
+              nombreFinca: fincaEncontrada?.label ?? "No encontrada",
+              codigoEstanque: estanqueEncontrado?.label ?? "No encontrado",
+              nombreColaborador: colaboradorEncontrado?.label ?? "No encontrado",
+            };
+          });
+
+          setRegistros(registrosConNombres);
+        }
+      } catch (error) {
+        console.error("Error cargando registros:", error);
+
+        if (activo) {
+          setRegistros([]);
+        }
       } finally {
-
-        setLoading(false);
-
+        if (activo) {
+          setLoading(false);
+        }
       }
     }
 
     cargarRegistros();
 
-  }, [registroTipo, finca, estanque]);
+    return () => {
+      activo = false;
+    };
+  }, [registroTipo, finca, estanque, fincas, estanques, colaboradores]);
 
 
   return {
 
     registroTipo,
+
     finca,
     estanque,
+
+    fincas, 
+    estanques,
+    colaboradores,
+    estanquesFiltrados,
 
     registros,
     loading,
