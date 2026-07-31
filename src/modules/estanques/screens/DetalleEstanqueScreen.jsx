@@ -43,39 +43,19 @@ export default function DetalleEstanqueScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
 
-  const { estanque: estanqueEncontrado } = useDetalleEstanque();
+  const { estanque: estanqueEncontrado, primeraMayuscula } = useDetalleEstanque();
   const [modalEliminarVisible, setModalEliminarVisible] = useState(false);
 
   const estanque = construirEstanqueDetalle(estanqueEncontrado, params);
 
+  console.log("ESTANQUE:", estanque);
+
+  const { fincaNombre } = params;
+
   function volver() {
     router.back();
   }
-
-  function editarEstanque() {
-    router.push({
-      pathname: "/registros/EditarEstanque",
-      params: estanque,
-    });
-  }
-
-  function abrirConfirmacionEliminar() {
-    setModalEliminarVisible(true);
-  }
-
-  function cerrarConfirmacionEliminar() {
-    setModalEliminarVisible(false);
-  }
-
-  function confirmarEliminarEstanque() {
-    eliminarEstanqueLocal(estanque.codigo);
-
-    console.log("Estanque eliminado:", estanque.codigo);
-
-    setModalEliminarVisible(false);
-    router.back();
-  }
-
+  
   if (estanque.codigo === "") {
     return (
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -101,7 +81,7 @@ export default function DetalleEstanqueScreen() {
     <>
       <NavbarRegistro
         Titulo="Detalle de Estanque"
-        Subtitulo={`${estanque.finca} ${estanque.codigo}`}
+        Subtitulo={`${estanque.codigo}`}
         Icono="document"
       />
 
@@ -111,10 +91,10 @@ export default function DetalleEstanqueScreen() {
             <SectionTitle title="Informacion general" icon={ICONS.document} />
 
             <Info label="Codigo" value={estanque.codigo} />
-            <Info label="Finca" value={estanque.finca} />
+            <Info label="Finca" value={fincaNombre} />
             <Info label="Estado" value={estanque.estado} />
-            <Info label="Tipo de estanque" value={estanque.tipoEstanque} />
-            <Info label="Fuente de agua" value={estanque.fuenteAgua} />
+            <Info label="Tipo de estanque" value={primeraMayuscula(estanque.tipoEstanque)} />
+            <Info label="Fuente de agua" value={primeraMayuscula(estanque.fuenteAgua)} />
           </Card>
 
           <Card>
@@ -128,7 +108,7 @@ export default function DetalleEstanqueScreen() {
           <Card>
             <SectionTitle title="Siembra y fechas" icon={ICONS.calendar} />
 
-            <Info label="Especie" value={estanque.especie} />
+            <Info label="Especie" value={primeraMayuscula(estanque.especie)} />
             <Info label="Fecha de siembra" value={estanque.fechaSiembra} />
             <Info
               label="Fecha inicio de engorde"
@@ -142,59 +122,25 @@ export default function DetalleEstanqueScreen() {
               label="Densidad de siembra"
               value={`${estanque.densidadSiembra} ind/m2`}
             />
-            <Info label="Precria" value={estanque.precria} />
+            <Info label="Precria" value={estanque.precria === true || estanque.precria === "true" ? "Sí":"No"} />
           </Card>
 
+          <Card>
+            <SectionTitle title="Alimentacion y Equipos" icon={ICONS.food} />
 
-          <View style={styles.detailActionsRow}>
-            <Button
-              variant="outline"
-              onPress={abrirConfirmacionEliminar}
-              style={styles.outlineDangerButton}
-            >
-              <View style={styles.inlineButtonContentCentered}>
-                <Icon icon={ICONS.delete} size={16} color={COLORS.error} />
-
-                <CustomText
-                  size={13}
-                  color={COLORS.error}
-                  style={styles.outlineActionText}
-                >
-                  Eliminar
-                </CustomText>
-              </View>
-            </Button>
-
-            <Button
-              variant="outline"
-              onPress={editarEstanque}
-              style={styles.outlineEditButton}
-            >
-              <View style={styles.inlineButtonContentCentered}>
-                <Icon icon={ICONS.edit} size={16} color={COLORS.primary} />
-
-                <CustomText
-                  size={13}
-                  color={COLORS.primary}
-                  style={styles.outlineActionText}
-                >
-                  Editar
-                </CustomText>
-              </View>
-            </Button>
-          </View>
+            <Info label="Metodo De Alimentacion" value={primeraMayuscula(estanque.metodoAlimentacion)} />
+            <Info label="Proveedor De Alimento" value={estanque.proveedorAlimento} />
+            <Info
+              label="Numero De Aireadores"
+              value={estanque.numeroAireadores}
+            />
+            <Info
+              label="Tiene Alimentador Automatico"
+              value={estanque.tieneAlimentadorAutomatico === true || estanque.tieneAlimentadorAutomatico === "true" ? "Sí":"No"}
+            />
+          </Card>
         </View>
       </ScrollView>
-
-      <ModalEliminar
-        visible={modalEliminarVisible}
-        title="estanque"
-        message={estanque.codigo}
-        confirmText="Si, eliminar"
-        cancelText="No"
-        onCancel={cerrarConfirmacionEliminar}
-        onConfirm={confirmarEliminarEstanque}
-      />
     </>
   );
 }

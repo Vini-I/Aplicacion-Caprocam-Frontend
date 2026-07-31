@@ -2,10 +2,10 @@
  * ============================================================
  * COMPONENTE: EquipoDetalleScreen
  * ============================================================
+ * Módulo: Mantenimiento de Equipos
  *
  * Pantalla que muestra el detalle completo de un equipo,
- * incluyendo su información, horas de uso, registros de encendido,
- * y estado actual.
+ * incluyendo su información, horas de uso y estado actual.
  *
  * Props:
  * - equipoId: string - ID del equipo a mostrar
@@ -16,20 +16,18 @@
  *
  * Ejemplo:
  * <EquipoDetalleScreen
- *   equipoId="eq-001"
+ *   equipoId="12"
  *   onClose={() => setModalVisible(false)}
  *   onEdit={(equipo) => abrirFormulario(equipo)}
  *   onDelete={(id) => confirmarEliminacion(id)}
  *   onToggle={(id) => toggleEquipo(id)}
  * />
+ * ============================================================
  */
 
-// ============================================================
-// IMPORTS
-// ============================================================
 import React, { useState, useEffect } from "react";
 import { View, ScrollView, TouchableOpacity } from "react-native";
-import { equiposService, getEstanqueById, horasRestantesMantenimiento } from "../services/equiposService";
+import { equiposService } from "../services/equiposService";
 import Spinner from "../../../shared/components/Spinner";
 import Card from "../../../shared/components/Card";
 import Badge from "../../../shared/components/Badge";
@@ -41,9 +39,6 @@ import { styles, ICON_SIZE } from "../styles/equipoDetalleStyles";
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
 
-// ============================================================
-// CONSTANTES AUXILIARES
-// ============================================================
 const TIPOS_LABELS = {
   aireacion: "Aireación",
   bombeo: "Bombeo",
@@ -74,9 +69,6 @@ const ESTADO_VARIANTS = {
   mantenimiento: "warning",
 };
 
-// ============================================================
-// COMPONENTE PRINCIPAL
-// ============================================================
 export default function EquipoDetalleScreen({
   equipoId,
   onClose,
@@ -84,27 +76,26 @@ export default function EquipoDetalleScreen({
   onDelete,
   onToggle,
 }) {
-  // --------------------------------------------------------
-  // ESTADOS
-  // --------------------------------------------------------
   const [equipo, setEquipo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [estanque, setEstanque] = useState(null);
 
-  // --------------------------------------------------------
-  // CARGA DE DATOS
-  // --------------------------------------------------------
   useEffect(() => {
     const loadData = async () => {
       try {
         setLoading(true);
         const data = await equiposService.getEquipoById(equipoId);
         setEquipo(data);
-        
+
         if (data.estanqueId) {
-          const est = getEstanqueById(data.estanqueId);
-          setEstanque(est);
+          // Los estanques vienen del backend real; se busca el que
+          // coincide con el estanqueId del equipo.
+          const estanques = await equiposService.getEstanquesDisponibles();
+          const est = estanques.find((e) => e.value === String(data.estanqueId));
+          setEstanque(est || null);
+        } else {
+          setEstanque(null);
         }
       } catch (err) {
         setError(err.message);
@@ -117,55 +108,36 @@ export default function EquipoDetalleScreen({
     }
   }, [equipoId]);
 
-  const handleEstanquePress = () => {
-    if (estanque) {
-      console.log("Navegar al estanque:", estanque.id);
-    }
-  };
-
   const handleTogglePress = () => {
     if (onToggle && equipo) {
       onToggle(equipo.id);
     }
   };
 
-  // --------------------------------------------------------
-  // RENDERIZADO CONDICIONAL
-  // --------------------------------------------------------
   if (loading) return <Spinner text="Cargando detalle..." />;
   if (error) return <CustomText style={styles.error}>Error: {error}</CustomText>;
   if (!equipo) return null;
 
-  // --------------------------------------------------------
-  // CONSTANTES DE VISUALIZACIÓN
-  // --------------------------------------------------------
   const tipoLabel = TIPOS_LABELS[equipo.tipo] || equipo.tipo;
   const tipoIcon = TIPOS_ICONS[equipo.tipo] || ICONS.gear;
   const estadoLabel = ESTADO_LABELS[equipo.estado] || equipo.estado;
   const estadoVariant = ESTADO_VARIANTS[equipo.estado] || "info";
-  const horasRestantes = horasRestantesMantenimiento(equipo);
-  const necesitaMant = horasRestantes === 0;
-  const horasUsoFormateado = equipo.horasUso < 1
-    ? `${Math.round(equipo.horasUso * 60)} min`
-    : `${Math.round(equipo.horasUso)} h`;
+  const horasRestantes = Math.max(0, (equipo.horasMantenimiento || 0) - (equipo.horasUso || 0));
+  const necesitaMant = equipo.horasMantenimiento ? horasRestantes === 0 : false;
+  const horasUsoFormateado =
+    equipo.horasUso < 1
+      ? `${Math.round(equipo.horasUso * 60)} min`
+      : `${Math.round(equipo.horasUso)} h`;
 
-  // --------------------------------------------------------
-  // RENDER PRINCIPAL
-  // --------------------------------------------------------
   return (
     <View style={styles.container}>
-      <ScrollView 
+      <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={true}
       >
-        {onClose && (
-          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-            <CustomText style={styles.closeButtonText}>✕ Cerrar</CustomText>
-          </TouchableOpacity>
-        )}
-
         <Card style={styles.card}>
+          {/* Cabecera */}
           <View style={styles.header}>
             <View style={styles.avatar}>
               <Icon icon={tipoIcon} size={32} color={COLORS.primary} />
@@ -182,154 +154,176 @@ export default function EquipoDetalleScreen({
                 style={styles.badgeCodigo}
                 textStyle={styles.badgeCodigoTexto}
               />
+              <Badge
+                label={equipo.encendido ? "Encendido" : "Apagado"}
+                variant={equipo.encendido ? "success" : "default"}
+                style={styles.badgeCodigo}
+              />
             </View>
           </View>
 
-          {/* Horas de uso */}
+          {/* Horas de uso y mantenimiento */}
           <View style={styles.horasContainer}>
             <View style={styles.horasRow}>
-              <CustomText style={styles.horasLabel}>Horas de uso</CustomText>
-              <CustomText style={[
-                styles.horasValor,
-                necesitaMant && styles.horasValorCritico
-              ]}>
+              <View style={styles.horasLabelContainer}>
+                <Icon
+                  icon={ICONS.clock}
+                  size={16}
+                  color={COLORS.textTertiary}
+                  style={styles.horasIcon}
+                />
+                <CustomText style={styles.horasLabel}>Horas de uso</CustomText>
+              </View>
+              <CustomText
+                style={[styles.horasValor, necesitaMant && styles.horasValorCritico]}
+              >
                 {horasUsoFormateado}
               </CustomText>
             </View>
             <View style={styles.horasRow}>
-              <CustomText style={styles.horasLabel}>
-                {necesitaMant ? "⚠️ Mantenimiento requerido" : "Horas para mantenimiento"}
-              </CustomText>
-              <CustomText style={[
-                styles.horasValor,
-                necesitaMant && styles.horasValorCritico
-              ]}>
-                {necesitaMant ? "0 h" : `${Math.round(horasRestantes)} h`}
-              </CustomText>
+              <View style={styles.horasLabelContainer}>
+                <Icon
+                  icon={ICONS.tools}
+                  size={16}
+                  color={COLORS.textTertiary}
+                  style={styles.horasIcon}
+                />
+                <CustomText style={styles.horasLabel}>
+                  {necesitaMant ? "Mantenimiento requerido" : "Horas para mantenimiento"}
+                </CustomText>
+              </View>
+              <View style={styles.horasValueRow}>
+                {necesitaMant && (
+                  <Icon
+                    icon={ICONS.alertTriangle}
+                    size={18}
+                    color={COLORS.error}
+                    style={styles.horasAlertIcon}
+                  />
+                )}
+                <CustomText
+                  style={[styles.horasValor, necesitaMant && styles.horasValorCritico]}
+                >
+                  {necesitaMant ? "0 h" : `${Math.round(horasRestantes)} h`}
+                </CustomText>
+              </View>
             </View>
           </View>
 
-          {/* Información del equipo */}
+          {/* Información del equipo - con íconos alineados */}
           <View style={styles.seccion}>
             <CustomText style={styles.seccionTitulo}>Información del equipo</CustomText>
 
             <View style={styles.filaDetalle}>
-              <CustomText style={styles.filaEtiqueta}>Tipo</CustomText>
-              <CustomText style={styles.filaValor}>{tipoLabel}</CustomText>
+              <View style={styles.filaDetalleIcono}>
+                <Icon icon={ICONS.gear} size={16} color={COLORS.textTertiary} />
+              </View>
+              <View style={styles.filaDetalleContenido}>
+                <CustomText style={styles.filaEtiqueta}>Tipo</CustomText>
+                <CustomText style={styles.filaValor}>{tipoLabel}</CustomText>
+              </View>
             </View>
 
-            {equipo.subcategoria && (
-              <View style={styles.filaDetalle}>
-                <CustomText style={styles.filaEtiqueta}>Subcategoría</CustomText>
+            <View style={styles.filaDetalle}>
+              <View style={styles.filaDetalleIcono}>
+                <Icon icon={ICONS.calendar} size={16} color={COLORS.textTertiary} />
+              </View>
+              <View style={styles.filaDetalleContenido}>
+                <CustomText style={styles.filaEtiqueta}>Fecha de instalación</CustomText>
+                <CustomText style={styles.filaValor}>{equipo.fechaInstalacion || "—"}</CustomText>
+              </View>
+            </View>
+
+            <View style={styles.filaDetalle}>
+              <View style={styles.filaDetalleIcono}>
+                <Icon icon={ICONS.engine} size={16} color={COLORS.textTertiary} />
+              </View>
+              <View style={styles.filaDetalleContenido}>
+                <CustomText style={styles.filaEtiqueta}>Función</CustomText>
+                <CustomText style={styles.filaValor}>{equipo.funcionEquipo || "—"}</CustomText>
+              </View>
+            </View>
+
+            {/* Estanque asociado */}
+            <View style={styles.filaDetalle}>
+              <View style={styles.filaDetalleIcono}>
+                <Icon icon={ICONS.water} size={16} color={COLORS.textTertiary} />
+              </View>
+              <View style={styles.filaDetalleContenido}>
+                <CustomText style={styles.filaEtiqueta}>Estanque asociado</CustomText>
                 <CustomText style={styles.filaValor}>
-                  {equipo.subcategoria}
+                  {estanque ? estanque.label : "No asociado"}
                 </CustomText>
               </View>
-            )}
-
-            <View style={styles.filaDetalle}>
-              <CustomText style={styles.filaEtiqueta}>Marca</CustomText>
-              <CustomText style={styles.filaValor}>{equipo.marca || "—"}</CustomText>
             </View>
 
             <View style={styles.filaDetalle}>
-              <CustomText style={styles.filaEtiqueta}>Modelo</CustomText>
-              <CustomText style={styles.filaValor}>{equipo.modelo || "—"}</CustomText>
-            </View>
-
-            <View style={styles.filaDetalle}>
-              <CustomText style={styles.filaEtiqueta}>Serie</CustomText>
-              <CustomText style={styles.filaValor}>{equipo.serie || "—"}</CustomText>
-            </View>
-
-            <View style={styles.filaDetalle}>
-              <CustomText style={styles.filaEtiqueta}>Fecha de instalación</CustomText>
-              <CustomText style={styles.filaValor}>{equipo.fechaInstalacion || "—"}</CustomText>
-            </View>
-
-            <View style={styles.filaDetalle}>
-              <CustomText style={styles.filaEtiqueta}>Ubicación</CustomText>
-              <CustomText style={styles.filaValor}>{equipo.ubicacion || "—"}</CustomText>
-            </View>
-
-            <View style={styles.filaDetalle}>
-              <CustomText style={styles.filaEtiqueta}>Función</CustomText>
-              <CustomText style={styles.filaValor}>{equipo.funcionEquipo || "—"}</CustomText>
-            </View>
-
-            {/* Estanque asociado con link */}
-            <View style={styles.filaDetalle}>
-              <CustomText style={styles.filaEtiqueta}>Estanque asociado</CustomText>
-              {estanque ? (
-                <TouchableOpacity onPress={handleEstanquePress}>
-                  <CustomText style={styles.filaValorLink}>
-                    {estanque.label} · {estanque.finca}
-                  </CustomText>
-                </TouchableOpacity>
-              ) : (
-                <CustomText style={styles.filaValor}>No asociado</CustomText>
-              )}
-            </View>
-
-            <View style={styles.filaDetalle}>
-              <CustomText style={styles.filaEtiqueta}>Último mantenimiento</CustomText>
-              <CustomText style={styles.filaValor}>{equipo.ultimoMantenimiento || "—"}</CustomText>
+              <View style={styles.filaDetalleIcono}>
+                <Icon icon={ICONS.tools} size={16} color={COLORS.textTertiary} />
+              </View>
+              <View style={styles.filaDetalleContenido}>
+                <CustomText style={styles.filaEtiqueta}>Horas para mantenimiento</CustomText>
+                <CustomText style={styles.filaValor}>
+                  {equipo.horasMantenimiento ?? "—"}
+                </CustomText>
+              </View>
             </View>
           </View>
 
-          {/* Descripción - MOVIDA ANTES DEL HISTORIAL */}
+          {/* Descripción */}
           {equipo.descripcion && (
             <View style={styles.seccion}>
               <CustomText style={styles.seccionTitulo}>Descripción</CustomText>
               <CustomText style={styles.filaValor}>{equipo.descripcion}</CustomText>
             </View>
           )}
-
-          {/* Registros de encendido - AHORA AL FINAL */}
-          {equipo.registrosEncendido && equipo.registrosEncendido.length > 0 && (
-            <View style={styles.seccion}>
-              <CustomText style={styles.seccionTitulo}>Historial de uso</CustomText>
-              {equipo.registrosEncendido.slice(-5).reverse().map((registro, index) => {
-                const inicio = new Date(registro.inicio);
-                const fechaStr = inicio.toLocaleDateString('es-CR');
-                const horaStr = inicio.toLocaleTimeString('es-CR', { hour: '2-digit', minute: '2-digit' });
-                const horas = registro.horas || 0;
-                return (
-                  <View key={index} style={styles.registroItem}>
-                    <CustomText style={styles.registroFecha}>
-                      {fechaStr} {horaStr}
-                      {!registro.fin && " (En curso)"}
-                    </CustomText>
-                    <CustomText style={styles.registroHoras}>
-                      {horas > 0 ? `${horas} h` : "—"}
-                    </CustomText>
-                  </View>
-                );
-              })}
-            </View>
-          )}
         </Card>
       </ScrollView>
 
-      {/* Footer fijo con botones Editar y Eliminar - SIEMPRE VISIBLES */}
+      {/* Botones de acción fijos en la parte inferior */}
       <View style={styles.footerContainer}>
         <View style={styles.footerButtonsContainer}>
           <Button
-            style={[styles.boton, styles.botonEditar]}
+            variant="outline"
             onPress={() => onEdit?.(equipo)}
+            style={[styles.boton, styles.botonEditar]}
           >
-            <Icon icon={ICONS.edit} size={ICON_SIZE.boton} color={COLORS.white} />
+            <Icon icon={ICONS.edit} size={ICON_SIZE.boton} color={COLORS.primary} />
             <CustomText style={styles.botonTexto}>Editar</CustomText>
           </Button>
-
           <Button
-            style={[styles.boton, styles.botonEliminar]}
-            onPress={() => onDelete?.(equipo.id)}
+            variant="outline"
+            onPress={handleTogglePress}
+            style={[styles.boton, styles.botonEditar]}
           >
-            <Icon icon={ICONS.delete} size={ICON_SIZE.boton} color={COLORS.white} />
-            <CustomText style={styles.botonTexto}>Eliminar</CustomText>
+            <Icon
+              icon={equipo.encendido ? ICONS.close : ICONS.check}
+              size={ICON_SIZE.boton}
+              color={COLORS.primary}
+            />
+            <CustomText style={styles.botonTexto}>
+              {equipo.encendido ? "Apagar" : "Encender"}
+            </CustomText>
+          </Button>
+          <Button
+            variant="outline"
+            onPress={() => onDelete?.(equipo.id)}
+            style={[styles.boton, styles.botonEliminar]}
+          >
+            <Icon icon={ICONS.delete} size={ICON_SIZE.boton} color={COLORS.error} />
+            <CustomText style={styles.botonTextoEliminar}>Eliminar</CustomText>
           </Button>
         </View>
+        <Button
+          variant="outline"
+          onPress={onClose}
+          style={[styles.botonCerrar, styles.botonCerrarFull]}
+        >
+          <View style={styles.botonContent}>
+            <Icon icon={ICONS.exit} size={ICON_SIZE.boton} color={COLORS.primary} />
+            <CustomText style={styles.botonTexto}>Cerrar</CustomText>
+          </View>
+        </Button>
       </View>
     </View>
   );

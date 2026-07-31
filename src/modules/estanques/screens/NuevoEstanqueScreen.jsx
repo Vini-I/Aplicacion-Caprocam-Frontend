@@ -13,7 +13,10 @@
  * - Select de aireador requerido solo cuando aplica.
  */
 
-import React, { useState } from "react";
+import { useEstanque } from "../context/EstanqueContext";
+import { useFinca } from "../../finca/context/FincaContext"
+
+import React, { useState, useEffect } from "react";
 import { ScrollView, View } from "react-native";
 import { useRouter } from "expo-router";
 
@@ -32,6 +35,8 @@ import NavbarRegistro from "../../../shared/components/NavbarRegistro";
 import { getCurrentDate } from "../../../shared/utils/dateUtils";
 
 import { styles } from "../styles/EstanqueStyle";
+import { STYLE } from "../../../theme/style";
+
 import {
   obtenerOpcionesEstanqueSeleccionado,
 } from "../services/AireadoresEstanqueService";
@@ -54,8 +59,13 @@ import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
 import { TYPOGRAPHY } from "../../../theme/typography";
 
-export default function NuevoEstanqueScreen({ navigation }) {
+export default function NuevoEstanqueScreen({ navigation, codigoCBO }) {
   const router = useRouter();
+
+  const { crearEstanque } = useEstanque();
+  const { buscarFinca } = useFinca();
+
+  const [finca, setFinca] = useState(null);
 
   const [codigo, setCodigo] = useState("");
   const [estado, setEstado] = useState("activo");
@@ -82,6 +92,15 @@ export default function NuevoEstanqueScreen({ navigation }) {
   const [mensaje, setMensaje] = useState("");
   const [tipoMensaje, setTipoMensaje] = useState("info");
   const [submitted, setSubmitted] = useState(false);
+
+  async function obtenerFinca(){
+    const data = await buscarFinca(codigoCBO);
+    setFinca(data);
+  }
+
+  useEffect(() => {
+    obtenerFinca();
+  }, []);
 
   function cancelar() {
     if (navigation) {
@@ -128,56 +147,61 @@ export default function NuevoEstanqueScreen({ navigation }) {
     return resultado.valido;
   }
 
-  function registrarEstanque() {
+  async function registrarEstanque() {
     if (validarFormulario() === false) {
       return;
     }
-
-    const nuevoEstanque = construirNuevoEstanque({
+    
+    const { NuevoEstanqueDTO } = construirNuevoEstanque({
+      idFinca: finca.id,
       codigo: codigo,
       estado: estado,
       tipoEstanque: tipoEstanque,
-      largo: largo,
-      ancho: ancho,
-      profundidad: profundidad,
+      largo: Number(largo),
+      ancho: Number(ancho),
+      profundidad: Number(profundidad),
       fuenteAgua: fuenteAgua,
       especie: especie,
       fechaSiembra: fechaSiembra,
       fechaInicioEngorde: fechaInicioEngorde,
       fechaMantenimiento: fechaMantenimiento,
-      densidadSiembra: densidadSiembra,
+      densidadSiembra: Number(densidadSiembra),
       precria: precria,
       metodoAlimentacion: metodoAlimentacion,
       proveedorAlimento: proveedorAlimento,
-      numeroAireadores: numeroAireadores,
+      numeroAireadores: Number(numeroAireadores),
       tieneAireadores: tieneAireadores,
       codigoAireador: codigoAireador,
       tieneAlimentadorAutomatico: tieneAlimentadorAutomatico,
     });
 
-    console.log("Estanque registrado:", nuevoEstanque);
+    try {
+      await crearEstanque(NuevoEstanqueDTO);
 
-    setTipoMensaje("success");
-    setMensaje("Estanque creado correctamente.");
+      setTipoMensaje("success");
+      setMensaje("Estanque creado correctamente.");
 
-    setTimeout(function () {
-      router.push({
-        pathname: "/registros/DetalleEstanque",
-        params: nuevoEstanque,
-      });
-    }, 900);
+      setTimeout(function () {
+        router.push({
+          pathname: `/finca/detalle?id=${finca.id}`,
+        });
+      }, 900);
+    } catch (error) {
+      setTipoMensaje("danger");
+      setMensaje(error.response?.data?.message || "Error al guardar los cambios.");
+    }
   }
 
   return (
     <>
       <NavbarRegistro
         Titulo="Nuevo Estanque"
-        Subtitulo="Finca: Finca La Reina"
+        Subtitulo={`${finca?.nombreFinca ?? "Cargando..."}`}
         Icono="water"
       />
 
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-        <View style={styles.content}>
+      <ScrollView style={STYLE.container} showsVerticalScrollIndicator={false}>
+        <View style={STYLE.contentWrapper}>
           <Card>
             <SectionTitle title="Identificacion" icon={ICONS.document} />
 
@@ -238,6 +262,7 @@ export default function NuevoEstanqueScreen({ navigation }) {
                   onChangeText={setLargo}
                   placeholder="Ej: 100"
                   keyboardType="numeric"
+                  numericOnly
                   labelStyle={styles.label}
                 />
               </View>
@@ -251,6 +276,7 @@ export default function NuevoEstanqueScreen({ navigation }) {
                   onChangeText={setAncho}
                   placeholder="Ej: 80"
                   keyboardType="numeric"
+                  numericOnly
                   labelStyle={styles.label}
                 />
               </View>
@@ -264,6 +290,7 @@ export default function NuevoEstanqueScreen({ navigation }) {
               onChangeText={setProfundidad}
               placeholder="Ej: 0.80"
               keyboardType="numeric"
+              numericOnly
               labelStyle={styles.label}
             />
 
@@ -334,6 +361,79 @@ export default function NuevoEstanqueScreen({ navigation }) {
             />
           </Card>
 
+          <Card>
+            <SectionTitle title="Alimentacion y equipos" icon={ICONS.food} />
+
+            <Select
+              label="Metodo de alimentacion"
+              options={METODOS_ALIMENTACION}
+              value={metodoAlimentacion}
+              onChange={setMetodoAlimentacion}
+              placeholder="Seleccione el metodo"
+              labelStyle={styles.label}
+            />
+
+            <Input
+              label="Proveedor de alimento"
+              value={proveedorAlimento}
+              onChangeText={setProveedorAlimento}
+              placeholder="Ej: Biomar"
+              labelStyle={styles.label}
+            />
+
+            <Select
+              label="Tiene aireadores"
+              options={OPCIONES_AIREADORES}
+              value={tieneAireadores}
+              onChange={manejarTieneAireadores}
+              placeholder="Seleccione una opcion"
+              labelStyle={styles.label}
+            />
+
+            {tieneAireadores === "si" && (
+              <View style={styles.aeratorBox}>
+                <Select
+                  label="Codigo del aireador"
+                  required={true}
+                  submitted={submitted}
+                  options={AIREADORES_EXISTENTES}
+                  value={codigoAireador}
+                  onChange={setCodigoAireador}
+                  placeholder="Seleccione el codigo"
+                  labelStyle={styles.label}
+                />
+
+                <Select
+                  label="Estanque seleccionado"
+                  options={obtenerOpcionesEstanqueSeleccionado(
+                    codigo,
+                    `${finca?.nombreFinca ?? "Cargando..."}`
+                  )}
+                  value={codigo}
+                  disabled={true}
+                  placeholder="Ingrese primero el codigo del estanque"
+                  labelStyle={styles.label}
+                />
+
+                <CustomText
+                  size={13}
+                  color={COLORS.textTertiary}
+                  style={styles.helperText}
+                >
+                  El aireador se asigna automaticamente al estanque actual.
+                </CustomText>
+              </View>
+            )}
+
+            <Select
+              label="Tiene alimentador automatico"
+              options={OPCIONES_ALIMENTADOR}
+              value={tieneAlimentadorAutomatico}
+              onChange={setTieneAlimentadorAutomatico}
+              placeholder="Seleccione una opcion"
+              labelStyle={styles.label}
+            />
+          </Card>
 
           {mensaje !== "" && (
             <Alert

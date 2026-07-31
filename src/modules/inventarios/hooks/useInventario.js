@@ -4,7 +4,7 @@
  * ============================================================
  *
  * Responsabilidad:
- * Maneja el estado de la pantalla de Inventarios: carga de productos,
+ * Maneja el estado de la pantalla de Inventarios: carga de productos desde la API,
  * texto de búsqueda, filtros activos (categoría, proveedor, unidad,
  * stock bajo, caducidad) y el cálculo de la lista filtrada final.
  * El filtro de caducidad muestra los productos cuya fechaCaducidad
@@ -13,7 +13,7 @@
  * esperado para revisar próximos vencimientos.
  *
  * Datos:
- * Lee los productos desde InventarioService.getProductosInventario(),
+ * Lee los productos mediante la llamada asíncronica a InventarioService.getProductosInventario(),
  * que ya devuelve el producto más reciente de primero. Cada producto
  * incluye fechaCaducidad como string dd/mm/aaaa (mismo formato que
  * entrega el DateInput compartido); es un dato real que ya existe en
@@ -24,9 +24,8 @@
  * existentes en memoria.
  *
  * Navegación:
- * Recarga productos y limpia búsqueda/filtros cada vez que la
- * pantalla recibe foco (useFocusEffect), y hace scroll al inicio del
- * listado.
+ * Recarga los productos de la API automáticamente cada vez que la
+ * pantalla recibe foco gracias a useFocusEffect.
  *
  * Dependencias:
  * services/InventarioService.js.
@@ -69,72 +68,82 @@ export function useInventario() {
 
   useFocusEffect(
     useCallback(() => {
-      setProductos(getProductosInventario());
+      let isActive = true;
 
-      setBusqueda("");
+      const loadData = async () => {
+        try {
+          const data = await getProductosInventario();
+          if (isActive) {
+            setProductos(data);
+          }
+        } catch (error) {
+          console.error("Error al cargar productos de inventario:", error);
+        }
+      };
+      loadData();
 
-      setFiltros({
-        categories: [],
-        suppliers: [],
-        units: [],
-        lowStock: false,
-        expiryDate: "",
-      });
-
-      flatListRef.current?.scrollToOffset({
-        offset: 0,
-        animated: false,
-      });
-    }, [])
+      return () => {
+        isActive = false;
+      };
+    }, []),
   );
 
-  const categorias = [...new Set(productos.map((p) => p.categoria))];
-  const proveedores = [...new Set(productos.map((p) => p.proveedor))];
-  const unidades = [...new Set(productos.map((p) => p.unidad))];
+  const categorias = Array.isArray(productos)
+    ? [...new Set(productos.map((p) => p.categoria).filter(Boolean))]
+    : [];
+  const proveedores = Array.isArray(productos)
+    ? [...new Set(productos.map((p) => p.proveedor).filter(Boolean))]
+    : [];
+  const unidades = Array.isArray(productos)
+    ? [...new Set(productos.map((p) => p.unidad).filter(Boolean))]
+    : [];
 
-  const productosFiltrados = productos.filter((p) => {
-    const texto = busqueda.toLowerCase();
+  const productosFiltrados = Array.isArray(productos)
+    ? productos.filter((p) => {
+        const texto = busqueda.toLowerCase();
+        const nombre = (p.nombre || "").toLowerCase();
+        const proveedor = (p.proveedor || "").toLowerCase();
+        const categoria = (p.categoria || "").toLowerCase();
+        const codigo = (p.codigo || "").toLowerCase();
 
-    const coincideTexto =
-      p.nombre.toLowerCase().includes(texto) ||
-      p.proveedor.toLowerCase().includes(texto) ||
-      p.categoria.toLowerCase().includes(texto) ||
-      (p.codigo && p.codigo.toLowerCase().includes(texto));
+        const coincideTexto =
+          nombre.includes(texto) ||
+          proveedor.includes(texto) ||
+          categoria.includes(texto) ||
+          codigo.includes(texto);
 
-    const coincideCategoria =
-      filtros.categories.length === 0 ||
-      filtros.categories.includes(p.categoria);
+        const coincideCategoria =
+          filtros.categories.length === 0 ||
+          filtros.categories.includes(p.categoria);
 
-    const coincideProveedor =
-      filtros.suppliers.length === 0 ||
-      filtros.suppliers.includes(p.proveedor);
+        const coincideProveedor =
+          filtros.suppliers.length === 0 ||
+          filtros.suppliers.includes(p.proveedor);
 
-    const coincideUnidad =
-      filtros.units.length === 0 ||
-      filtros.units.includes(p.unidad);
+        const coincideUnidad =
+          filtros.units.length === 0 || filtros.units.includes(p.unidad);
 
-    const coincideStock =
-      !filtros.lowStock ||
-      p.cantidad < p.stockMinimo;
+        const coincideStock = !filtros.lowStock || Number(p.cantidad) < Number(p.stockMinimo);
 
-    const fechaFiltro = parsearFechaDDMMAAAA(filtros.expiryDate);
-    const fechaProducto = parsearFechaDDMMAAAA(p.fechaCaducidad);
-    const coincideCaducidad =
-      !fechaFiltro || (fechaProducto && fechaProducto <= fechaFiltro);
+        const fechaFiltro = parsearFechaDDMMAAAA(filtros.expiryDate);
+        const fechaProducto = parsearFechaDDMMAAAA(p.fechaCaducidad);
+        const coincideCaducidad =
+          !fechaFiltro || (fechaProducto && fechaProducto <= fechaFiltro);
 
-    return (
-      coincideTexto &&
-      coincideCategoria &&
-      coincideProveedor &&
-      coincideUnidad &&
-      coincideStock &&
-      coincideCaducidad
-    );
-  });
+        return (
+          coincideTexto &&
+          coincideCategoria &&
+          coincideProveedor &&
+          coincideUnidad &&
+          coincideStock &&
+          coincideCaducidad
+        );
+      })
+    : [];
 
-  const cantidadStockBajo = productos.filter(
-    (p) => p.cantidad < p.stockMinimo
-  ).length;
+  const cantidadStockBajo = Array.isArray(productos)
+    ? productos.filter((p) => Number(p.cantidad) < Number(p.stockMinimo)).length
+    : 0;
 
   return {
     flatListRef,
