@@ -59,6 +59,7 @@ export function useProductForm() {
   const [guardadoExitoso, setGuardadoExitoso] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [errorGuardado, setErrorGuardado] = useState("");
+  const [mostrarAlertaValidacion, setMostrarAlertaValidacion] = useState(false);
 
   // ── Carga los proveedores reales una sola vez (GET /proveedores) ──
   useEffect(() => {
@@ -166,9 +167,9 @@ export function useProductForm() {
 
   const canSave = isEditMode ? hasRequiredData && hasChanges : hasRequiredData;
 
-  const validationMessage = !intentoGuardar ? "" : !hasRequiredData ? "Revisa los campos obligatorios marcados con * antes de guardar."
-     : isEditMode && !hasChanges ? "Realice algún cambio para guardar la actualización." : "";
- 
+ const validationMessage = !mostrarAlertaValidacion ? "" : !hasRequiredData ? "Revisa los campos obligatorios marcados con * antes de guardar."
+    : isEditMode && !hasChanges ? "Realice algún cambio para guardar la actualización." : "";
+
   const errorNombre = intentoGuardar && form.nombre.trim() === "";
   const errorCodigo = intentoGuardar && form.codigo.trim() === "";
   const errorCategoria = intentoGuardar && form.categoria === "";
@@ -197,10 +198,20 @@ export function useProductForm() {
     }));
   }
 
+  useEffect(() => {
+    if (mostrarAlertaValidacion) {
+      const t = setTimeout(() => setMostrarAlertaValidacion(false), 6000);
+      return () => clearTimeout(t);
+    }
+  }, [mostrarAlertaValidacion]);
+
   async function handleSubmit() {
     setIntentoGuardar(true);
 
-    if (!canSave) return;
+    if (!canSave) {
+      setMostrarAlertaValidacion(true);
+      return;
+    }
 
     const producto = {
       codigo: form.codigo.trim(), 
@@ -219,7 +230,13 @@ export function useProductForm() {
       entryDate: form.entryDate,
       expirationDate: form.expirationDate,
     };
-
+  useEffect(() => {
+    if (errorGuardado) {
+      const t = setTimeout(() => setErrorGuardado(""), 6000);      
+      return () => clearTimeout(t);
+    }
+  }, [errorGuardado]);
+  
     setGuardando(true);
     setErrorGuardado("");
     try {
