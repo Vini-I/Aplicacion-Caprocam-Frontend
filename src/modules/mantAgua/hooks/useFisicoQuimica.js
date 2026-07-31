@@ -243,11 +243,11 @@ export default function useFisicoQuimica() {
   const puedeAgregarMediciones = Boolean(fincaSeleccionada && estanqueSeleccionado);
 
   const handleIntentoAgregarSinSeleccion = useCallback(() => {
-    setSubmitted(true);
-    setErrorMessage(
-      validarSeleccionAntesDeAgregar({ fincaSeleccionada, estanqueSeleccionado }),
-    );
-  }, [fincaSeleccionada, estanqueSeleccionado]);
+  setSubmitted(true);
+  setErrorMessage(
+    validarSeleccionAntesDeAgregar({ fincaSeleccionada, estanqueSeleccionado }),
+  );
+}, [fincaSeleccionada, estanqueSeleccionado]);
 
   const handleFincaChange = useCallback((value) => {
     manejarCambioFinca({

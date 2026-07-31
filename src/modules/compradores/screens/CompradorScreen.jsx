@@ -31,6 +31,7 @@ import React from "react";
 import { View, FlatList, ActivityIndicator } from "react-native";
 
 import Card from "../../../shared/components/Card";
+import CardPress from "../../../shared/components/CardPress";
 import Button from "../../../shared/components/Button";
 import Icon from "../../../shared/components/Icons";
 import Text from "../../../shared/components/Text";
@@ -65,7 +66,7 @@ export default function CompradorScreen() {
   // Renderiza la tarjeta de cada comprador con su info de contacto
   function renderComprador(comprador) {
     return (
-      <Card style={[styles.card, STYLE.contentWrapper]}>
+      <CardPress onPress={() => handleVerDetalle(comprador.id)} style={[styles.card, STYLE.contentWrapper]}>
         {/* Encabezado con avatar, nombre, tipo y botón de detalle */}
         <View style={styles.cardHeader}>
           <View style={styles.avatar}>
@@ -80,13 +81,7 @@ export default function CompradorScreen() {
             </Text>
           </View>
 
-          <Button
-            variant="outline"
-            onPress={() => handleVerDetalle(comprador.id)}
-            style={styles.btnVerDetalle}
-          >
-            <Text style={styles.btnVerDetalleText}>Ver Detalle</Text>
-          </Button>
+          
         </View>
 
         {/* Teléfono formateado con el patrón +506 XXXX-XXXX */}
@@ -110,7 +105,7 @@ export default function CompradorScreen() {
           />
           <Text style={styles.contactText}>{comprador.correo}</Text>
         </View>
-      </Card>
+      </CardPress>
     );
   }
 

@@ -23,13 +23,8 @@ export const styles = StyleSheet.create({
   infoBanner: {
     marginBottom: 16,
     alignItems: "center",
-    backgroundColor: COLORS.errorLight,
-  },
-
-  infoBannerHistorico: {
-    marginBottom: 20,
-    alignItems: "center",
-    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
+    backgroundColor: COLORS.primaryLight,
   },
 
   floatingButtonContainer: {

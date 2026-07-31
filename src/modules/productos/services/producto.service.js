@@ -20,7 +20,7 @@ export const productoService = {
     }
   },
 
-  
+
   crearProducto: async (datos) => {
     try {
       const response = await api.post("/productos", {
@@ -61,10 +61,10 @@ export const productoService = {
     }
   },
 
-
+  // CORREGIDO: Se cambia de api.put('/productos/:id/activo') a api.delete('/productos/:id')
   desactivarProducto: async (id) => {
     try {
-      const response = await api.put(`/productos/${id}/activo`);
+      const response = await api.delete(`/productos/${id}`);
       return response.data.data;
     } catch (error) {
       throw error;
@@ -82,9 +82,7 @@ export const productoService = {
   },
 };
 
-// Traduce un producto tal como lo manda la API al shape que usan las
-// pantallas del front. Los nombres ya calzan 1:1 con lo que devuelve
-//  así que no haceel back
+
 export function mapProducto(apiProducto) {
   if (!apiProducto) return null;
   return {
