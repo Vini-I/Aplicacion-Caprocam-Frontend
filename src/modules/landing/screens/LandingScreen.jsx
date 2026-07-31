@@ -42,7 +42,7 @@ import {
 } from "../hooks/useLanding";
 import { styles } from "../styles/LandingStyle";
 
-export default function LandingScreen() {
+export default function LandingScreen({ onLogin }) {
   const router = useRouter();
 
   const { esMovil, esTablet } = useLandingResponsive();
@@ -78,7 +78,7 @@ export default function LandingScreen() {
           cerrarMenu={cerrarMenu}
           irAlInicio={irAlInicio}
           irASeccion={irASeccion}
-          iniciarSesion={() => router.push("/loginWeb")}
+          iniciarSesion={() => onLogin()}
         />
         <ScrollView
           ref={scrollRef}
