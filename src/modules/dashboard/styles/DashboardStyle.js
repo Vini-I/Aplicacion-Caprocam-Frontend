@@ -1,34 +1,29 @@
-/**
- * ============================================================
- * ESTILOS DEL DASHBOARD GENERAL
- * ============================================================
- *
- * Responsabilidad:
- * - Define estilos visuales del DashboardScreen.
- * - Usa tokens del theme cuando estan disponibles.
- * - Mantiene alertas con fondos suaves.
- * - Mantiene acceso outline a modulos.
- * - Mantiene grafica de estanques activos/cosechados.
- * - Mantiene grafica de alimentacion semanal.
- */
+/*
+//////////////////////////////////////////////////////////
+CABEZA DE ARCHIVO
+//////////////////////////////////////////////////////////
+Archivo: DashboardStyle.js
+Autor: Gerald Andres Alfaro Solorzano
+Fecha: 30/07/2026
+Modulo: Dashboard
+Descripcion:
+Define los estilos visuales propios de los componentes
+utilizados por el Dashboard.
+//////////////////////////////////////////////////////////
+*/
 
 import { StyleSheet } from "react-native";
 
 import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
 
-const PRIMARY_LIGHT = COLORS.primaryLight || "#ECF8FF";
-const BORDER_COLOR = COLORS.border || "#E5E7EB";
-const INPUT_BORDER = COLORS.inputBorder || "#E5E7EB";
-const INFO_LIGHT = COLORS.infoLight || "#ECF8FF";
+const PRIMARY_LIGHT = COLORS.primaryLight ? COLORS.primaryLight : "#ECF8FF";
+const BORDER_COLOR = COLORS.border ? COLORS.border : "#E5E7EB";
+const INPUT_BORDER = COLORS.inputBorder ? COLORS.inputBorder : "#E5E7EB";
+const INFO_LIGHT = COLORS.infoLight ? COLORS.infoLight : "#ECF8FF";
+const VIOLET = COLORS.violet ? COLORS.violet : "#7C3AED";
 
 export const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.surface,
-    paddingHorizontal: 16,
-  },
-
   scrollContent: {
     width: "100%",
     maxWidth: 900,
@@ -79,34 +74,6 @@ export const styles = StyleSheet.create({
   headerSubtitle: {
     marginTop: 2,
     fontFamily: TYPOGRAPHY.fontFamily.regular,
-  },
-
-  mareasAccessCard: {
-    width: "100%",
-    backgroundColor: COLORS.white,
-    borderRadius: 18,
-    padding: 16,
-    marginTop: 0,
-    marginBottom: 14,
-    flexDirection: "row",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: COLORS.primary,
-  },
-
-  mareasAccessIcon: {
-    width: 46,
-    height: 46,
-    borderRadius: 15,
-    backgroundColor: PRIMARY_LIGHT,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 12,
-  },
-
-  mareasAccessText: {
-    flex: 1,
-    minWidth: 0,
   },
 
   alertsCard: {
@@ -168,6 +135,7 @@ export const styles = StyleSheet.create({
     borderRadius: 12,
     paddingVertical: 14,
     paddingHorizontal: 12,
+    marginBottom: 10,
   },
 
   emptyAlertBoxSmall: {
@@ -222,13 +190,6 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     gap: 8,
-  },
-
-  alertBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 999,
-    backgroundColor: COLORS.white,
   },
 
   alertMessage: {
@@ -488,44 +449,82 @@ export const styles = StyleSheet.create({
     marginBottom: 10,
   },
 
-  twoColumns: {
-    flexDirection: "row",
-    gap: 16,
-    marginBottom: 16,
+  barChart: {
+    height: 170,
+    width: "100%",
+    borderLeftWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: COLORS.textQuaternary,
+    marginBottom: 18,
+    position: "relative",
+    overflow: "hidden",
   },
 
-  chartColumn: {
+  chartGridLines: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 28,
+    justifyContent: "space-between",
+  },
+
+  gridLine: {
+    height: 1,
+    width: "100%",
+    borderStyle: "dashed",
+    borderWidth: 1,
+    borderColor: BORDER_COLOR,
+  },
+
+  barChartContent: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "flex-end",
+    justifyContent: "space-between",
+    paddingHorizontal: 8,
+  },
+
+  barItem: {
     flex: 1,
     alignItems: "center",
     minWidth: 0,
   },
 
-  pastelChartContainer: {
-    width: "100%",
+  barTrack: {
+    height: 115,
+    width: 36,
+    justifyContent: "flex-end",
     alignItems: "center",
-    marginBottom: 18,
   },
 
-  pastelChartBox: {
+  barFill: {
     width: "100%",
-    maxWidth: 420,
-    alignItems: "center",
-    justifyContent: "center",
+    backgroundColor: COLORS.primary,
+    borderTopLeftRadius: 8,
+    borderTopRightRadius: 8,
+    maxHeight: 115,
   },
 
-  pastelStatsBox: {
+  barLabel: {
+    width: "100%",
+    marginTop: 6,
+    paddingHorizontal: 2,
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
+  },
+
+  twoColumns: {
     flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 18,
-    marginTop: 14,
     flexWrap: "wrap",
+    gap: 16,
+    marginBottom: 16,
   },
 
-  pastelStatItem: {
-    flexDirection: "row",
+  chartColumn: {
+    flexGrow: 1,
+    flexBasis: 280,
     alignItems: "center",
-    gap: 5,
+    minWidth: 0,
   },
 
   donutWrapper: {
@@ -568,20 +567,6 @@ export const styles = StyleSheet.create({
     left: 26,
   },
 
-  legendRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 10,
-    gap: 10,
-    flexWrap: "wrap",
-    justifyContent: "center",
-  },
-
-  legendItem: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-
   legendBlue: {
     width: 10,
     height: 10,
@@ -604,23 +589,6 @@ export const styles = StyleSheet.create({
     borderColor: COLORS.textQuaternary,
     position: "relative",
     overflow: "hidden",
-  },
-
-  chartGridLines: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: 28,
-    justifyContent: "space-between",
-  },
-
-  gridLine: {
-    height: 1,
-    width: "100%",
-    borderStyle: "dashed",
-    borderWidth: 1,
-    borderColor: BORDER_COLOR,
   },
 
   lineBars: {
@@ -647,51 +615,32 @@ export const styles = StyleSheet.create({
     maxHeight: 105,
   },
 
-  barChart: {
-    height: 170,
+  pastelChartContainer: {
     width: "100%",
-    borderLeftWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: COLORS.textQuaternary,
+    alignItems: "center",
     marginBottom: 18,
-    position: "relative",
-    overflow: "hidden",
   },
 
-  barChartContent: {
-    flex: 1,
+  pastelChartBox: {
+    width: "100%",
+    maxWidth: 420,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  pastelStatsBox: {
     flexDirection: "row",
-    alignItems: "flex-end",
-    justifyContent: "space-between",
-    paddingHorizontal: 8,
-  },
-
-  barItem: {
-    flex: 1,
     alignItems: "center",
-    minWidth: 0,
+    justifyContent: "center",
+    gap: 18,
+    marginTop: 14,
+    flexWrap: "wrap",
   },
 
-  barTrack: {
-    height: 115,
-    width: 36,
-    justifyContent: "flex-end",
+  pastelStatItem: {
+    flexDirection: "row",
     alignItems: "center",
-  },
-
-  barFill: {
-    width: "100%",
-    backgroundColor: COLORS.primary,
-    borderTopLeftRadius: 8,
-    borderTopRightRadius: 8,
-    maxHeight: 115,
-  },
-
-  barLabel: {
-    width: "100%",
-    marginTop: 6,
-    paddingHorizontal: 2,
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
+    gap: 5,
   },
 
   infoRowBlue: {
@@ -778,7 +727,7 @@ export const styles = StyleSheet.create({
     width: 11,
     height: 11,
     borderRadius: 6,
-    backgroundColor: COLORS.violet,
+    backgroundColor: VIOLET,
     marginRight: 12,
   },
 
