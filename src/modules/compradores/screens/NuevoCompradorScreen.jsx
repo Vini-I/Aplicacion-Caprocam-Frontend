@@ -46,7 +46,7 @@ import { ICONS } from "../../../theme/icons";
 import { STYLE } from "../../../theme/style";
 import { styles, ICON_SIZES } from "../styles/StylesNuevoComprador";
 
-import { useNuevoCompradorScreen, TELEFONO_MAX_LENGTH } from "../hooks/useNuevoCompradorScreen";
+import { useNuevoCompradorScreen, TELEFONO_MAX_LENGTH, CEDULA_MAX_LENGTH } from "../hooks/useNuevoCompradorScreen";
 
 export default function NuevoCompradorScreen() {
   const {
@@ -85,6 +85,7 @@ export default function NuevoCompradorScreen() {
       >
         <Card
           title="Información del comprador"
+          icon={ICONS.edit}
           style={styles.card}
           titleStyle={styles.cardTitle}
         >
@@ -99,12 +100,13 @@ export default function NuevoCompradorScreen() {
             labelStyle={styles.label}
           />
 
-          <Input
+           <Input
             label="Cédula *"
             value={cedula}
             onChangeText={handleCedulaChange}
-            placeholder="Ej. 1-0234-0567"
+            placeholder="Ej. 102340567"
             keyboardType="numeric"
+            maxLength={CEDULA_MAX_LENGTH}
             containerStyle={styles.field}
             style={[styles.input, errorCedula && styles.inputError]}
             labelStyle={styles.label}
@@ -114,7 +116,7 @@ export default function NuevoCompradorScreen() {
             label="Teléfono *"
             value={telefono}
             onChangeText={handleTelefonoChange}
-            placeholder="+506 7689-9087"
+            placeholder="88881234"
             keyboardType="phone-pad"
             maxLength={TELEFONO_MAX_LENGTH}
             containerStyle={styles.field}

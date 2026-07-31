@@ -41,8 +41,10 @@ import { useRouter } from "expo-router";
 import { compradorService } from "../services/comprador.service";
 
 // Regex para validar teléfonos con o sin código de país +506
-const TELEFONO_REGEX = /^(\+?506[\s-]?)?\d{4}[\s-]?\d{4}$/;
-export const TELEFONO_MAX_LENGTH = 14;
+const TELEFONO_REGEX = /^\d{8}$/;
+
+export const TELEFONO_MAX_LENGTH = 8;
+export const CEDULA_MAX_LENGTH = 10;
 
 // Regex básico para validar formato de correo electrónico
 const CORREO_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -86,14 +88,14 @@ export function useNuevoCompradorScreen() {
     }
   }, [mensajeError]);
 
-  // Permite solo dígitos, espacios, guiones y el símbolo + en el teléfono
+    // Permite solo dígitos en el teléfono
   const handleTelefonoChange = (valor) => {
-    setTelefono(valor.replace(/[^\d\s\-+]/g, ""));
+    setTelefono(valor.replace(/[^\d]/g, ""));
   };
 
-  // Permite solo dígitos y guiones en la cédula
+  // Permite solo dígitos en la cédula
   const handleCedulaChange = (valor) => {
-    setCedula(valor.replace(/[^\d-]/g, ""));
+    setCedula(valor.replace(/[^\d]/g, ""));
   };
 
   // Valida los campos y guarda el comprador si no hay errores
