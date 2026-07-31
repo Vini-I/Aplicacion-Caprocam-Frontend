@@ -41,6 +41,10 @@ export const styles = StyleSheet.create({
     fontFamily: TYPOGRAPHY.fontFamily.medium,
   },
 
+  campoConError: {
+    borderColor: COLORS.error,
+  },
+
   previewCard: {
     borderWidth: 1,
     borderColor: COLORS.secondary,

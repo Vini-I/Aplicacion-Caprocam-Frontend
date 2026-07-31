@@ -4,7 +4,7 @@ CABEZA DE ARCHIVO
 //////////////////////////////////////////////////////////
 Archivo: DashboardSanidadPanel.jsx
 Autor: Gerald Andres Alfaro Solorzano
-Fecha: 30/07/2026
+Fecha: 31/07/2026
 Modulo: Dashboard
 Descripcion:
 Renderiza el detalle de casos sanitarios y mortalidad
@@ -32,6 +32,8 @@ import {
 } from "../utils/DashboardUtils";
 
 import { styles } from "../styles/DashboardStyle";
+
+const VIOLET = COLORS.violet ? COLORS.violet : "#7C3AED";
 
 function SectionHeader({ icon, title, color }) {
   return (
@@ -70,23 +72,50 @@ function obtenerColorSeveridad(severidad) {
 function obtenerEstiloSeveridad(severidad) {
   const texto = obtenerTextoSeguro(severidad).toLowerCase();
 
-  const estilo = texto === "alta" || texto === "alto" || texto === "critica"
-    ? styles.badgeAlta
-    : texto === "media" || texto === "medio"
-      ? styles.badgeMedia
-      : texto === "baja" || texto === "bajo"
-        ? styles.badgeBaja
-        : null;
+  const estilo =
+    texto === "alta" || texto === "alto" || texto === "critica"
+      ? styles.badgeAlta
+      : texto === "media" || texto === "medio"
+        ? styles.badgeMedia
+        : texto === "baja" || texto === "bajo"
+          ? styles.badgeBaja
+          : null;
 
   return [styles.badge, estilo];
 }
 
-function obtenerNombreFrecuente(item, tipo) {
-  const valor = tipo === "enfermedad"
-    ? item.enfermedad ?? item.valor
-    : item.parasito ?? item.valor;
+function obtenerNombreTipo(tipo) {
+  return tipo === "parasitologia" ? "Parasitologia" : "Enfermedad";
+}
 
-  return obtenerTextoSeguro(item.nombre, obtenerTextoSeguro(valor, tipo === "enfermedad" ? "Enfermedad registrada" : "Parasito registrado"));
+function obtenerColorTipo(tipo) {
+  return tipo === "parasitologia" ? VIOLET : COLORS.error;
+}
+
+function obtenerEstiloTipo(tipo) {
+  return [
+    styles.badgeTipo,
+    tipo === "parasitologia"
+      ? styles.badgeTipoParasitologia
+      : styles.badgeTipoEnfermedad,
+  ];
+}
+
+function obtenerNombreFrecuente(item, tipo) {
+  const valor =
+    tipo === "enfermedad"
+      ? item.enfermedad ?? item.valor
+      : item.parasito ?? item.valor;
+
+  return obtenerTextoSeguro(
+    item.nombre,
+    obtenerTextoSeguro(
+      valor,
+      tipo === "enfermedad"
+        ? "Enfermedad registrada"
+        : "Parasito registrado"
+    )
+  );
 }
 
 function obtenerCantidadFrecuente(item) {
@@ -94,22 +123,49 @@ function obtenerCantidadFrecuente(item) {
   return Number.isFinite(cantidad) ? cantidad : 0;
 }
 
-function CasosSanitariosPanel({ resumenEnfermedades, resumenParasitologia, registrosEnfermedades, registrosParasitologia }) {
-  const enfermedadesFrecuentes = Array.isArray(resumenEnfermedades?.enfermedadesFrecuentes) ? resumenEnfermedades.enfermedadesFrecuentes : [];
-  const parasitosFrecuentes = Array.isArray(resumenParasitologia?.parasitosFrecuentes) ? resumenParasitologia.parasitosFrecuentes : [];
-  const casos = obtenerCasosSanitarios(registrosEnfermedades, registrosParasitologia);
+function CasosSanitariosPanel({
+  resumenEnfermedades,
+  resumenParasitologia,
+  registrosEnfermedades,
+  registrosParasitologia,
+}) {
+  const enfermedadesFrecuentes = Array.isArray(
+    resumenEnfermedades?.enfermedadesFrecuentes
+  )
+    ? resumenEnfermedades.enfermedadesFrecuentes
+    : [];
+
+  const parasitosFrecuentes = Array.isArray(
+    resumenParasitologia?.parasitosFrecuentes
+  )
+    ? resumenParasitologia.parasitosFrecuentes
+    : [];
+
+  const casos = obtenerCasosSanitarios(
+    registrosEnfermedades,
+    registrosParasitologia
+  );
 
   return (
     <Card style={styles.detailCard}>
-      <SectionHeader icon={ICONS.shieldAlert} title="Casos sanitarios" color={COLORS.warning} />
+      <SectionHeader
+        icon={ICONS.shieldAlert}
+        title="Casos sanitarios"
+        color={COLORS.warning}
+      />
 
       <View style={styles.divider} />
 
-      <CustomText size={13} color={COLORS.textTertiary} style={styles.panelSubtitle}>
+      <CustomText
+        size={13}
+        color={COLORS.textTertiary}
+        style={styles.panelSubtitle}
+      >
         CASOS FRECUENTES
       </CustomText>
 
-      {enfermedadesFrecuentes.length === 0 && parasitosFrecuentes.length === 0 ? (
+      {enfermedadesFrecuentes.length === 0 &&
+      parasitosFrecuentes.length === 0 ? (
         <EmptyMessage text="No hay casos sanitarios registrados." />
       ) : (
         <>
@@ -118,20 +174,39 @@ function CasosSanitariosPanel({ resumenEnfermedades, resumenParasitologia, regis
             const cantidad = obtenerCantidadFrecuente(item);
 
             return (
-              <View key={item.id ?? `enfermedad-${item.enfermedad ?? item.valor ?? index}`} style={styles.diseaseRow}>
+              <View
+                key={
+                  item.id ??
+                  `enfermedad-${item.enfermedad ?? item.valor ?? index}`
+                }
+                style={styles.diseaseRow}
+              >
                 <View style={styles.diseaseDotRed} />
 
                 <View style={styles.rowContent}>
-                  <CustomText size={15} weight="700" color={COLORS.textSecondary} numberOfLines={1}>
+                  <CustomText
+                    size={15}
+                    weight="700"
+                    color={COLORS.textSecondary}
+                    numberOfLines={1}
+                  >
                     {nombre}
                   </CustomText>
                 </View>
 
-                <CustomText size={15} weight="800" color={COLORS.textSecondary}>
+                <CustomText
+                  size={15}
+                  weight="800"
+                  color={COLORS.textSecondary}
+                >
                   {cantidad}
                 </CustomText>
 
-                <CustomText size={12} color={COLORS.textTertiary} style={styles.caseText}>
+                <CustomText
+                  size={12}
+                  color={COLORS.textTertiary}
+                  style={styles.caseText}
+                >
                   {cantidad === 1 ? "caso" : "casos"}
                 </CustomText>
               </View>
@@ -143,20 +218,39 @@ function CasosSanitariosPanel({ resumenEnfermedades, resumenParasitologia, regis
             const cantidad = obtenerCantidadFrecuente(item);
 
             return (
-              <View key={item.id ?? `parasito-${item.parasito ?? item.valor ?? index}`} style={styles.diseaseRow}>
+              <View
+                key={
+                  item.id ??
+                  `parasito-${item.parasito ?? item.valor ?? index}`
+                }
+                style={styles.diseaseRow}
+              >
                 <View style={styles.diseaseDotViolet} />
 
                 <View style={styles.rowContent}>
-                  <CustomText size={15} weight="700" color={COLORS.textSecondary} numberOfLines={1}>
+                  <CustomText
+                    size={15}
+                    weight="700"
+                    color={COLORS.textSecondary}
+                    numberOfLines={1}
+                  >
                     {nombre}
                   </CustomText>
                 </View>
 
-                <CustomText size={15} weight="800" color={COLORS.textSecondary}>
+                <CustomText
+                  size={15}
+                  weight="800"
+                  color={COLORS.textSecondary}
+                >
                   {cantidad}
                 </CustomText>
 
-                <CustomText size={12} color={COLORS.textTertiary} style={styles.caseText}>
+                <CustomText
+                  size={12}
+                  color={COLORS.textTertiary}
+                  style={styles.caseText}
+                >
                   {cantidad === 1 ? "caso" : "casos"}
                 </CustomText>
               </View>
@@ -165,7 +259,11 @@ function CasosSanitariosPanel({ resumenEnfermedades, resumenParasitologia, regis
         </>
       )}
 
-      <CustomText size={13} color={COLORS.textTertiary} style={styles.panelSubtitleSecondary}>
+      <CustomText
+        size={13}
+        color={COLORS.textTertiary}
+        style={styles.panelSubtitleSecondary}
+      >
         ULTIMOS CASOS
       </CustomText>
 
@@ -177,18 +275,39 @@ function CasosSanitariosPanel({ resumenEnfermedades, resumenParasitologia, regis
           const finca = obtenerTextoSeguro(caso.finca, "Sin finca");
           const estanque = obtenerTextoSeguro(caso.estanque, "Sin estanque");
           const severidad = obtenerTextoSeguro(caso.severidad);
-          const severidadNombre = obtenerTextoSeguro(caso.severidadNombre, severidad);
+          const severidadNombre = obtenerTextoSeguro(
+            caso.severidadNombre,
+            severidad
+          );
+          const tipo = obtenerTextoSeguro(caso.tipo, "enfermedad");
 
           return (
-            <View key={caso.id ?? `caso-sanitario-${index}`} style={styles.caseRow}>
-              <Icon icon={ICONS.alertTriangle} size={20} color={COLORS.warning} />
+            <View
+              key={caso.id ?? `caso-sanitario-${index}`}
+              style={styles.caseRow}
+            >
+              <Icon
+                icon={ICONS.alertTriangle}
+                size={20}
+                color={COLORS.warning}
+              />
 
               <View style={styles.rowContent}>
-                <CustomText size={15} weight="700" color={COLORS.textSecondary} numberOfLines={1}>
+                <CustomText
+                  size={15}
+                  weight="700"
+                  color={COLORS.textSecondary}
+                  numberOfLines={1}
+                >
                   {nombre}
                 </CustomText>
 
-                <CustomText size={12} color={COLORS.textTertiary} style={styles.rowDescription} numberOfLines={1}>
+                <CustomText
+                  size={12}
+                  color={COLORS.textTertiary}
+                  style={styles.rowDescription}
+                  numberOfLines={1}
+                >
                   {estanque} · {finca}
                 </CustomText>
 
@@ -197,10 +316,26 @@ function CasosSanitariosPanel({ resumenEnfermedades, resumenParasitologia, regis
                 </CustomText>
               </View>
 
-              <View style={obtenerEstiloSeveridad(severidad)}>
-                <CustomText size={12} weight="700" color={obtenerColorSeveridad(severidad)}>
-                  {severidadNombre}
-                </CustomText>
+              <View style={styles.caseBadges}>
+                <View style={obtenerEstiloTipo(tipo)}>
+                  <CustomText
+                    size={12}
+                    weight="700"
+                    color={obtenerColorTipo(tipo)}
+                  >
+                    {obtenerNombreTipo(tipo)}
+                  </CustomText>
+                </View>
+
+                <View style={obtenerEstiloSeveridad(severidad)}>
+                  <CustomText
+                    size={12}
+                    weight="700"
+                    color={obtenerColorSeveridad(severidad)}
+                  >
+                    {severidadNombre}
+                  </CustomText>
+                </View>
               </View>
             </View>
           );
@@ -211,12 +346,18 @@ function CasosSanitariosPanel({ resumenEnfermedades, resumenParasitologia, regis
 }
 
 function MortalidadPanel({ resumenEnfermedades, registrosEnfermedades }) {
-  const registrosMortalidad = obtenerRegistrosMortalidad(registrosEnfermedades);
+  const registrosMortalidad =
+    obtenerRegistrosMortalidad(registrosEnfermedades);
+
   const totalMortalidad = obtenerMortalidadTotal(resumenEnfermedades);
 
   return (
     <Card style={styles.detailCard}>
-      <SectionHeader icon={ICONS.mortality} title="Mortalidad registrada" color={COLORS.error} />
+      <SectionHeader
+        icon={ICONS.mortality}
+        title="Mortalidad registrada"
+        color={COLORS.error}
+      />
 
       <View style={styles.divider} />
 
@@ -234,7 +375,11 @@ function MortalidadPanel({ resumenEnfermedades, registrosEnfermedades }) {
         </View>
       </View>
 
-      <CustomText size={13} color={COLORS.textTertiary} style={styles.panelSubtitleSecondary}>
+      <CustomText
+        size={13}
+        color={COLORS.textTertiary}
+        style={styles.panelSubtitleSecondary}
+      >
         POR ESTANQUE
       </CustomText>
 
@@ -242,20 +387,39 @@ function MortalidadPanel({ resumenEnfermedades, registrosEnfermedades }) {
         <EmptyMessage text="No hay mortalidad registrada en enfermedades." />
       ) : (
         registrosMortalidad.map(function (item, index) {
-          const estanque = obtenerTextoSeguro(item.estanque, "Sin estanque");
+          const estanque = obtenerTextoSeguro(
+            item.estanque,
+            "Sin estanque"
+          );
           const finca = obtenerTextoSeguro(item.finca, "Sin finca");
-          const nombre = obtenerTextoSeguro(item.nombre, "Enfermedad registrada");
+          const nombre = obtenerTextoSeguro(
+            item.nombre,
+            "Enfermedad registrada"
+          );
 
           return (
-            <View key={item.id ?? `mortalidad-${index}`} style={styles.mortalityRow}>
+            <View
+              key={item.id ?? `mortalidad-${index}`}
+              style={styles.mortalityRow}
+            >
               <Icon icon={ICONS.shrimp} size={18} color={COLORS.error} />
 
               <View style={styles.rowContent}>
-                <CustomText size={15} weight="700" color={COLORS.textSecondary} numberOfLines={1}>
+                <CustomText
+                  size={15}
+                  weight="700"
+                  color={COLORS.textSecondary}
+                  numberOfLines={1}
+                >
                   {estanque} · {finca}
                 </CustomText>
 
-                <CustomText size={12} color={COLORS.textTertiary} style={styles.rowDescription} numberOfLines={1}>
+                <CustomText
+                  size={12}
+                  color={COLORS.textTertiary}
+                  style={styles.rowDescription}
+                  numberOfLines={1}
+                >
                   {nombre} · {formatearFechaCorta(item.fecha)}
                 </CustomText>
               </View>
@@ -277,9 +441,18 @@ function MortalidadPanel({ resumenEnfermedades, registrosEnfermedades }) {
   );
 }
 
-export default function DashboardSanidadPanel({ tipo, resumenEnfermedades, resumenParasitologia, registrosEnfermedades, registrosParasitologia }) {
+export default function DashboardSanidadPanel({
+  tipo,
+  resumenEnfermedades,
+  resumenParasitologia,
+  registrosEnfermedades,
+  registrosParasitologia,
+}) {
   return tipo === "mortalidad" ? (
-    <MortalidadPanel resumenEnfermedades={resumenEnfermedades} registrosEnfermedades={registrosEnfermedades} />
+    <MortalidadPanel
+      resumenEnfermedades={resumenEnfermedades}
+      registrosEnfermedades={registrosEnfermedades}
+    />
   ) : (
     <CasosSanitariosPanel
       resumenEnfermedades={resumenEnfermedades}
