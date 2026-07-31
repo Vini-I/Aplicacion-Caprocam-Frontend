@@ -7,7 +7,7 @@ export const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: COLORS.white
     },
-    
+
     headerRow: {
         flexDirection: "row",
         alignItems: "center",
@@ -23,7 +23,7 @@ export const styles = StyleSheet.create({
 
     filterTitle: {
         fontFamily: TYPOGRAPHY.fontFamily.bold,
-    },  
+    },
 
     icon: {
         marginRight: 8
@@ -44,7 +44,7 @@ export const styles = StyleSheet.create({
         justifyContent: "space-between",
         alignItems: "center",
         gap: 16,
-    },  
+    },
 
     inputItem: {
         flex: 1,
@@ -80,76 +80,6 @@ export const styles = StyleSheet.create({
         textAlign: "center",
         color: COLORS.textTertiary,
         lineHeight: 20,
-    },
+    }
 
-
-
-    inputItemFull: {
-        width: "100%",
-    },
-
-    recordCard: {
-        borderWidth: 1,
-        borderColor: COLORS.secondary,
-        backgroundColor: COLORS.surface,
-        borderRadius: 14,
-        padding: 14,
-        marginTop: 12,
-    },
-
-    recordHeader: {
-        flexDirection: "row",
-        alignItems: "center",
-        marginBottom: 12,
-    },
-
-    recordIconBox: {
-        width: 36,
-        height: 36,
-        borderRadius: 10,
-        backgroundColor: COLORS.primaryLight,
-        alignItems: "center",
-        justifyContent: "center",
-        marginRight: 10,
-    },
-
-    recordHeaderText: {
-        flex: 1,
-    },
-
-    recordType: {
-        fontSize: 12,
-        color: COLORS.textTertiary,
-    },
-
-    recordTitle: {
-        fontSize: 15,
-        fontFamily: TYPOGRAPHY.fontFamily.bold,
-        color: COLORS.textSecondary,
-    },
-
-    recordInfoRow: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        marginBottom: 6,
-    },
-
-    recordLabel: {
-        color: COLORS.textTertiary,
-        fontFamily: TYPOGRAPHY.fontFamily.medium,
-    },
-
-    recordValue: {
-        color: COLORS.textSecondary,
-        fontFamily: TYPOGRAPHY.fontFamily.regular,
-        textAlign: "right",
-        flex: 1,
-        marginLeft: 10,
-    },
-
-    recordDetail: {
-        marginTop: 8,
-        color: COLORS.textTertiary,
-        lineHeight: 20,
-    },
 })
