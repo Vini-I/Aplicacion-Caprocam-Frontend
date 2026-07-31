@@ -177,6 +177,7 @@ export default function TrazabilidadForm({
           label="Días de siembra *"
           value={formData.dias}
           onChangeText={(value) => onChange("dias", value)}
+          editable={!plAutocompletado}
           min={0}
           max={365}
           step={1}
@@ -199,7 +200,7 @@ export default function TrazabilidadForm({
         />
         {plAutocompletado && (
           <Text style={styles.plNote}>
-            Valor autocompletado desde la siembra del estanque de origen.
+            PL y días autocompletados desde la siembra activa del estanque de origen.
           </Text>
         )}
       </Card>

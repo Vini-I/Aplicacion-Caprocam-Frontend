@@ -31,6 +31,8 @@ import { useRouter } from "expo-router";
 import { initialForm } from "../screens/TrazabilidadData";
 import {
   obtenerEstanquesPorFinca,
+  obtenerEstanquesPreCriaPorFinca,
+  obtenerEstanquesEngordePorFinca,
   obtenerFincas,
   obtenerColaboradorSesion,
   obtenerSiembraPorEstanque,
@@ -53,6 +55,7 @@ export function useTrazabilidad() {
   const [plAutocompletado, setPlAutocompletado] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [mostrarAlerta, setMostrarAlerta] = useState(false);
+  const [fincas, setFincas] = useState([]);
 
   const timerAlertaRef = useRef(null);
 
@@ -68,16 +71,24 @@ export function useTrazabilidad() {
 
   function manejarCambio(field, value) {
     if (field === "estanqueOrigenId") {
-      const siembra = obtenerSiembraPorEstanque(value);
-
       setFormData((previousData) => ({
         ...previousData,
         [field]: value,
-        pl: siembra ? String(siembra.cantidadSembrada ?? "") : "",
       }));
-
-      setPlAutocompletado(Boolean(siembra));
       setMensajeError("");
+
+      const requestId = ++siembraRequestIdRef.current;
+
+      obtenerSiembraActivaPorEstanque(value).then((siembra) => {
+        if (siembraRequestIdRef.current !== requestId) return; // respuesta obsoleta
+
+        setFormData((previousData) => ({
+          ...previousData,
+          pl: siembra ? String(siembra.pl_siembra ?? "") : "",
+          dias: siembra ? String(siembra.dias ?? "") : "",
+        }));
+        setPlAutocompletado(Boolean(siembra));
+      });
       return;
     }
 
@@ -89,12 +100,15 @@ export function useTrazabilidad() {
   }
 
   function manejarCambioFinca(value) {
+    siembraRequestIdRef.current += 1; // invalida cualquier consulta de siembra en vuelo
+
     setFormData((previousData) => ({
       ...previousData,
       fincaId: value,
       estanqueOrigenId: "",
       estanqueDestinoId: "",
       pl: "",
+      dias: "",
     }));
 
     setPlAutocompletado(false);
@@ -157,7 +171,7 @@ export function useTrazabilidad() {
     return true;
   }
 
-  function manejarEnvio() {
+  async function manejarEnvio() {
     setSubmitted(true);
 
     const esValido = validarFormulario();
@@ -166,7 +180,17 @@ export function useTrazabilidad() {
       return;
     }
 
-    crearRegistroTrazabilidad(formData);
+    try {
+      await crearRegistroTrazabilidad(formData);
+    } catch (error) {
+      const mensajeApi = error?.response?.data?.message;
+      setMensajeError(
+        error?.response?.status === 400 && mensajeApi
+          ? mensajeApi
+          : "No se pudo guardar el registro. Intenta de nuevo."
+      );
+      return;
+    }
     setMensajeError("");
     setMostrarAlerta(true);
 

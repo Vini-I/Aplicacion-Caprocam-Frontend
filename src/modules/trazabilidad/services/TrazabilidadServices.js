@@ -4,31 +4,103 @@
  * ============================================================
  *
  * Descripción:
- * Implementa funciones de consulta y filtrado de registros de
- * trazabilidad. Actualmente usa datos locales en memoria como
- * placeholder hasta integrar con un backend.
+ * Consulta y registro de movimientos de trazabilidad contra la API.
+ * Estanques por finca y siembra activa siguen locales porque
+ * dependen de otros módulos (finca y siembra) que todavía no
+ * exponen esos endpoints.
  *
  * Funcionalidad principal:
- * - `obtenerRegistrosTrazabilidad`, `obtenerRegistroTrazabilidadPorId`,
- *   `filtrarRegistrosTrazabilidad`, `agregarRegistroTrazabilidad`,
- *   `obtenerFincas`, `obtenerEstanquesPorFinca`, `obtenerSiembraPorEstanque`, `obtenerColaboradores`.
+ * - `getRegistros`, `getRegistroPorId`, `crearRegistro`, `toggleActivoRegistro`,
+ *   `filtrarRegistrosTrazabilidad`, `obtenerFincas`, `obtenerEstanquesPorFinca`,
+ *   `obtenerTodosLosEstanques`, `obtenerSiembraPorEstanque`, `obtenerColaboradores`.
  *
  * Restricciones del proyecto:
- * - Reemplazar la implementación por llamadas a la API cuando el
- *   backend esté disponible, asegurando manejo de errores y tests.
+ * - No modificar los módulos de finca/colaboradores/siembra, solo
+ *   se consumen sus servicios.
  */
 
-import { registrosTrazabilidad } from "../screens/TrazabilidadData";
-import { obtenerSiembras } from "../../siembra/services/SiembraService";
+import api, { obtenerColaboradorIdDesdeToken } from "../../../api/api";
+import { fincaService } from "../../finca/services/finca.service";
+import { colaboradorService } from "../../colaboradores/services/colaborador.service";
 
-let registros = [...registrosTrazabilidad];
-
-export function obtenerRegistrosTrazabilidad() {
-  return registros;
+function obtenerValor(estanque, campos) {
+  for (const campo of campos) {
+    const valor = estanque?.[campo];
+    if (valor !== undefined && valor !== null && valor !== "") {
+      return valor;
+    }
+  }
+  return undefined;
 }
 
-export function obtenerRegistroTrazabilidadPorId(id) {
-  return registros.find((registro) => registro.id === id);
+function normalizarEstanque(estanque) {
+  const id = obtenerValor(estanque, ["id", "estanqueId"]);
+  const fincaId = obtenerValor(estanque, ["idFinca", "fincaId", "finca_id"]);
+  const codigo = obtenerValor(estanque, ["codigo", "codigoEstanque"]);
+  const tipoEstanque = obtenerValor(estanque, ["tipoEstanque", "tipo_estanque", "tipo"]);
+  const estado = obtenerValor(estanque, ["estado", "estadoEstanque"]);
+  const usaPrecria = obtenerValor(estanque, ["precria", "usa_precria", "usaPrecria"]);
+
+  return {
+    ...estanque,
+    id,
+    fincaId,
+    finca_id: fincaId,
+    codigo,
+    tipoEstanque,
+    tipo_estanque: tipoEstanque,
+    estado,
+    precria: usaPrecria,
+    usa_precria: usaPrecria,
+  };
+}
+
+function mapearEstanquesAOptions(estanques) {
+  return (estanques ?? [])
+    .map(normalizarEstanque)
+    .map((estanque) => ({
+      label: `${estanque.codigo ?? "Estanque"} (${estanque.tipoEstanque ?? ""})`,
+      value: estanque.id,
+      raw: estanque,
+    }));
+}
+
+function esEstanquePreCria(estanque) {
+  const raw = estanque?.precria ?? estanque?.usa_precria ?? estanque?.usaPrecria ?? "";
+  const val = String(raw).trim().toLowerCase();
+  if (val === "si" || val === "yes" || val === "true" || val === "1") return true;
+  // also accept numeric 1
+  if (Number(raw) === 1) return true;
+  return false;
+}
+
+export async function getRegistros() {
+  try {
+    const response = await api.get("/registrosTrazabilidad");
+    return response.data.data;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function getRegistroPorId(id) {
+  try {
+    const response = await api.get(`/registrosTrazabilidad/${id}`);
+    const registro = response.data.data;
+
+    // El backend (trazabilidad.model.js) solo devuelve IDs crudos
+    // (fincaId, estanqueOrigenId, estanqueDestinoId, colaboradorId).
+    // Como no se toca el backend, se cruzan los IDs con nombres aquí.
+    const [fincas, colaboradores, estanques] = await Promise.all([
+      obtenerFincas().catch(() => []),
+      obtenerColaboradores().catch(() => []),
+      obtenerTodosLosEstanques().catch(() => []),
+    ]);
+
+    return enriquecerRegistro(registro, construirMapas({ fincas, colaboradores, estanques }));
+  } catch (error) {
+    throw error;
+  }
 }
 
 export function filtrarRegistrosTrazabilidad(registros, texto, filtros) {
@@ -48,6 +120,9 @@ export function filtrarRegistrosTrazabilidad(registros, texto, filtros) {
 
     const coincideFiltros =
       (filtros.fincas.length === 0 || filtros.fincas.includes(registro.fincaId)) &&
+      ((filtros.estanques ?? []).length === 0 ||
+        filtros.estanques.includes(registro.estanqueOrigenId) ||
+        filtros.estanques.includes(registro.estanqueDestinoId)) &&
       (filtros.colaboradores.length === 0 ||
         filtros.colaboradores.includes(registro.colaboradorId)) &&
       (filtros.fecha === "" || registro.fecha === filtros.fecha);
@@ -56,56 +131,159 @@ export function filtrarRegistrosTrazabilidad(registros, texto, filtros) {
   });
 }
 
-export function agregarRegistroTrazabilidad(registro) {
-  registros = [registro, ...registros];
-
-  return registro;
-}
-
-export function obtenerFincas() {
-  return [
-    { label: "Finca Camarón de Occidente", value: "laReina" },
-    { label: "Finca Camarón del Sur", value: "laEsperanza" },
-    { label: "Finca Camarón del Norte", value: "laVilla" },
-  ];
-}
-
-export function obtenerEstanquesPorFinca(fincaId) {
-  const estanquesPorFinca = {
-    laReina: [
-      { label: "Estanque P-01 (Pre-cría)", value: "A01" },
-      { label: "Estanque P-02 (Pre-cría)", value: "A02" },
-      { label: "Estanque E-08 (Engorde)", value: "B01" },
-      { label: "Estanque E-09 (Engorde)", value: "B02" },
-    ],
-    laEsperanza: [
-      { label: "Estanque P-03 (Pre-cría)", value: "P-03" },
-      { label: "Estanque E-02 (Engorde)", value: "E-02" },
-      { label: "Estanque E-03 (Engorde)", value: "E-03" },
-    ],
-    laVilla: [
-      { label: "Estanque P-04 (Pre-cría)", value: "P-04" },
-      { label: "Estanque E-05 (Engorde)", value: "E-05" },
-    ],
-  };
-
-  return estanquesPorFinca[fincaId] || [];
-}
-
-export function obtenerSiembraPorEstanque(estanqueId) {
-  if (!estanqueId) return null;
-
-  const siembras = obtenerSiembras();
-
-  function normalize(text) {
-    return String(text ?? "").replace(/[^A-Za-z0-9]/g, "").toUpperCase();
+export async function crearRegistro(datos) {
+  try {
+    const response = await api.post("/registrosTrazabilidad", datos);
+    return response.data.data;
+  } catch (error) {
+    throw error;
   }
+}
 
-  const objetivo = normalize(estanqueId);
+export async function toggleActivoRegistro(id) {
+  try {
+    const response = await api.put(`/registrosTrazabilidad/${id}/activo`);
+    return response.data.data;
+  } catch (error) {
+    throw error;
+  }
+}
 
-  const siembra = siembras.find((s) => normalize(s.estanque) === objetivo);
+export async function obtenerFincas() {
+  const fincas = await fincaService.getFincas();
+  return fincas.map((finca) => ({ label: finca.nombreFinca, value: finca.id }));
+}
 
-  return siembra ?? null;
+export async function obtenerEstanquesPorFinca(fincaId) {
+  if (!fincaId) return [];
+  try {
+    const response = await api.get('/estanques');
+    const estanques = (response.data.data ?? []).map(normalizarEstanque);
+    return mapearEstanquesAOptions(
+      estanques.filter((estanque) => String(estanque.fincaId ?? estanque.finca_id) === String(fincaId)),
+    );
+  } catch (error) {
+    return [];
+  }
+}
+
+export async function obtenerEstanquesPreCriaPorFinca(fincaId) {
+  if (!fincaId) return [];
+  try {
+    const response = await api.get('/estanques');
+    const estanques = (response.data.data ?? []).map(normalizarEstanque);
+    return mapearEstanquesAOptions(
+      estanques.filter((estanque) => {
+        const fincaCoincide = String(estanque.fincaId ?? estanque.finca_id) === String(fincaId);
+        const esPrecria = esEstanquePreCria(estanque);
+        return fincaCoincide && esPrecria;
+      }),
+    );
+  } catch (error) {
+    return [];
+  }
+}
+
+export async function obtenerEstanquesEngordePorFinca(fincaId) {
+  if (!fincaId) return [];
+  try {
+    const response = await api.get('/estanques');
+    const estanques = (response.data.data ?? []).map(normalizarEstanque);
+    return mapearEstanquesAOptions(
+      estanques.filter((estanque) => {
+        const fincaCoincide = String(estanque.fincaId ?? estanque.finca_id) === String(fincaId);
+        const esEngorde = String(estanque.estado ?? "").toLowerCase() === "engorde";
+        return fincaCoincide && esEngorde;
+      }),
+    );
+  } catch (error) {
+    return [];
+  }
+}
+
+export async function obtenerTodosLosEstanques() {
+  // El backend no filtra por finca (idFinca se ignora en
+  // estanques.routes.js), así que se trae todo y se cruza
+  // por ID en el cliente. Usado para enriquecer los registros
+  // de trazabilidad (listado y detalle).
+  try {
+    const response = await api.get('/estanques');
+    return (response.data.data ?? []).map((estanque) => ({
+      label: `${estanque.codigo} (${estanque.tipoEstanque})`,
+      value: estanque.id,
+    }));
+  } catch (error) {
+    return [];
+  }
+}
+
+// Trae la siembra activa del estanque de origen para precargar PL y
+// días de cultivo en el formulario de Trazabilidad. Usa el endpoint
+// real de Siembra (GET /siembras/activa?estanqueId=), NO el mock de
+// SiembraService.js -- ese mock sigue vivo solo para el módulo de
+// Siembra, que aún no se conecta a la API (fuera de alcance aquí, no
+// se toca ese módulo).
+// Devuelve null si el estanque no tiene siembra activa (404 esperado,
+// no es un error real) o si no se pudo consultar.
+export async function obtenerSiembraActivaPorEstanque(estanqueId) {
+  if (!estanqueId) return null;
+  try {
+    const response = await api.get("/siembras/activa", {
+      params: { estanqueId },
+    });
+    return response.data.data ?? null;
+  } catch (error) {
+    if (error?.response?.status === 404) return null;
+    return null;
+  }
+}
+
+export async function obtenerColaboradores() {
+  const colaboradores = await colaboradorService.getColaboradores();
+  return colaboradores.map((colaborador) => ({
+    label: [colaborador.nombre, colaborador.apellidos].filter(Boolean).join(" "),
+    value: colaborador.id,
+  }));
+}
+
+export function obtenerColaboradorSesion() {
+  return { label: "Cargando...", value: 1 };
+}
+
+export async function obtenerColaboradorSesionActual() {
+  // El id ya no está fijo: se decodifica del token JWT actual
+  // (ver obtenerColaboradorIdDesdeToken en src/api/api.js).
+  const colaboradorId = await obtenerColaboradorIdDesdeToken();
+  try {
+    const colaborador = await colaboradorService.getColaboradorById(colaboradorId);
+    const nombreCompleto = [colaborador?.nombre, colaborador?.apellidos]
+      .filter(Boolean)
+      .join(" ");
+    return { label: nombreCompleto || `Colaborador ${colaboradorId}`, value: colaboradorId };
+  } catch (error) {
+    return { label: `Colaborador ${colaboradorId}`, value: colaboradorId };
+  }
+}
+
+/**
+ * ------------------------------------------------------------
+ * Enriquecimiento de registros (cruce de IDs a nombres)
+ * ------------------------------------------------------------
+ * El backend (trazabilidad.model.js -> mapearFila) solo devuelve
+ * IDs crudos (fincaId, estanqueOrigenId, estanqueDestinoId, colaboradorId). Como no se toca
+ * el backend, se cruzan los IDs con nombres aquí.
+ */
+
+export function construirMapas({ fincas = [], colaboradores = [], estanques = [] } = {}) {
+  const fincasMap = new Map(fincas.map((f) => [f.value, f.label]));
+  const colaboradoresMap = new Map(colaboradores.map((c) => [c.value, c.label]));
+  const estanquesMap = new Map(estanques.map((e) => [e.value, e.label]));
+
+  return {
+    fincasMap,
+    colaboradoresMap,
+    estanquesMap,
+  };
 }
 
 export function obtenerColaboradores() {

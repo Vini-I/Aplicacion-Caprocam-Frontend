@@ -239,6 +239,14 @@ export default function ProductForm() {
             />
           )}
 
+          {!!errorGuardado && (
+            <Alert
+              variant="danger"
+              message={errorGuardado}
+              style={styles.alertBox}
+            />
+          )}
+
           {guardadoExitoso && (
             <Alert
               variant="success"

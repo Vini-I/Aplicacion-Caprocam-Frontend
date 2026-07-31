@@ -63,7 +63,8 @@ export const styles = StyleSheet.create({
     margin: 0,
     marginTop: 0,
     borderRadius: 0,
-    
+    borderWidth: 0,
+    borderColor: "transparent",
   },
 
   card: {
@@ -102,7 +103,7 @@ export const styles = StyleSheet.create({
 
   movimiento: {
     flexDirection: "row",
-    justifyContent: "flex-start",
+    justifyContent: "space-around",
     alignItems: "center",
     gap: 3,
     marginBottom: 16,
