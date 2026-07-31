@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import  obtenerDetalleReporte  from "../services/detalleReporte.service";
+import  {obtenerDetalleReporte}  from "../services/detalleReporte.service";
 
 import { fincaService } from "../../finca/services/finca.service.js";
 import { estanqueService } from "../../estanques/services/estanque.service.js";
@@ -13,7 +13,8 @@ export function useDetalleReporte() {
   const [estanque, setEstanque] = useState(null);
   
   const [fincas, setFincas] = useState([]); 
-  const [estanques, setEstanques] = useState([]);   
+  const [estanques, setEstanques] = useState([]);  
+  const [estanquesFiltrados, setEstanquesFiltrados] = useState([]);
 
   const [registros, setRegistros] = useState([]);
 
@@ -44,7 +45,8 @@ export function useDetalleReporte() {
 
         const estanquesOptions = estanquesData.map((estanque) => ({
           label: estanque.codigo, 
-          value: estanque.id
+          value: estanque.id,
+          fincaId: estanque.idFinca,
         }));
 
         if (activo) {
@@ -68,6 +70,27 @@ export function useDetalleReporte() {
       activo = false;
     };
   }, []);
+
+  useEffect(() => {
+
+    if (!finca) {
+      setEstanquesFiltrados([]);
+      setEstanque(null);
+      return;
+    }
+
+
+    const filtrados = estanques.filter(
+      (item) => item.fincaId == finca
+    );
+
+
+    setEstanquesFiltrados(filtrados);
+
+    setEstanque(null);
+
+
+  }, [finca, estanques]);
 
   useEffect(() => {
     let activo = true;
@@ -120,6 +143,7 @@ export function useDetalleReporte() {
 
     fincas, 
     estanques,
+    estanquesFiltrados,
 
     registros,
     loading,

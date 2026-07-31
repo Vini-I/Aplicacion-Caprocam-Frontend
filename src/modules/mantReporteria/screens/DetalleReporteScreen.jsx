@@ -33,7 +33,7 @@ export default function DetalleReporteScreen() {
     estanque,
 
     fincas, 
-    estanques,
+    estanquesFiltrados,
 
     registros,
     loading,
@@ -97,7 +97,7 @@ export default function DetalleReporteScreen() {
                   <Select
                     label="Seleccione Estanque"
                     placeholder="Todos los estanques"
-                    options={estanques}
+                    options={estanquesFiltrados}
                     value={estanque}
                     onChange={setEstanque}
                   />

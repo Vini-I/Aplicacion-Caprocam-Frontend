@@ -1,21 +1,19 @@
-export async function obtenerDetalleRegistro({
+import { getCrecimiento } from "../../mantCrecimiento/services/mantCrecimiento.service";
+
+export async function obtenerDetalleReporte({
   tipoRegistro,
   fincaId,
   estanqueId,
 }) {
 
-  /*
-     Aquí irá después:
+  switch(tipoRegistro){
+    case "crecimiento": 
+      return getCrecimiento({
+        fincaId,
+        estanqueId
+      })
+    default: 
+      return [];
+  }
 
-     GET /api/registros/detalle
-
-     Params:
-
-     tipoRegistro
-     fincaId
-     estanqueId
-
- */
-
-  return [];
 }
