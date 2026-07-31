@@ -16,8 +16,8 @@ import { TYPOGRAPHY } from "../../../theme/typography";
 
 export const styles = StyleSheet.create({
   scrollContent: {
-    paddingVertical: 28,
-    paddingBottom: 40,
+    paddingVertical: 20,
+    paddingBottom: 100,
   },
 
   infoBanner: {
@@ -32,31 +32,44 @@ export const styles = StyleSheet.create({
     backgroundColor: COLORS.primary,
   },
 
-  createButton: {
+  floatingButtonContainer: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 10,
+    paddingHorizontal: 16,
+    paddingTop: 10,
+    paddingBottom: 18,
     backgroundColor: COLORS.white,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.secondary,
+    alignItems: "center",
+  },
+
+  fullButton: {
     width: "100%",
+    maxWidth: 900,
     height: 56,
     borderRadius: 14,
-    borderWidth: 1,
-    borderColor: COLORS.primary,
-    marginTop: 24,
-    marginBottom: 20,
     alignItems: "center",
     justifyContent: "center",
+    margin: 0,
+    paddingHorizontal: 16,
+    paddingVertical: 0,
+    alignSelf: "center",
   },
 
-  createButtonContent: {
+  btnContent: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    gap: 10,
   },
 
-  createButtonText: {
+  btnText: {
+    marginLeft: 8,
+    fontSize: 16,
+    fontFamily: TYPOGRAPHY.fontFamily.medium,
     color: COLORS.primary,
-    fontSize: 18,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    fontWeight: "700",
   },
 
   alertBox: {
@@ -66,5 +79,13 @@ export const styles = StyleSheet.create({
   alertText: {
     textAlign: "center",
     fontWeight: "bold",
+  },
+  infoAlertText: {
+    color: COLORS.white,
+    textAlign: "center",
+  },
+  errorAlertText: {
+    color: COLORS.error,
+    textAlign: "center",
   },
 });

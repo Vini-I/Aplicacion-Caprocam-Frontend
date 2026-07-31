@@ -45,11 +45,12 @@ import Title from "../../../shared/components/Title";
 import Text from "../../../shared/components/Text";
 import Badge from "../../../shared/components/Badge";
 import Input from "../../../shared/components/Input";
+import FilterChip from "../../../shared/components/FilterChip";
 import { useFilterButton } from "../hooks/useFilterButton";
 
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
-import { styles, sectionStyles, chipStyles } from "../styles/FilterButtonStyles";
+import { styles, sectionStyles } from "../styles/FilterButtonStyles";
 
 export default function FilterButton({
   fincas = [],
@@ -140,10 +141,10 @@ export default function FilterButton({
           {fincas.length > 0 && (
             <FilterSection label="Finca">
               {fincas.map((finca) => (
-                <Chip
+                <FilterChip
                   key={finca.value}
                   label={finca.label}
-                  selected={pendingFincas.includes(finca.value)}
+                  active={pendingFincas.includes(finca.value)}
                   onPress={() => toggleFinca(finca.value)}
                 />
               ))}
@@ -153,10 +154,10 @@ export default function FilterButton({
           {estanquesDisponibles.length > 0 && (
             <FilterSection label="Estanque">
               {estanquesDisponibles.map((estanque) => (
-                <Chip
+                <FilterChip
                   key={estanque.value}
                   label={estanque.label}
-                  selected={pendingEstanques.includes(estanque.value)}
+                  active={pendingEstanques.includes(estanque.value)}
                   onPress={() => toggleEstanque(estanque.value)}
                 />
               ))}
@@ -166,10 +167,10 @@ export default function FilterButton({
           {colaboradores.length > 0 && (
             <FilterSection label="Responsable">
               {colaboradores.map((colaborador) => (
-                <Chip
+                <FilterChip
                   key={colaborador.value}
                   label={colaborador.label}
-                  selected={pendingColaboradores.includes(colaborador.value)}
+                  active={pendingColaboradores.includes(colaborador.value)}
                   onPress={() => toggleColaborador(colaborador.value)}
                 />
               ))}
@@ -213,24 +214,6 @@ function FilterSection({ label, children }) {
       </Text>
       <View style={sectionStyles.chipsRow}>{children}</View>
     </View>
-  );
-}
-
-function Chip({ label, selected, onPress }) {
-  return (
-    <Button
-      variant="outline"
-      onPress={onPress}
-      style={[chipStyles.chip, selected && chipStyles.chipSelected]}
-    >
-      <Text
-        size={13}
-        color={selected ? COLORS.primary : COLORS.textSecondary}
-        weight={selected ? "600" : "400"}
-      >
-        {label}
-      </Text>
-    </Button>
   );
 }
 

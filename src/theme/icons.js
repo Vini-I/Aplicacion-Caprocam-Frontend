@@ -88,6 +88,10 @@ export const ICONS = {
     provider: "FontAwesome",
     name: "filter",
   },
+  search: {
+    provider: "FontAwesome",
+    name: "search",
+  },
 
   // Estanques
   water: {

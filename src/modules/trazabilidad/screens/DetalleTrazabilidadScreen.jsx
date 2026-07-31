@@ -27,7 +27,6 @@ import { STYLE } from "../../../theme/style";
 import Card from "../../../shared/components/Card";
 import Badge from "../../../shared/components/Badge";
 import Input from "../../../shared/components/Input";
-import Select from "../../../shared/components/Select";
 
 
 import { getRegistroPorId } from "../services/TrazabilidadServices";
@@ -106,14 +105,11 @@ export default function DetalleTrazabilidadScreen() {
               labelStyle={styles.labelLectura}
             />
 
-            <Select
-              label="Colaborador responsable"
-              options={[
-                { label: registro.colaboradorNombre, value: registro.colaboradorId },
-              ]}
-              value={registro.colaboradorId}
-              disabled={true}
-              selectStyle={styles.inputLectura}
+            <Input
+              label={registro.tipoResponsable ? `${registro.tipoResponsable} responsable` : "Responsable"}
+              value={registro.colaboradorNombre || "N/A"}
+              editable={false}
+              style={styles.inputLectura}
               labelStyle={styles.labelLectura}
             />
           </Card>

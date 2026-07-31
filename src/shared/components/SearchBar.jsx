@@ -26,7 +26,7 @@ export default function SearchBar({
 }) {
   return (
     <View style={[styles.container, containerStyle]}>
-      <Icon icon={ICONS.filter} size={16} color={COLORS.textTertiary} />
+      <Icon icon={ICONS.search} size={16} color={COLORS.textTertiary} />
 
       <TextInput
         style={[styles.input, inputStyle]}

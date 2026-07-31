@@ -50,34 +50,60 @@ export function useTrazabilidad() {
 
   const [formData, setFormData] = useState(() => ({
     ...initialForm,
-    colaboradorId: colaboradorSesion.value,
+    colaboradorId: colaboradorSesion.colaboradorId ?? null,
   }));
   const [mensajeError, setMensajeError] = useState("");
   const [plAutocompletado, setPlAutocompletado] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [mostrarAlerta, setMostrarAlerta] = useState(false);
   const [fincas, setFincas] = useState([]);
 
-  const timerAlertaRef = useRef(null);
+  const [errorCarga, setErrorCarga] = useState("");
+  const [sesionExpirada, setSesionExpirada] = useState(false);
+
+  function mostrarErrorCarga(mensaje, error) {
+    if (error?.response?.status === 401) {
+      setSesionExpirada(true);
+      setErrorCarga("Tu sesión expiró. Debes iniciar sesión de nuevo.");
+      return;
+    }
+    setSesionExpirada(false);
+    setErrorCarga(mensaje);
+  }
+
+  function cerrarErrorCarga() {
+    setErrorCarga("");
+    setSesionExpirada(false);
+  }
+
+  function irALogin() {
+    cerrarErrorCarga();
+    router.replace("/login");
+  }
+
+  const timerErrorRef = useRef(null);
 
   useEffect(() => {
     return () => {
-      if (timerAlertaRef.current) clearTimeout(timerAlertaRef.current);
+      if (timerErrorRef.current) clearTimeout(timerErrorRef.current);
     };
   }, []);
 
   useEffect(() => {
-    obtenerFincas().then(setFincas).catch(() => setFincas([]));
+    obtenerFincas()
+      .then(setFincas)
+      .catch((error) => {
+        setFincas([]);
+        mostrarErrorCarga("No se pudieron cargar las fincas.", error);
+      });
   }, []);
 
-  // Resuelve el nombre real del colaborador de sesión contra la API
-  // (el id ya es correcto desde el montaje, esto solo actualiza el label).
+  // Resuelve el nombre/datos reales de la sesión actual (usuario o colaborador)
   useEffect(() => {
     let cancelado = false;
     obtenerColaboradorSesionActual().then((real) => {
       if (cancelado) return;
       setColaboradorSesion(real);
-      setFormData((previousData) => ({ ...previousData, colaboradorId: real.value }));
+      setFormData((previousData) => ({ ...previousData, colaboradorId: real.colaboradorId ?? null }));
     });
     return () => {
       cancelado = true;
@@ -107,12 +133,12 @@ export function useTrazabilidad() {
         setEstanquesOrigen(listaOrigen || []);
         setEstanquesDestino(listaDestino || []);
       })
-      .catch(() => {
+      .catch((error) => {
         if (!mounted) return;
         setEstanquesOrigen([]);
         setEstanquesDestino([]);
+        mostrarErrorCarga("No se pudieron cargar los estanques de la finca seleccionada.", error);
       });
-
     return () => {
       mounted = false;
     };
@@ -130,6 +156,10 @@ export function useTrazabilidad() {
         [field]: value,
       }));
       setMensajeError("");
+      if (timerErrorRef.current) {
+        clearTimeout(timerErrorRef.current);
+        timerErrorRef.current = null;
+      }
 
       const requestId = ++siembraRequestIdRef.current;
 
@@ -151,6 +181,10 @@ export function useTrazabilidad() {
       [field]: value,
     }));
     setMensajeError("");
+    if (timerErrorRef.current) {
+      clearTimeout(timerErrorRef.current);
+      timerErrorRef.current = null;
+    }
   }
 
   function manejarCambioFinca(value) {
@@ -167,6 +201,10 @@ export function useTrazabilidad() {
 
     setPlAutocompletado(false);
     setMensajeError("");
+    if (timerErrorRef.current) {
+      clearTimeout(timerErrorRef.current);
+      timerErrorRef.current = null;
+    }
   }
 
   function obtenerCamposVacios() {
@@ -175,7 +213,6 @@ export function useTrazabilidad() {
       "estanqueOrigenId",
       "estanqueDestinoId",
       "fecha",
-      "colaboradorId",
       "tamaño",
       "dias",
       "pl",
@@ -187,38 +224,30 @@ export function useTrazabilidad() {
   }
 
   function validarFormulario() {
-    if (obtenerCamposVacios().length > 0) {
-      setMensajeError("Debe completar todos los campos para registrar el movimiento.");
-      return false;
-    }
+    const mensaje =
+      obtenerCamposVacios().length > 0
+        ? "Debe completar todos los campos para registrar el movimiento."
+        : formData.estanqueOrigenId === formData.estanqueDestinoId
+          ? "El estanque de origen no puede ser igual al estanque de destino."
+          : Number(formData.tamaño) <= 0
+            ? "El tamaño debe ser un número mayor a 0."
+            : Number(formData.pl) <= 0
+              ? "El campo PL debe ser un número mayor a 0."
+              : Number(formData.dias) <= 0
+                ? "Los días deben ser un número mayor a 0."
+                : !esFechaValida(formData.fecha)
+                  ? "La fecha ingresada no es válida."
+                  : esFechaFutura(formData.fecha)
+                    ? "La fecha no puede ser futura."
+                    : "";
 
-    if (formData.estanqueOrigenId === formData.estanqueDestinoId) {
-      setMensajeError("El estanque de origen no puede ser igual al estanque de destino.");
-      return false;
-    }
-
-    if (Number(formData.tamaño) <= 0) {
-      setMensajeError("El tamaño debe ser un número mayor a 0.");
-      return false;
-    }
-
-    if (Number(formData.pl) <= 0) {
-      setMensajeError("El campo PL debe ser un número mayor a 0.");
-      return false;
-    }
-
-    if (Number(formData.dias) <= 0) {
-      setMensajeError("Los días deben ser un número mayor a 0.");
-      return false;
-    }
-
-    if (!esFechaValida(formData.fecha)) {
-      setMensajeError("La fecha ingresada no es válida.");
-      return false;
-    }
-
-    if (esFechaFutura(formData.fecha)) {
-      setMensajeError("La fecha no puede ser futura.");
+    if (mensaje) {
+      setMensajeError(mensaje);
+      if (timerErrorRef.current) clearTimeout(timerErrorRef.current);
+      timerErrorRef.current = setTimeout(() => {
+        setMensajeError("");
+        timerErrorRef.current = null;
+      }, 6000);
       return false;
     }
 
@@ -237,6 +266,10 @@ export function useTrazabilidad() {
     try {
       await crearRegistroTrazabilidad(formData);
     } catch (error) {
+      if (error?.response?.status === 401) {
+        mostrarErrorCarga("", error);
+        return;
+      }
       const mensajeApi = error?.response?.data?.message;
       setMensajeError(
         error?.response?.status === 400 && mensajeApi
@@ -246,16 +279,10 @@ export function useTrazabilidad() {
       return;
     }
     setMensajeError("");
-    setMostrarAlerta(true);
-
-    if (timerAlertaRef.current) clearTimeout(timerAlertaRef.current);
-    timerAlertaRef.current = setTimeout(() => {
-      setMostrarAlerta(false);
-      timerAlertaRef.current = null;
-      setFormData(initialForm);
-      setSubmitted(false);
-      router.back();
-    }, 1500);
+    setFormData(initialForm);
+    setSubmitted(false);
+    setPlAutocompletado(false);
+    router.replace({ pathname: "/trazabilidad", params: { successMessage: "¡Movimiento registrado exitosamente!" } });
   }
 
 
@@ -269,9 +296,12 @@ export function useTrazabilidad() {
     plAutocompletado,
     mensajeError,
     submitted,
-    mostrarAlerta,
     manejarCambio,
     manejarCambioFinca,
     manejarEnvio,
+    errorCarga,
+    sesionExpirada,
+    cerrarErrorCarga,
+    irALogin,
   };
 }

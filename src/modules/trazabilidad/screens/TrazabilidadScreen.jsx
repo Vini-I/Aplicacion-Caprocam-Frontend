@@ -1,22 +1,18 @@
 /**
- * ============================================================
  * TrazabilidadScreen
- * ============================================================
- *
- * Listado de movimientos de trazabilidad.
- *
- * Reglas importantes / restricciones:
- * - No introducir headers locales en pantallas que usan el header global.
- * - El botón fijo de acción debe colocarse fuera del ScrollView.
- *
- * Navegación / dependencias relevantes:
- * - Usa `useTrazabilidadList` para obtener datos y acciones.
+ * Muestra el listado historico de movimientos de trazabilidad entre estanques con filtros y busqueda.
+ * @dependencies - useTrazabilidadList, Card, Button, Alert, SearchBar, FilterButton
+ * @validations - Filtra por finca, colaborador y texto de busqueda.
+ * @navigation - Permite ir a /trazabilidad/agregar mediante el boton flotante + Registrar movimiento.
  */
+import { useEffect, useState } from "react";
 import { View, ScrollView } from "react-native";
+import { useLocalSearchParams } from "expo-router";
 
 import { styles } from "../styles/TrazabilidadStyles";
 import { STYLE } from "../../../theme/style";
 
+import Alert from "../../../shared/components/Alert";
 import Button from "../../../shared/components/Button";
 import Card from "../../../shared/components/Card";
 import EmptyState from "../../../shared/components/EmptyState";
@@ -24,14 +20,18 @@ import Icon from "../../../shared/components/Icons";
 import Text from "../../../shared/components/Text";
 import { ICONS } from "../../../theme/icons";
 import { COLORS } from "../../../theme/colors";
-import Footer from "../../../shared/components/Footer";
 
-import SearchBar from "../../inventarios/components/SearchBar";
+import SearchBar from "../../../shared/components/SearchBar";
 import FilterButton from "../components/FilterButton";
 import { useTrazabilidadList, formatRegistroForView } from "../hooks/useTrazabilidadList";
 
 export default function TrazabilidadScreen() {
-  const {
+  const params = useLocalSearchParams();
+  const [visibleSuccessMessage, setVisibleSuccessMessage] = useState(
+    typeof params.successMessage === "string" ? params.successMessage : ""
+  );
+
+   const {
     busqueda,
     setBusqueda,
     filtros,
@@ -43,8 +43,26 @@ export default function TrazabilidadScreen() {
     limpiarBusqueda,
     nuevoRegistro,
     abrirDetalle,
+    errorCarga,
+    sesionExpirada,
+    cerrarErrorCarga,
+    irALogin,
 
   } = useTrazabilidadList();
+
+  useEffect(() => {
+    const successMessage =
+      typeof params.successMessage === "string" ? params.successMessage : "";
+
+    if (!successMessage) {
+      setVisibleSuccessMessage("");
+      return;
+    }
+
+    setVisibleSuccessMessage(successMessage);
+    const timer = setTimeout(() => setVisibleSuccessMessage(""), 3000);
+    return () => clearTimeout(timer);
+  }, [params.successMessage]);
 
   function renderRegistro(registro) {
     const r = formatRegistroForView(registro);
@@ -57,7 +75,7 @@ export default function TrazabilidadScreen() {
           </View>
 
           <Text style={styles.colaboradorText}>
-            Responsable: {r.colaboradorNombre}
+            {r.responsableTexto || `Responsable: ${r.colaboradorNombre}`}
           </Text>
 
           <View style={styles.movimiento}>
@@ -107,6 +125,34 @@ export default function TrazabilidadScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={STYLE.contentWrapper}>
+          {visibleSuccessMessage ? (
+            <Alert
+              variant="success"
+              message={visibleSuccessMessage}
+              style={styles.successAlert}
+            />
+          ) : null}
+
+          {errorCarga !== "" && (
+            <>
+              <Alert
+                variant="danger"
+                message={errorCarga}
+                style={styles.successAlert}
+              />
+              {sesionExpirada ? (
+                <Button variant="outline" onPress={irALogin} style={styles.errorAlertButton}>
+                  Ir a iniciar sesión
+                </Button>
+              ) : (
+                <Button variant="outline" onPress={cerrarErrorCarga} style={styles.errorAlertButton}>
+                  Cerrar
+                </Button>
+              )}
+            </>
+          )}
+
+
           <View style={styles.busquedaRow}>
             <SearchBar
               value={busqueda}
@@ -148,11 +194,7 @@ export default function TrazabilidadScreen() {
                     <Button variant="outline" onPress={limpiarBusqueda}>
                       Limpiar búsqueda
                     </Button>
-                  ) : (
-                    <Button variant="outline" onPress={nuevoRegistro}>
-                      Agregar trazabilidad
-                    </Button>
-                  )
+                  ) : undefined
                 }
                 style={styles.vacioContainer}
                 titleStyle={styles.vacioTitulo}
@@ -171,12 +213,10 @@ export default function TrazabilidadScreen() {
 
         </View>
       </ScrollView>
-      <View style={STYLE.contentWrapper}>
-      <View style={styles.stickyButtonContainer}>
+      <View style={styles.floatingButtonContainer}>
         <Button variant="outline" onPress={nuevoRegistro} style={styles.fullButton}>
-          + Agregar movimiento
+          + Registrar movimiento
         </Button>
-      </View>
       </View>
     </View>
   );

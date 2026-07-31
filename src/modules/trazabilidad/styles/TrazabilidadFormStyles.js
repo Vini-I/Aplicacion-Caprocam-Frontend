@@ -9,6 +9,13 @@ export const styles = StyleSheet.create({
     fontFamily: TYPOGRAPHY.fontFamily.bold,
     fontSize: 16,
   },
+
+  cardTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 10,
+  },
   label: {
     color: COLORS.textPrimary,
     fontFamily: TYPOGRAPHY.fontFamily.bold,

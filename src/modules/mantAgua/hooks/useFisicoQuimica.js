@@ -68,31 +68,74 @@ import {
 
 // Convierte las lecturas de RangeCard ({id, value}) al formato que
 // espera la API ([{valor, etiqueta}]).
-// TODO CRÍTICO — SIN CONFIRMAR: el equipo de API mostró la respuesta
-// de GetPorId/GetAll con ph/salinidad/temperatura/oxigenoDisuelto
-// como valores planos (ej. "ph": 7.5), no como arreglo. No sabemos
-// todavía si el POST/PUT también espera plano ahora, ni cómo se
-// registraría más de una lectura por día (día/noche en pH, hasta 5
-// en oxígeno) si cada fila de la tabla solo guarda un valor por
-// medición. NO cambiar este mapeo hasta que el equipo de API confirme
-// el body real que espera crear/actualizar.
-function mapearLecturas(lecturas) {
-  return (lecturas ?? []).map((lectura, index) => ({
-    valor: lectura.value,
-    etiqueta: String(index + 1),
-  }));
+function mapearLecturas(lecturas, esDiaNoche = false) {
+  return (lecturas ?? []).map((lectura, index) => {
+    let etiqueta = String(index + 1);
+    if (esDiaNoche) {
+      if (index === 0) {
+        etiqueta = 'Manana (05:00)';
+      } else if (index === 1) {
+        etiqueta = 'Tarde (16:00)';
+      }
+    }
+    return {
+      valor: lectura.value,
+      etiqueta,
+    };
+  });
 }
 
 // Inverso de mapearLecturas, para precargar el formulario.
-// Defensivo por el mismo TODO de arriba: si la API manda un arreglo
-// [{valor, etiqueta}] lo convierte a números planos; si manda un
-// valor plano (como en el ejemplo que dio API), lo envuelve en un
-// arreglo de un elemento para no tronar el RangeCard. Esto es un
-// parche temporal, no la solución — falta confirmar el contrato real.
-function desmapearLecturas(valor) {
-  if (Array.isArray(valor)) return valor.map((lectura) => lectura.valor);
-  if (typeof valor === 'number') return [valor];
-  return [];
+function desmapearLecturas(valor, esDiaNoche = false) {
+  if (!Array.isArray(valor)) {
+    if (typeof valor === 'number') return [valor];
+    return [];
+  }
+
+  if (!esDiaNoche) {
+    return valor.map((lectura) =>
+      typeof lectura === 'object' && lectura !== null ? lectura.valor : lectura
+    );
+  }
+
+  let mananaVal = null;
+  let tardeVal = null;
+  const libres = [];
+
+  for (const item of valor) {
+    if (typeof item === 'object' && item !== null) {
+      const et = String(item.etiqueta || '').toLowerCase();
+      if (
+        et.includes('manana') ||
+        et.includes('mañana') ||
+        et.includes('05:00') ||
+        et === '1'
+      ) {
+        mananaVal = item.valor;
+      } else if (
+        et.includes('tarde') ||
+        et.includes('16:00') ||
+        et === '2'
+      ) {
+        tardeVal = item.valor;
+      } else {
+        libres.push(item.valor);
+      }
+    } else {
+      libres.push(item);
+    }
+  }
+
+  if (mananaVal !== null || tardeVal !== null) {
+    const res = [];
+    if (mananaVal !== null) res.push(mananaVal);
+    if (tardeVal !== null) res.push(tardeVal);
+    return res;
+  }
+
+  return valor.map((lectura) =>
+    typeof lectura === 'object' && lectura !== null ? lectura.valor : lectura
+  );
 }
 
 export default function useFisicoQuimica() {
@@ -135,7 +178,7 @@ export default function useFisicoQuimica() {
 
   const timerAlertaRef = useRef(null);
   const router = useRouter();
-    const fechaHoy = useMemo(() => {
+  const fechaHoy = useMemo(() => {
     const hoy = new Date();
     const anio = hoy.getFullYear();
     const mes = String(hoy.getMonth() + 1).padStart(2, '0');
@@ -144,14 +187,14 @@ export default function useFisicoQuimica() {
   }, []);
 
   useEffect(() => {
-  if (!fincaSeleccionada) {
-    setEstanquesFiltrados([]);
-    return;
-  }
-  obtenerEstanquesPorFinca(fincaSeleccionada)
-    .then(setEstanquesFiltrados)
-    .catch(() => setEstanquesFiltrados([]));
-}, [fincaSeleccionada]);
+    if (!fincaSeleccionada) {
+      setEstanquesFiltrados([]);
+      return;
+    }
+    obtenerEstanquesPorFinca(fincaSeleccionada)
+      .then(setEstanquesFiltrados)
+      .catch(() => setEstanquesFiltrados([]));
+  }, [fincaSeleccionada]);
 
   // Limpia el timer de alertas al desmontar
   useEffect(() => {
@@ -219,7 +262,7 @@ export default function useFisicoQuimica() {
     setTieneMedicionesExistentes(false);
   }, []);
 
-const handleEstanqueChange = useCallback(async (value) => {
+  const handleEstanqueChange = useCallback(async (value) => {
     setEstanqueSeleccionado(value);
     setErrorMessage("");
 
@@ -234,11 +277,11 @@ const handleEstanqueChange = useCallback(async (value) => {
     // usa "ox" en todo el formulario.
     const mediciones = lecturaExistente
       ? {
-          ph: desmapearLecturas(lecturaExistente.ph),
-          salinidad: desmapearLecturas(lecturaExistente.salinidad),
-          temperatura: desmapearLecturas(lecturaExistente.temperatura),
-          ox: desmapearLecturas(lecturaExistente.oxigenoDisuelto),
-        }
+        ph: desmapearLecturas(lecturaExistente.ph, true),
+        salinidad: desmapearLecturas(lecturaExistente.salinidad, true),
+        temperatura: desmapearLecturas(lecturaExistente.temperatura, true),
+        ox: desmapearLecturas(lecturaExistente.oxigenoDisuelto, false),
+      }
       : { ph: [], salinidad: [], temperatura: [], ox: [] };
 
     setMedicionesPorEstanque(mediciones);
@@ -269,29 +312,34 @@ const handleEstanqueChange = useCallback(async (value) => {
     manejarCambioOxigeno({ values, setters: { ox: setLecturasOx }, localSetters: { ox: setLecturasOxLocal } });
   }, []);
 
-const alGuardar = useCallback(async () => {
+  const alGuardar = useCallback(async () => {
     try {
       await guardarLectura({
         fincaId: fincaSeleccionada,
         estanqueId: estanqueSeleccionado,
         fecha: fechaHoy,
-        ph: mapearLecturas(lecturasPh),
-        salinidad: mapearLecturas(lecturasSalinidad),
-        temperatura: mapearLecturas(lecturasTemp),
-        oxigenoDisuelto: mapearLecturas(lecturasOx),
+        ph: mapearLecturas(lecturasPh, true),
+        salinidad: mapearLecturas(lecturasSalinidad, true),
+        temperatura: mapearLecturas(lecturasTemp, true),
+        oxigenoDisuelto: mapearLecturas(lecturasOx, false),
       });
     } catch (error) {
-      setErrorMessage('No se pudo guardar la lectura. Intenta de nuevo.');
+      const msg = error?.response?.data?.message || 'No se pudo guardar la lectura. Intenta de nuevo.';
+      setErrorMessage(msg);
       return;
     }
 
     setMostrarAlerta(true);
+    setErrorMessage("");
     if (timerAlertaRef.current) clearTimeout(timerAlertaRef.current);
     timerAlertaRef.current = setTimeout(() => {
       setMostrarAlerta(false);
       timerAlertaRef.current = null;
-      router.replace('/(drawer)/(tabs)/registros');
-    }, 500);
+      router.replace({
+        pathname: '/(drawer)/(tabs)/registros',
+        params: { successMessage: '¡Mediciones físico-químicas guardadas exitosamente!' },
+      });
+    }, 300);
   }, [router, fincaSeleccionada, estanqueSeleccionado, fechaHoy, lecturasPh, lecturasSalinidad, lecturasTemp, lecturasOx]);
 
   const alEditar = useCallback(async () => {
@@ -300,23 +348,28 @@ const alGuardar = useCallback(async () => {
         fincaId: fincaSeleccionada,
         estanqueId: estanqueSeleccionado,
         fecha: fechaHoy,
-        ph: mapearLecturas(lecturasPh),
-        salinidad: mapearLecturas(lecturasSalinidad),
-        temperatura: mapearLecturas(lecturasTemp),
-        oxigenoDisuelto: mapearLecturas(lecturasOx),
+        ph: mapearLecturas(lecturasPh, true),
+        salinidad: mapearLecturas(lecturasSalinidad, true),
+        temperatura: mapearLecturas(lecturasTemp, true),
+        oxigenoDisuelto: mapearLecturas(lecturasOx, false),
       });
     } catch (error) {
-      setErrorMessage('No se pudo actualizar la lectura. Intenta de nuevo.');
+      const msg = error?.response?.data?.message || 'No se pudo actualizar la lectura. Intenta de nuevo.';
+      setErrorMessage(msg);
       return;
     }
 
     setMostrarAlertaEdicion(true);
+    setErrorMessage("");
     if (timerAlertaRef.current) clearTimeout(timerAlertaRef.current);
     timerAlertaRef.current = setTimeout(() => {
       setMostrarAlertaEdicion(false);
       timerAlertaRef.current = null;
-      router.replace('/(drawer)/(tabs)/registros');
-    }, 500);
+      router.replace({
+        pathname: '/(drawer)/(tabs)/registros',
+        params: { successMessage: '¡Mediciones físico-químicas actualizadas exitosamente!' },
+      });
+    }, 300);
   }, [lecturaIdActual, fincaSeleccionada, estanqueSeleccionado, fechaHoy, lecturasPh, lecturasSalinidad, lecturasTemp, lecturasOx, router]);
 
   // Valida el formulario y, si pasa, dispara el guardado
@@ -347,8 +400,6 @@ const alGuardar = useCallback(async () => {
     opcionesFincas,
     estanquesFiltrados,
     estanqueSeleccionadoObj,
-    mostrarAlerta,
-    mostrarAlertaEdicion,
     handleFincaChange,
     handleEstanqueChange,
     handlePhChange,

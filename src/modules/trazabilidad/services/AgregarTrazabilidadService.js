@@ -16,7 +16,7 @@ export async function crearRegistroTrazabilidad(formData) {
     estanqueOrigenId: formData.estanqueOrigenId,
     estanqueDestinoId: formData.estanqueDestinoId,
     fecha: aFechaISO(formData.fecha),
-    colaboradorId: formData.colaboradorId,
+    colaboradorId: formData.colaboradorId || null,
     tamano: formData.tamaño,
     dias: formData.dias,
     pl: formData.pl,

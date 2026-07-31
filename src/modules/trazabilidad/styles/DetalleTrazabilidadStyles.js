@@ -94,6 +94,7 @@ export const styles = StyleSheet.create({
 
   inputLectura: {
     backgroundColor: COLORS.secondary,
+    dropShadow: "none",
   },
 
   labelLectura: {

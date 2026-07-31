@@ -41,9 +41,16 @@ import NumberInput from "../../../shared/components/NumberInput";
 import Select from "../../../shared/components/Select";
 import Input from "../../../shared/components/Input";
 import DateInput from "../../../shared/components/DateInput";
+import Icon from "../../../shared/components/Icons";
+import { COLORS } from "../../../theme/colors";
+import { ICONS } from "../../../theme/icons";
 import { STYLE } from "../../../theme/style";
 import { styles } from "../styles/TrazabilidadFormStyles";
-import { esFechaValida, esFechaFutura } from "../../../shared/utils/dateUtils";
+import {
+  esFechaValida,
+  esFechaFutura,
+  formatearFechaInput,
+} from "../../../shared/utils/dateUtils";
 
 export default function TrazabilidadForm({
   formData,
@@ -87,11 +94,13 @@ export default function TrazabilidadForm({
         <Input
           label="Fecha del movimiento *"
           value={formData.fecha}
-          onChangeText={(value) => onChange("fecha", value)}
+          onChangeText={(value) => onChange("fecha", formatearFechaInput(value))}
           containerStyle={styles.field}
           style={mostrarErrorFecha ? styles.errorInput : undefined}
           labelStyle={styles.label}
-          keyboardType="numbers-and-punctuation"
+          keyboardType="numeric"
+          inputMode="numeric"
+          maxLength={10}
           placeholder="dd/mm/aaaa"
         />
       );
@@ -113,7 +122,11 @@ export default function TrazabilidadForm({
   return (
 
     <View style={[STYLE.contentWrapper]}>
-      <Card title="Movimiento" titleStyle={styles.cardTitle}>
+      <Card>
+        <View style={styles.cardTitleRow}>
+          <Icon icon={ICONS.transfer} color={COLORS.primary} />
+          <Text style={styles.cardTitle}>Movimiento</Text>
+        </View>
         <Select
           label="Finca *"
           placeholder="Seleccionar finca"
@@ -152,15 +165,19 @@ export default function TrazabilidadForm({
         {renderFecha()}
 
         <Input
-          label="Colaborador responsable"
-          value={colaboradorSesion?.label ?? ""}
+          label={colaboradorSesion?.labelCampo || "Responsable"}
+          value={colaboradorSesion?.nombre || colaboradorSesion?.label || ""}
           editable={false}
           containerStyle={styles.field}
           labelStyle={styles.label}
         />
       </Card>
 
-      <Card title="Datos del traslado" titleStyle={styles.cardTitle}>
+      <Card>
+        <View style={styles.cardTitleRow}>
+          <Icon icon={ICONS.clipboard} color={COLORS.primary} />
+          <Text style={styles.cardTitle}>Datos del traslado</Text>
+        </View>
         <NumberInput
           label="Tamaño (gramos) *"
           value={formData.tamaño}
