@@ -205,6 +205,13 @@ export function useProductForm() {
     }
   }, [mostrarAlertaValidacion]);
 
+  useEffect(() => {
+    if (errorGuardado) {
+      const t = setTimeout(() => setErrorGuardado(""), 6000);
+      return () => clearTimeout(t);
+    }
+  }, [errorGuardado]);
+
   async function handleSubmit() {
     setIntentoGuardar(true);
 
@@ -230,12 +237,7 @@ export function useProductForm() {
       entryDate: form.entryDate,
       expirationDate: form.expirationDate,
     };
-  useEffect(() => {
-    if (errorGuardado) {
-      const t = setTimeout(() => setErrorGuardado(""), 6000);      
-      return () => clearTimeout(t);
-    }
-  }, [errorGuardado]);
+  
   
     setGuardando(true);
     setErrorGuardado("");
