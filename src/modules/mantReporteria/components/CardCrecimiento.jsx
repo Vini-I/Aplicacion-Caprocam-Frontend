@@ -2,6 +2,11 @@ import { View } from "react-native";
 
 import Card from "../../../shared/components/Card";
 import Text from "../../../shared/components/Text";
+import Button from "../../../shared/components/Button.jsx"
+import Icon from "../../../shared/components/Icons.jsx"
+
+import { ICONS } from "../../../theme/icons.js";
+import { COLORS } from "../../../theme/colors.js";
 
 import { styles } from "../styles/DetalleReporteStyle.js";
 
@@ -65,6 +70,36 @@ export default function CardCrecimiento({ data }) {
                             <Text style={styles.peso}>
                                 {registro.peso_actual} g
                             </Text>
+                        </View>
+
+                        <View style={styles.Buttons}>
+                            <Button
+                                style={styles.Eliminar}
+                                onPress={() => abrirModalEliminar(estanque)}
+                            >
+                                <Icon
+                                icon={ICONS.delete}
+                                color={COLORS.error}
+                                size={20}
+                                />
+                                <Text size={12} color={COLORS.error}>
+                                Eliminar
+                                </Text>
+                            </Button>
+
+                            <Button
+                                style={styles.Editar}
+                                onPress={() => onEstanqueEditar(finca.codigoCBO, estanque.id)}
+                            >
+                                <Icon
+                                icon={ICONS.edit}
+                                color={COLORS.primary}
+                                size={20}
+                                />
+                                <Text size={12} color={COLORS.primary}>
+                                Editar
+                                </Text>
+                            </Button>
                         </View>
 
 

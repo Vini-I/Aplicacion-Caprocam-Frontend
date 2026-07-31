@@ -159,4 +159,41 @@ export const styles = StyleSheet.create({
         fontWeight: "800",
         color: COLORS.Crecimiento,
     },
+
+    Buttons: {
+        flexDirection: "row",
+        width: "100%",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginTop: 15,
+        marginRight: 10,
+      },
+    
+    Eliminar: {
+        flex: 1,
+        backgroundColor: COLORS.white,
+        borderColor: COLORS.error,
+        borderWidth: 2,
+        marginBottom: "auto",
+        flexDirection: "row",
+        alignItems: "center",
+        borderRadius: 6,
+        marginHorizontal: 2,
+        paddingHorizontal: 6,
+        paddingVertical: 4,
+    },
+    
+    Editar: {
+        flex: 1,
+        backgroundColor: COLORS.white,
+        borderColor: COLORS.primary,
+        borderWidth: 2,
+        marginBottom: "auto",
+        flexDirection: "row",
+        alignItems: "center",
+        borderRadius: 6,
+        marginHorizontal: 2,
+        paddingHorizontal: 12,
+        paddingVertical: 4,
+    },
 });

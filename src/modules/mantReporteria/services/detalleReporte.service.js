@@ -9,10 +9,13 @@ export async function obtenerDetalleReporte({
   switch(tipoRegistro){
     
     case "crecimiento": 
-      return getCrecimiento({
-        fincaId,
-        estanqueId
-      })
+      const registros = await getCrecimiento();
+
+      return registros.filter(
+        (r) => 
+          Number(r.finca_id) === Number(fincaId) &&
+          Number(r.estanque_id) === Number(estanqueId)
+      )
       
     default: 
       return [];
