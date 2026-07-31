@@ -29,7 +29,7 @@ export default function CardCrecimiento({ data }) {
                                     Finca
                                 </Text>
                                 <Text style={styles.value}>
-                                    {registro.finca_id}
+                                    {registro.nombreFinca}
                                 </Text>
                             </View>
 
@@ -38,7 +38,7 @@ export default function CardCrecimiento({ data }) {
                                     Estanque
                                 </Text>
                                 <Text style={styles.value}>
-                                    {registro.estanque_id}
+                                    {registro.codigoEstanque}
                                 </Text>
                             </View>
 
@@ -47,7 +47,7 @@ export default function CardCrecimiento({ data }) {
                                     Colaborador
                                 </Text>
                                 <Text style={styles.value}>
-                                    {registro.colaborador_id}
+                                    {registro.nombreColaborador}
                                 </Text>
                             </View>
 
@@ -57,7 +57,7 @@ export default function CardCrecimiento({ data }) {
                                     Fecha
                                 </Text>
                                 <Text style={styles.value}>
-                                    {registro.fecha_registro}
+                                    {new Date(registro.fecha_registro).toLocaleDateString("es-CR")}
                                 </Text>
                             </View>
                         </View>

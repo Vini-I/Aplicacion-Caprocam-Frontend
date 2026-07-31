@@ -4,6 +4,7 @@ import  {obtenerDetalleReporte}  from "../services/detalleReporte.service";
 
 import { fincaService } from "../../finca/services/finca.service.js";
 import { estanqueService } from "../../estanques/services/estanque.service.js";
+import { colaboradorService } from "../../colaboradores/services/colaborador.service.js";
 
 export function useDetalleReporte() {
 
@@ -14,6 +15,7 @@ export function useDetalleReporte() {
   
   const [fincas, setFincas] = useState([]); 
   const [estanques, setEstanques] = useState([]);  
+  const [colaboradores, setColaboradores] = useState([]);
   const [estanquesFiltrados, setEstanquesFiltrados] = useState([]);
 
   const [registros, setRegistros] = useState([]);
@@ -33,9 +35,10 @@ export function useDetalleReporte() {
     async function cargarCatalogos() {
       try {
 
-        const [fincasData, estanquesData] = await Promise.all([
+        const [fincasData, estanquesData, colaboradoresData] = await Promise.all([
           fincaService.getFincas(),
           estanqueService.getEstanques(),
+          colaboradorService.getColaboradores(),
         ]);
 
         const fincasOptions = fincasData.map((finca) => ({
@@ -49,9 +52,15 @@ export function useDetalleReporte() {
           fincaId: estanque.idFinca,
         }));
 
+        const colaboradoresOptions = colaboradoresData.map((colaborador) => ({
+          value: colaborador.id,
+          label: colaborador.nombre,
+        }));
+
         if (activo) {
           setFincas(fincasOptions);
           setEstanques(estanquesOptions);
+          setColaboradores(colaboradoresOptions);
         }
 
       } catch (error) {
@@ -111,7 +120,28 @@ export function useDetalleReporte() {
         });
 
         if (activo) {
-          setRegistros(registrosData);
+          const registrosConNombres = registrosData.map((registro) => {
+          const fincaEncontrada = fincas.find(
+            f => Number(f.value) === Number(registro.finca_id)
+          );
+
+          const estanqueEncontrado = estanques.find(
+            e => Number(e.value) === Number(registro.estanque_id)
+          );
+
+          const colaboradorEncontrado = colaboradores.find(
+            c => Number(c.value) === Number(registro.colaborador_id)
+          );
+
+            return {
+              ...registro,
+              nombreFinca: fincaEncontrada?.label ?? "No encontrada",
+              codigoEstanque: estanqueEncontrado?.label ?? "No encontrado",
+              nombreColaborador: colaboradorEncontrado?.label ?? "No encontrado",
+            };
+          });
+
+          setRegistros(registrosConNombres);
         }
       } catch (error) {
         console.error("Error cargando registros:", error);
@@ -131,7 +161,7 @@ export function useDetalleReporte() {
     return () => {
       activo = false;
     };
-  }, [registroTipo, finca, estanque]);
+  }, [registroTipo, finca, estanque, fincas, estanques, colaboradores]);
 
 
   return {
@@ -143,6 +173,7 @@ export function useDetalleReporte() {
 
     fincas, 
     estanques,
+    colaboradores,
     estanquesFiltrados,
 
     registros,
