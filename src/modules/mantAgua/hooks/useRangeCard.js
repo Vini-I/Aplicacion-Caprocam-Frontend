@@ -5,7 +5,8 @@
  *
  * Descripción:
  * Maneja el estado de las lecturas de RangeCard: agregar/quitar
- * filas, clamping de valores dentro de sliderMin/sliderMax y evaluación de zonas.
+ * filas, clamping de valores dentro de sliderMin/sliderMax, incremento/decremento
+ * funcional en tiempo real para avance continuo (hold) y evaluación de zonas.
  *
  * @dependencies react
  * @validations Limita lecturas entre min/max, redondeo a decimales e idealMin/idealMax.
@@ -97,20 +98,40 @@ export default function useRangeCard({
     setLecturas((prev) => prev.filter((r) => r.id !== id));
   }, []);
 
+  const decrementar = useCallback(
+    (id) => {
+      setLecturas((prev) =>
+        prev.map((r) => {
+          if (r.id !== id) return r;
+          const next = parseFloat(limitar(r.value - step, sliderMin, sliderMax).toFixed(decimals));
+          return { ...r, value: next, rawInput: formatear(next, decimals) };
+        })
+      );
+    },
+    [step, sliderMin, sliderMax, decimals]
+  );
+
+  const incrementar = useCallback(
+    (id) => {
+      setLecturas((prev) =>
+        prev.map((r) => {
+          if (r.id !== id) return r;
+          const next = parseFloat(limitar(r.value + step, sliderMin, sliderMax).toFixed(decimals));
+          return { ...r, value: next, rawInput: formatear(next, decimals) };
+        })
+      );
+    },
+    [step, sliderMin, sliderMax, decimals]
+  );
+
   const normalizar = (v) => (v - sliderMin) / (sliderMax - sliderMin);
   const tieneMaxIdeal = Number.isFinite(idealMax);
 
   // Devuelve los manejadores de una lectura puntual (botones +/-, input, blur)
   const obtenerManejadores = useCallback(
     (r) => ({
-      decrementar: () => {
-        const next = parseFloat(limitar(r.value - step, sliderMin, sliderMax).toFixed(decimals));
-        actualizarLectura(r.id, { value: next, rawInput: formatear(next, decimals) });
-      },
-      incrementar: () => {
-        const next = parseFloat(limitar(r.value + step, sliderMin, sliderMax).toFixed(decimals));
-        actualizarLectura(r.id, { value: next, rawInput: formatear(next, decimals) });
-      },
+      decrementar: () => decrementar(r.id),
+      incrementar: () => incrementar(r.id),
       handleChangeText: (text) => {
         const cleaned = text.replace(/[^0-9.]/g, '');
         const parts = cleaned.split('.');
@@ -139,7 +160,7 @@ export default function useRangeCard({
         actualizarLectura(r.id, { value: next, rawInput: formatear(next, decimals) });
       },
     }),
-    [step, sliderMin, sliderMax, decimals, actualizarLectura]
+    [decrementar, incrementar, sliderMin, sliderMax, decimals, actualizarLectura]
   );
 
   return {

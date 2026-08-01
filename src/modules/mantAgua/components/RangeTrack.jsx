@@ -5,7 +5,8 @@
  *
  * Descripción:
  * Componente presentacional para barra de rango dinámica con slider
- * interactivo (PanResponder) y zonas de indicación visual.
+ * interactivo (PanResponder), zonas de indicación visual y alineación
+ * dinámica de etiquetas de ticks (mínimo alineado a la derecha debajo de la barra).
  *
  * @dependencies RangeTrackStyles, COLORS, Text
  * @validations Restringe valores al rango min-max y aplica formato decimal.
@@ -96,16 +97,25 @@ export default function RangeTrack({
       </View>
 
       <View style={styles.ticksContainer}>
-        {ticks.map((t, i) => (
-          <Text
-            key={i}
-            size={10}
-            color={COLORS.textQuaternary}
-            style={[styles.tickText, { left: `${t.pct * 100}%` }]}
-          >
-            {t.label}
-          </Text>
-        ))}
+        {ticks.map((t, i) => {
+          let translateX = '-50%';
+          if (t.pct === 0) translateX = '0%';
+          else if (t.pct === 1) translateX = '-100%';
+
+          return (
+            <Text
+              key={i}
+              size={10}
+              color={COLORS.textQuaternary}
+              style={[
+                styles.tickText,
+                { left: `${t.pct * 100}%`, transform: [{ translateX }] },
+              ]}
+            >
+              {t.label}
+            </Text>
+          );
+        })}
       </View>
     </View>
   );

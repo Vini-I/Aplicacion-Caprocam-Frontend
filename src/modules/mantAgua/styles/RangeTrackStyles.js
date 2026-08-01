@@ -4,7 +4,7 @@
  * ============================================================
  *
  * Descripción:
- * Estilos centralizados para el componente RangeTrack (slider dinámico).
+ * Estilos centralizados para el componente RangeTrack (slider dinámico y etiquetas de ticks).
  *
  * @dependencies StyleSheet, COLORS, TYPOGRAPHY
  * @validations N/A
@@ -79,6 +79,5 @@ export const styles = StyleSheet.create({
 
   tickText: {
     position: 'absolute',
-    transform: [{ translateX: -12 }],
   },
 });
