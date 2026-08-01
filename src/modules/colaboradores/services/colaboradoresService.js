@@ -1,171 +1,240 @@
-// src/modules/colaboradores/services/colaboradoresService.js
 /**
- * Servicio con operaciones CRUD y estadísticas para colaboradores.
- * Actualmente usa datos mock, pero puede reemplazarse por llamadas a API.
+ * ============================================================
+ * SERVICIO: colaboradoresService
+ * ============================================================
+ * Módulo: Colaboradores
+ *
+ * Servicio que conecta con el backend real mediante la API.
+ * Todas las funciones son asíncronas y devuelven los datos
+ * mapeados al formato usado por el frontend.
+ *
+ * Nota: El backend espera el campo 'pinHash'. Dado que no podemos
+ * hashear el PIN en el frontend, enviamos el PIN en texto plano
+ * en el campo 'pinHash' para que la base de datos reciba un valor
+ * no nulo. Esto es temporal hasta que el backend implemente la
+ * generación/hasheo automático del PIN.
+ *
+ * Dependencias:
+ * - api (axios) desde src/api/api.js (ya incluye el interceptor de tokens)
+ * ============================================================
  */
 
-// Datos mock de colaboradores
-// src/modules/colaboradores/services/colaboradoresService.js
-// Agrega externalOwnerId a los colaboradores existentes
-let colaboradoresMock = [
-  {
-    id: "1",
-    nombre: "Carlos Rodríguez",
-    cedula: "123456789",
-    telefono: "88881111",
-    email: "carlos@camprocam.com",
-    rol: "camprocam_worker",
-    fincaId: "finca1",
-    activo: true,
-    externalOwnerId: null,
-  },
-  {
-    id: "2",
-    nombre: "María Fernández",
-    cedula: "987654321",
-    telefono: "88882222",
-    email: "maria@camprocam.com",
-    rol: "camprocam_worker",
-    fincaId: "finca2",
-    activo: true,
-    externalOwnerId: null,
-  },
-  {
-    id: "3",
-    nombre: "Dueño Externo S.A.",
-    cedula: "301234567",
-    telefono: "88883333",
-    email: "dueno@fincaexterna.com",
-    rol: "external_owner",
-    fincaId: "finca3",
-    activo: true,
-    externalOwnerId: null,
-  },
-  {
-    id: "4",
-    nombre: "Juan Pérez",
-    cedula: "112233445",
-    telefono: "88884444",
-    email: "juan@fincaexterna.com",
-    rol: "external_worker",
-    fincaId: "finca3",
-    activo: true,
-    externalOwnerId: "3",
-  },
-  {
-    id: "5",
-    nombre: "Ana Solano",
-    cedula: "556677889",
-    telefono: "88885555",
-    email: "ana@fincaexterna.com",
-    rol: "external_worker",
-    fincaId: "finca3",
-    activo: true,
-    externalOwnerId: "3",
-  },
-];
+import api from "../../../api/api";
 
-// Datos mock de estadísticas (alimentación, estanques, siembras) 
-const estadisticasMock = {
-  "1": {
-    alimentaciones: 24,
-    estanquesCreados: 3,
-    siembrasRegistradas: 5,
-    ultimaActividad: "2025-03-15",
-  },
-  "2": {
-    alimentaciones: 12,
-    estanquesCreados: 1,
-    siembrasRegistradas: 2,
-    ultimaActividad: "2025-03-14",
-  },
-  "4": {
-    alimentaciones: 8,
-    estanquesCreados: 0,
-    siembrasRegistradas: 1,
-    ultimaActividad: "2025-03-16",
+// Mapeo de roles
+const rolMapToId = {
+  camprocam_worker: 3,
+  external_owner: 2,
+  external_worker: 3,
+};
+
+const rolMapToTipo = {
+  camprocam_worker: "caprocam_collab",
+  external_owner: "external_owner",
+  external_worker: "external_collab",
+};
+
+const rolIdToRol = {
+  2: "external_owner",
+  3: (tipo) => {
+    if (tipo === "caprocam_collab") return "camprocam_worker";
+    if (tipo === "external_collab") return "external_worker";
+    return "external_worker";
   },
 };
 
-// Simula retardo de red
-const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+// Mapeo de backend a frontend
+function mapBackendToFrontend(data) {
+  let rol = "camprocam_worker";
+  if (data.rolId === 2) {
+    rol = "external_owner";
+  } else if (data.rolId === 3) {
+    rol = rolIdToRol[3](data.tipoColaborador);
+  }
+  return {
+    id: data.id,
+    nombre: `${data.nombre} ${data.apellidos}`,
+    cedula: data.nombreUsuario,
+    telefono: data.telefono,
+    email: data.email,
+    rol,
+    fincaId: data.fincaId,
+    activo: Boolean(data.activo), // Convierte 1/0 a true/false
+  };
+}
 
-export const colaboradoresService = {
-  // Obtener todos los colaboradores (con filtro opcional por fincaId y rol)
-  async getColaboradores(filtros = {}) {
-    await delay(500);
-    let resultados = [...colaboradoresMock];
+// Preparar payload para backend
+function prepareForBackend(data, pinHash = null) {
+  const [nombre, ...apellidosParts] = data.nombre.split(" ");
+  const apellidos = apellidosParts.join(" ") || "";
+  const payload = {
+    nombre: nombre || "",
+    apellidos,
+    nombreUsuario: data.cedula,
+    rolId: rolMapToId[data.rol] || 3,
+    fincaId: data.fincaId ? Number(data.fincaId) : null,
+    telefono: data.telefono || null,
+    email: data.email || null,
+    tipoColaborador: rolMapToTipo[data.rol] || "external_collab",
+    grupoDatos: 1, // temporal hasta autenticación
+  };
+  if (pinHash) {
+    payload.pinHash = pinHash;
+  }
+  return payload;
+}
+
+// ─── FUNCIONES PRINCIPALES ──────────────────────────────────────
+
+/**
+ * Obtiene todos los colaboradores activos del backend.
+ * Filtra por fincaId, rol, activo si se pasan.
+ * Ruta corregida: /colaboradores (sin /api/v0)
+ */
+async function getColaboradores(filtros = {}) {
+  try {
+    const response = await api.get("/colaboradores");
+    let data = response.data.data || [];
+
     if (filtros.fincaId) {
-      resultados = resultados.filter((c) => c.fincaId === filtros.fincaId);
+      data = data.filter((c) => c.fincaId === Number(filtros.fincaId));
     }
     if (filtros.rol) {
-      resultados = resultados.filter((c) => c.rol === filtros.rol);
+      data = data.filter((c) => {
+        const rol = mapBackendToFrontend(c).rol;
+        return rol === filtros.rol;
+      });
     }
     if (filtros.activo !== undefined) {
-      resultados = resultados.filter((c) => c.activo === filtros.activo);
+      data = data.filter((c) => Boolean(c.activo) === filtros.activo);
     }
-    return resultados;
-  },
 
-  // Obtener un colaborador por ID
-  async getColaboradorById(id) {
-    await delay(300);
-    const colaborador = colaboradoresMock.find((c) => c.id === id);
-    if (!colaborador) throw new Error("Colaborador no encontrado");
-    return { ...colaborador };
-  },
+    return data.map(mapBackendToFrontend);
+  } catch (error) {
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Error al obtener colaboradores";
+    throw new Error(message);
+  }
+}
 
-  // Crear nuevo colaborador
-  async createColaborador(data) {
-    await delay(500);
-    const newId = String(Date.now());
-    const nuevoColaborador = {
-      id: newId,
-      ...data,
-      activo: true,
+/**
+ * Obtiene un colaborador por su ID.
+ * Ruta corregida: /colaboradores/${id}
+ */
+async function getColaboradorById(id) {
+  try {
+    const response = await api.get(`/colaboradores/${id}`);
+    const data = response.data.data;
+    if (!data) throw new Error("Colaborador no encontrado");
+    return mapBackendToFrontend(data);
+  } catch (error) {
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Error al obtener colaborador";
+    throw new Error(message);
+  }
+}
+
+/**
+ * Crea un nuevo colaborador.
+ * Genera un PIN de 4 dígitos y lo envía en pinHash.
+ * Devuelve el colaborador creado y el PIN en texto plano.
+ * Ruta corregida: /colaboradores
+ */
+async function createColaborador(data) {
+  try {
+    const pin = String(Math.floor(1000 + Math.random() * 9000));
+    const payload = prepareForBackend(data, pin);
+    const response = await api.post("/colaboradores", payload);
+    const created = response.data.data;
+    return {
+      ...mapBackendToFrontend(created),
+      pin,
     };
-    colaboradoresMock.push(nuevoColaborador);
-    return { ...nuevoColaborador };
-  },
+  } catch (error) {
+    const errorData = error.response?.data;
+    const errorMessage = errorData?.message || error.message || "Error al crear colaborador";
+    const errorDetail = errorData?.error || errorData?.errors;
 
-  // Actualizar colaborador existente
-  async updateColaborador(id, data) {
-    await delay(500);
-    const index = colaboradoresMock.findIndex((c) => c.id === id);
-    if (index === -1) throw new Error("Colaborador no encontrado");
-    colaboradoresMock[index] = { ...colaboradoresMock[index], ...data };
-    return { ...colaboradoresMock[index] };
-  },
+    if (typeof errorDetail === "string" && errorDetail.includes("cedula")) {
+      throw new Error("Colaborador ya existente.");
+    }
+    throw new Error(errorMessage);
+  }
+}
 
-  // Eliminar (desactivar) colaborador
-// src/modules/colaboradores/services/colaboradoresService.js
-// Reemplaza el método deleteColaborador:
+/**
+ * Actualiza un colaborador existente.
+ * Si se proporciona un nuevo PIN, se envía en pinHash.
+ * Ruta corregida: /colaboradores/${id}
+ */
+async function updateColaborador(id, data, newPin = null) {
+  try {
+    const payload = prepareForBackend(data, newPin);
+    if (!newPin) delete payload.pinHash;
+    const response = await api.put(`/colaboradores/${id}`, payload);
+    return mapBackendToFrontend(response.data.data);
+  } catch (error) {
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Error al actualizar colaborador";
+    throw new Error(message);
+  }
+}
 
-async deleteColaborador(id) {
-  await delay(500);
-  const index = colaboradoresMock.findIndex((c) => c.id === id);
-  if (index === -1) throw new Error("Colaborador no encontrado");
-  // Eliminar completamente del array
-  colaboradoresMock.splice(index, 1);
-  return true;
-},
+/**
+ * Elimina (borrado lógico) un colaborador.
+ * Ruta corregida: /colaboradores/${id}
+ */
+async function deleteColaborador(id) {
+  try {
+    const response = await api.delete(`/colaboradores/${id}`);
+    return response.data.data ? true : false;
+  } catch (error) {
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Error al eliminar colaborador";
+    throw new Error(message);
+  }
+}
 
+// ─── FUNCIONES AUXILIARES (mock) ──────────────────────────────
 
-  // Obtener estadísticas de un colaborador
-  async getEstadisticasColaborador(colaboradorId) {
-    await delay(400);
-    const stats = estadisticasMock[colaboradorId] || {
-      alimentaciones: 0,
-      estanquesCreados: 0,
-      siembrasRegistradas: 0,
-      ultimaActividad: null,
-    };
-    return stats;
-  },
+/**
+ * Obtiene estadísticas de un colaborador (mock).
+ * (El backend no tiene este endpoint aún)
+ */
+async function getEstadisticasColaborador(colaboradorId) {
+  // TODO: implementar cuando el backend lo soporte
+  return {
+    alimentaciones: 0,
+    estanquesCreados: 0,
+    siembrasRegistradas: 0,
+    ultimaActividad: null,
+  };
+}
 
-  // Agrega este método al servicio
-async getTrabajadoresByOwner(ownerId) {
-  await delay(300);
-  return colaboradoresMock.filter((c) => c.externalOwnerId === ownerId && c.rol === "external_worker" && c.activo);
-},
+/**
+ * Obtiene trabajadores externos asociados a un dueño (mock).
+ */
+async function getTrabajadoresByOwner(ownerId) {
+  // TODO: implementar cuando el backend lo soporte
+  return [];
+}
+
+// ─── EXPORTACIÓN ────────────────────────────────────────────────
+
+export const colaboradoresService = {
+  getColaboradores,
+  getColaboradorById,
+  createColaborador,
+  updateColaborador,
+  deleteColaborador,
+  getEstadisticasColaborador,
+  getTrabajadoresByOwner,
 };

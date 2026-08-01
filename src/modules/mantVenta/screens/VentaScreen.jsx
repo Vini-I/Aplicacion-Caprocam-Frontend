@@ -1,10 +1,19 @@
+/**
+ * ============================================================
+ * PANTALLA DE REGISTRO DE VENTAS DEL MÓDULO DE VENTAS
+ * ============================================================
+ *
+ * Contiene la interfaz para registrar ventas de producto y
+ * enviar la información a la lógica de negocio del módulo.
+ */
+
 import { ScrollView, View } from "react-native";
 
 import Alert from "../../../shared/components/Alert.jsx";
 import Button from "../../../shared/components/Button.jsx";
 import Card from "../../../shared/components/Card.jsx";
 import Icon from "../../../shared/components/Icons.jsx";
-import Input from "../../../shared/components/Input.jsx";
+import DateInput from "../../../shared/components/DateInput.jsx";
 import NumberInput from "../../../shared/components/NumberInput.jsx";
 import Select from "../../../shared/components/Select.jsx";
 import Text from "../../../shared/components/Text.jsx";
@@ -12,23 +21,11 @@ import Text from "../../../shared/components/Text.jsx";
 import { COLORS } from "../../../theme/colors.js";
 import { ICONS } from "../../../theme/icons.js";
 
-import {
-  COMPRADOR_MANUAL,
-  formatearMontoColones,
-  useVenta,
-} from "../hooks/useVenta.js";
+import { formatearMontoColones, useVenta } from "../hooks/useVenta.js";
 import { styles } from "../styles/VentaStyles.js";
+import { STYLE } from "../../../theme/style";
 
-function SectionTitle({ icon, title }) {
-  return (
-    <View style={styles.sectionTitle}>
-      <Icon icon={icon} size={18} color={COLORS.primary} style={styles.sectionIcon} />
-      <Text style={styles.sectionText}>{title}</Text>
-    </View>
-  );
-}
-
-export default function VentaScreen() {
+export default function VentaScreen({ onDetalleVentas }) {
   const {
     fincaSeleccionada,
     estanqueSeleccionado,
@@ -39,19 +36,19 @@ export default function VentaScreen() {
     fechaVenta,
     colaboradorSeleccionado,
     compradorSeleccionado,
-    compradorManual,
     mensaje,
     tipoMensaje,
     errores,
     guardando,
-    isWide,
     opcionesFincas,
     estanquesFiltrados,
     opcionesColaboradores,
     opcionesCompradores,
     totalVenta,
+    ventas,
+    SectionTitle,
+    setFechaVenta,
     setEstanqueSeleccionado,
-    setCompradorManual,
     handleFincaChange,
     handlePesoPromedioChange,
     handleTamanoPromedioChange,
@@ -59,32 +56,19 @@ export default function VentaScreen() {
     handlePrecioChange,
     handleCompradorChange,
     handleColaboradorChange,
+    handleFechaChange,
     limpiarError,
     guardarVenta,
+    gridStyle,
+    errorInputStyle,
   } = useVenta();
 
-  const gridStyle = isWide ? styles.inputRow : styles.inputGrid;
-  const errorInputStyle = {
-    borderColor: COLORS.error,
-    backgroundColor: COLORS.surface,
-  };
-
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <Card style={styles.contentWrapper}>
+    <ScrollView style={STYLE.container} showsVerticalScrollIndicator={false}>
+      <Card style={STYLE.contentWrapper}>
         <View style={styles.headerRow}>
-          <Icon
-            icon={ICONS.shrimp}
-            size={22}
-            color={COLORS.primary}
-            style={styles.headerIcon}
-          />
           <Text style={styles.cardTitle}>Registro de venta</Text>
         </View>
-
-        {tipoMensaje === "success" && mensaje !== "" && (
-          <Text style={styles.successText}>{mensaje}</Text>
-        )}
 
         <SectionTitle icon={ICONS.water} title="Finca y estanque" />
 
@@ -169,12 +153,21 @@ export default function VentaScreen() {
             />
           </View>
         </View>
-
-        <Input label="Fecha *" value={fechaVenta} editable={false} />
+              
+        <View style={styles.inputItem}>
+          <DateInput
+            label="Fecha *"
+            value={fechaVenta}
+            onChangeText={handleFechaChange}
+            allowFutureDates={true}
+          />
+        </View>
 
         <View style={styles.summaryBox}>
           <Text style={styles.summaryLabel}>Total estimado</Text>
-          <Text style={styles.summaryValue}>{formatearMontoColones(totalVenta)}</Text>
+          <Text style={styles.summaryValue}>
+            {formatearMontoColones(totalVenta)}
+          </Text>
         </View>
 
         <SectionTitle icon={ICONS.user} title="Colaborador y comprador" />
@@ -203,19 +196,6 @@ export default function VentaScreen() {
           </View>
         </View>
 
-        {compradorSeleccionado === COMPRADOR_MANUAL && (
-          <Input
-            label="Nombre del comprador *"
-            placeholder="Escriba el nombre del comprador"
-            value={compradorManual}
-            onChangeText={(value) => {
-              setCompradorManual(value);
-              limpiarError("compradorManual");
-            }}
-            style={errores.compradorManual ? errorInputStyle : null}
-          />
-        )}
-
         {tipoMensaje === "error" && mensaje !== "" && (
           <Alert
             variant="danger"
@@ -225,20 +205,37 @@ export default function VentaScreen() {
           />
         )}
 
-        <View style={styles.buttonRow}>
-          <Button
-            onPress={guardarVenta}
-            disabled={guardando}
-            style={styles.saveButton}
-          >
-            <View style={styles.buttonContent}>
-              <Icon icon={ICONS.save} size={22} color={COLORS.white} />
-              <Text style={styles.buttonText}>
-                {guardando ? "Guardando..." : "Registrar venta"}
-              </Text>
-            </View>
-          </Button>
-        </View>
+        {tipoMensaje === "success" && mensaje !== "" && (
+          <Alert
+            variant="success"
+            message={mensaje}
+            style={styles.successAlert}
+            textStyle={styles.successAlertText}
+          />
+        )}
+
+        <Button
+          onPress={guardarVenta}
+          disabled={guardando}
+          style={styles.saveButton}
+        >
+          <View style={styles.buttonContent}>
+            <Icon icon={ICONS.save} size={22} color={COLORS.primary} />
+            <Text style={styles.buttonText}>
+              {guardando ? "Guardando..." : "Registrar venta"}
+            </Text>
+          </View>
+        </Button>
+
+        <Button
+          onPress={() => onDetalleVentas(ventas, fincaSeleccionada)}
+          style={styles.saveButton}
+        >
+          <View style={styles.buttonContent}>
+            <Icon icon={ICONS.report} size={20} color={COLORS.primary} />
+            <Text style={styles.buttonText}>Mostrar detalles</Text>
+          </View>
+        </Button>
       </Card>
     </ScrollView>
   );

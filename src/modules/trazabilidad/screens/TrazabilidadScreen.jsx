@@ -1,43 +1,42 @@
 /**
- * Pantalla: TrazabilidadScreen
+ * ============================================================
+ * PANTALLA TrazabilidadScreen
+ * ============================================================
  *
- * Muestra el listado de registros de Trazabilidad (movimientos de
- * pre-cría a engorde) registrados en el sistema.
+ * Descripción:
+ * Muestra el listado histórico de movimientos de trazabilidad entre estanques con búsqueda y filtros.
  *
- * Funcionalidades principales:
- * - Buscar registros por finca, estanque o responsable.
- * - Filtrar registros por finca, colaborador o fecha del movimiento.
- * - Mostrar cada registro mediante una tarjeta resumen.
- * - Abrir el detalle completo de un registro al presionar su tarjeta.
- * - Acceder al formulario para agregar un nuevo registro.
- *
- * Componentes utilizados:
- * - Navbar: encabezado principal de la pantalla.
- * - Button: acción para agregar un nuevo registro.
- * - SearchBar: búsqueda por finca, estanque o responsable.
- * - FilterButton: filtros por finca, colaborador y fecha.
- * - TrazabilidadCard: tarjeta reutilizable para mostrar cada registro.
- * - EmptyState: mensaje cuando no hay registros o no hay resultados.
+ * @dependencies useTrazabilidadList, CardPress, Button, Alert, SearchBar, FilterButton
+ * @validations Búsqueda por texto y filtros combinados.
+ * @navigation Redirige a /trazabilidad/agregar y /trazabilidad/[id].
  */
+import { useEffect, useState } from "react";
 import { View, ScrollView } from "react-native";
+import { useLocalSearchParams } from "expo-router";
 
 import { styles } from "../styles/TrazabilidadStyles";
+import { STYLE } from "../../../theme/style";
 
-import Navbar from "../../../shared/components/Navbar";
+import Alert from "../../../shared/components/Alert";
 import Button from "../../../shared/components/Button";
+import CardPress from "../../../shared/components/CardPress";
 import EmptyState from "../../../shared/components/EmptyState";
 import Icon from "../../../shared/components/Icons";
 import Text from "../../../shared/components/Text";
-import Title from "../../../shared/components/Title";
 import { ICONS } from "../../../theme/icons";
+import { COLORS } from "../../../theme/colors";
 
-import TrazabilidadCard from "../components/TrazabilidadCard";
-import SearchBar from "../components/SearchBar";
+import SearchBar from "../../../shared/components/SearchBar";
 import FilterButton from "../components/FilterButton";
-import { useTrazabilidadList } from "../hooks/useTrazabilidadList";
+import { useTrazabilidadList, formatRegistroForView } from "../hooks/useTrazabilidadList";
 
 export default function TrazabilidadScreen() {
-  const {
+  const params = useLocalSearchParams();
+  const [visibleSuccessMessage, setVisibleSuccessMessage] = useState(
+    typeof params.successMessage === "string" ? params.successMessage : ""
+  );
+
+   const {
     busqueda,
     setBusqueda,
     filtros,
@@ -49,56 +48,114 @@ export default function TrazabilidadScreen() {
     limpiarBusqueda,
     nuevoRegistro,
     abrirDetalle,
-    volver,
+    errorCarga,
+    sesionExpirada,
+    cerrarErrorCarga,
+    irALogin,
+
   } = useTrazabilidadList();
 
+  useEffect(() => {
+    const successMessage =
+      typeof params.successMessage === "string" ? params.successMessage : "";
+
+    if (!successMessage) {
+      setVisibleSuccessMessage("");
+      return;
+    }
+
+    setVisibleSuccessMessage(successMessage);
+    const timer = setTimeout(() => setVisibleSuccessMessage(""), 3000);
+    return () => clearTimeout(timer);
+  }, [params.successMessage]);
+
   function renderRegistro(registro) {
+    const r = formatRegistroForView(registro);
     return (
-      <TrazabilidadCard
-        key={registro.id}
-        fincaNombre={registro.fincaNombre}
-        fecha={registro.fecha}
-        colaboradorNombre={registro.colaboradorNombre}
-        estanqueOrigenLabel={registro.estanqueOrigenLabel}
-        estanqueDestinoLabel={registro.estanqueDestinoLabel}
-        pl={registro.pl}
-        tamaño={registro.tamaño}
-        dias={registro.dias}
-        onPress={() => abrirDetalle(registro.id)}
-        style={styles.tarjeta}
-      />
-    );
+      <CardPress style={styles.card} onPress={() => abrirDetalle(r.id)} key={r.id}>
+          <View style={styles.cardHeader}>
+            <Text style={styles.fincaText}>{r.fincaNombre}</Text>
+            <Text style={styles.fechaText}>{r.fecha}</Text>
+          </View>
+
+          <Text style={styles.colaboradorText}>
+            {r.responsableTexto || `Responsable: ${r.colaboradorNombre}`}
+          </Text>
+
+          <View style={styles.movimiento}>
+            <Text style={styles.estanqueText} numberOfLines={1}>
+              {r.estanqueOrigenLabel}
+            </Text>
+
+            <Icon
+              icon={ICONS.arrowLongRight}
+              size={32}
+              color={COLORS.primary}
+              style={styles.flechaIcon}
+            />
+
+            <Text style={styles.estanqueText} numberOfLines={1}>
+              {r.estanqueDestinoLabel}
+            </Text>
+          </View>
+
+          <View style={styles.cardFooter}>
+            <View style={styles.dato}>
+              <Text style={styles.datoLabel}>PL</Text>
+              <Text style={styles.datoValor}>
+                {r.plFormatted}
+              </Text>
+            </View>
+
+            <View style={styles.dato}>
+              <Text style={styles.datoLabel}>Tamaño</Text>
+              <Text style={styles.datoValor}>{r.tamanoFormatted}</Text>
+            </View>
+
+            <View style={styles.dato}>
+              <Text style={styles.datoLabel}>Días</Text>
+              <Text style={styles.datoValor}>{registro.dias}</Text>
+            </View>
+          </View>
+        </CardPress>
+      );
   }
 
   return (
-    <View style={styles.screen}>
-      <Navbar
-        title=""
-        style={styles.header}
-        leftContent={
-          <View style={styles.headerRow}>
-            <View style={styles.headerRowLeft}>
-            <Button onPress={volver} style={styles.newButton}>
-              <Icon icon={ICONS.home} size={20} style={styles.iconColor} />
-            </Button>
-            <Title style={styles.title}>Trazabilidad Biológica</Title>
-            </View>
-          </View>
-        }
-        rightContent={
-          <View style={styles.headerRow}>
-            <Button onPress={nuevoRegistro} style={styles.newButton}>
-              <Icon icon={ICONS.add} size={20} style={styles.iconColor} />
-            </Button>
-          </View>
-        }
-      />
-
+    <View style={STYLE.container}>
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.wrapper}>
+        <View style={STYLE.contentWrapper}>
+          {visibleSuccessMessage ? (
+            <Alert
+              variant="success"
+              message={visibleSuccessMessage}
+              style={styles.successAlert}
+            />
+          ) : null}
+
+          {errorCarga !== "" && (
+            <>
+              <Alert
+                variant="danger"
+                message={errorCarga}
+                style={styles.successAlert}
+              />
+              {sesionExpirada ? (
+                <Button variant="outline" onPress={irALogin} style={styles.errorAlertButton}>
+                  Ir a iniciar sesión
+                </Button>
+              ) : (
+                <Button variant="outline" onPress={cerrarErrorCarga} style={styles.errorAlertButton}>
+                  Cerrar
+                </Button>
+              )}
+            </>
+          )}
+
+
           <View style={styles.busquedaRow}>
             <SearchBar
               value={busqueda}
@@ -140,11 +197,7 @@ export default function TrazabilidadScreen() {
                     <Button variant="outline" onPress={limpiarBusqueda}>
                       Limpiar búsqueda
                     </Button>
-                  ) : (
-                    <Button onPress={nuevoRegistro}>
-                      Agregar trazabilidad
-                    </Button>
-                  )
+                  ) : undefined
                 }
                 style={styles.vacioContainer}
                 titleStyle={styles.vacioTitulo}
@@ -160,8 +213,14 @@ export default function TrazabilidadScreen() {
               registrosFiltrados.map(renderRegistro)
             )}
           </View>
+
         </View>
       </ScrollView>
+      <View style={styles.floatingButtonContainer}>
+        <Button variant="outline" onPress={nuevoRegistro} style={styles.fullButton}>
+          + Registrar movimiento
+        </Button>
+      </View>
     </View>
   );
 }

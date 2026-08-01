@@ -1,4 +1,17 @@
-import { useCallback, useEffect, useState } from 'react';
+/**
+ * ============================================================
+ * HOOK useRangeCard
+ * ============================================================
+ *
+ * Descripción:
+ * Maneja el estado de las lecturas de RangeCard: agregar/quitar
+ * filas, clamping de valores dentro de sliderMin/sliderMax y evaluación de zonas.
+ *
+ * @dependencies react
+ * @validations Limita lecturas entre min/max, redondeo a decimales e idealMin/idealMax.
+ */
+
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 const limitar = (val, min, max) => Math.min(Math.max(val, min), max);
 const formatear = (val, decimals) => val.toFixed(decimals);
@@ -7,54 +20,12 @@ function crearLectura(id, value, decimals) {
   return { id, value, rawInput: formatear(value, decimals), editing: false };
 }
 
-/**
- * ============================================================
- * HOOK useRangeCard
- * ============================================================
- *
- * Maneja el estado de las lecturas de RangeCard: agregar/quitar
- * lecturas, clamping de valores dentro de sliderMin/sliderMax y
- * formateo de decimales.
- *
- * ---
- * PARÁMETROS (objeto único)
- * ---
- * idealMin     number  — límite inferior del rango ideal
- * idealMax     number? — límite superior del rango ideal
- * sliderMin    number  — límite inferior permitido al editar
- * sliderMax    number  — límite superior permitido al editar
- * step         number  — incremento de los botones +/-
- * decimals     number  — decimales a redondear
- * maxLecturas  number  — tope de lecturas
- * onChange     fn?     — (lecturas) => void, callback hacia el padre
- *
- * ---
- * RETORNA
- * ---
- * lecturas            array  — [{ id, value, rawInput, editing }]
- * agregarLectura      fn     — agrega una lectura nueva (respeta maxLecturas)
- * eliminarLectura     fn(id) — elimina una lectura (nunca deja el array vacío)
- * normalizar          fn(v)  — convierte un valor a 0–1 según sliderMin/sliderMax
- * tieneMaxIdeal       bool   — true si se definió idealMax
- * obtenerManejadores  fn(r)  — dado un objeto de lectura, retorna
- *                              { decrementar, incrementar, handleChangeText, handleFocus, handleBlur }
- *
- * ---
- * EJEMPLO DE USO
- * ---
- * const {
- *   lecturas, agregarLectura, eliminarLectura,
- *   normalizar, tieneMaxIdeal,
- *   obtenerManejadores,
- * } = useRangeCard({
- *   idealMin: 7.5, idealMax: 8.5,
- *   sliderMin: 4, sliderMax: 10,
- *   step: 0.1, decimals: 1, maxLecturas: 2,
- *   onChange: (r) => setLecturasPh(r),
- * });
- *
- * const { incrementar, decrementar, handleChangeText, handleBlur } = obtenerManejadores(lecturas[0]);
- */
+// Convierte valores iniciales en objetos de lectura reutilizables por RangeCard.
+function crearLecturasDesdeValores(valores, idealMin, decimals) {
+  return (Array.isArray(valores) ? valores : []).map((value, index) =>
+    crearLectura(index + 1, Number(value) || idealMin, decimals),
+  );
+}
 
 export default function useRangeCard({
   idealMin,
@@ -71,53 +42,60 @@ export default function useRangeCard({
 
   const [lecturas, setLecturas] = useState(() => {
     if (initialLecturas.length > 0) {
-      return initialLecturas.map((value, index) =>
-        crearLectura(index + 1, Number(value) || idealMin, decimals),
-      );
+      return crearLecturasDesdeValores(initialLecturas, idealMin, decimals);
     }
 
-    return [crearLectura(1, idealMin, decimals)];
+    // Start empty by default (no measurement created until user adds one
+    // or initialValues are provided).
+    return [];
   });
 
   useEffect(() => {
     const next = initialLecturas.length > 0
-      ? initialLecturas.map((value, index) =>
-          crearLectura(index + 1, Number(value) || idealMin, decimals),
-        )
-      : [crearLectura(1, idealMin, decimals)];
+      ? crearLecturasDesdeValores(initialLecturas, idealMin, decimals)
+      : [];
 
     setLecturas(next);
-    onChange?.(next);
-  }, [JSON.stringify(initialLecturas), idealMin, decimals, onChange]);
+  }, [JSON.stringify(initialLecturas), idealMin, decimals]);
+
+  // Ref para evitar que el montaje inicial emita onChange([]) antes de
+  // que los initialValues se apliquen (race condition cuando el key del
+  // RangeCard cambia y el componente se remonta con datos vacíos
+  // transitorios mientras el fetch de mediciones está en vuelo).
+  const mountedRef = useRef(false);
+
+  // Única fuente que notifica al padre: se dispara después del render
+  // (nunca dentro de un reducer de setState), así el drag continuo no
+  // intenta actualizar FisicoQuimicaScreen mientras RangeCard se está
+  // renderizando.
+  useEffect(() => {
+    if (!mountedRef.current) {
+      mountedRef.current = true;
+      // En el primer render, solo emitir si ya hay lecturas reales.
+      // Si está vacío, no notificar — evita borrar los datos del padre.
+      if (lecturas.length > 0) {
+        onChange?.(lecturas);
+      }
+      return;
+    }
+    onChange?.(lecturas);
+  }, [lecturas, onChange]);
 
   const actualizarLectura = useCallback(
     (id, patch) => {
-      setLecturas((prev) => {
-        const next = prev.map((r) => (r.id === id ? { ...r, ...patch } : r));
-        onChange?.(next);
-        return next;
-      });
+      setLecturas((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)));
     },
-    [onChange]
+    []
   );
 
   const agregarLectura = useCallback(() => {
     if (lecturas.length >= maxLecturas) return;
-    setLecturas((prev) => {
-      const next = [...prev, crearLectura(Date.now(), idealMin, decimals)];
-      onChange?.(next);
-      return next;
-    });
-  }, [lecturas.length, maxLecturas, idealMin, decimals, onChange]);
+    setLecturas((prev) => [...prev, crearLectura(Date.now(), idealMin, decimals)]);
+  }, [lecturas.length, maxLecturas, idealMin, decimals]);
 
   const eliminarLectura = useCallback((id) => {
-    setLecturas((prev) => {
-      if (prev.length <= 1) return prev;
-      const next = prev.filter((r) => r.id !== id);
-      onChange?.(next);
-      return next;
-    });
-  }, [onChange]);
+    setLecturas((prev) => prev.filter((r) => r.id !== id));
+  }, []);
 
   const normalizar = (v) => (v - sliderMin) / (sliderMax - sliderMin);
   const tieneMaxIdeal = Number.isFinite(idealMax);
@@ -153,6 +131,12 @@ export default function useRangeCard({
           ? r.value
           : parseFloat(limitar(parsed, sliderMin, sliderMax).toFixed(decimals));
         actualizarLectura(r.id, { value: safe, rawInput: formatear(safe, decimals), editing: false });
+      },
+      // Actualiza el valor mientras se arrastra el thumb de RangeTrack.
+      // El valor ya llega redondeado/clampeado desde el componente.
+      handleArrastre: (nuevoValor) => {
+        const next = parseFloat(limitar(nuevoValor, sliderMin, sliderMax).toFixed(decimals));
+        actualizarLectura(r.id, { value: next, rawInput: formatear(next, decimals) });
       },
     }),
     [step, sliderMin, sliderMax, decimals, actualizarLectura]

@@ -1,133 +1,111 @@
 // modules/inventarios/services/inventarioService.js
 
 /**
- * Store en memoria para el módulo de inventarios.
- * Sirve como capa de datos mientras no hay backend.
- * Exporta funciones para leer, agregar y editar productos.
+ * ============================================================
+ * SERVICE: InventarioService
+ * ============================================================
+ *
+ * Responsabilidad:
+ * Capa de servicios y comunicación HTTP para el módulo de inventarios.
+ * Se conecta de forma asíncrona con la API para gestionar las operaciones
+ * CRUD (leer, agregar, actualizar y eliminar) de los productos del inventario.
+ *
+ * Datos:
+ * Cada producto: { id, codigo, nombre, categoria, cantidad, unidad,
+ * stockMinimo, proveedor, precioUnidad, fechaCaducidad }.
+ * fechaCaducidad ya existe como dato real del producto (se define y
+ * se guarda desde el módulo de Productos); aquí solo se refleja para
+ * que el filtro de "Fecha de caducidad" de FilterButton.jsx pueda
+ * usarlo. Formato dd/mm/aaaa, igual al que entrega el DateInput
+ * compartido.
+ *
+ * Validaciones:
+ * No aplica validación de campos aquí (se realiza en el formulario que
+ * consume este servicio). El id se autogenera de forma incremental.
+ *
+ * Navegación:
+ * No aplica, es una capa de datos sin UI.
+ *
+ * Dependencias:
+ * Es consumido por hooks/useInventario.js.
  */
+import api from "../../../api/api";
 
-let productos = [
-  {
-    id: 1,
-    nombre: "Alimento Biomar 35%",
-    categoria: "Alimentación",
-    cantidad: 250,
-    unidad: "kg",
-    stockMinimo: 50,
-    proveedor: "Biomar",
-    precioUnidad: 1450,
-  },
-  {
-    id: 2,
-    nombre: "Melaza de caña",
-    categoria: "Alimentación",
-    cantidad: 30,
-    unidad: "litros",
-    stockMinimo: 50,
-    proveedor: "Trisan",
-    precioUnidad: 320,
-  },
-  {
-    id: 3,
-    nombre: "Cal agrícola",
-    categoria: "Tratamiento",
-    cantidad: 120,
-    unidad: "kg",
-    stockMinimo: 40,
-    proveedor: "Farivet",
-    precioUnidad: 850,
-  },
-  {
-    id: 4,
-    nombre: "Probiótico EM-1",
-    categoria: "Tratamiento",
-    cantidad: 15,
-    unidad: "litros",
-    stockMinimo: 20,
-    proveedor: "Farivet",
-    precioUnidad: 4200,
-  },
-  {
-    id: 5,
-    nombre: "Oxígeno granulado",
-    categoria: "Químico",
-    cantidad: 80,
-    unidad: "kg",
-    stockMinimo: 30,
-    proveedor: "Trisan",
-    precioUnidad: 2100,
-  },
-  {
-    id: 6,
-    nombre: "Sal mineral",
-    categoria: "Alimentación",
-    cantidad: 200,
-    unidad: "kg",
-    stockMinimo: 60,
-    proveedor: "Trisan",
-    precioUnidad: 560,
-  },
-  {
-    id: 7,
-    nombre: "Fertilizante NPK",
-    categoria: "Fertilizante",
-    cantidad: 10,
-    unidad: "kg",
-    stockMinimo: 25,
-    proveedor: "Farivet",
-    precioUnidad: 1750,
-  },
-  {
-    id: 8,
-    nombre: "Yodo povidona",
-    categoria: "Químico",
-    cantidad: 5,
-    unidad: "litros",
-    stockMinimo: 10,
-    proveedor: "Trisan",
-    precioUnidad: 3900,
-  },
-];
+export async function getProductosInventario() {
+  try {
+    const response = await api.get("/inventario");
 
-/** Retorna una copia del array para evitar mutaciones externas. */
-export function getProductosInventario() {
-  return [...productos];
+    return response.data.data;
+  } catch (error) {
+    console.error("Error al obtener productos de inventario:", error);
+
+    throw error;
+  }
 }
 
-/**
- * Agrega un nuevo producto al store.
- * Asigna un id numérico autoincremental.
- */
-export function addProducto(producto) {
-  const nuevoId = productos.length > 0
-    ? Math.max(...productos.map((p) => p.id)) + 1
-    : 1;
+export async function getProductoById(id) {
+  try {
+    const response = await api.get(`/inventario/${id}`);
 
-  const nuevo = { ...producto, id: nuevoId };
-  productos = [...productos, nuevo];
-  return nuevo;
+    return response.data.data;
+  } catch (error) {
+    console.error(
+      "Error al obtener producto:",
+      error.response?.data || error.message,
+    );
+
+    throw error;
+  }
 }
 
-/**
- * Actualiza un producto existente por id.
- * Si no encuentra el id, no hace nada.
- */
-export function updateProducto(productoActualizado) {
-  productos = productos.map((p) =>
-    p.id === productoActualizado.id ? { ...p, ...productoActualizado } : p
-  );
+export async function addProducto({ producto_id,proveedor_id, stock_minimo }) {
+  try {
+    const response = await api.post("/inventario", {
+      producto_id,
+      proveedor_id,
+      stock_minimo,
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Error al crear producto:",
+      error.response?.data || error.message,
+    );
+    
+    throw error;
+  }
 }
 
-/**
- * Obtiene un producto por id.
- */
-export function getProductoById(id) {
-  return productos.find((p) => String(p.id) === String(id));
+export async function updateProducto(id, { proveedor_id, stock_minimo }) {
+  try {
+    const response = await api.put(`/inventario/${id}`,{
+      proveedor_id,
+      stock_minimo,
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Error al actualizar producto:",
+      error.response?.data || error.message,
+    );
+
+    throw error;
+  }
 }
 
-/**
- * Elimina un producto por id.
- */
-export function deleteProducto(id) {
-  productos = productos.filter((p) => p.id !== parseInt(id));
+export async function deleteProducto(id) {
+  try {
+    const response = await api.delete(`/inventario/${id}`);
+
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Error al eliminar producto:",
+      error.response?.data || error.message,
+    );
+
+    throw error;
+  }
 }

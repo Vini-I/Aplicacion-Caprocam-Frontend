@@ -1,44 +1,16 @@
 /**
  * ============================================================
- * COMPONENTE FILTERBUTTON (módulo Trazabilidad)
+ * COMPONENTE FilterButton
  * ============================================================
  *
- * Botón de filtrado con modal para el listado de Trazabilidad.
- * Mismo patrón visual que el FilterButton del módulo inventarios,
- * adaptado a los filtros relevantes de este módulo.
+ * Descripción:
+ * Botón de filtrado con modal inferior para el listado de Trazabilidad.
  *
- * Funcionalidad:
- * - Abre un modal desde la parte inferior de la pantalla.
- * - Filtra por finca con chips horizontales.
- * - Filtra por colaborador responsable con chips horizontales.
- * - Filtro por fecha del movimiento con DateInput.
- * - Badge en el botón con cantidad de filtros activos.
- * - Los filtros se aplican solo al presionar Aplicar.
- *
- * Props principales:
- * - fincas: array { label, value } - fincas disponibles.
- * - colaboradores: array { label, value } - colaboradores disponibles.
- * - activeFilters: objeto con los filtros activos actuales.
- * - onApply: función que recibe el objeto de filtros al aplicar.
- *
- * Estructura del objeto que recibe onApply:
- * {
- *   fincas: string[],
- *   colaboradores: string[],
- *   fecha: string,   // fecha en formato dd/mm/aaaa, vacío si no aplica
- * }
- *
- * Ejemplo:
- * <FilterButton
- *   fincas={fincas}
- *   colaboradores={colaboradores}
- *   activeFilters={filters}
- *   onApply={(f) => setFilters(f)}
- * />
+ * @dependencies FilterButtonStyles, Modal, Chip, DateInput, Button
+ * @validations Aplica filtros al presionar Aplicar; calcula badge de filtros activos.
+ * @navigation N/A
  */
-
-import { useState } from "react";
-import { View, ScrollView, StyleSheet } from "react-native";
+import { View, ScrollView } from "react-native";
 
 import Modal from "../../../shared/components/Modal";
 import Button from "../../../shared/components/Button";
@@ -46,10 +18,13 @@ import Icon from "../../../shared/components/Icons";
 import Title from "../../../shared/components/Title";
 import Text from "../../../shared/components/Text";
 import Badge from "../../../shared/components/Badge";
-import DateInput from "../../../shared/components/DateInput";
+import Input from "../../../shared/components/Input";
+import FilterChip from "../../../shared/components/FilterChip";
+import { useFilterButton } from "../hooks/useFilterButton";
 
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
+import { styles, sectionStyles } from "../styles/FilterButtonStyles";
 
 export default function FilterButton({
   fincas = [],
@@ -63,75 +38,50 @@ export default function FilterButton({
   style,
   containerStyle,
 }) {
-  const [modalVisible, setModalVisible] = useState(false);
+  const {
+    modalVisible,
+    pendingFincas,
+    pendingEstanques,
+    pendingColaboradores,
+    pendingFecha,
+    estanquesDisponibles,
+    activeCount,
+    setPendingFecha,
+    abrirModal,
+    cerrarModal,
+    toggleFinca,
+    toggleEstanque,
+    toggleColaborador,
+    limpiarFiltros,
+    aplicarFiltros,
+  } = useFilterButton({ activeFilters, onApply });
 
-  const [pendingFincas, setPendingFincas] = useState([]);
-  const [pendingColaboradores, setPendingColaboradores] = useState([]);
-  const [pendingFecha, setPendingFecha] = useState("");
-
-  const activeCount =
-    (activeFilters.fincas?.length || 0) +
-    (activeFilters.colaboradores?.length || 0) +
-    (activeFilters.fecha ? 1 : 0);
-
-  function abrirModal() {
-    setPendingFincas([...(activeFilters.fincas || [])]);
-    setPendingColaboradores([...(activeFilters.colaboradores || [])]);
-    setPendingFecha(activeFilters.fecha || "");
-    setModalVisible(true);
-  }
-
-  function cerrarModal() {
-    setModalVisible(false);
-  }
-
-  function toggleItem(list, setList, value) {
-    setList((previous) =>
-      previous.includes(value)
-        ? previous.filter((item) => item !== value)
-        : [...previous, value],
-    );
-  }
-
-  function limpiarFiltros() {
-    setPendingFincas([]);
-    setPendingColaboradores([]);
-    setPendingFecha("");
-  }
-
-  function aplicarFiltros() {
-    if (onApply) {
-      onApply({
-        fincas: pendingFincas,
-        colaboradores: pendingColaboradores,
-        fecha: pendingFecha,
-      });
-    }
-
-    cerrarModal();
-  }
+  const buttonVariant = activeCount > 0 ? "primary" : "outline";
+  const buttonIconColor = activeCount > 0 ? COLORS.white : COLORS.textSecondary;
+  const buttonTextColor = activeCount > 0 ? COLORS.white : COLORS.textSecondary;
 
   return (
     <>
       <View style={containerStyle}>
         <Button
-          variant="outline"
+          variant={buttonVariant}
           onPress={abrirModal}
           style={[
             styles.filterBtn,
             activeCount > 0 && styles.filterBtnActive,
+            activeCount === 0 && styles.filterBtnInactive,
             style,
           ]}
         >
           <Icon
             icon={ICONS.filter}
             size={16}
-            color={activeCount > 0 ? COLORS.primary : COLORS.textSecondary}
+            color={buttonIconColor}
           />
           <Text
             size={14}
             weight="500"
-            color={activeCount > 0 ? COLORS.primary : COLORS.textSecondary}
+            color={buttonTextColor}
             style={styles.filterBtnText}
           >
             Filtrar
@@ -165,13 +115,24 @@ export default function FilterButton({
           {fincas.length > 0 && (
             <FilterSection label="Finca">
               {fincas.map((finca) => (
-                <Chip
+                <FilterChip
                   key={finca.value}
                   label={finca.label}
-                  selected={pendingFincas.includes(finca.value)}
-                  onPress={() =>
-                    toggleItem(pendingFincas, setPendingFincas, finca.value)
-                  }
+                  active={pendingFincas.includes(finca.value)}
+                  onPress={() => toggleFinca(finca.value)}
+                />
+              ))}
+            </FilterSection>
+          )}
+
+          {estanquesDisponibles.length > 0 && (
+            <FilterSection label="Estanque">
+              {estanquesDisponibles.map((estanque) => (
+                <FilterChip
+                  key={estanque.value}
+                  label={estanque.label}
+                  active={pendingEstanques.includes(estanque.value)}
+                  onPress={() => toggleEstanque(estanque.value)}
                 />
               ))}
             </FilterSection>
@@ -180,26 +141,22 @@ export default function FilterButton({
           {colaboradores.length > 0 && (
             <FilterSection label="Responsable">
               {colaboradores.map((colaborador) => (
-                <Chip
+                <FilterChip
                   key={colaborador.value}
                   label={colaborador.label}
-                  selected={pendingColaboradores.includes(colaborador.value)}
-                  onPress={() =>
-                    toggleItem(
-                      pendingColaboradores,
-                      setPendingColaboradores,
-                      colaborador.value,
-                    )
-                  }
+                  active={pendingColaboradores.includes(colaborador.value)}
+                  onPress={() => toggleColaborador(colaborador.value)}
                 />
               ))}
             </FilterSection>
           )}
 
           <FilterSection label="Fecha del movimiento">
-            <DateInput
+            <Input
               value={pendingFecha}
               onChangeText={setPendingFecha}
+              placeholder="dd/mm/aaaa"
+              keyboardType="numbers-and-punctuation"
               containerStyle={styles.dateInput}
             />
           </FilterSection>
@@ -234,134 +191,4 @@ function FilterSection({ label, children }) {
   );
 }
 
-const sectionStyles = StyleSheet.create({
-  container: {
-    marginBottom: 20,
-  },
-  label: {
-    marginBottom: 10,
-  },
-  chipsRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-  },
-});
 
-function Chip({ label, selected, onPress }) {
-  return (
-    <Button
-      variant="outline"
-      onPress={onPress}
-      style={[chipStyles.chip, selected && chipStyles.chipSelected]}
-    >
-      <Text
-        size={13}
-        color={selected ? COLORS.primary : COLORS.textSecondary}
-        weight={selected ? "600" : "400"}
-      >
-        {label}
-      </Text>
-    </Button>
-  );
-}
-
-const chipStyles = StyleSheet.create({
-  chip: {
-    paddingVertical: 6,
-    paddingHorizontal: 14,
-    borderRadius: 99,
-    borderWidth: 1,
-    borderColor: COLORS.textTertiary,
-    backgroundColor: COLORS.white,
-  },
-  chipSelected: {
-    borderColor: COLORS.primary,
-    backgroundColor: COLORS.white,
-  },
-});
-
-const styles = StyleSheet.create({
-  filterBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: COLORS.textTertiary,
-    backgroundColor: COLORS.white,
-  },
-  filterBtnActive: {
-    borderColor: COLORS.primary,
-  },
-  filterBtnText: {
-    marginTop: 0,
-  },
-  badge: {
-    backgroundColor: COLORS.primary,
-    borderRadius: 99,
-    minWidth: 18,
-    height: 18,
-    paddingHorizontal: 6,
-    paddingVertical: 3,
-    marginTop: 4,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  badgeText: {
-    color: COLORS.white,
-    fontSize: 10,
-    fontWeight: "600",
-    textAlign: "center",
-  },
-  overlay: {
-    backgroundColor: "rgba(0,0,0,0.45)",
-    justifyContent: "flex-end",
-    padding: 0,
-  },
-  modalContainer: {
-    borderRadius: 20,
-    borderBottomLeftRadius: 0,
-    borderBottomRightRadius: 0,
-    maxHeight: "90%",
-    paddingBottom: 8,
-  },
-  modalHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 24,
-  },
-  closeBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 99,
-    borderWidth: 1,
-    borderColor: COLORS.textTertiary,
-    backgroundColor: COLORS.secondary,
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 0,
-    paddingVertical: 0,
-    paddingHorizontal: 0,
-  },
-  dateInput: {
-    flex: 1,
-    marginBottom: 0,
-  },
-  actions: {
-    flexDirection: "row",
-    gap: 8,
-    marginTop: 20,
-  },
-  btnClear: {
-    flex: 1,
-    marginTop: 0,
-  },
-  btnApply: {
-    flex: 1,
-    marginTop: 0,
-  },
-});

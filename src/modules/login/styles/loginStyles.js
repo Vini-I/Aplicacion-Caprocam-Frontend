@@ -1,39 +1,17 @@
+/**
+ * ============================================================
+ * ESTILOS: LoginScreen
+ * ============================================================
+ *
+ * Centraliza el layout y la apariencia de la pantalla de login.
+ */
+
 import { StyleSheet } from 'react-native';
 
 import { COLORS } from '../../../theme/colors';
 import { TYPOGRAPHY } from '../../../theme/typography';
 
 const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: COLORS.surface,
-  },
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.surface,
-  },
-  content: {
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 12,
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
-  },
-  safeActionArea: {
-    backgroundColor: COLORS.white,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.secondary,
-    paddingHorizontal: 20,
-    paddingTop: 10,
-  },
-  footerContent: {
-    paddingHorizontal: 20,
-    paddingBottom: 6,
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
-  },
   heroCard: {
     alignItems: 'center',
     marginBottom: 16,
@@ -60,13 +38,37 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderColor: COLORS.secondary,
   },
-  sectionSubtitle: {
-    marginTop: 4,
-    marginBottom: 14,
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
+  syncButton: {
+    width: "100%",
+    maxWidth: 450,
+    alignSelf: "center",
+    marginBottom: 12,
+  },
+  searchContainer: {
+    marginBottom: 12,
+  },
+  searchInputContainer: {
+    marginBottom: 0,
+  },
+  searchInput: {
+    borderWidth: 0,
+    paddingHorizontal: 0,
+    backgroundColor: 'transparent',
+    outlineStyle: 'none',
+  },
+  continueButton: {
+    width: "100%",
+    maxWidth: 450,
+    alignSelf: "center",
   },
   workersList: {
     marginTop: 6,
+  },
+  workersScroll: {
+    height: 392, // ~5 items de ~72px cada uno
+  },
+  workersScrollCompressed: {
+    height: 336, // reducido ~56px cuando el alert de sync es visible
   },
   workerButton: {
     marginTop: 0,
@@ -105,10 +107,8 @@ const styles = StyleSheet.create({
     marginVertical: 14,
     fontFamily: TYPOGRAPHY.fontFamily.regular,
   },
-  validationContainer: {
-    alignItems: 'center',
-    paddingTop: 8,
-    paddingBottom: 2,
+  actionSection: {
+    marginTop: 4,
   },
   modalOverlay: {
     backgroundColor: 'rgba(0,0,0,0.4)',
@@ -121,6 +121,14 @@ const styles = StyleSheet.create({
   modalTitle: {
     marginBottom: 12,
     fontFamily: TYPOGRAPHY.fontFamily.medium,
+  },
+  cancelButtonOutline: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+  },
+  cancelButtonTextOutline: {
+    color: COLORS.primary,
   },
   pinInputContainer: {
     width: '100%',
@@ -138,10 +146,15 @@ const styles = StyleSheet.create({
     color: COLORS.textPrimary,
     backgroundColor: COLORS.white,
   },
-  pinErrorText: {
+  pinErrorAlert: {
     marginTop: 10,
     marginBottom: 8,
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
+  },
+  syncAlert: {
+    width: '100%',
+    maxWidth: 450,
+    alignSelf: 'center',
+    marginBottom: 12,
   },
 });
 

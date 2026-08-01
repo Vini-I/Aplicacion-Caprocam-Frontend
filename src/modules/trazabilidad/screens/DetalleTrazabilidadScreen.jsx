@@ -1,111 +1,65 @@
 /**
- * Pantalla: DetalleTrazabilidadScreen
+ * ============================================================
+ * PANTALLA DetalleTrazabilidadScreen
+ * ============================================================
  *
- * Muestra toda la información de un registro de Trazabilidad ya
- * guardado (movimiento de pre-cría a engorde).
+ * Descripción:
+ * Muestra la información completa de solo lectura de un registro de trazabilidad.
  *
- * Este registro es un hecho histórico: la pantalla es de solo
- * lectura, sin botón de editar ni de eliminar, tal como lo
- * establece la especificación del módulo.
- *
- * Funcionalidades principales:
- * - Recibir el id del registro mediante la ruta (/trazabilidad/[id]).
- * - Mostrar el movimiento Origen -> Destino en un bloque destacado.
- * - Mostrar el resto de los datos del registro en modo solo lectura.
- *
- * Componentes utilizados:
- * - Navbar: encabezado de la pantalla.
- * - Badge: etiqueta de "Registro histórico".
- * - Card: agrupación visual de las secciones del detalle.
- * - Input, Select, DateInput: campos en modo solo lectura.
- * - Button: acción para volver al listado (sin Pressable directo).
+ * @dependencies TrazabilidadServices, Card, Input, Badge, expo-router
+ * @validations Registro histórico de solo lectura.
+ * @navigation Carga parámetro `id` de la ruta `/trazabilidad/[id]`.
  */
+import { useEffect, useState } from "react";
 import { View, ScrollView } from "react-native";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import {useLocalSearchParams } from "expo-router";
 import Text from "../../../shared/components/Text";
-import Title from "../../../shared/components/Title";
-
 import { styles } from "../styles/DetalleTrazabilidadStyles";
-
-import Navbar from "../../../shared/components/Navbar";
-import Button from "../../../shared/components/Button";
+import { STYLE } from "../../../theme/style";
 import Card from "../../../shared/components/Card";
 import Badge from "../../../shared/components/Badge";
 import Input from "../../../shared/components/Input";
-import Select from "../../../shared/components/Select";
-import DateInput from "../../../shared/components/DateInput";
-import Icon from "../../../shared/components/Icons";
-import { ICONS } from "../../../theme/icons";
 
-import { obtenerRegistroTrazabilidadPorId } from "../services/TrazabilidadServices";
+
+import { getRegistroPorId } from "../services/TrazabilidadServices";
 
 export default function DetalleTrazabilidadScreen() {
-  const router = useRouter();
   const { id } = useLocalSearchParams();
 
-  const registro = obtenerRegistroTrazabilidadPorId(Number(id));
+  const [registro, setRegistro] = useState(null);
+  const [cargando, setCargando] = useState(true);
 
-  function volver() {
-    router.back();
+  useEffect(() => {
+    // TODO: confirmar con API el tipo real de id (hoy se manda tal cual llega de la ruta)
+    getRegistroPorId(id)
+      .then(setRegistro)
+      .catch(() => setRegistro(null))
+      .finally(() => setCargando(false));
+  }, [id]);
+
+  if (cargando) {
+    return (
+      <View style={STYLE.container}>
+        <Text style={styles.notFoundText}>Cargando...</Text>
+      </View>
+    );
   }
 
   if (!registro) {
     return (
-      <View style={styles.container}>
-        <Navbar
-          title=""
-          leftContent={
-            <View style={styles.headerRow}>
-              <View style={styles.headerRowLeft}>
-                <Button
-                  variant="outline"
-                  onPress={volver}
-                  style={styles.backButton}
-                >
-                  <Icon icon={ICONS.back} size={20} style={styles.iconColor} />
-                </Button>
-
-                <Title style={styles.title}>Detalle de Trazabilidad</Title>
-              </View>
-            </View>
-          }
-          style={styles.header}
-        />
-
-        <Text style={styles.notFoundText}>
-          No se encontró el registro solicitado.
-        </Text>
+      <View style={STYLE.container}>
+        <Text style={styles.notFoundText}>No se encontró el registro solicitado.</Text>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <Navbar
-        title=""
-        leftContent={
-          <View style={styles.headerRow}>
-            <View style={styles.headerRowLeft}>
-              <Button
-                variant="outline"
-                onPress={volver}
-                style={styles.backButton}
-              >
-                <Icon icon={ICONS.back} size={20} style={styles.iconColor} />
-              </Button>
-
-              <Title style={styles.title}>{registro.fincaNombre}</Title>
-            </View>
-          </View>
-        }
-        style={styles.header}
-      />
-
+    <View style={STYLE.container}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        <View style={styles.wrapper}>
+        <View style={STYLE.contentWrapper}>
           <Badge
             label="Registro histórico · no editable"
             variant="info"
@@ -135,22 +89,19 @@ export default function DetalleTrazabilidadScreen() {
           </Card>
 
           <Card title="Información del movimiento" titleStyle={styles.cardTitle}>
-            <DateInput
+            <Input
               label="Fecha del movimiento"
               value={registro.fecha}
-              disabled={true}
-              inputStyle={styles.inputLectura}
+              editable={false}
+              style={styles.inputLectura}
               labelStyle={styles.labelLectura}
             />
 
-            <Select
-              label="Colaborador responsable"
-              options={[
-                { label: registro.colaboradorNombre, value: registro.colaboradorId },
-              ]}
-              value={registro.colaboradorId}
-              disabled={true}
-              selectStyle={styles.inputLectura}
+            <Input
+              label={registro.tipoResponsable ? `${registro.tipoResponsable} responsable` : "Responsable"}
+              value={registro.colaboradorNombre || "N/A"}
+              editable={false}
+              style={styles.inputLectura}
               labelStyle={styles.labelLectura}
             />
           </Card>
@@ -158,7 +109,7 @@ export default function DetalleTrazabilidadScreen() {
           <Card title="Datos del traslado" titleStyle={styles.cardTitle}>
             <Input
               label="Tamaño (gramos)"
-              value={`${registro.tamaño}g`}
+              value={`${registro.tamano}g`}
               editable={false}
               style={styles.inputLectura}
               labelStyle={styles.labelLectura}

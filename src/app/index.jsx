@@ -5,7 +5,7 @@ export default function Placeholder() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace("/login");
+    router.replace("/landing");
   }, []);
 
   return null;

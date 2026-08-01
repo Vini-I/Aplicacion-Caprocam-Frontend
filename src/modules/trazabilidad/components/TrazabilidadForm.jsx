@@ -1,21 +1,14 @@
 /**
- * Componente: TrazabilidadForm
+ * ============================================================
+ * COMPONENTE TrazabilidadForm
+ * ============================================================
  *
- * Formulario reutilizable para capturar el movimiento de un lote
- * de camarón de pre-cría a engorde (registro de Trazabilidad).
+ * Descripción:
+ * Formulario reutilizable para capturar el movimiento de un lote de camarón de pre-cría a engorde.
  *
- * Funcionalidades principales:
- * - Capturar finca, estanque de origen y estanque de destino.
- * - Capturar fecha del movimiento y colaborador responsable.
- * - Capturar tamaño (gramos), días de siembra y PL.
- * - El estanque de destino excluye al estanque ya elegido como origen,
- *   y viceversa, para evitar que coincidan.
- *
- * Componentes utilizados:
- * - Card: agrupación visual de las secciones del formulario.
- * - Select: selección de finca, estanques y colaborador.
- * - NumberInput: campos numéricos de tamaño, días y PL.
- * - DateInput: fecha del movimiento (no permite fechas futuras).
+ * @dependencies Select, Input, DateInput, TrazabilidadFormStyles
+ * @validations Encadenamiento de estanques, origen != destino, formato de fecha y valores numéricos.
+ * @navigation N/A
  */
 import { View, Platform } from "react-native";
 
@@ -23,57 +16,29 @@ import Text from "../../../shared/components/Text";
 import Card from "../../../shared/components/Card";
 import NumberInput from "../../../shared/components/NumberInput";
 import Select from "../../../shared/components/Select";
+import Input from "../../../shared/components/Input";
 import DateInput from "../../../shared/components/DateInput";
+import Icon from "../../../shared/components/Icons";
+import { COLORS } from "../../../theme/colors";
+import { ICONS } from "../../../theme/icons";
+import { STYLE } from "../../../theme/style";
 import { styles } from "../styles/TrazabilidadFormStyles";
-
-function convertDateToWeb(textDate) {
-  const parts = textDate.split("/");
-
-  if (parts.length !== 3) {
-    return "";
-  }
-
-  const day = parts[0];
-  const month = parts[1];
-  const year = parts[2];
-
-  return `${year}-${month}-${day}`;
-}
-
-function convertWebDateToText(webDate) {
-  const parts = webDate.split("-");
-
-  if (parts.length !== 3) {
-    return "";
-  }
-
-  const year = parts[0];
-  const month = parts[1];
-  const day = parts[2];
-
-  return `${day}/${month}/${year}`;
-}
-
-function getTodayWebDate() {
-  const today = new Date();
-
-  const day = String(today.getDate()).padStart(2, "0");
-  const month = String(today.getMonth() + 1).padStart(2, "0");
-  const year = today.getFullYear();
-
-  return `${year}-${month}-${day}`;
-}
+import {
+  esFechaValida,
+  esFechaFutura,
+  formatearFechaInput,
+} from "../../../shared/utils/dateUtils";
 
 export default function TrazabilidadForm({
   formData,
   fincas,
-  colaboradores,
+  colaboradorSesion,
   estanquesOrigen,
   estanquesDestino,
   onChange,
   onChangeFinca,
   plAutocompletado = false,
-  style,
+  submitted = false,
 }) {
   const opcionesOrigen = estanquesOrigen.filter(
     (estanque) => estanque.value !== formData.estanqueDestinoId,
@@ -83,105 +48,153 @@ export default function TrazabilidadForm({
     (estanque) => estanque.value !== formData.estanqueOrigenId,
   );
 
+  const mismoEstanqueOrigenDestino =
+    formData.estanqueOrigenId !== "" &&
+    formData.estanqueOrigenId === formData.estanqueDestinoId;
+
+  const mostrarErrorFinca = submitted && !formData.fincaId;
+  const mostrarErrorOrigen =
+    submitted && (!formData.estanqueOrigenId || mismoEstanqueOrigenDestino);
+  const mostrarErrorDestino =
+    submitted && (!formData.estanqueDestinoId || mismoEstanqueOrigenDestino);
+  const mostrarErrorFecha =
+    submitted &&
+    (!formData.fecha ||
+      !esFechaValida(formData.fecha) ||
+      esFechaFutura(formData.fecha));
+  const mostrarErrorTamano = submitted && (!formData.tamaño || Number(formData.tamaño) <= 0);
+  const mostrarErrorDias = submitted && (!formData.dias || Number(formData.dias) <= 0);
+  const mostrarErrorPl = submitted && (!formData.pl || Number(formData.pl) <= 0);
   function renderFecha() {
     if (Platform.OS === "web") {
       return (
-        <View style={styles.webDateContainer}>
-          <Text style={styles.webDateLabel}>Fecha del movimiento</Text>
-
-          <input
-            type="date"
-            value={convertDateToWeb(formData.fecha)}
-            max={getTodayWebDate()}
-            onChange={(event) =>
-              onChange("fecha", convertWebDateToText(event.target.value))
-            }
-            style={styles.webDateInput}
-          />
-        </View>
+        <Input
+          label="Fecha del movimiento *"
+          value={formData.fecha}
+          onChangeText={(value) => onChange("fecha", formatearFechaInput(value))}
+          containerStyle={styles.field}
+          style={mostrarErrorFecha ? styles.errorInput : undefined}
+          labelStyle={styles.label}
+          keyboardType="numeric"
+          inputMode="numeric"
+          maxLength={10}
+          placeholder="dd/mm/aaaa"
+        />
       );
     }
 
     return (
       <DateInput
-        label="Fecha del movimiento"
+        label="Fecha del movimiento *"
         value={formData.fecha}
         onChangeText={(value) => onChange("fecha", value)}
+        containerStyle={styles.field}
+        inputStyle={mostrarErrorFecha ? styles.errorInput : undefined}
+        labelStyle={styles.label}
+        placeholder="dd/mm/aaaa"
       />
     );
   }
 
   return (
-    <View style={[styles.container, style]}>
-      <Card title="Movimiento" titleStyle={styles.cardTitle}>
+
+    <View style={[STYLE.contentWrapper]}>
+      <Card>
+        <View style={styles.cardTitleRow}>
+          <Icon icon={ICONS.transfer} color={COLORS.primary} />
+          <Text style={styles.cardTitle}>Movimiento</Text>
+        </View>
         <Select
-          label="Finca"
+          label="Finca *"
           placeholder="Seleccionar finca"
           options={fincas}
           value={formData.fincaId}
           onChange={onChangeFinca}
+          containerStyle={styles.field}
+          labelStyle={styles.label}
+          selectStyle={mostrarErrorFinca ? styles.errorInput : undefined}
         />
 
         <Select
-          label="Estanque de origen (Pre-cría)"
+          label="Estanque de origen (Pre-cría) *"
           placeholder="Seleccionar estanque de origen"
           options={opcionesOrigen}
           value={formData.estanqueOrigenId}
           onChange={(value) => onChange("estanqueOrigenId", value)}
           disabled={formData.fincaId === ""}
+          containerStyle={styles.field}
+          labelStyle={styles.label}
+          selectStyle={mostrarErrorOrigen ? styles.errorInput : undefined}
         />
 
         <Select
-          label="Estanque de destino (Engorde)"
+          label="Estanque de destino (Engorde) *"
           placeholder="Seleccionar estanque de destino"
           options={opcionesDestino}
           value={formData.estanqueDestinoId}
           onChange={(value) => onChange("estanqueDestinoId", value)}
           disabled={formData.fincaId === ""}
+          containerStyle={styles.field}
+          labelStyle={styles.label}
+          selectStyle={mostrarErrorDestino ? styles.errorInput : undefined}
         />
 
         {renderFecha()}
 
-        <Select
-          label="Colaborador responsable"
-          placeholder="Seleccionar colaborador"
-          options={colaboradores}
-          value={formData.colaboradorId}
-          onChange={(value) => onChange("colaboradorId", value)}
+        <Input
+          label={colaboradorSesion?.labelCampo || "Responsable"}
+          value={colaboradorSesion?.nombre || colaboradorSesion?.label || ""}
+          editable={false}
+          containerStyle={styles.field}
+          labelStyle={styles.label}
         />
       </Card>
 
-      <Card title="Datos del traslado" titleStyle={styles.cardTitle}>
+      <Card>
+        <View style={styles.cardTitleRow}>
+          <Icon icon={ICONS.clipboard} color={COLORS.primary} />
+          <Text style={styles.cardTitle}>Datos del traslado</Text>
+        </View>
         <NumberInput
-          label="Tamaño (gramos)"
+          label="Tamaño (gramos) *"
           value={formData.tamaño}
           onChangeText={(value) => onChange("tamaño", value)}
           min={0}
           max={100}
           step={1}
+          containerStyle={styles.field}
+          labelStyle={styles.label}
+          style={mostrarErrorTamano ? styles.errorInput : undefined}
         />
 
         <NumberInput
-          label="Días de siembra"
+          label="Días de siembra *"
           value={formData.dias}
           onChangeText={(value) => onChange("dias", value)}
+          editable={!plAutocompletado}
           min={0}
           max={365}
           step={1}
+          containerStyle={styles.field}
+          labelStyle={styles.label}
+          style={mostrarErrorDias ? styles.errorInput : undefined}
         />
 
         <NumberInput
-          label="PL"
+          label="PL *"
           value={formData.pl}
           onChangeText={(value) => onChange("pl", value)}
           editable={!plAutocompletado}
           min={0}
           max={999999}
           step={1000}
+          containerStyle={styles.field}
+          labelStyle={styles.label}
+          style={mostrarErrorPl ? styles.errorInput : undefined}
         />
         {plAutocompletado && (
           <Text style={styles.plNote}>
-            Valor autocompletado desde la siembra del estanque de origen.
+            PL y días autocompletados desde la siembra activa del estanque de origen.
           </Text>
         )}
       </Card>

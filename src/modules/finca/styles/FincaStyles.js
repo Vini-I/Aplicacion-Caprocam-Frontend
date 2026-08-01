@@ -1,78 +1,77 @@
+/**
+ * ============================================================
+ * ESTILOS DE LISTADO DE FINCAS
+ * ============================================================
+ *
+ * Contiene los estilos utilizados en la pantalla principal donde
+ * se muestran las fincas registradas y sus acciones disponibles.
+ *
+ * Archivos que afecta:
+ * - FincasScreen.jsx
+ * - Componentes de tarjetas de finca.
+ * - Botones de acciones CRUD.
+ *
+ * Incluye estilos para:
+ * - Organización visual de las tarjetas de finca.
+ * - Contenedor de iconos y datos principales.
+ * - Etiquetas informativas de la finca.
+ * - Botones para editar y eliminar registros.
+ * - Botón de creación de nuevas fincas.
+ * - Alertas de confirmación para operaciones CRUD.
+ */
 import { StyleSheet } from "react-native";
 import { COLORS } from "../../../theme/colors.js";
 
 export const styles = StyleSheet.create({
-  Container: {
-    flex: 1,
-    padding: 16,
-    backgroundColor: COLORS.white,
-  },
-
-  ContentWrapper: {
-    flex: 1,
-    paddingHorizontal: 16,
-    backgroundColor: COLORS.white,
-  },
-
-  Card: {
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
+  card: {
     flexDirection: "row",
-    borderRadius: 16,
-    shadowColor: COLORS.black,
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    marginVertical: 5,
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 2,
   },
 
-  CardContent: {
+  cardContent: {
     flex: 1,
     flexDirection: "row",
-    alignSelf: "flex-start",
   },
 
-  IconContainer: {
+  iconContainer: {
     width: 45,
     height: 45,
     backgroundColor: COLORS.secondary,
     borderRadius: 28,
-    marginRight: 16,
+    marginTop: 5,
+    marginRight: 10,
     justifyContent: "center",
     alignItems: "center",
   },
 
-  Detalles: {
+  flex: {
+    flex: 1,
+  },
+
+  details: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 8,
-    marginTop: 6,
   },
 
-  DetallesColumn: {
+  detailsColumn: {
     flexDirection: "column",
     alignItems: "flex-start",
   },
 
-  Detalle: {
+  detail: {
     color: COLORS.primary,
     backgroundColor: COLORS.secondary,
     alignSelf: "flex-start",
   },
 
-  Buttons: {
+  buttonsCrud: {
     justifyContent: "center",
     alignSelf: "center",
     alignItems: "center",
-    marginRight: 20,
+    marginRight: 10,
   },
 
-  Eliminar: {
+  delete: {
     backgroundColor: COLORS.white,
     borderColor: COLORS.error,
     borderWidth: 2,
@@ -85,7 +84,11 @@ export const styles = StyleSheet.create({
     paddingVertical: 4,
   },
 
-  Editar: {
+  deleteIcon: {
+    color: COLORS.error,
+  },
+
+  edit: {
     backgroundColor: COLORS.white,
     borderColor: COLORS.primary,
     borderWidth: 2,
@@ -98,18 +101,43 @@ export const styles = StyleSheet.create({
     paddingVertical: 4,
   },
 
-  AddButton: {
-    maxWidth: 900,
-    alignSelf: "center",
-    width: "100%",
+  editIcon: {
+    color: COLORS.primary,
+  },
+
+  addButton: {
     borderWidth: 2,
-    color: COLORS.black,
+    color: COLORS.primary,
     borderColor: COLORS.primary,
     backgroundColor: COLORS.white,
-    borderStyle: "dashed",
     borderRadius: 12,
     flexDirection: "row",
     gap: 8,
-    marginTop: 10,
+    marginVertical: 20,
+  },
+
+  addButtonText: {
+    color: COLORS.primary,
+    fontWeight: 600
+  },
+
+  alertCorrect: {
+    alignItems: "center",
+    backgroundColor: COLORS.successLight,
+    borderWidth: 1.5,
+    borderColor: COLORS.success,
+    paddingVertical: 10,
+    borderRadius: 10,
+    marginBottom: 10,
+  },
+
+  alertIncorrect: {
+    alignItems: "center",
+    backgroundColor: COLORS.errorLight,
+    borderWidth: 1.5,
+    borderColor: COLORS.error,
+    paddingVertical: 10,
+    borderRadius: 10,
+    marginBottom: 10,
   },
 });

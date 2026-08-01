@@ -1,36 +1,45 @@
+/**
+ * ============================================================
+ * ESTILOS TrazabilidadFormStyles
+ * ============================================================
+ *
+ * Descripción:
+ * Estilos estandarizados para cards, labels y campos de error del formulario de trazabilidad.
+ *
+ * @dependencies StyleSheet, COLORS, TYPOGRAPHY
+ * @validations N/A
+ * @navigation N/A
+ */
 import { StyleSheet } from "react-native";
 
 import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
 
 export const styles = StyleSheet.create({
-  container: {
-    gap: 12,
-  },
   cardTitle: {
     color: COLORS.primary,
     fontFamily: TYPOGRAPHY.fontFamily.bold,
-  },
-  webDateContainer: {
-    marginBottom: 12,
-  },
-  webDateLabel: {
-    fontSize: 14,
-    fontFamily: TYPOGRAPHY.fontFamily.medium,
-    color: COLORS.textSecondary,
-    marginBottom: 6,
-  },
-  webDateInput: {
-    height: 45,
-    borderWidth: 1,
-    borderColor: COLORS.secondary,
-    borderRadius: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
     fontSize: 16,
-    color: COLORS.textSecondary,
-    backgroundColor: COLORS.white,
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
+  },
+
+  cardTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 10,
+  },
+  label: {
+    color: COLORS.textPrimary,
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
+    marginBottom: 6,
+    fontSize: 14,
+  },
+  field: {
+    marginBottom: 16,
+  },
+  errorInput: {
+    borderWidth: 1,
+    borderColor: COLORS.error,
   },
   plNote: {
     fontSize: 12,

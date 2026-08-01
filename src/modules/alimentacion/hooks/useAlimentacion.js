@@ -1,5 +1,26 @@
+/**
+ * ============================================================
+ * HOOK USEALIMENTACION
+ * ============================================================
+ *
+ * Maneja el fetch y el estado de los registros de alimentación
+ * ya guardados. No contiene ninguna lógica de UI ni de
+ * validación de formularios: solo carga/recarga datos.
+ *
+ * Estado que maneja:
+ * - alimentaciones: lista de registros obtenidos del service.
+ * - loading: true mientras se están cargando los datos.
+ * - error: mensaje de error si la carga falla, si no null.
+ *
+ * Retorna:
+ * - { alimentaciones, loading, error, recargar }
+ *
+ * Ejemplo:
+ * const { alimentaciones, loading, error, recargar } = useAlimentacion();
+ */
+
 import { useState, useEffect } from "react";
-import alimentacionService from "../services/alimentacion.service";
+import alimentacionService from "../services/Alimentacion.service";
 
 const useAlimentacion = () => {
     const [alimentaciones, setAlimentaciones] = useState([]);

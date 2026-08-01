@@ -1,82 +1,159 @@
 /**
- * Hook: useTrazabilidad
+ * ============================================================
+ * HOOK useTrazabilidad
+ * ============================================================
  *
- * Concentra todo el estado del formulario de Trazabilidad, sus
- * validaciones y el handler de envio. La pantalla solo consume
- * este hook y no contiene logica propia.
+ * Descripción:
+ * Centraliza el estado, validaciones y envío del formulario de trazabilidad.
  *
- * Validaciones aplicadas (segun especificacion del modulo):
- * - Finca, ambos estanques, fecha y colaborador son obligatorios.
- * - El estanque de origen no puede ser igual al de destino.
- * - Tamaño debe ser un numero mayor a 0.
- * - PL debe ser un numero mayor a 0.
- * - Dias debe ser un numero mayor a 0.
- * - La fecha no puede ser futura.
+ * @dependencies TrazabilidadServices, AgregarTrazabilidadService, dateUtils
+ * @validations Campos obligatorios, origen!=destino, números mayores a 0 y fecha válida.
+ * @navigation N/A
  */
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "expo-router";
 
 import { initialForm } from "../screens/TrazabilidadData";
 import {
-  obtenerEstanquesPorFinca,
+  obtenerEstanquesPreCriaPorFinca,
+  obtenerEstanquesEngordePorFinca,
   obtenerFincas,
-  obtenerColaboradores,
-  obtenerSiembraPorEstanque,
+  obtenerColaboradorSesion,
+  obtenerSiembraActivaPorEstanque,
 } from "../services/TrazabilidadServices";
 import { crearRegistroTrazabilidad } from "../services/AgregarTrazabilidadService";
-
-function fechaDesdeTexto(fechaTexto) {
-  const partes = fechaTexto.split("/");
-
-  if (partes.length !== 3) {
-    return null;
-  }
-
-  const dia = Number(partes[0]);
-  const mes = Number(partes[1]) - 1;
-  const anio = Number(partes[2]);
-
-  return new Date(anio, mes, dia);
-}
-
-function esFechaFutura(fechaTexto) {
-  const fecha = fechaDesdeTexto(fechaTexto);
-
-  if (!fecha) {
-    return false;
-  }
-
-  const hoy = new Date();
-  hoy.setHours(23, 59, 59, 999);
-
-  return fecha.getTime() > hoy.getTime();
-}
+import { esFechaFutura, esFechaValida } from "../../../shared/utils/dateUtils";
 
 export function useTrazabilidad() {
   const router = useRouter();
+  const [colaboradorSesion, setColaboradorSesion] = useState(() => obtenerColaboradorSesion());
 
-  const [formData, setFormData] = useState(initialForm);
-  const [modalVisible, setModalVisible] = useState(false);
+  const [formData, setFormData] = useState(() => ({
+    ...initialForm,
+    colaboradorId: colaboradorSesion.colaboradorId ?? null,
+  }));
   const [mensajeError, setMensajeError] = useState("");
   const [plAutocompletado, setPlAutocompletado] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [fincas, setFincas] = useState([]);
 
-  const fincas = obtenerFincas();
-  const colaboradores = obtenerColaboradores();
-  const estanquesOrigen = obtenerEstanquesPorFinca(formData.fincaId);
-  const estanquesDestino = obtenerEstanquesPorFinca(formData.fincaId);
+  const [errorCarga, setErrorCarga] = useState("");
+  const [sesionExpirada, setSesionExpirada] = useState(false);
+
+  function mostrarErrorCarga(mensaje, error) {
+    if (error?.response?.status === 401) {
+      setSesionExpirada(true);
+      setErrorCarga("Tu sesión expiró. Debes iniciar sesión de nuevo.");
+      return;
+    }
+    setSesionExpirada(false);
+    setErrorCarga(mensaje);
+  }
+
+  function cerrarErrorCarga() {
+    setErrorCarga("");
+    setSesionExpirada(false);
+  }
+
+  function irALogin() {
+    cerrarErrorCarga();
+    router.replace("/login");
+  }
+
+  const timerErrorRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (timerErrorRef.current) clearTimeout(timerErrorRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    obtenerFincas()
+      .then(setFincas)
+      .catch((error) => {
+        setFincas([]);
+        mostrarErrorCarga("No se pudieron cargar las fincas.", error);
+      });
+  }, []);
+
+  // Resuelve el nombre/datos reales de la sesión actual (usuario o colaborador)
+  useEffect(() => {
+    let cancelado = false;
+    obtenerColaboradorSesion(true).then((real) => {
+      if (cancelado) return;
+      setColaboradorSesion(real);
+      setFormData((previousData) => ({ ...previousData, colaboradorId: real.colaboradorId ?? null }));
+    });
+    return () => {
+      cancelado = true;
+    };
+  }, []);
+
+  const [estanquesOrigen, setEstanquesOrigen] = useState([]);
+  const [estanquesDestino, setEstanquesDestino] = useState([]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    if (!formData.fincaId) {
+      setEstanquesOrigen([]);
+      setEstanquesDestino([]);
+      return () => {
+        mounted = false;
+      };
+    }
+
+    Promise.all([
+      obtenerEstanquesPreCriaPorFinca(formData.fincaId),
+      obtenerEstanquesEngordePorFinca(formData.fincaId),
+    ])
+      .then(([listaOrigen, listaDestino]) => {
+        if (!mounted) return;
+        setEstanquesOrigen(listaOrigen || []);
+        setEstanquesDestino(listaDestino || []);
+      })
+      .catch((error) => {
+        if (!mounted) return;
+        setEstanquesOrigen([]);
+        setEstanquesDestino([]);
+        mostrarErrorCarga("No se pudieron cargar los estanques de la finca seleccionada.", error);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [formData.fincaId]);
+
+  // Evita que la respuesta de una consulta vieja (usuario cambió de
+  // estanque rápido) sobrescriba el pl/dias del estanque seleccionado
+  // actualmente.
+  const siembraRequestIdRef = useRef(0);
 
   function manejarCambio(field, value) {
     if (field === "estanqueOrigenId") {
-      const siembra = obtenerSiembraPorEstanque(value);
-
       setFormData((previousData) => ({
         ...previousData,
         [field]: value,
-        pl: siembra ? String(siembra.cantidadSembrada ?? "") : "",
       }));
+      setMensajeError("");
+      if (timerErrorRef.current) {
+        clearTimeout(timerErrorRef.current);
+        timerErrorRef.current = null;
+      }
 
-      setPlAutocompletado(Boolean(siembra));
+      const requestId = ++siembraRequestIdRef.current;
+
+      obtenerSiembraActivaPorEstanque(value).then((siembra) => {
+        if (siembraRequestIdRef.current !== requestId) return; // respuesta obsoleta
+
+        setFormData((previousData) => ({
+          ...previousData,
+          pl: siembra ? String(siembra.pl_siembra ?? "") : "",
+          dias: siembra ? String(siembra.dias ?? "") : "",
+        }));
+        setPlAutocompletado(Boolean(siembra));
+      });
       return;
     }
 
@@ -84,18 +161,31 @@ export function useTrazabilidad() {
       ...previousData,
       [field]: value,
     }));
+    setMensajeError("");
+    if (timerErrorRef.current) {
+      clearTimeout(timerErrorRef.current);
+      timerErrorRef.current = null;
+    }
   }
 
   function manejarCambioFinca(value) {
+    siembraRequestIdRef.current += 1; // invalida cualquier consulta de siembra en vuelo
+
     setFormData((previousData) => ({
       ...previousData,
       fincaId: value,
       estanqueOrigenId: "",
       estanqueDestinoId: "",
       pl: "",
+      dias: "",
     }));
 
     setPlAutocompletado(false);
+    setMensajeError("");
+    if (timerErrorRef.current) {
+      clearTimeout(timerErrorRef.current);
+      timerErrorRef.current = null;
+    }
   }
 
   function obtenerCamposVacios() {
@@ -104,7 +194,6 @@ export function useTrazabilidad() {
       "estanqueOrigenId",
       "estanqueDestinoId",
       "fecha",
-      "colaboradorId",
       "tamaño",
       "dias",
       "pl",
@@ -116,73 +205,84 @@ export function useTrazabilidad() {
   }
 
   function validarFormulario() {
-    if (obtenerCamposVacios().length > 0) {
-      setMensajeError("Debe completar todos los campos para registrar el movimiento.");
-      return false;
-    }
+    const mensaje =
+      obtenerCamposVacios().length > 0
+        ? "Debe completar todos los campos para registrar el movimiento."
+        : formData.estanqueOrigenId === formData.estanqueDestinoId
+          ? "El estanque de origen no puede ser igual al estanque de destino."
+          : Number(formData.tamaño) <= 0
+            ? "El tamaño debe ser un número mayor a 0."
+            : Number(formData.pl) <= 0
+              ? "El campo PL debe ser un número mayor a 0."
+              : Number(formData.dias) <= 0
+                ? "Los días deben ser un número mayor a 0."
+                : !esFechaValida(formData.fecha)
+                  ? "La fecha ingresada no es válida."
+                  : esFechaFutura(formData.fecha)
+                    ? "La fecha no puede ser futura."
+                    : "";
 
-    if (formData.estanqueOrigenId === formData.estanqueDestinoId) {
-      setMensajeError("El estanque de origen no puede ser igual al estanque de destino.");
-      return false;
-    }
-
-    if (Number(formData.tamaño) <= 0) {
-      setMensajeError("El tamaño debe ser un número mayor a 0.");
-      return false;
-    }
-
-    if (Number(formData.pl) <= 0) {
-      setMensajeError("El campo PL debe ser un número mayor a 0.");
-      return false;
-    }
-
-    if (Number(formData.dias) <= 0) {
-      setMensajeError("Los días deben ser un número mayor a 0.");
-      return false;
-    }
-
-    if (esFechaFutura(formData.fecha)) {
-      setMensajeError("La fecha no puede ser futura.");
+    if (mensaje) {
+      setMensajeError(mensaje);
+      if (timerErrorRef.current) clearTimeout(timerErrorRef.current);
+      timerErrorRef.current = setTimeout(() => {
+        setMensajeError("");
+        timerErrorRef.current = null;
+      }, 6000);
       return false;
     }
 
     return true;
   }
 
-  function manejarEnvio() {
+  async function manejarEnvio() {
+    setSubmitted(true);
+
     const esValido = validarFormulario();
 
     if (!esValido) {
-      setModalVisible(true);
       return;
     }
 
-    crearRegistroTrazabilidad(formData);
+    try {
+      await crearRegistroTrazabilidad(formData);
+    } catch (error) {
+      if (error?.response?.status === 401) {
+        mostrarErrorCarga("", error);
+        return;
+      }
+      const mensajeApi = error?.response?.data?.message;
+      setMensajeError(
+        error?.response?.status === 400 && mensajeApi
+          ? mensajeApi
+          : "No se pudo guardar el registro. Intenta de nuevo."
+      );
+      return;
+    }
+    setMensajeError("");
     setFormData(initialForm);
-    router.back();
+    setSubmitted(false);
+    setPlAutocompletado(false);
+    router.replace({ pathname: "/trazabilidad", params: { successMessage: "¡Movimiento registrado exitosamente!" } });
   }
 
-  function cerrarModal() {
-    setModalVisible(false);
-  }
 
-  function cerrarFormulario() {
-    router.back();
-  }
 
   return {
     formData,
     fincas,
-    colaboradores,
+    colaboradorSesion,
     estanquesOrigen,
     estanquesDestino,
     plAutocompletado,
-    modalVisible,
     mensajeError,
+    submitted,
     manejarCambio,
     manejarCambioFinca,
     manejarEnvio,
-    cerrarModal,
-    cerrarFormulario,
+    errorCarga,
+    sesionExpirada,
+    cerrarErrorCarga,
+    irALogin,
   };
 }

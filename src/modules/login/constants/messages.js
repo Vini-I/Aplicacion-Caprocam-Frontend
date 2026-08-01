@@ -16,12 +16,15 @@ export const LOGIN_MESSAGES = {
   SHIFT_SUBTITLE: '¿En qué horario vas a trabajar?',
 
   // Sección de Trabajadores
-  WORKER_TITLE: '¿Quién está trabajando?',
+  WORKER_TITLE: 'Selecciona tu nombre',
   WORKER_SUBTITLE: 'Toca tu nombre para comenzar',
 
   // Estados de Carga
-  LOADING: 'Cargando trabajadores...',
+  LOADING: 'Cargando colaboradores...',
   ERROR_PREFIX: 'Error: ',
+  NO_WORKERS_FOUND: 'No se encontraron colaboradores.',
+  SEARCH_PLACEHOLDER: 'Buscar por nombre',
+  SYNC_BUTTON_TEXT: 'Sincronizar Usuarios',
 
   // Botón
   BUTTON_TEXT: 'Continuar',

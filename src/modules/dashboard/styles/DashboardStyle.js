@@ -1,33 +1,33 @@
-/**
- * ============================================================
- * ESTILOS DEL DASHBOARD GENERAL
- * ============================================================
- *
- * Archivo exclusivo para DashboardScreen.
- *
- * Incluye:
- * - Tarjetas principales.
- * - Paneles de detalle.
- * - Graficos simples con View.
- * - Correccion para que los graficos no se salgan del cuadro.
- */
+/*
+//////////////////////////////////////////////////////////
+CABEZA DE ARCHIVO
+//////////////////////////////////////////////////////////
+Archivo: DashboardStyle.js
+Autor: Gerald Andres Alfaro Solorzano
+Fecha: 30/07/2026
+Modulo: Dashboard
+Descripcion:
+Define los estilos visuales propios de los componentes
+utilizados por el Dashboard.
+//////////////////////////////////////////////////////////
+*/
 
 import { StyleSheet } from "react-native";
 
 import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
 
-export const styles = StyleSheet.create({
-  container: {
-    backgroundColor: COLORS.white,
-    padding: 16,
-  },
+const PRIMARY_LIGHT = COLORS.primaryLight ? COLORS.primaryLight : "#ECF8FF";
+const BORDER_COLOR = COLORS.border ? COLORS.border : "#E5E7EB";
+const INPUT_BORDER = COLORS.inputBorder ? COLORS.inputBorder : "#E5E7EB";
+const INFO_LIGHT = COLORS.infoLight ? COLORS.infoLight : "#ECF8FF";
+const VIOLET = COLORS.violet ? COLORS.violet : "#7C3AED";
 
+export const styles = StyleSheet.create({
   scrollContent: {
     width: "100%",
     maxWidth: 900,
     alignSelf: "center",
-
     paddingTop: 14,
     paddingBottom: 28,
   },
@@ -35,18 +35,18 @@ export const styles = StyleSheet.create({
   headerCard: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.primary,
     borderRadius: 18,
     padding: 14,
     marginBottom: 14,
     borderWidth: 1,
-    borderColor: "#E5E7EB",
+    borderColor: COLORS.primary,
     shadowColor: COLORS.black,
     shadowOffset: {
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.06,
+    shadowOpacity: 0.08,
     shadowRadius: 6,
     elevation: 2,
   },
@@ -55,7 +55,7 @@ export const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 14,
-    backgroundColor: "#EAF7FF",
+    backgroundColor: COLORS.white,
     alignItems: "center",
     justifyContent: "center",
     marginRight: 12,
@@ -63,11 +63,12 @@ export const styles = StyleSheet.create({
 
   headerTextBox: {
     flex: 1,
+    minWidth: 0,
   },
 
   headerTitle: {
     fontFamily: TYPOGRAPHY.fontFamily.bold,
-    color: COLORS.textPrimary,
+    color: COLORS.white,
   },
 
   headerSubtitle: {
@@ -75,19 +76,232 @@ export const styles = StyleSheet.create({
     fontFamily: TYPOGRAPHY.fontFamily.regular,
   },
 
+  alertsCard: {
+    width: "100%",
+    borderRadius: 18,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: COLORS.warningLight,
+    backgroundColor: COLORS.white,
+    marginBottom: 14,
+  },
+
+  alertsHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 12,
+  },
+
+  alertsTitleBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+    minWidth: 0,
+  },
+
+  alertsIconBox: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: COLORS.warningLight,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 10,
+  },
+
+  alertsTextBox: {
+    flex: 1,
+    minWidth: 0,
+  },
+
+  alertsTitle: {
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
+    color: COLORS.textPrimary,
+  },
+
+  alertsCounter: {
+    minWidth: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: COLORS.warningLight,
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft: 10,
+  },
+
+  emptyAlertBox: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    marginBottom: 10,
+  },
+
+  emptyAlertBoxSmall: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    marginBottom: 8,
+  },
+
+  alertItem: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    borderRadius: 14,
+    padding: 12,
+    marginBottom: 8,
+    borderWidth: 1,
+  },
+
+  alertCritical: {
+    backgroundColor: COLORS.errorLight,
+    borderColor: COLORS.error,
+  },
+
+  alertWarning: {
+    backgroundColor: COLORS.warningLight,
+    borderColor: COLORS.warning,
+  },
+
+  alertInfo: {
+    backgroundColor: INFO_LIGHT,
+    borderColor: COLORS.primary,
+  },
+
+  alertIconContainer: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    backgroundColor: COLORS.white,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 10,
+  },
+
+  alertContent: {
+    flex: 1,
+    minWidth: 0,
+  },
+
+  alertTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 8,
+  },
+
+  alertMessage: {
+    marginTop: 4,
+    lineHeight: 17,
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
+  },
+
+  alertDetail: {
+    marginTop: 4,
+    lineHeight: 17,
+    fontFamily: TYPOGRAPHY.fontFamily.medium,
+  },
+
+  alertDropdownGroup: {
+    marginBottom: 10,
+  },
+
+  alertDropdownHeader: {
+    marginTop: 0,
+    minHeight: 44,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: BORDER_COLOR,
+    backgroundColor: COLORS.white,
+    paddingVertical: 9,
+    paddingHorizontal: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+
+  alertDropdownLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
+
+  alertDropdownTitle: {
+    marginLeft: 8,
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
+  },
+
+  alertDropdownRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+
+  alertDropdownBody: {
+    marginTop: 8,
+  },
+
+  alertCategoryTitle: {
+    marginTop: 6,
+    marginBottom: 6,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
+  },
+
+  alertDismissButton: {
+    width: 28,
+    height: 28,
+    minHeight: 28,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: BORDER_COLOR,
+    backgroundColor: COLORS.white,
+    marginTop: 0,
+    paddingHorizontal: 0,
+    paddingVertical: 0,
+  },
+
+  viewAllAlertsButton: {
+    minHeight: 44,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    backgroundColor: COLORS.white,
+    marginTop: 4,
+  },
+
+  inlineButtonContentCentered: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  viewAllAlertsText: {
+    marginLeft: 8,
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
+  },
+
   statsGrid: {
     width: "100%",
     gap: 12,
     marginBottom: 14,
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   statsGridTablet: {
     flexDirection: "row",
     flexWrap: "wrap",
+    justifyContent: "center",
+    alignItems: "center",
   },
 
   statCard: {
     width: "100%",
+    alignSelf: "center",
     minHeight: 118,
     borderRadius: 18,
     padding: 16,
@@ -110,19 +324,19 @@ export const styles = StyleSheet.create({
   },
 
   cardBlue: {
-    backgroundColor: "#ECF8FF",
+    backgroundColor: PRIMARY_LIGHT,
   },
 
   cardIndigo: {
-    backgroundColor: "#EEF6FF",
+    backgroundColor: INFO_LIGHT,
   },
 
   cardYellow: {
-    backgroundColor: "#FFF9E8",
+    backgroundColor: COLORS.warningLight,
   },
 
   cardRed: {
-    backgroundColor: "#FFF0F2",
+    backgroundColor: COLORS.errorLight,
   },
 
   statTopRow: {
@@ -130,6 +344,10 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+  },
+
+  statBottom: {
+    width: "100%",
   },
 
   statIconBox: {
@@ -141,19 +359,19 @@ export const styles = StyleSheet.create({
   },
 
   iconBlue: {
-    backgroundColor: "#D7F0FF",
+    backgroundColor: COLORS.primaryLight,
   },
 
   iconIndigo: {
-    backgroundColor: "#DDEBFF",
+    backgroundColor: COLORS.secondary,
   },
 
   iconYellow: {
-    backgroundColor: "#FFF0BA",
+    backgroundColor: COLORS.warningLight,
   },
 
   iconRed: {
-    backgroundColor: "#FFDDE2",
+    backgroundColor: COLORS.errorLight,
   },
 
   statValue: {
@@ -166,7 +384,7 @@ export const styles = StyleSheet.create({
   },
 
   statValueDanger: {
-    color: "#FF002A",
+    color: COLORS.error,
   },
 
   statLabel: {
@@ -179,7 +397,7 @@ export const styles = StyleSheet.create({
     borderRadius: 18,
     padding: 16,
     borderWidth: 1,
-    borderColor: "#E5E7EB",
+    borderColor: BORDER_COLOR,
     backgroundColor: COLORS.white,
     shadowColor: COLORS.black,
     shadowOffset: {
@@ -205,7 +423,7 @@ export const styles = StyleSheet.create({
 
   divider: {
     height: 1,
-    backgroundColor: "#E5E7EB",
+    backgroundColor: INPUT_BORDER,
     marginTop: 14,
     marginBottom: 16,
   },
@@ -221,6 +439,14 @@ export const styles = StyleSheet.create({
     marginBottom: 12,
     letterSpacing: 0.5,
     fontFamily: TYPOGRAPHY.fontFamily.medium,
+  },
+
+  emptyBox: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    marginBottom: 10,
   },
 
   barChart: {
@@ -248,7 +474,7 @@ export const styles = StyleSheet.create({
     width: "100%",
     borderStyle: "dashed",
     borderWidth: 1,
-    borderColor: "#E5EAF2",
+    borderColor: BORDER_COLOR,
   },
 
   barChartContent: {
@@ -274,7 +500,7 @@ export const styles = StyleSheet.create({
 
   barFill: {
     width: "100%",
-    backgroundColor: "#38BDF8",
+    backgroundColor: COLORS.primary,
     borderTopLeftRadius: 8,
     borderTopRightRadius: 8,
     maxHeight: 115,
@@ -289,57 +515,69 @@ export const styles = StyleSheet.create({
 
   twoColumns: {
     flexDirection: "row",
+    flexWrap: "wrap",
     gap: 16,
     marginBottom: 16,
   },
 
   chartColumn: {
-    flex: 1,
+    flexGrow: 1,
+    flexBasis: 280,
     alignItems: "center",
+    minWidth: 0,
   },
 
-  donut: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    borderWidth: 24,
-    borderColor: "#38BDF8",
+  donutWrapper: {
     alignItems: "center",
     justifyContent: "center",
+  },
+
+  donutChart: {
+    width: 130,
+    height: 130,
+    borderRadius: 65,
+    overflow: "hidden",
+    flexDirection: "row",
+    alignItems: "stretch",
+    justifyContent: "center",
+    backgroundColor: COLORS.textQuaternary,
+    position: "relative",
+  },
+
+  donutActiveSegment: {
+    height: "100%",
+    backgroundColor: COLORS.primary,
+  },
+
+  donutHarvestSegment: {
+    height: "100%",
+    backgroundColor: COLORS.textQuaternary,
   },
 
   donutInner: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    position: "absolute",
+    width: 78,
+    height: 78,
+    borderRadius: 39,
     backgroundColor: COLORS.white,
-  },
-
-  legendRow: {
-    flexDirection: "row",
     alignItems: "center",
-    marginTop: 10,
-    gap: 10,
-    flexWrap: "wrap",
     justifyContent: "center",
-  },
-
-  legendItem: {
-    flexDirection: "row",
-    alignItems: "center",
+    alignSelf: "center",
+    top: 26,
+    left: 26,
   },
 
   legendBlue: {
     width: 10,
     height: 10,
-    backgroundColor: "#38BDF8",
+    backgroundColor: COLORS.primary,
     marginRight: 4,
   },
 
   legendGray: {
     width: 10,
     height: 10,
-    backgroundColor: "#94A3B8",
+    backgroundColor: COLORS.textQuaternary,
     marginRight: 4,
   },
 
@@ -371,16 +609,44 @@ export const styles = StyleSheet.create({
 
   lineBar: {
     width: 8,
-    backgroundColor: "#38BDF8",
+    backgroundColor: COLORS.primary,
     borderRadius: 8,
     marginBottom: 4,
     maxHeight: 105,
   },
 
+  pastelChartContainer: {
+    width: "100%",
+    alignItems: "center",
+    marginBottom: 18,
+  },
+
+  pastelChartBox: {
+    width: "100%",
+    maxWidth: 420,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  pastelStatsBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 18,
+    marginTop: 14,
+    flexWrap: "wrap",
+  },
+
+  pastelStatItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+  },
+
   infoRowBlue: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#ECF8FF",
+    backgroundColor: PRIMARY_LIGHT,
     borderRadius: 14,
     padding: 14,
     marginBottom: 10,
@@ -389,7 +655,7 @@ export const styles = StyleSheet.create({
   infoRowIndigo: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#EEF6FF",
+    backgroundColor: INFO_LIGHT,
     borderRadius: 14,
     padding: 14,
     marginBottom: 10,
@@ -399,7 +665,7 @@ export const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 12,
-    backgroundColor: "#BDE8FF",
+    backgroundColor: COLORS.primaryLight,
     alignItems: "center",
     justifyContent: "center",
     marginRight: 12,
@@ -409,7 +675,7 @@ export const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 12,
-    backgroundColor: "#BFDBFE",
+    backgroundColor: COLORS.secondary,
     alignItems: "center",
     justifyContent: "center",
     marginRight: 12,
@@ -436,38 +702,43 @@ export const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 999,
     marginBottom: 4,
-    backgroundColor: "#EAF7FF",
+    backgroundColor: INFO_LIGHT,
   },
 
-  productionTotalBox: {
+  diseaseRow: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FFF9E8",
-    borderRadius: 14,
-    padding: 18,
-    borderWidth: 1,
-    borderColor: "#FDE68A",
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    paddingVertical: 13,
+    paddingHorizontal: 12,
+    marginBottom: 8,
   },
 
-  feedTotalBox: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#FFF0F2",
-    borderRadius: 14,
-    padding: 18,
-    borderWidth: 1,
-    borderColor: "#FFCCD5",
+  diseaseDotRed: {
+    width: 11,
+    height: 11,
+    borderRadius: 6,
+    backgroundColor: COLORS.error,
+    marginRight: 12,
   },
 
-  totalBoxText: {
-    marginLeft: 18,
-    flex: 1,
+  diseaseDotViolet: {
+    width: 11,
+    height: 11,
+    borderRadius: 6,
+    backgroundColor: VIOLET,
+    marginRight: 12,
+  },
+
+  caseText: {
+    marginLeft: 6,
   },
 
   caseRow: {
     flexDirection: "row",
     alignItems: "flex-start",
-    backgroundColor: "#FFF9E8",
+    backgroundColor: COLORS.warningLight,
     borderRadius: 14,
     padding: 14,
     marginBottom: 10,
@@ -481,15 +752,41 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
   },
 
-  badgeMedia: {
-    backgroundColor: "#FEF3C7",
-    borderColor: "#FCD34D",
+  badgeAlta: {
+    backgroundColor: COLORS.errorLight,
+    borderColor: COLORS.error,
   },
 
-  feedRow: {
+  badgeMedia: {
+    backgroundColor: COLORS.warningLight,
+    borderColor: COLORS.warning,
+  },
+
+  badgeBaja: {
+    backgroundColor: COLORS.successLight,
+    borderColor: COLORS.success,
+  },
+
+  mortalityTotalBox: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FFF0F2",
+    backgroundColor: COLORS.errorLight,
+    borderRadius: 14,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: COLORS.errorLight,
+  },
+
+  totalBoxText: {
+    marginLeft: 18,
+    flex: 1,
+    minWidth: 0,
+  },
+
+  mortalityRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: COLORS.errorLight,
     borderRadius: 14,
     padding: 14,
     marginBottom: 10,
@@ -501,14 +798,14 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#F1F5F9",
+    borderBottomColor: INPUT_BORDER,
   },
 
   recordIconBox: {
     width: 36,
     height: 36,
     borderRadius: 10,
-    backgroundColor: "#F1F5F9",
+    backgroundColor: COLORS.surface,
     alignItems: "center",
     justifyContent: "center",
     marginRight: 12,

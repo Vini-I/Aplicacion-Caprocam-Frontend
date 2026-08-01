@@ -1,548 +1,470 @@
-import React, { useState } from "react";
-import { useRouter } from "expo-router";
-import {
-  View,
-  ScrollView,
-  Text,
-  Pressable,
-  useWindowDimensions,
-  Platform,
-} from "react-native";
+/**
+ * =========================================================================
+ * PANTALLA DETALLE DE SIEMBRA
+ * =========================================================================
+ *
+ * Pantalla encargada de mostrar la información completa de una siembra
+ * existente y permitir su edición.
+ *
+ * FUNCIONALIDAD:
+ *
+ * 1. Carga la información de una siembra seleccionada.
+ *
+ * 2. Muestra el resumen del ciclo productivo:
+ *      - Día actual.
+ *      - Progreso del cultivo.
+ *      - Etapa de la siembra.
+ *
+ * 3. Renderiza las secciones del formulario:
+ *      - Información general.
+ *      - Datos de larva.
+ *      - Cálculo de población.
+ *
+ * 4. Permite editar, guardar y cancelar cambios realizados en la siembra.
+ *
+ * 5. Cuando la Siembra viene de una Pre-Cría (pasoPorPrecria === "si"),
+ *    el resumen embebido de Pre-Cría y la sección "Datos de larva"
+ *    quedan siempre en modo lectura (mode="view"), sin importar si el
+ *    resto del formulario está en edición — son datos heredados, no
+ *    propios de esta Siembra.
+ *
+ * LÓGICA:
+ * - La gestión del estado, validaciones y acciones se realiza mediante:
+ *  -useDetalleSiembra.
+ *
+ * COMPONENTES UTILIZADOS:
+ *
+ * - Card.
+ * - Badge.
+ * - Button.
+ * - ProgressBar.
+ * - Alert.
+ * - Componentes de sección del módulo Siembra.
+ *
+ * NAVEGACIÓN:
+ * - /(drawer)/siembra/nueva
+ *      Se navega hacia aquí al finalizar una Pre-Cría o al crear una
+ *      siembra a partir de una Pre-Cría, enviando los datos ya
+ *      completados como parámetros.
+ *
+ * DEPENDENCIAS PRINCIPALES:
+ *
+ * - useDetalleSiembra.
+ * - SiembraService.
+ * - InformacionGeneralSection.
+ * - DatosLarvaSection.
+ * - CalculoPoblacionSection.
+ * - PreCriaSection.
+ * - Componentes compartidos:
+ *      - Card, Badge, Button, ProgressBar, Alert, Icon, NavbarRegistro.
+ *
+ * IMPORTANTE:
+ *
+ * - No contiene reglas de negocio.
+ * - No realiza cálculos directamente.
+ * - Mantiene la separación entre presentación y lógica.
+ *
+ * =========================================================================
+ */
+
+import React from "react";
+
+import { useLocalSearchParams } from "expo-router";
+import { View, ScrollView } from "react-native";
+
+// Componentes compartidos
 
 import Card from "../../../shared/components/Card";
 import Badge from "../../../shared/components/Badge";
 import Button from "../../../shared/components/Button";
-import Input from "../../../shared/components/Input";
-import DateInput from "../../../shared/components/DateInput";
-import Select from "../../../shared/components/Select";
 import ProgressBar from "../../../shared/components/ProgressBar";
 import Alert from "../../../shared/components/Alert";
-import NumberInput from "../../../shared/components/NumberInput";
 import Icon from "../../../shared/components/Icons";
+import NavbarRegistro from "../../../shared/components/NavbarRegistro";
+import Text from "../../../shared/components/Text";
+
+
+// Secciones del formulario
+
+import InformacionGeneralSection from "../components/InformacionGeneralSection";
+import DatosLarvaSection from "../components/DatosLarvaSection";
+import CalculoPoblacionSection from "../components/CalculoPoblacionSection";
+import PreCriaSection from "../components/PreCriaSection";
+
+// Tema y estilos
 
 import { ICONS } from "../../../theme/icons";
+import { COLORS } from "../../../theme/colors";
 import { styles } from "../styles/DetalleSiembraStyles";
+import { STYLE } from "../../../theme/style";
 
-import {
-  obtenerSiembraPorId,
-  obtenerProveedoresLarva,
-  obtenerTecnicasCultivo,
-  obtenerTiposLarva,
-} from "../services/SiembraService";
-
-const diaActual = 2;
-const totalDias = 90;
-
-function calcularEtapa(dia, diasTotales) {
-  if (dia > 60) return 3;
-  if (dia > 30) return 2;
-  return 1;
-}
-
-function obtenerFechaActual() {
-  const fecha = new Date();
-  const dia = String(fecha.getDate()).padStart(2, "0");
-  const mes = String(fecha.getMonth() + 1).padStart(2, "0");
-  const anio = fecha.getFullYear();
-
-  return `${dia}/${mes}/${anio}`;
-}
-
-function convertirADdMmAaaa(fechaIso) {
-  const partes = fechaIso.split("-");
-
-  if (partes.length !== 3) {
-    return "";
-  }
-
-  const anio = partes[0];
-  const mes = partes[1];
-  const dia = partes[2];
-
-  return `${dia}/${mes}/${anio}`;
-}
-
-function convertirAAaaaMmDd(fechaTexto) {
-  const partes = fechaTexto.split("/");
-
-  if (partes.length !== 3) {
-    return "";
-  }
-
-  const dia = partes[0];
-  const mes = partes[1];
-  const anio = partes[2];
-
-  return `${anio}-${mes}-${dia}`;
-}
+// Hook principal
+import useDetalleSiembra from "../hooks/useDetalleSiembra";
 
 export default function DetalleSiembraScreen() {
-  const router = useRouter();
+  const { id } = useLocalSearchParams();
 
-  const siembra = obtenerSiembraPorId(25);
+  const {
+    siembra,
 
-  const tiposLarva = obtenerTiposLarva();
-  const tiposProveedor = obtenerProveedoresLarva();
-  const tiposTecnica = obtenerTecnicasCultivo();
+    formData,
 
-  const [isEditing, setIsEditing] = useState(false);
+    estanques,
 
-  const [mensaje, setMensaje] = useState("");
-  const [mensajeVariant, setMensajeVariant] = useState("info");
+    fincas,
 
-  const [fechaSiembra, setFechaSiembra] = useState(
-    siembra?.fechaSiembra ?? obtenerFechaActual(),
-  );
-  const [cantidad, setCantidad] = useState(
-    String(siembra?.cantidadSembrada ?? "1000"),
-  );
-  const [area, setArea] = useState(siembra?.areaEstanque ?? "0.5");
-  const [densidad, setDensidad] = useState(siembra?.densidad ?? "12");
-  const [tipoLarva, setTipoLarva] = useState(
-    siembra?.tipoLarva ?? siembra?.especie ?? "vannamei",
-  );
-  const [proveedor, setProveedor] = useState(
-    siembra?.proveedorLarva ?? "pacifico",
-  );
-  const [fechaIngreso, setFechaIngreso] = useState(
-    siembra?.fechaIngreso ?? siembra?.fechaSiembra ?? obtenerFechaActual(),
-  );
-  const [horaIngreso, setHoraIngreso] = useState(
-    siembra?.horaIngreso ?? "08:30",
-  );
-  const [certificado, setCertificado] = useState(
-    siembra?.certificadoLarva ?? "CERT-2026-001",
-  );
-  const [tecnica, setTecnica] = useState(siembra?.tecnicaCultivo ?? "semi");
-  const [diasCiclo, setDiasCiclo] = useState(
-    String(siembra?.diasMaduracion ?? "90"),
-  );
+    tecnicasCultivo,
 
-  const [valoresGuardados, setValoresGuardados] = useState({
-    fechaSiembra: siembra?.fechaSiembra ?? obtenerFechaActual(),
-    cantidad: String(siembra?.cantidadSembrada ?? "1000"),
-    area: siembra?.areaEstanque ?? "0.5",
-    densidad: siembra?.densidad ?? "12",
-    tipoLarva: siembra?.tipoLarva ?? siembra?.especie ?? "vannamei",
-    proveedor: siembra?.proveedorLarva ?? "pacifico",
-    fechaIngreso:
-      siembra?.fechaIngreso ?? siembra?.fechaSiembra ?? obtenerFechaActual(),
-    horaIngreso: siembra?.horaIngreso ?? "08:30",
-    certificado: siembra?.certificadoLarva ?? "CERT-2026-001",
-    tecnica: siembra?.tecnicaCultivo ?? "semi",
-    diasCiclo: String(siembra?.diasMaduracion ?? "90"),
-  });
+    proveedoresLarva,
 
-  const { width } = useWindowDimensions();
-  const isWeb = width > 768;
+    laboratoriosLarva,
 
-  const etapa = calcularEtapa(diaActual, totalDias);
+    procedenciasLarva,
 
-  function obtenerValoresActuales() {
-    return {
-      fechaSiembra,
-      cantidad,
-      area,
-      densidad,
-      tipoLarva,
-      proveedor,
-      fechaIngreso,
-      horaIngreso,
-      certificado,
-      tecnica,
-      diasCiclo,
-    };
-  }
+    plLarva,
 
-  function hayCamposVacios() {
-    const actuales = obtenerValoresActuales();
+    isEditing,
 
-    return Object.values(actuales).some(
-      (valor) => String(valor ?? "").trim() === "",
-    );
-  }
+    mensaje,
 
-  function iniciarEdicion() {
-    setMensaje("");
-    setIsEditing(true);
-  }
+    mensajeVariant,
 
-  function cancelarEdicion() {
-    setFechaSiembra(valoresGuardados.fechaSiembra);
-    setCantidad(valoresGuardados.cantidad);
-    setArea(valoresGuardados.area);
-    setDensidad(valoresGuardados.densidad);
-    setTipoLarva(valoresGuardados.tipoLarva);
-    setProveedor(valoresGuardados.proveedor);
-    setFechaIngreso(valoresGuardados.fechaIngreso);
-    setHoraIngreso(valoresGuardados.horaIngreso);
-    setCertificado(valoresGuardados.certificado);
-    setTecnica(valoresGuardados.tecnica);
-    setDiasCiclo(valoresGuardados.diasCiclo);
+    diaActual,
 
-    setMensaje("");
-    setIsEditing(false);
-  }
+    totalDias,
 
-  function guardar() {
-    if (hayCamposVacios()) {
-      setMensaje("Ningún campo puede quedar en blanco.");
-      setMensajeVariant("danger");
-      return;
-    }
+    etapa,
 
-    setValoresGuardados(obtenerValoresActuales());
-    setMensaje("Siembra guardada correctamente.");
-    setMensajeVariant("success");
-    setIsEditing(false);
-  }
+    progreso,
 
-  function regresarASiembra() {
-    router.push("/siembra");
-  }
+    handleChange,
 
-  function renderFechaSiembraEditable() {
-    if (Platform.OS === "web") {
-      return (
-        <View style={styles.webDateContainer}>
-          <Text style={styles.webDateLabel}>Fecha de siembra</Text>
+    handleChangeFinca,
 
-          <input
-            type="date"
-            value={convertirAAaaaMmDd(fechaSiembra)}
-            max={convertirAAaaaMmDd(obtenerFechaActual())}
-            onChange={(event) =>
-              setFechaSiembra(convertirADdMmAaaa(event.target.value))
-            }
-            style={styles.webDateInput}
-          />
-        </View>
-      );
-    }
+    handleChangeEstanque,
 
+    iniciarEdicion,
+
+    cancelarEdicion,
+
+    guardar,
+
+    guardando,
+
+    handleFinalizarPreCria,
+
+    handleCrearSiembraDesdePrecria,
+
+    datosCierrePreCriaCompletos,
+
+    handleAgregarProveedorLarva,
+
+    handleAgregarLaboratorioLarva,
+
+    handleAgregarProcedenciaLarva,
+
+    handleEditarProveedorLarva,
+
+    handleEditarLaboratorioLarva,
+
+    handleEditarProcedenciaLarva,
+
+    handleEliminarProveedorLarva,
+
+    handleEliminarLaboratorioLarva,
+
+    handleEliminarProcedenciaLarva,
+
+    fieldHelpers,
+  } = useDetalleSiembra(id);
+
+  if (!siembra || !formData) {
     return (
-      <DateInput
-        label="Fecha de siembra"
-        value={fechaSiembra}
-        onChangeText={setFechaSiembra}
-        inputStyle={styles.inputEditing}
-        labelStyle={styles.labelNombre}
-      />
+      <>
+        <NavbarRegistro
+          Titulo="Detalle de Siembra"
+          Subtitulo="Cargando información..."
+          Icono="shrimp"
+        />
+      </>
     );
   }
 
-  function renderFechaIngresoEditable() {
-    if (Platform.OS === "web") {
-      return (
-        <View style={styles.webDateContainer}>
-          <Text style={styles.webDateLabel}>Fecha ingreso de larva</Text>
-
-          <input
-            type="date"
-            value={convertirAAaaaMmDd(fechaIngreso)}
-            max={convertirAAaaaMmDd(obtenerFechaActual())}
-            onChange={(event) =>
-              setFechaIngreso(convertirADdMmAaaa(event.target.value))
-            }
-            style={styles.webDateInput}
-          />
-        </View>
-      );
-    }
-
-    return (
-      <DateInput
-        label="Fecha ingreso de larva"
-        value={fechaIngreso}
-        onChangeText={setFechaIngreso}
-        inputStyle={styles.inputEditing}
-        labelStyle={styles.labelNombre}
-      />
-    );
-  }
+  // NUEVO: busca el nombre real en los catálogos, con fallback si no
+  // se encuentra (ej. mientras cargan, o si el id no calza con nada).
+  const fincaLabel =
+    fincas.find((f) => f.value === formData.finca)?.label || "Sin finca";
+  const estanqueLabel =
+    estanques.find((e) => e.value === formData.estanque)?.label ||
+    "Sin estanque";
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.headerTop}>
-          <Pressable onPress={regresarASiembra} style={styles.backButton}>
-            <Icon icon={ICONS.exit} size={22} style={styles.headerIcon} />
-          </Pressable>
-
-          <View>
-            <Text style={styles.headerSubtitle}>Detalle de Siembra</Text>
-            <Text style={styles.headerTitle}>
-              {siembra?.estanque ?? "A01"} – {siembra?.finca ?? "Finca"}
-            </Text>
-          </View>
-        </View>
-      </View>
-
+    <>
+      <NavbarRegistro
+        Titulo={
+          formData.tipoRegistro === "precria"
+            ? "Detalle de Pre-Cría"
+            : "Detalle de Siembra"
+        }
+        Subtitulo={`${estanqueLabel} – ${fincaLabel}`}
+        Icono="shrimp"
+      />
       <ScrollView
+        style={STYLE.container}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        {mensaje !== "" && (
-          <Alert
-            message={mensaje}
-            variant={mensajeVariant}
-            style={styles.alert}
-          />
-        )}
+        <View style={STYLE.contentWrapper}>
+          {/* Resumen del ciclo de siembra */}
+          <Card>
+            <View style={styles.resumenHeader}>
+              <View style={styles.iconContainer}>
+                <Icon icon={ICONS.shrimp} style={styles.summaryIcon} />
+              </View>
 
-        <Card>
-          <View style={styles.resumenHeader}>
-            <View style={styles.iconContainer}>
-              <Icon icon={ICONS.shrimp} size={28} style={styles.summaryIcon} />
+              <View style={styles.resumenInfo}>
+                <Badge
+                  label={`Día ${diaActual} de ${totalDias}`}
+                  variant="success"
+                  textStyle={styles.badgeText}
+                />
+
+                <Text style={styles.siembraTitle}>
+                  {formData.tipoRegistro === "precria" ? "Pre-Cría" : "Siembra"}{" "}
+                  #{id}
+                </Text>
+              </View>
             </View>
 
-            <View style={styles.resumenInfo}>
-              <Badge
-                label={`Día ${diaActual} de ${totalDias}`}
-                variant="success"
-                textStyle={styles.badgeText}
-              />
-
-              <Text style={styles.siembraTitle}>
-                Siembra #{siembra?.siembraId ?? 25}
-              </Text>
+            <View style={styles.subtitleRow}>
+              <Icon icon={ICONS.growth} color={COLORS.textTertiary} />
+              <Text style={styles.subtitle}>Avance del ciclo</Text>
             </View>
-          </View>
 
-          <Text style={styles.subtitle}>Avance del ciclo</Text>
-          <ProgressBar progress={Math.round((diaActual / totalDias) * 100)} />
+            <ProgressBar progress={progreso} />
 
-          <Text style={styles.subtitle}>Estado de Etapa</Text>
+            <View style={styles.subtitleRow}>
+              <Icon icon={ICONS.clipboard} color={COLORS.textTertiary} />
+              <Text style={styles.subtitle}>Estado de Etapa</Text>
+            </View>
 
-          <View style={styles.etapas}>
-            <Badge
-              label="Siembra"
-              variant={etapa >= 1 ? "success" : undefined}
-              style={isWeb ? styles.badgeEtapa : undefined}
-              textStyle={styles.badgeText}
-            />
-            <Badge
-              label="Maduración"
-              variant={etapa >= 2 ? "warning" : undefined}
-              style={isWeb ? styles.badgeEtapa : undefined}
-              textStyle={styles.badgeText}
-            />
-            <Badge
-              label="Cosecha"
-              variant={etapa >= 3 ? "success" : undefined}
-              style={isWeb ? styles.badgeEtapa : undefined}
-              textStyle={styles.badgeText}
-            />
-          </View>
-        </Card>
+            <View style={styles.etapas}>
+              {(formData.tipoRegistro === "precria"
+                ? [
+                    { label: "Siembra", variant: "success" },
+                    { label: "Desarrollo", variant: "warning" },
+                    { label: "Finalización", variant: "success" },
+                  ]
+                : [
+                    { label: "Siembra", variant: "success" },
+                    { label: "Maduración", variant: "warning" },
+                    { label: "Cosecha", variant: "success" },
+                  ]
+              ).map((etapaInfo, index) => (
+                <Badge
+                  key={etapaInfo.label}
+                  label={etapaInfo.label}
+                  variant={etapa >= index + 1 ? etapaInfo.variant : undefined}
+                  style={styles.badgeEtapa}
+                  textStyle={styles.badgeText}
+                />
+              ))}
+            </View>
+          </Card>
 
-        <Card title="Información de la Siembra" titleStyle={styles.cardTitle}>
-          {!isEditing ? (
+          {formData.tipoRegistro === "precria" ? (
             <>
-              <DateInput
-                label="Fecha de siembra"
-                value={fechaSiembra}
-                disabled={true}
-                inputStyle={styles.dateInputLectura}
-                textStyle={styles.dateInputTexto}
-                labelStyle={styles.labelNombre}
+              <PreCriaSection
+                formData={formData}
+                onChange={handleChange}
+                onChangeFinca={handleChangeFinca}
+                onChangeEstanque={handleChangeEstanque}
+                fincas={fincas}
+                estanques={estanques}
+                mode={isEditing ? "edit" : "view"}
+                fieldHelpers={fieldHelpers}
+                isAutonomous={true}
+                plOptions={plLarva}
               />
-
-              <NumberInput
-                label="Camarones sembrados"
-                value={cantidad}
-                editable={false}
-                style={styles.inputNombre}
-                labelStyle={styles.labelNombre}
-                min={0}
-                max={1000000}
-              />
-
-              <Input
-                label="Área (ha)"
-                value={area}
-                editable={false}
-                style={styles.inputNombre}
-                labelStyle={styles.labelNombre}
-              />
-
-              <Input
-                label="Densidad"
-                value={densidad}
-                editable={false}
-                style={styles.inputNombre}
-                labelStyle={styles.labelNombre}
-              />
-
-              <Select
-                label="Tipo de larva"
-                options={tiposLarva}
-                value={tipoLarva}
-                disabled={true}
-                selectStyle={styles.selectVista}
-                labelStyle={styles.labelSelect}
-                selectedTextStyle={styles.textoSeleccionado}
-                optionTextStyle={styles.textoOpciones}
-              />
-
-              <Select
-                label="Proveedor"
-                options={tiposProveedor}
-                value={proveedor}
-                disabled={true}
-                selectStyle={styles.selectVista}
-                labelStyle={styles.labelSelect}
-                selectedTextStyle={styles.textoSeleccionado}
-                optionTextStyle={styles.textoOpciones}
-              />
-
-              <DateInput
-                label="Fecha ingreso de larva"
-                value={fechaIngreso}
-                disabled={true}
-                inputStyle={styles.dateInputLectura}
-                textStyle={styles.dateInputTexto}
-                labelStyle={styles.labelNombre}
-              />
-
-              <Input
-                label="Hora ingreso"
-                value={horaIngreso}
-                editable={false}
-                style={styles.inputNombre}
-                labelStyle={styles.labelNombre}
-              />
-
-              <Input
-                label="Certificado de larva"
-                value={certificado}
-                editable={false}
-                style={styles.inputNombre}
-                labelStyle={styles.labelNombre}
-              />
-
-              <Select
-                label="Técnica de cultivo"
-                options={tiposTecnica}
-                value={tecnica}
-                disabled={true}
-                selectStyle={styles.selectVista}
-                labelStyle={styles.labelSelect}
-                selectedTextStyle={styles.textoSeleccionado}
-                optionTextStyle={styles.textoOpciones}
-              />
-
-              <NumberInput
-                label="Duración estimada del ciclo"
-                value={diasCiclo}
-                editable={false}
-                style={styles.inputNombre}
-                labelStyle={styles.labelNombre}
-                min={0}
-                max={100}
+              <DatosLarvaSection
+                formData={formData}
+                onChange={handleChange}
+                proveedoresLarva={proveedoresLarva}
+                laboratoriosLarva={laboratoriosLarva}
+                procedenciasLarva={procedenciasLarva}
+                plLarva={plLarva}
+                mode={isEditing ? "edit" : "view"}
+                fieldHelpers={fieldHelpers}
+                onAgregarProveedor={handleAgregarProveedorLarva}
+                onAgregarLaboratorio={handleAgregarLaboratorioLarva}
+                onAgregarProcedencia={handleAgregarProcedenciaLarva}
+                onEditarProveedor={handleEditarProveedorLarva}
+                onEditarLaboratorio={handleEditarLaboratorioLarva}
+                onEditarProcedencia={handleEditarProcedenciaLarva}
+                onEliminarProveedor={handleEliminarProveedorLarva}
+                onEliminarLaboratorio={handleEliminarLaboratorioLarva}
+                onEliminarProcedencia={handleEliminarProcedenciaLarva}
               />
             </>
           ) : (
             <>
-              {renderFechaSiembraEditable()}
+              {/* Información general */}
 
-              <NumberInput
-                label="Camarones sembrados"
-                value={cantidad}
-                onChangeText={setCantidad}
-                style={styles.inputEditing}
-                labelStyle={styles.labelNombre}
-                min={1000}
-                max={100000}
-                step={1000}
+              <InformacionGeneralSection
+                formData={formData}
+                onChange={handleChange}
+                onChangeFinca={handleChangeFinca}
+                onChangeEstanque={handleChangeEstanque}
+                fincas={fincas}
+                estanques={estanques}
+                tecnicasCultivo={tecnicasCultivo}
+                mode={isEditing ? "edit" : "view"}
+                fieldHelpers={fieldHelpers}
               />
 
-              <Select
-                label="Tipo de larva"
-                options={tiposLarva}
-                value={tipoLarva}
-                onChange={setTipoLarva}
-                labelStyle={styles.labelSelect}
-                selectedTextStyle={styles.textoSeleccionado}
-                optionTextStyle={styles.textoOpciones}
+              {formData.pasoPorPrecria === "si" && formData.precriaId && (
+                <PreCriaSection
+                  formData={formData}
+                  onChange={handleChange}
+                  mode="view"
+                  fieldHelpers={fieldHelpers}
+                />
+              )}
+
+              {/* Datos de larva */}
+
+              <DatosLarvaSection
+                formData={formData}
+                onChange={handleChange}
+                proveedoresLarva={proveedoresLarva}
+                laboratoriosLarva={laboratoriosLarva}
+                procedenciasLarva={procedenciasLarva}
+                plLarva={plLarva}
+                mode={
+                  isEditing && formData.pasoPorPrecria !== "si"
+                    ? "edit"
+                    : "view"
+                }
+                fieldHelpers={fieldHelpers}
+                onAgregarProveedor={handleAgregarProveedorLarva}
+                onAgregarLaboratorio={handleAgregarLaboratorioLarva}
+                onAgregarProcedencia={handleAgregarProcedenciaLarva}
+                onEditarProveedor={handleEditarProveedorLarva}
+                onEditarLaboratorio={handleEditarLaboratorioLarva}
+                onEditarProcedencia={handleEditarProcedenciaLarva}
+                onEliminarProveedor={handleEliminarProveedorLarva}
+                onEliminarLaboratorio={handleEliminarLaboratorioLarva}
+                onEliminarProcedencia={handleEliminarProcedenciaLarva}
               />
 
-              <Select
-                label="Proveedor"
-                options={tiposProveedor}
-                value={proveedor}
-                onChange={setProveedor}
-                labelStyle={styles.labelSelect}
-                selectedTextStyle={styles.textoSeleccionado}
-                optionTextStyle={styles.textoOpciones}
-              />
+              {/* Cálculo de población */}
 
-              {renderFechaIngresoEditable()}
-
-              <Input
-                label="Hora ingreso"
-                value={horaIngreso}
-                onChangeText={setHoraIngreso}
-                style={styles.inputEditing}
-                labelStyle={styles.labelNombre}
-              />
-
-              <Input
-                label="Certificado de larva"
-                value={certificado}
-                onChangeText={setCertificado}
-                style={styles.inputEditing}
-                labelStyle={styles.labelNombre}
-              />
-
-              <Select
-                label="Técnica de cultivo"
-                options={tiposTecnica}
-                value={tecnica}
-                onChange={setTecnica}
-                labelStyle={styles.labelSelect}
-                selectedTextStyle={styles.textoSeleccionado}
-                optionTextStyle={styles.textoOpciones}
-              />
-
-              <NumberInput
-                label="Días estimados del ciclo"
-                value={diasCiclo}
-                onChangeText={setDiasCiclo}
-                style={styles.inputEditing}
-                labelStyle={styles.labelNombre}
-                min={0}
-                max={100}
+              <CalculoPoblacionSection
+                formData={formData}
+                onChange={handleChange}
+                mode={isEditing ? "edit" : "view"}
+                fieldHelpers={fieldHelpers}
               />
             </>
           )}
-        </Card>
 
-        {!isEditing ? (
-          <Button onPress={iniciarEdicion} textStyle={styles.textoBoton}>
-            Editar
-          </Button>
-        ) : (
-          <View style={styles.actions}>
-            <Button
-              style={styles.button}
-              onPress={guardar}
-              textStyle={styles.textoBoton}
-            >
-              Guardar
-            </Button>
+          {mensaje !== "" && (
+            <Alert
+              message={mensaje}
+              variant={mensajeVariant}
+              style={[
+                styles.alert,
+                mensajeVariant === "success" && styles.alertSuccess,
+              ]}
+              textStyle={{ textAlign: "center" }}
+            />
+          )}
 
-            <Button
-              variant="outline"
-              style={styles.button}
-              onPress={cancelarEdicion}
-              textStyle={styles.textoBoton}
-            >
-              Cancelar
-            </Button>
-          </View>
-        )}
+          {!isEditing ? (
+            <View style={styles.actions}>
+              {/*
+                Si la Pre-Cría ya fue finalizada previamente, se ofrece
+                un acceso directo para registrar la Siembra sin tener
+                que volver a entrar en modo edición.
+              */}
+              {formData.tipoRegistro === "precria" &&
+                formData.estado === "Finalizada" && (
+                  <Button
+                    style={styles.button}
+                    onPress={handleCrearSiembraDesdePrecria}
+                    textStyle={styles.textoBoton}
+                    variant="outline"
+                  >
+                    <View style={styles.buttonContent}>
+                      <Icon icon={ICONS.add} color={COLORS.primary} />
+                      <Text style={styles.textoBoton}>Registrar Siembra</Text>
+                    </View>
+                  </Button>
+                )}
+
+              <Button
+                style={styles.button}
+                onPress={iniciarEdicion}
+                textStyle={styles.textoBoton}
+                variant="outline"
+              >
+                <View style={styles.buttonContent}>
+                  <Icon icon={ICONS.edit} color={COLORS.primary} />
+                  <Text style={styles.textoBoton}>Editar</Text>
+                </View>
+              </Button>
+
+              {formData.tipoRegistro === "precria" &&
+                formData.estado !== "Finalizada" && (
+                  <Button
+                    style={styles.button}
+                    onPress={handleFinalizarPreCria}
+                    disabled={guardando}
+                    textStyle={styles.textoBoton}
+                    variant="outline"
+                  >
+                    <View style={styles.buttonContent}>
+                      <Icon icon={ICONS.check} color={COLORS.primary} />
+                      <Text style={styles.textoBoton}>
+                        {guardando ? "Finalizando..." : "Finalizar Precria"}
+                      </Text>
+                    </View>
+                  </Button>
+                )}
+            </View>
+          ) : (
+            <View style={styles.actions}>
+              {/* EN MODO EDICIÓN QUEDAN LAS ACCIONES DE PERSISTENCIA */}
+              <Button
+                style={styles.button}
+                onPress={guardar}
+                disabled={guardando}
+                textStyle={styles.textoBoton}
+                variant="outline"
+              >
+                <View style={styles.buttonContent}>
+                  <Icon icon={ICONS.save} color={COLORS.primary} />
+                  <Text style={styles.textoBoton}>
+                    {guardando ? "Guardando..." : "Guardar"}
+                  </Text>
+                </View>
+              </Button>
+
+              <Button
+                variant="outline"
+                style={styles.button}
+                onPress={cancelarEdicion}
+                textStyle={styles.textoBoton}
+              >
+                <View style={styles.buttonContent}>
+                  <Icon icon={ICONS.close} color={COLORS.primary} />
+                  <Text style={styles.textoBoton}>Cancelar</Text>
+                </View>
+              </Button>
+            </View>
+          )}
+        </View>
       </ScrollView>
-    </View>
+    </>
   );
 }

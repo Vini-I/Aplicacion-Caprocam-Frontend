@@ -3,24 +3,12 @@
  * SCREEN: PARASITOLOGIA
  * ============================================================
  *
- * Modulo para registrar parasitos por finca y estanque.
- *
- * Funcionalidad:
- * - Permite seleccionar finca y estanque.
- * - Permite seleccionar el parasito encontrado.
- * - Calcula porcentaje de infeccion.
- * - Calcula grado de infeccion.
- * - Guarda registros usando useParasitologia.
- *
- * Importante:
- * - No se mide con si/no.
- * - Se mide con camarones muestreados e infectados.
- * - Gregarinas y epicomensales van aqui, no en Enfermedades.
+ * Renderiza el formulario para registrar parasitologias.
+ * Toda la logica se encuentra en useParasitologiaScreen.
  */
 
-import React, { useState } from "react";
-import { ScrollView, View, useWindowDimensions } from "react-native";
-import { useRouter } from "expo-router";
+import React from "react";
+import { ScrollView, View } from "react-native";
 
 import Alert from "../../../shared/components/Alert";
 import Button from "../../../shared/components/Button";
@@ -31,651 +19,270 @@ import Input from "../../../shared/components/Input";
 import NumberInput from "../../../shared/components/NumberInput";
 import Select from "../../../shared/components/Select";
 import CustomText from "../../../shared/components/Text";
-import Title from "../../../shared/components/Title";
+import NavbarRegistro from "../../../shared/components/NavbarRegistro";
 
-import { FINCAS, ESTANQUES } from "../../registro/screens/RegistroData";
-
-import useParasitologia from "../hooks/useParasitologia";
-import {
-  PARASITOS_CATALOGO,
-  calcularGradoInfeccion,
-  obtenerNombreParasito,
-} from "../services/ParasitologiaService";
+import ParasitologiaSectionTitle from "../components/ParasitologiaSectionTitle";
+import useParasitologiaScreen from "../hooks/useParasitologiaScreen";
 
 import { styles } from "../styles/ParasitologiaStyle";
-
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
-import { TYPOGRAPHY } from "../../../theme/typography";
+import { STYLE } from "../../../theme/style";
 
-function obtenerFechaActual() {
-  const fecha = new Date();
-  const dia = String(fecha.getDate()).padStart(2, "0");
-  const mes = String(fecha.getMonth() + 1).padStart(2, "0");
-  const anio = fecha.getFullYear();
-
-  return `${dia}/${mes}/${anio}`;
-}
-
-function obtenerOpcionesFincas() {
-  const opciones = [];
-
-  FINCAS.forEach(function (finca) {
-    opciones.push({
-      label: finca.nombre,
-      value: finca.id,
-    });
-  });
-
-  return opciones;
-}
-
-function obtenerOpcionesEstanques(fincaId) {
-  let opciones = [];
-
-  if (fincaId !== "") {
-    const estanquesFinca = ESTANQUES[fincaId];
-
-    if (estanquesFinca !== undefined) {
-      estanquesFinca.forEach(function (estanque) {
-        opciones.push({
-          label: `${estanque.id} - ${estanque.especie}`,
-          value: estanque.id,
-        });
-      });
-    }
-  }
-
-  return opciones;
-}
-
-function obtenerNombreFinca(fincaId) {
-  let nombre = "";
-
-  FINCAS.forEach(function (finca) {
-    if (finca.id === fincaId) {
-      nombre = finca.nombre;
-    }
-  });
-
-  return nombre;
-}
-
-function obtenerColorGrado(grado) {
-  let color = COLORS.success;
-
-  if (Number(grado) === 2) {
-    color = COLORS.warning;
-  }
-
-  if (Number(grado) === 3) {
-    color = COLORS.error;
-  }
-
-  if (Number(grado) === 4) {
-    color = COLORS.error;
-  }
-
-  return color;
-}
-
-export default function ParasitologiaScreen({ onBack, navigation }) {
-  const router = useRouter();
-  const { width } = useWindowDimensions();
-
-  const { registrosParasitologia, loading, error, guardarRegistro } =
-    useParasitologia();
-
-  let esTablet = false;
-  let esDesktop = false;
-
-  if (width >= 768) {
-    esTablet = true;
-  }
-
-  if (width >= 1024) {
-    esDesktop = true;
-  }
-
-  const [finca, setFinca] = useState("");
-  const [estanque, setEstanque] = useState("");
-  const [fechaReporte, setFechaReporte] = useState(obtenerFechaActual());
-  const [responsable, setResponsable] = useState("");
-  const [parasito, setParasito] = useState("");
-  const [camaronesMuestreados, setCamaronesMuestreados] = useState("0");
-  const [camaronesInfectados, setCamaronesInfectados] = useState("0");
-  const [observaciones, setObservaciones] = useState("");
-  const [mensaje, setMensaje] = useState("");
-  const [tipoMensaje, setTipoMensaje] = useState("info");
-
-  let headerStyle = [styles.header];
-  let contentStyle = [styles.content];
-  let gridStyle = [styles.grid];
-  let itemStyle = [styles.gridItem];
-  let itemFullStyle = [styles.gridItem];
-
-  if (esTablet === true) {
-    contentStyle.push(styles.contentTablet);
-    gridStyle.push(styles.gridTablet);
-    itemStyle.push(styles.gridItemTablet);
-    itemFullStyle.push(styles.gridItemFull);
-  }
-
-  if (esDesktop === true) {
-    headerStyle.push(styles.headerDesktop);
-    contentStyle.push(styles.contentDesktop);
-    gridStyle.push(styles.gridDesktop);
-    itemStyle.push(styles.gridItemDesktop);
-    itemFullStyle.push(styles.gridItemFull);
-  }
-
-  const opcionesFincas = obtenerOpcionesFincas();
-  const opcionesEstanques = obtenerOpcionesEstanques(finca);
-
-  const gradoCalculado = calcularGradoInfeccion(
-    camaronesMuestreados,
-    camaronesInfectados,
-  );
-
-  const colorGrado = obtenerColorGrado(gradoCalculado.grado);
-
-  function volver() {
-    if (onBack) {
-      onBack();
-      return;
-    }
-
-    if (navigation) {
-      navigation.goBack();
-      return;
-    }
-
-    router.back();
-  }
-
-  function cambiarFinca(valor) {
-    setFinca(valor);
-    setEstanque("");
-  }
-
-  function limpiarFormulario() {
-    setFinca("");
-    setEstanque("");
-    setFechaReporte(obtenerFechaActual());
-    setResponsable("");
-    setParasito("");
-    setCamaronesMuestreados("0");
-    setCamaronesInfectados("0");
-    setObservaciones("");
-  }
-
-  function validarFormulario() {
-    let valido = true;
-
-    if (finca === "") {
-      setTipoMensaje("warning");
-      setMensaje("Debe seleccionar una finca.");
-      valido = false;
-    }
-
-    if (valido === true && estanque === "") {
-      setTipoMensaje("warning");
-      setMensaje("Debe seleccionar un estanque.");
-      valido = false;
-    }
-
-    if (valido === true && fechaReporte === "") {
-      setTipoMensaje("warning");
-      setMensaje("Debe seleccionar la fecha del reporte.");
-      valido = false;
-    }
-
-    if (valido === true && parasito === "") {
-      setTipoMensaje("warning");
-      setMensaje("Debe seleccionar el parasito.");
-      valido = false;
-    }
-
-    if (valido === true && Number(camaronesMuestreados) <= 0) {
-      setTipoMensaje("warning");
-      setMensaje("Debe ingresar la cantidad de camarones muestreados.");
-      valido = false;
-    }
-
-    if (valido === true && Number(camaronesInfectados) < 0) {
-      setTipoMensaje("warning");
-      setMensaje("Los camarones infectados no pueden ser negativos.");
-      valido = false;
-    }
-
-    if (
-      valido === true &&
-      Number(camaronesInfectados) > Number(camaronesMuestreados)
-    ) {
-      setTipoMensaje("warning");
-      setMensaje("Los camarones infectados no pueden superar la muestra.");
-      valido = false;
-    }
-
-    return valido;
-  }
-
-  async function registrarParasitologia() {
-    if (validarFormulario() === false) {
-      return;
-    }
-
-    const nuevoRegistro = {
-      finca: finca,
-      fincaNombre: obtenerNombreFinca(finca),
-      estanque: estanque,
-      fechaReporte: fechaReporte,
-      responsable: responsable,
-      parasito: parasito,
-      camaronesMuestreados: camaronesMuestreados,
-      camaronesInfectados: camaronesInfectados,
-      observaciones: observaciones.trim(),
-    };
-
-    const guardado = await guardarRegistro(nuevoRegistro);
-
-    if (guardado === null) {
-      setTipoMensaje("danger");
-      setMensaje("No se pudo guardar el registro de parasitologia.");
-      return;
-    }
-
-    setTipoMensaje("success");
-    setMensaje("Registro de parasitologia guardado correctamente.");
-
-    limpiarFormulario();
-  }
+export default function ParasitologiaScreen() {
+  const pantalla = useParasitologiaScreen();
 
   return (
-    <ScrollView style={styles.screen} showsVerticalScrollIndicator={false}>
-      <View style={headerStyle}>
-        <Button variant="outline" onPress={volver} style={styles.cancelButton}>
-          <View style={styles.inlineButtonContent}>
-            <Icon icon={ICONS.exit} size={18} color={COLORS.white} />
+    <>
+      <NavbarRegistro
+        Titulo="Parasitologia"
+        Subtitulo="Registro por grados de infeccion"
+        Icono="parasite"
+      />
 
-            <CustomText
-              size={16}
-              color={COLORS.white}
-              style={styles.cancelText}
-            >
-              Volver
-            </CustomText>
-          </View>
-        </Button>
+      <ScrollView style={STYLE.container} showsVerticalScrollIndicator={false}>
+        <View style={[STYLE.contentWrapper, pantalla.contentStyle]}>
+          {pantalla.loading && (
+            <Alert
+              variant="info"
+              message="Cargando datos de parasitologia..."
+              style={styles.alert}
+              textStyle={styles.alertText}
+            />
+          )}
 
-        <View style={styles.headerRow}>
-          <View style={styles.headerIcon}>
-            <Icon icon={ICONS.parasite} size={28} color={COLORS.primary} />
-          </View>
+          <Card>
+            <ParasitologiaSectionTitle
+              title="Ubicacion del muestreo"
+              icon={ICONS.document}
+            />
 
-          <View style={styles.headerTextBox}>
-            <Title
-              level={3}
-              color={COLORS.white}
-              fuente={TYPOGRAPHY.fontFamily.bold}
-            >
-              Parasitologia
-            </Title>
+            <View style={pantalla.gridStyle}>
+              <View style={pantalla.itemStyle}>
+                <Select
+                  label="Finca *"
+                  options={pantalla.opcionesFincas}
+                  value={pantalla.finca}
+                  onChange={pantalla.cambiarFinca}
+                  placeholder={pantalla.placeholderFinca}
+                  labelStyle={styles.label}
+                />
+              </View>
 
-            <CustomText
-              size={14}
-              color={COLORS.white}
-              style={styles.headerSubtitle}
-            >
-              Registro por grados de infeccion
-            </CustomText>
-          </View>
-        </View>
-      </View>
+              <View style={pantalla.itemStyle}>
+                <Select
+                  label="Estanque *"
+                  options={pantalla.opcionesEstanques}
+                  value={pantalla.estanque}
+                  onChange={pantalla.setEstanque}
+                  placeholder={pantalla.placeholderEstanque}
+                  disabled={pantalla.finca === ""}
+                  labelStyle={styles.label}
+                />
+              </View>
 
-      <View style={contentStyle}>
-        {mensaje !== "" && (
-          <Alert
-            variant={tipoMensaje}
-            message={mensaje}
-            style={styles.alert}
-            textStyle={styles.alertText}
-          />
-        )}
+              <View style={pantalla.itemStyle}>
+                <DateInput
+                  label="Fecha del reporte *"
+                  value={pantalla.fechaReporte}
+                  onChangeText={pantalla.setFechaReporte}
+                  labelStyle={styles.label}
+                />
+              </View>
 
-        {error !== "" && (
-          <Alert
-            variant="danger"
-            message={error}
-            style={styles.alert}
-            textStyle={styles.alertText}
-          />
-        )}
-
-        <Card>
-          <SectionTitle title="Ubicacion del muestreo" icon={ICONS.document} />
-
-          <View style={gridStyle}>
-            <View style={itemStyle}>
-              <Select
-                label="Finca *"
-                options={opcionesFincas}
-                value={finca}
-                onChange={cambiarFinca}
-                placeholder="Seleccione la finca"
-                labelStyle={styles.label}
-              />
+              <View style={pantalla.itemStyle} pointerEvents="none">
+                <Input
+                  label="Responsable"
+                  value={pantalla.responsable}
+                  placeholder=""
+                  editable={false}
+                  readOnly={true}
+                  selectTextOnFocus={false}
+                  labelStyle={styles.label}
+                />
+              </View>
             </View>
+          </Card>
 
-            <View style={itemStyle}>
-              <Select
-                label="Estanque *"
-                options={opcionesEstanques}
-                value={estanque}
-                onChange={setEstanque}
-                placeholder="Seleccione el estanque"
-                labelStyle={styles.label}
-              />
-            </View>
+          <Card>
+            <ParasitologiaSectionTitle
+              title="Conteo parasitologico"
+              icon={ICONS.microscope}
+            />
 
-            <View style={itemStyle}>
-              <DateInput
-                label="Fecha del reporte *"
-                value={fechaReporte}
-                onChangeText={setFechaReporte}
-                labelStyle={styles.label}
-              />
-            </View>
+            <View style={pantalla.gridStyle}>
+              <View style={pantalla.itemStyle}>
+                <Select
+                  label="Parasito *"
+                  options={pantalla.opcionesParasitos}
+                  value={pantalla.parasito}
+                  onChange={pantalla.setParasito}
+                  placeholder={pantalla.placeholderParasito}
+                  labelStyle={styles.label}
+                />
+              </View>
 
-            <View style={itemStyle}>
-              <Input
-                label="Responsable"
-                value={responsable}
-                onChangeText={setResponsable}
-                placeholder="Nombre del responsable"
-                labelStyle={styles.label}
-              />
-            </View>
-          </View>
-        </Card>
+              <View style={pantalla.itemStyle}>
+                <NumberInput
+                  label="Camarones muestreados *"
+                  value={pantalla.camaronesMuestreados}
+                  onChangeText={pantalla.setCamaronesMuestreados}
+                  min={0}
+                  max={999999}
+                  step={1}
+                  labelStyle={styles.label}
+                />
+              </View>
 
-        <Card>
-          <SectionTitle title="Conteo parasitologico" icon={ICONS.microscope} />
+              <View style={pantalla.itemStyle}>
+                <NumberInput
+                  label="Camarones infectados *"
+                  value={pantalla.camaronesInfectados}
+                  onChangeText={pantalla.setCamaronesInfectados}
+                  min={0}
+                  max={999999}
+                  step={1}
+                  labelStyle={styles.label}
+                />
+              </View>
 
-          <View style={gridStyle}>
-            <View style={itemStyle}>
-              <Select
-                label="Parasito *"
-                options={PARASITOS_CATALOGO}
-                value={parasito}
-                onChange={setParasito}
-                placeholder="Seleccione el parasito"
-                labelStyle={styles.label}
-              />
-            </View>
-
-            <View style={itemStyle}>
-              <NumberInput
-                label="Camarones muestreados *"
-                value={camaronesMuestreados}
-                onChangeText={setCamaronesMuestreados}
-                min={0}
-                max={999999}
-                step={1}
-                labelStyle={styles.label}
-              />
-            </View>
-
-            <View style={itemStyle}>
-              <NumberInput
-                label="Camarones infectados *"
-                value={camaronesInfectados}
-                onChangeText={setCamaronesInfectados}
-                min={0}
-                max={999999}
-                step={1}
-                labelStyle={styles.label}
-              />
-            </View>
-
-            <View style={itemFullStyle}>
-              <View style={styles.previewCard}>
-                <View style={styles.previewHeader}>
-                  <Icon icon={ICONS.report} size={20} color={COLORS.primary} />
-
-                  <CustomText
-                    size={15}
-                    color={COLORS.textPrimary}
-                    style={styles.previewTitle}
-                  >
-                    Resultado calculado
-                  </CustomText>
-                </View>
-
-                <View style={styles.previewGrid}>
-                  <View style={styles.previewBox}>
-                    <CustomText
-                      size={12}
-                      color={COLORS.textTertiary}
-                      style={styles.previewLabel}
-                    >
-                      Muestreados
-                    </CustomText>
+              <View style={pantalla.itemFullStyle}>
+                <View style={styles.previewCard}>
+                  <View style={styles.previewHeader}>
+                    <Icon icon={ICONS.report} size={20} color={COLORS.primary} />
 
                     <CustomText
-                      size={20}
-                      color={COLORS.textSecondary}
-                      style={styles.previewValue}
+                      size={15}
+                      color={COLORS.textPrimary}
+                      style={styles.previewTitle}
                     >
-                      {camaronesMuestreados}
+                      Resultado calculado
                     </CustomText>
                   </View>
 
-                  <View style={styles.previewBox}>
-                    <CustomText
-                      size={12}
-                      color={COLORS.textTertiary}
-                      style={styles.previewLabel}
-                    >
-                      Infectados
-                    </CustomText>
+                  <View style={styles.previewGrid}>
+                    <View style={styles.previewBox}>
+                      <CustomText
+                        size={12}
+                        color={COLORS.textTertiary}
+                        style={styles.previewLabel}
+                      >
+                        Muestreados
+                      </CustomText>
 
-                    <CustomText
-                      size={20}
-                      color={COLORS.textSecondary}
-                      style={styles.previewValue}
-                    >
-                      {camaronesInfectados}
-                    </CustomText>
-                  </View>
+                      <CustomText
+                        size={20}
+                        color={COLORS.textSecondary}
+                        style={styles.previewValue}
+                      >
+                        {pantalla.camaronesMuestreados || 0}
+                      </CustomText>
+                    </View>
 
-                  <View style={styles.previewBox}>
-                    <CustomText
-                      size={12}
-                      color={COLORS.textTertiary}
-                      style={styles.previewLabel}
-                    >
-                      Porcentaje
-                    </CustomText>
+                    <View style={styles.previewBox}>
+                      <CustomText
+                        size={12}
+                        color={COLORS.textTertiary}
+                        style={styles.previewLabel}
+                      >
+                        Infectados
+                      </CustomText>
 
-                    <CustomText
-                      size={20}
-                      color={COLORS.textSecondary}
-                      style={styles.previewValue}
-                    >
-                      {gradoCalculado.porcentaje}%
-                    </CustomText>
-                  </View>
-                </View>
+                      <CustomText
+                        size={20}
+                        color={COLORS.textSecondary}
+                        style={styles.previewValue}
+                      >
+                        {pantalla.camaronesInfectados || 0}
+                      </CustomText>
+                    </View>
 
-                <View style={styles.gradeBox}>
-                  <View style={styles.gradeHeader}>
-                    <CustomText size={14} color={COLORS.textSecondary}>
-                      Grado de infeccion
-                    </CustomText>
+                    <View style={styles.previewBox}>
+                      <CustomText
+                        size={12}
+                        color={COLORS.textTertiary}
+                        style={styles.previewLabel}
+                      >
+                        Porcentaje
+                      </CustomText>
 
-                    <View style={styles.gradeBadge}>
-                      <CustomText size={13} color={colorGrado} weight="800">
-                        {gradoCalculado.nombre}
+                      <CustomText
+                        size={20}
+                        color={COLORS.textSecondary}
+                        style={styles.previewValue}
+                      >
+                        {pantalla.gradoCalculado.porcentaje}%
                       </CustomText>
                     </View>
                   </View>
 
-                  <CustomText
-                    size={13}
-                    color={COLORS.textTertiary}
-                    style={styles.gradeDescription}
-                  >
-                    {gradoCalculado.descripcion}
-                  </CustomText>
+                  <View style={styles.gradeBox}>
+                    <View style={styles.gradeHeader}>
+                      <CustomText size={14} color={COLORS.textSecondary}>
+                        Grado de infeccion
+                      </CustomText>
+
+                      <View style={styles.gradeBadge}>
+                        <CustomText
+                          size={13}
+                          color={pantalla.colorGrado}
+                          weight="800"
+                        >
+                          {pantalla.gradoCalculado.nombre}
+                        </CustomText>
+                      </View>
+                    </View>
+
+                    <CustomText
+                      size={13}
+                      color={COLORS.textTertiary}
+                      style={styles.gradeDescription}
+                    >
+                      {pantalla.gradoCalculado.descripcion}
+                    </CustomText>
+                  </View>
                 </View>
               </View>
+
+              <View style={pantalla.itemFullStyle}>
+                <Input
+                  label="Observaciones"
+                  value={pantalla.observaciones}
+                  onChangeText={pantalla.setObservaciones}
+                  placeholder="Describa observaciones del muestreo"
+                  multiline={true}
+                  labelStyle={styles.label}
+                  style={styles.textArea}
+                />
+              </View>
             </View>
+          </Card>
 
-            <View style={itemFullStyle}>
-              <Input
-                label="Observaciones"
-                value={observaciones}
-                onChangeText={setObservaciones}
-                placeholder="Describa observaciones del muestreo"
-                multiline={true}
-                labelStyle={styles.label}
-                style={styles.textArea}
-              />
-            </View>
-          </View>
-        </Card>
-
-        <Button
-          onPress={registrarParasitologia}
-          style={styles.saveButton}
-          disabled={loading}
-        >
-          <View style={styles.inlineButtonContentCentered}>
-            <Icon icon={ICONS.save} size={18} color={COLORS.white} />
-
-            <CustomText size={16} color={COLORS.white} style={styles.saveText}>
-              Registrar parasitologia
-            </CustomText>
-          </View>
-        </Button>
-
-        <Card>
-          <SectionTitle title="Detalles guardados" icon={ICONS.certificate} />
-
-          {registrosParasitologia.length === 0 && (
-            <CustomText
-              size={14}
-              color={COLORS.textTertiary}
-              style={styles.emptyText}
-            >
-              Aun no hay registros de parasitologia.
-            </CustomText>
+          {pantalla.mensaje !== "" && (
+            <Alert
+              variant={pantalla.tipoMensaje}
+              message={pantalla.mensaje}
+              style={styles.alert}
+              textStyle={styles.alertText}
+            />
           )}
 
-          {registrosParasitologia.map(function (registro) {
-            return (
-              <RegistroParasitologia key={registro.id} registro={registro} />
-            );
-          })}
-        </Card>
-      </View>
-    </ScrollView>
-  );
-}
-
-function SectionTitle({ title, icon }) {
-  return (
-    <View style={styles.sectionTitleRow}>
-      <Icon icon={icon} size={18} color={COLORS.primary} />
-
-      <Title
-        level={5}
-        color={COLORS.textSecondary}
-        fuente={TYPOGRAPHY.fontFamily.bold}
-        style={styles.sectionTitle}
-      >
-        {title}
-      </Title>
-    </View>
-  );
-}
-
-function RegistroParasitologia({ registro }) {
-  const colorGrado = obtenerColorGrado(registro.gradoInfeccion);
-
-  return (
-    <View style={styles.savedCase}>
-      <View style={styles.savedCaseHeader}>
-        <View style={styles.savedCaseTitleBox}>
-          <CustomText
-            size={15}
-            color={COLORS.textPrimary}
-            style={styles.savedCaseTitle}
+          <Button
+            variant="outline"
+            onPress={pantalla.registrarParasitologia}
+            style={styles.outlinePrimaryButton}
+            disabled={pantalla.loading}
           >
-            {registro.fincaNombre} - {registro.estanque}
-          </CustomText>
+            <View style={styles.inlineButtonContentCentered}>
+              <Icon icon={ICONS.save} size={18} color={COLORS.primary} />
 
-          <CustomText
-            size={12}
-            color={COLORS.textTertiary}
-            style={styles.savedCaseSubtitle}
-          >
-            {registro.parasitoNombre}
-          </CustomText>
+              <CustomText size={16} color={COLORS.primary} style={styles.saveText}>
+                Registrar parasitologia
+              </CustomText>
+            </View>
+          </Button>
         </View>
-
-        <View style={styles.savedGradeBadge}>
-          <CustomText size={12} color={colorGrado} weight="800">
-            {registro.nombreGrado}
-          </CustomText>
-        </View>
-      </View>
-
-      <Info label="Fecha" value={registro.fechaReporte} />
-      <Info label="Responsable" value={registro.responsable} />
-      <Info label="Parasito" value={obtenerNombreParasito(registro.parasito)} />
-      <Info label="Muestreados" value={registro.camaronesMuestreados} />
-      <Info label="Infectados" value={registro.camaronesInfectados} />
-      <Info label="Porcentaje" value={`${registro.porcentajeInfeccion}%`} />
-      <Info label="Descripcion" value={registro.descripcionGrado} />
-      <Info label="Observaciones" value={registro.observaciones} />
-    </View>
-  );
-}
-
-function Info({ label, value }) {
-  let valorFinal = value;
-
-  if (valorFinal === "") {
-    valorFinal = "No registrado";
-  }
-
-  if (valorFinal === undefined) {
-    valorFinal = "No registrado";
-  }
-
-  if (valorFinal === null) {
-    valorFinal = "No registrado";
-  }
-
-  return (
-    <View style={styles.infoRow}>
-      <CustomText
-        size={13}
-        color={COLORS.textTertiary}
-        style={styles.infoLabel}
-      >
-        {label}
-      </CustomText>
-
-      <CustomText
-        size={14}
-        color={COLORS.textSecondary}
-        style={styles.infoValue}
-      >
-        {valorFinal}
-      </CustomText>
-    </View>
+      </ScrollView>
+    </>
   );
 }

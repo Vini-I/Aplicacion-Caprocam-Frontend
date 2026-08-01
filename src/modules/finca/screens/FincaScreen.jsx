@@ -1,115 +1,144 @@
-import { ScrollView, View, useWindowDimensions } from "react-native";
-import { useState } from "react";
-import { fincas } from "./FincaData.js";
+/**
+ * ============================================================
+ * PANTALLA PRINCIPAL DE FINCAS
+ * ============================================================
+ *
+ * Muestra el listado de fincas registradas y permite realizar
+ * acciones principales sobre cada una de ellas.
+ *
+ * Funcionalidad:
+ * - Presenta las fincas disponibles mediante tarjetas interactivas.
+ * - Muestra información básica como nombre, ubicación y responsable.
+ * - Permite acceder al detalle de una finca seleccionada.
+ * - Permite editar y eliminar fincas registradas.
+ * - Muestra alertas de confirmación después de acciones CRUD.
+ * - Controla la visualización del modal de eliminación.
+ * - Utiliza componentes reutilizables para mantener la interfaz.
+ */
+import { ScrollView, View } from "react-native";
+
 import { styles } from "../../finca/styles/FincaStyles.js";
 import { ICONS } from "../../../theme/icons.js";
 import { COLORS } from "../../../theme/colors.js";
+import { useFincaScreen } from "../hooks/useFincaScreen.js";
+
+import { STYLE } from "../../../theme/style.js";
+import Alert from "../../../shared/components/Alert.jsx";
 import Button from "../../../shared/components/Button.jsx";
+import CardPress from "../../../shared/components/CardPress";
 import Title from "../../../shared/components/Title.jsx";
 import Text from "../../../shared/components/Text.jsx";
 import Icon from "../../../shared/components/Icons.jsx";
 import Badge from "../../../shared/components/Badge.jsx";
-import ModalEliminarFinca from "./ModalEliminarFinca.jsx";
+import ModalEliminar from "../../../shared/components/ModalEliminar.jsx";
 
 export default function FincasScreen({ onDetail, onNew, onEdit }) {
-  const { width } = useWindowDimensions();
-  const isCompact = width < 380;
-  const [ModalVisible, setModalVisible] = useState(false);
-  const [FincaNombreSeleccionada, setFincaNombreSeleccionada] = useState(null);
-
-  function abrirModalEliminar(Finca) {
-    setFincaNombreSeleccionada(Finca.nombre);
-    setModalVisible(true);
-  }
-
-  function cancelarEliminar() {
-    setModalVisible(false);
-    setFincaNombreSeleccionada(null);
-  }
-
-  function confirmarEliminar() {
-    console.log("Eliminando finca:", FincaNombreSeleccionada);
-    setModalVisible(false);
-    setFincaNombreSeleccionada(null);
-  }
+  const {
+    fincas,
+    isCompact,
+    alert,
+    ModalVisible,
+    FincaNombreSeleccionada,
+    abrirModalEliminar,
+    cancelarEliminar,
+    confirmarEliminar,
+  } = useFincaScreen();
 
   return (
-    <ScrollView style={styles.Container}>
-      {fincas.map((Finca) => (
-        <View key={Finca.codigoInterno}  style={styles.Card}>
-          <Button
-            style={styles.ContentWrapper}
-            onPress={() => onDetail(Finca.codigoInterno)}
+    <ScrollView style={STYLE.container} showsVerticalScrollIndicator={false}>
+      <View style={STYLE.contentWrapper}>
+        {alert === "edited" && (
+          <Alert style={styles.alertCorrect}>Finca editada correctamente</Alert>
+        )}
+        {alert === "created" && (
+          <Alert style={styles.alertCorrect}>
+            Finca registrada correctamente
+          </Alert>
+        )}
+        {alert === "deleted" && (
+          <Alert style={styles.alertIncorrect}>
+            Finca eliminada correctamente
+          </Alert>
+        )}
+
+        {fincas.map((Finca) => (
+          <CardPress
+            key={Finca.id}
+            onPress={() => onDetail(Finca.id)}
+            style={styles.card}
           >
-            <View style={styles.CardContent}>
-              <View style={styles.IconContainer}>
+            <View style={styles.cardContent}>
+              <View style={styles.iconContainer}>
                 <Icon icon={ICONS.location} size={25} color={COLORS.primary} />
               </View>
 
-              <View style={{ flex: 1 }}>
+              <View style={styles.flex}>
                 <Title level={4} numberOfLines={2}>
-                  {Finca.nombre}
+                  {Finca.nombreFinca}
                 </Title>
 
                 <Text numberOfLines={3} color={COLORS.textTertiary}>
                   {Finca.provincia}, {Finca.canton}, {Finca.distrito}
                 </Text>
-                <Text color={COLORS.primary}>{Finca.responsable}</Text>
+                <Text color={COLORS.primary}>{Finca.propietarioResponsable}</Text>
 
                 <View
-                  style={[styles.Detalles, isCompact && styles.DetallesColumn]}
+                  style={[styles.details, isCompact && styles.detailsColumn]}
                 >
                   <Badge
-                  label={`${Finca.estanques}  estanques`} textStyle={styles.Detalle}
-                  >
-                  </Badge>
+                    label={`${Finca.estanques ?? "-"} estanques`}
+                    textStyle={styles.detail}
+                  ></Badge>
                   <Badge
-                  label={`${Finca.areaTotal}  ha`} textStyle={styles.Detalle}
-                  >
-                  </Badge>
+                    label={`${Finca.areaTotal}  ha`}
+                    textStyle={styles.detail}
+                  ></Badge>
                 </View>
               </View>
+              <View style={styles.buttonsCrud}>
+                <Button
+                  style={styles.delete}
+                  onPress={() => abrirModalEliminar(Finca)}
+                >
+                  <Icon
+                    icon={ICONS.delete}
+                    style={[styles.deleteIcon]}
+                    size={20}
+                  />
+                  <Text size={12} style={styles.deleteIcon}>
+                    Eliminar
+                  </Text>
+                </Button>
+
+                <Button
+                  style={styles.edit}
+                  onPress={() => onEdit(Finca.id)}
+                >
+                  <Icon icon={ICONS.edit} style={styles.editIcon} size={20} />
+                  <Text size={12} style={styles.editIcon}>
+                    Editar
+                  </Text>
+                </Button>
+              </View>
             </View>
-          </Button>
-          <View style={styles.Buttons}>
-          <Button
-            style={styles.Eliminar}
-            onPress={() => abrirModalEliminar(Finca)}
-          >
-            <Icon
-              icon={ICONS.delete}
-              style={{ color: COLORS.error }}
-              size={20}
-            />
-            <Text size={12} style={{ color: COLORS.error }}>
-              Eliminar
-            </Text>
-          </Button>
-          <Button style={styles.Editar} onPress={() => onEdit()}>
-            <Icon
-              icon={ICONS.edit}
-              style={{ color: COLORS.primary }}
-              size={20}
-            />
-            <Text size={12} style={{ color: COLORS.primary }}>
-              Editar
-            </Text>
-          </Button>
-          </View>
-        </View>
-      ))}
+          </CardPress>
+        ))}
 
-      <Button style={styles.AddButton} onPress={() => onNew()}>
-        <Icon icon={ICONS.add} size={15} />
-        <Text size={15}>REGISTRAR NUEVA FINCA</Text>
-      </Button>
+        <Button style={styles.addButton} onPress={() => onNew()}>
+          <Icon style={styles.addButtonText} icon={ICONS.add} size={15} />
+          <Text style={styles.addButtonText} size={15}>
+            REGISTRAR NUEVA FINCA
+          </Text>
+        </Button>
 
-      <ModalEliminarFinca
-        visible={ModalVisible}
-        nombre={FincaNombreSeleccionada}
-        onCancelar={cancelarEliminar}
-        onConfirmar={confirmarEliminar}
-      />
+        <ModalEliminar
+          visible={ModalVisible}
+          title="finca"
+          message={FincaNombreSeleccionada}
+          onCancel={cancelarEliminar}
+          onConfirm={confirmarEliminar}
+        />
+      </View>
     </ScrollView>
   );
 }

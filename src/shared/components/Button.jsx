@@ -3,34 +3,49 @@
  * COMPONENTE BUTTON
  * ============================================================
  *
- * Boton reutilizable para React Native.
- *
- * Funcionalidad:
- * - Usa Pressable para manejar la accion del usuario.
- * - Recibe children para permitir texto, iconos u otros elementos.
- * - Permite variantes visuales: primary, secondary, danger y outline.
- * - Permite estado disabled para bloquear la accion.
- *
- * Props principales:
- * - children: contenido visible dentro del boton.
- * - onPress: funcion que se ejecuta al presionar.
- * - variant: estilo visual del boton.
- * - disabled: desactiva el boton.
- * - style: estilos extra para el contenedor.
- * - textStyle: estilos extra para el texto cuando children es texto.
- *
- * Ejemplo:
- * <Button onPress={guardarDatos}>Guardar</Button>
+ * Responsabilidad:
+ * - Centraliza botones de la aplicacion.
+ * - Usa outline como variante por defecto.
+ * - Mantiene variantes con relleno solo cuando el modulo lo solicite.
+ * - Permite texto, iconos o contenido personalizado como children.
  */
 
 import React from "react";
 import { Pressable, Text, StyleSheet } from "react-native";
 import { COLORS } from "../../theme/colors";
+import { TYPOGRAPHY } from "../../theme/typography";
+
+function addVariantStyles(variant, buttonStyles, textStyles) {
+  if (variant === "primary") {
+    buttonStyles.push(styles.primary);
+    textStyles.push(styles.primaryText);
+  }
+
+  if (variant === "secondary") {
+    buttonStyles.push(styles.secondary);
+    textStyles.push(styles.secondaryText);
+  }
+
+  if (variant === "danger") {
+    buttonStyles.push(styles.danger);
+    textStyles.push(styles.dangerText);
+  }
+
+  if (variant === "ghost") {
+    buttonStyles.push(styles.ghost);
+    textStyles.push(styles.ghostText);
+  }
+
+  if (variant === "outline") {
+    buttonStyles.push(styles.outline);
+    textStyles.push(styles.outlineText);
+  }
+}
 
 export default function Button({
   children,
   onPress,
-  variant = "primary",
+  variant = "outline",
   disabled = false,
   style,
   textStyle,
@@ -38,18 +53,7 @@ export default function Button({
   const buttonStyles = [styles.button];
   const textStyles = [styles.text];
 
-  if (variant === "secondary") {
-    buttonStyles.push(styles.secondary);
-  }
-
-  if (variant === "danger") {
-    buttonStyles.push(styles.danger);
-  }
-
-  if (variant === "outline") {
-    buttonStyles.push(styles.outline);
-    textStyles.push(styles.outlineText);
-  }
+  addVariantStyles(variant, buttonStyles, textStyles);
 
   if (disabled === true) {
     buttonStyles.push(styles.disabled);
@@ -75,7 +79,15 @@ export default function Button({
 
   return (
     <Pressable
-      style={buttonStyles}
+      style={function ({ pressed }) {
+        const finalStyles = [...buttonStyles];
+
+        if (pressed === true && disabled === false) {
+          finalStyles.push(styles.pressed);
+        }
+
+        return finalStyles;
+      }}
       onPress={onPress}
       disabled={disabled}
       accessibilityRole="button"
@@ -87,34 +99,70 @@ export default function Button({
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: COLORS.primary,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 8,
+    paddingVertical: 11,
+    paddingHorizontal: 18,
+    borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",
     marginTop: 8,
+    borderWidth: 1,
   },
-  secondary: {
-    backgroundColor: COLORS.textTertiary,
-  },
-  danger: {
-    backgroundColor: COLORS.error,
-  },
+
   outline: {
     backgroundColor: COLORS.white,
-    borderWidth: 1,
     borderColor: COLORS.primary,
   },
+
+  primary: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
+  },
+
+  secondary: {
+    backgroundColor: COLORS.white,
+    borderColor: COLORS.textTertiary,
+  },
+
+  danger: {
+    backgroundColor: COLORS.white,
+    borderColor: COLORS.error,
+  },
+
+  ghost: {
+    backgroundColor: "transparent",
+    borderColor: "transparent",
+  },
+
   disabled: {
     opacity: 0.5,
   },
-  text: {
-    color: COLORS.white,
-    fontSize: 16,
-    fontWeight: "600",
+
+  pressed: {
+    opacity: 0.75,
   },
+
+  text: {
+    fontSize: 16,
+    fontFamily: TYPOGRAPHY.fontFamily.medium,
+  },
+
   outlineText: {
+    color: COLORS.primary,
+  },
+
+  primaryText: {
+    color: COLORS.white,
+  },
+
+  secondaryText: {
+    color: COLORS.textTertiary,
+  },
+
+  dangerText: {
+    color: COLORS.error,
+  },
+
+  ghostText: {
     color: COLORS.primary,
   },
 });

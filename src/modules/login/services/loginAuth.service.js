@@ -1,14 +1,36 @@
-
 /**
- * verifyPinCredentials
+ * ============================================================
+ * SERVICIO: loginAuth
+ * ============================================================
  *
- * Valida el PIN localmente por ahora.
- * Cuando exista backend, aquí se reemplaza por fetch/axios.
+ * Valida el PIN del operario contra el backend real.
  */
+
+import api from "../../../api/api";
+
 export async function verifyPinCredentials({ workerId, pinCode }) {
   if (workerId == null || pinCode.length !== 4) {
     return { isValid: false, message: 'Datos inválidos para autenticar.' };
   }
 
-  return { isValid: true, message: '' };
+  try {
+    const response = await api.post("/login/verificar-pin", {
+      operarioId: workerId,
+      pin: pinCode,
+    });
+
+    return {
+      isValid: true,
+      message: response.data.message,
+      data: response.data.data,
+    };
+  } catch (err) {
+    if (err.response) {
+      // El backend respondió con 401, 404 o 422
+      const message = err.response.data?.message || 'Error al verificar el PIN.';
+      return { isValid: false, message };
+    }
+    // No hubo respuesta del servidor (red caída, IP mal, etc.)
+    return { isValid: false, message: 'Error de red. Verifica tu conexión.' };
+  }
 }

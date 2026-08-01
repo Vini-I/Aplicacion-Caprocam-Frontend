@@ -1,51 +1,104 @@
+/**
+ * ============================================================
+ * ESTILOS: colaboradoresListStyles
+ * ============================================================
+ *
+ * Estilos para la pantalla ColaboradoresListScreen.
+ * Se eliminaron los estilos de la tabBar y se ajustó el
+ * botón flotante para que quede fijo en la parte inferior.
+ *
+ * Dependencias:
+ * - COLORS desde theme/colors
+ * ============================================================
+ */
+
 import { StyleSheet } from "react-native";
 import { COLORS } from "../../../theme/colors";
-import Icon from "../../../shared/components/Icons";
-import { ICONS } from "../../../theme/icons";
 
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.white,
   },
-  tabBar: {
-    flexDirection: "row",
-    backgroundColor: COLORS.white,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.secondary,
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: 12,
-    alignItems: "center",
-    borderBottomWidth: 2,
-    borderBottomColor: "transparent",
-  },
-  activeTab: {
-    borderBottomColor: COLORS.primary,
-  },
-  tabText: {
-    fontWeight: "600",
-    color: COLORS.textSecondary,
-  },
   searchRow: {
-    paddingHorizontal: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 0,
     paddingVertical: 12,
     backgroundColor: COLORS.white,
     marginTop: 8,
-  },
-  searchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
     gap: 8,
     width: "100%",
     maxWidth: 900,
     alignSelf: "center",
   },
-  searchInput: { flex: 1, marginBottom: 0 },
-  addButtonContainer: { alignSelf: "center" },
-  list: { padding: 16, paddingBottom: 80 },
-  error: { color: COLORS.error, textAlign: "center", marginTop: 20 },
+  searchInput: {
+    flex: 1,
+    marginBottom: 0,
+  },
+  filterButtonStyle: {
+    height: 42,
+    borderColor: COLORS.textTertiary,
+    marginTop: 0,
+    alignSelf: "center",
+  },
+  list: {
+    padding: 0,
+    paddingBottom: 110, // espacio para el botón flotante
+    width: '100%',
+    left: 0,
+    maxWidth: 900,
+    alignSelf: 'center',
+  },
+  error: {
+    color: COLORS.error,
+    textAlign: "center",
+    marginTop: 20,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  alertWrapper: {
+    marginBottom: 12,
+    paddingHorizontal: 16,
+    width: '100%',
+    maxWidth: 900,
+    alignSelf: 'center',
+  },
+
+  // Botón flotante
+  floatingButtonContainer: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 15,
+    backgroundColor: COLORS.white,
+  },
+  floatingButton: {
+    width: "100%",
+    maxWidth: 900,
+    alignSelf: "center",
+    backgroundColor: "transparent",
+    borderColor: COLORS.primary,
+    borderWidth: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 6,
+  },
+  floatingButtonText: {
+    color: COLORS.primary,
+    fontWeight: "600",
+    fontSize: 13,
+  },
+
+  // Estilos del modal de confirmación
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.6)",
@@ -97,6 +150,54 @@ export const styles = StyleSheet.create({
     marginBottom: 16,
     textAlign: "center",
   },
-  modalInput: { marginBottom: 20 },
-  modalButtons: { flexDirection: "row", gap: 12, justifyContent: "center" },
+  modalInput: {
+    marginBottom: 20,
+  },
+  modalButtons: {
+    flexDirection: "row",
+    gap: 12,
+    justifyContent: "center",
+  },
+  modalConfirmContainer: {
+    width: "100%",
+    maxWidth: 900,
+    alignSelf: "center",
+  },
+  modalCancelBtn: {
+    marginTop: 0,
+    flex: 1,
+    borderColor: COLORS.primary,
+    borderWidth: 1,
+    backgroundColor: "transparent",
+  },
+  modalDeleteBtn: {
+    marginTop: 0,
+    flex: 1,
+    borderColor: COLORS.error,
+    borderWidth: 1,
+    backgroundColor: "transparent",
+  },
+  modalDetalleContainer: {
+    width: "100%",
+    maxWidth: 900,
+    maxHeight: "85%",
+    alignSelf: "center",
+    padding: 16,
+    borderRadius: 16,
+    overflow: "hidden",
+    backgroundColor: COLORS.surface,
+  },
+  modalDetalleOverlay: {
+    backgroundColor: "rgba(0,0,0,0.6)",
+    justifyContent: "center",
+    padding: 16,
+  },
+    emptyStateButton: {
+    marginTop: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    borderColor: COLORS.primary,
+    backgroundColor: 'transparent',
+  },
 });

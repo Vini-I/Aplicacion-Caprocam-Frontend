@@ -1,7 +1,33 @@
+/**
+ * ============================================================
+ * PANTALLA: DETALLEPRODUCTOSCREEN
+ * ============================================================
+ * Módulo: Productos
+ *
+ * Muestra el detalle completo de un producto del inventario.
+ *
+ * FUNCIONALIDAD:
+ * 1. Header celeste usando COLORS.primary.
+ * 2. Muestra información general: cantidad, stock mínimo,
+ *    categoría y proveedor.
+ * 3. Muestra información económica: precio por unidad y valor
+ *    total en stock (precio x cantidad).
+ * 4. Marca con un badge cuando el producto tiene stock bajo
+ *    (cantidad menor al stock mínimo).
+ * 5. Botón "Editar" navega al formulario con el producto cargado.
+ * 6. Botón "Eliminar" abre un modal de confirmación antes de
+ *    borrar el producto definitivamente.
+ *
+ * IMPORTANTE:
+ * - No modifica rutas existentes ni la estructura del proyecto.
+ * ============================================================
+ */
 
-import { View, ScrollView } from "react-native";
+
+
+import { View, ScrollView, ActivityIndicator } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { getProductoById, deleteProducto } from "../../inventarios/services/InventarioService.js";
+
 
 import Navbar from "../../../shared/components/Navbar";
 import Icon from "../../../shared/components/Icons";
@@ -9,15 +35,18 @@ import Card from "../../../shared/components/Card";
 import Button from "../../../shared/components/Button";
 import Text from "../../../shared/components/Text";
 import Title from "../../../shared/components/Title";
+import ModalEliminar from "../../../shared/components/ModalEliminar";
 import Badge from "../../../shared/components/Badge";
 import Modal from "../../../shared/components/Modal";
+import Alert from "../../../shared/components/Alert";
 
 import { ICONS } from "../../../theme/icons";
 import { COLORS } from "../../../theme/colors";
+import { STYLE } from "../../../theme/style";
 
 import { styles,colorCategoria,colorCategoriaDefault } from "../styles/DetalleProductScreenStyles";
 
-import { useDetalleProducto } from "../services/DetalleProductoScreen";
+import { useDetalleProducto } from "../hooks/useDetalleProductoScreen.js";
 
 function FilaDetalle({ etiqueta, valor, resaltado = false }) {
   return (
@@ -39,6 +68,9 @@ function FilaDetalle({ etiqueta, valor, resaltado = false }) {
 export default function DetalleProductoScreen() {
   const {
     producto,
+    cargando,
+    error,
+    eliminando,
     tieneStockBajo,
     colores,
     precioFormateado,
@@ -49,11 +81,20 @@ export default function DetalleProductoScreen() {
     confirmarEliminar,
     handleBack,
     handleCerrarModal,
+    eliminado,
   } = useDetalleProducto();
+
+  if (cargando) {
+    return (
+      <View style={[STYLE.container, styles.loadingContainer]}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+      </View>
+    );
+  }
 
   if (!producto) {
     return (
-      <View style={styles.contenedor}>
+      <View style={STYLE.container}>
         <Navbar
           title="Producto no encontrado"
           style={styles.navbar}
@@ -68,7 +109,7 @@ export default function DetalleProductoScreen() {
           }
         />
         <View style={styles.emptyContainer}>
-          <Text>El producto no existe</Text>
+          <Text>{error || "El producto no existe"}</Text>
         </View>
       </View>
     );
@@ -76,24 +117,9 @@ export default function DetalleProductoScreen() {
 
 
     return (
-        <View style={styles.contenedor}>
-            <Navbar
-                title="Detalle de Producto"
-                style={styles.navbar}
-                titleStyle={styles.navbarTitulo}
-                leftContent={
-                    <Button
-                        variant="outline"
-                        onPress={handleBack}
-                        style={styles.backButton}
-                    >
-                        <Icon icon={ICONS.back} size={22} color={COLORS.white} />
-                    </Button>
-                }
-            />
-
+        <View style={STYLE.container}>
             <ScrollView
-                contentContainerStyle={styles.contentContainer}
+                contentContainerStyle={[styles.contentContainer, STYLE.contentWrapper]}
                 showsVerticalScrollIndicator={false}
             >
                 <Card style={styles.tarjeta}>
@@ -143,48 +169,45 @@ export default function DetalleProductoScreen() {
                     </View>
                 </Card>
 
-                <View style={styles.botonesSeccion}>
-                    <Button
-                        style={[styles.botonAccion, styles.botonEditar]}
-                        onPress={handleEditar}
-                    >
-                        <Icon icon={ICONS.edit} size={20} color={COLORS.white} />
-                        <Text color={COLORS.white} weight="600" size={14}>
-                            Editar
-                        </Text>
-                    </Button>
-
-                    <Button
-                        style={[styles.botonAccion, styles.botonEliminar]}
-                        onPress={handleEliminar}
-                    >
-                        <Icon icon={ICONS.delete} size={20} color={COLORS.white} />
-                        <Text color={COLORS.white} weight="600" size={14}>
-                            Eliminar
-                        </Text>
+        <View style={styles.botonesSeccion}>
+                    <Button variant="outline" style={[styles.botonAccion, styles.botonEditar]} onPress={handleEditar}>
+                        <Icon icon={ICONS.edit} size={20} color={COLORS.primary} />
+                        <Text color={COLORS.primary} weight="600" size={14}>Editar</Text>
+                        </Button>
+                        
+                    <Button variant="outline" style={[styles.botonAccion, styles.botonEliminar]} onPress={handleEliminar}>
+                        <Icon icon={ICONS.delete} size={20} color={COLORS.error} />
+                        <Text color={COLORS.error} weight="600" size={14}>Eliminar</Text>
                     </Button>
                 </View>
+
+                {/* Alert de éxito al pie de la pantalla, igual que al guardar un producto */}
+                {eliminado && (
+                    <Alert
+                        variant="success"
+                        message="Producto eliminado correctamente."
+                        style={styles.alertEliminado}
+                    />
+                )}
+
+                {/* Si falla la desactivación en el back, se muestra el error aquí */}
+                {!!error && !eliminado && (
+                    <Alert
+                        variant="danger"
+                        message={error}
+                        style={styles.alertEliminado}
+                    />
+                )}
             </ScrollView>
 
-            <Modal
+            <ModalEliminar
                 visible={modalEliminarVisible}
-                onClose={() => setModalEliminarVisible(false)}
-                closeText="Cancelar"
-            >
-                <Title level={5} style={styles.modalTitulo}>
-                    Eliminar producto
-                </Title>
-                <Text size={14} color={COLORS.textSecondary} style={styles.modalTexto}>
-                    ¿Está seguro que desea eliminar "{producto.nombre}"? Esta acción no se puede deshacer.
-                </Text>
-                <Button style={styles.botonModalEliminar} onPress={confirmarEliminar}>
-                    <Icon icon={ICONS.delete} size={18} color={COLORS.white} />
-                    <Text color={COLORS.white} weight="600" size={14}>
-                        Eliminar
-                    </Text>
-                </Button>
-            </Modal>
-        </View>
+                title="producto"
+                message={producto.nombre}
+                onCancel={handleCerrarModal}
+                onConfirm={confirmarEliminar}
+            />
+        </View>        
     );
 }
 
