@@ -25,12 +25,14 @@ import { useState, useEffect, useCallback } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { productoService, mapProducto } from "../services/producto.service";
 import { getProveedorPorId } from "../services/proveedoresLookup";
+import { useError } from "../../../shared/context/ErrorContext";
 
 import { colorCategoria, colorCategoriaDefault } from "../styles/DetalleProductScreenStyles";
 
 export function useDetalleProducto() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
+  const { mostrarError } = useError();
 
   const [producto, setProducto] = useState(null);
   const [cargando, setCargando] = useState(true);
@@ -66,10 +68,11 @@ export function useDetalleProducto() {
     } catch (err) {
       setProducto(null);
       setError("No se pudo cargar el producto.");
+      mostrarError(err);
     } finally {
       setCargando(false);
     }
-  }, [id]);
+  }, [id, mostrarError]);
 
   useEffect(() => {
     if (id) cargarProducto();
@@ -103,6 +106,7 @@ export function useDetalleProducto() {
     } catch (err) {
       setModalEliminarVisible(false);
       setError("No se pudo eliminar el producto. Intenta de nuevo.");
+      mostrarError(err);
     } finally {
       setEliminando(false);
     }

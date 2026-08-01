@@ -41,10 +41,12 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { productoService } from "../services/producto.service";
 import { getProveedores, filtrarProveedoresPorCategoria } from "../services/proveedoresLookup";
 import { initialForm } from "../services/DataProductForm";
+import { useError } from "../../../shared/context/ErrorContext";
 
 export function useEditarProducto() {
   const router = useRouter();
   const params = useLocalSearchParams();
+  const { mostrarError } = useError();
 
   const [form, setForm] = useState(initialForm);
   const [originalForm, setOriginalForm] = useState(initialForm);
@@ -74,6 +76,7 @@ export function useEditarProducto() {
             "No se pudieron cargar los proveedores. Verifica que el back tenga montada la ruta /proveedores."
           );
           setProveedoresTodos([]);
+          mostrarError(err);
         }
       } finally {
         if (activo) setCargandoProveedores(false);
@@ -83,7 +86,7 @@ export function useEditarProducto() {
     return () => {
       activo = false;
     };
-  }, []);
+  }, [mostrarError]);
 
   useEffect(() => {
     const filtrados = filtrarProveedoresPorCategoria(proveedoresTodos, form.categoria);

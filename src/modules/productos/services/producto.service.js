@@ -19,6 +19,23 @@
 
 import api from "../../../api/api";
 
+/**
+ * ============================================================
+ * MANEJO DE ERRORES DE ESTE SERVICE
+ * ============================================================
+ * Mismo patrón acordado en equipo que en comprador.service.js (ver
+ * Explicación ModalError): si el back devuelve un status
+ * "controlado" (con un mensaje real y útil, ej. 404 "Producto no
+ * encontrado"), dejamos pasar el error tal cual (throw error) para
+ * que el mensaje real del back llegue hasta mostrarError(). Para
+ * cualquier otro status armamos un mensaje genérico propio de la
+ * acción que falló.
+ * ============================================================
+ */
+function esErrorControlado(error, statusEsperados) {
+  return statusEsperados.includes(error.response?.status);
+}
+
 export const productoService = {
 
   getProductos: async () => {
@@ -26,7 +43,8 @@ export const productoService = {
       const response = await api.get("/productos");
       return response.data.data;
     } catch (error) {
-      throw error;
+      if (esErrorControlado(error, [500])) throw error;
+      throw new Error("No se pudieron obtener los productos.");
     }
   },
 
@@ -35,7 +53,8 @@ export const productoService = {
       const response = await api.get(`/productos/${id}`);
       return response.data.data;
     } catch (error) {
-      throw error;
+      if (esErrorControlado(error, [404, 500])) throw error;
+      throw new Error("No se pudo obtener el producto.");
     }
   },
 
@@ -56,7 +75,8 @@ export const productoService = {
       });
       return response.data.data;
     } catch (error) {
-      throw error;
+      if (esErrorControlado(error, [400, 500])) throw error;
+      throw new Error("No se pudo crear el producto.");
     }
   },
 
@@ -76,7 +96,8 @@ export const productoService = {
       });
       return response.data.data;
     } catch (error) {
-      throw error;
+      if (esErrorControlado(error, [400, 404, 500])) throw error;
+      throw new Error("No se pudo actualizar el producto.");
     }
   },
 
@@ -86,7 +107,8 @@ export const productoService = {
       const response = await api.delete(`/productos/${id}`);
       return response.data.data;
     } catch (error) {
-      throw error;
+      if (esErrorControlado(error, [404, 500])) throw error;
+      throw new Error("No se pudo eliminar el producto.");
     }
   },
 
@@ -96,7 +118,8 @@ export const productoService = {
       const response = await api.get("/productos", { params: { nombre } });
       return response.data.data;
     } catch (error) {
-      throw error;
+      if (esErrorControlado(error, [500])) throw error;
+      throw new Error("No se pudieron buscar productos.");
     }
   },
 };

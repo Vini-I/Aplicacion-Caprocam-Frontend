@@ -15,8 +15,10 @@
  *    proveedor, cantidad, stock mínimo, precio) solo después de
  *    presionar Guardar (intentoGuardar), mostrando un mensaje
  *    general y marcando cada campo inválido por separado.
- * 4. Guarda el producto nuevo, muestra una alerta de éxito
- *    (guardadoExitoso) y navega de vuelta al listado poco después.
+ * 4. Al guardar con éxito, YA NO navega al listado: muestra el
+ *    alert de "guardado" por 3 segundos y luego limpia todo el
+ *    formulario (campos y errores) para poder cargar otro producto
+ *    sin salir de la pantalla.
  *
  * IMPORTANTE:
  * - El botón de guardar NO se bloquea de entrada: el usuario puede
@@ -34,9 +36,11 @@ import { useRouter } from "expo-router";
 import { productoService } from "../services/producto.service";
 import { getProveedores, filtrarProveedoresPorCategoria } from "../services/proveedoresLookup";
 import { initialForm } from "../services/DataProductForm";
+import { useError } from "../../../shared/context/ErrorContext";
 
 export function useAgregarProducto() {
   const router = useRouter();
+  const { mostrarError } = useError();
 
   const [form, setForm] = useState(initialForm);
   const [intentoGuardar, setIntentoGuardar] = useState(false);
@@ -64,6 +68,7 @@ export function useAgregarProducto() {
             "No se pudieron cargar los proveedores. Verifica que el back tenga montada la ruta /proveedores."
           );
           setProveedoresTodos([]);
+          mostrarError(err);
         }
       } finally {
         if (activo) setCargandoProveedores(false);
@@ -73,7 +78,7 @@ export function useAgregarProducto() {
     return () => {
       activo = false;
     };
-  }, []);
+  }, [mostrarError]);
 
   useEffect(() => {
     const filtrados = filtrarProveedoresPorCategoria(proveedoresTodos, form.categoria);
@@ -195,13 +200,14 @@ export function useAgregarProducto() {
     }
     setGuardando(false);
 
-    // Muestra la alerta de éxito antes de navegar, para que el usuario
-    // tenga retroalimentación visual clara de que el guardado ocurrió.
+ 
     setGuardadoExitoso(true);
 
     setTimeout(() => {
-      router.replace("/(drawer)/inventarios");
-    }, 900);
+      setGuardadoExitoso(false);
+      setForm(initialForm);
+      setIntentoGuardar(false);
+    }, 3000);
   }
 
   function handleBack() {
