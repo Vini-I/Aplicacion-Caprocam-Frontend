@@ -3,56 +3,60 @@
  * SERVICE RALEO.SERVICE
  * ============================================================
  *
- * Persiste los registros de raleo en AsyncStorage bajo la clave
- * "raleos_v1". Sigue exactamente el mismo patrón que
- * Alimentacion.service.js.
+ * Conecta el módulo de Raleo con el backend real (Express +
+ * MySQL) usando axios, en vez de AsyncStorage.
+ *
+ * Endpoint base: /raleo (definido en app.js del backend como
+ * /api/v0/raleo, y api.js ya apunta a EXPO_PUBLIC_API_URL que
+ * debe incluir ese prefijo /api/v0).
  *
  * Funcionalidad:
- * - getAll(): retorna todos los registros guardados.
- * - create(registro): agrega un registro nuevo con id y timestamp.
- * - deleteById(id): elimina un registro por id.
- * - clearAll(): elimina todos los registros guardados.
+ * - getAll(filtros): retorna todos los raleos activos.
+ *   Acepta filtros opcionales { idFinca, idEstanque, grupoDatos }.
+ * - getById(id): retorna un raleo por su id.
+ * - create(form): crea un raleo nuevo, mapeando los nombres de
+ *   campo del formulario (finca, estanque, porcentajeRaleo,
+ *   pesoPromedio, biomasaActual, ...) a los nombres reales de la
+ *   tabla raleos (idFinca, idEstanque, porcentaje, pesoEstimado,
+ *   biomasaEstimada, ...).
+ * - update(id, form): actualiza un raleo existente.
+ * - deleteById(id): elimina lógicamente un raleo (activo=false).
  *
  * Importante:
- * - Este archivo NO valida los datos que recibe: la validación
- *   de campos obligatorios ocurre antes, en useRaleo.validarForm().
+ * - Este archivo NO valida los datos que recibe: la validación de
+ *   campos obligatorios ocurre antes, en useRaleo.validarForm().
+ *   El backend además valida de nuevo (incluye el enum de
+ *   `metodo`) y puede responder 400/422/409; esos errores se
+ *   propagan tal cual (error.response.data).
+ * - Mantiene la misma forma pública (getAll/create/deleteById)
+ *   que usaba con AsyncStorage, para no tener que tocar
+ *   RaleoScreen.jsx más de lo necesario.
  *
  * Ejemplo:
  * await raleoService.create(form);
  */
 
-import AsyncStorage from "@react-native-async-storage/async-storage";
-
-const CLAVE = "raleos_v1";
+import api from "../../../api/api.js";
 
 const raleoService = {
     getAll: async () => {
-        try {
-            const datos = await AsyncStorage.getItem(CLAVE);
-            return datos ? JSON.parse(datos) : [];
-        } catch {
-            return [];
-        }
+        const respuesta = await api.get(`/raleos`);
+        return respuesta.data;
+    },
+
+    getById: async (id) => {
+        const respuesta = await api.get(`/raleos/${id}`);
+        return respuesta.data;
     },
 
     create: async (registro) => {
-        const lista = await raleoService.getAll();
-        const nuevo = {
-            ...registro,
-            id:        Date.now().toString(),
-            timestamp: new Date().toISOString(),
-        };
-        await AsyncStorage.setItem(CLAVE, JSON.stringify([...lista, nuevo]));
-        return nuevo;
+        const respuesta = await api.post(`/raleos`, registro);
+        return respuesta.data;
     },
 
     deleteById: async (id) => {
-        const lista = await raleoService.getAll();
-        await AsyncStorage.setItem(CLAVE, JSON.stringify(lista.filter(r => r.id !== id)));
-    },
-
-    clearAll: async () => {
-        await AsyncStorage.removeItem(CLAVE);
+        const respuesta = await api.delete(`/raleos/${id}`)
+        return respuesta.data;
     },
 };
 

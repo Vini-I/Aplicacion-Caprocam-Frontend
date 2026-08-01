@@ -44,12 +44,14 @@ import { styles } from "../styles/RaleoStyles";
 import { STYLE } from "../../../theme/style";
 import useRaleo from "../hooks/useRaleo";
 import raleoService from "../services/Raleo.service";
+import { useError } from "../../../shared/context/ErrorContext.js";
 
 export default function RaleoScreen() {
   const { form, updateField, resetForm, validarForm } = useRaleo();
   const [submitted, setSubmitted] = useState(false);
   const [errores, setErrores] = useState({});
   const [alerta, setAlerta] = useState({ visible: false, variant: "success", mensaje: "" });
+  const { mostrarError} = useError();
 //Constantes para el calculo de biomasa estimada
 const biomasaActual = Number(form.biomasaActual);
 const porcentaje = Number(form.porcentajeRaleo);
@@ -79,6 +81,12 @@ useEffect(() => {
   return () => clearTimeout(timer);
 }, [alerta.visible]);
 
+function convertirFecha(fecha) {
+  const [dia, mes, año] = fecha.split("/");
+
+  return `${año}-${mes}-${dia}`;
+}
+
   const handleGuardar = async () => {
     setSubmitted(true);
     const { valido, errores: erroresValidacion } = validarForm();
@@ -91,15 +99,22 @@ useEffect(() => {
 
     try {
       const registro = {
-        ...form,
+        idFinca: form.finca,
+        idEstanque: form.estanque,
+        fecha: convertirFecha(form.fecha),
+        porcentaje: Number(form.porcentajeRaleo),
+        pesoEstimado: Number(form.pesoPromedio),
+        biomasaEstimado: Number(form.biomasaActual),
+        objetivo: form.objetivo,
+        metodo: form.metodo,
         observaciones: form.observaciones?.trim()
           ? form.observaciones
           : "No se realizan observaciones",
       };
       await raleoService.create(registro);
       setAlerta({ visible: true, variant: "success", mensaje: "Raleo registrado correctamente" });
-    } catch {
-      setAlerta({ visible: true, variant: "danger", mensaje: "No se pudo guardar el registro" });
+    } catch (error) {
+      mostrarError(error);
     }
   };
 
