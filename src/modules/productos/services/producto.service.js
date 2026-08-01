@@ -1,3 +1,22 @@
+/**
+ * ============================================================
+ * SERVICE: PRODUCTOSERVICE
+ * ============================================================
+ * Módulo: Productos
+ *
+ * Conexión a la API de productos (CRUD contra /productos).
+ *
+ * FUNCIONALIDAD:
+ * 1. getProductos / getProductoPorId: lectura de productos.
+ * 2. crearProducto / actualizarProducto: alta y edición.
+ * 3. desactivarProducto: baja lógica (DELETE /productos/:id).
+ * 4. buscarProductosPorNombre: búsqueda por nombre.
+ * 5. mapProducto: normaliza la respuesta cruda del back al shape
+ *    que usan las pantallas del módulo.
+ *
+ * ============================================================
+ */
+
 import api from "../../../api/api";
 
 export const productoService = {
