@@ -52,6 +52,10 @@ export const styles = StyleSheet.create({
     fontFamily: TYPOGRAPHY.fontFamily.medium,
   },
 
+  campoConError: {
+    borderColor: COLORS.error,
+  },
+
   disabledInput: {
     backgroundColor: COLORS.surface ?? "#F8FAFC",
     color: COLORS.textTertiary,

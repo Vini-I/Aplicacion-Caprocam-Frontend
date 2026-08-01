@@ -745,6 +745,32 @@ export const styles = StyleSheet.create({
     gap: 10,
   },
 
+  caseBadges: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    flexWrap: "wrap",
+    gap: 6,
+    marginLeft: 8,
+  },
+
+  badgeTipo: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+    borderWidth: 1,
+  },
+
+  badgeTipoEnfermedad: {
+    backgroundColor: COLORS.errorLight,
+    borderColor: COLORS.error,
+  },
+
+  badgeTipoParasitologia: {
+    backgroundColor: COLORS.secondary,
+    borderColor: VIOLET,
+  },
+
   badge: {
     paddingHorizontal: 10,
     paddingVertical: 4,
