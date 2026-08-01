@@ -63,16 +63,16 @@ import {
   Dimensions,
 } from "react-native";
 
-import Modal from "../../../shared/components/Modal";
-import Button from "../../../shared/components/Button";
-import Icon from "../../../shared/components/Icons";
-import Title from "../../../shared/components/Title";
-import CustomText from "../../../shared/components/Text";
-import Badge from "../../../shared/components/Badge";
-import DateInput from "../../../shared/components/DateInput";
+import Modal from "./Modal";
+import Button from "./Button";
+import Icon from "./Icons";
+import Title from "./Title";
+import CustomText from "./Text";
+import Badge from "./Badge";
+import DateInput from "./DateInput";
 
-import { COLORS } from "../../../theme/colors";
-import { ICONS } from "../../../theme/icons";
+import { COLORS } from "../../theme/colors";
+import { ICONS } from "../../theme/icons";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 const PANEL_ANIM_MS = 260;
