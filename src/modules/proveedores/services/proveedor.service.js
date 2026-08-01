@@ -27,13 +27,11 @@ export const tiposProducto = [
   { label: "Otros", value: "Otros" },
 ];
 
-// Label legible a partir del value del backend.
 export function getTipoProductoLabel(value) {
   const tipo = tiposProducto.find((t) => t.value === value);
   return tipo ? tipo.label : value;
 }
 
-// Solo los values, derivados de tiposProducto.
 export function getTiposProductoValues() {
   return tiposProducto.map((t) => t.value);
 }

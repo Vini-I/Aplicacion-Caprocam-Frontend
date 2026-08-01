@@ -72,22 +72,24 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 6,
-    height: 38,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: COLORS.primary,
     backgroundColor: COLORS.white,
-    paddingHorizontal: 14,
-    paddingVertical: 0,
-    flexShrink: 0,
+    borderWidth: 2,
+    borderColor: COLORS.primary,
+    borderRadius: 12,
+    gap: 8,
     shadowColor: COLORS.black,
-  
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 4,
   },
 
   lista: {
     ...STYLE.contentWrapper,
-    paddingBottom: 24,
+    paddingBottom: 100,
   },
 
   tarjeta: {

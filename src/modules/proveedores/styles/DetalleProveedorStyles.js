@@ -9,7 +9,6 @@
  * - Asegura la legibilidad de las notas usando estilos de tipografía.
  *
  * REGLAS IMPORTANTES:
- * - Está prohibido el uso de estilos inline en el JSX.
  * - Se deben usar constantes del tema (COLORS, TYPOGRAPHY) siempre.
  * - Los botones usan borde y no fondo sólido, según diseño (outline).
  * - No define paddings generales, eso lo maneja STYLE.container.
