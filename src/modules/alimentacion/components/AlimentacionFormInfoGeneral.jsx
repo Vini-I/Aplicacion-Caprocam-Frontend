@@ -12,6 +12,14 @@
  * - form, updateField, submitted, errores (mismos que recibe
  *   AlimentacionForm).
  *
+ * Finca/estanque: usa useFincaEstanqueAlimentacion (mismo patron
+ * que useFincaCrecimiento.js) en vez del useCatalogos generico que
+ * usaba antes (importado, de forma confusa, desde el modulo de
+ * densidadPoblacional). Trae todas las fincas y todos los
+ * estanques una sola vez, y filtra los estanques de la finca
+ * elegida en memoria, sin pedirle al backend "los estanques de la
+ * finca X" cada vez que cambia la finca.
+ *
  * Ejemplo:
  * <AlimentacionFormInfoGeneral form={form} updateField={updateField} submitted={submitted} errores={errores} />
  */
@@ -27,7 +35,7 @@ import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
 import { ICONS } from "../../../theme/icons";
 import { HORAS } from "../constants/alimentacionOpciones";
-import { useCatalogos } from "../../../modules/densidadPoblacional/hooks/useCatalogos.js";
+import { useFincaEstanqueAlimentacion } from "../hooks/useFincaEstanqueAlimentacion";
 
 const bordeError = { borderColor: COLORS.error, borderWidth: 1.5 };
 const sectionTitleRow = { flexDirection: "row", alignItems: "center", marginBottom: 10 };
@@ -44,12 +52,11 @@ export default function AlimentacionFormInfoGeneral({
   const invalidoFecha = submitted && !!errores.fecha;
   const invalidoHora = submitted && !!errores.hora;
 
-  const { fincasOptions, estanquesOptions, recargarEstanques } = useCatalogos();
-  
+  const { fincasOptions, estanquesOptions } = useFincaEstanqueAlimentacion(form.finca);
+
   const handleFincaChange = (idFinca) => {
     updateField("finca", idFinca);
     updateField("estanque", "");
-    recargarEstanques(idFinca);
   };
 
   const handleEstanqueChange = (idEstanque) => {

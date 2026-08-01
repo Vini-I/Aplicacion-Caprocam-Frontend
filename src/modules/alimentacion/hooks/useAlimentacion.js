@@ -10,31 +10,35 @@
  * Estado que maneja:
  * - alimentaciones: lista de registros obtenidos del service.
  * - loading: true mientras se están cargando los datos.
- * - error: mensaje de error si la carga falla, si no null.
+ *
+ * Cargar la lista es una acción FUERA de un formulario: si falla,
+ * el error se muestra con el ModalError global vía
+ * useError().mostrarError(), no con un estado local (ver
+ * ErrorContext.js).
  *
  * Retorna:
- * - { alimentaciones, loading, error, recargar }
+ * - { alimentaciones, loading, recargar }
  *
  * Ejemplo:
- * const { alimentaciones, loading, error, recargar } = useAlimentacion();
+ * const { alimentaciones, loading, recargar } = useAlimentacion();
  */
 
 import { useState, useEffect } from "react";
 import alimentacionService from "../services/Alimentacion.service";
+import { useError } from "../../../shared/context/ErrorContext";
 
 const useAlimentacion = () => {
     const [alimentaciones, setAlimentaciones] = useState([]);
     const [loading, setLoading]               = useState(false);
-    const [error, setError]                   = useState(null);
+    const { mostrarError }                    = useError();
 
     const recargar = async () => {
         setLoading(true);
-        setError(null);
         try {
             const datos = await alimentacionService.getAll();
             setAlimentaciones(datos);
-        } catch {
-            setError("No se pudieron cargar los registros.");
+        } catch (error) {
+            mostrarError(error);
         } finally {
             setLoading(false);
         }
@@ -42,7 +46,7 @@ const useAlimentacion = () => {
 
     useEffect(() => { recargar(); }, []);
 
-    return { alimentaciones, loading, error, recargar };
+    return { alimentaciones, loading, recargar };
 };
 
 export default useAlimentacion;

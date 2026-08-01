@@ -71,16 +71,8 @@ function aFrontend(registro) {
 
 const alimentacionService = {
     getAll: async (filtros = {}) => {
-        try {
-            const response = await api.get("/alimentaciones", { params: filtros });
-            return (response.data.data || []).map(aFrontend);
-        } catch (error) {
-            console.log("ERROR COMPLETO:", error);
-            console.log("STATUS:", error.response?.status);
-            console.log("DATA:", error.response?.data);
-            console.log("MESSAGE:", error.message);
-            throw error;
-        }
+        const response = await api.get("/alimentaciones", { params: filtros });
+        return (response.data.data || []).map(aFrontend);
     },
 
     getById: async (id) => {

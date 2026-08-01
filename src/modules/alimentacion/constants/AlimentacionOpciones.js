@@ -4,35 +4,19 @@
  * ============================================================
  *
  * Centraliza las opciones fijas de los selects del formulario de
- * Alimentación (Finca, Estanque, Método, Presentación, Proveedor,
- * Tipo) y las horas del selector de Hora, para que los
- * componentes de sección del formulario no las redefinan cada
- * uno por su cuenta.
+ * Alimentación (Método, Presentación, Proveedor, Tipo) y las
+ * horas del selector de Hora, para que los componentes de sección
+ * del formulario no las redefinan cada uno por su cuenta.
+ *
+ * Finca y Estanque NO viven aquí: se cargan en vivo desde el
+ * backend vía src/shared/hooks/useCatalogos.js (value = id
+ * numérico real), no como listas fijas.
  *
  * Ejemplo:
- * import { FINCAS, ESTANQUES } from '../constants/alimentacionOpciones';
+ * import { METODOS, PRESENTACION } from '../constants/alimentacionOpciones';
  */
 
 export const HORAS = ["7:00 AM", "3:00 PM"];
-
-export const ESTANQUES = [
-  { label: "A01", value: "A01" },
-  { label: "A02", value: "A02" },
-  { label: "B01", value: "B01" },
-  { label: "B02", value: "B02" },
-  { label: "B03", value: "B03" },
-  { label: "E01", value: "E01" },
-  { label: "E02", value: "E02" },
-  { label: "V01", value: "V01" },
-  { label: "V02", value: "V02" },
-];
-
-export const FINCAS = [
-  { label: "Finca La Reina", value: "laReina" },
-  { label: "Finca La Esperanza", value: "laEsperanza" },
-  { label: "Finca La Villa", value: "laVilla" },
-  { label: "Finca El Paraíso", value: "elParaiso" },
-];
 
 export const METODOS = [
   { label: "Plato", value: "Plato" },

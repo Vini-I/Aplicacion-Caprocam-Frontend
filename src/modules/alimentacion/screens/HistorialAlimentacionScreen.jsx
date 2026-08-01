@@ -34,10 +34,9 @@ import { TYPOGRAPHY } from "../../../theme/typography";
 import { styles } from "../styles/AlimentacionStyles";
 import { STYLE } from "../../../theme/style";
 export default function HistorialAlimentacionScreen({ navigation }) {
-  const { alimentaciones, loading, error } = useAlimentacion();
+  const { alimentaciones, loading } = useAlimentacion();
 
   if (loading) return <Spinner />;
-  if (error) return <Text color={COLORS.error}>{error}</Text>;
 
   return (
     <View style={styles.screen}>
@@ -50,7 +49,7 @@ export default function HistorialAlimentacionScreen({ navigation }) {
       </ScrollView>
 
       <Pressable onPress={() => navigation.goBack()} style={styles.btnVolver}>
-        <Text color={COLORS.primary}>VOLVER</Text>
+        <Text color={COLORS.primary}>Volver</Text>
       </Pressable>
     </View>
   );
