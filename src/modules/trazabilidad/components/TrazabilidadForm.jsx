@@ -1,37 +1,14 @@
 /**
  * ============================================================
- * COMPONENTE TRAZABILIDADFORM
+ * COMPONENTE TrazabilidadForm
  * ============================================================
  *
- * Formulario reutilizable para capturar el movimiento de un lote
- * de camarón de pre-cría a engorde (registro de Trazabilidad).
+ * Descripción:
+ * Formulario reutilizable para capturar el movimiento de un lote de camarón de pre-cría a engorde.
  *
- * FUNCIONALIDAD:
- * 1. Captura finca, estanque de origen y estanque de destino mediante
- *    Select encadenados (el destino excluye al estanque ya elegido
- *    como origen, y viceversa, para evitar que coincidan).
- * 2. Captura fecha del movimiento y colaborador responsable. En
- *    iOS/Android usa DateInput (calendario nativo); en web usa Input
- *    de texto con formato dd/mm/aaaa, porque el picker nativo que usa
- *    DateInput (@react-native-community/datetimepicker) no tiene
- *    soporte para web.
- * 3. Captura tamaño (gramos), días de siembra y PL.
- * 4. Marca en rojo los campos obligatorios solo después de intentar
- *    guardar (prop `submitted`).
- *
- * COMPONENTES UTILIZADOS:
- * - Card: agrupación visual de las secciones del formulario.
- * - Select: selección de finca, estanques y colaborador.
- * - NumberInput: campos numéricos de tamaño, días y PL.
- * - DateInput: fecha del movimiento en iOS/Android (dd/mm/aaaa).
- * - Input: fallback de fecha en web (dd/mm/aaaa, sin picker nativo).
- *
- * IMPORTANTE:
- * - No modifica el login.
- * - No cambia rutas existentes.
- * - Usa la estructura existente del proyecto.
- * - No se modificó el código de DateInput.jsx; el fallback de web se
- *   resuelve aquí con Platform.OS.
+ * @dependencies Select, Input, DateInput, TrazabilidadFormStyles
+ * @validations Encadenamiento de estanques, origen != destino, formato de fecha y valores numéricos.
+ * @navigation N/A
  */
 import { View, Platform } from "react-native";
 
@@ -41,9 +18,16 @@ import NumberInput from "../../../shared/components/NumberInput";
 import Select from "../../../shared/components/Select";
 import Input from "../../../shared/components/Input";
 import DateInput from "../../../shared/components/DateInput";
+import Icon from "../../../shared/components/Icons";
+import { COLORS } from "../../../theme/colors";
+import { ICONS } from "../../../theme/icons";
 import { STYLE } from "../../../theme/style";
 import { styles } from "../styles/TrazabilidadFormStyles";
-import { esFechaValida, esFechaFutura } from "../../../shared/utils/dateUtils";
+import {
+  esFechaValida,
+  esFechaFutura,
+  formatearFechaInput,
+} from "../../../shared/utils/dateUtils";
 
 export default function TrazabilidadForm({
   formData,
@@ -87,11 +71,13 @@ export default function TrazabilidadForm({
         <Input
           label="Fecha del movimiento *"
           value={formData.fecha}
-          onChangeText={(value) => onChange("fecha", value)}
+          onChangeText={(value) => onChange("fecha", formatearFechaInput(value))}
           containerStyle={styles.field}
           style={mostrarErrorFecha ? styles.errorInput : undefined}
           labelStyle={styles.label}
-          keyboardType="numbers-and-punctuation"
+          keyboardType="numeric"
+          inputMode="numeric"
+          maxLength={10}
           placeholder="dd/mm/aaaa"
         />
       );
@@ -113,7 +99,11 @@ export default function TrazabilidadForm({
   return (
 
     <View style={[STYLE.contentWrapper]}>
-      <Card title="Movimiento" titleStyle={styles.cardTitle}>
+      <Card>
+        <View style={styles.cardTitleRow}>
+          <Icon icon={ICONS.transfer} color={COLORS.primary} />
+          <Text style={styles.cardTitle}>Movimiento</Text>
+        </View>
         <Select
           label="Finca *"
           placeholder="Seleccionar finca"
@@ -152,15 +142,19 @@ export default function TrazabilidadForm({
         {renderFecha()}
 
         <Input
-          label="Colaborador responsable"
-          value={colaboradorSesion?.label ?? ""}
+          label={colaboradorSesion?.labelCampo || "Responsable"}
+          value={colaboradorSesion?.nombre || colaboradorSesion?.label || ""}
           editable={false}
           containerStyle={styles.field}
           labelStyle={styles.label}
         />
       </Card>
 
-      <Card title="Datos del traslado" titleStyle={styles.cardTitle}>
+      <Card>
+        <View style={styles.cardTitleRow}>
+          <Icon icon={ICONS.clipboard} color={COLORS.primary} />
+          <Text style={styles.cardTitle}>Datos del traslado</Text>
+        </View>
         <NumberInput
           label="Tamaño (gramos) *"
           value={formData.tamaño}
@@ -177,6 +171,7 @@ export default function TrazabilidadForm({
           label="Días de siembra *"
           value={formData.dias}
           onChangeText={(value) => onChange("dias", value)}
+          editable={!plAutocompletado}
           min={0}
           max={365}
           step={1}
@@ -199,7 +194,7 @@ export default function TrazabilidadForm({
         />
         {plAutocompletado && (
           <Text style={styles.plNote}>
-            Valor autocompletado desde la siembra del estanque de origen.
+            PL y días autocompletados desde la siembra activa del estanque de origen.
           </Text>
         )}
       </Card>

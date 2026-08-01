@@ -1,84 +1,151 @@
 /**
  * ============================================================
- * SERVICIOS - FÍSICO-QUÍMICA
+ * SERVICIO FisicoQuimicaServices
  * ============================================================
  *
  * Descripción:
- * Funciones de persistencia y consulta para el módulo Físico-Química.
- * Actualmente son implementaciones locales/placeholder hasta que
- * exista un backend o almacenamiento definido.
+ * Funciones de integración con la API RESTful para la gestión y
+ * consulta de lecturas físico-químicas (pH, salinidad, temperatura, oxígeno).
  *
- * Funcionalidad / reglas importantes:
- * - `guardarLectura(datos)`: guarda una lectura (pendiente implementar
- *   almacenamiento real).
- * - `obtenerLecturasPorEstanque(estanqueId)`: devuelve lecturas por estanque.
- *
- * Restricciones del proyecto:
- * - No realizar llamadas a APIs externas desde aquí sin control de
- *   errores y pruebas. Reemplazar por la capa de integración cuando
- *   exista el backend.
+ * @dependencies api, fincaService
+ * @validations Normalización de parámetros, validación de estado y mapeo de lecturas.
+ * @navigation N/A
  */
 
-const historialLecturasPorEstanque = {
-  A01: {
-    ph: [7.8, 7.6],
-    salinidad: [18.2, 17.9],
-    temperatura: [28.5, 28.8],
-    ox: [6.1, 5.9],
-  },
-  A02: {
-    ph: [7.7, 7.6],
-    salinidad: [17.5, 17.2],
-    temperatura: [28.8, 29.0],
-    ox: [6.0, 5.8],
-  },
-  'P-03': {
-    ph: [7.6],
-    salinidad: [16.0],
-    temperatura: [29.0],
-    ox: [6.2],
-  },
-};
+import api from '../../../api/api';
+import { fincaService } from '../../finca/services/finca.service';
 
-const opcionesFincas = [
-  { label: 'Finca Camarón de Occidente', value: 'laReina' },
-  { label: 'Finca Camarón del Sur', value: 'laEsperanza' },
-  { label: 'Finca Camarón del Norte', value: 'laVilla' },
-];
-
-const estanquesPorFinca = {
-  laReina: [
-    { label: 'Estanque P-01 (Pre-cría)', value: 'A01' },
-    { label: 'Estanque P-02 (Pre-cría)', value: 'A02' },
-    { label: 'Estanque E-08 (Engorde)', value: 'B01' },
-    { label: 'Estanque E-09 (Engorde)', value: 'B02' },
-  ],
-  laEsperanza: [
-    { label: 'Estanque P-03 (Pre-cría)', value: 'P-03' },
-    { label: 'Estanque E-02 (Engorde)', value: 'E-02' },
-    { label: 'Estanque E-03 (Engorde)', value: 'E-03' },
-  ],
-  laVilla: [
-    { label: 'Estanque P-04 (Pre-cría)', value: 'P-04' },
-    { label: 'Estanque E-05 (Engorde)', value: 'E-05' },
-  ],
-};
-
-export const guardarLectura = async (datos) => {
-  // TODO: AsyncStorage, API call, etc.
-  console.log('guardarLectura - pendiente de implementar', datos);
-};
-
-export function obtenerLecturasPorEstanque(estanqueId) {
-  return historialLecturasPorEstanque[estanqueId] ?? null;
+export async function getLecturas() {
+  try {
+    const response = await api.get('/lecturasFisicoQuimicas');
+    return response.data.data;
+  } catch (error) {
+    throw error;
+  }
 }
 
-export function obtenerOpcionesFincas() {
-  return opcionesFincas;
+export async function getLecturaPorId(id) {
+  try {
+    const response = await api.get(`/lecturasFisicoQuimicas/${id}`);
+    return response.data.data;
+  } catch (error) {
+    throw error;
+  }
 }
 
-export function obtenerEstanquesPorFinca(fincaSeleccionada) {
-  return estanquesPorFinca[fincaSeleccionada] || [];
+export async function crearLectura(datos) {
+  try {
+    const response = await api.post('/lecturasFisicoQuimicas', datos);
+    return response.data.data;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function actualizarLectura(id, datos) {
+  try {
+    const response = await api.put(`/lecturasFisicoQuimicas/${id}`, datos);
+    return response.data.data;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function eliminarLectura(id) {
+  try {
+    const response = await api.delete(`/lecturasFisicoQuimicas/${id}`);
+    return response.data.data;
+  } catch (error) {
+    throw error;
+  }
+}
+
+// Consulta si el estanque ya tiene lectura en la fecha dada. Esta es
+// la única ruta para ese propósito (el equipo de API quitó el
+// /estanque/:id/ultimo por duplicar esto). Con eso se decide
+// "Guardar" vs "Actualizar" y se precargan los valores del formulario.
+export async function getLecturaPorEstanqueYFecha(estanqueId, fecha) {
+  try {
+    const response = await api.get(`/lecturasFisicoQuimicas/estanque/${estanqueId}`, {
+      params: { fecha },
+    });
+    return response.data.data;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function guardarLectura(datos) {
+  return crearLectura(datos);
+}
+
+function normalizarLecturas(valor) {
+  if (Array.isArray(valor)) {
+    return valor;
+  }
+
+  if (valor === undefined || valor === null || valor === "") {
+    return [];
+  }
+
+  if (typeof valor === "number") {
+    return [valor];
+  }
+
+  if (typeof valor === "string") {
+    const numero = Number(valor);
+    return Number.isNaN(numero) ? [valor] : [numero];
+  }
+
+  return [valor];
+}
+
+export async function obtenerLecturasPorEstanque(estanqueId, fecha = null) {
+  if (!estanqueId) {
+    return null;
+  }
+
+  const fechaConsulta = fecha ?? new Date().toISOString().slice(0, 10);
+
+  try {
+    const response = await api.get(`/lecturasFisicoQuimicas/estanque/${estanqueId}`, {
+      params: { fecha: fechaConsulta },
+    });
+
+    const datos = response.data?.data ?? null;
+
+    if (!datos) {
+      return null;
+    }
+
+    return {
+      ph: normalizarLecturas(datos.ph),
+      ox: normalizarLecturas(datos.ox ?? datos.oxigenoDisuelto),
+      temperatura: normalizarLecturas(datos.temperatura),
+      salinidad: normalizarLecturas(datos.salinidad),
+    };
+  } catch (error) {
+    return null;
+  }
+}
+
+export async function obtenerOpcionesFincas() {
+  const fincas = await fincaService.getFincas();
+  return fincas.map((finca) => ({ label: finca.nombreFinca, value: finca.id }));
+}
+export async function obtenerEstanquesPorFinca(fincaId) {
+  if (!fincaId) return [];
+  try {
+    const response = await api.get('/estanques');
+    return (response.data.data ?? [])
+      .filter((estanque) => estanque.idFinca === fincaId)
+      .map((estanque) => ({
+        label: `${estanque.codigo} (${estanque.tipoEstanque})`,
+        value: estanque.id,
+      }));
+  } catch (error) {
+    return [];
+  }
 }
 
 export function obtenerEstadoLecturasLocal(medicionesPorEstanque = {}) {
@@ -102,12 +169,12 @@ export function hayMedicionesRegistradas(lecturasPorTipo = []) {
   return lecturasPorTipo.some((lecturas) => Array.isArray(lecturas) && lecturas.length > 0);
 }
 
-export function validarFormularioFisicoQuimica({ fincaSeleccionada, estanqueSeleccionado, tieneAlgunaMedicion }) {
+export function validarFormularioFisicoQuimica({ fincaSeleccionada, estanqueSeleccionado, tieneAlgunaMedicion, tieneMedicionesExistentes }) {
   if (!fincaSeleccionada || !estanqueSeleccionado) {
     return 'Selecciona la finca y el estanque antes de guardar.';
   }
 
-  if (!tieneAlgunaMedicion) {
+  if (!tieneMedicionesExistentes && !tieneAlgunaMedicion) {
     return 'Agrega al menos una medición antes de guardar.';
   }
 
@@ -126,20 +193,6 @@ export function manejarCambioFinca({ value, setters }) {
   setters?.estanque?.("");
   setters?.mediciones?.({ ph: [], salinidad: [], temperatura: [], ox: [] });
   setters?.error?.("");
-}
-
-export function manejarCambioEstanque({ value, setters, obtenerLecturas }) {
-  setters?.estanque?.(value);
-  setters?.error?.("");
-
-  const lecturas = obtenerLecturas?.(value);
-  setters?.mediciones?.(lecturas ?? { ph: [], salinidad: [], temperatura: [], ox: [] });
-}
-
-export function manejarCambioLecturas({ values, setters, localSetters }) {
-  const valores = values ?? [];
-  if (localSetters?.ph) localSetters.ph(valores);
-  if (setters?.ph) setters.ph(valores);
 }
 
 export function manejarCambioPh({ values, setters, localSetters }) {

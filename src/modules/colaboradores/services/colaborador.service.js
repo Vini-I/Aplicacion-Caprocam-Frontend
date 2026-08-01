@@ -14,7 +14,20 @@ export const colaboradorService  = {
             throw error;
         
         }
+    },
+
+    getColaboradorById: async (id) => {
+        try {
+
+            const response = await api.get(`/colaboradores/${id}`);
+
+            return response.data.data;
+
+        } catch (error) {
+
+            throw error;
+
+        }
     }
 }
-
 
