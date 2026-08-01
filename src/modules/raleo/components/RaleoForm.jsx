@@ -41,7 +41,7 @@ import Icon from "../../../shared/components/Icons";
 import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
 import { ICONS } from "../../../theme/icons";
-import { useCatalogos } from "../../../modules/densidadPoblacional/hooks/useCatalogos.js";
+import { useFincaEstanqueRaleo } from "../hooks/useFincaEstanqueRaleo";
 
 const FINCAS = [
   { label: "Finca La Reina", value: 1 },
@@ -91,10 +91,9 @@ export default function RaleoForm({
   const invalidoBiomasaTotal = submitted && !!errores.biomasaActual;
   const invalidoObjetivo = submitted && !!errores.objetivo;
   const invalidoMetodo = submitted && !!errores.metodo;
-  const invalidoResponsable = submitted && !!errores.responsable;
   const invalidoObservaciones = submitted && !!errores.observaciones;
 
-  const { fincasOptions, estanquesOptions, recargarEstanques } = useCatalogos();
+  const { fincasOptions, estanquesOptions } = useFincaEstanqueRaleo(form.finca);
 
   const handleFincaChange = (idFinca) => {
     updateField("finca", idFinca);
@@ -137,6 +136,16 @@ export default function RaleoForm({
           placeholder="Seleccionar estanque"
           selectStyle={invalidoEstanque ? bordeError : null}
         />
+
+        <Input
+          label="Responsable del raleo *"
+          placeholder="Nombre del responsable"
+          value={form.responsable ?? ""}
+          onChangeText={(v) => updateField("responsable", v)}
+          //style={invalidoResponsable ? bordeError : null}
+          editable={false}
+        />
+
       </Card>
 
       <Card>
@@ -207,14 +216,6 @@ export default function RaleoForm({
           placeholder="Seleccionar método"
           selectStyle={invalidoMetodo ? bordeError : null}
         />
-
-        <Input
-          label="Responsable del raleo *"
-          placeholder="Nombre del responsable"
-          value={form.responsable ?? ""}
-          onChangeText={(v) => updateField("responsable", v)}
-          style={invalidoResponsable ? bordeError : null}
-        />
       </Card>
 
       <Card>
@@ -226,11 +227,11 @@ export default function RaleoForm({
         </View>
 
         <Input
-          label="Notas adicionales *"
+          label="Notas adicionales"
           placeholder="Ingrese observaciones del raleo"
           value={form.observaciones ?? ""}
           onChangeText={(v) => updateField("observaciones", v)}
-          style={invalidoObservaciones ? bordeError : null}
+          
         />
       </Card>
     </View>
