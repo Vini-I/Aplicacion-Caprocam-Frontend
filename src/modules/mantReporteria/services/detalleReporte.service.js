@@ -3,6 +3,7 @@ import parasitologiaService from "../../parasitologia/services/ParasitologiaServ
 import enfermedadesService from "../../enfermedades/services/EnfermedadesService";
 import raleoService from "../../raleo/services/Raleo.service";
 import alimentacionService from "../../alimentacion/services/Alimentacion.service";
+import densidadPoblacionalService from "../../densidadPoblacional/services/DensidadPoblacional.service";
 
 export async function obtenerDetalleReporte({
   tipoRegistro,
@@ -53,9 +54,16 @@ export async function obtenerDetalleReporte({
     case "alimentacion":
       const registrosAlim = await alimentacionService.getAll();
 
-      console.log("Alimentacion", registrosAlim);
-
       return registrosAlim.filter(
+        (r) => 
+          Number(r.idFinca) === Number(fincaId) &&
+          Number(r.idEstanque) === Number(estanqueId)
+      )
+
+    case "densidad_poblacional":
+      const registrosDensidad = await densidadPoblacionalService.getAll(); 
+
+      return registrosDensidad.filter(
         (r) => 
           Number(r.idFinca) === Number(fincaId) &&
           Number(r.idEstanque) === Number(estanqueId)
