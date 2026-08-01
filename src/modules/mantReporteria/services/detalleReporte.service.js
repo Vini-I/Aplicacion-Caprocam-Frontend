@@ -1,4 +1,5 @@
 import { getCrecimiento } from "../../mantCrecimiento/services/mantCrecimiento.service";
+import parasitologiaService from "../../parasitologia/services/ParasitologiaService";
 
 export async function obtenerDetalleReporte({
   tipoRegistro,
@@ -15,6 +16,18 @@ export async function obtenerDetalleReporte({
         (r) => 
           Number(r.finca_id) === Number(fincaId) &&
           Number(r.estanque_id) === Number(estanqueId)
+      )
+
+    case "parasitologia": 
+
+      const registrosPara = await parasitologiaService.getAll();
+      
+      console.log(registrosPara);
+
+      return registrosPara.filter(
+        (r) => 
+          Number(r.fincaId) === Number(fincaId) &&
+          Number(r.estanqueId) === Number(estanqueId)
       )
       
     default: 

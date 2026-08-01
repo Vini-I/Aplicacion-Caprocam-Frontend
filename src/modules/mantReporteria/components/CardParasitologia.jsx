@@ -10,7 +10,9 @@ import { COLORS } from "../../../theme/colors.js";
 
 import { styles } from "../styles/DetalleReporteStyle.js";
 
-export default function CardCrecimiento({ data }) {
+export default function CardParasitologia({ data }) {
+
+    console.log("DATOS PARASITOLOGIA:", data);
 
     return (
         <>
@@ -42,31 +44,66 @@ export default function CardCrecimiento({ data }) {
 
                             <View style={styles.infoItem}>
                                 <Text style={styles.label}>
-                                    Colaborador
+                                    Fecha Reporte
                                 </Text>
                                 <Text style={styles.value}>
-                                    {registro.nombreColaborador}
+                                    {new Date(registro.fechaReporte).toLocaleDateString("es-CR")}
                                 </Text>
                             </View>
 
+                            <View style={styles.infoItem}>
+                                <Text style={styles.label}>
+                                    Parasito
+                                </Text>
+                                <Text style={styles.value}>
+                                    {registro.parasito.charAt(0).toUpperCase() + registro.parasito.slice(1)}
+                                </Text>
+                            </View>
 
                             <View style={styles.infoItem}>
                                 <Text style={styles.label}>
-                                    Fecha
+                                    Grado Infeccion
                                 </Text>
                                 <Text style={styles.value}>
-                                    {new Date(registro.fecha_registro).toLocaleDateString("es-CR")}
+                                    {registro.gradoInfeccion.charAt(0).toUpperCase() + registro.gradoInfeccion.slice(1)}
+                                </Text>
+                            </View>
+
+                            <View style={styles.infoItem}>
+                                <Text style={styles.label}>
+                                    Camarones Muestreados
+                                </Text>
+                                <Text style={styles.value}>
+                                    {registro.camaronesMuestreados}
+                                </Text>
+                            </View>
+
+                            <View style={styles.infoItem}>
+                                <Text style={styles.label}>
+                                    Camarones Infectados
+                                </Text>
+                                <Text style={styles.value}>
+                                    {registro.camaronesInfectados}
+                                </Text>
+                            </View>
+
+                            <View style={styles.infoItem}>
+                                <Text style={styles.label}>
+                                    Colaborador
+                                </Text>
+                                <Text style={styles.value}>
+                                    {registro.nombreColaborador.charAt(0).toUpperCase() + registro.nombreColaborador.slice(1)}
                                 </Text>
                             </View>
                         </View>
 
                         <View style={styles.pesoContainer}>
                             <Text style={styles.label}>
-                                Peso actual
+                                Porcetaje Infeccion
                             </Text>
 
                             <Text style={styles.peso}>
-                                {registro.peso_actual} g
+                                {registro.porcentajeInfeccion} %
                             </Text>
                         </View>
 
