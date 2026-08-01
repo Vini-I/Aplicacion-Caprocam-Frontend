@@ -14,7 +14,7 @@ import { STYLE } from "../../../theme/style";
 
 import Alert from "../../../shared/components/Alert";
 import Button from "../../../shared/components/Button";
-import Card from "../../../shared/components/Card";
+import CardPress from "../../../shared/components/CardPress";
 import EmptyState from "../../../shared/components/EmptyState";
 import Icon from "../../../shared/components/Icons";
 import Text from "../../../shared/components/Text";
@@ -67,8 +67,7 @@ export default function TrazabilidadScreen() {
   function renderRegistro(registro) {
     const r = formatRegistroForView(registro);
     return (
-      <Button onPress={() => abrirDetalle(r.id)} style={styles.touchable} key={r.id}>
-        <Card style={styles.card}>
+      <CardPress style={styles.card} onPress={() => abrirDetalle(r.id)} key={r.id}>
           <View style={styles.cardHeader}>
             <Text style={styles.fincaText}>{r.fincaNombre}</Text>
             <Text style={styles.fechaText}>{r.fecha}</Text>
@@ -113,9 +112,8 @@ export default function TrazabilidadScreen() {
               <Text style={styles.datoValor}>{registro.dias}</Text>
             </View>
           </View>
-        </Card>
-      </Button>
-    );
+        </CardPress>
+      );
   }
 
   return (

@@ -35,7 +35,8 @@ import {
   obtenerEstanquesEngordePorFinca,
   obtenerFincas,
   obtenerColaboradorSesion,
-  obtenerSiembraPorEstanque,
+  obtenerColaboradorSesionActual,
+  obtenerSiembraActivaPorEstanque,
 } from "../services/TrazabilidadServices";
 import { crearRegistroTrazabilidad } from "../services/AgregarTrazabilidadService";
 import { esFechaFutura, esFechaValida } from "../../../shared/utils/dateUtils";
@@ -44,8 +45,7 @@ import { esFechaFutura, esFechaValida } from "../../../shared/utils/dateUtils";
 
 export function useTrazabilidad() {
   const router = useRouter();
-  const colaboradorSesion = obtenerColaboradorSesion();
-
+  const [colaboradorSesion, setColaboradorSesion] = useState(obtenerColaboradorSesion);
 
   const [formData, setFormData] = useState(() => ({
     ...initialForm,

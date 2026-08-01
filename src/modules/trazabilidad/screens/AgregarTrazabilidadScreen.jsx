@@ -5,6 +5,7 @@
  * @validations - Campos obligatorios (finca, origen, destino, fecha, tamaño, días, PL) marcados con *. Origen != Destino.
  * @navigation - Redirige a /trazabilidad tras registrar exitosamente.
  */
+import { useRef, useEffect } from "react";
 import { View, ScrollView } from "react-native";
 import Text from "../../../shared/components/Text";
 import { styles } from "../styles/AgregarTrazabilidadStyle";
@@ -19,6 +20,8 @@ import TrazabilidadForm from "../components/TrazabilidadForm";
 import { useTrazabilidad } from "../hooks/useTrazabilidad";
 
 export default function AgregarTrazabilidadScreen() {
+  const scrollViewRef = useRef(null);
+
   const {
     formData,
     fincas,
@@ -37,9 +40,16 @@ export default function AgregarTrazabilidadScreen() {
     irALogin,
   } = useTrazabilidad();
 
+  useEffect(() => {
+    if (mensajeError) {
+      scrollViewRef.current?.scrollToEnd({ animated: true });
+    }
+  }, [mensajeError]);
+
   return (
     <View style={STYLE.container}>
       <ScrollView
+        ref={scrollViewRef}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >

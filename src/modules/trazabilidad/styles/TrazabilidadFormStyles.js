@@ -1,3 +1,10 @@
+/**
+ * ESTILOS TrazabilidadFormStyles
+ * Define los estilos estandarizados para los cards, labels y campos de error del formulario de trazabilidad.
+ * @dependencies COLORS, TYPOGRAPHY (theme)
+ * @validations N/A
+ * @navigation N/A
+ */
 import { StyleSheet } from "react-native";
 
 import { COLORS } from "../../../theme/colors";

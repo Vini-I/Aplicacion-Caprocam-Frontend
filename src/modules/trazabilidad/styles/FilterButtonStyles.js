@@ -16,10 +16,10 @@ import { COLORS } from "../../../theme/colors";
 
 export const styles = StyleSheet.create({
   overlay: {
-  backgroundColor: "rgba(0,0,0,0.45)",
-  justifyContent: "flex-end",
-  padding: 0,
-},
+    backgroundColor: COLORS.black,
+    justifyContent: "flex-end",
+    padding: 0,
+  },
  modalContainer: {
   paddingHorizontal: 16,
   paddingTop: 12,

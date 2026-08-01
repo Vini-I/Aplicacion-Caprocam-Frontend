@@ -25,9 +25,11 @@ import {
   enriquecerRegistros,
   filtrarRegistrosTrazabilidad,
 } from "../services/TrazabilidadServices";
+import { useError } from "../../../shared/context/ErrorContext";
 
 export function useTrazabilidadList() {
   const router = useRouter();
+  const { mostrarError } = useError();
 
   const [busqueda, setBusqueda] = useState("");
   const [filtros, setFiltros] = useState({
@@ -55,6 +57,7 @@ export function useTrazabilidadList() {
     }
     setSesionExpirada(false);
     setErrorCarga(mensaje);
+    if (error) mostrarError(error);
   }
 
   function cerrarErrorCarga() {
