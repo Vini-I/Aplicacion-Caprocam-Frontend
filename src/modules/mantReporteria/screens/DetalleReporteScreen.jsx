@@ -59,9 +59,6 @@ export default function DetalleReporteScreen() {
       <ScrollView>
         <View style={STYLE.container}>
           <Card style={STYLE.contentWrapper}>
-            <View style={styles.headerRow}>
-              <Text style={styles.cardTitle}>Detalle de Registro</Text>
-            </View>
             <View>
               <Text size={16} style={styles.filterTitle}>
                 <Icon style={styles.icon} icon={ICONS.filter} color={COLORS.primary} size={18} />
