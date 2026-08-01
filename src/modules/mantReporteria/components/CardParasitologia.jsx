@@ -11,9 +11,7 @@ import { COLORS } from "../../../theme/colors.js";
 import { styles } from "../styles/DetalleReporteStyle.js";
 
 export default function CardParasitologia({ data }) {
-
-    console.log("DATOS PARASITOLOGIA:", data);
-
+    
     return (
         <>
             {

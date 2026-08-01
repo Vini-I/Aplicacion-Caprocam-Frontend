@@ -1,6 +1,7 @@
 import { getCrecimiento } from "../../mantCrecimiento/services/mantCrecimiento.service";
 import parasitologiaService from "../../parasitologia/services/ParasitologiaService";
 import enfermedadesService from "../../enfermedades/services/EnfermedadesService";
+import raleoService from "../../raleo/services/Raleo.service";
 
 export async function obtenerDetalleReporte({
   tipoRegistro,
@@ -22,8 +23,6 @@ export async function obtenerDetalleReporte({
     case "parasitologia": 
 
       const registrosPara = await parasitologiaService.getAll();
-      
-      console.log(registrosPara);
 
       return registrosPara.filter(
         (r) => 
@@ -32,12 +31,22 @@ export async function obtenerDetalleReporte({
       )
 
     case "enfermedades":
+
       const registrosEnf = await enfermedadesService.getAll();
       
       return registrosEnf.filter(
         (r) => 
           Number(r.fincaId) === Number(fincaId) &&
           Number(r.estanqueId) === Number(estanqueId)
+      )
+  
+    case "raleo":
+      const registrosRaleo = await raleoService.getAll();
+
+      return registrosRaleo.filter(
+        (r) => 
+          Number(r.idFinca) === Number(fincaId) &&
+          Number(r.idEstanque) === Number(estanqueId)
       )
       
     default: 

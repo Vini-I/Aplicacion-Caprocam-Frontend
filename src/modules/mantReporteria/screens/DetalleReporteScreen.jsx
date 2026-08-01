@@ -19,6 +19,7 @@ import NavbarRegistro from "../../../shared/components/NavbarRegistro.jsx"
 import CardCrecimiento from "../components/CardCrecimiento.jsx";
 import CardParasitologia from "../components/CardParasitologia.jsx";
 import CardEnfermedades from "../components/CardEnfermedades.jsx";
+import CardRaleo from "../components/CardRaleo.jsx";
 
 import { useDetalleReporte } from "../hooks/useDetalleReporte.js";
 import { TIPOS_REGISTRO } from "../constants/tipoReporte.js";
@@ -184,6 +185,14 @@ export default function DetalleReporteScreen() {
                   {
                     registroTipo === "enfermedades" && (
                       <CardEnfermedades
+                        data={registros}
+                      />
+                    )
+                  }
+
+                  {
+                    registroTipo === "raleo" && (
+                      <CardRaleo
                         data={registros}
                       />
                     )

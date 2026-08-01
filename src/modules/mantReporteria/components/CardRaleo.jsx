@@ -10,7 +10,7 @@ import { COLORS } from "../../../theme/colors.js";
 
 import { styles } from "../styles/DetalleReporteStyle.js";
 
-export default function CardEnfermedades({ data }) {
+export default function CardRaleo({ data }) {
 
     return (
         <>
@@ -55,47 +55,56 @@ export default function CardEnfermedades({ data }) {
                                     Fecha
                                 </Text>
                                 <Text style={styles.value}>
-                                    {new Date(registro.fechaReporte).toLocaleDateString("es-CR")}
+                                    {new Date(registro.fecha).toLocaleDateString("es-CR")}
                                 </Text>
                             </View>
 
                             <View style={styles.infoItem}>
                                 <Text style={styles.label}>
-                                    Nombre Enfermedad
+                                    Metodo de Raleo
                                 </Text>
                                 <Text style={styles.value}>
-                                    {registro.enfermedad}
+                                    {registro.metodo}
                                 </Text>
                             </View>
 
                             <View style={styles.infoItem}>
                                 <Text style={styles.label}>
-                                    Severidad
+                                    Peso Estimado
                                 </Text>
                                 <Text style={styles.value}>
-                                    {registro.severidad.charAt(0).toUpperCase() + registro.severidad.slice(1)}
+                                    {registro.pesoEstimado} g
                                 </Text>
                             </View>
 
                             <View style={styles.infoItem}>
                                 <Text style={styles.label}>
-                                    Mortalidad
+                                    Biomasa Estimada
                                 </Text>
                                 <Text style={styles.value}>
-                                    {registro.mortalidadRegistrada}
+                                    {registro.biomasaEstimado} Kg
                                 </Text>
                             </View>
 
                             <View style={styles.infoItem}>
                                 <Text style={styles.label}>
-                                    Reporte
+                                    Objetivo de Raleo
                                 </Text>
                                 <Text style={styles.value}>
-                                    {registro.reporte}
+                                    {registro.objetivo} g
                                 </Text>
                             </View>
 
+                            <View style={styles.infoItem}>
+                                <Text style={styles.label}>
+                                    Observaciones
+                                </Text>
+                                <Text style={styles.value}>
+                                    {registro.observaciones}
+                                </Text>
+                            </View>
                         </View>
+
                         <View style={styles.Buttons}>
                             <Button
                                 style={styles.Eliminar}
