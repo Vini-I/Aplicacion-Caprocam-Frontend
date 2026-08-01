@@ -18,7 +18,7 @@ export default function CardRaleo({ data }) {
                 data.map((registro) => (
                     <Card
                         key={registro.id}
-                        style={styles.cardRegistro}
+                        style={[styles.cardRegistro, { borderLeftColor: COLORS.Raleo }]}
 
                     >
                         <View style={styles.infoGrid}> 

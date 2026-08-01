@@ -18,8 +18,7 @@ export default function CardEnfermedades({ data }) {
                 data.map((registro) => (
                     <Card
                         key={registro.id}
-                        style={styles.cardRegistro}
-
+                        style={[styles.cardRegistro, { borderLeftColor: COLORS. Enfermedades }]}
                     >
                         <View style={styles.infoGrid}> 
                             <View style={styles.infoItem}>
@@ -45,7 +44,7 @@ export default function CardEnfermedades({ data }) {
                                     Colaborador
                                 </Text>
                                 <Text style={styles.value}>
-                                    {registro.nombreColaborador}
+                                    {registro.nombreColaborador?registro.nombreColaborador.charAt(0).toUpperCase() + registro.nombreColaborador.slice(1): ""}
                                 </Text>
                             </View>
 
@@ -64,7 +63,7 @@ export default function CardEnfermedades({ data }) {
                                     Nombre Enfermedad
                                 </Text>
                                 <Text style={styles.value}>
-                                    {registro.enfermedad}
+                                    {registro.enfermedad?registro.enfermedad.charAt(0).toUpperCase() + registro.enfermedad.slice(1): ""}
                                 </Text>
                             </View>
 
@@ -73,7 +72,7 @@ export default function CardEnfermedades({ data }) {
                                     Severidad
                                 </Text>
                                 <Text style={styles.value}>
-                                    {registro.severidad.charAt(0).toUpperCase() + registro.severidad.slice(1)}
+                                    {registro.severidad?registro.severidad.charAt(0).toUpperCase() + registro.severidad.slice(1): ""}
                                 </Text>
                             </View>
 
