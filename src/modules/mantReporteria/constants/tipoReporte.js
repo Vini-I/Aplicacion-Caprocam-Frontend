@@ -1,6 +1,6 @@
 export const TIPOS_REGISTRO = [
 
-  {
+  { 
     label: "Alimentación",
     value: "alimentacion",
   },
@@ -39,4 +39,5 @@ export const TIPOS_REGISTRO = [
 
 export const TIPOS_AUTOGESTIONADOS = [
   "alimentacion",
+  "enfermedades",
 ];
