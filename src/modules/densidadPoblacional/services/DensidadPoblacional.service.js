@@ -35,12 +35,23 @@
  * - Mantiene la misma forma pública (getAll/create/deleteById)
  *   que usaba con AsyncStorage, para no tener que tocar
  *   useDensidadPoblacional.js más de lo necesario.
+ * - Fecha: useDensidadPoblacional.js maneja `fecha` como string
+ *   dd/mm/aaaa (formato de toda la app / DateInput). El backend
+ *   exige y devuelve siempre YYYY-MM-DD (ISO estricto, ver
+ *   isFechaValida en el backend). aBody() convierte dd/mm/aaaa ->
+ *   YYYY-MM-DD con toMysqlDate() antes de enviar, y aFrontend()
+ *   convierte YYYY-MM-DD -> dd/mm/aaaa con formatDate() al recibir,
+ *   para que DateInput siga mostrando el formato que espera. Antes
+ *   la fecha se enviaba tal cual (dd/mm/aaaa) y el backend la
+ *   rechazaba con "fecha inválida" (o, peor, para días <= 12
+ *   invertía día/mes silenciosamente).
  *
  * Ejemplo:
  * await densidadPoblacionalService.create(registro);
  */
 
 import api from "../../../api/api";
+import { toMysqlDate, formatDate } from "../../../shared/utils/dateUtils";
 
 /*
 Convierte valores numéricos del formulario.
@@ -53,6 +64,29 @@ function numero(valor) {
 }
 
 /*
+Convierte la fecha dd/mm/aaaa (formato que maneja
+useDensidadPoblacional.js / DateInput) al formato YYYY-MM-DD que
+exige el backend. Si la fecha viene vacía o no se puede interpretar,
+retorna undefined en vez de mandar un string inválido: así el
+backend responde "El campo fecha es requerido" (más claro) en vez
+de "El campo fecha no es una fecha válida".
+*/
+function fechaABackend(fecha) {
+    const iso = toMysqlDate(fecha);
+    return iso === "" ? undefined : iso;
+}
+
+/*
+Convierte la fecha YYYY-MM-DD que devuelve el backend de vuelta a
+dd/mm/aaaa, para que DateInput / el resto de la pantalla la sigan
+mostrando en el formato que usan.
+*/
+function fechaAFrontend(fecha) {
+    if (!fecha) return fecha;
+    return formatDate(fecha);
+}
+
+/*
 Convierte el objeto "registro" que arma useDensidadPoblacional.js
 a los campos reales que espera el backend
 (dtos/densidadPoblacional.dto.js).
@@ -61,7 +95,7 @@ function aBody(registro) {
     return {
         idFinca: registro.finca,
         idEstanque: registro.estanque,
-        fecha: registro.fecha,
+        fecha: fechaABackend(registro.fecha),
         cantidadSiembra: numero(registro.siembraPorM2),
         areaEstanque: numero(registro.areaEstanque),
         numeroCamarones: numero(registro.numeroCamarones),
@@ -88,6 +122,7 @@ function aFrontend(registro) {
         estanque: registro.idEstanque,
         supervivencia: registro.sobrevivencia,
         siembraPorM2: registro.cantidadSiembra,
+        fecha: fechaAFrontend(registro.fecha),
     };
 }
 
