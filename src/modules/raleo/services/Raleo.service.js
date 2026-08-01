@@ -3,19 +3,34 @@
  * SERVICE RALEO.SERVICE
  * ============================================================
  *
- * Persiste los registros de raleo en AsyncStorage bajo la clave
- * "raleos_v1". Sigue exactamente el mismo patrón que
- * Alimentacion.service.js.
+ * Conecta el módulo de Raleo con el backend real (Express +
+ * MySQL) usando axios, en vez de AsyncStorage.
+ *
+ * Endpoint base: /raleo (definido en app.js del backend como
+ * /api/v0/raleo, y api.js ya apunta a EXPO_PUBLIC_API_URL que
+ * debe incluir ese prefijo /api/v0).
  *
  * Funcionalidad:
- * - getAll(): retorna todos los registros guardados.
- * - create(registro): agrega un registro nuevo con id y timestamp.
- * - deleteById(id): elimina un registro por id.
- * - clearAll(): elimina todos los registros guardados.
+ * - getAll(filtros): retorna todos los raleos activos.
+ *   Acepta filtros opcionales { idFinca, idEstanque, grupoDatos }.
+ * - getById(id): retorna un raleo por su id.
+ * - create(form): crea un raleo nuevo, mapeando los nombres de
+ *   campo del formulario (finca, estanque, porcentajeRaleo,
+ *   pesoPromedio, biomasaActual, ...) a los nombres reales de la
+ *   tabla raleos (idFinca, idEstanque, porcentaje, pesoEstimado,
+ *   biomasaEstimada, ...).
+ * - update(id, form): actualiza un raleo existente.
+ * - deleteById(id): elimina lógicamente un raleo (activo=false).
  *
  * Importante:
- * - Este archivo NO valida los datos que recibe: la validación
- *   de campos obligatorios ocurre antes, en useRaleo.validarForm().
+ * - Este archivo NO valida los datos que recibe: la validación de
+ *   campos obligatorios ocurre antes, en useRaleo.validarForm().
+ *   El backend además valida de nuevo (incluye el enum de
+ *   `metodo`) y puede responder 400/422/409; esos errores se
+ *   propagan tal cual (error.response.data).
+ * - Mantiene la misma forma pública (getAll/create/deleteById)
+ *   que usaba con AsyncStorage, para no tener que tocar
+ *   RaleoScreen.jsx más de lo necesario.
  *
  * Ejemplo:
  * await raleoService.create(form);
