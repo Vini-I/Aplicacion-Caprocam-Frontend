@@ -179,10 +179,9 @@ export const styles = StyleSheet.create({
         alignItems: "center",
         borderRadius: 6,
         marginHorizontal: 2,
-        paddingHorizontal: 6,
-        paddingVertical: 4,
+        height: "70%",
     },
-    
+
     Editar: {
         flex: 1,
         backgroundColor: COLORS.white,
@@ -193,7 +192,6 @@ export const styles = StyleSheet.create({
         alignItems: "center",
         borderRadius: 6,
         marginHorizontal: 2,
-        paddingHorizontal: 12,
-        paddingVertical: 4,
+        height: "70%",
     },
 });
