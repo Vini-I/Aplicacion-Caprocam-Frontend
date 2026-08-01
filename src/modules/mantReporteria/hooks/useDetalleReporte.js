@@ -132,7 +132,7 @@ export function useDetalleReporte() {
           const colaboradorEncontrado = colaboradores.find(
             c => Number(c.value) === Number(registro.colaborador_id || registro.colaboradorId || registro.idColaborador)
           );
-
+          
             return {
               ...registro,
               nombreFinca: fincaEncontrada?.label ?? "No encontrada",
