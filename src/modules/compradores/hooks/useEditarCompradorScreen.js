@@ -31,6 +31,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { compradorService, mapComprador } from "../services/comprador.service";
+import { useError } from "../../../shared/context/ErrorContext";
 
 // Regex para validar teléfonos con o sin código de país +506
 const TELEFONO_REGEX = /^\d{8}$/;
@@ -58,6 +59,7 @@ function validarCorreo(valor) {
 export function useEditarCompradorScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
+  const { mostrarError } = useError();
 
   // Estado de carga inicial del comprador
   const [cargando, setCargando] = useState(true);
@@ -102,10 +104,11 @@ export function useEditarCompradorScreen() {
       setNotas(comprador.notas);
     } catch (err) {
       setErrorCarga("No se pudo cargar el comprador.");
+      mostrarError(err);
     } finally {
       setCargando(false);
     }
-  }, [id]);
+  }, [id, mostrarError]);
 
   useEffect(() => {
     if (id) cargarComprador();

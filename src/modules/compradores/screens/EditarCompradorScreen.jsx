@@ -67,7 +67,7 @@ export default function EditarCompradorScreen() {
 
   if (cargando) {
     return (
-      <View style={[styles.container, { justifyContent: "center" }]}>
+      <View style={[styles.container, styles.loadingContainer]}>
         <ActivityIndicator size="large" color={COLORS.primary} />
       </View>
     );

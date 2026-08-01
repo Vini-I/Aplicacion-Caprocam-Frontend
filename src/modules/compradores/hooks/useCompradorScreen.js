@@ -23,12 +23,14 @@
  */
 
 
-import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "expo-router";
+import { useState, useCallback } from "react";
+import { useRouter, useFocusEffect } from "expo-router";
 import { compradorService, mapComprador } from "../services/comprador.service";
+import { useError } from "../../../shared/context/ErrorContext";
 
 export function useCompradorScreen() {
   const router = useRouter();
+  const { mostrarError } = useError();
 
   const [compradores, setCompradores] = useState([]);
   const [cargando, setCargando] = useState(true);
@@ -45,14 +47,18 @@ export function useCompradorScreen() {
       setCompradores((data || []).map(mapComprador));
     } catch (err) {
       setError("No se pudieron cargar los compradores. Intenta de nuevo.");
+      mostrarError(err);
     } finally {
       setCargando(false);
     }
-  }, []);
+  }, [mostrarError]);
 
-  useEffect(() => {
-    cargarCompradores();
-  }, [cargarCompradores]);
+  
+  useFocusEffect(
+    useCallback(() => {
+      cargarCompradores();
+    }, [cargarCompradores])
+  );
 
   
   const TIPOS = [];

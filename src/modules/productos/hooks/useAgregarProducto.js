@@ -1,57 +1,49 @@
 /**
  * ============================================================
- * HOOK: USEPRODUCTFORM
+ * HOOK: USEAGREGARPRODUCTO
  * ============================================================
  * Módulo: Productos
  *
- * Maneja el estado y la lógica del formulario de alta/edición
- * de producto.
+ * Maneja el estado y la lógica del formulario de ALTA de producto.
+ * Es la mitad "crear" de lo que antes era useProductForm.js.
  *
  * FUNCIONALIDAD:
- * 1. Carga los datos del producto cuando llega productoParam
- *    (modo edición); si no llega, arranca en modo creación.
+ * 1. Arranca siempre en formulario vacío (initialForm).
  * 2. Recalcula la lista de proveedores disponibles cada vez que
  *    cambia la categoría, y limpia el proveedor si ya no aplica.
- * 3. Valida los campos obligatorios (nombre, categoría, cantidad,
- *    stock mínimo, precio) solo después de presionar Guardar
- *    (intentoGuardar), mostrando un mensaje general y marcando
- *    cada campo inválido por separado (errorNombre, errorCategoria,
- *    errorCantidad, errorStockMinimo, errorPrecio).
- * 4. En modo edición, además exige que haya cambios reales
- *    respecto al producto original antes de permitir guardar.
- * 5. Guarda el producto (crear o actualizar), muestra una alerta de
- *    éxito (guardadoExitoso) y navega de vuelta poco después.
+ * 3. Valida los campos obligatorios (código, nombre, categoría,
+ *    proveedor, cantidad, stock mínimo, precio) solo después de
+ *    presionar Guardar (intentoGuardar), mostrando un mensaje
+ *    general y marcando cada campo inválido por separado.
+ * 4. Al guardar con éxito, YA NO navega al listado: muestra el
+ *    alert de "guardado" por 3 segundos y luego limpia todo el
+ *    formulario (campos y errores) para poder cargar otro producto
+ *    sin salir de la pantalla.
  *
  * IMPORTANTE:
- * - En modo creación el botón de guardar NO se bloquea de
- *   entrada: el usuario puede presionar y ver qué campo falta.
- * - En modo edición sí se bloquea mientras no haya cambios.
+ * - El botón de guardar NO se bloquea de entrada: el usuario puede
+ *   presionar y ver qué campo falta (igual que antes en modo
+ *   creación dentro de useProductForm.js).
  * - La navegación posterior al guardado se retrasa ~900ms para que
  *   la alerta de éxito alcance a mostrarse antes de salir de la
  *   pantalla.
  * ============================================================
  */
 
-
 import { useState, useEffect } from "react";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useRouter } from "expo-router";
 
 import { productoService } from "../services/producto.service";
 import { getProveedores, filtrarProveedoresPorCategoria } from "../services/proveedoresLookup";
 import { initialForm } from "../services/DataProductForm";
+import { useError } from "../../../shared/context/ErrorContext";
 
-
-// ─────────────────────────────────────────────
-// Hook principal del formulario
-// ─────────────────────────────────────────────
-export function useProductForm() {
+export function useAgregarProducto() {
   const router = useRouter();
-  const params = useLocalSearchParams();
+  const { mostrarError } = useError();
 
   const [form, setForm] = useState(initialForm);
-  const [originalForm, setOriginalForm] = useState(initialForm);
   const [intentoGuardar, setIntentoGuardar] = useState(false);
-  const [productoId, setProductoId] = useState(null);
   const [proveedoresTodos, setProveedoresTodos] = useState([]);
   const [opcionesProveedores, setOpcionesProveedores] = useState([]);
   const [cargandoProveedores, setCargandoProveedores] = useState(true);
@@ -76,6 +68,7 @@ export function useProductForm() {
             "No se pudieron cargar los proveedores. Verifica que el back tenga montada la ruta /proveedores."
           );
           setProveedoresTodos([]);
+          mostrarError(err);
         }
       } finally {
         if (activo) setCargandoProveedores(false);
@@ -85,9 +78,8 @@ export function useProductForm() {
     return () => {
       activo = false;
     };
-  }, []);
+  }, [mostrarError]);
 
-  
   useEffect(() => {
     const filtrados = filtrarProveedoresPorCategoria(proveedoresTodos, form.categoria);
     const lista = [
@@ -109,55 +101,11 @@ export function useProductForm() {
     }
   }, [form.categoria, proveedoresTodos]);
 
-  // ── Carga datos si viene un producto para editar ──
-  useEffect(() => {
-    if (params?.productoParam) {
-      try {
-        const producto = JSON.parse(params.productoParam);
-
-        const cargado = {
-          codigo: producto.codigo ?? "", 
-          nombre: producto.nombre ?? "",
-          categoria: producto.categoria ?? "",
-          // El producto que llega desde el detalle trae proveedorId
-          // (id real) -- lo usamos como value del select. Si no tiene
-          // proveedor asignado (null), preseleccionamos "none" para
-          // que se vea "Sin proveedor asignado" en vez de quedar vacío.
-          proveedor: producto.proveedorId !== null && producto.proveedorId !== undefined
-            ? String(producto.proveedorId)
-            : "none",
-          cantidad: producto.cantidad !== undefined ? String(producto.cantidad) : "",
-          unidad: producto.unidad ?? "kg",
-          stockMinimo: producto.stockMinimo !== undefined ? String(producto.stockMinimo) : "",
-          precioUnidad: producto.precioUnidad !== undefined ? String(producto.precioUnidad) : "",
-          entryDate: producto.entryDate ?? "",
-          expirationDate: producto.expirationDate ?? "",
-        };
-
-        setForm(cargado);
-        setOriginalForm(cargado);
-        setProductoId(producto.id);
-      } catch {
-        setForm(initialForm);
-        setOriginalForm(initialForm);
-        setProductoId(null);
-      }
-    } else {
-      setForm(initialForm);
-      setOriginalForm(initialForm);
-      setProductoId(null);
-    }
-  }, [params?.productoParam]);
-
   // ─────────────────────────────────────────────
   // Derivados
   // ─────────────────────────────────────────────
-  const isEditMode = productoId !== null;
-
-  const hasChanges = JSON.stringify(form) !== JSON.stringify(originalForm);
-
   const hasRequiredData =
-    form.codigo.trim() !== "" && 
+    form.codigo.trim() !== "" &&
     form.nombre.trim() !== "" &&
     form.categoria !== "" &&
     form.proveedor !== "" &&
@@ -165,10 +113,13 @@ export function useProductForm() {
     form.stockMinimo !== "" &&
     form.precioUnidad !== "";
 
-  const canSave = isEditMode ? hasRequiredData && hasChanges : hasRequiredData;
+  const canSave = hasRequiredData;
 
- const validationMessage = !mostrarAlertaValidacion ? "" : !hasRequiredData ? "Revisa los campos obligatorios marcados con * antes de guardar."
-    : isEditMode && !hasChanges ? "Realice algún cambio para guardar la actualización." : "";
+  const validationMessage = !mostrarAlertaValidacion
+    ? ""
+    : !hasRequiredData
+    ? "Revisa los campos obligatorios marcados con * antes de guardar."
+    : "";
 
   const errorNombre = intentoGuardar && form.nombre.trim() === "";
   const errorCodigo = intentoGuardar && form.codigo.trim() === "";
@@ -221,7 +172,7 @@ export function useProductForm() {
     }
 
     const producto = {
-      codigo: form.codigo.trim(), 
+      codigo: form.codigo.trim(),
       nombre: form.nombre.trim(),
       categoria: form.categoria,
       // form.proveedor guarda el id real del proveedor elegido, o el
@@ -237,16 +188,11 @@ export function useProductForm() {
       entryDate: form.entryDate,
       expirationDate: form.expirationDate,
     };
-  
-  
+
     setGuardando(true);
     setErrorGuardado("");
     try {
-      if (isEditMode) {
-        await productoService.actualizarProducto(productoId, producto);
-      } else {
-        await productoService.crearProducto(producto);
-      }
+      await productoService.crearProducto(producto);
     } catch (error) {
       setGuardando(false);
       setErrorGuardado("No se pudo guardar el producto. Intenta de nuevo.");
@@ -254,31 +200,18 @@ export function useProductForm() {
     }
     setGuardando(false);
 
-    // Muestra la alerta de éxito antes de navegar, para que el usuario
-    // tenga retroalimentación visual clara de que el guardado ocurrió.
+ 
     setGuardadoExitoso(true);
 
     setTimeout(() => {
-      if (isEditMode) {
-        router.replace({
-          pathname: "/(drawer)/inventarios/detalleProducto",
-          params: { id: productoId.toString() },
-        });
-      } else {
-        router.replace("/(drawer)/inventarios");
-      }
-    }, 900);
+      setGuardadoExitoso(false);
+      setForm(initialForm);
+      setIntentoGuardar(false);
+    }, 3000);
   }
 
   function handleBack() {
-    if (isEditMode) {
-      router.replace({
-        pathname: "/(drawer)/inventarios/detalleProducto",
-        params: { id: productoId.toString() },
-      });
-    } else {
-      router.replace("/(drawer)/inventarios");
-    }
+    router.replace("/(drawer)/inventarios");
   }
 
   // ─────────────────────────────────────────────
@@ -286,11 +219,9 @@ export function useProductForm() {
   // ─────────────────────────────────────────────
   return {
     form,
-    productoId,
     opcionesProveedores,
     cargandoProveedores,
     errorProveedores,
-    isEditMode,
     canSave,
     validationMessage,
     showExpirationDate,
