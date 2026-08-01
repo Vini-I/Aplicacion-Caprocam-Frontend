@@ -76,7 +76,6 @@
  */
 
 import { useState,useEffect } from "react";
-import { useRouter } from "expo-router";
 import { useDatosConteo } from "./useDatosConteo";
 import densidadPoblacionalService from "../services/DensidadPoblacional.service";
 import { useFincaEstanqueDensidad } from "./useFincaEstanqueDensidad";
@@ -128,7 +127,6 @@ export default function useDensidadPoblacional() {
   const [errores, setErrores] = useState({});
   const [alerta, setAlerta] = useState({ visible: false, variant: "success", mensaje: "" });
 
-  const router = useRouter();
   const datosConteo = useDatosConteo();
 
   const { fincasOptions, estanquesOptions } = useFincaEstanqueDensidad(finca);
@@ -202,7 +200,10 @@ export default function useDensidadPoblacional() {
     if (alerta.variant === "success") {
       setSubmitted(false);
       setErrores({});
-      router.replace("/(drawer)/(tabs)/registros");
+      setFinca(null);
+      setEstanque(null);
+      setFecha(hoy());
+      datosConteo.resetear();
     }
 
     setAlerta((prev) => ({

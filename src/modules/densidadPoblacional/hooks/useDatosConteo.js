@@ -38,15 +38,37 @@
 
 import { useState } from "react";
 
+const VALORES_INICIALES = {
+  numeroCamarones: "",
+  tirosAtarraya: "",
+  areaAtarraya: "",
+  promedioPorTiro: "",
+  supervivencia: "",
+  notasConteo: "",
+  siembraPorM2: "",
+  areaEstanque: "",
+};
+
 export const useDatosConteo = () => {
-  const [numeroCamarones, setNumeroCamarones] = useState("");
-  const [tirosAtarraya, setTirosAtarraya] = useState("");
-  const [areaAtarraya, setAreaAtarraya] = useState("");
-  const [promedioPorTiro, setPromedioPorTiro] = useState("");
-  const [supervivencia, setSupervivencia] = useState("");
-  const [notasConteo, setNotasConteo] = useState("");
-  const [siembraPorM2, setSiembraPorM2] = useState("");
-  const [areaEstanque, setAreaEstanque] = useState("");
+  const [numeroCamarones, setNumeroCamarones] = useState(VALORES_INICIALES.numeroCamarones);
+  const [tirosAtarraya, setTirosAtarraya] = useState(VALORES_INICIALES.tirosAtarraya);
+  const [areaAtarraya, setAreaAtarraya] = useState(VALORES_INICIALES.areaAtarraya);
+  const [promedioPorTiro, setPromedioPorTiro] = useState(VALORES_INICIALES.promedioPorTiro);
+  const [supervivencia, setSupervivencia] = useState(VALORES_INICIALES.supervivencia);
+  const [notasConteo, setNotasConteo] = useState(VALORES_INICIALES.notasConteo);
+  const [siembraPorM2, setSiembraPorM2] = useState(VALORES_INICIALES.siembraPorM2);
+  const [areaEstanque, setAreaEstanque] = useState(VALORES_INICIALES.areaEstanque);
+
+  const resetear = () => {
+    setNumeroCamarones(VALORES_INICIALES.numeroCamarones);
+    setTirosAtarraya(VALORES_INICIALES.tirosAtarraya);
+    setAreaAtarraya(VALORES_INICIALES.areaAtarraya);
+    setPromedioPorTiro(VALORES_INICIALES.promedioPorTiro);
+    setSupervivencia(VALORES_INICIALES.supervivencia);
+    setNotasConteo(VALORES_INICIALES.notasConteo);
+    setSiembraPorM2(VALORES_INICIALES.siembraPorM2);
+    setAreaEstanque(VALORES_INICIALES.areaEstanque);
+  };
 
   const validar = () => {
     const errores = {};
@@ -98,6 +120,7 @@ export const useDatosConteo = () => {
     setSiembraPorM2,
     setAreaEstanque,
 
+    resetear,
     validar,
   };
 };
