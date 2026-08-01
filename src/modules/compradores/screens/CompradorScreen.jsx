@@ -35,8 +35,8 @@ import CardPress from "../../../shared/components/CardPress";
 import Button from "../../../shared/components/Button";
 import Icon from "../../../shared/components/Icons";
 import Text from "../../../shared/components/Text";
-import SearchBar from "../../../shared/components/SearchBar";
-import FilterButton from "../../../shared/components/FilterButton";
+import SearchBar from "../../../modules/inventarios/components/SearchBar";
+import FilterButton from "../../../modules/inventarios/components/FilterButton";
 import EmptyState from "../../../shared/components/EmptyState";
 import Alert from "../../../shared/components/Alert";
 

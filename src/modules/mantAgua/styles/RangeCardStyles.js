@@ -4,7 +4,7 @@
  * ============================================================
  *
  * Descripción:
- * Estilos para RangeCard, separando layout de la tarjeta y controles internos.
+ * Estilos para RangeCard, separando layout de la tarjeta, botones de paso (-/+) con hold y controles internos.
  *
  * @dependencies StyleSheet, COLORS, TYPOGRAPHY
  * @validations N/A
@@ -73,6 +73,17 @@ export const innerStyles = StyleSheet.create({
   },
   labelText: {
     marginTop: 2,
+  },
+
+  // ─── Botones de paso +/- con Hold ───────────────────────────
+  stepHoldBtn: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: COLORS.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 8,
   },
 
   // ─── Botón circular de agregar (reemplaza al antiguo stepBtn +) ──

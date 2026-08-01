@@ -5,12 +5,13 @@
  *
  * Descripción:
  * Formulario reutilizable para capturar el movimiento de un lote de camarón de pre-cría a engorde.
+ * Utiliza DateInput de forma unificada para la selección de fecha.
  *
  * @dependencies Select, Input, DateInput, TrazabilidadFormStyles
  * @validations Encadenamiento de estanques, origen != destino, formato de fecha y valores numéricos.
  * @navigation N/A
  */
-import { View, Platform } from "react-native";
+import { View } from "react-native";
 
 import Text from "../../../shared/components/Text";
 import Card from "../../../shared/components/Card";
@@ -26,7 +27,6 @@ import { styles } from "../styles/TrazabilidadFormStyles";
 import {
   esFechaValida,
   esFechaFutura,
-  formatearFechaInput,
 } from "../../../shared/utils/dateUtils";
 
 export default function TrazabilidadForm({
@@ -65,37 +65,6 @@ export default function TrazabilidadForm({
   const mostrarErrorTamano = submitted && (!formData.tamaño || Number(formData.tamaño) <= 0);
   const mostrarErrorDias = submitted && (!formData.dias || Number(formData.dias) <= 0);
   const mostrarErrorPl = submitted && (!formData.pl || Number(formData.pl) <= 0);
-  function renderFecha() {
-    if (Platform.OS === "web") {
-      return (
-        <Input
-          label="Fecha del movimiento *"
-          value={formData.fecha}
-          onChangeText={(value) => onChange("fecha", formatearFechaInput(value))}
-          containerStyle={styles.field}
-          style={mostrarErrorFecha ? styles.errorInput : undefined}
-          labelStyle={styles.label}
-          keyboardType="numeric"
-          inputMode="numeric"
-          maxLength={10}
-          placeholder="dd/mm/aaaa"
-        />
-      );
-    }
-
-    return (
-      <DateInput
-        label="Fecha del movimiento *"
-        value={formData.fecha}
-        onChangeText={(value) => onChange("fecha", value)}
-        containerStyle={styles.field}
-        inputStyle={mostrarErrorFecha ? styles.errorInput : undefined}
-        labelStyle={styles.label}
-        placeholder="dd/mm/aaaa"
-      />
-    );
-  }
-
   return (
 
     <View style={[STYLE.contentWrapper]}>
@@ -139,7 +108,15 @@ export default function TrazabilidadForm({
           selectStyle={mostrarErrorDestino ? styles.errorInput : undefined}
         />
 
-        {renderFecha()}
+        <DateInput
+          label="Fecha del movimiento *"
+          value={formData.fecha}
+          onChangeText={(value) => onChange("fecha", value)}
+          containerStyle={styles.field}
+          inputStyle={mostrarErrorFecha ? styles.errorInput : undefined}
+          labelStyle={styles.label}
+          placeholder="dd/mm/aaaa"
+        />
 
         <Input
           label={colaboradorSesion?.labelCampo || "Responsable"}

@@ -5,14 +5,15 @@
  *
  * Descripción:
  * Tarjeta para registrar mediciones numéricas (pH, temperatura,
- * oxígeno, salinidad) utilizando barras de rango dinámicas.
+ * oxígeno, salinidad) utilizando barras de rango dinámicas y botones
+ * de paso (- / +) con soporte de avance continuo (hold) e incremento de 0.1 por defecto.
  *
- * @dependencies RangeTrack, useRangeCard, RangeCardStyles
- * @validations Evaluación contra rangos ideales (óptimo, alerta, peligro).
+ * @dependencies RangeTrack, StepHoldButton, useRangeCard, RangeCardStyles
+ * @validations Evaluación contra rangos ideales (óptimo, alerta, peligro) y clamping min/max.
  * @navigation N/A
  *
  * La lógica de estado vive en el hook useRangeCard(); este
- * archivo solo arma el JSX.
+ * archivo solo arma el JSX e integra los controles táctiles de paso.
  * Admite `containerStyle` para personalizar el contenedor desde quien lo usa.
  *
  * ---
@@ -77,7 +78,8 @@
  * />
  */
 
-import { View } from 'react-native';
+import { useRef, useEffect } from 'react';
+import { View, TouchableOpacity } from 'react-native';
 import Button from '../../../shared/components/Button';
 import Text from '../../../shared/components/Text';
 import Title from '../../../shared/components/Title';
@@ -87,6 +89,49 @@ import { ICONS } from '../../../theme/icons';
 import useRangeCard from '../hooks/useRangeCard';
 import RangeTrack from './RangeTrack';
 import { cardStyles as s, innerStyles as inner } from '../styles/RangeCardStyles';
+
+function StepHoldButton({ icon, onPress, disabled, style }) {
+  const timerRef = useRef(null);
+  const intervalRef = useRef(null);
+
+  const stop = () => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+  };
+
+  const handlePressIn = () => {
+    if (disabled) return;
+    onPress();
+    stop();
+    timerRef.current = setTimeout(() => {
+      intervalRef.current = setInterval(() => {
+        onPress();
+      }, 100);
+    }, 400);
+  };
+
+  useEffect(() => {
+    return () => stop();
+  }, []);
+
+  return (
+    <TouchableOpacity
+      activeOpacity={0.6}
+      onPressIn={handlePressIn}
+      onPressOut={stop}
+      disabled={disabled}
+      style={[style, disabled && { opacity: 0.3 }]}
+    >
+      <Icon icon={icon} size={13} color={COLORS.white} />
+    </TouchableOpacity>
+  );
+}
 
 
 
@@ -245,7 +290,7 @@ export default function RangeCard({
 
       {lecturas.map((r, idx) => {
         const colorValor = showRangeColor ? colorPorValor(r.value, { idealMin, idealMax, ...zonasInfo, tieneMaxIdeal }) : COLORS.primary;
-        const { handleArrastre } = obtenerManejadores(r);
+        const { handleArrastre, decrementar, incrementar } = obtenerManejadores(r);
         const esUltima = idx === lecturas.length - 1;
         const puedeMostrarAgregar = esUltima && lecturas.length > 0 && lecturas.length < effectiveMax;
 
@@ -271,6 +316,13 @@ export default function RangeCard({
               })()}
             </View>
 
+            <StepHoldButton
+              icon={ICONS.minus}
+              onPress={decrementar}
+              disabled={r.value <= sliderMin}
+              style={inner.stepHoldBtn}
+            />
+
             <RangeTrack
               value={r.value}
               min={sliderMin}
@@ -281,6 +333,13 @@ export default function RangeCard({
               badgeColor={colorValor}
               badgeText={r.value.toFixed(decimals)}
               onChange={handleArrastre}
+            />
+
+            <StepHoldButton
+              icon={ICONS.add}
+              onPress={incrementar}
+              disabled={r.value >= sliderMax}
+              style={inner.stepHoldBtn}
             />
 
             <View style={inner.rightValueWrap}>
