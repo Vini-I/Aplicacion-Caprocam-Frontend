@@ -1,18 +1,32 @@
 import api from "../../../api/api";
 
+/**
+ * ============================================================
+ * MANEJO DE ERRORES DE ESTE SERVICE
+ * ============================================================
+ * Patrón acordado en equipo (ver Explicación ModalError): si el
+ * back devuelve un status "controlado" (con un mensaje real y útil,
+ * ej. 404 "Comprador no encontrado"), dejamos pasar el error tal
+ * cual (throw error) para que el mensaje real del back llegue hasta
+ * mostrarError(). Para cualquier otro status (500 inesperado, sin
+ * respuesta del servidor, etc.) armamos un mensaje genérico propio
+ * de la acción que falló, en vez de mostrarle al usuario un error
+ * técnico crudo.
+ * ============================================================
+ */
+function esErrorControlado(error, statusEsperados) {
+  return statusEsperados.includes(error.response?.status);
+}
+
 export const compradorService = {
 
-  getCompradores: async() => {
+  getCompradores: async () => {
     try {
-
       const response = await api.get("/compradores");
-
       return response.data.data;
-
     } catch (error) {
-
-      throw error; 
-      
+      if (esErrorControlado(error, [500])) throw error;
+      throw new Error("No se pudieron obtener los compradores.");
     }
   },
 
@@ -21,7 +35,8 @@ export const compradorService = {
       const response = await api.get(`/compradores/${id}`);
       return response.data.data;
     } catch (error) {
-      throw error;
+      if (esErrorControlado(error, [404, 500])) throw error;
+      throw new Error("No se pudo obtener el comprador.");
     }
   },
 
@@ -38,7 +53,8 @@ export const compradorService = {
       });
       return response.data.data;
     } catch (error) {
-      throw error;
+      if (esErrorControlado(error, [400, 500])) throw error;
+      throw new Error("No se pudo crear el comprador.");
     }
   },
 
@@ -54,7 +70,8 @@ export const compradorService = {
       });
       return response.data.data;
     } catch (error) {
-      throw error;
+      if (esErrorControlado(error, [400, 404, 500])) throw error;
+      throw new Error("No se pudo actualizar el comprador.");
     }
   },
 
@@ -64,7 +81,8 @@ export const compradorService = {
       const response = await api.delete(`/compradores/${id}`);
       return response.data.data;
     } catch (error) {
-      throw error;
+      if (esErrorControlado(error, [404, 500])) throw error;
+      throw new Error("No se pudo eliminar el comprador.");
     }
   },
 }

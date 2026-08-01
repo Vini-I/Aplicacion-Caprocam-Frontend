@@ -152,7 +152,7 @@ export default function CompradorScreen() {
           <ActivityIndicator
             size="large"
             color={COLORS.primary}
-            style={{ marginTop: 32 }}
+            style={styles.loadingIndicator}
           />
         ) : (
           <FlatList
