@@ -4,13 +4,11 @@
  * ============================================================
  *
  * Descripción:
- * Hook responsable de obtener y filtrar el listado de registros
- * de trazabilidad. Encapsula la lógica de búsqueda y filtros para
- * mantener las pantallas simples.
+ * Hook responsable de obtener, enriquecer y filtrar el listado de registros de trazabilidad.
  *
- * Reglas/Restricciones:
- * - No exportar funciones que no sean consumidas por las pantallas.
- * - Mantener la lógica de filtrado pura para facilitar pruebas.
+ * @dependencies TrazabilidadServices, ErrorContext, expo-router
+ * @validations Búsqueda por texto y filtros combinados (fincas, estanques, colaboradores, fecha).
+ * @navigation Navega a /trazabilidad/agregar y /trazabilidad/:id.
  */
 
 import { useCallback, useEffect, useMemo, useState } from "react";

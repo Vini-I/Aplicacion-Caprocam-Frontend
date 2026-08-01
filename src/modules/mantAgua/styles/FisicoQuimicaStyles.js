@@ -1,23 +1,14 @@
 /**
  * ============================================================
- * ESTILOS - FÍSICO-QUÍMICA
+ * ESTILOS FisicoQuimicaStyles
  * ============================================================
  *
  * Descripción:
- * Estilos para la pantalla `FisicoQuimicaScreen` y sus
- * componentes relacionados (RangeCard). Define el layout del
- * formulario, contenedores y wrappers necesarios para el
- * comportamiento correcto del UI en web y móvil.
+ * Estilos centralizados para la pantalla FisicoQuimicaScreen y sus componentes.
  *
- * Funcionalidad / reglas importantes:
- * - Mantener `overflow: "visible"` en wrappers que deben
- *   permitir overlays (selects, dropdowns, etc.).
- * - Evitar valores arbitrarios de `zIndex`; usarlos con criterio.
- * - Usar `COLORS` y `TYPOGRAPHY` desde `theme`.
- *
- * Restricciones del proyecto:
- * - Este archivo solo contiene definiciones de `StyleSheet`.
- * - No incluye lógica de presentación ni side-effects.
+ * @dependencies StyleSheet, COLORS, TYPOGRAPHY
+ * @validations N/A
+ * @navigation N/A
  */
 
 import { StyleSheet } from "react-native";

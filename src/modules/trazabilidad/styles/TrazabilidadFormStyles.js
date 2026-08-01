@@ -1,7 +1,12 @@
 /**
+ * ============================================================
  * ESTILOS TrazabilidadFormStyles
- * Define los estilos estandarizados para los cards, labels y campos de error del formulario de trazabilidad.
- * @dependencies COLORS, TYPOGRAPHY (theme)
+ * ============================================================
+ *
+ * Descripción:
+ * Estilos estandarizados para cards, labels y campos de error del formulario de trazabilidad.
+ *
+ * @dependencies StyleSheet, COLORS, TYPOGRAPHY
  * @validations N/A
  * @navigation N/A
  */

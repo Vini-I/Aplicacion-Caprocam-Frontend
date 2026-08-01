@@ -1,12 +1,14 @@
 /**
  * ============================================================
- * TrazabilidadStyles.js
+ * ESTILOS TrazabilidadStyles
  * ============================================================
  *
- * Estilos del listado de Trazabilidad.
+ * Descripción:
+ * Estilos del listado principal de trazabilidad (tarjetas, badges y layout).
  *
- * Reglas importantes / restricciones:
- * - Mantener las claves mínimas necesarias; eliminar estilos huérfanos.
+ * @dependencies StyleSheet, COLORS, TYPOGRAPHY
+ * @validations N/A
+ * @navigation N/A
  */
 
 import { StyleSheet } from "react-native";

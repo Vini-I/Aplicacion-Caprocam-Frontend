@@ -1,40 +1,14 @@
 /**
  * ============================================================
- * COMPONENTE FILTERBUTTON (módulo Trazabilidad)
+ * COMPONENTE FilterButton
  * ============================================================
  *
- * Botón de filtrado con modal para el listado de Trazabilidad.
- * Mismo patrón visual que el FilterButton del módulo inventarios,
- * adaptado a los filtros relevantes de este módulo.
+ * Descripción:
+ * Botón de filtrado con modal inferior para el listado de Trazabilidad.
  *
- * Funcionalidad:
- * - Abre un modal desde la parte inferior de la pantalla.
- * - Filtra por finca con chips horizontales.
- * - Filtra por colaborador responsable con chips horizontales.
- * - Filtro por fecha del movimiento con DateInput.
- * - Badge en el botón con cantidad de filtros activos.
- * - Los filtros se aplican solo al presionar Aplicar.
- *
- * Props principales:
- * - fincas: array { label, value } - fincas disponibles.
- * - colaboradores: array { label, value } - colaboradores disponibles.
- * - activeFilters: objeto con los filtros activos actuales.
- * - onApply: función que recibe el objeto de filtros al aplicar.
- *
- * Estructura del objeto que recibe onApply:
- * {
- *   fincas: string[],
- *   colaboradores: string[],
- *   fecha: string,   // fecha en formato dd/mm/aaaa, vacío si no aplica
- * }
- *
- * Ejemplo:
- * <FilterButton
- *   fincas={fincas}
- *   colaboradores={colaboradores}
- *   activeFilters={filters}
- *   onApply={(f) => setFilters(f)}
- * />
+ * @dependencies FilterButtonStyles, Modal, Chip, DateInput, Button
+ * @validations Aplica filtros al presionar Aplicar; calcula badge de filtros activos.
+ * @navigation N/A
  */
 import { View, ScrollView } from "react-native";
 

@@ -14,11 +14,12 @@
 export const COLORS = {
 
   // Paleta de colores
-  primary: '#009EF5', 
-  secondary: '#EEF2FF', 
+  primary: '#009EF5',
+  secondary: '#EEF2FF',
   surface: '#F8FAFC',
   successLight: '#BCFDF5',
   warningLight: '#FFEDD4',
+  overlay: 'rgba(0, 0, 0, 0.45)',
 
 
   //Colores base
@@ -44,15 +45,15 @@ export const COLORS = {
   errorLight: '#FEE2E2',
 
   primaryLight: "#EAF7FF",
-  
+
   //Colores modulos registro
 
-  Alimentacion: '#009EF5',    
-  Crecimiento: '#22C55E',   
-  FisicoQuimica: '#8B5CF6',   
-  Densidad: '#F59E0B',       
-  Enfermedades: '#EF4444',   
-  Parasitologia: '#D946EF',  
-  Raleo: '#06B6D4',           
+  Alimentacion: '#009EF5',
+  Crecimiento: '#22C55E',
+  FisicoQuimica: '#8B5CF6',
+  Densidad: '#F59E0B',
+  Enfermedades: '#EF4444',
+  Parasitologia: '#D946EF',
+  Raleo: '#06B6D4',
   DetalleRegistro: '#64748B',
 };

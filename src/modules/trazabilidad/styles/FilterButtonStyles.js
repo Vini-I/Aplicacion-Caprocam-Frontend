@@ -1,22 +1,21 @@
 /**
  * ============================================================
- * ESTILOS - FILTERBUTTON
+ * ESTILOS FilterButtonStyles
  * ============================================================
  *
- * Define los estilos del componente de filtrado de trazabilidad,
- * incluyendo el botón principal, el modal y los chips de filtro.
+ * Descripción:
+ * Estilos centralizados para el componente de filtrado FilterButton.
  *
- * Reglas:
- * - Usar colores del tema `COLORS`.
- * - Mantener los estilos de presentación separados de la lógica.
- * - `filterBtnInactive` aplica solo el borde cuando no hay filtros activos.
+ * @dependencies StyleSheet, COLORS
+ * @validations N/A
+ * @navigation N/A
  */
 import { StyleSheet } from "react-native";
 import { COLORS } from "../../../theme/colors";
 
 export const styles = StyleSheet.create({
   overlay: {
-    backgroundColor: COLORS.black,
+    backgroundColor: COLORS.overlay,
     justifyContent: "flex-end",
     padding: 0,
   },

@@ -1,37 +1,14 @@
 /**
  * ============================================================
- * COMPONENTE TRAZABILIDADFORM
+ * COMPONENTE TrazabilidadForm
  * ============================================================
  *
- * Formulario reutilizable para capturar el movimiento de un lote
- * de camarón de pre-cría a engorde (registro de Trazabilidad).
+ * Descripción:
+ * Formulario reutilizable para capturar el movimiento de un lote de camarón de pre-cría a engorde.
  *
- * FUNCIONALIDAD:
- * 1. Captura finca, estanque de origen y estanque de destino mediante
- *    Select encadenados (el destino excluye al estanque ya elegido
- *    como origen, y viceversa, para evitar que coincidan).
- * 2. Captura fecha del movimiento y colaborador responsable. En
- *    iOS/Android usa DateInput (calendario nativo); en web usa Input
- *    de texto con formato dd/mm/aaaa, porque el picker nativo que usa
- *    DateInput (@react-native-community/datetimepicker) no tiene
- *    soporte para web.
- * 3. Captura tamaño (gramos), días de siembra y PL.
- * 4. Marca en rojo los campos obligatorios solo después de intentar
- *    guardar (prop `submitted`).
- *
- * COMPONENTES UTILIZADOS:
- * - Card: agrupación visual de las secciones del formulario.
- * - Select: selección de finca, estanques y colaborador.
- * - NumberInput: campos numéricos de tamaño, días y PL.
- * - DateInput: fecha del movimiento en iOS/Android (dd/mm/aaaa).
- * - Input: fallback de fecha en web (dd/mm/aaaa, sin picker nativo).
- *
- * IMPORTANTE:
- * - No modifica el login.
- * - No cambia rutas existentes.
- * - Usa la estructura existente del proyecto.
- * - No se modificó el código de DateInput.jsx; el fallback de web se
- *   resuelve aquí con Platform.OS.
+ * @dependencies Select, Input, DateInput, TrazabilidadFormStyles
+ * @validations Encadenamiento de estanques, origen != destino, formato de fecha y valores numéricos.
+ * @navigation N/A
  */
 import { View, Platform } from "react-native";
 

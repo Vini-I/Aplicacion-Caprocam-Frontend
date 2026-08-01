@@ -1,7 +1,14 @@
 /**
- * RangeTrackStyles
- * Estilos centralizados para el componente RangeTrack (slider dinamico).
- * @dependencies - COLORS, TYPOGRAPHY
+ * ============================================================
+ * ESTILOS RangeTrackStyles
+ * ============================================================
+ *
+ * Descripción:
+ * Estilos centralizados para el componente RangeTrack (slider dinámico).
+ *
+ * @dependencies StyleSheet, COLORS, TYPOGRAPHY
+ * @validations N/A
+ * @navigation N/A
  */
 
 import { StyleSheet } from 'react-native';

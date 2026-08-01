@@ -1,9 +1,14 @@
 /**
- * AgregarTrazabilidadScreen
- * Pantalla para registrar un nuevo movimiento de trazabilidad entre estanques.
- * @dependencies - TrazabilidadForm, useTrazabilidad, Button, Alert, Icon
- * @validations - Campos obligatorios (finca, origen, destino, fecha, tamaño, días, PL) marcados con *. Origen != Destino.
- * @navigation - Redirige a /trazabilidad tras registrar exitosamente.
+ * ============================================================
+ * PANTALLA AgregarTrazabilidadScreen
+ * ============================================================
+ *
+ * Descripción:
+ * Pantalla para el registro de nuevos movimientos de trazabilidad entre estanques.
+ *
+ * @dependencies TrazabilidadForm, useTrazabilidad, Button, Alert, Icon
+ * @validations Campos obligatorios marcados con *. Estanque origen != destino.
+ * @navigation Muestra alerta y redirige tras guardar exitosamente.
  */
 import { useRef, useEffect } from "react";
 import { View, ScrollView } from "react-native";

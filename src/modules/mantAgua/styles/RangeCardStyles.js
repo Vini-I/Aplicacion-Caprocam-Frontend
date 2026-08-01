@@ -1,19 +1,14 @@
 /**
  * ============================================================
- * ESTILOS - RANGECARD
+ * ESTILOS RangeCardStyles
  * ============================================================
  *
  * Descripción:
- * Estilos para `RangeCard`, separando estilos de la tarjeta
- * (cardStyles) y estilos internos (innerStyles) para controles
- * como botones, inputs y la barra de progreso.
+ * Estilos para RangeCard, separando layout de la tarjeta y controles internos.
  *
- * Reglas importantes:
- * - Mantener consistencia con la paleta definida en `theme/colors`.
- * - Evitar estilos globales que afecten a otros componentes.
- *
- * Restricciones:
- * - Sólo contiene definiciones de StyleSheet.
+ * @dependencies StyleSheet, COLORS, TYPOGRAPHY
+ * @validations N/A
+ * @navigation N/A
  */
 
 import { StyleSheet } from 'react-native';
