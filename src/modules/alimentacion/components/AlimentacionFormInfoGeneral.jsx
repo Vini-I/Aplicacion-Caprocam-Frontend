@@ -23,7 +23,7 @@
  * Ejemplo:
  * <AlimentacionFormInfoGeneral form={form} updateField={updateField} submitted={submitted} errores={errores} />
  */
-
+ 
 import React from "react";
 import { View, Pressable, StyleSheet } from "react-native";
 import Card from "../../../shared/components/Card";

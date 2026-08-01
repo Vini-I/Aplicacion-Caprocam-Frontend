@@ -27,7 +27,7 @@
  * Ejemplo:
  * <RegistroAlimentacionScreen navigation={navigation} />
  */
-
+ 
 import React, { useState } from "react";
 import { View, ScrollView, Pressable } from "react-native";
 import useAlimentacionForm from "../hooks/useAlimentacionForm";
