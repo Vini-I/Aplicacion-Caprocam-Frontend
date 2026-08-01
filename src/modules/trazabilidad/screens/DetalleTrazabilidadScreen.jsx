@@ -1,22 +1,14 @@
 /**
- * Pantalla: DetalleTrazabilidadScreen
+ * ============================================================
+ * PANTALLA DetalleTrazabilidadScreen
+ * ============================================================
  *
- * Muestra toda la información de un registro de Trazabilidad ya
- * guardado (movimiento de pre-cría a engorde).
+ * Descripción:
+ * Muestra la información completa de solo lectura de un registro de trazabilidad.
  *
- * Este registro es un hecho histórico: la pantalla es de solo
- * lectura, sin botón de editar ni de eliminar, tal como lo
- * establece la especificación del módulo.
- *
- * Funcionalidades principales:
- * - Recibir el id del registro mediante la ruta (/trazabilidad/[id]).
- * - Mostrar el movimiento Origen -> Destino en un bloque destacado.
- * - Mostrar el resto de los datos del registro en modo solo lectura.
- *
- * Componentes utilizados:
- * - Badge: etiqueta de "Registro histórico".
- * - Card: agrupación visual de las secciones del detalle.
- * - Input, Select, DateInput: campos en modo solo lectura.
+ * @dependencies TrazabilidadServices, Card, Input, Badge, expo-router
+ * @validations Registro histórico de solo lectura.
+ * @navigation Carga parámetro `id` de la ruta `/trazabilidad/[id]`.
  */
 import { useEffect, useState } from "react";
 import { View, ScrollView } from "react-native";
@@ -27,7 +19,6 @@ import { STYLE } from "../../../theme/style";
 import Card from "../../../shared/components/Card";
 import Badge from "../../../shared/components/Badge";
 import Input from "../../../shared/components/Input";
-import Select from "../../../shared/components/Select";
 
 
 import { getRegistroPorId } from "../services/TrazabilidadServices";
@@ -106,14 +97,11 @@ export default function DetalleTrazabilidadScreen() {
               labelStyle={styles.labelLectura}
             />
 
-            <Select
-              label="Colaborador responsable"
-              options={[
-                { label: registro.colaboradorNombre, value: registro.colaboradorId },
-              ]}
-              value={registro.colaboradorId}
-              disabled={true}
-              selectStyle={styles.inputLectura}
+            <Input
+              label={registro.tipoResponsable ? `${registro.tipoResponsable} responsable` : "Responsable"}
+              value={registro.colaboradorNombre || "N/A"}
+              editable={false}
+              style={styles.inputLectura}
               labelStyle={styles.labelLectura}
             />
           </Card>

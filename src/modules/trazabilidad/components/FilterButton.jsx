@@ -1,40 +1,14 @@
 /**
  * ============================================================
- * COMPONENTE FILTERBUTTON (módulo Trazabilidad)
+ * COMPONENTE FilterButton
  * ============================================================
  *
- * Botón de filtrado con modal para el listado de Trazabilidad.
- * Mismo patrón visual que el FilterButton del módulo inventarios,
- * adaptado a los filtros relevantes de este módulo.
+ * Descripción:
+ * Botón de filtrado con modal inferior para el listado de Trazabilidad.
  *
- * Funcionalidad:
- * - Abre un modal desde la parte inferior de la pantalla.
- * - Filtra por finca con chips horizontales.
- * - Filtra por colaborador responsable con chips horizontales.
- * - Filtro por fecha del movimiento con DateInput.
- * - Badge en el botón con cantidad de filtros activos.
- * - Los filtros se aplican solo al presionar Aplicar.
- *
- * Props principales:
- * - fincas: array { label, value } - fincas disponibles.
- * - colaboradores: array { label, value } - colaboradores disponibles.
- * - activeFilters: objeto con los filtros activos actuales.
- * - onApply: función que recibe el objeto de filtros al aplicar.
- *
- * Estructura del objeto que recibe onApply:
- * {
- *   fincas: string[],
- *   colaboradores: string[],
- *   fecha: string,   // fecha en formato dd/mm/aaaa, vacío si no aplica
- * }
- *
- * Ejemplo:
- * <FilterButton
- *   fincas={fincas}
- *   colaboradores={colaboradores}
- *   activeFilters={filters}
- *   onApply={(f) => setFilters(f)}
- * />
+ * @dependencies FilterButtonStyles, Modal, Chip, DateInput, Button
+ * @validations Aplica filtros al presionar Aplicar; calcula badge de filtros activos.
+ * @navigation N/A
  */
 import { View, ScrollView } from "react-native";
 
@@ -45,11 +19,12 @@ import Title from "../../../shared/components/Title";
 import Text from "../../../shared/components/Text";
 import Badge from "../../../shared/components/Badge";
 import Input from "../../../shared/components/Input";
+import FilterChip from "../../../shared/components/FilterChip";
 import { useFilterButton } from "../hooks/useFilterButton";
 
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
-import { styles, sectionStyles, chipStyles } from "../styles/FilterButtonStyles";
+import { styles, sectionStyles } from "../styles/FilterButtonStyles";
 
 export default function FilterButton({
   fincas = [],
@@ -140,10 +115,10 @@ export default function FilterButton({
           {fincas.length > 0 && (
             <FilterSection label="Finca">
               {fincas.map((finca) => (
-                <Chip
+                <FilterChip
                   key={finca.value}
                   label={finca.label}
-                  selected={pendingFincas.includes(finca.value)}
+                  active={pendingFincas.includes(finca.value)}
                   onPress={() => toggleFinca(finca.value)}
                 />
               ))}
@@ -153,10 +128,10 @@ export default function FilterButton({
           {estanquesDisponibles.length > 0 && (
             <FilterSection label="Estanque">
               {estanquesDisponibles.map((estanque) => (
-                <Chip
+                <FilterChip
                   key={estanque.value}
                   label={estanque.label}
-                  selected={pendingEstanques.includes(estanque.value)}
+                  active={pendingEstanques.includes(estanque.value)}
                   onPress={() => toggleEstanque(estanque.value)}
                 />
               ))}
@@ -166,10 +141,10 @@ export default function FilterButton({
           {colaboradores.length > 0 && (
             <FilterSection label="Responsable">
               {colaboradores.map((colaborador) => (
-                <Chip
+                <FilterChip
                   key={colaborador.value}
                   label={colaborador.label}
-                  selected={pendingColaboradores.includes(colaborador.value)}
+                  active={pendingColaboradores.includes(colaborador.value)}
                   onPress={() => toggleColaborador(colaborador.value)}
                 />
               ))}
@@ -213,24 +188,6 @@ function FilterSection({ label, children }) {
       </Text>
       <View style={sectionStyles.chipsRow}>{children}</View>
     </View>
-  );
-}
-
-function Chip({ label, selected, onPress }) {
-  return (
-    <Button
-      variant="outline"
-      onPress={onPress}
-      style={[chipStyles.chip, selected && chipStyles.chipSelected]}
-    >
-      <Text
-        size={13}
-        color={selected ? COLORS.primary : COLORS.textSecondary}
-        weight={selected ? "600" : "400"}
-      >
-        {label}
-      </Text>
-    </Button>
   );
 }
 

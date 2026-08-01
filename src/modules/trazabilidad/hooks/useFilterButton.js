@@ -1,3 +1,10 @@
+/**
+ * HOOK useFilterButton
+ * Administra el estado modal y la selección de filtros por finca, estanque, colaborador y fecha.
+ * @dependencies obtenerEstanquesPorFinca (TrazabilidadServices)
+ * @validations Mantiene sincronizada la lista de estanques segun las fincas seleccionadas en el filtro.
+ * @navigation N/A
+ */
 import { useEffect, useState } from "react";
 import { obtenerEstanquesPorFinca } from "../services/TrazabilidadServices";
 

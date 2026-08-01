@@ -1,12 +1,14 @@
 /**
  * ============================================================
- * TrazabilidadStyles.js
+ * ESTILOS TrazabilidadStyles
  * ============================================================
  *
- * Estilos del listado de Trazabilidad.
+ * Descripción:
+ * Estilos del listado principal de trazabilidad (tarjetas, badges y layout).
  *
- * Reglas importantes / restricciones:
- * - Mantener las claves mínimas necesarias; eliminar estilos huérfanos.
+ * @dependencies StyleSheet, COLORS, TYPOGRAPHY
+ * @validations N/A
+ * @navigation N/A
  */
 
 import { StyleSheet } from "react-native";
@@ -26,14 +28,14 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 16,
     paddingHorizontal: 0,
-    gap: 2,
+    gap: 8,
     width: "100%",
   },
 
-  
   filterButton: {
-    height: 43,
+    height: 46,
     marginTop: 0,
+    marginBottom: 0,
   },
 
   contadorResultados: {
@@ -154,6 +156,10 @@ export const styles = StyleSheet.create({
 
   searchBarContainer: {
     flex: 1,
+    marginBottom: 0,
+    height: 46,
+    alignSelf: "center",
+    borderColor: COLORS.black,
   },
 
   vacioTitulo: {
@@ -175,22 +181,44 @@ export const styles = StyleSheet.create({
     marginTop: 12,
   },
 
-  stickyButtonContainer: {
-    position: "relative",
-    width: "100%",
-    alignSelf: "stretch",
+  successAlert: {
+    marginTop: 8,
+    marginBottom: 12,
+  },
+
+  errorAlertButton: {
+    marginBottom: 12,
+  },
+
+  floatingButtonContainer: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 10,
+    paddingHorizontal: 16,
+    paddingTop: 10,
+    paddingBottom: 18,
     backgroundColor: COLORS.white,
-    paddingHorizontal: 0,
-    paddingVertical: 12,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.secondary,
+    alignItems: "center",
+  },
+
+  errorAlertButton: {
+    marginBottom: 12,
   },
 
   fullButton: {
     width: "100%",
+    maxWidth: 900,
     height: 56,
     borderRadius: 14,
     alignItems: "center",
     justifyContent: "center",
-    margin:0,
-    padding:0,
+    margin: 0,
+    paddingHorizontal: 16,
+    paddingVertical: 0,
+    alignSelf: "center",
   },
 });

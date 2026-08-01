@@ -1,3 +1,15 @@
+/**
+ * ============================================================
+ * ESTILOS TrazabilidadFormStyles
+ * ============================================================
+ *
+ * Descripción:
+ * Estilos estandarizados para cards, labels y campos de error del formulario de trazabilidad.
+ *
+ * @dependencies StyleSheet, COLORS, TYPOGRAPHY
+ * @validations N/A
+ * @navigation N/A
+ */
 import { StyleSheet } from "react-native";
 
 import { COLORS } from "../../../theme/colors";
@@ -8,6 +20,13 @@ export const styles = StyleSheet.create({
     color: COLORS.primary,
     fontFamily: TYPOGRAPHY.fontFamily.bold,
     fontSize: 16,
+  },
+
+  cardTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 10,
   },
   label: {
     color: COLORS.textPrimary,

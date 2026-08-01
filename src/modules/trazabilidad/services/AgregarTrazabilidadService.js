@@ -1,38 +1,26 @@
-import { parseDate } from "../../../shared/utils/dateUtils";
+/**
+ * ============================================================
+ * SERVICIO AgregarTrazabilidadService
+ * ============================================================
+ *
+ * Descripción:
+ * Procesa el envío de nuevos registros de trazabilidad formateando campos e integrando toMysqlDate.
+ *
+ * @dependencies toMysqlDate (shared/utils/dateUtils), crearRegistro (TrazabilidadServices)
+ * @validations Convierte la fecha dd/mm/aaaa a YYYY-MM-DD MySQL antes de enviar al backend.
+ * @navigation N/A
+ */
+import { toMysqlDate } from "../../../shared/utils/dateUtils";
 import { crearRegistro } from "./TrazabilidadServices";
-
-import {
-  obtenerFincas,
-  obtenerColaboradorSesion,
-  obtenerEstanquesPorFinca,
-  obtenerRegistrosTrazabilidad,
-  agregarRegistroTrazabilidad,
-} from "./TrazabilidadServices";
-
-export function crearRegistroTrazabilidad(formData) {
-  const fincas = obtenerFincas();
-  const colaboradorSesion = obtenerColaboradorSesion();
-  const estanques = obtenerEstanquesPorFinca(formData.fincaId);
-  const registrosActuales = obtenerRegistrosTrazabilidad();
-
-  const finca = fincas.find((item) => item.value === formData.fincaId);
-  const origen = estanques.find(
-    (item) => item.value === formData.estanqueOrigenId,
-  );
-  const destino = estanques.find(
-    (item) => item.value === formData.estanqueDestinoId,
-  );
 
 export async function crearRegistroTrazabilidad(formData) {
   const body = {
     fincaId: formData.fincaId,
     estanqueOrigenId: formData.estanqueOrigenId,
     estanqueDestinoId: formData.estanqueDestinoId,
-    estanqueDestinoLabel: destino?.label ?? "",
-    fecha: formData.fecha,
-    colaboradorId: colaboradorSesion.value,
-    colaboradorNombre: colaboradorSesion.label,
-    tamaño: formData.tamaño,
+    fecha: toMysqlDate(formData.fecha) || formData.fecha,
+    colaboradorId: formData.colaboradorId || null,
+    tamano: formData.tamaño,
     dias: formData.dias,
     pl: formData.pl,
   };

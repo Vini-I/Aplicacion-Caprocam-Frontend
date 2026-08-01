@@ -3,55 +3,21 @@
  * HOOK useFisicoQuimica
  * ============================================================
  *
- * Maneja TODO el estado de la pantalla Físico-Química: selección
- * de finca/estanque, lecturas de las 4 mediciones (locales y las
- * que se envían a RangeCard), validación al guardar, las alertas
- * de "guardado"/"actualizado" con su timer, y la navegación de
- * regreso a /registros tras guardar.
+ * Descripción:
+ * Maneja todo el estado de la pantalla Físico-Química: selección
+ * de finca/estanque, lecturas de las 4 mediciones (locales y enviadas),
+ * precargado de datos, validación al guardar/actualizar/eliminar y alertas.
  *
- * ---
- * RETORNA
- * ---
- * fincaSeleccionada         string  — value de la finca elegida
- * estanqueSeleccionado      string  — value del estanque elegido
- * medicionesPorEstanque     obj     — { ph, salinidad, temperatura, ox } precargados
- * submitted                 bool    — true tras el primer intento de guardar
- * errorMessage               string  — mensaje de validación general
- * tieneMedicionesExistentes bool    — true si el estanque ya tenía mediciones
- * tieneAlgunaMedicion       bool    — true si hay al menos una lectura cargada
- * estanquesFiltrados         array   — opciones para el Select de estanque
- * estanqueSeleccionadoObj    obj     — objeto completo del estanque elegido
- * mostrarAlerta              bool    — true mientras se muestra "guardado exitosamente"
- * mostrarAlertaEdicion       bool    — true mientras se muestra "actualizado exitosamente"
- * handleFincaChange          fn      — onChange del Select de finca
- * handleEstanqueChange       fn      — onChange del Select de estanque
- * handlePhChange              fn      — onChange del RangeCard de pH
- * handleSalinidadChange       fn      — onChange del RangeCard de salinidad
- * handleTempChange            fn      — onChange del RangeCard de temperatura
- * handleOxChange               fn      — onChange del RangeCard de oxígeno
- * handleGuardarClick          fn      — valida y dispara alGuardar()
- * alEditar                    fn      — dispara el alert de edición y navega tras 500ms
- *
- * ---
- * RESTRICCIONES
- * ---
- * - No debe renderizar JSX; solo expone estado y handlers a FisicoQuimicaScreen.
- * - No debe manejar navegación directa fuera de alGuardar/alEditar/handleGuardarClick.
- *
- * ---
- * EJEMPLO DE USO
- * ---
- * const { mostrarAlerta, handleGuardarClick, handlePhChange } = useFisicoQuimica();
- *
- * <RangeCard title="pH" onChange={handlePhChange} ... />
- * <Button onPress={handleGuardarClick}>Guardar módulo</Button>
+ * @dependencies FisicoQuimicaServices, ErrorContext
+ * @validations Finca y estanque requeridos; al menos una medición para guardar.
+ * @navigation Muestra mensaje de éxito local y resetea el formulario tras 3s.
  */
 
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
-import { useRouter } from 'expo-router';
 import {
   guardarLectura,
   actualizarLectura,
+  eliminarLectura,
   getLecturaPorEstanqueYFecha,
   manejarCambioFinca,
   manejarCambioOxigeno,
@@ -65,37 +31,82 @@ import {
   validarFormularioFisicoQuimica,
   validarSeleccionAntesDeAgregar,
 } from '../services/FisicoQuimicaServices';
+import { useError } from '../../../shared/context/ErrorContext';
 
 // Convierte las lecturas de RangeCard ({id, value}) al formato que
 // espera la API ([{valor, etiqueta}]).
-// TODO CRÍTICO — SIN CONFIRMAR: el equipo de API mostró la respuesta
-// de GetPorId/GetAll con ph/salinidad/temperatura/oxigenoDisuelto
-// como valores planos (ej. "ph": 7.5), no como arreglo. No sabemos
-// todavía si el POST/PUT también espera plano ahora, ni cómo se
-// registraría más de una lectura por día (día/noche en pH, hasta 5
-// en oxígeno) si cada fila de la tabla solo guarda un valor por
-// medición. NO cambiar este mapeo hasta que el equipo de API confirme
-// el body real que espera crear/actualizar.
-function mapearLecturas(lecturas) {
-  return (lecturas ?? []).map((lectura, index) => ({
-    valor: lectura.value,
-    etiqueta: String(index + 1),
-  }));
+function mapearLecturas(lecturas, esDiaNoche = false) {
+  return (lecturas ?? []).map((lectura, index) => {
+    let etiqueta = String(index + 1);
+    if (esDiaNoche) {
+      if (index === 0) {
+        etiqueta = 'Manana (05:00)';
+      } else if (index === 1) {
+        etiqueta = 'Tarde (16:00)';
+      }
+    }
+    return {
+      valor: lectura.value,
+      etiqueta,
+    };
+  });
 }
 
 // Inverso de mapearLecturas, para precargar el formulario.
-// Defensivo por el mismo TODO de arriba: si la API manda un arreglo
-// [{valor, etiqueta}] lo convierte a números planos; si manda un
-// valor plano (como en el ejemplo que dio API), lo envuelve en un
-// arreglo de un elemento para no tronar el RangeCard. Esto es un
-// parche temporal, no la solución — falta confirmar el contrato real.
-function desmapearLecturas(valor) {
-  if (Array.isArray(valor)) return valor.map((lectura) => lectura.valor);
-  if (typeof valor === 'number') return [valor];
-  return [];
+function desmapearLecturas(valor, esDiaNoche = false) {
+  if (!Array.isArray(valor)) {
+    if (typeof valor === 'number') return [valor];
+    return [];
+  }
+
+  if (!esDiaNoche) {
+    return valor.map((lectura) =>
+      typeof lectura === 'object' && lectura !== null ? lectura.valor : lectura
+    );
+  }
+
+  let mananaVal = null;
+  let tardeVal = null;
+  const libres = [];
+
+  for (const item of valor) {
+    if (typeof item === 'object' && item !== null) {
+      const et = String(item.etiqueta || '').toLowerCase();
+      if (
+        et.includes('manana') ||
+        et.includes('mañana') ||
+        et.includes('05:00') ||
+        et === '1'
+      ) {
+        mananaVal = item.valor;
+      } else if (
+        et.includes('tarde') ||
+        et.includes('16:00') ||
+        et === '2'
+      ) {
+        tardeVal = item.valor;
+      } else {
+        libres.push(item.valor);
+      }
+    } else {
+      libres.push(item);
+    }
+  }
+
+  if (mananaVal !== null || tardeVal !== null) {
+    const res = [];
+    if (mananaVal !== null) res.push(mananaVal);
+    if (tardeVal !== null) res.push(tardeVal);
+    return res;
+  }
+
+  return valor.map((lectura) =>
+    typeof lectura === 'object' && lectura !== null ? lectura.valor : lectura
+  );
 }
 
 export default function useFisicoQuimica() {
+  const { mostrarError } = useError();
 
   const [estanquesFiltrados, setEstanquesFiltrados] = useState([]);
   // Lecturas que se envían a guardar/actualizar
@@ -104,9 +115,8 @@ export default function useFisicoQuimica() {
   const [lecturasTemp, setLecturasTemp] = useState([]);
   const [lecturasOx, setLecturasOx] = useState([]);
 
-  // Alertas de guardado/edición
-  const [mostrarAlerta, setMostrarAlerta] = useState(false);
-  const [mostrarAlertaEdicion, setMostrarAlertaEdicion] = useState(false);
+  // Alerta de éxito local (3 segundos)
+  const [mensajeExito, setMensajeExito] = useState("");
 
   // Selección de finca/estanque y mediciones precargadas del estanque
   const [fincaSeleccionada, setFincaSeleccionada] = useState("");
@@ -134,8 +144,7 @@ export default function useFisicoQuimica() {
   const [opcionesFincas, setOpcionesFincas] = useState([]);
 
   const timerAlertaRef = useRef(null);
-  const router = useRouter();
-    const fechaHoy = useMemo(() => {
+  const fechaHoy = useMemo(() => {
     const hoy = new Date();
     const anio = hoy.getFullYear();
     const mes = String(hoy.getMonth() + 1).padStart(2, '0');
@@ -144,14 +153,17 @@ export default function useFisicoQuimica() {
   }, []);
 
   useEffect(() => {
-  if (!fincaSeleccionada) {
-    setEstanquesFiltrados([]);
-    return;
-  }
-  obtenerEstanquesPorFinca(fincaSeleccionada)
-    .then(setEstanquesFiltrados)
-    .catch(() => setEstanquesFiltrados([]));
-}, [fincaSeleccionada]);
+    if (!fincaSeleccionada) {
+      setEstanquesFiltrados([]);
+      return;
+    }
+    obtenerEstanquesPorFinca(fincaSeleccionada)
+      .then(setEstanquesFiltrados)
+      .catch((err) => {
+        setEstanquesFiltrados([]);
+        if (err?.response?.status !== 401) mostrarError(err);
+      });
+  }, [fincaSeleccionada]);
 
   // Limpia el timer de alertas al desmontar
   useEffect(() => {
@@ -177,7 +189,10 @@ export default function useFisicoQuimica() {
   useEffect(() => {
     obtenerOpcionesFincas()
       .then(setOpcionesFincas)
-      .catch(() => setOpcionesFincas([]));
+      .catch((err) => {
+        setOpcionesFincas([]);
+        if (err?.response?.status !== 401) mostrarError(err);
+      });
   }, []);
 
   const tieneAlgunaMedicion = useMemo(
@@ -219,7 +234,7 @@ export default function useFisicoQuimica() {
     setTieneMedicionesExistentes(false);
   }, []);
 
-const handleEstanqueChange = useCallback(async (value) => {
+  const handleEstanqueChange = useCallback(async (value) => {
     setEstanqueSeleccionado(value);
     setErrorMessage("");
 
@@ -234,11 +249,11 @@ const handleEstanqueChange = useCallback(async (value) => {
     // usa "ox" en todo el formulario.
     const mediciones = lecturaExistente
       ? {
-          ph: desmapearLecturas(lecturaExistente.ph),
-          salinidad: desmapearLecturas(lecturaExistente.salinidad),
-          temperatura: desmapearLecturas(lecturaExistente.temperatura),
-          ox: desmapearLecturas(lecturaExistente.oxigenoDisuelto),
-        }
+        ph: desmapearLecturas(lecturaExistente.ph, true),
+        salinidad: desmapearLecturas(lecturaExistente.salinidad, true),
+        temperatura: desmapearLecturas(lecturaExistente.temperatura, true),
+        ox: desmapearLecturas(lecturaExistente.oxigenoDisuelto, false),
+      }
       : { ph: [], salinidad: [], temperatura: [], ox: [] };
 
     setMedicionesPorEstanque(mediciones);
@@ -269,57 +284,102 @@ const handleEstanqueChange = useCallback(async (value) => {
     manejarCambioOxigeno({ values, setters: { ox: setLecturasOx }, localSetters: { ox: setLecturasOxLocal } });
   }, []);
 
-const alGuardar = useCallback(async () => {
+  const resetearFormulario = useCallback(() => {
+    setFincaSeleccionada("");
+    setEstanqueSeleccionado("");
+    setEstanquesFiltrados([]);
+    setMedicionesPorEstanque({ ph: [], salinidad: [], temperatura: [], ox: [] });
+    setLecturasPh([]);
+    setLecturasSalinidad([]);
+    setLecturasTemp([]);
+    setLecturasOx([]);
+    setLecturasPhLocal([]);
+    setLecturasSalinidadLocal([]);
+    setLecturasTempLocal([]);
+    setLecturasOxLocal([]);
+    setTieneMedicionesExistentes(false);
+    setLecturaIdActual(null);
+    setSubmitted(false);
+  }, []);
+
+  const alGuardar = useCallback(async () => {
     try {
       await guardarLectura({
         fincaId: fincaSeleccionada,
         estanqueId: estanqueSeleccionado,
         fecha: fechaHoy,
-        ph: mapearLecturas(lecturasPh),
-        salinidad: mapearLecturas(lecturasSalinidad),
-        temperatura: mapearLecturas(lecturasTemp),
-        oxigenoDisuelto: mapearLecturas(lecturasOx),
+        ph: mapearLecturas(lecturasPh, true),
+        salinidad: mapearLecturas(lecturasSalinidad, true),
+        temperatura: mapearLecturas(lecturasTemp, true),
+        oxigenoDisuelto: mapearLecturas(lecturasOx, false),
       });
     } catch (error) {
-      setErrorMessage('No se pudo guardar la lectura. Intenta de nuevo.');
+      const msg = error?.response?.data?.message || 'No se pudo guardar la lectura. Intenta de nuevo.';
+      setErrorMessage(msg);
       return;
     }
 
-    setMostrarAlerta(true);
+    setMensajeExito('¡Mediciones físico-químicas guardadas exitosamente!');
+    setErrorMessage('');
+    resetearFormulario();
+
     if (timerAlertaRef.current) clearTimeout(timerAlertaRef.current);
     timerAlertaRef.current = setTimeout(() => {
-      setMostrarAlerta(false);
+      setMensajeExito('');
       timerAlertaRef.current = null;
-      router.replace('/(drawer)/(tabs)/registros');
-    }, 500);
-  }, [router, fincaSeleccionada, estanqueSeleccionado, fechaHoy, lecturasPh, lecturasSalinidad, lecturasTemp, lecturasOx]);
+    }, 3000);
+  }, [fincaSeleccionada, estanqueSeleccionado, fechaHoy, lecturasPh, lecturasSalinidad, lecturasTemp, lecturasOx, resetearFormulario]);
 
   const alEditar = useCallback(async () => {
+    if (!tieneAlgunaMedicion) {
+      try {
+        await eliminarLectura(lecturaIdActual);
+      } catch (error) {
+        const msg = error?.response?.data?.message || 'No se pudo eliminar la lectura del estanque. Intenta de nuevo.';
+        setErrorMessage(msg);
+        return;
+      }
+
+      setMensajeExito('¡Medición del estanque eliminada exitosamente!');
+      setErrorMessage('');
+      resetearFormulario();
+
+      if (timerAlertaRef.current) clearTimeout(timerAlertaRef.current);
+      timerAlertaRef.current = setTimeout(() => {
+        setMensajeExito('');
+        timerAlertaRef.current = null;
+      }, 3000);
+      return;
+    }
+
     try {
       await actualizarLectura(lecturaIdActual, {
         fincaId: fincaSeleccionada,
         estanqueId: estanqueSeleccionado,
         fecha: fechaHoy,
-        ph: mapearLecturas(lecturasPh),
-        salinidad: mapearLecturas(lecturasSalinidad),
-        temperatura: mapearLecturas(lecturasTemp),
-        oxigenoDisuelto: mapearLecturas(lecturasOx),
+        ph: mapearLecturas(lecturasPh, true),
+        salinidad: mapearLecturas(lecturasSalinidad, true),
+        temperatura: mapearLecturas(lecturasTemp, true),
+        oxigenoDisuelto: mapearLecturas(lecturasOx, false),
       });
     } catch (error) {
-      setErrorMessage('No se pudo actualizar la lectura. Intenta de nuevo.');
+      const msg = error?.response?.data?.message || 'No se pudo actualizar la lectura. Intenta de nuevo.';
+      setErrorMessage(msg);
       return;
     }
 
-    setMostrarAlertaEdicion(true);
+    setMensajeExito('¡Mediciones físico-químicas actualizadas exitosamente!');
+    setErrorMessage('');
+    resetearFormulario();
+
     if (timerAlertaRef.current) clearTimeout(timerAlertaRef.current);
     timerAlertaRef.current = setTimeout(() => {
-      setMostrarAlertaEdicion(false);
+      setMensajeExito('');
       timerAlertaRef.current = null;
-      router.replace('/(drawer)/(tabs)/registros');
-    }, 500);
-  }, [lecturaIdActual, fincaSeleccionada, estanqueSeleccionado, fechaHoy, lecturasPh, lecturasSalinidad, lecturasTemp, lecturasOx, router]);
+    }, 3000);
+  }, [lecturaIdActual, fincaSeleccionada, estanqueSeleccionado, fechaHoy, lecturasPh, lecturasSalinidad, lecturasTemp, lecturasOx, tieneAlgunaMedicion, resetearFormulario]);
 
-  // Valida el formulario y, si pasa, dispara el guardado
+  // Valida el formulario y, si pasa, dispara el guardado o actualización
   const handleGuardarClick = useCallback(() => {
     setSubmitted(true);
 
@@ -327,13 +387,18 @@ const alGuardar = useCallback(async () => {
       fincaSeleccionada,
       estanqueSeleccionado,
       tieneAlgunaMedicion,
+      tieneMedicionesExistentes,
     });
 
     setErrorMessage(error);
     if (error) return;
 
-    alGuardar();
-  }, [fincaSeleccionada, estanqueSeleccionado, tieneAlgunaMedicion, alGuardar]);
+    if (tieneMedicionesExistentes) {
+      alEditar();
+    } else {
+      alGuardar();
+    }
+  }, [fincaSeleccionada, estanqueSeleccionado, tieneAlgunaMedicion, tieneMedicionesExistentes, alGuardar, alEditar]);
 
   return {
     fincaSeleccionada,
@@ -341,14 +406,13 @@ const alGuardar = useCallback(async () => {
     medicionesPorEstanque,
     submitted,
     errorMessage,
+    mensajeExito,
     tieneMedicionesExistentes,
     tieneAlgunaMedicion,
     puedeAgregarMediciones,
     opcionesFincas,
     estanquesFiltrados,
     estanqueSeleccionadoObj,
-    mostrarAlerta,
-    mostrarAlertaEdicion,
     handleFincaChange,
     handleEstanqueChange,
     handlePhChange,
