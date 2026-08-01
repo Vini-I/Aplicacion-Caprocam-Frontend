@@ -26,7 +26,7 @@ import { ICONS } from "../../../theme/icons";
 import { COLORS } from "../../../theme/colors";
 import Footer from "../../../shared/components/Footer";
 
-import SearchBar from "../../inventarios/components/SearchBar";
+import SearchBar from "../../../shared/components/SearchBar";
 import FilterButton from "../components/FilterButton";
 import { useTrazabilidadList, formatRegistroForView } from "../hooks/useTrazabilidadList";
 

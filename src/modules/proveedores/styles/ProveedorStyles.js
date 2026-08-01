@@ -1,24 +1,39 @@
 /**
- * ============================================================
- * ESTILOS LISTADO DE PROVEEDORES
- * ============================================================
- *
- * Estilos de la pantalla ProveedorScreen (listado).
+ * ProveedorStyles.js
+ * Estilos para la pantalla principal de proveedores.
  *
  * FUNCIONALIDAD:
- * 1. Colores y tipografia salen de theme/colors y theme/typography.
- * 
- * 2. La screen usa STYLE.container + STYLE.contentWrapper (theme/style)
- *    como único wrapper
+ * - Define los estilos de la lista de proveedores (Cards iterativas).
+ * - Organiza visualmente la barra de búsqueda y el botón de filtro.
+ * - Contiene estilos para los avatares (círculos con iniciales).
+ * - Posiciona absolutamente el botón flotante "Agregar Proveedor".
  *
+ * REGLAS IMPORTANTES:
+ * - El botón de "Agregar" se ancla abajo para estar siempre visible.
+ * - Los iconos usan colores temáticos definidos en ICON_STYLES.
+ * - Se elimina el padding general usando STYLE.contentWrapper.
+ * - Garantiza la separación uniforme entre cada CardPress.
+ *
+ * @dependencies - StyleSheet, COLORS, TYPOGRAPHY, theme/style
+ * @validations - N/A
+ * @navigation - N/A
  */
 import { StyleSheet } from "react-native";
 import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
 
 export const styles = StyleSheet.create({
+  alertSuccess: {
+    marginBottom: 16,
+  },
   card: {
     marginBottom: 14,
+    borderWidth: 0,
+    elevation: 3,
+    shadowColor: COLORS.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
 
   cardHeader: {
@@ -94,27 +109,9 @@ export const styles = StyleSheet.create({
     gap: 8,
   },
 
-  btnVerDetalle: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    backgroundColor: COLORS.white,
-    borderWidth: 1,
-    borderColor: COLORS.primary,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    marginTop: 0,
-  },
-
-  btnVerDetalleText: {
-    fontSize: 13,
-    color: COLORS.primary,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-  },
-
   searchBarContainer: {
     flex: 1,
+    marginBottom: 0,
   },
 
   filterButton: {
@@ -131,6 +128,13 @@ export const styles = StyleSheet.create({
     fontFamily: TYPOGRAPHY.fontFamily.regular,
   },
 
+  floatingButtonWrapper: {
+    position: "absolute",
+    bottom: 24,
+    left: 0,
+    right: 0,
+  },
+
   btnAgregar: {
     flexDirection: "row",
     alignItems: "center",
@@ -139,9 +143,16 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.primary,
     paddingVertical: 14,
-    marginBottom: 16,
     borderRadius: 10,
     gap: 8,
+    shadowColor: COLORS.black,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 4,
   },
 
   btnAgregarText: {
@@ -159,9 +170,6 @@ export const ICON_STYLES = {
     color: COLORS.primary,
   },
   user: {
-    color: COLORS.primary,
-  },
-  verDetalle: {
     color: COLORS.primary,
   },
 };

@@ -1,40 +1,31 @@
 /**
- * ============================================================
- * PANTALLA LISTADO DE PROVEEDORES
- * ============================================================
- *
- * Pantalla principal del módulo de proveedores.
+ * ProveedorScreen.jsx
+ * Pantalla principal que lista los proveedores con filtros y búsqueda.
  *
  * FUNCIONALIDAD:
- * 1. Muestra el listado de proveedores en cards (avatar, nombre, tipo,
- *    teléfono, correo).
- * 
- * 2. Permite buscar por texto y filtrar por tipo de producto.
- * 
- * 3. "Ver Detalle" navega a
- *    /(drawer)/proveedores/detalleProveedor?id=.
- * 
- * 4. "Agregar proveedor" navega a
- *    /(drawer)/proveedores/nuevoProveedor.
- * 
- * 5. Muestra un EmptyState cuando no hay resultados para la búsqueda o
- *    los filtros aplicados.
+ * - Lista de tarjetas con la información básica de cada proveedor.
+ * - Contiene la barra de búsqueda y botón de filtro.
  *
- * IMPORTANTE:
- * - Es una pantalla de solo lectura/listado, sin formulario.
- * - El filtro y la búsqueda no modifican datos.
+ * REGLAS IMPORTANTES:
+ * - Renderiza botón flotante para agregar en la parte inferior.
+ * - Pantalla de solo lectura; la lógica de búsqueda está en el hook.
+ *
+ * @dependencies - React, expo-router, Componentes UI, FilterButton, useProveedorScreen
+ * @validations - N/A
+ * @navigation - nuevoProveedor, detalleProveedor
  */
 import React from "react";
 import { View, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
 
-import Card from "../../../shared/components/Card";
+import CardPress from "../../../shared/components/CardPress";
 import Button from "../../../shared/components/Button";
 import Icon from "../../../shared/components/Icons";
 import CustomText from "../../../shared/components/Text";
-import SearchBar from "../../inventarios/components/SearchBar";
-import FilterButton from "../../inventarios/components/FilterButton";
+import SearchBar from "../../../shared/components/SearchBar";
+import FilterButton from "../../../shared/components/FilterButton";
 import EmptyState from "../../../shared/components/EmptyState";
+import Alert from "../../../shared/components/Alert";
 
 import { ICONS } from "../../../theme/icons";
 import { STYLE } from "../../../theme/style";
@@ -51,11 +42,35 @@ export default function ProveedorScreen() {
     filtros,
     TIPOS,
     handleAplicarFiltros,
+    alert,
+    recargar,
   } = useProveedorScreen();
 
   return (
-    <ScrollView style={STYLE.container} ScrollView showsVerticalScrollIndicator={false}>
-      <View style={STYLE.contentWrapper}>
+    <View style={STYLE.container}>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <View style={STYLE.contentWrapper}>
+          {alert === "created" && (
+            <Alert
+              variant="success"
+              message="Proveedor registrado correctamente"
+              style={styles.alertSuccess}
+            />
+          )}
+          {alert === "edited" && (
+            <Alert
+              variant="success"
+              message="Proveedor editado correctamente"
+              style={styles.alertSuccess}
+            />
+          )}
+          {alert === "deleted" && (
+            <Alert
+              variant="success"
+              message="Proveedor eliminado correctamente"
+              style={styles.alertSuccess}
+            />
+          )}
         <View style={styles.barraBusqueda}>
           <SearchBar
             value={busqueda}
@@ -94,7 +109,16 @@ export default function ProveedorScreen() {
         )}
 
         {proveedoresFiltrados.map((proveedor) => (
-          <Card key={proveedor.id} style={styles.card}>
+          <CardPress
+            key={proveedor.id}
+            style={styles.card}
+            onPress={() =>
+              router.push({
+                pathname: "/(drawer)/proveedores/detalleProveedor",
+                params: { id: proveedor.id.toString() },
+              })
+            }
+          >
             <View style={styles.cardHeader}>
               <View style={styles.avatar}>
                 <CustomText style={styles.avatarText}>
@@ -111,18 +135,10 @@ export default function ProveedorScreen() {
                 </CustomText>
               </View>
 
-              <Button
-                onPress={() =>
-                  router.push({
-                    pathname: "/(drawer)/proveedores/detalleProveedor",
-                    params: { id: proveedor.id.toString() },
-                  })
-                }
-                style={styles.btnVerDetalle}
-              >
-                <Icon icon={ICONS.growth} color={ICON_STYLES.verDetalle.color} />
-                <CustomText style={styles.btnVerDetalleText}>Ver Detalle</CustomText>
-              </Button>
+              <Icon
+                icon={ICONS.growth}
+                color={ICON_STYLES.verDetalle?.color || COLORS.primary}
+              />
             </View>
 
             <View style={styles.contactTitleRow}>
@@ -139,18 +155,22 @@ export default function ProveedorScreen() {
             <View style={styles.contactRow}>
               <CustomText style={styles.contactText}>{proveedor.correo}</CustomText>
             </View>
-          </Card>
+          </CardPress>
         ))}
+        </View>
+      </ScrollView>
 
-        <Button
-          variant="ghost"
-          onPress={() => router.push("/(drawer)/proveedores/nuevoProveedor")}
-          style={styles.btnAgregar}
-        >
-          <Icon icon={ICONS.add} color={ICON_STYLES.add.color} />
-          <CustomText style={styles.btnAgregarText}>Agregar proveedor</CustomText>
-        </Button>
+      <View style={styles.floatingButtonWrapper} pointerEvents="box-none">
+        <View style={STYLE.contentWrapper}>
+          <Button
+            onPress={() => router.push("/(drawer)/proveedores/nuevoProveedor")}
+            style={styles.btnAgregar}
+          >
+            <Icon icon={ICONS.add} color={ICON_STYLES.add.color} />
+            <CustomText style={styles.btnAgregarText}>Registrar Proveedor</CustomText>
+          </Button>
+        </View>
       </View>
-    </ScrollView>
+    </View>
   );
 }

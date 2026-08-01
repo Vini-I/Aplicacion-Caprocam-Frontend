@@ -11,8 +11,8 @@ import Button from "../../../shared/components/Button";
 import Icon from "../../../shared/components/Icons";
 import CustomText from "../../../shared/components/Text";
 import Alert from "../../../shared/components/Alert";
-import SearchBar from "../../inventarios/components/SearchBar";
-import FilterButton from "../../inventarios/components/FilterButton";
+import SearchBar from "../../../shared/components/SearchBar";
+import FilterButton from "../../../shared/components/FilterButton";
 
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";

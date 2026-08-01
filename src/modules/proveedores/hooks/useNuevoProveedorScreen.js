@@ -1,47 +1,25 @@
 /**
- * ============================================================
- * HOOK NUEVO PROVEEDOR
- * ============================================================
- *
- * Logica de la pantalla de registro de un nuevo proveedor.
+ * useNuevoProveedorScreen.js
+ * Hook para la lógica de la pantalla de creación de proveedores.
  *
  * FUNCIONALIDAD:
- * 1. Maneja el estado del formulario: nombre, tipoProducto, telefono,
- *    correo, direccion, notas.
- * 
- * 2. Nombre, tipo de producto, telefono, correo y direccion son
- *    obligatorios (asterisco visible desde el primer render). Notas es
- *    el unico campo opcional.
- * 
- * 3. El correo debe tener formato valido ademas de ser obligatorio.
- * 
- * 4. Los errores solo se calculan dentro de handleSubmit (al presionar
- *    Guardar proveedor), nunca mientras el usuario escribe.
- * 
- * 5. mensajeError expone el mensaje general que se muestra arriba
- *    del boton "Guardar proveedor". Puede venir de la validacion local
- *    o del backend (ej. nombre duplicado, telefono con formato
- *    invalido segun el backend).
- * 
- * 6. Al guardar correctamente, el proveedor se crea contra el backend
- *    (createProveedor), para que el listado (ProveedorScreen) lo vea
- *    reflejado al volver a esa pantalla.
- * 
- * 7. guardadoExitoso habilita la alerta de confirmacion tras un
- *    guardado correcto.
- * 
- * 8. La validacion de telefono/correo reutiliza el validador comun del
- *    modulo (utils/contactValidators), sin regex propio duplicado.
+ * - Maneja el estado del formulario de creación.
+ * - Solo muestra errores al presionar Guardar, nunca mientras se escribe.
  *
- * 9. guardando expone si la peticion de creacion esta en curso, para
- *    poder deshabilitar el boton de Guardar desde la screen.
+ * REGLAS IMPORTANTES:
+ * - Teléfono debe ser estrictamente de 8 dígitos.
+ * - Reutiliza validadores de utils/contactValidators.js.
+ *
+ * @dependencies - React, ProveedorContext, contactValidators, ProveedorDTO
+ * @validations - Teléfono de 8 dígitos, Correo válido, Campos requeridos
+ * @navigation - N/A
  */
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { validarTelefono, validarCorreo } from "../utils/contactValidators";
-import { createProveedor } from "../services/proveedor.service";
+import { useProveedor } from "../context/ProveedorContext";
 import { ProveedorDTO } from "../dtos/proveedor.dto";
 
-export const TELEFONO_MAX_LENGTH = 14;
+export const TELEFONO_MAX_LENGTH = 8;
 
 const MENSAJE_CAMPOS_OBLIGATORIOS =
   "Revisa los campos obligatorios marcados con * antes de guardar.";
@@ -61,6 +39,7 @@ function obtenerMensajeError(nuevosErrores) {
 }
 
 export function useNuevoProveedorScreen() {
+  const { crearProveedor } = useProveedor();
   const [nombre, setNombre] = useState("");
   const [tipoProducto, setTipoProducto] = useState("");
   const [telefono, setTelefono] = useState("");
@@ -71,9 +50,16 @@ export function useNuevoProveedorScreen() {
   const [mensajeError, setMensajeError] = useState("");
   const [guardadoExitoso, setGuardadoExitoso] = useState(false);
   const [guardando, setGuardando] = useState(false);
+  const errorTimeout = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (errorTimeout.current) clearTimeout(errorTimeout.current);
+    };
+  }, []);
 
   function handleTelefonoChange(valor) {
-    setTelefono(valor.replace(/[^\d\s\-+]/g, ""));
+    setTelefono(valor.replace(/[^0-9]/g, ""));
   }
 
   function limpiarFormulario() {
@@ -96,8 +82,8 @@ export function useNuevoProveedorScreen() {
     }
 
     const errorTel = validarTelefono(telefono, {
-      mensajeObligatorio: "El telefono es obligatorio.",
-      mensajeInvalido: "Ingrese un telefono valido. Ej: +506 7689-9087",
+      mensajeObligatorio: "El teléfono es obligatorio.",
+      mensajeInvalido: "Ingrese un teléfono válido de 8 dígitos. Ej: 12345678",
     });
     if (errorTel) nuevosErrores.telefono = errorTel;
 
@@ -118,6 +104,12 @@ export function useNuevoProveedorScreen() {
       setErrores(nuevosErrores);
       setMensajeError(obtenerMensajeError(nuevosErrores));
       setGuardadoExitoso(false);
+      
+      if (errorTimeout.current) clearTimeout(errorTimeout.current);
+      errorTimeout.current = setTimeout(() => {
+        setErrores({});
+        setMensajeError("");
+      }, 6000);
       return;
     }
 
@@ -135,7 +127,7 @@ export function useNuevoProveedorScreen() {
     });
 
     try {
-      await createProveedor(proveedorDTO);
+      await crearProveedor(proveedorDTO);
 
       setGuardadoExitoso(true);
       limpiarFormulario();

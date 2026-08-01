@@ -1,57 +1,26 @@
 /**
- * ============================================================
- * HOOK EDITAR PROVEEDOR
- * ============================================================
- *
- * Logica de la pantalla de edicion de un proveedor existente.
+ * useEditarProveedorScreen.js
+ * Hook para la lógica de la pantalla de edición de proveedores.
  *
  * FUNCIONALIDAD:
- * 1. Carga el proveedor desde el backend (getProveedorById) y expone
- *    su estado editable: tipoProducto, telefono, correo, direccion,
- *    notas (nombre es de solo lectura, no se valida ni se marca en
- *    rojo).
- * 
- * 2. Tipo de producto, telefono, correo y direccion son obligatorios
- *    (asterisco visible desde el primer render).
- * 
- * 3. La validacion se ejecuta unicamente dentro de guardar() (al
- *    presionar Guardar proveedor); handleTelefonoChange y
- *    handleCorreoChange (y el resto de los setters) solo actualizan el
- *    valor, nunca disparan el error mientras el usuario escribe. Como
- *    los datos llegan precargados y validos, no hay errores ni bordes
- *    rojos al abrir el formulario.
- * 
- * 4. alerta expone el mensaje general (variant + message) que la
- *    screen muestra arriba del boton Guardar proveedor.
- * 
- * 6. El usuario puede modificar uno, varios o todos los campos; no es
- *    obligatorio tocarlos todos. Al presionar guardar():
- *    - Si ningun campo cambio respecto al proveedor original, no se
- *      guarda y se muestra unicamente la alerta
- *      "No hay cambios para guardar."
- * 
- *    - Si hay cambios pero algun campo obligatorio quedo vacio o
- *      invalido, no se guarda: se marcan en rojo solo esos campos y se
- *      muestra unicamente la alerta "Revisa los campos obligatorios
- *      marcados con * antes de guardar."
- * 
- *    - Si hay cambios y todos los campos obligatorios son validos, se
- *      guarda contra el backend (updateProveedor) y se muestra la
- *      alerta de exito.
+ * - Carga el proveedor existente mediante su ID.
+ * - Maneja el estado de edición permitiendo modificar campos excepto el nombre.
  *
- * 7. cargando expone si el proveedor original aun se esta trayendo del
- *    backend.
+ * REGLAS IMPORTANTES:
+ * - Los errores solo se muestran al intentar guardar.
+ * - Si no hay cambios, previene la petición al backend.
  *
- * IMPORTANTE:
- * - No navega; expone alerta para que la screen decida donde mostrarla.
+ * @dependencies - React, expo-router, ProveedorContext, contactValidators, ProveedorDTO
+ * @validations - Teléfono de 8 dígitos, Correo válido, Campos requeridos
+ * @navigation - N/A
  */
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useLocalSearchParams } from "expo-router";
-import { getProveedorById, updateProveedor } from "../services/proveedor.service";
+import { useProveedor } from "../context/ProveedorContext";
 import { validarTelefono, validarCorreo } from "../utils/contactValidators";
 import { ProveedorDTO } from "../dtos/proveedor.dto";
 
-export const TELEFONO_MAX_LENGTH = 14;
+export const TELEFONO_MAX_LENGTH = 8;
 
 function validarDireccion(valor) {
   if (!valor || !valor.trim()) return "La dirección es obligatoria.";
@@ -65,6 +34,7 @@ function validarTipoProducto(valor) {
 
 export function useEditarProveedorScreen() {
   const { id } = useLocalSearchParams();
+  const { buscarProveedor, editarProveedor } = useProveedor();
 
   const [base, setBase] = useState(null);
   const [nombre, setNombreState] = useState("");
@@ -77,12 +47,20 @@ export function useEditarProveedorScreen() {
   const [alerta, setAlerta] = useState(null);
   const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
+  const [guardadoExitoso, setGuardadoExitoso] = useState(false);
+  const errorTimeout = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (errorTimeout.current) clearTimeout(errorTimeout.current);
+    };
+  }, []);
 
   const cargarProveedor = useCallback(async () => {
     try {
       setCargando(true);
 
-      const data = await getProveedorById(id);
+      const data = await buscarProveedor(id);
 
       setBase(data);
       setNombreState(data.nombre);
@@ -106,7 +84,7 @@ export function useEditarProveedorScreen() {
   }, [cargarProveedor]);
 
   function handleTelefonoChange(valor) {
-    setTelefono(valor);
+    setTelefono(valor.replace(/[^0-9]/g, ""));
   }
 
   function handleCorreoChange(valor) {
@@ -133,6 +111,12 @@ export function useEditarProveedorScreen() {
         variant: "danger",
         message: "No hay cambios para guardar.",
       });
+      
+      if (errorTimeout.current) clearTimeout(errorTimeout.current);
+      errorTimeout.current = setTimeout(() => {
+        setErrores({});
+        setAlerta(null);
+      }, 6000);
       return;
     }
 
@@ -143,7 +127,7 @@ export function useEditarProveedorScreen() {
 
     const errorTel = validarTelefono(telefono, {
       mensajeObligatorio: "El teléfono es obligatorio.",
-      mensajeInvalido: "Ingrese un teléfono válido. Ej: +506 2222-3344",
+      mensajeInvalido: "Ingrese un teléfono válido de 8 dígitos. Ej: 12345678",
     });
     if (errorTel) nuevosErrores.telefono = errorTel;
 
@@ -163,6 +147,12 @@ export function useEditarProveedorScreen() {
         variant: "danger",
         message: "Revisa los campos obligatorios marcados con * antes de guardar.",
       });
+      
+      if (errorTimeout.current) clearTimeout(errorTimeout.current);
+      errorTimeout.current = setTimeout(() => {
+        setErrores({});
+        setAlerta(null);
+      }, 6000);
       return;
     }
 
@@ -178,19 +168,23 @@ export function useEditarProveedorScreen() {
         notas,
       });
 
-      const actualizado = await updateProveedor(base.id, proveedorDTO);
+      await editarProveedor(base.id, proveedorDTO);
+      const actualizado = await buscarProveedor(base.id);
 
       setBase(actualizado);
-      setAlerta({
-        variant: "success",
-        message: "Proveedor actualizado correctamente.",
-      });
+      setGuardadoExitoso(true);
     } catch (error) {
-      const mensajeBackend = error.response?.data?.message;
+      const mensajeBackend = error.message;
       setAlerta({
         variant: "danger",
         message: mensajeBackend || "No fue posible actualizar el proveedor.",
       });
+      
+      if (errorTimeout.current) clearTimeout(errorTimeout.current);
+      errorTimeout.current = setTimeout(() => {
+        setErrores({});
+        setAlerta(null);
+      }, 6000);
     } finally {
       setGuardando(false);
     }
@@ -211,6 +205,7 @@ export function useEditarProveedorScreen() {
     alerta,
     cargando,
     guardando,
+    guardadoExitoso,
     handleTelefonoChange,
     handleCorreoChange,
     guardar,

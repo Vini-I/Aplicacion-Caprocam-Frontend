@@ -1,22 +1,20 @@
 /**
- * ============================================================
- * STYLES: InventarioStyles
- * ============================================================
+ * InventarioStyles.js
+ * Estilos visuales de la pantalla de Inventarios.
  *
- * Responsabilidad:
- * Estilos visuales de la pantalla de Inventarios (screens/InventarioScreen.jsx).
+ * FUNCIONALIDAD:
+ * - Define los estilos de la barra de búsqueda y filtros.
+ * - Estiliza el listado de tarjetas y badges de productos.
+ * - Define el estilo outline del botón flotante inferior.
  *
- * Datos:
- * No aplica, solo estilos.
+ * REGLAS IMPORTANTES:
+ * - Evita estilos inline en InventarioScreen.jsx.
+ * - Utiliza las constantes del tema (COLORS, TYPOGRAPHY).
+ * - Botones de acción principal en estilo outline.
  *
- * Validaciones:
- * No aplica.
- *
- * Navegación:
- * No aplica.
- *
- * Dependencias:
- * theme/colors.js, theme/typography.js, theme/style.js.
+ * @dependencies - StyleSheet, COLORS, TYPOGRAPHY, STYLE
+ * @validations - N/A
+ * @navigation - N/A
  */
 
 import { StyleSheet } from "react-native";
@@ -38,6 +36,7 @@ export const styles = StyleSheet.create({
 
   searchBarContainer: {
     flex: 1,
+    marginBottom: 0,
   },
 
   filterButton: {
@@ -64,14 +63,6 @@ export const styles = StyleSheet.create({
     flex: 1,
   },
 
-  filaContadorBoton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 4,
-    gap: 8,
-  },
-
   contadorResultados: {
     fontFamily: TYPOGRAPHY.fontFamily.regular,
     flexShrink: 1,
@@ -90,6 +81,8 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 0,
     flexShrink: 0,
+    shadowColor: COLORS.black,
+  
   },
 
   lista: {
@@ -151,24 +144,13 @@ export const styles = StyleSheet.create({
 
   badgeCategoria: {
     fontFamily: TYPOGRAPHY.fontFamily.medium,
-    flexShrink: 1,
+    alignSelf: "flex-start",
+    marginBottom: 12,
+    marginTop: 2,
   },
 
   badgeTexto: {
     fontFamily: TYPOGRAPHY.fontFamily.medium,
-  },
-
-  botonDetalle: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    borderWidth: 1,
-    borderColor: COLORS.primary,
-    borderRadius: 8,
-    paddingVertical: 6,
-    paddingHorizontal: 14,
-    backgroundColor: COLORS.white,
-    flexShrink: 0,
   },
 
   filasDetalle: {
@@ -189,4 +171,12 @@ export const styles = StyleSheet.create({
   valorDetalle: {
     fontFamily: TYPOGRAPHY.fontFamily.medium,
   },
+
+  floatingButtonWrapper: {
+    position: "absolute",
+    bottom: 24,
+    left: 0,
+    right: 0,
+  },
+
 });

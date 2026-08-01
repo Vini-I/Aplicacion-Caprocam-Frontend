@@ -59,11 +59,7 @@ import Button from "../../../shared/components/Button";
 import Icon from "../../../shared/components/Icons";
 import EmptyState from "../../../shared/components/EmptyState";
 import SearchBar from "../../../shared/components/SearchBar";
-import Alert from "../../../shared/components/Alert";
-import FilterPanel, {
-  FilterActions,
-} from "../../../shared/components/FilterPanel";
-import FilterChip from "../../../shared/components/FilterChip";
+import FilterButton from "../../../shared/components/FilterButton";
 import { ICONS } from "../../../theme/icons";
 import { COLORS } from "../../../theme/colors";
 import { STYLE } from "../../../theme/style";

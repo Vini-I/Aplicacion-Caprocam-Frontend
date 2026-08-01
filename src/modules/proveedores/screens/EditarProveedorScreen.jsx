@@ -1,33 +1,22 @@
 /**
- * ============================================================
- * PANTALLA EDITAR PROVEEDOR
- * ============================================================
- *
- * Pantalla para editar la informacion de un proveedor existente.
+ * EditarProveedorScreen.jsx
+ * Pantalla con el formulario para editar un proveedor.
  *
  * FUNCIONALIDAD:
- * 1. Permite modificar tipo de producto, telefono, correo, direccion y
- *    notas (nombre queda de solo lectura).
- * 
- * 2. Tipo de producto, telefono, correo y direccion son obligatorios,
- *    con asterisco visible desde el primer render. Notas es el unico
- *    campo opcional.
- * 
- * 3. Al presionar Guardar proveedor se valida el formulario:
- *    - Cada campo invalido se marca en rojo solo el borde, sin
- *      mensaje ni icono individual debajo del campo.
- *    - Arriba del boton "Guardar proveedor" aparece la alerta general
- *      alerta, centrada.
- * 
- * 4. Si no se modifico ningun campo respecto al proveedor original, no
- *    se guarda: se muestra una alerta de error en su lugar.
+ * - Renderiza el formulario de edición (nombre de solo lectura).
+ * - Muestra un alert de éxito si la edición es correcta.
  *
- * IMPORTANTE:
- * - Al guardar exitosamente permanece en la pantalla mostrando la
- *   alerta de exito; no redirige automaticamente a otra ruta.
+ * REGLAS IMPORTANTES:
+ * - Deshabilita la edición del nombre del proveedor (editable=false).
+ * - Delega la lógica de negocio al hook.
+ *
+ * @dependencies - React, expo-router, Componentes UI, Alert, useEditarProveedorScreen
+ * @validations - Valida campos requeridos y formato numérico en UI
+ * @navigation - /(drawer)/proveedores (al guardar)
  */
-import React from "react";
-import { View, ScrollView } from "react-native";
+import React, { useRef, useEffect } from "react";
+import { View, ScrollView, ActivityIndicator } from "react-native";
+import { useRouter } from "expo-router";
 
 import Card from "../../../shared/components/Card";
 import Input from "../../../shared/components/Input";
@@ -63,11 +52,28 @@ export default function EditarProveedorScreen() {
     handleTelefonoChange,
     handleCorreoChange,
     guardar,
+    guardadoExitoso,
   } = useEditarProveedorScreen();
+
+  const router = useRouter();
+  const scrollViewRef = useRef(null);
+
+  useEffect(() => {
+    if (alerta?.variant === "danger") {
+      scrollViewRef.current?.scrollToEnd({ animated: true });
+    }
+  }, [alerta]);
+
+  useEffect(() => {
+    if (guardadoExitoso) {
+      router.replace("/(drawer)/proveedores");
+    }
+  }, [guardadoExitoso, router]);
 
   return (
     <View style={STYLE.container}>
       <ScrollView
+        ref={scrollViewRef}
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
@@ -102,8 +108,8 @@ export default function EditarProveedorScreen() {
             label="Teléfono *"
             value={telefono}
             onChangeText={handleTelefonoChange}
-            placeholder="+506 2222-3344"
-            keyboardType="phone-pad"
+            placeholder="Ej: 12345678"
+            keyboardType="numeric"
             maxLength={TELEFONO_MAX_LENGTH}
             containerStyle={styles.field}
             style={[styles.input, !!errores.telefono && styles.inputError]}
@@ -146,7 +152,10 @@ export default function EditarProveedorScreen() {
             <Alert
               variant={alerta.variant}
               message={alerta.message}
-              style={[styles.alertContainer, alerta.variant === "success" && styles.alertSuccess]}
+              style={[
+                styles.alertBox,
+                alerta.variant === "success" && styles.alertSuccess,
+              ]}
               textStyle={styles.alertText}
             />
           )}
@@ -158,7 +167,7 @@ export default function EditarProveedorScreen() {
           >
             <View style={styles.buttonContent}>
               <Icon icon={ICONS.save} color={ICON_STYLES.save.color} />
-              <CustomText style={styles.saveButtonText}>Guardar proveedor</CustomText>
+              <CustomText style={styles.saveButtonText}>Guardar Cambios</CustomText>
             </View>
           </Button>
         </Card>
