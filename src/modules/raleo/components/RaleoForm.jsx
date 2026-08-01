@@ -11,6 +11,18 @@
  * y el campo resulte inválido.
  *
  * Funcionalidad:
+ * - Finca/estanque usan datos reales del backend via
+ *   useFincaEstanqueRaleo (mismo patron que useFincaCrecimiento.js).
+ * - CORREGIDO: handleFincaChange llamaba a recargarEstanques(idFinca),
+ *   una funcion que no existia en este archivo (ReferenceError en
+ *   cada cambio de finca). useFincaEstanqueRaleo ya filtra los
+ *   estanques en memoria solo con que cambie form.finca, no hace
+ *   falta ninguna llamada adicional.
+ * - CORREGIDO: "Responsable del raleo" era un Input de texto
+ *   deshabilitado sin ninguna forma de llenarse (dead UI). Se
+ *   reemplazo por "Colaborador asignado *", un Select real con
+ *   colaboradores del backend (mismo patron y mismo caracter
+ *   obligatorio que useFincaCrecimiento.js / FincaCrecimientoScreen.jsx).
  * - Todos los colores usados vienen de COLORS (COLORS.textPrimary,
  *   COLORS.textTertiary, COLORS.primary, COLORS.white,
  *   COLORS.secondary), sin valores hardcodeados.
@@ -30,7 +42,7 @@
  * />
  */
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { View } from "react-native";
 import Card from "../../../shared/components/Card";
 import Select from "../../../shared/components/Select";
@@ -42,24 +54,8 @@ import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
 import { ICONS } from "../../../theme/icons";
 import { useFincaEstanqueRaleo } from "../hooks/useFincaEstanqueRaleo";
+import { colaboradorService } from "../../colaboradores/services/colaborador.service";
 
-const FINCAS = [
-  { label: "Finca La Reina", value: 1 },
-  { label: "Finca La Esperanza", value: 2 },
-  { label: "Finca La Villa", value: 3 },
-  { label: "Finca El Paraíso", value: 4 },
-];
-const ESTANQUES = [
-  { label: "A01", value: 1 },
-  { label: "A02", value: 2 },
-  { label: "B01", value: 3 },
-  { label: "B02", value: 4 },
-  { label: "B03", value: 5 },
-  { label: "E01", value: 6 },
-  { label: "E02", value: 7 },
-  { label: "V01", value: 8 },
-  { label: "V02", value: 9 },
-];
 const OBJETIVOS = [
   { label: "Comercialización", value: "Comercializacion" },
   { label: "Reducción de densidad", value: "Reduccion_densidad" },
@@ -85,20 +81,45 @@ export default function RaleoForm({
 }) {
   const invalidoFinca = submitted && !!errores.finca;
   const invalidoEstanque = submitted && !!errores.estanque;
+  const invalidoColaborador = submitted && !!errores.colaborador;
   const invalidoFecha = submitted && !!errores.fecha;
   const invalidoPorcentaje = submitted && !!errores.porcentajeRaleo;
   const invalidoPesoPromedio = submitted && !!errores.pesoPromedio;
   const invalidoBiomasaTotal = submitted && !!errores.biomasaActual;
   const invalidoObjetivo = submitted && !!errores.objetivo;
   const invalidoMetodo = submitted && !!errores.metodo;
-  const invalidoObservaciones = submitted && !!errores.observaciones;
 
   const { fincasOptions, estanquesOptions } = useFincaEstanqueRaleo(form.finca);
+
+  // Colaboradores: mismo patrón de fetch-una-vez que fincas/estanques,
+  // pero sin filtrado (no depende de ninguna otra seleccion).
+  const [colaboradores, setColaboradores] = useState([]);
+
+  useEffect(() => {
+    let activo = true;
+
+    (async () => {
+      try {
+        const data = await colaboradorService.getColaboradores();
+        if (activo) setColaboradores(data || []);
+      } catch {
+        if (activo) setColaboradores([]);
+      }
+    })();
+
+    return () => {
+      activo = false;
+    };
+  }, []);
+
+  const colaboradoresOptions = colaboradores.map((c) => ({
+    label: c.nombre,
+    value: c.id,
+  }));
 
   const handleFincaChange = (idFinca) => {
     updateField("finca", idFinca);
     updateField("estanque", "");
-    recargarEstanques(idFinca);
   };
 
   return (
@@ -137,13 +158,13 @@ export default function RaleoForm({
           selectStyle={invalidoEstanque ? bordeError : null}
         />
 
-        <Input
-          label="Responsable del raleo *"
-          placeholder="Nombre del responsable"
-          value={form.responsable ?? ""}
-          onChangeText={(v) => updateField("responsable", v)}
-          //style={invalidoResponsable ? bordeError : null}
-          editable={false}
+        <Select
+          label="Colaborador asignado *"
+          value={form.colaborador}
+          onChange={(v) => updateField("colaborador", v)}
+          options={colaboradoresOptions}
+          placeholder="Seleccionar colaborador"
+          selectStyle={invalidoColaborador ? bordeError : null}
         />
 
       </Card>
