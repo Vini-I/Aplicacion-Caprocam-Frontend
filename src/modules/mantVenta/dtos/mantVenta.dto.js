@@ -13,9 +13,6 @@ export class MantVentaDTO {
         fecha
     
     }) {
-
-        this.grupoDatos = 1; // Temporal hasta implementar Grupo de Datos
-
         this.finca = finca;
         this.estanque = estanque;
         this.colaborador = colaborador;
