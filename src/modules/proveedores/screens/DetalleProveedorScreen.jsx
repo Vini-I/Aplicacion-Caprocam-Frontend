@@ -1,26 +1,18 @@
 /**
- * ============================================================
- * PANTALLA DETALLE PROVEEDOR
- * ============================================================
- *
- * Muestra la informacion completa de un proveedor y permite editarlo o
- * eliminarlo.
+ * DetalleProveedorScreen.jsx
+ * Pantalla que muestra el detalle de un proveedor.
  *
  * FUNCIONALIDAD:
- * 1. Muestra contacto (telefono, correo, direccion) del proveedor.
- * 
- * 2. Muestra la seccion "Notas adicionales" con su icono solo si el
- *    proveedor tiene notas guardadas; si no hay notas, la seccion se
- *    quita por completo (no se renderiza vacia).
- * 
- * 3. Si el proveedor no existe muestra un EmptyState y un botón
- *    outline "Volver al listado".
- * 
- * 4. Editar navega a /(drawer)/proveedores/editarProveedor?id=.
- * 
+ * - Muestra la información de contacto y notas de un proveedor.
+ * - Renderiza botones de acción (Editar y Eliminar).
  *
- * IMPORTANTE:
- * - Es una pantalla de solo lectura, no aplica validacion de formulario.
+ * REGLAS IMPORTANTES:
+ * - Si no existe el proveedor, muestra un estado vacío (EmptyState).
+ * - Confirmar eliminación abre un modal.
+ *
+ * @dependencies - React, expo-router, Componentes UI, useDetalleProveedorScreen, Styles
+ * @validations - N/A
+ * @navigation - /(drawer)/proveedores (al eliminar)
  */
 import { View, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
@@ -107,7 +99,9 @@ export default function DetalleProveedorScreen() {
 
               <View style={styles.filaDetalle}>
                 <CustomText style={styles.filaEtiqueta}>Teléfono</CustomText>
-                <CustomText style={styles.filaValor}>{formatearTelefono(proveedor.telefono)}</CustomText>
+                <CustomText style={styles.filaValor}>
+                  {formatearTelefono(proveedor.telefono)}
+                </CustomText>
               </View>
 
               <View style={styles.filaDetalle}>
@@ -147,7 +141,9 @@ export default function DetalleProveedorScreen() {
               }
             >
               <Icon icon={ICONS.edit} color={COLORS.primary} />
-              <CustomText style={[styles.botonTexto, styles.botonTextoEditar]}>Editar</CustomText>
+              <CustomText style={[styles.botonTexto, styles.botonTextoEditar]}>
+                Editar Proveedor
+              </CustomText>
             </Button>
 
             <Button
@@ -155,7 +151,9 @@ export default function DetalleProveedorScreen() {
               onPress={abrirModal}
             >
               <Icon icon={ICONS.delete} color={COLORS.error} />
-              <CustomText style={[styles.botonTexto, styles.botonTextoEliminar]}>Eliminar</CustomText>
+              <CustomText style={[styles.botonTexto, styles.botonTextoEliminar]}>
+                Eliminar Proveedor
+              </CustomText>
             </Button>
           </View>
         </View>
@@ -168,7 +166,7 @@ export default function DetalleProveedorScreen() {
         onCancel={cerrarModal}
         onConfirm={async () => {
           await confirmarEliminar();
-          router.replace("/(drawer)/proveedores/proveedorScreen");
+          router.replace("/(drawer)/proveedores");
         }}
 
       />

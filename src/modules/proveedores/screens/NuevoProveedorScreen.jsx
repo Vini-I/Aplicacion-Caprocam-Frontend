@@ -1,37 +1,22 @@
 /**
- * ============================================================
- * PANTALLA NUEVO PROVEEDOR
- * ============================================================
- *
- * Pantalla para registrar un nuevo proveedor.
+ * NuevoProveedorScreen.jsx
+ * Pantalla con el formulario para registrar un nuevo proveedor.
  *
  * FUNCIONALIDAD:
- * 1. Muestra un formulario con nombre, tipo de producto, telefono,
- *    correo, direccion y notas.
- * 
- * 2. Los campos obligatorios (nombre, tipo de producto, telefono,
- *    correo, direccion) llevan asterisco visible desde el primer
- *    render. Notas es el unico campo opcional.
- * 
- * 3. Al presionar Guardar proveedor se valida el formulario:
- *    - Cada campo invalido se marca en rojo solo el borde, sin
- *      mensaje ni icono individual debajo del campo.
- *    - Arriba del boton Guardar proveedor aparece el mensaje
- *      general, dentro de una alerta.
- * 
- * 4. Si el guardado es exitoso, se muestra una alerta de confirmacion
- *    tambien arriba del boton "Guardar proveedor", y el proveedor
- *    queda agregado a proveedoresMock (se refleja en ProveedorScreen).
+ * - Renderiza el formulario con campos requeridos marcados con asterisco.
+ * - Muestra la alerta de éxito o error al presionar Guardar.
  *
- * IMPORTANTE:
- * - No navega a otras pantallas; al guardar exitosamente se queda en
- *   la misma vista.
-
- * - Toda la logica de validacion vive en useNuevoProveedorScreen, la
- *   screen solo pinta el estado.
+ * REGLAS IMPORTANTES:
+ * - Toda la lógica reside en el hook, la pantalla es solo UI.
+ * - Navega de regreso al listado únicamente al guardar con éxito.
+ *
+ * @dependencies - React, expo-router, Componentes UI, Alert, useNuevoProveedorScreen
+ * @validations - Valida campos requeridos y formato numérico en UI
+ * @navigation - /(drawer)/proveedores (al guardar)
  */
-import React from "react";
+import React, { useRef, useEffect } from "react";
 import { View, ScrollView } from "react-native";
+import { useRouter } from "expo-router";
 
 import Card from "../../../shared/components/Card";
 import Input from "../../../shared/components/Input";
@@ -72,9 +57,25 @@ export default function NuevoProveedorScreen() {
     handleSubmit,
   } = useNuevoProveedorScreen();
 
+  const router = useRouter();
+  const scrollViewRef = useRef(null);
+
+  useEffect(() => {
+    if (mensajeError !== "") {
+      scrollViewRef.current?.scrollToEnd({ animated: true });
+    }
+  }, [mensajeError]);
+
+  useEffect(() => {
+    if (guardadoExitoso) {
+      router.replace("/(drawer)/proveedores");
+    }
+  }, [guardadoExitoso, router]);
+
   return (
     <View style={STYLE.container}>
       <ScrollView
+        ref={scrollViewRef}
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
@@ -113,8 +114,8 @@ export default function NuevoProveedorScreen() {
             label="Teléfono *"
             value={telefono}
             onChangeText={handleTelefonoChange}
-            placeholder="+506 7689-9087"
-            keyboardType="phone-pad"
+            placeholder="Ej: 12345678"
+            keyboardType="numeric"
             maxLength={TELEFONO_MAX_LENGTH}
             containerStyle={styles.field}
             style={[styles.input, errores.telefono && styles.inputError]}
@@ -163,19 +164,10 @@ export default function NuevoProveedorScreen() {
             />
           )}
 
-          {guardadoExitoso && (
-            <CustomAlert
-              variant="success"
-              message="Proveedor guardado correctamente."
-              style={[styles.alertBox, styles.alertSuccess]}
-              textStyle={styles.alertText}
-            />
-          )}
-
           <Button onPress={handleSubmit} style={styles.saveButton}>
             <View style={styles.buttonContent}>
               <Icon icon={ICONS.save} color={COLORS.primary} />
-              <Text style={styles.saveButtonText}>Guardar proveedor</Text>
+              <Text style={styles.saveButtonText}>Registrar Proveedor</Text>
             </View>
           </Button>
         </Card>

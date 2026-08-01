@@ -1,23 +1,17 @@
 /**
- * ============================================================
- * DTO: InventarioDTO
- * ============================================================
+ * Inventario.dto.js
+ * DTO para normalizar la información del inventario.
  *
- * Responsabilidad:
- * Objeto de Transferencia de Datos (DTO) para normalizar y estructurar 
- * la información del inventario antes de ser procesada por la capa de 
- * servicios o la interfaz de usuario.
+ * FUNCIONALIDAD:
+ * - Estructura los datos antes de ser enviados al backend.
+ * - Convierte las cantidades y stock mínimo a valores numéricos.
  *
- * Propiedades:
- * - Producto: Objeto asociado o identificador del producto (por defecto null).
- * - proveedor: Proveedor asignado al registro de inventario.
- * - cantidad: Cantidad numérica actual en stock.
- * - unidad: Unidad de medida (ej. kg, litros, unidades).
- * - stockMinimo: Límite numérico mínimo permitido antes de alerta de stock bajo.
+ * REGLAS IMPORTANTES:
+ * - Sirve como puente entre los campos del formulario y el payload.
  *
- * Dependencias:
- * Ninguna. Es utilizado por los servicios y componentes del módulo.
- * ============================================================
+ * @dependencies - N/A
+ * @validations - Convierte string a Number para cantidades
+ * @navigation - N/A
  */
 
 export class InventarioDTO {

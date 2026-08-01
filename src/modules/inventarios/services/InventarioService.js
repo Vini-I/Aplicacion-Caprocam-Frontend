@@ -1,33 +1,17 @@
-// modules/inventarios/services/inventarioService.js
-
 /**
- * ============================================================
- * SERVICE: InventarioService
- * ============================================================
+ * InventarioService.js
+ * Capa de servicios HTTP para el módulo de inventarios.
  *
- * Responsabilidad:
- * Capa de servicios y comunicación HTTP para el módulo de inventarios.
- * Se conecta de forma asíncrona con la API para gestionar las operaciones
- * CRUD (leer, agregar, actualizar y eliminar) de los productos del inventario.
+ * FUNCIONALIDAD:
+ * - Se conecta de forma asíncrona con la API (axios).
+ * - Gestiona operaciones CRUD (leer, agregar, actualizar, eliminar).
  *
- * Datos:
- * Cada producto: { id, codigo, nombre, categoria, cantidad, unidad,
- * stockMinimo, proveedor, precioUnidad, fechaCaducidad }.
- * fechaCaducidad ya existe como dato real del producto (se define y
- * se guarda desde el módulo de Productos); aquí solo se refleja para
- * que el filtro de "Fecha de caducidad" de FilterButton.jsx pueda
- * usarlo. Formato dd/mm/aaaa, igual al que entrega el DateInput
- * compartido.
+ * REGLAS IMPORTANTES:
+ * - No incluye lógica de UI; solo peticiones y parseo básico de datos.
  *
- * Validaciones:
- * No aplica validación de campos aquí (se realiza en el formulario que
- * consume este servicio). El id se autogenera de forma incremental.
- *
- * Navegación:
- * No aplica, es una capa de datos sin UI.
- *
- * Dependencias:
- * Es consumido por hooks/useInventario.js.
+ * @dependencies - axios api instance
+ * @validations - N/A
+ * @navigation - N/A
  */
 import api from "../../../api/api";
 
@@ -37,9 +21,10 @@ export async function getProductosInventario() {
 
     return response.data.data;
   } catch (error) {
-    console.error("Error al obtener productos de inventario:", error);
-
-    throw error;
+    if(error.response){
+      throw error;
+    }
+    throw new Error("No se pudieron obtener los productos del inventario")
   }
 }
 
@@ -49,12 +34,10 @@ export async function getProductoById(id) {
 
     return response.data.data;
   } catch (error) {
-    console.error(
-      "Error al obtener producto:",
-      error.response?.data || error.message,
-    );
-
-    throw error;
+   if(error.response){
+      throw error;
+    }
+    throw new Error("No se pudo obtener el producto del inventario")
   }
 }
 
@@ -68,12 +51,10 @@ export async function addProducto({ producto_id,proveedor_id, stock_minimo }) {
 
     return response.data;
   } catch (error) {
-    console.error(
-      "Error al crear producto:",
-      error.response?.data || error.message,
-    );
-    
-    throw error;
+   if(error.response){
+      throw error;
+    }
+    throw new Error("No se pudo registrar el producto en el inventario")
   }
 }
 
@@ -86,12 +67,10 @@ export async function updateProducto(id, { proveedor_id, stock_minimo }) {
 
     return response.data;
   } catch (error) {
-    console.error(
-      "Error al actualizar producto:",
-      error.response?.data || error.message,
-    );
-
-    throw error;
+    if(error.response){
+      throw error;
+    }
+    throw new Error("No se pudo actualizar el producto del inventario")
   }
 }
 
@@ -101,11 +80,9 @@ export async function deleteProducto(id) {
 
     return response.data;
   } catch (error) {
-    console.error(
-      "Error al eliminar producto:",
-      error.response?.data || error.message,
-    );
-
-    throw error;
+     if(error.response){
+      throw error;
+    }
+    throw new Error("No se pudo eliminar el producto del inventario")
   }
 }

@@ -1,46 +1,28 @@
 /**
- * ============================================================
- * HOOK: useInventario
- * ============================================================
+ * useInventario.js
+ * Hook para manejar el estado y lógica de la pantalla de Inventarios.
  *
- * Responsabilidad:
- * Maneja el estado de la pantalla de Inventarios: carga de productos desde la API,
- * texto de búsqueda, filtros activos (categoría, proveedor, unidad,
- * stock bajo, caducidad) y el cálculo de la lista filtrada final.
- * El filtro de caducidad muestra los productos cuya fechaCaducidad
- * sea igual o anterior a la fecha elegida en FilterButton (es decir,
- * "productos que caducan en o antes de esta fecha"), que es el uso
- * esperado para revisar próximos vencimientos.
+ * FUNCIONALIDAD:
+ * - Carga el listado de productos desde la API mediante InventarioService.
+ * - Centraliza el estado de la barra de búsqueda y los filtros activos.
+ * - Aplica filtros múltiples (categoría, proveedor, unidad, caducidad, stock).
  *
- * Datos:
- * Lee los productos mediante la llamada asíncronica a InventarioService.getProductosInventario(),
- * que ya devuelve el producto más reciente de primero. Cada producto
- * incluye fechaCaducidad como string dd/mm/aaaa (mismo formato que
- * entrega el DateInput compartido); es un dato real que ya existe en
- * el módulo de Productos, aquí solo se consume para el filtro.
+ * REGLAS IMPORTANTES:
+ * - Los filtros se aplican a los datos cargados en memoria.
+ * - Se manejan errores globales usando ErrorContext.
  *
- * Validaciones:
- * No aplica validación de formulario; solo filtra sobre datos ya
- * existentes en memoria.
- *
- * Navegación:
- * Recarga los productos de la API automáticamente cada vez que la
- * pantalla recibe foco gracias a useFocusEffect.
- *
- * Dependencias:
- * services/InventarioService.js.
+ * @dependencies - React, expo-router, InventarioService, ErrorContext
+ * @validations - N/A
+ * @navigation - N/A
  */
 
 import { useCallback, useRef, useState } from "react";
 import { useFocusEffect } from "expo-router";
 
 import { getProductosInventario } from "../services/InventarioService.js";
+import { useError } from "../../../shared/context/ErrorContext.js";
 
-/**
- * Convierte un string "dd/mm/aaaa" a Date para poder comparar fechas.
- * No usa regex, solo split. Devuelve null si el string viene vacío o
- * mal formado (así el filtro simplemente no aplica en vez de romper).
- */
+
 function parsearFechaDDMMAAAA(fecha) {
   if (!fecha) return null;
   const partes = fecha.split("/");
@@ -54,6 +36,7 @@ function parsearFechaDDMMAAAA(fecha) {
 
 export function useInventario() {
   const flatListRef = useRef(null);
+  const { mostrarError } = useError();
 
   const [productos, setProductos] = useState([]);
   const [busqueda, setBusqueda] = useState("");
@@ -77,7 +60,7 @@ export function useInventario() {
             setProductos(data);
           }
         } catch (error) {
-          console.error("Error al cargar productos de inventario:", error);
+          if (isActive) mostrarError(error);
         }
       };
       loadData();
@@ -92,7 +75,7 @@ export function useInventario() {
     ? [...new Set(productos.map((p) => p.categoria).filter(Boolean))]
     : [];
   const proveedores = Array.isArray(productos)
-    ? [...new Set(productos.map((p) => p.proveedor).filter(Boolean))]
+    ? [...new Set(productos.map((p) => p.nombreProveedor).filter(Boolean))]
     : [];
   const unidades = Array.isArray(productos)
     ? [...new Set(productos.map((p) => p.unidad).filter(Boolean))]
@@ -102,7 +85,7 @@ export function useInventario() {
     ? productos.filter((p) => {
         const texto = busqueda.toLowerCase();
         const nombre = (p.nombre || "").toLowerCase();
-        const proveedor = (p.proveedor || "").toLowerCase();
+        const proveedor = (p.nombreProveedor || "").toLowerCase();
         const categoria = (p.categoria || "").toLowerCase();
         const codigo = (p.codigo || "").toLowerCase();
 
@@ -118,12 +101,13 @@ export function useInventario() {
 
         const coincideProveedor =
           filtros.suppliers.length === 0 ||
-          filtros.suppliers.includes(p.proveedor);
+          filtros.suppliers.includes(p.nombreProveedor);
 
         const coincideUnidad =
           filtros.units.length === 0 || filtros.units.includes(p.unidad);
 
-        const coincideStock = !filtros.lowStock || Number(p.cantidad) < Number(p.stockMinimo);
+        const coincideStock =
+          !filtros.lowStock || Number(p.cantidad) < Number(p.stockMinimo);
 
         const fechaFiltro = parsearFechaDDMMAAAA(filtros.expiryDate);
         const fechaProducto = parsearFechaDDMMAAAA(p.fechaCaducidad);
