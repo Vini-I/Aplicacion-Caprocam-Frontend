@@ -23,7 +23,7 @@ import Text from "../../../shared/components/Text";
 import Icon from "../../../shared/components/Icons";
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
-import { TIPOS, PRESENTACION, METODOS } from "../constants/alimentacionOpciones";
+import { TIPOS, PRESENTACION, METODOS } from "../constants/AlimentacionOpciones";
 import { styles } from "../styles/AlimentacionStyles";
 
 export default function AlimentacionFormTipo({

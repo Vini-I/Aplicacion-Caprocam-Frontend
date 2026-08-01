@@ -34,7 +34,7 @@ import Icon from "../../../shared/components/Icons";
 import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
 import { ICONS } from "../../../theme/icons";
-import { HORAS } from "../constants/alimentacionOpciones";
+import { HORAS } from "../constants/AlimentacionOpciones";
 import { useFincaEstanqueAlimentacion } from "../hooks/useFincaEstanqueAlimentacion";
 
 const bordeError = { borderColor: COLORS.error, borderWidth: 1.5 };
