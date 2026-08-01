@@ -1,8 +1,15 @@
 /**
- * RangeTrack
- * Componente presentacional para barra de rango dinamica con slider y badges.
- * @dependencies - RangeTrackStyles, COLORS, Text
- * @validations - Restringe valores al rango min-max y formatea con decimales indicados.
+ * ============================================================
+ * COMPONENTE RangeTrack
+ * ============================================================
+ *
+ * Descripción:
+ * Componente presentacional para barra de rango dinámica con slider
+ * interactivo (PanResponder) y zonas de indicación visual.
+ *
+ * @dependencies RangeTrackStyles, COLORS, Text
+ * @validations Restringe valores al rango min-max y aplica formato decimal.
+ * @navigation N/A
  */
 
 import { useRef } from 'react';

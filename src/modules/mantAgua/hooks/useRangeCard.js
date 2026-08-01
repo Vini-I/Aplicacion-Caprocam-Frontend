@@ -3,55 +3,12 @@
  * HOOK useRangeCard
  * ============================================================
  *
+ * Descripción:
  * Maneja el estado de las lecturas de RangeCard: agregar/quitar
- * lecturas, clamping de valores dentro de sliderMin/sliderMax y
- * formateo de decimales.
- * Admite iniciar vacío y permite eliminar lecturas hasta quedar en cero.
+ * filas, clamping de valores dentro de sliderMin/sliderMax y evaluación de zonas.
  *
- * ---
- * PARÁMETROS (objeto único)
- * ---
- * idealMin     number  — límite inferior del rango ideal
- * idealMax     number? — límite superior del rango ideal
- * sliderMin    number  — límite inferior permitido al editar
- * sliderMax    number  — límite superior permitido al editar
- * step         number  — incremento de los botones +/-
- * decimals     number  — decimales a redondear
- * maxLecturas  number  — tope de lecturas
- * onChange     fn?     — (lecturas) => void, callback hacia el padre
- *
- * ---
- * RETORNA
- * ---
- * lecturas            array  — [{ id, value, rawInput, editing }]
- * agregarLectura      fn     — agrega una lectura nueva (respeta maxLecturas)
- * eliminarLectura     fn(id) — elimina una lectura (nunca deja el array vacío)
- * normalizar          fn(v)  — convierte un valor a 0–1 según sliderMin/sliderMax
- * tieneMaxIdeal       bool   — true si se definió idealMax
- * obtenerManejadores  fn(r)  — dado un objeto de lectura, retorna
- *                              { decrementar, incrementar, handleChangeText, handleFocus, handleBlur, handleArrastre }
- *
- * ---
- * RESTRICCIONES
- * ---
- * - No hacer llamadas a servicios/API desde este hook; solo maneja estado local.
- * - Nunca dejar el arreglo de lecturas vacío; respetar siempre maxLecturas.
- *
- * ---
- * EJEMPLO DE USO
- * ---
- * const {
- *   lecturas, agregarLectura, eliminarLectura,
- *   normalizar, tieneMaxIdeal,
- *   obtenerManejadores,
- * } = useRangeCard({
- *   idealMin: 7.5, idealMax: 8.5,
- *   sliderMin: 4, sliderMax: 10,
- *   step: 0.1, decimals: 1, maxLecturas: 2,
- *   onChange: (r) => setLecturasPh(r),
- * });
- *
- * const { incrementar, decrementar, handleChangeText, handleBlur } = obtenerManejadores(lecturas[0]);
+ * @dependencies react
+ * @validations Limita lecturas entre min/max, redondeo a decimales e idealMin/idealMax.
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';

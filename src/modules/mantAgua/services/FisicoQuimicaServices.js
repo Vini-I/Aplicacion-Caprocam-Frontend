@@ -1,16 +1,15 @@
 /**
  * ============================================================
- * SERVICIOS - FÍSICO-QUÍMICA
+ * SERVICIO FisicoQuimicaServices
  * ============================================================
  *
  * Descripción:
- * Funciones de persistencia y consulta para el módulo Físico-Química.
- * Lecturas y fincas ya consumen la API real. Estanques por finca
- * sigue local porque el módulo de fincas todavía no expone ese
- * endpoint (GET /fincas/:fincaId/estanques pendiente).
+ * Funciones de integración con la API RESTful para la gestión y
+ * consulta de lecturas físico-químicas (pH, salinidad, temperatura, oxígeno).
  *
- * Restricciones del proyecto:
- * - No modificar el módulo de finca, solo se consume fincaService.
+ * @dependencies api, fincaService
+ * @validations Normalización de parámetros, validación de estado y mapeo de lecturas.
+ * @navigation N/A
  */
 
 import api from '../../../api/api';
@@ -46,6 +45,15 @@ export async function crearLectura(datos) {
 export async function actualizarLectura(id, datos) {
   try {
     const response = await api.put(`/lecturasFisicoQuimicas/${id}`, datos);
+    return response.data.data;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function eliminarLectura(id) {
+  try {
+    const response = await api.delete(`/lecturasFisicoQuimicas/${id}`);
     return response.data.data;
   } catch (error) {
     throw error;
@@ -161,12 +169,12 @@ export function hayMedicionesRegistradas(lecturasPorTipo = []) {
   return lecturasPorTipo.some((lecturas) => Array.isArray(lecturas) && lecturas.length > 0);
 }
 
-export function validarFormularioFisicoQuimica({ fincaSeleccionada, estanqueSeleccionado, tieneAlgunaMedicion }) {
+export function validarFormularioFisicoQuimica({ fincaSeleccionada, estanqueSeleccionado, tieneAlgunaMedicion, tieneMedicionesExistentes }) {
   if (!fincaSeleccionada || !estanqueSeleccionado) {
     return 'Selecciona la finca y el estanque antes de guardar.';
   }
 
-  if (!tieneAlgunaMedicion) {
+  if (!tieneMedicionesExistentes && !tieneAlgunaMedicion) {
     return 'Agrega al menos una medición antes de guardar.';
   }
 

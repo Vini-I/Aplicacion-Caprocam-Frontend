@@ -1,11 +1,18 @@
 /**
- * FisicoQuimicaScreen
- * Pantalla principal para captura y actualizacion de lecturas fisico-quimicas (pH, salinidad, temperatura, oxigeno).
- * @dependencies - RangeCard, Select, Button, Alert, useFisicoQuimica, FisicoQuimicaStyles
- * @validations - Finca y estanque requeridos marcados con *. Requiere al menos una medicion valida en cualquier parametro.
- * @navigation - Redirige a /registros tras guardar o actualizar exitosamente.
+ * ============================================================
+ * PANTALLA FisicoQuimicaScreen
+ * ============================================================
+ *
+ * Descripción:
+ * Pantalla principal para la captura, edición y desactivación
+ * de lecturas físico-químicas (pH, salinidad, temperatura, oxígeno).
+ *
+ * @dependencies RangeCard, Select, Button, Alert, useFisicoQuimica, FisicoQuimicaStyles
+ * @validations Finca y estanque requeridos. Requiere al menos una medición válida para guardar.
+ * @navigation Muestra alerta local de éxito por 3s y resetea el formulario.
  */
 
+import { useRef, useEffect } from 'react';
 import { View, ScrollView } from 'react-native';
 import Button from '../../../shared/components/Button';
 import Alert from '../../../shared/components/Alert';
@@ -22,13 +29,17 @@ import { styles } from '../styles/FisicoQuimicaStyles';
 import { STYLE } from '../../../theme/style';
 
 export default function FisicoQuimicaScreen({ onBack }) {
+  const scrollViewRef = useRef(null);
+
   const {
     fincaSeleccionada,
     estanqueSeleccionado,
     medicionesPorEstanque,
     submitted,
     errorMessage,
+    mensajeExito,
     tieneMedicionesExistentes,
+    tieneAlgunaMedicion,
     puedeAgregarMediciones,
     opcionesFincas,
     estanquesFiltrados,
@@ -41,8 +52,13 @@ export default function FisicoQuimicaScreen({ onBack }) {
     handleOxChange,
     handleGuardarClick,
     handleIntentoAgregarSinSeleccion,
-    alEditar,
   } = useFisicoQuimica();
+
+  useEffect(() => {
+    if (errorMessage || mensajeExito) {
+      scrollViewRef.current?.scrollToEnd({ animated: true });
+    }
+  }, [errorMessage, mensajeExito]);
 
   return (
     <>
@@ -55,6 +71,7 @@ export default function FisicoQuimicaScreen({ onBack }) {
       <View style={STYLE.container}>
 
         <ScrollView
+          ref={scrollViewRef}
           style={styles.scroll}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
@@ -152,6 +169,14 @@ export default function FisicoQuimicaScreen({ onBack }) {
 
             <View style={styles.spacer} />
 
+            {mensajeExito !== "" && (
+              <Alert
+                variant="success"
+                message={mensajeExito}
+                style={styles.errorBanner}
+              />
+            )}
+
             {errorMessage !== "" && (
               <Alert
                 variant="danger"
@@ -166,12 +191,21 @@ export default function FisicoQuimicaScreen({ onBack }) {
         {Boolean(fincaSeleccionada && estanqueSeleccionado) && (
           <View style={styles.floatingButtonContainer}>
             {tieneMedicionesExistentes ? (
-              <Button variant="outline" onPress={alEditar} style={styles.fullButton}>
-                <View style={styles.btnContent}>
-                  <Icon icon={ICONS.edit} size={20} color={COLORS.primary} />
-                  <Text style={styles.btnText}>Actualizar mediciones</Text>
-                </View>
-              </Button>
+              tieneAlgunaMedicion ? (
+                <Button variant="outline" onPress={handleGuardarClick} style={styles.fullButton}>
+                  <View style={styles.btnContent}>
+                    <Icon icon={ICONS.edit} size={20} color={COLORS.primary} />
+                    <Text style={styles.btnText}>Actualizar mediciones</Text>
+                  </View>
+                </Button>
+              ) : (
+                <Button variant="outline" onPress={handleGuardarClick} style={styles.fullButton}>
+                  <View style={styles.btnContent}>
+                    <Icon icon={ICONS.delete} size={20} color={COLORS.error} />
+                    <Text style={[styles.btnText, { color: COLORS.error }]}>Eliminar lectura del estanque</Text>
+                  </View>
+                </Button>
+              )
             ) : (
               <Button variant="outline" onPress={handleGuardarClick} style={styles.fullButton}>
                 <View style={styles.btnContent}>

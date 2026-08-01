@@ -1,9 +1,14 @@
 /**
- * TrazabilidadScreen
- * Muestra el listado historico de movimientos de trazabilidad entre estanques con filtros y busqueda.
- * @dependencies - useTrazabilidadList, Card, Button, Alert, SearchBar, FilterButton
- * @validations - Filtra por finca, colaborador y texto de busqueda.
- * @navigation - Permite ir a /trazabilidad/agregar mediante el boton flotante + Registrar movimiento.
+ * ============================================================
+ * PANTALLA TrazabilidadScreen
+ * ============================================================
+ *
+ * Descripción:
+ * Muestra el listado histórico de movimientos de trazabilidad entre estanques con búsqueda y filtros.
+ *
+ * @dependencies useTrazabilidadList, CardPress, Button, Alert, SearchBar, FilterButton
+ * @validations Búsqueda por texto y filtros combinados.
+ * @navigation Redirige a /trazabilidad/agregar y /trazabilidad/[id].
  */
 import { useEffect, useState } from "react";
 import { View, ScrollView } from "react-native";

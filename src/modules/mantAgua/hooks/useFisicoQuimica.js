@@ -3,55 +3,21 @@
  * HOOK useFisicoQuimica
  * ============================================================
  *
- * Maneja TODO el estado de la pantalla Físico-Química: selección
- * de finca/estanque, lecturas de las 4 mediciones (locales y las
- * que se envían a RangeCard), validación al guardar, las alertas
- * de "guardado"/"actualizado" con su timer, y la navegación de
- * regreso a /registros tras guardar.
+ * Descripción:
+ * Maneja todo el estado de la pantalla Físico-Química: selección
+ * de finca/estanque, lecturas de las 4 mediciones (locales y enviadas),
+ * precargado de datos, validación al guardar/actualizar/eliminar y alertas.
  *
- * ---
- * RETORNA
- * ---
- * fincaSeleccionada         string  — value de la finca elegida
- * estanqueSeleccionado      string  — value del estanque elegido
- * medicionesPorEstanque     obj     — { ph, salinidad, temperatura, ox } precargados
- * submitted                 bool    — true tras el primer intento de guardar
- * errorMessage               string  — mensaje de validación general
- * tieneMedicionesExistentes bool    — true si el estanque ya tenía mediciones
- * tieneAlgunaMedicion       bool    — true si hay al menos una lectura cargada
- * estanquesFiltrados         array   — opciones para el Select de estanque
- * estanqueSeleccionadoObj    obj     — objeto completo del estanque elegido
- * mostrarAlerta              bool    — true mientras se muestra "guardado exitosamente"
- * mostrarAlertaEdicion       bool    — true mientras se muestra "actualizado exitosamente"
- * handleFincaChange          fn      — onChange del Select de finca
- * handleEstanqueChange       fn      — onChange del Select de estanque
- * handlePhChange              fn      — onChange del RangeCard de pH
- * handleSalinidadChange       fn      — onChange del RangeCard de salinidad
- * handleTempChange            fn      — onChange del RangeCard de temperatura
- * handleOxChange               fn      — onChange del RangeCard de oxígeno
- * handleGuardarClick          fn      — valida y dispara alGuardar()
- * alEditar                    fn      — dispara el alert de edición y navega tras 500ms
- *
- * ---
- * RESTRICCIONES
- * ---
- * - No debe renderizar JSX; solo expone estado y handlers a FisicoQuimicaScreen.
- * - No debe manejar navegación directa fuera de alGuardar/alEditar/handleGuardarClick.
- *
- * ---
- * EJEMPLO DE USO
- * ---
- * const { mostrarAlerta, handleGuardarClick, handlePhChange } = useFisicoQuimica();
- *
- * <RangeCard title="pH" onChange={handlePhChange} ... />
- * <Button onPress={handleGuardarClick}>Guardar módulo</Button>
+ * @dependencies FisicoQuimicaServices, ErrorContext
+ * @validations Finca y estanque requeridos; al menos una medición para guardar.
+ * @navigation Muestra mensaje de éxito local y resetea el formulario tras 3s.
  */
 
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
-import { useRouter } from 'expo-router';
 import {
   guardarLectura,
   actualizarLectura,
+  eliminarLectura,
   getLecturaPorEstanqueYFecha,
   manejarCambioFinca,
   manejarCambioOxigeno,
@@ -65,6 +31,7 @@ import {
   validarFormularioFisicoQuimica,
   validarSeleccionAntesDeAgregar,
 } from '../services/FisicoQuimicaServices';
+import { useError } from '../../../shared/context/ErrorContext';
 
 // Convierte las lecturas de RangeCard ({id, value}) al formato que
 // espera la API ([{valor, etiqueta}]).
@@ -139,6 +106,7 @@ function desmapearLecturas(valor, esDiaNoche = false) {
 }
 
 export default function useFisicoQuimica() {
+  const { mostrarError } = useError();
 
   const [estanquesFiltrados, setEstanquesFiltrados] = useState([]);
   // Lecturas que se envían a guardar/actualizar
@@ -147,9 +115,8 @@ export default function useFisicoQuimica() {
   const [lecturasTemp, setLecturasTemp] = useState([]);
   const [lecturasOx, setLecturasOx] = useState([]);
 
-  // Alertas de guardado/edición
-  const [mostrarAlerta, setMostrarAlerta] = useState(false);
-  const [mostrarAlertaEdicion, setMostrarAlertaEdicion] = useState(false);
+  // Alerta de éxito local (3 segundos)
+  const [mensajeExito, setMensajeExito] = useState("");
 
   // Selección de finca/estanque y mediciones precargadas del estanque
   const [fincaSeleccionada, setFincaSeleccionada] = useState("");
@@ -177,7 +144,6 @@ export default function useFisicoQuimica() {
   const [opcionesFincas, setOpcionesFincas] = useState([]);
 
   const timerAlertaRef = useRef(null);
-  const router = useRouter();
   const fechaHoy = useMemo(() => {
     const hoy = new Date();
     const anio = hoy.getFullYear();
@@ -193,7 +159,10 @@ export default function useFisicoQuimica() {
     }
     obtenerEstanquesPorFinca(fincaSeleccionada)
       .then(setEstanquesFiltrados)
-      .catch(() => setEstanquesFiltrados([]));
+      .catch((err) => {
+        setEstanquesFiltrados([]);
+        if (err?.response?.status !== 401) mostrarError(err);
+      });
   }, [fincaSeleccionada]);
 
   // Limpia el timer de alertas al desmontar
@@ -220,7 +189,10 @@ export default function useFisicoQuimica() {
   useEffect(() => {
     obtenerOpcionesFincas()
       .then(setOpcionesFincas)
-      .catch(() => setOpcionesFincas([]));
+      .catch((err) => {
+        setOpcionesFincas([]);
+        if (err?.response?.status !== 401) mostrarError(err);
+      });
   }, []);
 
   const tieneAlgunaMedicion = useMemo(
@@ -312,6 +284,24 @@ export default function useFisicoQuimica() {
     manejarCambioOxigeno({ values, setters: { ox: setLecturasOx }, localSetters: { ox: setLecturasOxLocal } });
   }, []);
 
+  const resetearFormulario = useCallback(() => {
+    setFincaSeleccionada("");
+    setEstanqueSeleccionado("");
+    setEstanquesFiltrados([]);
+    setMedicionesPorEstanque({ ph: [], salinidad: [], temperatura: [], ox: [] });
+    setLecturasPh([]);
+    setLecturasSalinidad([]);
+    setLecturasTemp([]);
+    setLecturasOx([]);
+    setLecturasPhLocal([]);
+    setLecturasSalinidadLocal([]);
+    setLecturasTempLocal([]);
+    setLecturasOxLocal([]);
+    setTieneMedicionesExistentes(false);
+    setLecturaIdActual(null);
+    setSubmitted(false);
+  }, []);
+
   const alGuardar = useCallback(async () => {
     try {
       await guardarLectura({
@@ -329,20 +319,39 @@ export default function useFisicoQuimica() {
       return;
     }
 
-    setMostrarAlerta(true);
-    setErrorMessage("");
+    setMensajeExito('¡Mediciones físico-químicas guardadas exitosamente!');
+    setErrorMessage('');
+    resetearFormulario();
+
     if (timerAlertaRef.current) clearTimeout(timerAlertaRef.current);
     timerAlertaRef.current = setTimeout(() => {
-      setMostrarAlerta(false);
+      setMensajeExito('');
       timerAlertaRef.current = null;
-      router.replace({
-        pathname: '/(drawer)/(tabs)/registros',
-        params: { successMessage: '¡Mediciones físico-químicas guardadas exitosamente!' },
-      });
-    }, 300);
-  }, [router, fincaSeleccionada, estanqueSeleccionado, fechaHoy, lecturasPh, lecturasSalinidad, lecturasTemp, lecturasOx]);
+    }, 3000);
+  }, [fincaSeleccionada, estanqueSeleccionado, fechaHoy, lecturasPh, lecturasSalinidad, lecturasTemp, lecturasOx, resetearFormulario]);
 
   const alEditar = useCallback(async () => {
+    if (!tieneAlgunaMedicion) {
+      try {
+        await eliminarLectura(lecturaIdActual);
+      } catch (error) {
+        const msg = error?.response?.data?.message || 'No se pudo eliminar la lectura del estanque. Intenta de nuevo.';
+        setErrorMessage(msg);
+        return;
+      }
+
+      setMensajeExito('¡Medición del estanque eliminada exitosamente!');
+      setErrorMessage('');
+      resetearFormulario();
+
+      if (timerAlertaRef.current) clearTimeout(timerAlertaRef.current);
+      timerAlertaRef.current = setTimeout(() => {
+        setMensajeExito('');
+        timerAlertaRef.current = null;
+      }, 3000);
+      return;
+    }
+
     try {
       await actualizarLectura(lecturaIdActual, {
         fincaId: fincaSeleccionada,
@@ -359,20 +368,18 @@ export default function useFisicoQuimica() {
       return;
     }
 
-    setMostrarAlertaEdicion(true);
-    setErrorMessage("");
+    setMensajeExito('¡Mediciones físico-químicas actualizadas exitosamente!');
+    setErrorMessage('');
+    resetearFormulario();
+
     if (timerAlertaRef.current) clearTimeout(timerAlertaRef.current);
     timerAlertaRef.current = setTimeout(() => {
-      setMostrarAlertaEdicion(false);
+      setMensajeExito('');
       timerAlertaRef.current = null;
-      router.replace({
-        pathname: '/(drawer)/(tabs)/registros',
-        params: { successMessage: '¡Mediciones físico-químicas actualizadas exitosamente!' },
-      });
-    }, 300);
-  }, [lecturaIdActual, fincaSeleccionada, estanqueSeleccionado, fechaHoy, lecturasPh, lecturasSalinidad, lecturasTemp, lecturasOx, router]);
+    }, 3000);
+  }, [lecturaIdActual, fincaSeleccionada, estanqueSeleccionado, fechaHoy, lecturasPh, lecturasSalinidad, lecturasTemp, lecturasOx, tieneAlgunaMedicion, resetearFormulario]);
 
-  // Valida el formulario y, si pasa, dispara el guardado
+  // Valida el formulario y, si pasa, dispara el guardado o actualización
   const handleGuardarClick = useCallback(() => {
     setSubmitted(true);
 
@@ -380,13 +387,18 @@ export default function useFisicoQuimica() {
       fincaSeleccionada,
       estanqueSeleccionado,
       tieneAlgunaMedicion,
+      tieneMedicionesExistentes,
     });
 
     setErrorMessage(error);
     if (error) return;
 
-    alGuardar();
-  }, [fincaSeleccionada, estanqueSeleccionado, tieneAlgunaMedicion, alGuardar]);
+    if (tieneMedicionesExistentes) {
+      alEditar();
+    } else {
+      alGuardar();
+    }
+  }, [fincaSeleccionada, estanqueSeleccionado, tieneAlgunaMedicion, tieneMedicionesExistentes, alGuardar, alEditar]);
 
   return {
     fincaSeleccionada,
@@ -394,6 +406,7 @@ export default function useFisicoQuimica() {
     medicionesPorEstanque,
     submitted,
     errorMessage,
+    mensajeExito,
     tieneMedicionesExistentes,
     tieneAlgunaMedicion,
     puedeAgregarMediciones,

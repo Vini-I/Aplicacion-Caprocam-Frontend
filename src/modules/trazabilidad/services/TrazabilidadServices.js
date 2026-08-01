@@ -1,22 +1,14 @@
 /**
  * ============================================================
- * SERVICIOS - TRAZABILIDAD
+ * SERVICIO TrazabilidadServices
  * ============================================================
  *
  * Descripción:
- * Consulta y registro de movimientos de trazabilidad contra la API.
- * Estanques por finca y siembra activa siguen locales porque
- * dependen de otros módulos (finca y siembra) que todavía no
- * exponen esos endpoints.
+ * Consulta, filtrado y registro de movimientos de trazabilidad con la API.
  *
- * Funcionalidad principal:
- * - `getRegistros`, `getRegistroPorId`, `crearRegistro`, `toggleActivoRegistro`,
- *   `filtrarRegistrosTrazabilidad`, `obtenerFincas`, `obtenerEstanquesPorFinca`,
- *   `obtenerTodosLosEstanques`, `obtenerSiembraPorEstanque`, `obtenerColaboradores`.
- *
- * Restricciones del proyecto:
- * - No modificar los módulos de finca/colaboradores/siembra, solo
- *   se consumen sus servicios.
+ * @dependencies api, fincaService, colaboradorService
+ * @validations Normalización de estanques, cruce de nombres y sesión de usuario/colaborador.
+ * @navigation N/A
  */
 
 import api from "../../../api/api";
@@ -358,36 +350,33 @@ export function obtenerSesionFormulario() {
   };
 }
 
-export function obtenerColaboradorSesion() {
-  return obtenerSesionFormulario();
-}
-
-export async function obtenerColaboradorSesionActual() {
+export function obtenerColaboradorSesion(esAsync = false) {
   const sesion = obtenerSesionFormulario();
-  if (sesion.tipo === "usuario") {
+  if (!esAsync) {
     return sesion;
   }
 
-  const colaboradorId = sesion.colaboradorId;
-  if (!colaboradorId) {
-    return sesion;
-  }
+  return (async () => {
+    if (sesion.tipo === "usuario" || !sesion.colaboradorId) {
+      return sesion;
+    }
 
-  try {
-    const colaborador = await colaboradorService.getColaboradorById(colaboradorId);
-    const nombreCompleto = [colaborador?.nombre, colaborador?.apellidos]
-      .filter(Boolean)
-      .join(" ");
-    const nombre = nombreCompleto || `Colaborador ${colaboradorId}`;
-    return {
-      ...sesion,
-      nombre,
-      label: `Colaborador: ${nombre}`,
-      colaboradorId,
-    };
-  } catch (error) {
-    return sesion;
-  }
+    try {
+      const colaborador = await colaboradorService.getColaboradorById(sesion.colaboradorId);
+      const nombreCompleto = [colaborador?.nombre, colaborador?.apellidos]
+        .filter(Boolean)
+        .join(" ");
+      const nombre = nombreCompleto || `Colaborador ${sesion.colaboradorId}`;
+      return {
+        ...sesion,
+        nombre,
+        label: `Colaborador: ${nombre}`,
+        colaboradorId: sesion.colaboradorId,
+      };
+    } catch (error) {
+      return sesion;
+    }
+  })();
 }
 
 /**

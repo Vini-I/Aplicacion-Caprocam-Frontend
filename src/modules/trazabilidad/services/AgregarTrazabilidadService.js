@@ -1,6 +1,11 @@
 /**
+ * ============================================================
  * SERVICIO AgregarTrazabilidadService
- * Procesa el envio de nuevos registros de trazabilidad formateando campos e integrando toMysqlDate.
+ * ============================================================
+ *
+ * Descripción:
+ * Procesa el envío de nuevos registros de trazabilidad formateando campos e integrando toMysqlDate.
+ *
  * @dependencies toMysqlDate (shared/utils/dateUtils), crearRegistro (TrazabilidadServices)
  * @validations Convierte la fecha dd/mm/aaaa a YYYY-MM-DD MySQL antes de enviar al backend.
  * @navigation N/A

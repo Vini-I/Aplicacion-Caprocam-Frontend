@@ -1,22 +1,15 @@
 /**
  * ============================================================
- * COMPONENTE RANGECARD
+ * COMPONENTE RangeCard
  * ============================================================
  *
+ * Descripción:
  * Tarjeta para registrar mediciones numéricas (pH, temperatura,
- * oxígeno, salinidad, etc.). El valor de cada lectura se ajusta
- * arrastrando el thumb de una barra de rango (RangeTrack), ya no
- * con botones +/- de paso fijo.
+ * oxígeno, salinidad) utilizando barras de rango dinámicas.
  *
- * Permite:
- * - Mostrar una etiqueta y una unidad de medida
- * - Registrar una o varias mediciones (hasta maxLecturas)
- * - Marcar si el valor está dentro del rango ideal (rojo/amarillo/
- *   verde/gris según qué tan lejos esté del rango ideal)
- * - Agregar una lectura nueva desde el botón "+" de la última fila
- *   (o desde el botón "+ Agregar medición" cuando no hay ninguna)
- * - Trabajar con un rango ideal completo (idealMin + idealMax)
- *   o con un mínimo único (solo idealMin)
+ * @dependencies RangeTrack, useRangeCard, RangeCardStyles
+ * @validations Evaluación contra rangos ideales (óptimo, alerta, peligro).
+ * @navigation N/A
  *
  * La lógica de estado vive en el hook useRangeCard(); este
  * archivo solo arma el JSX.
@@ -291,7 +284,7 @@ export default function RangeCard({
             />
 
             <View style={inner.rightValueWrap}>
-              <Text size={14} color={colorValor} style={{ fontWeight: '700' }}>
+              <Text size={14} color={colorValor} style={inner.rightValue}>
                 {r.value.toFixed(decimals)} {unit}
               </Text>
             </View>

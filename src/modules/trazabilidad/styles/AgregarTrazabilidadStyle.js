@@ -1,12 +1,14 @@
 /**
  * ============================================================
- * AgregarTrazabilityStyle.js
+ * ESTILOS AgregarTrazabilidadStyle
  * ============================================================
  *
- * Estilos para la pantalla `AgregarTrazabilidadScreen`.
+ * Descripción:
+ * Estilos centralizados para la pantalla AgregarTrazabilidadScreen.
  *
- * Reglas importantes / restricciones:
- * - No usar colores hardcodeados; usar `COLORS`.
+ * @dependencies StyleSheet, COLORS, TYPOGRAPHY
+ * @validations N/A
+ * @navigation N/A
  */
 
 import { StyleSheet } from "react-native";

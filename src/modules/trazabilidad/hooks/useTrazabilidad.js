@@ -4,48 +4,30 @@
  * ============================================================
  *
  * Descripción:
- * Centraliza el estado, validaciones y envío del formulario de
- * trazabilidad. La pantalla consumidora debe delegar la lógica a
- * este hook y mantener la presentación separada.
+ * Centraliza el estado, validaciones y envío del formulario de trazabilidad.
  *
- * Validaciones principales:
- * - Campos obligatorios: finca, estanques (origen/destino), fecha, colaborador, tamaño, dias, pl.
- * - Origen y destino no pueden coincidir.
- * - Valores numéricos deben ser mayores que 0.
- * - La fecha debe tener formato dd/mm/aaaa válido y no puede ser futura.
- *
- * Retorna:
- * - `formData`, `fincas`, `colaboradores`, `estanquesOrigen`, `estanquesDestino`,
- *   `plAutocompletado`, `mensajeError`, `submitted`, `mostrarAlerta` y handlers como
- *   `manejarCambio`, `manejarCambioFinca`, `manejarEnvio`.
- *
- * Restricciones:
- * - No realizar llamadas a la API directamente; usar los servicios del módulo.
- * - No implementar parseo/validación de fecha local; usar las utilidades
- *   compartidas de shared/utils/dateUtils.js.
- *  */
+ * @dependencies TrazabilidadServices, AgregarTrazabilidadService, dateUtils
+ * @validations Campos obligatorios, origen!=destino, números mayores a 0 y fecha válida.
+ * @navigation N/A
+ */
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "expo-router";
 
 import { initialForm } from "../screens/TrazabilidadData";
 import {
-  obtenerEstanquesPorFinca,
   obtenerEstanquesPreCriaPorFinca,
   obtenerEstanquesEngordePorFinca,
   obtenerFincas,
   obtenerColaboradorSesion,
-  obtenerColaboradorSesionActual,
   obtenerSiembraActivaPorEstanque,
 } from "../services/TrazabilidadServices";
 import { crearRegistroTrazabilidad } from "../services/AgregarTrazabilidadService";
 import { esFechaFutura, esFechaValida } from "../../../shared/utils/dateUtils";
 
-
-
 export function useTrazabilidad() {
   const router = useRouter();
-  const [colaboradorSesion, setColaboradorSesion] = useState(obtenerColaboradorSesion);
+  const [colaboradorSesion, setColaboradorSesion] = useState(() => obtenerColaboradorSesion());
 
   const [formData, setFormData] = useState(() => ({
     ...initialForm,
@@ -99,7 +81,7 @@ export function useTrazabilidad() {
   // Resuelve el nombre/datos reales de la sesión actual (usuario o colaborador)
   useEffect(() => {
     let cancelado = false;
-    obtenerColaboradorSesionActual().then((real) => {
+    obtenerColaboradorSesion(true).then((real) => {
       if (cancelado) return;
       setColaboradorSesion(real);
       setFormData((previousData) => ({ ...previousData, colaboradorId: real.colaboradorId ?? null }));

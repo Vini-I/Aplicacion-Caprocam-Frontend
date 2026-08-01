@@ -1,3 +1,15 @@
+/**
+ * ============================================================
+ * HOOK useRangeTrack
+ * ============================================================
+ *
+ * Descripción:
+ * Administra los gestos PanResponder para el slider continuo de RangeTrack.
+ *
+ * @dependencies PanResponder, useRef (react-native, react)
+ * @validations Limita los valores arrastrados entre min y max con decimales configurables.
+ * @navigation N/A
+ */
 import { useRef } from 'react';
 import { PanResponder } from 'react-native';
 
