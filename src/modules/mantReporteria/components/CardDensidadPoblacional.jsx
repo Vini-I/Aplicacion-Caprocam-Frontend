@@ -10,7 +10,7 @@ import { COLORS } from "../../../theme/colors.js";
 
 import { styles } from "../styles/DetalleReporteStyle.js";
 
-export default function CardCrecimiento({ data }) {
+export default function CardDensidadPoblacional({ data }) {
 
     return (
         <>
@@ -18,7 +18,7 @@ export default function CardCrecimiento({ data }) {
                 data.map((registro) => (
                     <Card
                         key={registro.id}
-                        style={[styles.cardRegistro, { borderLeftColor: COLORS.Crecimiento }]}
+                        style={[styles.cardRegistro, { borderLeftColor: COLORS.DensidadPoblacional }]}
 
                     >
                         <View style={styles.infoGrid}> 
@@ -45,28 +45,90 @@ export default function CardCrecimiento({ data }) {
                                     Colaborador
                                 </Text>
                                 <Text style={styles.value}>
-                                    {registro.nombreColaborador}
+                                    {registro.usuarioNombre}
                                 </Text>
                             </View>
-
 
                             <View style={styles.infoItem}>
                                 <Text style={styles.label}>
                                     Fecha
                                 </Text>
                                 <Text style={styles.value}>
-                                    {new Date(registro.fecha_registro).toLocaleDateString("es-CR")}
+                                    {new Date(registro.fecha).toLocaleDateString("es-CR")}
+                                </Text>
+                            </View>
+
+                            <View style={styles.infoItem}>
+                                <Text style={styles.label}>
+                                    Densidad Poblacional
+                                </Text>
+                                <Text style={styles.value}>
+                                    {registro.densidad}
+                                </Text>
+                            </View>
+
+                            <View style={styles.infoItem}>
+                                <Text style={styles.label}>
+                                    Camarones estimados
+                                </Text>
+                                <Text style={styles.value}>
+                                    {registro.numeroCamarones}
+                                </Text>
+                            </View>
+
+                            <View style={styles.infoItem}>
+                                <Text style={styles.label}>
+                                    Promedio por tiro
+                                </Text>
+                                <Text style={styles.value}>
+                                    {registro.promedioPorTiro}
+                                </Text>
+                            </View>
+
+                            <View style={styles.infoItem}>
+                                <Text style={styles.label}>
+                                   Tiros de atarraya
+                                </Text>
+                                <Text style={styles.value}>
+                                    {registro.tirosAtarraya}
+                                </Text>
+                            </View>
+
+                            <View style={styles.infoItem}>
+                                <Text style={styles.label}>
+                                   Área del estanque
+                                </Text>
+                                <Text style={styles.value}>
+                                    {registro.areaEstanque}
+                                </Text>
+                            </View>
+
+                            <View style={styles.infoItem}>
+                                <Text style={styles.label}>
+                                   Área de la atarraya
+                                </Text>
+                                <Text style={styles.value}>
+                                    {registro.areaAtarraya} m²
+                                </Text>
+                            </View>
+
+                            <View style={styles.infoItem}>
+                                <Text style={styles.label}>
+                                    Cantidad de siembra
+                                </Text>
+                                <Text style={styles.value}>
+                                    {registro.cantidadSiembra} cam/m²
                                 </Text>
                             </View>
                         </View>
 
                         <View style={styles.pesoContainer}>
                             <Text style={styles.label}>
-                                Peso actual
+                                Sobrevivencia
                             </Text>
 
                             <Text style={styles.peso}>
-                                {registro.peso_actual} g
+                                {registro.sobrevivencia} %
                             </Text>
                         </View>
 

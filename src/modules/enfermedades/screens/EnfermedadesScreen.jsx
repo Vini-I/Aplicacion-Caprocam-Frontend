@@ -37,7 +37,7 @@ export default function EnfermedadesScreen() {
       <NavbarRegistro
         Titulo="Enfermedades"
         Subtitulo="Registro de casos sanitarios"
-        Icono="report"
+        Icono="shieldAlert"
       />
 
       <ScrollView style={STYLE.container} showsVerticalScrollIndicator={false}>
@@ -58,6 +58,9 @@ export default function EnfermedadesScreen() {
                   placeholder={pantalla.placeholderFinca}
                   disabled={pantalla.loading}
                   labelStyle={styles.label}
+                  selectStyle={
+                    pantalla.errorFinca && styles.campoConError
+                  }
                 />
               </View>
 
@@ -70,6 +73,9 @@ export default function EnfermedadesScreen() {
                   placeholder={pantalla.placeholderEstanque}
                   disabled={pantalla.loading || pantalla.finca === ""}
                   labelStyle={styles.label}
+                  selectStyle={
+                    pantalla.errorEstanque && styles.campoConError
+                  }
                 />
               </View>
 
@@ -79,6 +85,9 @@ export default function EnfermedadesScreen() {
                   value={pantalla.fechaReporte}
                   onChangeText={pantalla.cambiarFechaReporte}
                   labelStyle={styles.label}
+                  inputStyle={
+                    pantalla.errorFechaReporte && styles.campoConError
+                  }
                 />
               </View>
 
@@ -99,7 +108,7 @@ export default function EnfermedadesScreen() {
           <Card style={styles.card}>
             <EnfermedadesSectionTitle
               title="Enfermedad detectada"
-              icon={ICONS.report}
+              icon={ICONS.shieldAlert}
             />
 
             <Select
@@ -110,6 +119,9 @@ export default function EnfermedadesScreen() {
               placeholder={pantalla.placeholderEnfermedad}
               disabled={pantalla.loading}
               labelStyle={styles.label}
+              selectStyle={
+                pantalla.errorEnfermedad && styles.campoConError
+              }
             />
           </Card>
 
@@ -129,6 +141,9 @@ export default function EnfermedadesScreen() {
                   placeholder={pantalla.placeholderSeveridad}
                   disabled={pantalla.loading}
                   labelStyle={styles.label}
+                  selectStyle={
+                    pantalla.errorSeveridad && styles.campoConError
+                  }
                 />
               </View>
 
@@ -152,7 +167,10 @@ export default function EnfermedadesScreen() {
                   placeholder="Describa sintomas, observaciones o acciones realizadas"
                   multiline={true}
                   labelStyle={styles.label}
-                  style={styles.textArea}
+                  style={[
+                    styles.textArea,
+                    pantalla.errorReporte && styles.campoConError,
+                  ]}
                 />
               </View>
             </View>
@@ -176,7 +194,11 @@ export default function EnfermedadesScreen() {
             <View style={styles.inlineButtonContentCentered}>
               <Icon icon={ICONS.save} size={18} color={COLORS.primary} />
 
-              <CustomText size={16} color={COLORS.primary} style={styles.saveText}>
+              <CustomText
+                size={16}
+                color={COLORS.primary}
+                style={styles.saveText}
+              >
                 Guardar
               </CustomText>
             </View>

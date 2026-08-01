@@ -3,37 +3,53 @@
  * COMPONENTE SEARCHBAR
  * ============================================================
  *
- * Responsabilidad:
- * - Barra de busqueda global para listados y filtros.
- * - Mantiene borde, icono y placeholder consistente.
- * - Evita SearchBar duplicados en modulos.
+ * Barra de busqueda reutilizable para React Native.
+ *
+ * Funcionalidad:
+ * - Busca por nombre de producto, categoria o proveedor.
+ * - Devuelve el texto ingresado mediante onChangeText.
+ * - Preparada para conectar al backend.
+ *
+ * Props principales:
+ * - value: texto actual de busqueda.
+ * - onChangeText: funcion que recibe el nuevo texto.
+ * - placeholder: texto de ayuda.
+ * - editable: habilita o bloquea el campo.
+ * - containerStyle: estilos extra para el contenedor.
+ *
+ * Ejemplo:
+ * <SearchBar
+ *   value={search}
+ *   onChangeText={setSearch}
+ * />
  */
 
-import React from "react";
-import { StyleSheet, TextInput, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, StyleSheet } from "react-native";
 
+import Input from "./Input";
 import Icon from "./Icons";
+
 import { COLORS } from "../../theme/colors";
 import { ICONS } from "../../theme/icons";
-import { TYPOGRAPHY } from "../../theme/typography";
+
 
 export default function SearchBar({
   value = "",
   onChangeText,
-  placeholder = "Buscar",
+  placeholder = "",
+  editable = true,
   containerStyle,
-  inputStyle,
 }) {
+
   return (
     <View style={[styles.container, containerStyle]}>
-      <Icon icon={ICONS.search} size={16} color={COLORS.textTertiary} />
-
-      <TextInput
-        style={[styles.input, inputStyle]}
-        value={value}
+      <Input value={value}
         onChangeText={onChangeText}
-        placeholder={placeholder}
-        placeholderTextColor={COLORS.textQuaternary}
+        placeholder = {placeholder}
+        editable = {editable}
+        containerStyle={styles.inputContainer}
+        style={styles.input}
       />
     </View>
   );
@@ -41,22 +57,25 @@ export default function SearchBar({
 
 const styles = StyleSheet.create({
   container: {
-    minHeight: 46,
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: COLORS.inputBorder,
-    borderRadius: 12,
-    paddingHorizontal: 12,
+    borderColor: COLORS.textTertiary,
+    borderRadius: 8,
     backgroundColor: COLORS.white,
-    marginBottom: 12,
+    paddingHorizontal: 10,
   },
-
-  input: {
+  iconWrap: {
+    marginRight: 6,
+  },
+  inputContainer: {
     flex: 1,
-    marginLeft: 8,
-    fontSize: 15,
-    color: COLORS.textSecondary,
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
+    marginBottom: 0,
+  },
+  input: {
+    borderWidth: 0,
+    paddingHorizontal: 0,
+    backgroundColor: "transparent",
+    outlineStyle: "none",
   },
 });

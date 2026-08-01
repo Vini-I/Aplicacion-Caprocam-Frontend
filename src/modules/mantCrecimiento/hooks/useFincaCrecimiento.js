@@ -254,7 +254,7 @@ export function useFincaCrecimiento() {
 
       await createCrecimiento(crecimientoDTO);
 
-      setSuccessMessage("Guarado exitosamente");
+      setSuccessMessage("Guardado exitosamente");
 
     } catch (error) {
       setErrorMessage("Ocurrio un error al guardar el crecimiento");

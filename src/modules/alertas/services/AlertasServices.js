@@ -59,6 +59,14 @@ function obtenerNumeroSeguro(valor) {
   return numero;
 }
 
+function normalizarLista(valor) {
+  if (Array.isArray(valor) === true) {
+    return valor;
+  }
+
+  return [];
+}
+
 function parsearFecha(valor) {
   if (valor instanceof Date) {
     return valor;
@@ -142,8 +150,11 @@ function obtenerAlertasInventario(
   productosInventario,
 ) {
   const alertas = [];
+  const productos = normalizarLista(
+    productosInventario,
+  );
 
-  productosInventario.forEach(
+  productos.forEach(
     function (producto) {
       const cantidad =
         obtenerNumeroSeguro(
@@ -246,8 +257,11 @@ COSECHA
 
 function obtenerAlertasCosecha(siembras) {
   const alertas = [];
+  const siembrasSeguras = normalizarLista(
+    siembras,
+  );
 
-  siembras.forEach(
+  siembrasSeguras.forEach(
     function (siembra) {
       const diasCultivo =
         obtenerNumeroSeguro(
@@ -384,8 +398,11 @@ ESTANQUES
 
 function obtenerAlertasEstanques(estanques) {
   const alertas = [];
+  const estanquesSeguros = normalizarLista(
+    estanques,
+  );
 
-  estanques.forEach(
+  estanquesSeguros.forEach(
     function (estanque) {
       const diasCultivo =
         obtenerNumeroSeguro(
@@ -537,8 +554,11 @@ function existeAlimentacionRegistrada(
 ) {
   let existe = false;
   const hoy = new Date();
+  const alimentacionesSeguras = normalizarLista(
+    alimentaciones,
+  );
 
-  alimentaciones.forEach(
+  alimentacionesSeguras.forEach(
     function (registro) {
       const horaRegistro =
         obtenerHoraNumero(
@@ -657,8 +677,11 @@ function obtenerEquiposPorTipo(
   tipoBuscado,
 ) {
   const resultado = [];
+  const equiposSeguros = normalizarLista(
+    equipos,
+  );
 
-  equipos.forEach(
+  equiposSeguros.forEach(
     function (equipo) {
       const tipo =
         obtenerTextoSeguro(
@@ -700,13 +723,17 @@ function obtenerSerieEquipo(equipo) {
 }
 
 function obtenerNombresEquipos(equipos) {
-  if (equipos.length === 0) {
+  const equiposSeguros = normalizarLista(
+    equipos,
+  );
+
+  if (equiposSeguros.length === 0) {
     return "equipos registrados";
   }
 
   const nombres = [];
 
-  equipos.forEach(
+  equiposSeguros.forEach(
     function (equipo) {
       nombres.push(
         (
@@ -1040,8 +1067,14 @@ function obtenerAlertasSanitarias(
   registrosParasitologia,
 ) {
   const alertas = [];
+  const enfermedadesSeguras = normalizarLista(
+    registrosEnfermedades,
+  );
+  const parasitologiasSeguras = normalizarLista(
+    registrosParasitologia,
+  );
 
-  registrosEnfermedades.forEach(
+  enfermedadesSeguras.forEach(
     function (registro) {
       const severidad =
         obtenerTextoSeguro(
@@ -1091,7 +1124,7 @@ function obtenerAlertasSanitarias(
     },
   );
 
-  registrosParasitologia.forEach(
+  parasitologiasSeguras.forEach(
     function (registro) {
       const grado =
         obtenerTextoSeguro(
@@ -1154,49 +1187,43 @@ export function construirAlertasOperativas(
   datos,
 ) {
   let alertas = [];
+  let datosFinales = {};
 
-  const productosInventario =
-    Array.isArray(
-      datos.productosInventario,
-    )
-      ? datos.productosInventario
-      : [];
+  if (
+    datos !== undefined &&
+    datos !== null &&
+    typeof datos === "object"
+  ) {
+    datosFinales = datos;
+  }
 
-  const siembras =
-    Array.isArray(datos.siembras)
-      ? datos.siembras
-      : [];
+  const productosInventario = normalizarLista(
+    datosFinales.productosInventario,
+  );
 
-  const alimentaciones =
-    Array.isArray(
-      datos.alimentaciones,
-    )
-      ? datos.alimentaciones
-      : [];
+  const siembras = normalizarLista(
+    datosFinales.siembras,
+  );
 
-  const estanques =
-    Array.isArray(datos.estanques)
-      ? datos.estanques
-      : [];
+  const alimentaciones = normalizarLista(
+    datosFinales.alimentaciones,
+  );
 
-  const equipos =
-    Array.isArray(datos.equipos)
-      ? datos.equipos
-      : [];
+  const estanques = normalizarLista(
+    datosFinales.estanques,
+  );
 
-  const registrosEnfermedades =
-    Array.isArray(
-      datos.registrosEnfermedades,
-    )
-      ? datos.registrosEnfermedades
-      : [];
+  const equipos = normalizarLista(
+    datosFinales.equipos,
+  );
 
-  const registrosParasitologia =
-    Array.isArray(
-      datos.registrosParasitologia,
-    )
-      ? datos.registrosParasitologia
-      : [];
+  const registrosEnfermedades = normalizarLista(
+    datosFinales.registrosEnfermedades,
+  );
+
+  const registrosParasitologia = normalizarLista(
+    datosFinales.registrosParasitologia,
+  );
 
   alertas = alertas.concat(
     obtenerAlertasSanitarias(
@@ -1262,8 +1289,12 @@ AGRUPACION
 export function agruparAlertasPorTipo(
   alertas,
 ) {
+  const alertasSeguras = normalizarLista(
+    alertas,
+  );
+
   return {
-    critica: alertas.filter(
+    critica: alertasSeguras.filter(
       function (alerta) {
         return (
           alerta.tipo ===
@@ -1272,7 +1303,7 @@ export function agruparAlertasPorTipo(
       },
     ),
 
-    advertencia: alertas.filter(
+    advertencia: alertasSeguras.filter(
       function (alerta) {
         return (
           alerta.tipo ===
@@ -1281,7 +1312,7 @@ export function agruparAlertasPorTipo(
       },
     ),
 
-    info: alertas.filter(
+    info: alertasSeguras.filter(
       function (alerta) {
         return (
           alerta.tipo ===
@@ -1329,15 +1360,18 @@ export async function obtenerAlertasDescartadas() {
 export async function guardarAlertasDescartadas(
   ids,
 ) {
+  const idsSeguros = normalizarLista(ids);
+
   await AsyncStorage.setItem(
     CLAVE_ALERTAS_DESCARTADAS,
-    JSON.stringify(ids),
+    JSON.stringify(idsSeguros),
   );
 }
 
 export async function descartarAlerta(id) {
-  const lista =
-    await obtenerAlertasDescartadas();
+  const lista = normalizarLista(
+    await obtenerAlertasDescartadas(),
+  );
 
   let existe = false;
 
@@ -1364,11 +1398,18 @@ export function filtrarAlertasDescartadas(
   alertas,
   descartadas,
 ) {
-  return alertas.filter(
+  const alertasSeguras = normalizarLista(
+    alertas,
+  );
+  const descartadasSeguras = normalizarLista(
+    descartadas,
+  );
+
+  return alertasSeguras.filter(
     function (alerta) {
       let descartada = false;
 
-      descartadas.forEach(
+      descartadasSeguras.forEach(
         function (id) {
           if (id === alerta.id) {
             descartada = true;

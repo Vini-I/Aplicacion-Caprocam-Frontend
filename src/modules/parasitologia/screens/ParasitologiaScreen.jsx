@@ -16,10 +16,10 @@ import Card from "../../../shared/components/Card";
 import DateInput from "../../../shared/components/DateInput";
 import Icon from "../../../shared/components/Icons";
 import Input from "../../../shared/components/Input";
+import NavbarRegistro from "../../../shared/components/NavbarRegistro";
 import NumberInput from "../../../shared/components/NumberInput";
 import Select from "../../../shared/components/Select";
 import CustomText from "../../../shared/components/Text";
-import NavbarRegistro from "../../../shared/components/NavbarRegistro";
 
 import ParasitologiaSectionTitle from "../components/ParasitologiaSectionTitle";
 import useParasitologiaScreen from "../hooks/useParasitologiaScreen";
@@ -41,7 +41,7 @@ export default function ParasitologiaScreen() {
       />
 
       <ScrollView style={STYLE.container} showsVerticalScrollIndicator={false}>
-        <View style={[STYLE.contentWrapper, pantalla.contentStyle]}>
+        <View style={[STYLE.contentWrapper, styles.content]}>
           {pantalla.loading && (
             <Alert
               variant="info"
@@ -65,7 +65,11 @@ export default function ParasitologiaScreen() {
                   value={pantalla.finca}
                   onChange={pantalla.cambiarFinca}
                   placeholder={pantalla.placeholderFinca}
+                  disabled={pantalla.loading}
                   labelStyle={styles.label}
+                  selectStyle={
+                    pantalla.errorFinca && styles.campoConError
+                  }
                 />
               </View>
 
@@ -76,8 +80,11 @@ export default function ParasitologiaScreen() {
                   value={pantalla.estanque}
                   onChange={pantalla.setEstanque}
                   placeholder={pantalla.placeholderEstanque}
-                  disabled={pantalla.finca === ""}
+                  disabled={pantalla.loading || pantalla.finca === ""}
                   labelStyle={styles.label}
+                  selectStyle={
+                    pantalla.errorEstanque && styles.campoConError
+                  }
                 />
               </View>
 
@@ -86,7 +93,11 @@ export default function ParasitologiaScreen() {
                   label="Fecha del reporte *"
                   value={pantalla.fechaReporte}
                   onChangeText={pantalla.setFechaReporte}
+                  disabled={pantalla.loading}
                   labelStyle={styles.label}
+                  inputStyle={
+                    pantalla.errorFechaReporte && styles.campoConError
+                  }
                 />
               </View>
 
@@ -94,7 +105,6 @@ export default function ParasitologiaScreen() {
                 <Input
                   label="Responsable"
                   value={pantalla.responsable}
-                  placeholder=""
                   editable={false}
                   readOnly={true}
                   selectTextOnFocus={false}
@@ -118,7 +128,11 @@ export default function ParasitologiaScreen() {
                   value={pantalla.parasito}
                   onChange={pantalla.setParasito}
                   placeholder={pantalla.placeholderParasito}
+                  disabled={pantalla.loading}
                   labelStyle={styles.label}
+                  selectStyle={
+                    pantalla.errorParasito && styles.campoConError
+                  }
                 />
               </View>
 
@@ -130,7 +144,11 @@ export default function ParasitologiaScreen() {
                   min={0}
                   max={999999}
                   step={1}
+                  editable={!pantalla.loading}
                   labelStyle={styles.label}
+                  style={
+                    pantalla.errorMuestreados && styles.campoConError
+                  }
                 />
               </View>
 
@@ -142,7 +160,11 @@ export default function ParasitologiaScreen() {
                   min={0}
                   max={999999}
                   step={1}
+                  editable={!pantalla.loading}
                   labelStyle={styles.label}
+                  style={
+                    pantalla.errorInfectados && styles.campoConError
+                  }
                 />
               </View>
 
@@ -251,6 +273,7 @@ export default function ParasitologiaScreen() {
                   onChangeText={pantalla.setObservaciones}
                   placeholder="Describa observaciones del muestreo"
                   multiline={true}
+                  editable={!pantalla.loading}
                   labelStyle={styles.label}
                   style={styles.textArea}
                 />
@@ -276,8 +299,12 @@ export default function ParasitologiaScreen() {
             <View style={styles.inlineButtonContentCentered}>
               <Icon icon={ICONS.save} size={18} color={COLORS.primary} />
 
-              <CustomText size={16} color={COLORS.primary} style={styles.saveText}>
-                Registrar parasitologia
+              <CustomText
+                size={16}
+                color={COLORS.primary}
+                style={styles.saveText}
+              >
+                Guardar
               </CustomText>
             </View>
           </Button>
