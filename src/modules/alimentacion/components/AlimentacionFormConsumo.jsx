@@ -25,10 +25,7 @@ import Icon from "../../../shared/components/Icons";
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
 import { PROVEEDORES } from "../constants/alimentacionOpciones";
-
-const bordeError = { borderColor: COLORS.error, borderWidth: 1.5 };
-const sectionTitleRow = { flexDirection: "row", alignItems: "center", marginBottom: 10 };
-const sectionIcon = { marginRight: 8 };
+import { styles } from "../styles/AlimentacionStyles";
 
 export default function AlimentacionFormConsumo({
   form = {},
@@ -36,37 +33,39 @@ export default function AlimentacionFormConsumo({
   submitted = false,
   errores = {},
 }) {
-  const invalidoCantidadKg = submitted && !!errores.cantidadKg;
-  const invalidoProveedor = submitted && !!errores.proveedor;
-
   return (
     <Card>
-      <View style={sectionTitleRow}>
-        <Icon icon={ICONS.weight} size={18} color={COLORS.primary} style={sectionIcon} />
+      <View style={styles.sectionTitleRow}>
+        <Icon icon={ICONS.weight} size={18} color={COLORS.primary} style={styles.sectionIcon} />
         <Text size={18} weight="700" color={COLORS.textSecondary}>
           Consumo
         </Text>
       </View>
 
       <Input
-        label="Cantidad (Kg) *"
+        label="Cantidad (Kg)"
         placeholder="Ej: 20"
         value={String(form.cantidadKg ?? "")}
         keyboardType="numeric"
+        maxLength={6}
         onChangeText={(v) => {
           const soloNumeros = v.replace(/[^0-9]/g, "");
           updateField("cantidadKg", soloNumeros);
         }}
-        style={invalidoCantidadKg ? bordeError : null}
+        required
+        submitted={submitted}
+        error={submitted ? (errores.cantidadKg || "") : ""}
       />
 
       <Select
-        label="Proveedor *"
+        label="Proveedor"
         value={form.proveedor}
         onChange={(v) => updateField("proveedor", v)}
         options={PROVEEDORES}
         placeholder="Seleccionar proveedor"
-        selectStyle={invalidoProveedor ? bordeError : null}
+        required
+        submitted={submitted}
+        error={submitted ? (errores.proveedor || "") : ""}
       />
     </Card>
   );
