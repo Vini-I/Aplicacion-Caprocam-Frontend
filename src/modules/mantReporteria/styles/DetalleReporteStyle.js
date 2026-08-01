@@ -194,4 +194,24 @@ export const styles = StyleSheet.create({
         marginHorizontal: 2,
         height: "70%",
     },
+
+    alertCorrect: {
+        alignItems: "center",
+        backgroundColor: COLORS.successLight,
+        borderWidth: 1.5,
+        borderColor: COLORS.success,
+        paddingVertical: 10,
+        borderRadius: 10,
+        marginBottom: 10,
+    },
+
+    alertIncorrect: {
+        alignItems: "center",
+        backgroundColor: COLORS.errorLight,
+        borderWidth: 1.5,
+        borderColor: COLORS.error,
+        paddingVertical: 10,
+        borderRadius: 10,
+        marginBottom: 10,
+    },
 });
