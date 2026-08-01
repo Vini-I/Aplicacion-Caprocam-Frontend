@@ -36,10 +36,9 @@ import { TYPOGRAPHY } from "../../../theme/typography";
 import { ICONS } from "../../../theme/icons";
 import { HORAS } from "../constants/AlimentacionOpciones";
 import { useFincaEstanqueAlimentacion } from "../hooks/useFincaEstanqueAlimentacion";
+import { styles as formStyles } from "../styles/AlimentacionStyles";
 
-const bordeError = { borderColor: COLORS.error, borderWidth: 1.5 };
-const sectionTitleRow = { flexDirection: "row", alignItems: "center", marginBottom: 10 };
-const sectionIcon = { marginRight: 8 };
+const { bordeError, sectionTitleRow, sectionIcon } = formStyles;
 
 export default function AlimentacionFormInfoGeneral({
   form = {},

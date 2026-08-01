@@ -78,6 +78,11 @@ export const styles = StyleSheet.create({
     marginBottom: 4,
   },
 
+  bordeError: {
+    borderColor: COLORS.error,
+    borderWidth: 1.5,
+  },
+
   // Secciones de AlimentacionForm* (título + ícono de cada Card).
   sectionTitleRow: {
     flexDirection: "row",
