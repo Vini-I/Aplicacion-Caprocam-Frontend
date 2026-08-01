@@ -16,10 +16,10 @@ import { COLORS } from "../../../theme/colors";
 
 export const styles = StyleSheet.create({
   overlay: {
-  backgroundColor: "rgba(0,0,0,0.45)",
-  justifyContent: "flex-end",
-  padding: 0,
-},
+    backgroundColor: COLORS.black,
+    justifyContent: "flex-end",
+    padding: 0,
+  },
  modalContainer: {
   paddingHorizontal: 16,
   paddingTop: 12,
@@ -49,13 +49,13 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 8,
     paddingHorizontal: 12,
-    borderRadius: 8,
+    borderRadius: 12,
   },
   filterBtnActive: {
     backgroundColor: COLORS.primary,
   },
   filterBtnInactive: {
-    borderColor: COLORS.textTertiary,
+    borderColor: COLORS.black,
   },
   filterBtnText: {
     marginLeft: 8,
@@ -94,23 +94,6 @@ export const sectionStyles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 8,
-  },
-});
-
-export const chipStyles = StyleSheet.create({
-  chip: {
-    paddingVertical: 6,
-    paddingHorizontal: 14,
-    borderRadius: 99,
-    borderWidth: 1,
-    borderColor: COLORS.textTertiary,
-    backgroundColor: COLORS.white,
-    marginRight: 8,
-    marginBottom: 8,
-  },
-  chipSelected: {
-    borderColor: COLORS.primary,
-    backgroundColor: COLORS.white,
   },
 });
 

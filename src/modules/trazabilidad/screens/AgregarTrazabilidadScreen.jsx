@@ -1,19 +1,11 @@
 /**
- * ============================================================
  * AgregarTrazabilidadScreen
- * ============================================================
- *
- * Pantalla para registrar un nuevo movimiento de trazabilidad.
- *
- * Reglas importantes / restricciones:
- * - El header no es local: lo resuelve el Stack layout de rutas
- *   (ver src/app/(drawer)/trazabilidad/_layout.jsx). No agregar un Navbar aquí.
- * - Botones normales deben usar `variant="outline"` salvo excepción aprobada.
- * - Colores deben salir de `COLORS`.
- *
- * Navegación / dependencias relevantes:
- * - Navega a listar/detalle mediante `useTrazabilidad`.
+ * Pantalla para registrar un nuevo movimiento de trazabilidad entre estanques.
+ * @dependencies - TrazabilidadForm, useTrazabilidad, Button, Alert, Icon
+ * @validations - Campos obligatorios (finca, origen, destino, fecha, tamaño, días, PL) marcados con *. Origen != Destino.
+ * @navigation - Redirige a /trazabilidad tras registrar exitosamente.
  */
+import { useRef, useEffect } from "react";
 import { View, ScrollView } from "react-native";
 import Text from "../../../shared/components/Text";
 import { styles } from "../styles/AgregarTrazabilidadStyle";
@@ -28,6 +20,8 @@ import TrazabilidadForm from "../components/TrazabilidadForm";
 import { useTrazabilidad } from "../hooks/useTrazabilidad";
 
 export default function AgregarTrazabilidadScreen() {
+  const scrollViewRef = useRef(null);
+
   const {
     formData,
     fincas,
@@ -36,20 +30,26 @@ export default function AgregarTrazabilidadScreen() {
     estanquesDestino,
     mensajeError,
     submitted,
-    mostrarAlerta,
     manejarCambio,
     manejarCambioFinca,
     manejarEnvio,
     plAutocompletado,
+    errorCarga,
+    sesionExpirada,
+    cerrarErrorCarga,
+    irALogin,
   } = useTrazabilidad();
+
+  useEffect(() => {
+    if (mensajeError) {
+      scrollViewRef.current?.scrollToEnd({ animated: true });
+    }
+  }, [mensajeError]);
 
   return (
     <View style={STYLE.container}>
-
-
-      {/* Header provided by Stack layout (see src/app/(drawer)/trazabilidad/_layout.jsx) */}
-
       <ScrollView
+        ref={scrollViewRef}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
@@ -57,9 +57,28 @@ export default function AgregarTrazabilidadScreen() {
           <Alert
             variant="info"
             message="Este registro es un hecho histórico: no se puede editar ni borrar una vez guardado."
-            style={styles.infoBanner}
-            textStyle={{ color: COLORS.error }}
+            style={styles.infoBannerHistorico}
+            textStyle={styles.infoAlertText}
           />
+
+          {errorCarga !== "" && (
+            <Alert
+              variant="danger"
+              message={errorCarga}
+              style={styles.infoBanner}
+              textStyle={styles.errorAlertText}
+            />
+          )}
+
+          {errorCarga !== "" && (
+            <Button
+              variant="outline"
+              onPress={sesionExpirada ? irALogin : cerrarErrorCarga}
+              style={styles.infoBanner}
+            >
+              {sesionExpirada ? "Ir a iniciar sesión" : "Cerrar"}
+            </Button>
+          )}
 
           <TrazabilidadForm
             formData={formData}
@@ -81,32 +100,24 @@ export default function AgregarTrazabilidadScreen() {
                 "Revisa los campos obligatorios marcados con * antes de guardar."
               }
               style={styles.infoBanner}
-              textStyle={{ color: COLORS.error }}
+              textStyle={styles.errorAlertText}
             />
           )}
-
-          {mostrarAlerta && (
-            <Alert
-              variant="success"
-              message="¡Movimiento registrado exitosamente!"
-              style={styles.alertBox}
-              textStyle={styles.alertText}
-            />
-          )}
-
-          <Button
-            variant="outline"
-            onPress={manejarEnvio}
-            style={styles.createButton}
-          >
-            <View style={styles.createButtonContent}>
-              <Icon icon={ICONS.save} size={20} color={COLORS.primary} />
-              <Text style={styles.createButtonText}>Registrar movimiento</Text>
-            </View>
-          </Button>
         </View>
       </ScrollView>
-    
+
+      <View style={styles.floatingButtonContainer}>
+        <Button
+          variant="outline"
+          onPress={manejarEnvio}
+          style={styles.fullButton}
+        >
+          <View style={styles.btnContent}>
+            <Icon icon={ICONS.save} size={20} color={COLORS.primary} />
+            <Text style={styles.btnText}>Registrar movimiento</Text>
+          </View>
+        </Button>
+      </View>
     </View>
   );
 }

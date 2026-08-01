@@ -182,6 +182,22 @@ export function formatDate(fecha) {
   return formatDateObject(parsed);
 }
 
+export function formatearFechaInput(valorNuevo) {
+  const soloNumeros = String(valorNuevo ?? "")
+    .replace(/\D/g, "")
+    .slice(0, 8);
+
+  if (soloNumeros.length > 4) {
+    return `${soloNumeros.slice(0, 2)}/${soloNumeros.slice(2, 4)}/${soloNumeros.slice(4)}`;
+  }
+
+  if (soloNumeros.length > 2) {
+    return `${soloNumeros.slice(0, 2)}/${soloNumeros.slice(2)}`;
+  }
+
+  return soloNumeros;
+}
+
 export function esFechaValida(fechaTexto) {
   return parseDate(fechaTexto) !== null;
 }

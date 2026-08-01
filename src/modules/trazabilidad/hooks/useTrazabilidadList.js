@@ -25,9 +25,11 @@ import {
   enriquecerRegistros,
   filtrarRegistrosTrazabilidad,
 } from "../services/TrazabilidadServices";
+import { useError } from "../../../shared/context/ErrorContext";
 
 export function useTrazabilidadList() {
   const router = useRouter();
+  const { mostrarError } = useError();
 
   const [busqueda, setBusqueda] = useState("");
   const [filtros, setFiltros] = useState({
@@ -39,37 +41,88 @@ export function useTrazabilidadList() {
 
   const [registros, setRegistros] = useState([]);
   const [fincas, setFincas] = useState([]);
-  const [colaboradores, setColaboradores] = useState([]);
+  const [colaboradoresCat, setColaboradoresCat] = useState([]);
   const [estanques, setEstanques] = useState([]);
+// Errores fuera de un formulario (cargar catálogos o el listado):
+  // se muestran con el mismo Alert que ya usa la pantalla, no en
+  // console.error ni en silencio. 401 = token vencido.
+  const [errorCarga, setErrorCarga] = useState("");
+  const [sesionExpirada, setSesionExpirada] = useState(false);
+
+  function mostrarErrorCarga(mensaje, error) {
+    if (error?.response?.status === 401) {
+      setSesionExpirada(true);
+      setErrorCarga("Tu sesión expiró. Debes iniciar sesión de nuevo.");
+      return;
+    }
+    setSesionExpirada(false);
+    setErrorCarga(mensaje);
+    if (error) mostrarError(error);
+  }
+
+  function cerrarErrorCarga() {
+    setErrorCarga("");
+    setSesionExpirada(false);
+  }
+
+  function irALogin() {
+    cerrarErrorCarga();
+    router.replace("/login");
+  }
 
   useEffect(() => {
-    obtenerFincas().then(setFincas).catch(() => setFincas([]));
-    obtenerColaboradores().then(setColaboradores).catch(() => setColaboradores([]));
-    obtenerTodosLosEstanques().then(setEstanques).catch(() => setEstanques([]));
+    obtenerFincas().then(setFincas).catch((error) => {
+      setFincas([]);
+      mostrarErrorCarga("No se pudieron cargar las fincas.", error);
+    });
+
+    obtenerColaboradores().then(setColaboradoresCat).catch((error) => {
+      setColaboradoresCat([]);
+      mostrarErrorCarga("No se pudieron cargar los colaboradores.", error);
+    });
+
+    obtenerTodosLosEstanques().then(setEstanques).catch((error) => {
+      setEstanques([]);
+      mostrarErrorCarga("No se pudieron cargar los estanques.", error);
+    });
   }, []);
 
-  // Se vuelve a pedir el listado cada vez que la pantalla toma foco,
-  // para que se vea el registro recién agregado al volver de "agregar".
   useFocusEffect(
     useCallback(() => {
-      getRegistros().then(setRegistros).catch(() => setRegistros([]));
+      getRegistros().then(setRegistros).catch((error) => {
+        setRegistros([]);
+        mostrarErrorCarga("No se pudo cargar el listado de trazabilidad.", error);
+      });
     }, []),
   );
 
-  // El backend solo devuelve IDs crudos (fincaId, colaboradorId,
-  // estanqueOrigenId, estanqueDestinoId). Se cruzan acá contra
-  // fincas/colaboradores/estanques ya cargados para armar
-  // fincaNombre, colaboradorNombre, estanqueOrigenLabel y
-  // estanqueDestinoLabel, que es lo que espera TrazabilidadScreen.jsx.
   const mapas = useMemo(
-    () => construirMapas({ fincas, colaboradores, estanques }),
-    [fincas, colaboradores, estanques],
+    () => construirMapas({ fincas, colaboradores: colaboradoresCat, estanques }),
+    [fincas, colaboradoresCat, estanques],
   );
 
   const registrosEnriquecidos = useMemo(
     () => enriquecerRegistros(registros, mapas),
     [registros, mapas],
   );
+
+  // Extrae unicamente los responsables (usuarios o colaboradores) que
+  // poseen al menos 1 registro en el listado de trazabilidad.
+  const colaboradores = useMemo(() => {
+    const map = new Map();
+    (registrosEnriquecidos || []).forEach((reg) => {
+      const key = reg.colaboradorId ?? (reg.creadoPorUsuarioId ? `user_${reg.creadoPorUsuarioId}` : reg.colaboradorNombre);
+      const label = reg.colaboradorNombre || "Sin asignar";
+
+      if (key && label && !map.has(key)) {
+        map.set(key, {
+          label,
+          value: key,
+        });
+      }
+    });
+    return Array.from(map.values());
+  }, [registrosEnriquecidos]);
 
   const registrosFiltrados = useMemo(
     () => filtrarRegistrosTrazabilidad(registrosEnriquecidos, busqueda, filtros),
@@ -108,6 +161,10 @@ export function useTrazabilidadList() {
     nuevoRegistro,
     limpiarBusqueda,
     abrirDetalle,
+    errorCarga,
+    sesionExpirada,
+    cerrarErrorCarga,
+    irALogin,
   };
 }
 

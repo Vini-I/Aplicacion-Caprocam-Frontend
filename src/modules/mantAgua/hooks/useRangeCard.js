@@ -29,7 +29,7 @@
  * normalizar          fn(v)  — convierte un valor a 0–1 según sliderMin/sliderMax
  * tieneMaxIdeal       bool   — true si se definió idealMax
  * obtenerManejadores  fn(r)  — dado un objeto de lectura, retorna
- *                              { decrementar, incrementar, handleChangeText, handleFocus, handleBlur }
+ *                              { decrementar, incrementar, handleChangeText, handleFocus, handleBlur, handleArrastre }
  *
  * ---
  * RESTRICCIONES
@@ -54,7 +54,7 @@
  * const { incrementar, decrementar, handleChangeText, handleBlur } = obtenerManejadores(lecturas[0]);
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 const limitar = (val, min, max) => Math.min(Math.max(val, min), max);
 const formatear = (val, decimals) => val.toFixed(decimals);
@@ -99,36 +99,46 @@ export default function useRangeCard({
       : [];
 
     setLecturas(next);
-    onChange?.(next);
-  }, [JSON.stringify(initialLecturas), idealMin, decimals, onChange]);
+  }, [JSON.stringify(initialLecturas), idealMin, decimals]);
+
+  // Ref para evitar que el montaje inicial emita onChange([]) antes de
+  // que los initialValues se apliquen (race condition cuando el key del
+  // RangeCard cambia y el componente se remonta con datos vacíos
+  // transitorios mientras el fetch de mediciones está en vuelo).
+  const mountedRef = useRef(false);
+
+  // Única fuente que notifica al padre: se dispara después del render
+  // (nunca dentro de un reducer de setState), así el drag continuo no
+  // intenta actualizar FisicoQuimicaScreen mientras RangeCard se está
+  // renderizando.
+  useEffect(() => {
+    if (!mountedRef.current) {
+      mountedRef.current = true;
+      // En el primer render, solo emitir si ya hay lecturas reales.
+      // Si está vacío, no notificar — evita borrar los datos del padre.
+      if (lecturas.length > 0) {
+        onChange?.(lecturas);
+      }
+      return;
+    }
+    onChange?.(lecturas);
+  }, [lecturas, onChange]);
 
   const actualizarLectura = useCallback(
     (id, patch) => {
-      setLecturas((prev) => {
-        const next = prev.map((r) => (r.id === id ? { ...r, ...patch } : r));
-        onChange?.(next);
-        return next;
-      });
+      setLecturas((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)));
     },
-    [onChange]
+    []
   );
 
   const agregarLectura = useCallback(() => {
     if (lecturas.length >= maxLecturas) return;
-    setLecturas((prev) => {
-      const next = [...prev, crearLectura(Date.now(), idealMin, decimals)];
-      onChange?.(next);
-      return next;
-    });
-  }, [lecturas.length, maxLecturas, idealMin, decimals, onChange]);
+    setLecturas((prev) => [...prev, crearLectura(Date.now(), idealMin, decimals)]);
+  }, [lecturas.length, maxLecturas, idealMin, decimals]);
 
   const eliminarLectura = useCallback((id) => {
-    setLecturas((prev) => {
-      const next = prev.filter((r) => r.id !== id);
-      onChange?.(next);
-      return next;
-    });
-  }, [onChange]);
+    setLecturas((prev) => prev.filter((r) => r.id !== id));
+  }, []);
 
   const normalizar = (v) => (v - sliderMin) / (sliderMax - sliderMin);
   const tieneMaxIdeal = Number.isFinite(idealMax);
@@ -164,6 +174,12 @@ export default function useRangeCard({
           ? r.value
           : parseFloat(limitar(parsed, sliderMin, sliderMax).toFixed(decimals));
         actualizarLectura(r.id, { value: safe, rawInput: formatear(safe, decimals), editing: false });
+      },
+      // Actualiza el valor mientras se arrastra el thumb de RangeTrack.
+      // El valor ya llega redondeado/clampeado desde el componente.
+      handleArrastre: (nuevoValor) => {
+        const next = parseFloat(limitar(nuevoValor, sliderMin, sliderMax).toFixed(decimals));
+        actualizarLectura(r.id, { value: next, rawInput: formatear(next, decimals) });
       },
     }),
     [step, sliderMin, sliderMax, decimals, actualizarLectura]

@@ -19,9 +19,75 @@
  *   se consumen sus servicios.
  */
 
-import api, { obtenerColaboradorIdDesdeToken } from "../../../api/api";
+import api from "../../../api/api";
 import { fincaService } from "../../finca/services/finca.service";
 import { colaboradorService } from "../../colaboradores/services/colaborador.service";
+
+function decodificarJwtPayload(token) {
+  if (!token) return null;
+  const partes = token.split(".");
+  if (partes.length !== 3) return null;
+  try {
+    const payloadBase64 = partes[1].replace(/-/g, "+").replace(/_/g, "/");
+    const padded = payloadBase64.padEnd(payloadBase64.length + ((4 - (payloadBase64.length % 4)) % 4), "=");
+    const decoded = typeof globalThis !== "undefined" && typeof globalThis.atob === "function"
+      ? globalThis.atob(padded)
+      : Buffer.from(padded, "base64").toString("binary");
+    return JSON.parse(decoded);
+  } catch (error) {
+    return null;
+  }
+}
+
+function obtenerSesionDesdeTokenLocal() {
+  let token = null;
+  let usuarioGuardado = null;
+  try {
+    if (typeof localStorage !== "undefined") {
+      token = localStorage.getItem("caprocam_auth_token");
+      const raw = localStorage.getItem("caprocam_usuario");
+      if (raw) usuarioGuardado = JSON.parse(raw);
+    }
+  } catch (e) {
+    // Ignorar
+  }
+
+  const payload = decodificarJwtPayload(token);
+
+  if (!payload && !usuarioGuardado) {
+    return {
+      esColaborador: false,
+      tipo: "usuario",
+      id: null,
+      nombre: "Usuario",
+      colaboradorId: null,
+    };
+  }
+
+  const esColaborador = payload?.esColaborador === true || (Boolean(payload?.colaboradorId) && !payload?.usuario);
+
+  if (esColaborador) {
+    const colaboradorId = payload?.colaboradorId ?? payload?.id ?? null;
+    const nombre = payload?.nombre ?? usuarioGuardado?.nombre ?? (colaboradorId ? `Colaborador ${colaboradorId}` : "Colaborador");
+    return {
+      esColaborador: true,
+      tipo: "colaborador",
+      id: colaboradorId,
+      nombre,
+      colaboradorId: colaboradorId ? Number(colaboradorId) : null,
+    };
+  }
+
+  const usuarioId = payload?.id ?? usuarioGuardado?.id ?? null;
+  const nombre = payload?.nombre ?? usuarioGuardado?.nombre ?? payload?.usuario ?? "Usuario";
+  return {
+    esColaborador: false,
+    tipo: "usuario",
+    id: usuarioId,
+    nombre,
+    colaboradorId: null,
+  };
+}
 
 function obtenerValor(estanque, campos) {
   for (const campo of campos) {
@@ -65,13 +131,41 @@ function mapearEstanquesAOptions(estanques) {
     }));
 }
 
-function esEstanquePreCria(estanque) {
+function obtenerTipoEstanque(estanque) {
+  const rawTipo = obtenerValor(estanque, ["tipoEstanque", "tipo_estanque", "tipo"]);
+  if (rawTipo !== undefined && rawTipo !== null && rawTipo !== "") {
+    return String(rawTipo).trim().toLowerCase();
+  }
+
+  const rawEstado = obtenerValor(estanque, ["estado", "estadoEstanque"]);
+  if (rawEstado !== undefined && rawEstado !== null && rawEstado !== "") {
+    return String(rawEstado).trim().toLowerCase();
+  }
+
+  return "";
+}
+
+export function esEstanquePreCria(estanque) {
+  const tipo = obtenerTipoEstanque(estanque);
+  if (tipo.includes("pre")) return true;
+  if (tipo.includes("engorde")) return false;
+
   const raw = estanque?.precria ?? estanque?.usa_precria ?? estanque?.usaPrecria ?? "";
   const val = String(raw).trim().toLowerCase();
   if (val === "si" || val === "yes" || val === "true" || val === "1") return true;
-  // also accept numeric 1
   if (Number(raw) === 1) return true;
   return false;
+}
+
+export function esEstanqueEngorde(estanque) {
+  const tipo = obtenerTipoEstanque(estanque);
+  if (tipo.includes("engorde")) return true;
+  if (tipo.includes("pre")) return false;
+
+  const estado = String(obtenerValor(estanque, ["estado", "estadoEstanque"]) ?? "")
+    .trim()
+    .toLowerCase();
+  return estado.includes("engorde");
 }
 
 export async function getRegistros() {
@@ -118,13 +212,17 @@ export function filtrarRegistrosTrazabilidad(registros, texto, filtros) {
         String(valor ?? "").toLowerCase().includes(textoBusqueda),
       );
 
+    const keyResponsable = registro.colaboradorId ?? (registro.creadoPorUsuarioId ? `user_${registro.creadoPorUsuarioId}` : registro.colaboradorNombre);
+
     const coincideFiltros =
       (filtros.fincas.length === 0 || filtros.fincas.includes(registro.fincaId)) &&
       ((filtros.estanques ?? []).length === 0 ||
         filtros.estanques.includes(registro.estanqueOrigenId) ||
         filtros.estanques.includes(registro.estanqueDestinoId)) &&
       (filtros.colaboradores.length === 0 ||
-        filtros.colaboradores.includes(registro.colaboradorId)) &&
+        filtros.colaboradores.includes(keyResponsable) ||
+        filtros.colaboradores.includes(registro.colaboradorId) ||
+        filtros.colaboradores.includes(registro.colaboradorNombre)) &&
       (filtros.fecha === "" || registro.fecha === filtros.fecha);
 
     return coincideBusqueda && coincideFiltros;
@@ -192,7 +290,7 @@ export async function obtenerEstanquesEngordePorFinca(fincaId) {
     return mapearEstanquesAOptions(
       estanques.filter((estanque) => {
         const fincaCoincide = String(estanque.fincaId ?? estanque.finca_id) === String(fincaId);
-        const esEngorde = String(estanque.estado ?? "").toLowerCase() === "engorde";
+        const esEngorde = esEstanqueEngorde(estanque);
         return fincaCoincide && esEngorde;
       }),
     );
@@ -246,22 +344,49 @@ export async function obtenerColaboradores() {
   }));
 }
 
+export function obtenerSesionFormulario() {
+  const sesion = obtenerSesionDesdeTokenLocal();
+  const esUsuario = sesion.tipo === "usuario";
+
+  return {
+    tipo: sesion.tipo,
+    labelCampo: esUsuario ? "Usuario responsable" : "Colaborador responsable",
+    nombre: sesion.nombre,
+    label: esUsuario ? `Usuario: ${sesion.nombre}` : `Colaborador: ${sesion.nombre}`,
+    colaboradorId: sesion.colaboradorId,
+    usuarioId: esUsuario ? sesion.id : null,
+  };
+}
+
 export function obtenerColaboradorSesion() {
-  return { label: "Cargando...", value: 1 };
+  return obtenerSesionFormulario();
 }
 
 export async function obtenerColaboradorSesionActual() {
-  // El id ya no está fijo: se decodifica del token JWT actual
-  // (ver obtenerColaboradorIdDesdeToken en src/api/api.js).
-  const colaboradorId = await obtenerColaboradorIdDesdeToken();
+  const sesion = obtenerSesionFormulario();
+  if (sesion.tipo === "usuario") {
+    return sesion;
+  }
+
+  const colaboradorId = sesion.colaboradorId;
+  if (!colaboradorId) {
+    return sesion;
+  }
+
   try {
     const colaborador = await colaboradorService.getColaboradorById(colaboradorId);
     const nombreCompleto = [colaborador?.nombre, colaborador?.apellidos]
       .filter(Boolean)
       .join(" ");
-    return { label: nombreCompleto || `Colaborador ${colaboradorId}`, value: colaboradorId };
+    const nombre = nombreCompleto || `Colaborador ${colaboradorId}`;
+    return {
+      ...sesion,
+      nombre,
+      label: `Colaborador: ${nombre}`,
+      colaboradorId,
+    };
   } catch (error) {
-    return { label: `Colaborador ${colaboradorId}`, value: colaboradorId };
+    return sesion;
   }
 }
 
@@ -286,23 +411,55 @@ export function construirMapas({ fincas = [], colaboradores = [], estanques = []
   };
 }
 
-export function obtenerColaboradores() {
-  // Datos de ejemplo; en un escenario real, estos datos deberían provenir de una API o base de datos.
-  // con el listado de colaboradores se llena un array y este se 
-  // retorna para el uso del filtrado por colaborador en la pantalla de trazabilidad.
+export function enriquecerRegistro(registro = {}, mapas = {}) {
+  const { fincasMap = new Map(), colaboradoresMap = new Map(), estanquesMap = new Map() } = mapas;
 
-  return [
-    { label: "Mario Juárez", value: "marioJuarez" },
-    { label: "Elena Rostova", value: "elenaRostova" },
-    { label: "Carlos Méndez", value: "carlosMendez" },
-  ];
-}
-  export function obtenerColaboradorSesion() {
-    // TODO: reemplazar por el colaborador autenticado real (token/contexto
-    // de sesión) cuando este módulo se conecte al backend de autenticación.
-    // Por ahora se simula el usuario que inició sesión.
-    // Este se utiliza en agregarRegistroTrazabilidad para asignar el colaborador que realiza la acción.
-    return { label: "Elena Rostova", value: "elenaRostova" };
+  let responsableNombre = "";
+  let tipoResponsable = "Colaborador";
+  const sesionActual = obtenerSesionDesdeTokenLocal();
+
+  if (registro.colaboradorId && colaboradoresMap.has(registro.colaboradorId)) {
+    responsableNombre = colaboradoresMap.get(registro.colaboradorId);
+    tipoResponsable = "Colaborador";
+  } else if (registro.colaboradorNombre) {
+    responsableNombre = registro.colaboradorNombre;
+    tipoResponsable = "Colaborador";
+  } else if (registro.usuarioNombre || registro.creadoPorUsuarioNombre || registro.creadoPorUsuario?.nombre || registro.usuario?.nombre) {
+    responsableNombre = registro.usuarioNombre || registro.creadoPorUsuarioNombre || registro.creadoPorUsuario?.nombre || registro.usuario?.nombre;
+    tipoResponsable = "Usuario";
+  } else if (registro.creadoPorUsuarioId || registro.usuarioId || registro.usuario_id) {
+    const usuarioIdReg = registro.creadoPorUsuarioId || registro.usuarioId || registro.usuario_id;
+    if (sesionActual && sesionActual.tipo === "usuario" && sesionActual.nombre) {
+      responsableNombre = sesionActual.nombre;
+    } else {
+      responsableNombre = `Usuario #${usuarioIdReg}`;
+    }
+    tipoResponsable = "Usuario";
+  } else if (sesionActual && sesionActual.tipo === "usuario" && !registro.colaboradorId) {
+    responsableNombre = sesionActual.nombre || "Usuario";
+    tipoResponsable = "Usuario";
+  } else if (registro.creadoPorColaboradorId) {
+    responsableNombre = `Colaborador #${registro.creadoPorColaboradorId}`;
+    tipoResponsable = "Colaborador";
+  } else {
+    responsableNombre = "Sin asignar";
+    tipoResponsable = "Responsable";
   }
 
+  return {
+    ...registro,
+    fincaNombre: fincasMap.get(registro.fincaId) ?? registro.fincaNombre ?? "",
+    colaboradorNombre: responsableNombre,
+    tipoResponsable,
+    responsableTexto: `${tipoResponsable}: ${responsableNombre}`,
+    estanqueOrigenLabel:
+      estanquesMap.get(registro.estanqueOrigenId) ?? registro.estanqueOrigenLabel ?? "",
+    estanqueDestinoLabel:
+      estanquesMap.get(registro.estanqueDestinoId) ?? registro.estanqueDestinoLabel ?? "",
+  };
+}
 
+export function enriquecerRegistros(registros = [], mapas) {
+  if (!Array.isArray(registros)) return [];
+  return registros.map((r) => enriquecerRegistro(r, mapas));
+}
