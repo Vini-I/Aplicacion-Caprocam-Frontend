@@ -15,7 +15,8 @@
  * - Expone "mensaje"/"mensajeVariant" para el Alert global del estándar
  *   (ya no se usa un Modal): la screen lo muestra centrado y arriba del
  *   botón de guardar. Usa "danger" (no "error") como variant porque es
- *   el nombre que reconoce shared/components/Alert.jsx.
+ *   el nombre que reconoce shared/components/Alert.jsx. El helper
+ *   mostrarMensaje() se encarga de la duración (3s éxito / 6s error).
  * - Maneja el flujo "Siembra a partir de Pre-Cría": si el usuario NO
  *   llegó automáticamente desde "Finalizar Pre-Cría", puede elegir
  *   manualmente el origen (Directa / A partir de Pre-Cría) y, en ese
@@ -31,7 +32,7 @@
  * la interfaz y ejecutar acciones.
  */
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useRouter, useLocalSearchParams } from "expo-router";
 
 import {
@@ -41,11 +42,11 @@ import {
 import { obtenerCamposObligatorios as obtenerCamposObligatoriosPorTipo } from "./siembraValidationRules";
 import { calcularCantidadSembrada } from "./siembraCalculos";
 import { obtenerFechaHoy, formatearFechaDesdeISO } from "./dateUtils";
-import {
-  obtenerEstanquePorCodigo,
-  obtenerEstanquesPorFinca,
-  obtenerFincas,
-} from "./fincaEstanqueLocal";
+
+import { fincaService } from "../../finca/services/finca.service";
+import { estanqueService } from "../../estanques/services/estanque.service";
+
+import { useError } from "../../../shared/context/ErrorContext";
 
 import {
   getPrecrias,
@@ -95,7 +96,7 @@ const initialFormData = {
   densidadPoblacional: "8",
   cantidadSembrada: "",
   plSiembra: "",
-  diasMaduracion: "90",
+  duracionCiclo: "90",
   areaHectareas: "",
 
   fechaInicio: "",
@@ -123,6 +124,29 @@ export default function useNuevaSiembra() {
   const [mensajeVariant, setMensajeVariant] = useState("info");
   const [guardando, setGuardando] = useState(false);
 
+  const { mostrarError } = useError();
+
+  const mensajeTimeoutRef = useRef(null);
+
+  function mostrarMensaje(texto, variant) {
+    if (mensajeTimeoutRef.current) {
+      clearTimeout(mensajeTimeoutRef.current);
+    }
+    setMensaje(texto);
+    setMensajeVariant(variant);
+
+    const duracion = variant === "success" ? 3000 : 6000;
+    mensajeTimeoutRef.current = setTimeout(() => {
+      setMensaje("");
+    }, duracion);
+  }
+
+  useEffect(() => {
+    return () => {
+      if (mensajeTimeoutRef.current) clearTimeout(mensajeTimeoutRef.current);
+    };
+  }, []);
+
   const [formData, setFormData] = useState(initialFormData);
   const params = useLocalSearchParams();
 
@@ -145,8 +169,39 @@ export default function useNuevaSiembra() {
     }));
   }, []);
 
-  const estanques = obtenerEstanquesPorFinca(formData.finca);
-  const fincas = useMemo(() => obtenerFincas(), []);
+  const [fincas, setFincas] = useState([]);
+  const [estanques, setEstanques] = useState([]);
+
+  useEffect(() => {
+    fincaService
+      .getFincas()
+      .then((data) =>
+        setFincas(data.map((f) => ({ label: f.nombreFinca, value: f.id }))),
+      )
+      .catch(() => setFincas([]));
+  }, []);
+
+  useEffect(() => {
+    if (!formData.finca) {
+      setEstanques([]);
+      return;
+    }
+    estanqueService
+      .getEstanques()
+      .then((todos) => {
+        const filtrados = todos.filter(
+          (estanque) => String(estanque.idFinca) === String(formData.finca),
+        );
+        const mapeados = filtrados.map((estanque) => ({
+          label: estanque.codigo,
+          value: estanque.id,
+          areaHectareas: (estanque.largo * estanque.ancho) / 10000,
+        }));
+        setEstanques(mapeados);
+      })
+      .catch(() => setEstanques([]));
+  }, [formData.finca]);
+
   const tecnicasCultivo = useMemo(
     () => [
       { label: "Extensiva", value: "extensiva" },
@@ -184,8 +239,7 @@ export default function useNuevaSiembra() {
         setLaboratoriosLarva(mapCatalogo(laboratorios));
         setProcedenciasLarva(mapCatalogo(procedencias));
       } catch (err) {
-        setMensaje("No fue posible cargar los catálogos de larva.");
-        setMensajeVariant("danger");
+        mostrarError(err);
       } finally {
         setCargandoCatalogos(false);
       }
@@ -249,7 +303,7 @@ export default function useNuevaSiembra() {
   }
 
   function handleChangeEstanque(value) {
-    const estanque = obtenerEstanquePorCodigo(formData.finca, value);
+    const estanque = estanques.find((e) => e.value === value);
     const area = estanque?.areaHectareas ?? "";
 
     setFormData((previousData) => {
@@ -323,8 +377,10 @@ export default function useNuevaSiembra() {
         return actualizado;
       });
     } catch (err) {
-      setMensaje("No fue posible cargar la Pre-Cría seleccionada.");
-      setMensajeVariant("danger");
+      mostrarMensaje(
+        "No fue posible cargar la Pre-Cría seleccionada.",
+        "danger",
+      );
     }
   }
 
@@ -455,13 +511,24 @@ export default function useNuevaSiembra() {
 
     if (Object.keys(nuevosErrores).length > 0) {
       const tipo = formData.tipoRegistro === "precria" ? "Pre-Cría" : "Siembra";
-      setMensaje(
+      mostrarMensaje(
         `Debe completar todos los campos obligatorios para registrar esta ${tipo}.`,
+        "danger",
       );
-      setMensajeVariant("danger");
       return;
     }
-
+    if (
+      formData.tipoRegistro === "siembra" &&
+      formData.pasoPorPrecria === "si" &&
+      Number(formData.cantidadSembrada) >
+        Number(formData.cantidadSobrevivientePrecria)
+    ) {
+      mostrarMensaje(
+        "La cantidad sembrada no puede ser mayor a la cantidad de sobrevivientes de la Pre-Cría.",
+        "danger",
+      );
+      return;
+    }
     setGuardando(true);
     try {
       let loteId;
@@ -477,18 +544,22 @@ export default function useNuevaSiembra() {
       } else {
         await createSiembra(new SiembraDTO(formData, loteId));
       }
-
-      setMensaje(
-        formData.tipoRegistro === "precria"
-          ? "Pre-Cría registrada correctamente."
-          : "Siembra registrada correctamente.",
-      );
-      setMensajeVariant("success");
       setSubmitted(false);
+      router.push({
+        pathname: "/siembra",
+        params: {
+          mensajeExito:
+            formData.tipoRegistro === "precria"
+              ? "Pre-Cría registrada correctamente."
+              : "Siembra registrada correctamente.",
+        },
+      });
     } catch (err) {
       const mensajeBackend = err.response?.data?.message;
-      setMensaje(mensajeBackend || "No fue posible registrar el ciclo.");
-      setMensajeVariant("danger");
+      mostrarMensaje(
+        mensajeBackend || "No fue posible registrar el ciclo.",
+        "danger",
+      );
     } finally {
       setGuardando(false);
     }

@@ -48,6 +48,7 @@ export class LoteLarvaDTO {
     this.pl_inicial = Number(formData.plInicial || formData.plSiembra || 0);
     this.cantidad_inicial = Number(formData.cantidadInicial || formData.cantidadSembrada || 0);
     this.fecha_ingreso = aFechaISO(formData.fechaInicio || formData.fechaSiembra || "");
+    this.estado_lote = formData.estadoLote || undefined;
   }
 }
 
@@ -88,5 +89,6 @@ export class SiembraDTO {
     this.cantidad_sembrada = Number(formData.cantidadSembrada || 0);
     this.pl_siembra = numeroDesdePL(formData.plSiembra);
     this.estado = formData.estado === "Finalizada" ? "FINALIZADA" : "ACTIVA";
+    this.duracion_ciclo = formData.duracionCiclo ? Number(formData.duracionCiclo) : null;
   }
 }
