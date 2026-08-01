@@ -32,8 +32,8 @@ import Card from "../../../shared/components/Card";
 import Button from "../../../shared/components/Button";
 import Icon from "../../../shared/components/Icons";
 import CustomText from "../../../shared/components/Text";
-import SearchBar from "../../inventarios/components/SearchBar";
-import FilterButton from "../../inventarios/components/FilterButton";
+import SearchBar from "../../../shared/components/SearchBar";
+import FilterButton from "../../../shared/components/FilterButton";
 import EmptyState from "../../../shared/components/EmptyState";
 
 import { ICONS } from "../../../theme/icons";
