@@ -323,4 +323,10 @@ export const ICONS = {
     provider: "Entypo",
     name: "link",
   },
+
+  //WhatsApp
+  whatsApp: {
+    provider: "FontAwesome5",
+    name: "whatsapp"
+  }
 };

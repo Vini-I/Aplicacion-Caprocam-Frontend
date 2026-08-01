@@ -9,7 +9,6 @@
  * 
  * Datos:
  * - tickets: Lista completa de tickets.
- * - ticketsFiltrados: Lista procesada según texto de búsqueda.
  * 
  * Validaciones:
  * - Filtra tickets en base al criterio seleccionado de forma segura.
@@ -22,33 +21,48 @@
  * - mantEquipoUtils.js
  */
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
+import { useNavigation } from "expo-router";
 import * as MantService from "../services/mantEquipoService.js";
-import { filtrarTickets } from "../utils/mantEquipoUtils.js";
 
 export function useMantEquipo() {
   const [tickets,  setTickets]  = useState([]);
   const [busqueda, setBusqueda] = useState("");
-  const [filtro,   setFiltro]   = useState("");
   const [cargando, setCargando] = useState(true);
+  const navigation = useNavigation();
 
-  useEffect(() => {
+  const cargarTickets = () => {
+    setCargando(true);
     MantService.obtenerTickets()
       .then((data) => setTickets(Array.isArray(data) ? data : []))
       .catch(() => setTickets([]))
       .finally(() => setCargando(false));
-  }, []);
+  };
 
-  // Filtrado real para demo
-  const ticketsFiltrados = useMemo(
-    () => filtrarTickets(tickets, busqueda, filtro),
-    [tickets, busqueda, filtro]
-  );
+  useEffect(() => {
+    cargarTickets();
 
-  function agregarTicket(t)         { setTickets((prev) => [t, ...prev]); }
-  function eliminarTicket(id)       { setTickets((prev) => prev.filter((t) => t.id !== id)); }
-  function actualizarTicket(upd)    {
-    setTickets((prev) => prev.map((t) => t.id === upd.id ? { ...t, ...upd } : t));
+    const unsubscribe = navigation.addListener("focus", () => {
+      // Sincronizar instantáneamente con la base mutable en memoria
+      setTickets([...MantService.TICKETS_MOCK]);
+    });
+
+    return unsubscribe;
+  }, [navigation]);
+
+  function agregarTicket(t) {
+    MantService.agregarTicket(t);
+    setTickets([...MantService.TICKETS_MOCK]);
+  }
+
+  function eliminarTicket(id) {
+    MantService.eliminarTicket(id);
+    setTickets([...MantService.TICKETS_MOCK]);
+  }
+
+  function actualizarTicket(upd) {
+    MantService.actualizarTicket(upd);
+    setTickets([...MantService.TICKETS_MOCK]);
   }
 
   // Cambia el estadoEquipo en el mock de equipos (demo sin backend)
@@ -57,9 +71,8 @@ export function useMantEquipo() {
   }
 
   return {
-    tickets, ticketsFiltrados,
+    tickets,
     busqueda, setBusqueda,
-    filtro,   setFiltro,
     cargando,
     agregarTicket, eliminarTicket, actualizarTicket, actualizarEstadoEquipo,
   };

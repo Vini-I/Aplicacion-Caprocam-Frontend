@@ -24,6 +24,9 @@
 import React from "react";
 import { View, TouchableOpacity } from "react-native";
 import CustomText from "../../../shared/components/Text";
+import Icon from "../../../shared/components/Icons";
+import { ICONS } from "../../../theme/icons";
+import { COLORS } from "../../../theme/colors";
 import { styles } from "../styles/trabajadoresExternosListStyles";
 
 // ============================================================
@@ -46,8 +49,14 @@ export default function TrabajadoresExternosList({ trabajadores, onSelectTrabaja
         <TouchableOpacity key={item.id} onPress={() => onSelectTrabajador?.(item.id)}>
           <View style={styles.item}>
             <CustomText style={styles.itemName}>{item.nombre}</CustomText>
-            <CustomText style={styles.itemDetail}>📞 {item.telefono}</CustomText>
-            <CustomText style={styles.itemDetail}>✉️ {item.email}</CustomText>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
+              <Icon icon={ICONS.phone} size={13} color={COLORS.textTertiary} style={{ marginRight: 6 }} />
+              <CustomText style={styles.itemDetail}>{item.telefono}</CustomText>
+            </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
+              <Icon icon={ICONS.user} size={13} color={COLORS.textTertiary} style={{ marginRight: 6 }} />
+              <CustomText style={styles.itemDetail}>{item.email}</CustomText>
+            </View>
             <CustomText style={styles.itemDetail}>Cédula: {item.cedula}</CustomText>
           </View>
         </TouchableOpacity>

@@ -1,12 +1,14 @@
 /**
  * ============================================================
- * ESTILOS GLOBALES DE LAYOUT
+ * SISTEMA DE ICONOS CENTRALIZADO
  * ============================================================
  *
- * Responsabilidad:
- * - Define el layout base de pantallas.
- * - Evita que cada modulo invente margenes o anchos distintos.
- * - Mantiene el patron container + contentWrapper.
+ * Breve: Estilos reutilizables para screens.
+ *
+ * - `container`: Contenedor raíz que ocupa la pantalla completa (fondo y padding).
+ * - `contentWrapper`: Wrapper centrado con `maxWidth` para acomodar cards y contenido.
+ *
+ * Uso: aplicar `style.container` al View raíz de cada screen y envolver el contenido con `style.contentWrapper`.
  */
 
 import { StyleSheet } from "react-native";
@@ -15,15 +17,13 @@ import { COLORS } from "./colors.js";
 export const STYLE = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.surface,
+    padding: 16,
+    backgroundColor: COLORS.white,
   },
 
   contentWrapper: {
-    width: "100%",
     maxWidth: 900,
     alignSelf: "center",
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 32,
+    width: "100%",
   },
 });

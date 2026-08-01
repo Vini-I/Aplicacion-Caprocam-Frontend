@@ -52,6 +52,8 @@ export const useRegister = ({ onRegisterSuccess = () => {} } = {}) => {
     errors,
     isFormValid,
     loading,
+    serverError,
+    setServerError,
     handleRegister,
     showSuccessModal,
     handleModalClose,
