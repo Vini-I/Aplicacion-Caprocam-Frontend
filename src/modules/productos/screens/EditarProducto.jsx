@@ -39,10 +39,14 @@ import Button from "../../../shared/components/Button";
 import NumberInput from "../../../shared/components/NumberInput";
 import DateInput from "../../../shared/components/DateInput";
 import Alert from "../../../shared/components/Alert";
+import Icon from "../../../shared/components/Icons";
+import Text from "../../../shared/components/Text";
 
 import { STYLE } from "../../../theme/style";
+import { COLORS } from "../../../theme/colors";
 import { useEditarProducto } from "../hooks/useEditarProducto";
 import { CATEGORIAS, UNIDADES } from "../services/DataProductForm";
+import { ICONS } from "../../../theme/icons";
 
 import { styles } from "../styles/ProductFormStyles";
 
@@ -78,11 +82,12 @@ export default function EditarProducto() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          <Card
-            title="Información del producto"
-            style={styles.card}
-            titleStyle={styles.cardTitle}
-          >
+          <Card style={styles.card}>
+            <View style={styles.cardHeader}>
+              <Icon icon={ICONS.edit} color={COLORS.primary} size={22} />
+              <Text style={styles.cardTitle}>Información del producto</Text>
+            </View>
+
             {/* Código / identificador */}
             <Input
               label="Código *"

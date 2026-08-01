@@ -83,11 +83,11 @@ export default function EditarCompradorScreen() {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        <Card
-          title="Información del comprador"
-          style={styles.card}
-          titleStyle={styles.cardTitle}
-        >
+        <Card style={styles.card}>
+         <View style={styles.cardHeader}>
+           <Icon icon={ICONS.edit} color={COLORS.primary} size={22} />
+           <Text style={styles.cardTitle}>Información del comprador</Text>
+         </View>
           {/* Alerta general: error, advertencia o confirmación de guardado */}
           {alerta && (
             <Alert
