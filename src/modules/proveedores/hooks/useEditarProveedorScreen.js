@@ -70,10 +70,7 @@ export function useEditarProveedorScreen() {
       setDireccion(data.direccion);
       setNotas(data.notas || "");
     } catch (err) {
-      setAlerta({
-        variant: "danger",
-        message: "No fue posible cargar el proveedor.",
-      });
+      setBase(null);
     } finally {
       setCargando(false);
     }
@@ -129,13 +126,19 @@ export function useEditarProveedorScreen() {
       mensajeObligatorio: "El teléfono es obligatorio.",
       mensajeInvalido: "Ingrese un teléfono válido de 8 dígitos. Ej: 12345678",
     });
-    if (errorTel) nuevosErrores.telefono = errorTel;
+    if (errorTel) {
+      nuevosErrores.telefono = errorTel;
+      if (telefono.trim() !== "") nuevosErrores.telefonoInvalido = true;
+    }
 
     const errorCorr = validarCorreo(correo, {
       mensajeObligatorio: "El correo es obligatorio.",
       mensajeInvalido: "Ingrese un correo válido. Ej: ventas@empresa.com",
     });
-    if (errorCorr) nuevosErrores.correo = errorCorr;
+    if (errorCorr) {
+      nuevosErrores.correo = errorCorr;
+      if (correo.trim() !== "") nuevosErrores.correoInvalido = true;
+    }
 
     const errorDir = validarDireccion(direccion);
     if (errorDir) nuevosErrores.direccion = errorDir;
@@ -143,9 +146,13 @@ export function useEditarProveedorScreen() {
     setErrores(nuevosErrores);
 
     if (Object.keys(nuevosErrores).length > 0) {
+      let mensajeAlerta = "Revisa los campos obligatorios marcados con * antes de guardar.";
+      if (nuevosErrores.telefonoInvalido) mensajeAlerta = nuevosErrores.telefono;
+      else if (nuevosErrores.correoInvalido) mensajeAlerta = nuevosErrores.correo;
+
       setAlerta({
         variant: "danger",
-        message: "Revisa los campos obligatorios marcados con * antes de guardar.",
+        message: mensajeAlerta,
       });
       
       if (errorTimeout.current) clearTimeout(errorTimeout.current);

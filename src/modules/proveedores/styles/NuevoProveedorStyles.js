@@ -10,7 +10,6 @@
  *
  * REGLAS IMPORTANTES:
  * - Totalmente sincronizado con EditarProveedorStyles en medidas.
- * - No hardcodear hexadecimanes; usar obligatoriamente COLORS.
  * - Los errores visuales (inputError) son bordes rojos únicamente.
  * - Las fuentes se obtienen exclusivamente de TYPOGRAPHY.
  *

@@ -54,12 +54,12 @@ export function formatearTelefono(valor) {
   return soloNumero.slice(0, 8);
 }
 
-// Formato estricto +506 XXXX-XXXX que exige el backend.
+// Formato de 8 dígitos que exige el backend.
 export function normalizarTelefonoParaBackend(telefono) {
   const limpio = (telefono || "").replace(/[^\d]/g, "");
   const soloNumero = limpio.startsWith("506") ? limpio.slice(3) : limpio;
 
   if (soloNumero.length !== 8) return telefono || "";
 
-  return `+506 ${soloNumero.slice(0, 4)}-${soloNumero.slice(4)}`;
+  return soloNumero.slice(0, 8);
 }

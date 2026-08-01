@@ -10,7 +10,6 @@
  *
  * REGLAS IMPORTANTES:
  * - Los estilos de alerta (success/danger) se manejan por variantes.
- * - Prohibido usar margin/padding inline en el componente React.
  * - Los campos comparten borderRadius y alturas idénticas al diseño.
  * - El color de inputError solo es visible cuando existe un error.
  *

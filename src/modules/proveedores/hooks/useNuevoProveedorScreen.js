@@ -25,16 +25,12 @@ const MENSAJE_CAMPOS_OBLIGATORIOS =
   "Revisa los campos obligatorios marcados con * antes de guardar.";
 
 function obtenerMensajeError(nuevosErrores) {
-  if (
-    nuevosErrores.nombre ||
-    nuevosErrores.tipoProducto ||
-    nuevosErrores.telefono ||
-    nuevosErrores.direccion ||
-    nuevosErrores.correoObligatorio
-  ) {
+  if (nuevosErrores.telefonoInvalido) return nuevosErrores.telefono;
+  if (nuevosErrores.correoInvalido) return nuevosErrores.correo;
+
+  if (Object.keys(nuevosErrores).length > 0) {
     return MENSAJE_CAMPOS_OBLIGATORIOS;
   }
-  if (nuevosErrores.correo) return nuevosErrores.correo;
   return "";
 }
 
@@ -85,7 +81,10 @@ export function useNuevoProveedorScreen() {
       mensajeObligatorio: "El teléfono es obligatorio.",
       mensajeInvalido: "Ingrese un teléfono válido de 8 dígitos. Ej: 12345678",
     });
-    if (errorTel) nuevosErrores.telefono = errorTel;
+    if (errorTel) {
+      nuevosErrores.telefono = errorTel;
+      if (telefono.trim() !== "") nuevosErrores.telefonoInvalido = true;
+    }
 
     const errorCorr = validarCorreo(correo, {
       mensajeObligatorio: "El correo electronico es obligatorio.",
@@ -93,7 +92,7 @@ export function useNuevoProveedorScreen() {
     });
     if (errorCorr) {
       nuevosErrores.correo = errorCorr;
-      if (!correo.trim()) nuevosErrores.correoObligatorio = true;
+      if (correo.trim() !== "") nuevosErrores.correoInvalido = true;
     }
 
     if (!direccion.trim()) {
@@ -133,11 +132,13 @@ export function useNuevoProveedorScreen() {
       limpiarFormulario();
     } catch (error) {
       setGuardadoExitoso(false);
-
-      const mensajeBackend = error.response?.data?.message;
-      setMensajeError(
-        mensajeBackend || "No fue posible guardar el proveedor.",
-      );
+      setMensajeError(error.message || "No fue posible guardar el proveedor.");
+      
+      if (errorTimeout.current) clearTimeout(errorTimeout.current);
+      errorTimeout.current = setTimeout(() => {
+        setErrores({});
+        setMensajeError("");
+      }, 6000);
     } finally {
       setGuardando(false);
     }

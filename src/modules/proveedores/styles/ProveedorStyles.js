@@ -140,10 +140,9 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: COLORS.white,
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: COLORS.primary,
-    paddingVertical: 14,
-    borderRadius: 10,
+    borderRadius: 12,
     gap: 8,
     shadowColor: COLORS.black,
     shadowOffset: {

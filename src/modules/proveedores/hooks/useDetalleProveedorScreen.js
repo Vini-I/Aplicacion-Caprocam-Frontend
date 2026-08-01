@@ -13,7 +13,7 @@
  * @validations - N/A
  * @navigation - N/A
  */
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useFocusEffect } from "expo-router";
 import { useLocalSearchParams } from "expo-router";
 import { useProveedor } from "../context/ProveedorContext";
@@ -27,9 +27,10 @@ export function useDetalleProveedorScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
+  const eliminando = useRef(false);
 
   const cargarProveedor = useCallback(async () => {
-    if (!id) return;
+    if (!id || eliminando.current) return;
     try {
       setCargando(true);
       setError("");
@@ -59,9 +60,11 @@ export function useDetalleProveedorScreen() {
 
   async function confirmarEliminar() {
     try {
+      eliminando.current = true;
       await eliminarProveedor(id);
       setModalVisible(false);
     } catch (err) {
+      eliminando.current = false;
       setModalVisible(false);
       setError("No fue posible eliminar el proveedor.");
     }

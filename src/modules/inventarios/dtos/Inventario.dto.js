@@ -16,7 +16,6 @@
 
 export class InventarioDTO {
   constructor({ Producto = null, proveedor, cantidad, unidad, stockMinimo }) {
-    this.grupoDatos = 1; //Temporal
     this.Producto = Producto;
     this.proveedor = proveedor;
     this.cantidad = Number(cantidad);

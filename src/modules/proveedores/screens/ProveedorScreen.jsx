@@ -27,6 +27,7 @@ import FilterButton from "../../../shared/components/FilterButton";
 import EmptyState from "../../../shared/components/EmptyState";
 import Alert from "../../../shared/components/Alert";
 
+import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
 import { STYLE } from "../../../theme/style";
 import { styles, ICON_STYLES } from "../styles/ProveedorStyles";
@@ -48,7 +49,10 @@ export default function ProveedorScreen() {
 
   return (
     <View style={STYLE.container}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 100 }}
+      >
         <View style={STYLE.contentWrapper}>
           {alert === "created" && (
             <Alert
