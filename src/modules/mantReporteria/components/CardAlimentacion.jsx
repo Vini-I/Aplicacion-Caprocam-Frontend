@@ -108,7 +108,7 @@ export default function CardAlimentacion({ fincaId, estanqueId, onEditar, onAler
 
                     <View style={styles.pesoContainer}>
                         <Text style={styles.label}>Cantidad KG</Text>
-                        <Text style={styles.peso}>{registro.cantidadKg} Kg</Text>
+                        <Text style={styles.cantidadKg}>{registro.cantidadKg} Kg</Text>
                     </View>
 
                     <View style={styles.Buttons}>

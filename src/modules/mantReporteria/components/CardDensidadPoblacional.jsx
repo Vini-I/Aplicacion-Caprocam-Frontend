@@ -18,7 +18,7 @@ export default function CardDensidadPoblacional({ data }) {
                 data.map((registro) => (
                     <Card
                         key={registro.id}
-                        style={styles.cardRegistro}
+                        style={[styles.cardRegistro, { borderLeftColor: COLORS.DensidadPoblacional }]}
 
                     >
                         <View style={styles.infoGrid}> 
