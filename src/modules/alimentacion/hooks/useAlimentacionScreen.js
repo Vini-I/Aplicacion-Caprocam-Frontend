@@ -39,10 +39,6 @@ import useAlimentacion from "./useAlimentacion";
 import useAlimentacionForm from "./useAlimentacionForm";
 import alimentacionService from "../services/Alimentacion.service";
 
-/**
- * Extrae el mensaje del error sin depender de ErrorContext.
- * Esta función pertenece únicamente al módulo Alimentación.
- */
 const extraerMensajeAlimentacion = (error) => {
   const data = error?.response?.data;
 

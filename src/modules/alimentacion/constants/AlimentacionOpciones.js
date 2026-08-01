@@ -4,13 +4,14 @@
  * ============================================================
  *
  * Centraliza las opciones fijas de los selects del formulario de
- * Alimentación (Método, Presentación, Proveedor, Tipo) y las
- * horas del selector de Hora, para que los componentes de sección
- * del formulario no las redefinan cada uno por su cuenta.
+ * Alimentación (Método, Presentación, Tipo) y las horas del
+ * selector de Hora, para que los componentes de sección del
+ * formulario no las redefinan cada uno por su cuenta.
  *
- * Finca y Estanque NO viven aquí: se cargan en vivo desde el
- * backend vía src/shared/hooks/useCatalogos.js (value = id
- * numérico real), no como listas fijas.
+ * Finca, Estanque, Proveedor y Producto NO viven aquí: se cargan
+ * en vivo desde el backend (value = id numérico real) via
+ * useFincaEstanqueAlimentacion.js y useProveedorProductoAlimentacion.js,
+ * no como listas fijas.
  *
  * Ejemplo:
  * import { METODOS, PRESENTACION } from '../constants/alimentacionOpciones';
@@ -26,11 +27,6 @@ export const METODOS = [
 export const PRESENTACION = [
   { label: "En polvo", value: "Polvo" },
   { label: "Granulado", value: "Granulado" },
-];
-
-export const PROVEEDORES = [
-  { label: "Biomar", value: "Biomar" },
-  { label: "Otro", value: "Otro" },
 ];
 
 export const TIPOS = [

@@ -7,38 +7,52 @@
  * ya guardados. No contiene ninguna lógica de UI ni de
  * validación de formularios: solo carga/recarga datos.
  *
- * Estado que maneja:
- * - alimentaciones: lista de registros obtenidos del service.
- * - loading: true mientras se están cargando los datos.
+ * IMPORTANTE: Alimentacion.service.js es un passthrough puro (solo
+ * llama a axios, no mapea nombres de campo). El backend devuelve
+ * cada registro con idFinca/idEstanque (no finca/estanque), pero
+ * AlimentacionList.jsx y GestionAlimentacion.jsx leen
+ * item.finca/item.estanque. Por eso este hook agrega esos alias
+ * (sin quitar idFinca/idEstanque) antes de guardar el estado, para
+ * no tener que tocar esos componentes.
  *
- * Cargar la lista es una acción FUERA de un formulario: si falla,
- * el error se muestra con el ModalError global vía
- * useError().mostrarError(), no con un estado local (ver
- * ErrorContext.js).
+ * Estado que maneja:
+ * - alimentaciones: lista de registros obtenidos del service, con
+ *   alias finca/estanque agregados.
+ * - loading: true mientras se están cargando los datos.
+ * - error: mensaje de error si la carga falla, si no null.
  *
  * Retorna:
- * - { alimentaciones, loading, recargar }
+ * - { alimentaciones, loading, error, recargar }
  *
  * Ejemplo:
- * const { alimentaciones, loading, recargar } = useAlimentacion();
+ * const { alimentaciones, loading, error, recargar } = useAlimentacion();
  */
 
 import { useState, useEffect } from "react";
 import alimentacionService from "../services/Alimentacion.service";
-import { useError } from "../../../shared/context/ErrorContext";
+
+function conAliasFincaEstanque(registro) {
+    if (!registro) return registro;
+    return {
+        ...registro,
+        finca: registro.idFinca,
+        estanque: registro.idEstanque,
+    };
+}
 
 const useAlimentacion = () => {
     const [alimentaciones, setAlimentaciones] = useState([]);
     const [loading, setLoading]               = useState(false);
-    const { mostrarError }                    = useError();
+    const [error, setError]                   = useState(null);
 
     const recargar = async () => {
         setLoading(true);
+        setError(null);
         try {
             const datos = await alimentacionService.getAll();
-            setAlimentaciones(datos);
-        } catch (error) {
-            mostrarError(error);
+            setAlimentaciones((datos || []).map(conAliasFincaEstanque));
+        } catch {
+            setError("No se pudieron cargar los registros.");
         } finally {
             setLoading(false);
         }
@@ -46,7 +60,7 @@ const useAlimentacion = () => {
 
     useEffect(() => { recargar(); }, []);
 
-    return { alimentaciones, loading, recargar };
+    return { alimentaciones, loading, error, recargar };
 };
 
 export default useAlimentacion;
