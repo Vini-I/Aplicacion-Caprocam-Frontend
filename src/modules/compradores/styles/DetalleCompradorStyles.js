@@ -220,6 +220,10 @@ export const styles = StyleSheet.create({
     fontFamily: TYPOGRAPHY.fontFamily.bold,
     fontWeight: undefined,
   },
+
+  loadingContainer: {
+    justifyContent: "center",
+  },
 });
 
 export const ICON_SIZE = {

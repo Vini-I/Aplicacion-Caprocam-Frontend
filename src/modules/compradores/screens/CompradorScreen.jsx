@@ -35,8 +35,8 @@ import CardPress from "../../../shared/components/CardPress";
 import Button from "../../../shared/components/Button";
 import Icon from "../../../shared/components/Icons";
 import Text from "../../../shared/components/Text";
-import SearchBar from "../../inventarios/components/SearchBar";
-import FilterButton from "../../inventarios/components/FilterButton";
+import SearchBar from "../../../shared/components/SearchBar";
+import FilterButton from "../../../shared/components/FilterButton";
 import EmptyState from "../../../shared/components/EmptyState";
 import Alert from "../../../shared/components/Alert";
 
@@ -152,7 +152,7 @@ export default function CompradorScreen() {
           <ActivityIndicator
             size="large"
             color={COLORS.primary}
-            style={{ marginTop: 32 }}
+            style={styles.loadingIndicator}
           />
         ) : (
           <FlatList

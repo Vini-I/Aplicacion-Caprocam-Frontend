@@ -18,6 +18,10 @@
  *    (errorNombre, errorCedula, errorTelefono, errorCorreo) para
  *    pintar el borde rojo, y UN SOLO mensaje general (mensajeError)
  *    para mostrar debajo del formulario.
+ * 4. Al guardar con éxito, YA NO navega a la lista: muestra el
+ *    alert de "guardado" por 3 segundos y luego limpia todo el
+ *    formulario (campos y errores) para que se pueda cargar otro
+ *    comprador sin salir de la pantalla.
  *
  * IMPORTANTE:
  * - Los errores solo se calculan dentro de handleSubmit: nunca
@@ -139,9 +143,22 @@ export function useNuevoCompradorScreen() {
     setMensajeError("");
     setGuardadoExitoso(true);
 
+    // Ya no navegamos fuera de la pantalla: mostramos el alert de
+    // éxito por 3 segundos y luego limpiamos el formulario para que
+    // el usuario pueda registrar otro comprador sin salir de acá.
     setTimeout(() => {
-      router.replace("/(drawer)/compradores/compradorScreen");
-    }, 900);
+      setGuardadoExitoso(false);
+      setNombre("");
+      setCedula("");
+      setTelefono("");
+      setCorreo("");
+      setDireccion("");
+      setNotas("");
+      setErrorNombre(false);
+      setErrorCedula(false);
+      setErrorTelefono(false);
+      setErrorCorreo(false);
+    }, 3000);
   }
 
   function handleVolver() {

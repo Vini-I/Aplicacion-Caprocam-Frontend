@@ -79,7 +79,7 @@ export const styles = StyleSheet.create({
     borderColor: COLORS.secondary,
     backgroundColor: COLORS.white,
     paddingHorizontal: 14,
-    fontSize: 15
+    fontSize: 15,
   },
   numberInput: {
     borderRadius: 12,
@@ -95,7 +95,7 @@ export const styles = StyleSheet.create({
   },
 
   inputError: {
-   borderColor: COLORS.error,
+    borderColor: COLORS.error,
   },
   saveButton: {
     marginTop: 10,

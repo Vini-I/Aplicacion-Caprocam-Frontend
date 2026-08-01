@@ -61,7 +61,7 @@ export default function DetalleCompradorScreen() {
 
   if (cargando) {
     return (
-      <View style={[styles.container, { justifyContent: "center" }]}>
+      <View style={[styles.container, styles.loadingContainer]}>
         <ActivityIndicator size="large" color={COLORS.primary} />
       </View>
     );
@@ -155,7 +155,7 @@ export default function DetalleCompradorScreen() {
           {/* Alert de éxito al pie de la pantalla, igual que al guardar un producto */}
       {eliminado && (
         <Alert
-          variant="danger"
+          variant="success"
           message="Comprador eliminado correctamente."
           style={styles.alertEliminado}
         />

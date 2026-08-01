@@ -26,10 +26,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { compradorService, mapComprador } from "../services/comprador.service";
+import { useError } from "../../../shared/context/ErrorContext";
 
 export function useDetalleCompradorScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
+  const { mostrarError } = useError();
 
   const [comprador, setComprador] = useState(null);
   const [cargando, setCargando] = useState(true);
@@ -51,10 +53,11 @@ export function useDetalleCompradorScreen() {
     } catch (err) {
       setComprador(null);
       setError("No se pudo cargar el comprador.");
+      mostrarError(err);
     } finally {
       setCargando(false);
     }
-  }, [id]);
+  }, [id, mostrarError]);
 
   useEffect(() => {
     if (id) cargarComprador();
@@ -75,6 +78,7 @@ export function useDetalleCompradorScreen() {
     } catch (err) {
       setModalVisible(false);
       setError("No se pudo eliminar el comprador. Intenta de nuevo.");
+      mostrarError(err);
     } finally {
       setEliminando(false);
     }

@@ -83,12 +83,11 @@ export default function NuevoCompradorScreen() {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        <Card
-          title="Información del comprador"
-          icon={ICONS.edit}
-          style={styles.card}
-          titleStyle={styles.cardTitle}
-        >
+        <Card style={styles.card}>
+           <View style={styles.cardHeader}>
+             <Icon icon={ICONS.add} color={COLORS.primary} size={22} />
+             <Text style={styles.cardTitle}>Información del comprador</Text>
+           </View>
           {/* Campos del formulario */}
           <Input
             label="Nombre del comprador *"

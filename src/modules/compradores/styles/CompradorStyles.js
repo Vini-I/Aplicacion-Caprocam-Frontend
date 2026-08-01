@@ -177,6 +177,10 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: TYPOGRAPHY.fontFamily.bold,
   },
+
+  loadingIndicator: {
+    marginTop: 32,
+  },
 });
 
 export const ICON_STYLES = {
