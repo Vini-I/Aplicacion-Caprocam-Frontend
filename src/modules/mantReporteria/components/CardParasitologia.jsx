@@ -18,7 +18,7 @@ export default function CardParasitologia({ data }) {
                 data.map((registro) => (
                     <Card
                         key={registro.id}
-                        style={styles.cardRegistro}
+                        style={[styles.cardRegistro,{ borderLeftColor: COLORS.Parasitologia }]}
 
                     >
                         <View style={styles.infoGrid}> 
@@ -54,7 +54,7 @@ export default function CardParasitologia({ data }) {
                                     Parasito
                                 </Text>
                                 <Text style={styles.value}>
-                                    {registro.parasito.charAt(0).toUpperCase() + registro.parasito.slice(1)}
+                                    {registro.parasito?registro.parasito.charAt(0).toUpperCase() + registro.parasito.slice(1): ""}
                                 </Text>
                             </View>
 
@@ -63,7 +63,7 @@ export default function CardParasitologia({ data }) {
                                     Grado Infeccion
                                 </Text>
                                 <Text style={styles.value}>
-                                    {registro.gradoInfeccion.charAt(0).toUpperCase() + registro.gradoInfeccion.slice(1)}
+                                    {registro.gradoInfeccion?registro.gradoInfeccion.charAt(0).toUpperCase() + registro.gradoInfeccion.slice(1): ""}
                                 </Text>
                             </View>
 
@@ -90,7 +90,7 @@ export default function CardParasitologia({ data }) {
                                     Colaborador
                                 </Text>
                                 <Text style={styles.value}>
-                                    {registro.nombreColaborador.charAt(0).toUpperCase() + registro.nombreColaborador.slice(1)}
+                                    {registro.nombreColaborador?registro.nombreColaborador.charAt(0).toUpperCase() + registro.nombreColaborador.slice(1): ""}
                                 </Text>
                             </View>
                         </View>
@@ -100,7 +100,7 @@ export default function CardParasitologia({ data }) {
                                 Porcetaje Infeccion
                             </Text>
 
-                            <Text style={styles.peso}>
+                            <Text style={styles.infeccion}>
                                 {registro.porcentajeInfeccion} %
                             </Text>
                         </View>

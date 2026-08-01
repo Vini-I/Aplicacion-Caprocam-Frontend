@@ -18,7 +18,7 @@ export default function CardCrecimiento({ data }) {
                 data.map((registro) => (
                     <Card
                         key={registro.id}
-                        style={styles.cardRegistro}
+                        style={[styles.cardRegistro, { borderLeftColor: COLORS.Crecimiento }]}
 
                     >
                         <View style={styles.infoGrid}> 

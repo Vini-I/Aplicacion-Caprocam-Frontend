@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import  {obtenerDetalleReporte}  from "../services/detalleReporte.service";
+import { TIPOS_AUTOGESTIONADOS } from "../constants/tipoReporte.js";
 
 import { fincaService } from "../../finca/services/finca.service.js";
 import { estanqueService } from "../../estanques/services/estanque.service.js";
@@ -17,6 +18,8 @@ export function useDetalleReporte() {
   const [estanques, setEstanques] = useState([]);  
   const [colaboradores, setColaboradores] = useState([]);
   const [estanquesFiltrados, setEstanquesFiltrados] = useState([]);
+
+  const [alert, setAlert] = useState(null);
 
   const [registros, setRegistros] = useState([]);
 
@@ -110,6 +113,12 @@ export function useDetalleReporte() {
         return;
       }
 
+      if (TIPOS_AUTOGESTIONADOS.includes(registroTipo)) {
+        setRegistros([]);
+        setLoading(false);
+        return;
+      }
+
       try {
         setLoading(true);
 
@@ -132,7 +141,7 @@ export function useDetalleReporte() {
           const colaboradorEncontrado = colaboradores.find(
             c => Number(c.value) === Number(registro.colaborador_id || registro.colaboradorId || registro.idColaborador)
           );
-
+          
             return {
               ...registro,
               nombreFinca: fincaEncontrada?.label ?? "No encontrada",
@@ -161,7 +170,7 @@ export function useDetalleReporte() {
     return () => {
       activo = false;
     };
-  }, [registroTipo, finca, estanque, fincas, estanques, colaboradores]);
+  }, [registroTipo, finca, estanque, fincas, estanques, colaboradores, filtrosCompletos]);
 
 
   return {
@@ -184,6 +193,9 @@ export function useDetalleReporte() {
     setRegistroTipo,
     setFinca,
     setEstanque,
+
+    alert,
+    setAlert,
 
   };
 }

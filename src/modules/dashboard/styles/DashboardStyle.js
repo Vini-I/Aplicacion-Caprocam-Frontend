@@ -567,6 +567,10 @@ export const styles = StyleSheet.create({
     left: 26,
   },
 
+  donutTotalNumber: {
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
+  },
+
   legendBlue: {
     width: 10,
     height: 10,

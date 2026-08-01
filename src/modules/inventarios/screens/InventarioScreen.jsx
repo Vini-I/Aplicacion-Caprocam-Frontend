@@ -52,8 +52,8 @@ import CustomText from "../../../shared/components/Text";
 import Title from "../../../shared/components/Title";
 import EmptyState from "../../../shared/components/EmptyState";
 import Icon from "../../../shared/components/Icons";
-import SearchBar from "../components/SearchBar";
-import FilterButton from "../components/FilterButton";
+import SearchBar from "../../../shared/components/SearchBar";
+import FilterButton from "../../../shared/components/FilterButton";
 
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
