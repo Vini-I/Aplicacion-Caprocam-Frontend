@@ -75,6 +75,10 @@ export const styles = StyleSheet.create({
     paddingVertical: 18,
   },
 
+  contentTablet: {
+    paddingVertical: 18,
+  },
+
   contentDesktop: {
     maxWidth: 900,
     alignSelf: "center",
@@ -87,6 +91,11 @@ export const styles = StyleSheet.create({
 
   alertText: {
     fontFamily: TYPOGRAPHY.fontFamily.medium,
+  },
+
+  errorText: {
+    marginTop: 6,
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
   },
 
   sectionTitleRow: {
@@ -109,6 +118,11 @@ export const styles = StyleSheet.create({
     width: "100%",
   },
 
+  gridTablet: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    columnGap: 12,
+  },
 
   gridDesktop: {
     flexDirection: "row",
@@ -120,15 +134,30 @@ export const styles = StyleSheet.create({
     width: "100%",
   },
 
+  gridItemTablet: {
+    width: "48.5%",
+  },
 
   gridItemDesktop: {
     width: "32%",
+  },
+
+  gridItemFull: {
+    width: "100%",
   },
 
   optionsGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 10,
+    borderWidth: 1,
+    borderColor: "transparent",
+    borderRadius: 12,
+    padding: 4,
+  },
+
+  optionsGridError: {
+    borderColor: COLORS.error,
   },
 
   optionButton: {
@@ -149,12 +178,6 @@ export const styles = StyleSheet.create({
   textArea: {
     minHeight: 100,
     textAlignVertical: "top",
-  },
-
-  saveButton: {
-    minHeight: 50,
-    borderRadius: 14,
-    marginBottom: 18,
   },
 
   inlineButtonContent: {
@@ -202,5 +225,14 @@ export const styles = StyleSheet.create({
 
   infoValue: {
     fontFamily: TYPOGRAPHY.fontFamily.regular,
+  },
+
+  outlinePrimaryButton: {
+    minHeight: 50,
+    borderRadius: 14,
+    marginBottom: 18,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    backgroundColor: COLORS.white,
   },
 });

@@ -32,13 +32,14 @@
  * solo conserva la navegación (useRouter).
  */
 
-import { useState, useEffect, useCallback, useMemo } from "react";
-import { useNavigation, useRouter } from "expo-router";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useNavigation, useRouter, useLocalSearchParams } from "expo-router";
 import { calcularProgresoCiclo } from "./siembraCalculos";
 import { getSiembras } from "../services/siembra.service";
 import { getPrecrias } from "../services/precria.service";
 import { fincaService } from "../../finca/services/finca.service";
-import { getEstanquesPorFinca } from "../services/estanquePorFinca.service";
+import { estanqueService } from "../../estanques/services/estanque.service";
+import { useError } from "../../../shared/context/ErrorContext";
 import { getLotes } from "../services/lote.service";
 import { formatearFechaDesdeISO } from "./dateUtils";
 
@@ -56,8 +57,36 @@ export default function useSiembraList() {
   const [busqueda, setBusqueda] = useState("");
   const [filtros, setFiltros] = useState({ categories: [] });
   const [cargando, setCargando] = useState(true);
-  const [error, setError] = useState("");
+  const { mostrarError } = useError();
+  const { mensajeExito } = useLocalSearchParams();
+  const [mensaje, setMensaje] = useState("");
+  const [mensajeVariant, setMensajeVariant] = useState("info");
+  const mensajeTimeoutRef = useRef(null);
 
+  function mostrarMensaje(texto, variant) {
+    if (mensajeTimeoutRef.current) {
+      clearTimeout(mensajeTimeoutRef.current);
+    }
+    setMensaje(texto);
+    setMensajeVariant(variant);
+
+    const duracion = variant === "success" ? 3000 : 6000;
+    mensajeTimeoutRef.current = setTimeout(() => {
+      setMensaje("");
+    }, duracion);
+  }
+
+  useEffect(() => {
+    return () => {
+      if (mensajeTimeoutRef.current) clearTimeout(mensajeTimeoutRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (mensajeExito) {
+      mostrarMensaje(mensajeExito, "success");
+    }
+  }, [mensajeExito]);
   const tiposRegistro = [
     { label: "Siembra", value: "siembra" },
     { label: "Pre-Cría", value: "precria" },
@@ -65,6 +94,35 @@ export default function useSiembraList() {
 
   const [fincas, setFincas] = useState([]);
   const [estanques, setEstanques] = useState([]);
+
+  const [filtroVisible, setFiltroVisible] = useState(false);
+  const [categoriasSeleccionadas, setCategoriasSeleccionadas] = useState(
+    filtros.categories,
+  );
+
+  function handleToggleFiltroVisible() {
+    if (!filtroVisible) {
+      setCategoriasSeleccionadas(filtros.categories);
+    }
+    setFiltroVisible((v) => !v);
+  }
+
+  function handleToggleChip(value) {
+    setCategoriasSeleccionadas((prev) =>
+      prev.includes(value) ? prev.filter((c) => c !== value) : [...prev, value],
+    );
+  }
+
+  function handleAplicarFiltro() {
+    setFiltros({ categories: categoriasSeleccionadas });
+    setFiltroVisible(false);
+  }
+
+  function handleLimpiarFiltro() {
+    setCategoriasSeleccionadas([]);
+    setFiltros({ categories: [] });
+    setFiltroVisible(false);
+  }
 
   useEffect(() => {
     fincaService
@@ -76,8 +134,15 @@ export default function useSiembraList() {
   }, []);
 
   useEffect(() => {
-    getEstanquesPorFinca()
-      .then(setEstanques)
+    estanqueService
+      .getEstanques()
+      .then((todos) => {
+        const mapeados = todos.map((estanque) => ({
+          label: estanque.codigo,
+          value: estanque.id,
+        }));
+        setEstanques(mapeados);
+      })
       .catch(() => setEstanques([]));
   }, []);
   function obtenerNombresFincaEstanque(registro) {
@@ -134,7 +199,6 @@ export default function useSiembraList() {
   const cargar = useCallback(async () => {
     try {
       setCargando(true);
-      setError("");
       const [siembras, precrias] = await Promise.all([
         getSiembras(),
         getPrecrias(),
@@ -144,7 +208,7 @@ export default function useSiembraList() {
         ...precrias.map(mapPrecriaParaCard),
       ]);
     } catch (err) {
-      setError("No fue posible cargar las siembras.");
+      mostrarError(err);
     } finally {
       setCargando(false);
     }
@@ -192,16 +256,22 @@ export default function useSiembraList() {
   );
 
   return {
-    siembrasFiltradas,
-    busqueda,
-    setBusqueda,
-    filtros,
-    setFiltros,
-    tiposRegistro,
-    cargando,
-    error,
-    handleNuevaSiembra,
-    handleDetalleSiembra,
-    recargar: cargar,
-  };
+  siembrasFiltradas,
+  busqueda,
+  setBusqueda,
+  filtros,
+  tiposRegistro,
+  cargando,
+  mensaje,
+  mensajeVariant,
+  filtroVisible,
+  categoriasSeleccionadas,
+  handleToggleFiltroVisible,
+  handleToggleChip,
+  handleAplicarFiltro,
+  handleLimpiarFiltro,
+  handleNuevaSiembra,
+  handleDetalleSiembra,
+  recargar: cargar,
+};
 }

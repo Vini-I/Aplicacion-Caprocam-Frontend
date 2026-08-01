@@ -51,14 +51,19 @@
  *
  * =========================================================================
  */
+import { useState } from "react";
 import { View, Text, ScrollView } from "react-native";
 import { styles } from "../styles/SiembraListStyles";
 
 import Button from "../../../shared/components/Button";
 import Icon from "../../../shared/components/Icons";
 import EmptyState from "../../../shared/components/EmptyState";
-import SearchBar from "../../inventarios/components/SearchBar";
-import FilterButton from "../../inventarios/components/FilterButton";
+import SearchBar from "../../../shared/components/SearchBar";
+import Alert from "../../../shared/components/Alert";
+import FilterPanel, {
+  FilterActions,
+} from "../../../shared/components/FilterPanel";
+import FilterChip from "../../../shared/components/FilterChip";
 import { ICONS } from "../../../theme/icons";
 import { COLORS } from "../../../theme/colors";
 import { STYLE } from "../../../theme/style";
@@ -70,16 +75,18 @@ export default function SiembraListScreen() {
   const {
     busqueda,
     setBusqueda,
-
+    mensaje,
+    mensajeVariant,
     filtros,
-    setFiltros,
-
     tiposRegistro,
-
     siembrasFiltradas,
-
+    filtroVisible,
+    categoriasSeleccionadas,
+    handleToggleFiltroVisible,
+    handleToggleChip,
+    handleAplicarFiltro,
+    handleLimpiarFiltro,
     handleNuevaSiembra,
-
     handleDetalleSiembra,
   } = useSiembraList();
 
@@ -90,6 +97,13 @@ export default function SiembraListScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={STYLE.contentWrapper}>
+          {mensaje !== "" && (
+            <Alert
+              message={mensaje}
+              variant={mensajeVariant}
+              textStyle={{ textAlign: "center" }}
+            />
+          )}
           <View style={styles.contentHeader}>
             <View style={styles.cardTitleRow}>
               <Icon icon={ICONS.shrimp} color={COLORS.primary} />
@@ -105,32 +119,39 @@ export default function SiembraListScreen() {
               onChangeText={setBusqueda}
               placeholder="Buscar finca, estanque, lote, proveedor..."
               containerStyle={styles.searchBarContainer}
+              inputStyle={styles.searchInputSinFoco}
             />
-            <View style={styles.filterColumn}>
-              <FilterButton
-                categories={tiposRegistro}
-                suppliers={[]}
-                units={[]}
-                activeFilters={filtros}
-                onApply={setFiltros}
-                showLowStock={false}
-                showExpiryDate={false}
-                buttonStyle={styles.filterButton}
-              />
-              <Button
-                variant="outline"
-                onPress={handleNuevaSiembra}
-                style={[styles.newButton, styles.newButtonCompact]}
-              >
-                <View style={styles.newButtonContent}>
-                  <Icon icon={ICONS.add} color={COLORS.primary} />
-                  <Text style={styles.newButtonText} numberOfLines={1}>
-                    Nueva Siembra
-                  </Text>
-                </View>
-              </Button>
-            </View>
+
+            <Button
+              variant="outline"
+              onPress={handleToggleFiltroVisible}
+              style={styles.filtroToggleButton}
+            >
+              <Icon icon={ICONS.filter} color={COLORS.primary} />
+              <Text style={styles.filtroToggleText}>Filtrar</Text>
+            </Button>
           </View>
+
+          {filtroVisible && (
+            <View style={styles.filtroPanelWrapper}>
+              <FilterPanel title="Filtrar por tipo">
+                <View style={styles.filtroChipsRow}>
+                  {tiposRegistro.map((tipo) => (
+                    <FilterChip
+                      key={tipo.value}
+                      label={tipo.label}
+                      active={categoriasSeleccionadas.includes(tipo.value)}
+                      onPress={() => handleToggleChip(tipo.value)}
+                    />
+                  ))}
+                </View>
+                <FilterActions
+                  onClear={handleLimpiarFiltro}
+                  onApply={handleAplicarFiltro}
+                />
+              </FilterPanel>
+            </View>
+          )}
 
           <Text style={styles.contadorResultados}>
             {siembrasFiltradas.length}{" "}
@@ -157,6 +178,19 @@ export default function SiembraListScreen() {
           )}
         </View>
       </ScrollView>
+
+      <View style={styles.buttonWrapper}>
+        <Button
+          variant="outline"
+          onPress={handleNuevaSiembra}
+          style={styles.addButton}
+        >
+          <View style={styles.newButtonContent}>
+            <Icon icon={ICONS.add} color={COLORS.primary} />
+            <Text style={styles.newButtonText}>Añadir Siembra</Text>
+          </View>
+        </Button>
+      </View>
     </View>
   );
 }

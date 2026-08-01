@@ -326,8 +326,8 @@ export default function NuevaSiembraScreen() {
                 {guardando
                   ? "Guardando..."
                   : formData.tipoRegistro === "precria"
-                    ? "Guardar Pre-Cría"
-                    : "Guardar Siembra"}
+                    ? "Registar Pre-Cría"
+                    : "Registrar Siembra"}
               </Text>
             </View>
           </Button>

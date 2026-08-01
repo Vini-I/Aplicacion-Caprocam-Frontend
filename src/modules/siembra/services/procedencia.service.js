@@ -20,7 +20,6 @@ export const getProcedencias = async () => {
     const response = await api.get("/procedencias");
     return response.data.data;
   } catch (error) {
-    console.error("Error al obtener procedencias:", error);
     throw error;
   }
 };
@@ -32,8 +31,7 @@ export const createProcedencia = async (nombre) => {
   try {
     const response = await api.post("/procedencias", { nombre });
     return response.data.data;
-  } catch (error) {
-    console.error("Error al crear procedencia:", error.response?.data || error.message);
+  } catch (error) {;
     throw error;
   }
 };
@@ -46,7 +44,6 @@ export const updateProcedencia = async (id, nombre) => {
     const response = await api.put(`/procedencias/${id}`, { nombre });
     return response.data.data;
   } catch (error) {
-    console.error("Error al actualizar procedencia:", error.response?.data || error.message);
     throw error;
   }
 };
@@ -59,7 +56,6 @@ export const eliminarProcedencia = async (id) => {
     const response = await api.delete(`/procedencias/${id}`);
     return response.data.data;
   } catch (error) {
-    console.error("Error al eliminar procedencia:", error.response?.data || error.message);
     throw error;
   }
 };
