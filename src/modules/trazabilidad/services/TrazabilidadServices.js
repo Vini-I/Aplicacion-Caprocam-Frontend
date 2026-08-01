@@ -286,22 +286,23 @@ export function construirMapas({ fincas = [], colaboradores = [], estanques = []
   };
 }
 
-export function enriquecerRegistro(registro = {}, mapas = {}) {
-  const { fincasMap = new Map(), colaboradoresMap = new Map(), estanquesMap = new Map() } = mapas;
+export function obtenerColaboradores() {
+  // Datos de ejemplo; en un escenario real, estos datos deberían provenir de una API o base de datos.
+  // con el listado de colaboradores se llena un array y este se 
+  // retorna para el uso del filtrado por colaborador en la pantalla de trazabilidad.
 
-  return {
-    ...registro,
-    fincaNombre: fincasMap.get(registro.fincaId) ?? registro.fincaNombre ?? "",
-    colaboradorNombre:
-      colaboradoresMap.get(registro.colaboradorId) ?? registro.colaboradorNombre ?? "",
-    estanqueOrigenLabel:
-      estanquesMap.get(registro.estanqueOrigenId) ?? registro.estanqueOrigenLabel ?? "",
-    estanqueDestinoLabel:
-      estanquesMap.get(registro.estanqueDestinoId) ?? registro.estanqueDestinoLabel ?? "",
-  };
+  return [
+    { label: "Mario Juárez", value: "marioJuarez" },
+    { label: "Elena Rostova", value: "elenaRostova" },
+    { label: "Carlos Méndez", value: "carlosMendez" },
+  ];
 }
+  export function obtenerColaboradorSesion() {
+    // TODO: reemplazar por el colaborador autenticado real (token/contexto
+    // de sesión) cuando este módulo se conecte al backend de autenticación.
+    // Por ahora se simula el usuario que inició sesión.
+    // Este se utiliza en agregarRegistroTrazabilidad para asignar el colaborador que realiza la acción.
+    return { label: "Elena Rostova", value: "elenaRostova" };
+  }
 
-export function enriquecerRegistros(registros = [], mapas) {
-  if (!Array.isArray(registros)) return [];
-  return registros.map((r) => enriquecerRegistro(r, mapas));
-}
+

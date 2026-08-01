@@ -35,8 +35,7 @@ import {
   obtenerEstanquesEngordePorFinca,
   obtenerFincas,
   obtenerColaboradorSesion,
-  obtenerColaboradorSesionActual,
-  obtenerSiembraActivaPorEstanque,
+  obtenerSiembraPorEstanque,
 } from "../services/TrazabilidadServices";
 import { crearRegistroTrazabilidad } from "../services/AgregarTrazabilidadService";
 import { esFechaFutura, esFechaValida } from "../../../shared/utils/dateUtils";
@@ -45,8 +44,8 @@ import { esFechaFutura, esFechaValida } from "../../../shared/utils/dateUtils";
 
 export function useTrazabilidad() {
   const router = useRouter();
+  const colaboradorSesion = obtenerColaboradorSesion();
 
-  const [colaboradorSesion, setColaboradorSesion] = useState(obtenerColaboradorSesion);
 
   const [formData, setFormData] = useState(() => ({
     ...initialForm,
@@ -66,62 +65,9 @@ export function useTrazabilidad() {
     };
   }, []);
 
-  useEffect(() => {
-    obtenerFincas().then(setFincas).catch(() => setFincas([]));
-  }, []);
-
-  // Resuelve el nombre real del colaborador de sesión contra la API
-  // (el id ya es correcto desde el montaje, esto solo actualiza el label).
-  useEffect(() => {
-    let cancelado = false;
-    obtenerColaboradorSesionActual().then((real) => {
-      if (cancelado) return;
-      setColaboradorSesion(real);
-      setFormData((previousData) => ({ ...previousData, colaboradorId: real.value }));
-    });
-    return () => {
-      cancelado = true;
-    };
-  }, []);
-
-  const [estanquesOrigen, setEstanquesOrigen] = useState([]);
-  const [estanquesDestino, setEstanquesDestino] = useState([]);
-
-  useEffect(() => {
-    let mounted = true;
-
-    if (!formData.fincaId) {
-      setEstanquesOrigen([]);
-      setEstanquesDestino([]);
-      return () => {
-        mounted = false;
-      };
-    }
-
-    Promise.all([
-      obtenerEstanquesPreCriaPorFinca(formData.fincaId),
-      obtenerEstanquesEngordePorFinca(formData.fincaId),
-    ])
-      .then(([listaOrigen, listaDestino]) => {
-        if (!mounted) return;
-        setEstanquesOrigen(listaOrigen || []);
-        setEstanquesDestino(listaDestino || []);
-      })
-      .catch(() => {
-        if (!mounted) return;
-        setEstanquesOrigen([]);
-        setEstanquesDestino([]);
-      });
-
-    return () => {
-      mounted = false;
-    };
-  }, [formData.fincaId]);
-
-  // Evita que la respuesta de una consulta vieja (usuario cambió de
-  // estanque rápido) sobrescriba el pl/dias del estanque seleccionado
-  // actualmente.
-  const siembraRequestIdRef = useRef(0);
+  const fincas = obtenerFincas();
+  const estanquesOrigen = obtenerEstanquesPorFinca(formData.fincaId);
+  const estanquesDestino = obtenerEstanquesPorFinca(formData.fincaId);
 
   function manejarCambio(field, value) {
     if (field === "estanqueOrigenId") {

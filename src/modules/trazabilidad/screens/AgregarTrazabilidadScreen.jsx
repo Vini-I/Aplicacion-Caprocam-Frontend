@@ -57,8 +57,8 @@ export default function AgregarTrazabilidadScreen() {
           <Alert
             variant="info"
             message="Este registro es un hecho histórico: no se puede editar ni borrar una vez guardado."
-            style={styles.infoBannerHistorico}
-            textStyle={{ color: COLORS.white }}
+            style={styles.infoBanner}
+            textStyle={{ color: COLORS.error }}
           />
 
           <TrazabilidadForm
