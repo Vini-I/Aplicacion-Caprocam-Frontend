@@ -122,15 +122,15 @@ export function useDetalleReporte() {
         if (activo) {
           const registrosConNombres = registrosData.map((registro) => {
           const fincaEncontrada = fincas.find(
-            f => Number(f.value) === Number(registro.finca_id)
+            f => Number(f.value) === Number(registro.finca_id || registro.fincaId || registro.idFinca)
           );
 
           const estanqueEncontrado = estanques.find(
-            e => Number(e.value) === Number(registro.estanque_id)
+            e => Number(e.value) === Number(registro.estanque_id || registro.estanqueId || registro.idEstanque)
           );
 
           const colaboradorEncontrado = colaboradores.find(
-            c => Number(c.value) === Number(registro.colaborador_id)
+            c => Number(c.value) === Number(registro.colaborador_id || registro.colaboradorId || registro.idColaborador)
           );
 
             return {

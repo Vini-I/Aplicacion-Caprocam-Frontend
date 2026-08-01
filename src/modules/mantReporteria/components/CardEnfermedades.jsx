@@ -10,7 +10,7 @@ import { COLORS } from "../../../theme/colors.js";
 
 import { styles } from "../styles/DetalleReporteStyle.js";
 
-export default function CardCrecimiento({ data }) {
+export default function CardEnfermedades({ data }) {
 
     return (
         <>
@@ -55,21 +55,47 @@ export default function CardCrecimiento({ data }) {
                                     Fecha
                                 </Text>
                                 <Text style={styles.value}>
-                                    {new Date(registro.fecha_registro).toLocaleDateString("es-CR")}
+                                    {new Date(registro.fechaReporte).toLocaleDateString("es-CR")}
                                 </Text>
                             </View>
+
+                            <View style={styles.infoItem}>
+                                <Text style={styles.label}>
+                                    Nombre Enfermedad
+                                </Text>
+                                <Text style={styles.value}>
+                                    {registro.enfermedad}
+                                </Text>
+                            </View>
+
+                            <View style={styles.infoItem}>
+                                <Text style={styles.label}>
+                                    Severidad
+                                </Text>
+                                <Text style={styles.value}>
+                                    {registro.severidad.charAt(0).toUpperCase() + registro.severidad.slice(1)}
+                                </Text>
+                            </View>
+
+                            <View style={styles.infoItem}>
+                                <Text style={styles.label}>
+                                    Mortalidad
+                                </Text>
+                                <Text style={styles.value}>
+                                    {registro.mortalidadRegistrada}
+                                </Text>
+                            </View>
+
+                            <View style={styles.infoItem}>
+                                <Text style={styles.label}>
+                                    Reporte
+                                </Text>
+                                <Text style={styles.value}>
+                                    {registro.reporte}
+                                </Text>
+                            </View>
+
                         </View>
-
-                        <View style={styles.pesoContainer}>
-                            <Text style={styles.label}>
-                                Peso actual
-                            </Text>
-
-                            <Text style={styles.peso}>
-                                {registro.peso_actual} g
-                            </Text>
-                        </View>
-
                         <View style={styles.Buttons}>
                             <Button
                                 style={styles.Eliminar}

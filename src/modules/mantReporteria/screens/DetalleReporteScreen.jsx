@@ -15,7 +15,11 @@ import Icon from "../../../shared/components/Icons.jsx";
 import Select from "../../../shared/components/Select.jsx";
 import Text from "../../../shared/components/Text.jsx";
 import NavbarRegistro from "../../../shared/components/NavbarRegistro.jsx"
+
 import CardCrecimiento from "../components/CardCrecimiento.jsx";
+import CardParasitologia from "../components/CardParasitologia.jsx";
+import CardEnfermedades from "../components/CardEnfermedades.jsx";
+import CardRaleo from "../components/CardRaleo.jsx";
 
 import { useDetalleReporte } from "../hooks/useDetalleReporte.js";
 import { TIPOS_REGISTRO } from "../constants/tipoReporte.js";
@@ -55,9 +59,6 @@ export default function DetalleReporteScreen() {
       <ScrollView>
         <View style={STYLE.container}>
           <Card style={STYLE.contentWrapper}>
-            <View style={styles.headerRow}>
-              <Text style={styles.cardTitle}>Detalle de Registro</Text>
-            </View>
             <View>
               <Text size={16} style={styles.filterTitle}>
                 <Icon style={styles.icon} icon={ICONS.filter} color={COLORS.primary} size={18} />
@@ -165,6 +166,30 @@ export default function DetalleReporteScreen() {
                   {
                     registroTipo === "crecimiento" && (
                       <CardCrecimiento
+                        data={registros}
+                      />
+                    )
+                  } 
+
+                  {
+                    registroTipo === "parasitologia" && (
+                      <CardParasitologia
+                        data={registros}
+                      />
+                    )
+                  }
+
+                  {
+                    registroTipo === "enfermedades" && (
+                      <CardEnfermedades
+                        data={registros}
+                      />
+                    )
+                  }
+
+                  {
+                    registroTipo === "raleo" && (
+                      <CardRaleo
                         data={registros}
                       />
                     )
