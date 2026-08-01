@@ -1,0 +1,76 @@
+import { getCrecimiento } from "../../mantCrecimiento/services/mantCrecimiento.service";
+import parasitologiaService from "../../parasitologia/services/ParasitologiaService";
+import enfermedadesService from "../../enfermedades/services/EnfermedadesService";
+import raleoService from "../../raleo/services/Raleo.service";
+import alimentacionService from "../../alimentacion/services/Alimentacion.service";
+import densidadPoblacionalService from "../../densidadPoblacional/services/DensidadPoblacional.service";
+
+export async function obtenerDetalleReporte({
+  tipoRegistro,
+  fincaId,
+  estanqueId,
+}) {
+
+  switch(tipoRegistro){
+    
+    case "crecimiento": 
+      const registros = await getCrecimiento();
+
+      return registros.filter(
+        (r) => 
+          Number(r.finca_id) === Number(fincaId) &&
+          Number(r.estanque_id) === Number(estanqueId)
+      )
+
+    case "parasitologia": 
+
+      const registrosPara = await parasitologiaService.getAll();
+
+      return registrosPara.filter(
+        (r) => 
+          Number(r.fincaId) === Number(fincaId) &&
+          Number(r.estanqueId) === Number(estanqueId)
+      )
+
+    case "enfermedades":
+
+      const registrosEnf = await enfermedadesService.getAll();
+      
+      return registrosEnf.filter(
+        (r) => 
+          Number(r.fincaId) === Number(fincaId) &&
+          Number(r.estanqueId) === Number(estanqueId)
+      )
+  
+    case "raleo":
+      const registrosRaleo = await raleoService.getAll();
+
+      return registrosRaleo.filter(
+        (r) => 
+          Number(r.idFinca) === Number(fincaId) &&
+          Number(r.idEstanque) === Number(estanqueId)
+      )
+
+    case "alimentacion":
+      const registrosAlim = await alimentacionService.getAll();
+
+      return registrosAlim.filter(
+        (r) => 
+          Number(r.idFinca) === Number(fincaId) &&
+          Number(r.idEstanque) === Number(estanqueId)
+      )
+
+    case "densidad_poblacional":
+      const registrosDensidad = await densidadPoblacionalService.getAll(); 
+
+      return registrosDensidad.filter(
+        (r) => 
+          Number(r.idFinca) === Number(fincaId) &&
+          Number(r.idEstanque) === Number(estanqueId)
+      )
+
+    default: 
+      return [];
+  }
+
+}

@@ -1,206 +1,171 @@
-/**
- * ============================================================
- * HOOK: DASHBOARD SCREEN
- * ============================================================
- *
- * Centraliza carga de datos, seleccion de cards, alertas y
- * navegacion del DashboardScreen.
- */
+/*
+//////////////////////////////////////////////////////////
+CABEZA DE ARCHIVO
+//////////////////////////////////////////////////////////
+Archivo: useDashboardScreen.js
+Autor: Gerald Andres Alfaro Solorzano
+Fecha: 30/07/2026
+Modulo: Dashboard
+Descripcion:
+Centraliza la logica de interfaz, calculos, alertas,
+navegacion y actualizacion automatica del Dashboard.
+//////////////////////////////////////////////////////////
+*/
 
-import { useEffect, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useWindowDimensions } from "react-native";
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 
-import { fincas as fincasModulo } from "../../finca/screens/FincaData";
-import { estanques as estanquesModulo } from "../../mantCrecimiento/services/EstanqueData";
-import { obtenerSiembras } from "../../siembra/services/SiembraService";
-import useAlimentacion from "../../alimentacion/hooks/useAlimentacion";
-import { getProductosInventario } from "../../inventarios/services/InventarioService";
-import { EQUIPOS_MOCK } from "../../mantEquipo/services/mantEquipoService";
-import enfermedadesService from "../../enfermedades/services/EnfermedadesService";
-import parasitologiaService from "../../parasitologia/services/ParasitologiaService";
-import {
-  construirAlertasOperativas,
-  descartarAlerta,
-  filtrarAlertasDescartadas,
-  obtenerAlertasDescartadas,
-} from "../../alertas/services/AlertasServices.js";
-import {
-  construirFincasDashboard,
-  obtenerAlimentacionSemanal,
-  obtenerMortalidadTotal,
-  obtenerResumenEnfermedadesVacio,
-  obtenerResumenParasitologiaVacio,
-  obtenerTotalCasosSanitarios,
-  obtenerUltimosRegistros,
-} from "../services/DashboardService";
+import { useError } from "../../../shared/context/ErrorContext";
+import { construirAlertasOperativas, descartarAlerta, filtrarAlertasDescartadas, obtenerAlertasDescartadas } from "../../alertas/services/AlertasServices";
+
+import useDashboard from "./useDashboard";
+import { construirFincasDashboard, obtenerAlimentacionSemanal, obtenerMortalidadTotal, obtenerTotalCasosSanitarios, obtenerUltimosRegistros } from "../utils/DashboardUtils";
+
+const ALERTAS_ABIERTAS_INICIALES = {
+  critica: true,
+  advertencia: true,
+  info: false,
+};
 
 export default function useDashboardScreen() {
   const router = useRouter();
-  const dimensiones = useWindowDimensions();
+  const { width } = useWindowDimensions();
+  const { mostrarError } = useError();
+
+  const {
+    fincas,
+    estanques,
+    alimentaciones,
+    siembras,
+    inventario,
+    equipos,
+    enfermedades,
+    resumenEnfermedades,
+    parasitologias,
+    resumenParasitologias,
+    fisicoQuimicos,
+    loading,
+    recargar,
+  } = useDashboard();
 
   const [selectedCard, setSelectedCard] = useState(null);
+  const [alertasAbiertas, setAlertasAbiertas] = useState(ALERTAS_ABIERTAS_INICIALES);
   const [alertasDescartadas, setAlertasDescartadas] = useState([]);
-  const [alertasAbiertas, setAlertasAbiertas] = useState({
-    critica: true,
-    advertencia: true,
-    info: false,
-  });
-  const [fincasData, setFincasData] = useState([]);
-  const [estanquesData, setEstanquesData] = useState([]);
-  const [siembrasData, setSiembrasData] = useState([]);
-  const [productosInventario, setProductosInventario] = useState([]);
-  const [equiposData, setEquiposData] = useState([]);
-  const [registrosEnfermedades, setRegistrosEnfermedades] = useState([]);
-  const [registrosParasitologia, setRegistrosParasitologia] = useState([]);
-  const [resumenEnfermedades, setResumenEnfermedades] = useState(
-    obtenerResumenEnfermedadesVacio(),
-  );
-  const [resumenParasitologia, setResumenParasitologia] = useState(
-    obtenerResumenParasitologiaVacio(),
-  );
 
-  const { alimentaciones, recargar } = useAlimentacion();
+  const fincasDashboard = useMemo(function () {
+    return construirFincasDashboard(fincas, estanques);
+  }, [fincas, estanques]);
 
-  let isTablet = false;
+  const alimentacionSemanal = useMemo(function () {
+    return obtenerAlimentacionSemanal(alimentaciones);
+  }, [alimentaciones]);
 
-  if (dimensiones.width >= 720) {
-    isTablet = true;
-  }
+  const totalCasosSanitarios = useMemo(function () {
+    return obtenerTotalCasosSanitarios(resumenEnfermedades, resumenParasitologias);
+  }, [resumenEnfermedades, resumenParasitologias]);
 
-  const fincasDashboard = construirFincasDashboard(fincasData, estanquesData);
-  const alimentacionSemanal = obtenerAlimentacionSemanal(alimentaciones);
+  const totalMortalidad = useMemo(function () {
+    return obtenerMortalidadTotal(resumenEnfermedades);
+  }, [resumenEnfermedades]);
 
-  const totalCasosSanitarios = obtenerTotalCasosSanitarios(
-    resumenEnfermedades,
-    resumenParasitologia,
-  );
+  const alertasBase = useMemo(function () {
+    return construirAlertasOperativas({
+      productosInventario: inventario,
+      siembras,
+      alimentaciones,
+      estanques,
+      equipos,
+      registrosEnfermedades: enfermedades,
+      registrosParasitologia: parasitologias,
+      registrosFisicoQuimicos: fisicoQuimicos,
+    });
+  }, [inventario, siembras, alimentaciones, estanques, equipos, enfermedades, parasitologias, fisicoQuimicos]);
 
-  const totalMortalidad = obtenerMortalidadTotal(resumenEnfermedades);
+  const alertasDashboard = useMemo(function () {
+    return filtrarAlertasDescartadas(alertasBase, alertasDescartadas).slice(0, 10);
+  }, [alertasBase, alertasDescartadas]);
 
-  const alertasBase = construirAlertasOperativas({
-    productosInventario: productosInventario,
-    siembras: siembrasData,
-    alimentaciones: alimentaciones,
-    estanques: estanquesData,
-    equipos: equiposData,
-    registrosEnfermedades: registrosEnfermedades,
-    registrosParasitologia: registrosParasitologia,
-  });
+  const ultimosRegistros = useMemo(function () {
+    return obtenerUltimosRegistros(alimentaciones, siembras, enfermedades, parasitologias, fisicoQuimicos);
+  }, [alimentaciones, siembras, enfermedades, parasitologias, fisicoQuimicos]);
 
-  const alertasDashboard = filtrarAlertasDescartadas(
-    alertasBase,
-    alertasDescartadas,
-  ).slice(0, 10);
-
-  const ultimosRegistros = obtenerUltimosRegistros(
-    alimentaciones,
-    siembrasData,
-    registrosEnfermedades,
-    registrosParasitologia,
-  );
-
-  function manejarSeleccionCard(cardId) {
-    if (selectedCard === cardId) {
-      setSelectedCard(null);
+  const cargarAlertasDescartadas = useCallback(async function () {
+    try {
+      const ids = await obtenerAlertasDescartadas();
+      setAlertasDescartadas(Array.isArray(ids) ? ids : []);
+    } catch (error) {
+      mostrarError(error);
     }
+  }, [mostrarError]);
 
-    if (selectedCard !== cardId) {
-      setSelectedCard(cardId);
-    }
-  }
+  useFocusEffect(
+    useCallback(function () {
+      recargar();
+      cargarAlertasDescartadas();
+    }, [recargar, cargarAlertasDescartadas]),
+  );
 
-  function irAMareas() {
-    router.push("/mareas/");
-  }
+  const manejarSeleccionCard = useCallback(function (cardId) {
+    setSelectedCard(function (cardActual) {
+      return cardActual === cardId ? null : cardId;
+    });
+  }, []);
 
-  function irAAlertas() {
-    router.push("/alertas");
-  }
-
-  function alternarAlertas(tipo) {
-    setAlertasAbiertas(function (actual) {
+  const alternarAlertas = useCallback(function (tipo) {
+    setAlertasAbiertas(function (estadoActual) {
       return {
-        ...actual,
-        [tipo]: !actual[tipo],
+        ...estadoActual,
+        [tipo]: !estadoActual[tipo],
       };
     });
-  }
-
-  async function descartarAlertaDashboard(id) {
-    const ids = await descartarAlerta(id);
-    setAlertasDescartadas(ids);
-  }
-
-  useEffect(function () {
-    let activo = true;
-    let intervalo = null;
-
-    async function cargarDatos() {
-      const enfermedades = await enfermedadesService.getAll();
-      const resumenEnfermedad = await enfermedadesService.getResumenDashboard();
-
-      const parasitos = await parasitologiaService.getAll();
-      const resumenParasitos = await parasitologiaService.getResumenDashboard();
-
-      if (activo === true) {
-        setFincasData([...fincasModulo]);
-        setEstanquesData([...estanquesModulo]);
-        setSiembrasData(obtenerSiembras());
-        setProductosInventario(getProductosInventario());
-        setEquiposData([...EQUIPOS_MOCK]);
-        setRegistrosEnfermedades(enfermedades);
-        setResumenEnfermedades(resumenEnfermedad);
-        setRegistrosParasitologia(parasitos);
-        setResumenParasitologia(resumenParasitos);
-      }
-    }
-
-    async function cargarDescartadas() {
-      const ids = await obtenerAlertasDescartadas();
-
-      if (activo === true) {
-        setAlertasDescartadas(ids);
-      }
-    }
-
-    recargar();
-    cargarDatos();
-    cargarDescartadas();
-
-    intervalo = setInterval(function () {
-      recargar();
-      cargarDatos();
-    }, 5000);
-
-    return function () {
-      activo = false;
-
-      if (intervalo !== null) {
-        clearInterval(intervalo);
-      }
-    };
   }, []);
+
+  const descartarAlertaDashboard = useCallback(async function (id) {
+    try {
+      const ids = await descartarAlerta(id);
+      setAlertasDescartadas(Array.isArray(ids) ? ids : []);
+    } catch (error) {
+      mostrarError(error);
+    }
+  }, [mostrarError]);
+
+  const irAAlertas = useCallback(function () {
+    router.push("/alertas");
+  }, [router]);
 
   return {
     selectedCard,
     alertasAbiertas,
+    alertasDescartadas,
+    cargando: loading,
+    isTablet: width >= 720,
+
+    fincasData: fincas,
     fincasDashboard,
-    estanquesData,
-    registrosEnfermedades,
-    registrosParasitologia,
-    resumenEnfermedades,
-    resumenParasitologia,
+    estanquesData: estanques,
+
+    alimentaciones,
     alimentacionSemanal,
+    siembrasData: siembras,
+    productosInventario: inventario,
+    equiposData: equipos,
+
+    registrosEnfermedades: enfermedades,
+    resumenEnfermedades,
+    registrosParasitologia: parasitologias,
+    resumenParasitologia: resumenParasitologias,
+    registrosFisicoQuimicos: fisicoQuimicos,
+
     totalCasosSanitarios,
     totalMortalidad,
     alertasDashboard,
     ultimosRegistros,
-    isTablet,
+
+    recargar,
     manejarSeleccionCard,
-    irAMareas,
-    irAAlertas,
     alternarAlertas,
     descartarAlertaDashboard,
+    irAAlertas,
   };
 }
