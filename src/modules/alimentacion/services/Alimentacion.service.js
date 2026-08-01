@@ -35,80 +35,62 @@
 
 import api from "../../../api/api";
 
-/*
-Convierte los campos del formulario del frontend a los campos
-reales que espera el backend (dtos/alimentacion.dto.js).
-*/
-function aBody(form) {
-    return {
-        idFinca: form.finca,
-        idEstanque: form.estanque,
-        fecha: form.fecha,
-        hora: form.hora,
-        metodo: form.metodo,
-        cantidadKg: form.cantidadKg !== "" ? Number(form.cantidadKg) : undefined,
-        presentacion: form.presentacion || undefined,
-        proveedor: form.proveedor || undefined,
-        tipoAlimento: form.tipoAlimento || undefined,
-        observaciones: form.observaciones || undefined,
-    };
+async function getAll() {
+  try {
+    const response = await api.get("/alimentaciones");
+    return response.data.data;
+  } catch (error) {
+    console.error("Error al obtener alimentaciones", error.response?.data || error.message);
+    throw error;
+  }
 }
 
-/*
-Convierte un registro devuelto por el backend (camelCase, con
-idFinca/idEstanque numéricos) a la forma que ya usaban las
-pantallas (con alias finca/estanque), para no romper componentes
-como AlimentacionStats/AlimentacionList que leen esos nombres.
-*/
-function aFrontend(registro) {
-    if (!registro) return registro;
-    return {
-        ...registro,
-        finca: registro.idFinca,
-        estanque: registro.idEstanque,
-    };
+async function getById(id) {
+  try {
+    const response = await api.get(`/alimentaciones/${id}`);
+    return response.data.data;
+  } catch (error) {
+    console.error("Error al obtener la alimentación", error.response?.data || error.message);
+    throw error;
+  }
+}
+
+async function create(alimentacionDTO) {
+  try {
+    const response = await api.post("/alimentaciones", alimentacionDTO);
+    return response.data.data;
+  } catch (error) {
+    console.error("Error al crear la alimentación", error.response?.data || error.message);
+    throw error;
+  }
+}
+
+async function update(id, alimentacionDTO) {
+  try {
+    const response = await api.put(`/alimentaciones/${id}`, alimentacionDTO);
+    return response.data.data;
+  } catch (error) {
+    console.error("Error al actualizar la alimentación", error.response?.data || error.message);
+    throw error;
+  }
+}
+
+async function deleteById(id) {
+  try {
+    const response = await api.delete(`/alimentaciones/${id}`);
+    return response.data.data;
+  } catch (error) {
+    console.error("Error al eliminar la alimentación", error.response?.data || error.message);
+    throw error;
+  }
 }
 
 const alimentacionService = {
-    getAll: async (filtros = {}) => {
-        const response = await api.get("/alimentaciones", { params: filtros });
-        return (response.data.data || []).map(aFrontend);
-    },
-
-    getById: async (id) => {
-        try {
-            const response = await api.get(`/alimentaciones/${id}`);
-            return aFrontend(response.data.data);
-        } catch (error) {
-            throw error;
-        }
-    },
-
-    create: async (form) => {
-        try {
-            const response = await api.post("/alimentaciones", aBody(form));
-            return aFrontend(response.data.data);
-        } catch (error) {
-            throw error;
-        }
-    },
-
-    update: async (id, form) => {
-        try {
-            const response = await api.put(`/alimentaciones/${id}`, aBody(form));
-            return aFrontend(response.data.data);
-        } catch (error) {
-            throw error;
-        }
-    },
-
-    deleteById: async (id) => {
-        try {
-            const response = await api.delete(`/alimentaciones/${id}`);
-            return aFrontend(response.data.data);
-        } catch (error) {
-            throw error;
-        }
-    },
+  getAll,
+  getById,
+  create,
+  update,
+  deleteById,
 };
+
 export default alimentacionService;

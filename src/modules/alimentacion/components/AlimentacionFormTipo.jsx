@@ -14,7 +14,7 @@
  * Ejemplo:
  * <AlimentacionFormTipo form={form} updateField={updateField} submitted={submitted} errores={errores} />
  */
-
+ 
 import React from "react";
 import { View } from "react-native";
 import Card from "../../../shared/components/Card";
@@ -23,7 +23,7 @@ import Text from "../../../shared/components/Text";
 import Icon from "../../../shared/components/Icons";
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
-import { TIPOS, PRESENTACION, METODOS } from "../constants/alimentacionOpciones";
+import { TIPOS, PRESENTACION, METODOS } from "../constants/AlimentacionOpciones";
 import { styles } from "../styles/AlimentacionStyles";
 
 export default function AlimentacionFormTipo({

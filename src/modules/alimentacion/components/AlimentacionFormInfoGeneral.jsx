@@ -23,7 +23,7 @@
  * Ejemplo:
  * <AlimentacionFormInfoGeneral form={form} updateField={updateField} submitted={submitted} errores={errores} />
  */
-
+ 
 import React from "react";
 import { View, Pressable, StyleSheet } from "react-native";
 import Card from "../../../shared/components/Card";
@@ -34,7 +34,7 @@ import Icon from "../../../shared/components/Icons";
 import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
 import { ICONS } from "../../../theme/icons";
-import { HORAS } from "../constants/alimentacionOpciones";
+import { HORAS } from "../constants/AlimentacionOpciones";
 import { useFincaEstanqueAlimentacion } from "../hooks/useFincaEstanqueAlimentacion";
 
 const bordeError = { borderColor: COLORS.error, borderWidth: 1.5 };

@@ -27,7 +27,7 @@
  *   handleGuardar={handleGuardar}
  * />
  */
-
+ 
 import React, { useEffect, useRef } from "react";
 import { View, ScrollView } from "react-native";
 

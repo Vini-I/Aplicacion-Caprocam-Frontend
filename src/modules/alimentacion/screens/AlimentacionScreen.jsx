@@ -71,4 +71,4 @@ export default function AlimentacionScreen({ navigation, onBack }) {
       </View>
     </>
   );
-}
+} 
