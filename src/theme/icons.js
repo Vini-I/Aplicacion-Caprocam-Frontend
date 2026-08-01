@@ -50,6 +50,10 @@ export const ICONS = {
     provider: "MaterialIcons",
     name: "home-filled",
   },
+  menu: {
+    provider: "AntDesign",
+    name: "menu",
+  },
 
   // Ubicación
   location: {
@@ -144,7 +148,7 @@ export const ICONS = {
     provider: "MaterialCommunityIcons",
     name: "star",
   },
-   close: {
+  close: {
     provider: "MaterialIcons",
     name: "close",
   },
@@ -161,6 +165,10 @@ export const ICONS = {
   phone: {
     provider: "FontAwesome",
     name: "phone",
+  },
+  email: {
+    provider: "MaterialIcons",
+    name: "email",
   },
 
   // Medidas
@@ -331,6 +339,6 @@ export const ICONS = {
   //WhatsApp
   whatsApp: {
     provider: "FontAwesome5",
-    name: "whatsapp"
-  }
+    name: "whatsapp",
+  },
 };
