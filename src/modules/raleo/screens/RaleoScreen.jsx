@@ -11,12 +11,21 @@
  *   tenía onPress={() => {}} y no guardaba ni validaba nada.
  *   Ahora handleGuardar activa `submitted = true`, valida con
  *   validarForm() de useRaleo, y solo si es válido persiste el
- *   registro con Raleo.service.js, muestra el modal de éxito y
+ *   registro con Raleo.service.js, muestra la alerta de éxito y
  *   reinicia el formulario (resetForm + submitted=false).
- * - El feedback de guardado (éxito, campos incompletos, error de
- *   guardado) se muestra con los componentes globales Modal +
- *   Alert de shared/components/, en vez de window.alert/
- *   Alert.alert nativos (mismo patrón de AlimentacionScreen.jsx).
+ * - idColaborador se agrega ahora al registro (antes faltaba por
+ *   completo: el backend lo exigia como requerido y cada guardado
+ *   fallaba con "El campo idColaborador es requerido"). Es
+ *   opcional a nivel de columna en la base de datos, pero
+ *   useRaleo.js lo valida como obligatorio en la UI, igual que
+ *   Crecimiento.
+ * - El feedback de éxito y de validación (campos incompletos) se
+ *   muestra en línea con el componente global Alert de
+ *   shared/components/. Los errores que devuelve el backend al
+ *   guardar (catch de handleGuardar) se muestran aparte, con el
+ *   ModalError global (useError().mostrarError, montado en
+ *   app/_layout.jsx) — no con el Alert en línea. Ninguno de los
+ *   dos usa window.alert/Alert.alert nativos.
  * - `observaciones` no es obligatorio: si el usuario no escribe
  *   nada, handleGuardar lo completa con "No se realizan
  *   observaciones" antes de persistir el registro.
@@ -101,6 +110,7 @@ function convertirFecha(fecha) {
       const registro = {
         idFinca: form.finca,
         idEstanque: form.estanque,
+        idColaborador: form.colaborador ? Number(form.colaborador) : undefined,
         fecha: convertirFecha(form.fecha),
         porcentaje: Number(form.porcentajeRaleo),
         pesoEstimado: Number(form.pesoPromedio),
