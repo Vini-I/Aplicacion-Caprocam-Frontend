@@ -2,6 +2,7 @@ import { getCrecimiento } from "../../mantCrecimiento/services/mantCrecimiento.s
 import parasitologiaService from "../../parasitologia/services/ParasitologiaService";
 import enfermedadesService from "../../enfermedades/services/EnfermedadesService";
 import raleoService from "../../raleo/services/Raleo.service";
+import alimentacionService from "../../alimentacion/services/Alimentacion.service";
 
 export async function obtenerDetalleReporte({
   tipoRegistro,
@@ -48,7 +49,18 @@ export async function obtenerDetalleReporte({
           Number(r.idFinca) === Number(fincaId) &&
           Number(r.idEstanque) === Number(estanqueId)
       )
-      
+
+    case "alimentacion":
+      const registrosAlim = await alimentacionService.getAll();
+
+      console.log("Alimentacion", registrosAlim);
+
+      return registrosAlim.filter(
+        (r) => 
+          Number(r.idFinca) === Number(fincaId) &&
+          Number(r.idEstanque) === Number(estanqueId)
+      )
+
     default: 
       return [];
   }

@@ -20,6 +20,7 @@ import CardCrecimiento from "../components/CardCrecimiento.jsx";
 import CardParasitologia from "../components/CardParasitologia.jsx";
 import CardEnfermedades from "../components/CardEnfermedades.jsx";
 import CardRaleo from "../components/CardRaleo.jsx";
+import CardAlimentacion from "../components/CardAlimentacion.jsx";
 
 import { useDetalleReporte } from "../hooks/useDetalleReporte.js";
 import { TIPOS_REGISTRO } from "../constants/tipoReporte.js";
@@ -190,6 +191,14 @@ export default function DetalleReporteScreen() {
                   {
                     registroTipo === "raleo" && (
                       <CardRaleo
+                        data={registros}
+                      />
+                    )
+                  }
+
+                  {
+                    registroTipo === "alimentacion" && (
+                      <CardAlimentacion
                         data={registros}
                       />
                     )
