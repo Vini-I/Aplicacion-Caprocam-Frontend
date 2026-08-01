@@ -80,7 +80,6 @@ export default function useRaleo() {
     if (!form.biomasaActual) errores.biomasaActual = "La biomasa actual estimada es obligatoria";
     if (!form.objetivo) errores.objetivo = "El objetivo del raleo es obligatorio";
     if (!form.metodo) errores.metodo = "El método es obligatorio";
-    if (!form.responsable) errores.responsable = "El responsable es obligatorio";
     if (!form.observaciones) errores.observaciones = "Las observaciones son obligatorias";
     return { valido: Object.keys(errores).length === 0, errores };
   }
