@@ -81,7 +81,7 @@ export default function AgregarProducto() {
         >
           <Card style={styles.card}>
             <View style={styles.cardHeader}>
-              <Icon icon={ICONS.add} color={COLORS.primary} size={22} />
+              <Icon icon={ICONS.save} color={COLORS.primary} size={22} />
               <Text style={styles.cardTitle}>Información del producto</Text>
             </View>
             {/* Código / identificador */}
@@ -236,9 +236,11 @@ export default function AgregarProducto() {
               onPress={handleSubmit}
               disabled={guardadoExitoso || guardando}
               style={styles.saveButton}
-              textStyle={styles.saveButtonText}
             >
+              <Icon icon={ICONS.add} size={20} color={COLORS.primary} />
+              <Text style={styles.saveButtonText}>
               {guardando ? "Guardando..." : "Guardar producto"}
+            </Text>
             </Button>
           </Card>
         </ScrollView>

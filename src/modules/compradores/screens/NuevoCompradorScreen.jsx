@@ -85,7 +85,7 @@ export default function NuevoCompradorScreen() {
       >
         <Card style={styles.card}>
            <View style={styles.cardHeader}>
-             <Icon icon={ICONS.add} color={COLORS.primary} size={22} />
+             <Icon icon={ICONS.addUser} color={COLORS.primary} size={22} />
              <Text style={styles.cardTitle}>Información del comprador</Text>
            </View>
           {/* Campos del formulario */}
@@ -180,7 +180,7 @@ export default function NuevoCompradorScreen() {
           {/* Botón para guardar, dispara la validación */}
           <Button variant="outline" onPress={handleSubmit} disabled={guardando} style={styles.saveButton}>
             <View style={styles.buttonContent}>
-               <Icon icon={ICONS.save} size={ICON_SIZES.save} color={COLORS.primary} />
+               <Icon icon={ICONS.add} size={ICON_SIZES.save} color={COLORS.primary} />
                <Text style={styles.saveButtonText}>
                  {guardando ? "Guardando..." : "Guardar comprador"}
                </Text>
