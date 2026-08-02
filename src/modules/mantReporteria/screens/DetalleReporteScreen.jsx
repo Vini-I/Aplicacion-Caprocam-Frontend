@@ -13,6 +13,7 @@
  */
 
 import { ScrollView, View } from "react-native";
+import { useRouter } from "expo-router";
 
 import Card from "../../../shared/components/Card.jsx";
 import Icon from "../../../shared/components/Icons.jsx";
@@ -41,7 +42,22 @@ import { ICONS } from "../../../theme/icons.js";
 import { STYLE } from "../../../theme/style.js";
 import { styles } from "../styles/DetalleReporteStyle.js";
 
-export default function DetalleReporteScreen() {
+export default function DetalleReporteScreen({ onEditarAlimentacion }) {
+  
+  const router = useRouter();
+
+  const handleEditarAlimentacion = (id) => {
+    if (onEditarAlimentacion) {
+      onEditarAlimentacion(id);
+      return;
+    }
+    
+    router.push({
+      pathname: "/registros/EditarAlimentacion",
+      params: { id: String(id) },
+    });
+  };
+
   const {
     registroTipo,
     finca,
@@ -192,6 +208,7 @@ export default function DetalleReporteScreen() {
                       fincaId={finca}
                       estanqueId={estanque}
                       onAlertChange={setAlert}
+                      onEditar={handleEditarAlimentacion}
                     />
                   )}
 

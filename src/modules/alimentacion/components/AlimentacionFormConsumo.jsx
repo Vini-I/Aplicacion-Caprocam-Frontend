@@ -44,7 +44,7 @@ export default function AlimentacionFormConsumo({
 
   const handleProveedorChange = (idProveedor) => {
     updateField("idProveedor", idProveedor);
-    const seleccionado = proveedoresOptions.find((p) => p.value === idProveedor);
+    const seleccionado = proveedoresOptions.find((p) => String(p.value) === String(idProveedor));
     updateField("proveedor", seleccionado ? seleccionado.label : "");
     // Al cambiar de proveedor, el producto elegido ya no aplica
     // (pertenecia al proveedor anterior).
