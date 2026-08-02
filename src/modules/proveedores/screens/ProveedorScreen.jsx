@@ -171,7 +171,7 @@ export default function ProveedorScreen() {
             style={styles.btnAgregar}
           >
             <Icon icon={ICONS.add} color={ICON_STYLES.add.color} />
-            <CustomText style={styles.btnAgregarText}>Registrar Proveedor</CustomText>
+            <CustomText style={styles.btnAgregarText}>Añadir Proveedor</CustomText>
           </Button>
         </View>
       </View>
