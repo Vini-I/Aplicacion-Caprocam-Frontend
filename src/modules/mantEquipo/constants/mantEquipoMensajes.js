@@ -2,19 +2,15 @@
  * ============================================================
  * CONSTANTES: mantEquipoMensajes
  * ============================================================
- * 
- * Responsabilidad: Centraliza los textos estáticos, etiquetas de campos,
- * cabeceras de tabla, opciones para selectores y los mapeos de estados
- * del módulo de Mantenimiento de Equipos.
- * 
- * Incluye:
- * - Textos UI (labels, placeholders, mensajes de validación)
- * - Listas de opciones para SelectorPills y comboboxes
- * - Mapeos frontend ↔ backend para estado del ticket y tipo de personal
- * - Constantes de estado del ticket
- * 
- * Dependencias:
- * - tokenStorage (solo para obtener el usuario de sesión)
+ *
+ * Módulo: Mantenimiento de Equipos
+ *
+ * RESPONSABILIDAD:
+ * - Centralizar los textos estáticos, etiquetas, opciones de selectores y mapeos de enum frontend ↔ backend.
+ *
+ * @dependencies - tokenStorage.js (login/utils/tokenStorage.js)
+ * @validations  - Mapeo bidireccional estricto de estados de ticket y tipo de personal para la API.
+ * @navigation   - Ninguna
  */
 
 

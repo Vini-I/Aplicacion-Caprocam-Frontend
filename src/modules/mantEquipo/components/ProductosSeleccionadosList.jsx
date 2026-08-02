@@ -6,15 +6,11 @@
  * Módulo: Mantenimiento de Equipos
  *
  * RESPONSABILIDAD:
+ * - Componente personalizado que reutiliza elementos de shared/components.
  * - Desplegar la lista de insumos/productos seleccionados con diseño responsivo.
- * - Estructura en 2 filas internas por tarjeta:
- *   - Fila 1: Nombre/Detalles (izq) + Botón Eliminar (der).
- *   - Fila 2: Selector de Cantidad ±  (izq) + Subtotal (der).
  *
- * @dependencies - CustomText, Button, Icon de shared/components
- *               - COLORS, ICONS de theme
- *               - ProductosSeleccionadosListStyles
- * @validations  - Cantidad mínima: 1
+ * @dependencies - Text.jsx, Button.jsx, Icons.jsx (shared/components), ProductosSeleccionadosListStyles.js (styles)
+ * @validations  - Cantidad mínima: 1.
  * @navigation   - Ninguna
  */
 

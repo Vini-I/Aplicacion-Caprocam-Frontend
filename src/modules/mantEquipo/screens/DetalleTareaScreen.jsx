@@ -1,30 +1,10 @@
 /**
- * ============================================================
  * PANTALLA: DetalleTareaScreen
- * ============================================================
- * Módulo: Mantenimiento de Equipos
+ * Pantalla de vista detallada de solo lectura para una tarea de mantenimiento con acciones de edición y eliminación.
  *
- * Responsabilidad:
- * Muestra el detalle completo de una tarea en una pantalla independiente.
- * Es de solo lectura, pero permite navegar a la edición o eliminar la tarea.
- *
- * Datos:
- * - Obtiene el id de la tarea desde los parámetros de ruta.
- * - Carga la tarea usando tareasService.obtenerTareaPorId.
- *
- * Validaciones:
- * - Si la tarea no existe, muestra un mensaje de error.
- *
- * Navegación:
- * - Botón "Volver" (NavbarRegistro) regresa a la lista.
- * - Botón "Editar" navega a /equipos/tareaForm?id={id}.
- * - Botón "Eliminar" abre ModalEliminar y, al confirmar, elimina y regresa.
- *
- * Dependencias:
- * - tareasService (para obtener la tarea)
- * - shared/components (NavbarRegistro, Card, Icon, Button, ModalEliminar, etc.)
- * - styles/tareasStyles (reutiliza algunos estilos)
- * ============================================================
+ * @dependencies - NavbarRegistro.jsx, Card.jsx, Icon.jsx, Button.jsx, ModalEliminar.jsx (shared/components), tareasService.js (services)
+ * @validations  - Muestra mensaje de error si la tarea no existe o falla al eliminarse.
+ * @navigation   - Regresa a la lista ('/equipos/tareas') o navega a edición ('/equipos/tareaForm?id={id}').
  */
 
 import React, { useState, useEffect } from 'react';

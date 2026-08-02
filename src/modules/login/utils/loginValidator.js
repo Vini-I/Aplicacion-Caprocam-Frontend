@@ -1,10 +1,10 @@
 /**
- * ============================================================
- * UTILIDAD: Validador de Formulario de Login
- * ============================================================
+ * UTILIDAD: loginValidator
+ * Funciones puras para evaluar la validez del formulario de login de colaboradores y obtener mensajes.
  *
- * Funciones para validar el estado del formulario de login.
- * Centraliza la lógica de validación en un lugar.
+ * @dependencies - Ninguna
+ * @validations  - Valida selección de colaborador (hasWorker).
+ * @navigation   - Ninguna
  */
 
 /**

@@ -1,4 +1,11 @@
-// src/modules/mantEquipo/screens/TareaFormScreen.jsx
+/**
+ * PANTALLA: TareaFormScreen
+ * Formulario para crear una nueva tarea de mantenimiento o modificar una existente.
+ *
+ * @dependencies - NavbarRegistro.jsx, Card.jsx, Input.jsx, Select.jsx, Button.jsx, NumberInput.jsx (shared/components), useTareaForm.js (hooks)
+ * @validations  - Valida que los campos requeridos (nombre, descripción, categoría, duración) estén completos.
+ * @navigation   - Redirige a la lista de tareas ('/equipos/tareas') al guardar o cancelar.
+ */
 
 import React from "react";
 import { View, ScrollView } from "react-native";

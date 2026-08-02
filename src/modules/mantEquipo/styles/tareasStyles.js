@@ -1,18 +1,10 @@
 /**
- * ============================================================
  * ESTILOS: tareasStyles
- * ============================================================
- * Módulo: Mantenimiento de Equipos
+ * Estilos globales para las pantallas y componentes del catálogo de tareas (TareasScreen, DetalleTareaScreen).
  *
- * Estilos para la pantalla TareasScreen y sus componentes.
- * También incluye estilos compartidos para DetalleEquipoScreen
- * y DetalleTareaScreen.
- *
- * Utiliza la paleta de COLORS del tema central.
- *
- * Dependencias:
- * - COLORS desde theme/colors
- * ============================================================
+ * @dependencies - colors.js (theme/colors.js), style.js (theme/style.js)
+ * @validations  - Define estilos de tabla, modales, listas y tarjetas de tareas.
+ * @navigation   - Ninguna
  */
 
 import { StyleSheet } from 'react-native';

@@ -1,27 +1,16 @@
 /**
- * ============================================================
  * CONSTANTES: authMessages
- * ============================================================
- * 
- * Responsabilidad: Centralizar los textos estáticos, etiquetas, placeholders
- * y mensajes de error para la autenticación y registro Web.
- * 
- * FUNCIONALIDAD:
- * - Define textos para WebLoginScreen y WebRegisterScreen.
- * 
- * DATOS:
- * - AUTH_MESSAGES: Objeto con los textos estandarizados del flujo.
- * 
- * VALIDACIONES:
- * - Contiene los mensajes de error para campos vacíos, correos inválidos y contraseñas.
- * 
- * DEPENDENCIAS:
- * - Ninguna.
+ * Centraliza los mensajes estáticos, etiquetas de formularios, placeholders
+ * y textos de error para los flujos de autenticación web y móvil (AUTH_MESSAGES, LOGIN_MESSAGES).
+ *
+ * @dependencies - Ninguna
+ * @validations  - Cadenas de texto que coinciden con las reglas de validación.
+ * @navigation   - N/A
  */
 
 export const AUTH_MESSAGES = {
 
-  // SECCIÓN: Compartido entre Login y Registro
+  // SECCIÓN: Compartido entre Login y Registro Web
   LABEL_USERNAME:            'Usuario',
   LABEL_PASSWORD:            'Contraseña',
   PLACEHOLDER_USERNAME:      'Ingresa tu usuario',
@@ -66,4 +55,27 @@ export const AUTH_MESSAGES = {
   MODAL_SUCCESS_TITLE:   '¡Cuenta creada con éxito!',
   MODAL_SUCCESS_BODY:    'Recibirás un correo electrónico con la información de acceso a tu cuenta.',
   MODAL_SUCCESS_BUTTON:  'Volver al Login',
+};
+
+export const LOGIN_MESSAGES = {
+  // Sección de Turnos
+  SHIFT_TITLE: 'Selecciona tu turno',
+  SHIFT_SUBTITLE: '¿En qué horario vas a trabajar?',
+
+  // Sección de Trabajadores
+  WORKER_TITLE: 'Selecciona tu nombre',
+  WORKER_SUBTITLE: 'Toca tu nombre para comenzar',
+
+  // Estados de Carga
+  LOADING: 'Cargando colaboradores...',
+  ERROR_PREFIX: 'Error: ',
+  NO_WORKERS_FOUND: 'No se encontraron colaboradores.',
+  SEARCH_PLACEHOLDER: 'Buscar por nombre',
+  SYNC_BUTTON_TEXT: 'Sincronizar Usuarios',
+
+  // Botón
+  BUTTON_TEXT: 'Continuar',
+
+  // Empresa
+  COMPANY_NAME: 'Caprocam',
 };

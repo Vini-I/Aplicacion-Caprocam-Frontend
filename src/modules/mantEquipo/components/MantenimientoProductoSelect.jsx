@@ -6,15 +6,11 @@
  * Módulo: Mantenimiento de Equipos
  *
  * RESPONSABILIDAD:
- * - Obtiene el catálogo de productos del inventario desde el backend.
- * - Renderiza el selector sin mostrar precios.
- * - Valida stock disponible antes de agregar.
- * - Muestra alerta si no hay stock suficiente.
+ * - Componente personalizado que reutiliza elementos de shared/components.
+ * - Obtener el catálogo de productos del inventario y renderizar el selector validando stock.
  *
- * @dependencies - Select, Alert de shared/components
- *               - InventarioService de inventarios/services
- *               - styles/mantEquipoStyles, theme/colors
- * @validations  - Stock disponible > 0 antes de agregar producto
+ * @dependencies - Select.jsx, Alert.jsx (shared/components), InventarioService.js (services), mantEquipoStyles.js (styles)
+ * @validations  - Valida stock disponible (> 0) antes de agregar un producto.
  * @navigation   - Ninguna
  */
 

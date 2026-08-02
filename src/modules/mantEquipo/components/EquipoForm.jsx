@@ -2,33 +2,16 @@
  * ============================================================
  * COMPONENTE: EquipoForm
  * ============================================================
+ *
  * Módulo: Mantenimiento de Equipos
  *
- * Formulario para crear o editar equipos.
- * Refleja el modelo real del backend: ya no incluye
- * marca, modelo, serie ni subcategoría (no existen en la
- * tabla equipos del backend).
+ * RESPONSABILIDAD:
+ * - Componente personalizado que reutiliza elementos de shared/components.
+ * - Renderizar el formulario interactivo para la creación y edición de equipos.
  *
- * Props:
- * - initialData: objeto con datos iniciales (para edición)
- * - onSubmit: función que recibe los datos del formulario al enviar
- * - isEditing: booleano que indica si es edición
- * - tiposEquipo: lista de tipos disponibles
- * - estanquesDisponibles: lista de estanques para asociar
- * - hideSubmitButton: booleano para ocultar el botón de envío interno
- * - onValidationError: función que se llama con el mensaje de error
- *
- * Ejemplo:
- * <EquipoForm
- *   initialData={{}}
- *   onSubmit={handleSubmit}
- *   isEditing={false}
- *   tiposEquipo={tipos}
- *   estanquesDisponibles={estanques}
- *   hideSubmitButton={true}
- *   onValidationError={(msg) => setAlert({ type: 'danger', message: msg })}
- * />
- * ============================================================
+ * @dependencies - Input.jsx, Select.jsx, Button.jsx, Text.jsx (shared/components), useEquipoForm.js (hooks)
+ * @validations  - Valida campos obligatorios (código, tipo, función, horas uso) notificando errores.
+ * @navigation   - Ninguna
  */
 
 import React, { forwardRef, useImperativeHandle } from "react";

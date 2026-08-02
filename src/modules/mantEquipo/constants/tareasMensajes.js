@@ -3,19 +3,14 @@
  * CONSTANTES: tareasMensajes
  * ============================================================
  *
- * Centraliza todos los textos visibles al usuario del módulo de tareas.
- * Facilita la futura internacionalización (i18n) sin tocar los componentes.
+ * Módulo: Mantenimiento de Equipos / Tareas
  *
- * Secciones:
- * - TEXTOS_PANTALLA: textos de la toolbar y tabla vacía.
- * - HEADERS_TABLA: cabeceras de la tabla.
- * - OPCIONES_CATEGORIA: opciones del select de categoría.
- * - TEXTOS_MODAL_TAREA: textos del modal de creación/edición.
- * - ERRORES_FORM: mensajes de validación.
+ * RESPONSABILIDAD:
+ * - Centralizar los textos visibles al usuario, opciones de categoría y mensajes del catálogo de tareas.
  *
- * Ejemplo:
- * import { TEXTOS_PANTALLA } from '../constants/tareasMensajes';
- * console.log(TEXTOS_PANTALLA.titulo); // "Gestión de Tareas"
+ * @dependencies - Ninguna
+ * @validations  - Estándar de claves y etiquetas de categoría/estado.
+ * @navigation   - Ninguna
  */
 
 // ============================================================

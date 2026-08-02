@@ -3,10 +3,15 @@
  * COMPONENTE: EquipoSelect
  * ============================================================
  *
- * Selector local para el formulario de registro de equipo.
- * Reserva un espacio fijo para el dropdown para que el card
- * no cambie de tamaño al abrirse.
- * Ruta: src/modules/mantEquipo/components/EquipoSelect.jsx
+ * Módulo: Mantenimiento de Equipos
+ *
+ * RESPONSABILIDAD:
+ * - Componente personalizado con controles interactivos de UI.
+ * - Renderizar un selector desplegable con espacio reservado para seleccionar equipos sin alterar el layout.
+ *
+ * @dependencies - EquipoSelectStyles.js (styles)
+ * @validations  - Deshabilita interacciones si la prop disabled es true.
+ * @navigation   - Ninguna
  */
 
 import React, { useMemo, useState } from "react";

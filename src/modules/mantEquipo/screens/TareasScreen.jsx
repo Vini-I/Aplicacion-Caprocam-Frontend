@@ -1,4 +1,11 @@
-// src/modules/mantEquipo/screens/TareasScreen.jsx
+/**
+ * PANTALLA: TareasScreen
+ * Pantalla principal del catálogo de tareas de mantenimiento con lista, búsqueda y filtros por categoría/estado.
+ *
+ * @dependencies - FilaTarea.jsx (components), useTareas.js (hooks), Spinner.jsx, Button.jsx, SearchBar.jsx, FilterButton.jsx (shared/components)
+ * @validations  - Muestra Spinner durante la carga y estado de lista vacía si no hay coincidencias.
+ * @navigation   - Navega a la creación ('/equipos/tareaForm') y al detalle de tarea.
+ */
 
 import React, { useState, useRef, useEffect } from "react";
 import { View, FlatList } from "react-native";

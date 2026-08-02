@@ -6,9 +6,8 @@
  * Módulo: Mantenimiento de Equipos
  *
  * RESPONSABILIDAD:
- * - Carga el catálogo de tareas desde el backend (GET /tareas).
- * - Renderiza el selector excluyendo las tareas ya asignadas al ticket.
- * - Muestra loading mientras carga y mensaje si no hay tareas disponibles.
+ * - Componente personalizado que reutiliza elementos de shared/components.
+ * - Cargar el catálogo de tareas desde el backend y renderizar el selector excluyendo las ya asignadas.
  *
  * @dependencies - Select, CustomText de shared/components
  *               - obtenerTareas de tareasService

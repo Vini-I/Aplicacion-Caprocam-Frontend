@@ -2,24 +2,16 @@
  * ============================================================
  * COMPONENTE: EquipoDetailTicket
  * ============================================================
- * 
- * Responsabilidad: Mostrar una tarjeta detallada del equipo seleccionado
- * en el formulario de ticket, permitiendo desvincularlo.
- * 
- * Datos:
- * - equipo: Datos del equipo seleccionado.
- * 
- * Validaciones:
- * - Renderizado condicional si no hay equipo seleccionado.
- * - Alineación perfecta de "Horas de uso al ingresar" y "Horas para mantenimiento" sin saltos de línea.
- * 
- * Navegación:
- * - Permite ejecutar callback para desvincular el equipo seleccionado.
- * 
- * DEPENDENCIAS:
- * - CustomText, Button, Icon
- * - theme/icons, theme/colors, mantEquipoStyles, mantEquipoMensajes
- * ============================================================
+ *
+ * Módulo: Mantenimiento de Equipos
+ *
+ * RESPONSABILIDAD:
+ * - Componente personalizado que reutiliza elementos de shared/components.
+ * - Mostrar una tarjeta detallada del equipo seleccionado en el formulario de ticket, permitiendo desvincularlo.
+ *
+ * @dependencies - Text.jsx, Button.jsx, Icons.jsx (shared/components), mantEquipoStyles.js (styles), mantEquipoMensajes.js (constants)
+ * @validations  - Renderizado condicional si existe equipo seleccionado.
+ * @navigation   - Recibe callback onQuitar para desvincular el equipo.
  */
 
 import React from "react";
