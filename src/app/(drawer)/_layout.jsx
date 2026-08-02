@@ -116,6 +116,17 @@ export default function DrawerLayout() {
       />
 
       <Drawer.Screen
+        name="alertas"
+        options={{
+          drawerLabel: "Alertas",
+          title: "Alertas",
+          drawerIcon: ({ color, size }) => (
+            <Icon icon={ICONS.notification} size={22} color={color} />
+          ),
+        }}
+      />
+
+      <Drawer.Screen
         name="linksPrueba"
         options={{
           drawerLabel: "Links de Prueba",

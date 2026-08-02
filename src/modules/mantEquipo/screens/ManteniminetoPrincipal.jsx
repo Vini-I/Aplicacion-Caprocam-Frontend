@@ -46,8 +46,8 @@ import { View, ScrollView, useWindowDimensions } from "react-native";
 import Spinner from "../../../shared/components/Spinner.jsx";
 import CustomText from "../../../shared/components/Text.jsx";
 import Button from "../../../shared/components/Button.jsx";
-import SearchBar from "../../inventarios/components/SearchBar.jsx";
-import FilterButton from "../../inventarios/components/FilterButton";
+import SearchBar from "../../../shared/components/SearchBar";
+import FilterButton from "../../../shared/components/FilterButton";
 import Icon from "../../../shared/components/Icons.jsx";
 import Alert from "../../../shared/components/Alert.jsx";
 
