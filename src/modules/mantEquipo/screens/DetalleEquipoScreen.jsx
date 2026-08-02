@@ -9,23 +9,43 @@
  * Incluye información general, horas de uso, alerta de mantenimiento,
  * y acciones (editar, eliminar).
  *
- * @dependencies - NavbarRegistro, Card, Icon, Button, CustomText, Spinner,
- *               - ModalEliminar, Alert de shared/components
- *               - equiposService
- *               - styles/tareasStyles, theme/colors, theme/style, theme/icons
- * @validations  - Si el equipo no existe muestra mensaje de error
- * @navigation   - "✎ Editar Equipo" → /equipos/registrarEquipo?edit={id}
- *               - "🗑 Eliminar Equipo" → ModalEliminar y luego /equipos/equipos
- *               - Clic en estanque → /estanques/detalle?id={estanqueId}
+ * Datos:
+ * - Obtiene el id del equipo desde los parámetros de ruta.
+ * - Carga el equipo usando equiposService.getEquipoById (conectado al backend real).
+ * - Si el equipo tiene estanqueId, resuelve el estanque asociado consultando
+ *   equiposService.getEstanquesDisponibles() (el backend no expone un
+ *   endpoint de estanque individual, así que se busca dentro de la lista).
+ *
+ * Validaciones:
+ * - Si el equipo no existe, muestra mensaje de error.
+ *
+ * Navegación:
+ * - Botón "Editar equipo" abre el formulario de registro/edición.
+ * - Botón "Eliminar equipo" abre ModalEliminar y, al confirmar, elimina y regresa a la lista con alerta verde.
+ * - Clic en el estanque asociado navega a detalle del estanque.
+ *
+ * Estándares cumplidos:
+ * - Botones CRUD con texto "Editar equipo" / "Eliminar equipo" (#4)
+ * - Alertas de error en eliminación mostradas en la misma pantalla (#2)
+ * - Navegación por CardPress (desde la lista) (#5)
+ * - Detalle en pantalla separada, edición en otra (#7)
+ * - Manejo de excepciones con modales y alerts (#11)
+ *
+ * Dependencias:
+ * - equiposService
+ * - shared/components (NavbarRegistro, Card, Icon, Button, ModalEliminar, etc.)
+ * - styles/tareasStyles (reutiliza algunos estilos)
  *
  * NOTA: "marca", "modelo", "serie", "subcategoria", "ultimoMantenimiento"
- * y "registrosEncendido" se quitaron porque el backend real no tiene esos campos.
+ * y "registrosEncendido" se quitaron de esta pantalla porque el backend
+ * real (equipo.dto.js / equipo.model.js) no tiene esos campos — eran
+ * parte del mock anterior y nunca van a llegar con datos reales.
  * ============================================================
  */
 
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, ScrollView, TouchableOpacity } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 
 import NavbarRegistro from '../../../shared/components/NavbarRegistro';
 import Card from '../../../shared/components/Card';
@@ -35,13 +55,12 @@ import CustomText from '../../../shared/components/Text';
 import Spinner from '../../../shared/components/Spinner';
 import ModalEliminar from '../../../shared/components/ModalEliminar';
 import Alert from '../../../shared/components/Alert';
-import Badge from '../../../shared/components/Badge';
 
 import { COLORS } from '../../../theme/colors';
 import { ICONS } from '../../../theme/icons';
 import { STYLE } from '../../../theme/style';
+import { equiposService } from '../services/equiposService';
 import { styles, detalleStyles, equipoDetalleStyles } from '../styles/tareasStyles';
-import { useDetalleEquipoScreen } from '../hooks/useDetalleEquipoScreen';
 
 // Mapeo de tipos a iconos
 const TIPOS_ICONS = {
@@ -82,13 +101,7 @@ function horasRestantesMantenimiento(equipo) {
 }
 
 // Componente para fila con ícono alineado a la izquierda
-// valueColor es un string de color (ej: COLORS.primary) o undefined;
-// se aplica mediante un objeto de estilo plano para cumplir el estándar
-// sin usar estilos inline {{ ... }} en el JSX.
 function FilaDetalleIcono({ icon, label, value, valueColor, onPress }) {
-  const valorEstilo = valueColor
-    ? [detalleStyles.valor, { color: valueColor }]
-    : detalleStyles.valor;
   return (
     <View style={detalleStyles.fila}>
       <View style={detalleStyles.iconoWrapper}>
@@ -101,7 +114,7 @@ function FilaDetalleIcono({ icon, label, value, valueColor, onPress }) {
             <CustomText style={detalleStyles.valorLink}>{value || '—'}</CustomText>
           </TouchableOpacity>
         ) : (
-          <CustomText style={valorEstilo}>
+          <CustomText style={[detalleStyles.valor, valueColor && { color: valueColor }]}>
             {value || '—'}
           </CustomText>
         )}
@@ -114,20 +127,85 @@ export default function DetalleEquipoScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
 
-  const {
-    equipo,
-    estanque,
-    loading,
-    error,
-    alert,
-    showConfirmModal,
-    deleteTarget,
-    handleEditar,
-    handleEliminarPress,
-    confirmDelete,
-    cancelDelete,
-    handleEstanquePress,
-  } = useDetalleEquipoScreen({ id, router });
+  const [equipo, setEquipo] = useState(null);
+  const [estanque, setEstanque] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [alertError, setAlertError] = useState(null); // solo errores en detalle
+
+  const cargarDatos = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const data = await equiposService.getEquipoById(id);
+      setEquipo(data);
+
+      if (data.estanqueId) {
+        const estanques = await equiposService.getEstanquesDisponibles();
+        const encontrado = estanques.find((e) => e.value === String(data.estanqueId));
+        setEstanque(encontrado || null);
+      } else {
+        setEstanque(null);
+      }
+    } catch (err) {
+      setError(err.message || 'No se pudo cargar el equipo.');
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    if (id) cargarDatos();
+    else setError('ID de equipo no proporcionado.');
+  }, [id, cargarDatos]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (id) cargarDatos();
+    }, [id, cargarDatos])
+  );
+
+  const handleEditar = () => {
+    router.push(`/equipos/registrarEquipo?edit=${equipo.id}`);
+  };
+
+  const handleEliminarPress = () => {
+    setDeleteTarget(equipo);
+    setShowConfirmModal(true);
+  };
+
+  const confirmDelete = async () => {
+    try {
+      await equiposService.deleteEquipo(equipo.id);
+      setShowConfirmModal(false);
+      // Navegar a la lista con alerta de éxito (verde)
+      router.replace({
+        pathname: '/equipos/equipos',
+        params: {
+          alertType: 'success',
+          alertMessage: `Equipo "${equipo.nombre}" eliminado correctamente.`
+        }
+      });
+    } catch (err) {
+      // Error: mostrar alerta roja en esta misma pantalla
+      setAlertError({ type: 'danger', message: err.message || 'No se pudo eliminar el equipo.' });
+      setShowConfirmModal(false);
+    }
+  };
+
+  const cancelDelete = () => {
+    setShowConfirmModal(false);
+    setDeleteTarget(null);
+  };
+
+  const handleEstanquePress = () => {
+    if (estanque) {
+      router.push(`/estanques/detalle?id=${estanque.value}`);
+    }
+  };
 
   if (loading) {
     return (
@@ -142,7 +220,7 @@ export default function DetalleEquipoScreen() {
       <>
         <NavbarRegistro Titulo="Detalle de Equipo" Subtitulo="Error" Icono="tools" />
         <View style={styles.centerContainer}>
-          <CustomText style={styles.errorTextLine}>
+          <CustomText style={{ color: COLORS.error }}>
             {error || 'Equipo no encontrado'}
           </CustomText>
         </View>
@@ -248,7 +326,7 @@ export default function DetalleEquipoScreen() {
             style={[equipoDetalleStyles.boton, equipoDetalleStyles.botonEditar]}
           >
             <Icon icon={ICONS.edit} size={18} color={COLORS.primary} />
-            <CustomText style={equipoDetalleStyles.botonTexto}>Editar Equipo</CustomText>
+            <CustomText style={equipoDetalleStyles.botonTexto}>Editar equipo</CustomText>
           </Button>
           <Button
             variant="outline"
@@ -256,7 +334,7 @@ export default function DetalleEquipoScreen() {
             style={[equipoDetalleStyles.boton, equipoDetalleStyles.botonEliminar]}
           >
             <Icon icon={ICONS.delete} size={18} color={COLORS.error} />
-            <CustomText style={equipoDetalleStyles.botonTextoEliminar}>Eliminar Equipo</CustomText>
+            <CustomText style={equipoDetalleStyles.botonTextoEliminar}>Eliminar equipo</CustomText>
           </Button>
         </View>
       </ScrollView>
