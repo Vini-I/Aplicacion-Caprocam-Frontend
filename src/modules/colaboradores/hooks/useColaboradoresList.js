@@ -67,7 +67,7 @@ export function useColaboradoresList() {
     }
     try {
       await eliminarColaborador(deleteTarget.id);
-showAlert("danger", `El colaborador ${deleteTarget.nombre} ha sido eliminado correctamente.`);
+      showAlert("success", `El colaborador ${deleteTarget.nombre} ha sido eliminado correctamente.`);
       setShowConfirmModal(false);
       setDeleteTarget(null);
       setCedulaConfirmacion("");
@@ -93,6 +93,7 @@ showAlert("danger", `El colaborador ${deleteTarget.nombre} ha sido eliminado cor
     cedulaError,
     setCedulaError,
     alert,
+    showAlert, // <--- exportado para usar desde la screen
     handleDeletePress,
     confirmDelete,
     fetchColaboradores,

@@ -77,8 +77,10 @@ export const styles = StyleSheet.create({
     flex: 1,
   },
   alertWrapper: {
-    marginBottom: 12,
-    paddingHorizontal: 16,
+    marginTop: 6,           // ← separación de la barra de búsqueda
+    marginBottom: 12,        // ← separación de los cards
+    paddingHorizontal: 0,
+    paddingVertical: 0,     // o 16 si quieres padding interno, pero el Alert ya tiene padding
     width: '100%',
     maxWidth: 900,
     alignSelf: 'center',

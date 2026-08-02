@@ -19,6 +19,7 @@
  * - handleChange, handleSubmit
  * - rolesDisponibles
  * - handleCedulaChange, handleTelefonoChange, handleNombreChange, handleApellidosChange
+ * - resetForm: función para limpiar el formulario y estados de validación
  * ============================================================
  */
 
@@ -36,6 +37,16 @@ const validarTelefono = (telefono) => /^\d{8}$/.test(telefono);
 const validarEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 const validarNombre = (nombre) => nombre.trim().length >= 2;
 const validarApellidos = (apellidos) => apellidos.trim().length >= 2;
+
+const INITIAL_FORM = {
+  cedula: "",
+  nombre: "",
+  apellidos: "",
+  telefono: "",
+  email: "",
+  rol: "",
+  fincaId: "",
+};
 
 export function useColaboradorForm({
   initialData,
@@ -189,6 +200,22 @@ export function useColaboradorForm({
     onSubmit(submitData);
   };
 
+  // ─── RESET FORM ──────────────────────────────────────────────
+  const resetForm = () => {
+    setForm({
+      cedula: "",
+      nombre: "",
+      apellidos: "",
+      telefono: "",
+      email: "",
+      rol: userRole === "camprocam_admin" ? "camprocam_worker" : "external_worker",
+      fincaId: fincaId || "",
+    });
+    setErrors({});
+    setSubmitted(false);
+    setValidationMessage("");
+  };
+
   return {
     form,
     errors,
@@ -202,5 +229,6 @@ export function useColaboradorForm({
     handleNombreChange,
     handleApellidosChange,
     handleSubmit,
+    resetForm,
   };
 }

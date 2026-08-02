@@ -15,7 +15,7 @@
  * ============================================================
  */
 
-import React, { useCallback, useState, useMemo, useRef } from 'react';
+import React, { useCallback, useState, useMemo, useRef, useEffect } from 'react';
 import { View, ScrollView } from 'react-native';
 import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 
@@ -68,6 +68,7 @@ export default function ColaboradoresListScreen() {
     cedulaError,
     setCedulaError,
     alert,
+    showAlert,
     handleDeletePress,
     confirmDelete,
   } = useColaboradoresList();
@@ -80,6 +81,16 @@ export default function ColaboradoresListScreen() {
     lowStock: false,
     expiryDate: '',
   });
+
+  // ─── Mostrar alerta desde parámetros de ruta ──────────────
+  useEffect(() => {
+    const { alertType, alertMessage } = params;
+    if (alertType && alertMessage) {
+      showAlert(alertType, alertMessage);
+      // Limpiar parámetros para que no se repitan al recargar
+      router.setParams({ alertType: undefined, alertMessage: undefined });
+    }
+  }, [params.alertType, params.alertMessage]);
 
   // ─── FILTRADO DE BÚSQUEDA CON MANEJO DE NULL ──────────────
   const listaFiltrada = useMemo(() => {
@@ -176,7 +187,7 @@ export default function ColaboradoresListScreen() {
         <CustomText style={styles.contadorResultados}>{contador}</CustomText>
       </View>
 
-      {/* Alerta flotante */}
+      {/* Alerta flotante - ahora con el mismo ancho que los demás elementos */}
       {alert && (
         <View style={styles.alertWrapper}>
           <Alert variant={alert.type} message={alert.message} />

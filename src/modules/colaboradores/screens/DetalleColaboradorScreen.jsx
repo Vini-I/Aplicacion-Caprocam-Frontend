@@ -123,11 +123,16 @@ export default function DetalleColaboradorScreen() {
     setEliminando(true);
     try {
       await colaboradoresService.deleteColaborador(colaborador.id);
-      setAlert({ type: 'danger', message: `Colaborador "${colaborador.nombre}" eliminado correctamente.` });
-      setShowConfirmModal(false);
-      // Esperar un momento para que se vea el alert y luego regresar
-      setTimeout(() => router.replace('/(drawer)/colaboradores'), 1500);
+      // Navegar a la lista con alerta de éxito (verde)
+      router.replace({
+        pathname: '/(drawer)/colaboradores',
+        params: {
+          alertType: 'success',
+          alertMessage: `Colaborador "${colaborador.nombre}" eliminado correctamente.`
+        }
+      });
     } catch (err) {
+      // Error: mostrar alerta roja en esta misma pantalla
       setAlert({ type: 'danger', message: err.message || 'No se pudo eliminar el colaborador.' });
       setShowConfirmModal(false);
     } finally {
@@ -174,8 +179,6 @@ export default function DetalleColaboradorScreen() {
 
   return (
     <>
-
-
       <ScrollView style={STYLE.container} contentContainerStyle={STYLE.contentWrapper}>
         {/* Información personal */}
         <Card>
@@ -274,7 +277,7 @@ export default function DetalleColaboradorScreen() {
           </Card>
         )}
 
-        {/* Alertas de éxito/error */}
+        {/* Alertas de error (solo errores de eliminación) */}
         {alert && (
           <View style={{ marginBottom: 12 }}>
             <Alert variant={alert.type} message={alert.message} />

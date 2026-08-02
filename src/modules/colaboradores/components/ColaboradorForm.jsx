@@ -22,7 +22,7 @@
  * - fincasOptions: array de { label, value } para el select de fincas (opcional)
  */
 
-import React, { useEffect, useState } from "react";
+import React, { forwardRef, useImperativeHandle, useEffect, useState } from "react";
 import { View } from "react-native";
 import Input from "../../../shared/components/Input";
 import Select from "../../../shared/components/Select";
@@ -36,18 +36,21 @@ import { styles } from "../styles/colaboradorFormStyles";
 import { ICONS } from "../../../theme/icons";
 import { COLORS } from "../../../theme/colors";
 
-export default function ColaboradorForm({
-  initialData = {},
-  onSubmit,
-  isEditing = false,
-  userRole,
-  fincaId,
-  onCancel,
-  serverError = "",
-  successMessage = "",
-  roleOptions,
-  fincasOptions = [],
-}) {
+const ColaboradorForm = forwardRef(function ColaboradorForm(
+  {
+    initialData = {},
+    onSubmit,
+    isEditing = false,
+    userRole,
+    fincaId,
+    onCancel,
+    serverError = "",
+    successMessage = "",
+    roleOptions,
+    fincasOptions = [],
+  },
+  ref
+) {
   const {
     form,
     errors,
@@ -61,6 +64,7 @@ export default function ColaboradorForm({
     handleNombreChange,
     handleApellidosChange,
     handleSubmit,
+    resetForm,
   } = useColaboradorForm({
     initialData,
     isEditing,
@@ -70,6 +74,11 @@ export default function ColaboradorForm({
     availableRoles: roleOptions,
     fincasOptions,
   });
+
+  // Exponer resetForm al padre
+  useImperativeHandle(ref, () => ({
+    resetForm,
+  }));
 
   const opcionesFincas = hookFincasOptions || fincasOptions || [];
 
@@ -227,4 +236,6 @@ export default function ColaboradorForm({
       </View>
     </View>
   );
-}
+});
+
+export default ColaboradorForm;

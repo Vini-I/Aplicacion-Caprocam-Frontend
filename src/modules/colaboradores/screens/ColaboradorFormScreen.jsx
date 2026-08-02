@@ -23,7 +23,7 @@
  */
 // src/modules/colaboradores/screens/ColaboradorFormScreen.jsx
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { View, ScrollView } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 
@@ -51,6 +51,8 @@ export default function ColaboradorFormScreen() {
   const [errorMessage, setErrorMessage] = useState("");
   const [roleOptions, setRoleOptions] = useState([]);
   const [fincasOptions, setFincasOptions] = useState([]);
+
+  const formRef = useRef();
 
   // Cargar roles disponibles
   useEffect(() => {
@@ -110,9 +112,12 @@ export default function ColaboradorFormScreen() {
       if (isEditing) {
         await colaboradoresService.updateColaborador(id, formData);
         setSuccessMessage("Colaborador actualizado correctamente.");
+        // En edición, no limpiamos el formulario para no perder los cambios
       } else {
         await colaboradoresService.createColaborador(formData);
         setSuccessMessage("Colaborador creado correctamente.");
+        // Limpiar formulario para agregar otro colaborador
+        formRef.current?.resetForm();
       }
     } catch (err) {
       setErrorMessage(err.message || "No se pudo guardar el colaborador.");
@@ -148,14 +153,15 @@ export default function ColaboradorFormScreen() {
     <>
       <ScrollView style={STYLE.container} contentContainerStyle={STYLE.contentWrapper}>
         <ColaboradorForm
+          ref={formRef}
           initialData={initialData}
           isEditing={isEditing}
           userRole={userRole}
           fincaId={fincaId}
           onSubmit={handleSubmit}
           onCancel={handleCancel}
-          serverError={errorMessage}      // se pasa como error al formulario
-          successMessage={successMessage} // se pasa como éxito al formulario
+          serverError={errorMessage}
+          successMessage={successMessage}
           roleOptions={roleOptions}
           fincasOptions={fincasOptions}
         />
