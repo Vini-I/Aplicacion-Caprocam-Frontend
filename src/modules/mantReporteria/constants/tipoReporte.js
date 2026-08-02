@@ -36,8 +36,8 @@ export const TIPOS_REGISTRO = [
  */
 export const TIPOS_AUTOGESTIONADOS = [
   "alimentacion",
-  "parasitologia",
   "enfermedades",
+  "parasitologia",
   "crecimiento",
   "densidad_poblacional",
   "raleo",

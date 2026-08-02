@@ -227,6 +227,7 @@ export default function AlertasScreen() {
 
   const [abiertos, setAbiertos] = useState(obtenerEstadoInicialDropdowns());
   const [descartadas, setDescartadas] = useState([]);
+  const [productosInventario, setProductosInventario] = useState([]);
   const [registrosEnfermedades, setRegistrosEnfermedades] = useState([]);
   const [registrosParasitologia, setRegistrosParasitologia] = useState([]);
 
@@ -234,14 +235,42 @@ export default function AlertasScreen() {
     let activo = true;
 
     async function cargarDatos() {
-      const ids = await obtenerAlertasDescartadas();
-      const enfermedades = await enfermedadesService.getAll();
-      const parasitos = await parasitologiaService.getAll();
+      let ids = [];
+      let productos = [];
+      let enfermedades = [];
+      let parasitos = [];
+
+      try {
+        ids = await obtenerAlertasDescartadas();
+      } catch (error) {
+        ids = [];
+      }
+
+      try {
+        productos = await getProductosInventario();
+      } catch (error) {
+        productos = [];
+      }
+
+      try {
+        enfermedades = await enfermedadesService.getAll();
+      } catch (error) {
+        enfermedades = [];
+      }
+
+      try {
+        parasitos = await parasitologiaService.getAll();
+      } catch (error) {
+        parasitos = [];
+      }
 
       if (activo === true) {
-        setDescartadas(ids);
-        setRegistrosEnfermedades(enfermedades);
-        setRegistrosParasitologia(parasitos);
+        setDescartadas(Array.isArray(ids) ? ids : []);
+        setProductosInventario(Array.isArray(productos) ? productos : []);
+        setRegistrosEnfermedades(
+          Array.isArray(enfermedades) ? enfermedades : [],
+        );
+        setRegistrosParasitologia(Array.isArray(parasitos) ? parasitos : []);
       }
     }
 
@@ -255,7 +284,7 @@ export default function AlertasScreen() {
 
   const alertasBase = construirAlertasOperativas({
     fincas: fincasModulo,
-    productosInventario: getProductosInventario(),
+    productosInventario: productosInventario,
     siembras: obtenerSiembras(),
     alimentaciones: alimentaciones,
     estanques: estanquesModulo,
@@ -278,7 +307,7 @@ export default function AlertasScreen() {
 
   async function descartar(id) {
     const ids = await descartarAlerta(id);
-    setDescartadas(ids);
+    setDescartadas(Array.isArray(ids) ? ids : []);
   }
 
   return (

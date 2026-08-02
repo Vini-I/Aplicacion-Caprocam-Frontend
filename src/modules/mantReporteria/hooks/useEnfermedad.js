@@ -1,6 +1,6 @@
 /**
  * ============================================================
- * HOOK DE ALIMENTACIÓN
+ * HOOK DE ENFERMEDADES
  * ============================================================
  * 
  * Autocontenido: carga sus propios registros, maneja el modal
@@ -8,49 +8,49 @@
  * screen para recargar ni para reenviar callbacks de recarga.
  */
 import { useState, useEffect } from "react";
-import alimentacionService from "../../alimentacion/services/Alimentacion.service.js";
+import enfermedadesService from "../../enfermedades/services/EnfermedadesService.js";
 import { obtenerDetalleReporte } from "../services/detalleReporte.service.js";
 import useModalEliminar from "../hooks/useModalEliminar.js";
 
-export default function useAlimentacion(fincaId, estanqueId, onAlertChange) {
-  const [alimentaciones, setAlimentaciones] = useState([]);
+export default function useEnfermedad(fincaId, estanqueId, onAlertChange) {
+  const [enfermedades, setEnfermedades] = useState([]);
   const [loading, setLoading] = useState(true);
   const [alert, setAlert] = useState(null);
 
-  async function cargarAlimentaciones() {
+  async function cargarEnfermedades() {
     try {
       setLoading(true);
       const data = await obtenerDetalleReporte({
-        tipoRegistro: "alimentacion",
+        tipoRegistro: "enfermedades",
         fincaId,
         estanqueId,
       });
-      setAlimentaciones(data);
+      setEnfermedades(data);
     } catch (error) {
-      console.error("Error al cargar alimentaciones", error);
+      console.error("Error al cargar enfermedades", error);
     } finally {
       setLoading(false);
     }
   }
 
   useEffect(() => {
-    cargarAlimentaciones();
+    cargarEnfermedades();
   }, [fincaId, estanqueId]);
 
-  async function eliminarAlimentacion(id) {
-    await alimentacionService.deleteById(id);
-    await cargarAlimentaciones();
+  async function eliminarEnfermedad(id) {
+    await enfermedadesService.deleteById(id);
+    await cargarEnfermedades();
     setAlert("deleted");
   }
 
   const {
     modalVisible,
-    itemSeleccionado: alimentacionSeleccionada,
+    itemSeleccionado: enfermedadSeleccionada,
     loadingEliminar,
     abrirModalEliminar,
     cancelarEliminar,
     confirmarEliminar,
-  } = useModalEliminar(eliminarAlimentacion);
+  } = useModalEliminar(eliminarEnfermedad);
 
   useEffect(() => {
     onAlertChange?.(alert);
@@ -63,12 +63,12 @@ export default function useAlimentacion(fincaId, estanqueId, onAlertChange) {
   }, [alert]);
 
   return {
-    alimentaciones,
+    enfermedades,
     loading,
     alert,
 
     modalVisible,
-    alimentacionSeleccionada,
+    enfermedadSeleccionada,
     loadingEliminar,
     abrirModalEliminar,
     cancelarEliminar,
