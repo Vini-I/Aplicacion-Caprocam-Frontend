@@ -233,8 +233,8 @@ export default function RaleoForm({
         <Input
           label="Biomasa restante estimada (kg)"
           value={
-            biomasaCalculada !== ""
-              ? biomasaCalculada.toFixed(2)
+            biomasaCalculada !== "" && !isNaN(Number(biomasaCalculada))
+              ? Number(biomasaCalculada).toFixed(2)
               : ""
           }
           editable={false}
