@@ -282,3 +282,5 @@ export default function DetalleReporteScreen() {
     </View>
   );
 }
+
+
