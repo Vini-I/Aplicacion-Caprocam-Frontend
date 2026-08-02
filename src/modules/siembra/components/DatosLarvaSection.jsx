@@ -20,9 +20,14 @@
  * Laboratorio, Procedencia) por props; si no vienen, los links de
  * ese campo no se muestran.
  *
+ * En modo "view", cada campo se muestra como texto plano
+ * (CampoLectura) en vez de un input/select deshabilitado - los
+ * links de catálogo tampoco se muestran en ese modo (ya lo hacía
+ * renderLinks antes).
+ *
  * DEPENDENCIAS:
  * - Card, Input, Select, Button, Alert, Modal, ModalEliminar (shared/components).
- * - SectionTitle, useCatalogoModal.
+ * - SectionTitle, CampoLectura, useCatalogoModal.
  */
 import { View, ScrollView } from "react-native";
 
@@ -34,6 +39,7 @@ import Modal from "../../../shared/components/Modal";
 import ModalEliminar from "../../../shared/components/ModalEliminar";
 import Alert from "../../../shared/components/Alert";
 import Text from "../../../shared/components/Text";
+import CampoLectura from "./CampoLectura";
 
 import { ICONS } from "../../../theme/icons";
 import { COLORS } from "../../../theme/colors";
@@ -151,78 +157,115 @@ export default function DatosLarvaSection({
     ? opcionesPorCampo[campoActivo] || []
     : [];
 
+  // El Select guarda el id de cada catálogo, no el nombre. En modo
+  // vista no hay Select, así que buscamos el nombre real a mano
+  // para poder mostrarlo como texto.
+  const proveedorLabel =
+    proveedoresLarva.find((p) => p.value === formData.proveedorLarva)?.label ||
+    "";
+  const laboratorioLabel =
+    laboratoriosLarva.find((l) => l.value === formData.laboratorioLarva)
+      ?.label || "";
+  const procedenciaLabel =
+    procedenciasLarva.find((p) => p.value === formData.procedenciaLarva)
+      ?.label || "";
+  const plLabel =
+    plLarva.find((p) => p.value === formData.plSiembra)?.label ||
+    formData.plSiembra ||
+    "";
+
   return (
     <Card>
       <SectionTitle icon={ICONS.shrimp} title="Datos de larva" />
 
-      <Select
-        label={requiredLabel("Proveedor de larva")}
-        placeholder="Seleccionar proveedor"
-        options={proveedoresLarva}
-        value={formData.proveedorLarva}
-        onChange={(value) => onChange("proveedorLarva", value)}
-        labelStyle={styles.requiredLabel}
-        selectStyle={hasError("proveedorLarva") ? styles.inputError : null}
-        disabled={isViewMode}
-      />
+      {isViewMode ? (
+        <CampoLectura label="Proveedor de larva" value={proveedorLabel} />
+      ) : (
+        <Select
+          label={requiredLabel("Proveedor de larva")}
+          placeholder="Seleccionar proveedor"
+          options={proveedoresLarva}
+          value={formData.proveedorLarva}
+          onChange={(value) => onChange("proveedorLarva", value)}
+          labelStyle={styles.requiredLabel}
+          selectStyle={hasError("proveedorLarva") ? styles.inputError : null}
+        />
+      )}
       {renderLinks("proveedorLarva")}
 
-      <Select
-        label={requiredLabel("Laboratorio")}
-        placeholder="Seleccionar laboratorio"
-        options={laboratoriosLarva}
-        value={formData.laboratorioLarva}
-        onChange={(value) => onChange("laboratorioLarva", value)}
-        labelStyle={styles.requiredLabel}
-        selectStyle={hasError("laboratorioLarva") ? styles.inputError : null}
-        disabled={isViewMode}
-      />
+      {isViewMode ? (
+        <CampoLectura label="Laboratorio" value={laboratorioLabel} />
+      ) : (
+        <Select
+          label={requiredLabel("Laboratorio")}
+          placeholder="Seleccionar laboratorio"
+          options={laboratoriosLarva}
+          value={formData.laboratorioLarva}
+          onChange={(value) => onChange("laboratorioLarva", value)}
+          labelStyle={styles.requiredLabel}
+          selectStyle={hasError("laboratorioLarva") ? styles.inputError : null}
+        />
+      )}
       {renderLinks("laboratorioLarva")}
 
-      <Select
-        label={requiredLabel("Procedencia de larva")}
-        placeholder="Seleccionar procedencia"
-        options={procedenciasLarva}
-        value={formData.procedenciaLarva}
-        onChange={(value) => onChange("procedenciaLarva", value)}
-        labelStyle={styles.requiredLabel}
-        selectStyle={hasError("procedenciaLarva") ? styles.inputError : null}
-        disabled={isViewMode}
-      />
+      {isViewMode ? (
+        <CampoLectura label="Procedencia de larva" value={procedenciaLabel} />
+      ) : (
+        <Select
+          label={requiredLabel("Procedencia de larva")}
+          placeholder="Seleccionar procedencia"
+          options={procedenciasLarva}
+          value={formData.procedenciaLarva}
+          onChange={(value) => onChange("procedenciaLarva", value)}
+          labelStyle={styles.requiredLabel}
+          selectStyle={hasError("procedenciaLarva") ? styles.inputError : null}
+        />
+      )}
       {renderLinks("procedenciaLarva")}
 
-      <Input
-        label={requiredLabel("Código de lote")}
-        placeholder="Ej: LARV-2026-001"
-        value={formData.codigoLoteLarva}
-        onChangeText={(value) => onChange("codigoLoteLarva", value)}
-        labelStyle={styles.requiredLabel}
-        style={hasError("codigoLoteLarva") ? styles.inputError : null}
-        editable={!isViewMode}
-      />
-
-      {!esPreCria && (
-        <Select
-          label={requiredLabel("PL larva")}
-          placeholder="Seleccionar PL"
-          options={plLarva}
-          value={formData.plSiembra}
-          onChange={(value) => onChange("plSiembra", value)}
+      {isViewMode ? (
+        <CampoLectura label="Código de lote" value={formData.codigoLoteLarva} />
+      ) : (
+        <Input
+          label={requiredLabel("Código de lote")}
+          placeholder="Ej: LARV2026001"
+          value={formData.codigoLoteLarva}
+          onChangeText={(value) => onChange("codigoLoteLarva", value)}
           labelStyle={styles.requiredLabel}
-          selectStyle={hasError("plSiembra") ? styles.inputError : null}
-          disabled={isViewMode}
+          style={hasError("codigoLoteLarva") ? styles.inputError : null}
         />
       )}
 
-      <Input
-        label={requiredLabel("Certificado de larva")}
-        placeholder="Ej: CERT-2026-001"
-        value={formData.certificadoLarva}
-        onChangeText={(value) => onChange("certificadoLarva", value)}
-        labelStyle={styles.requiredLabel}
-        style={hasError("certificadoLarva") ? styles.inputError : null}
-        editable={!isViewMode}
-      />
+      {!esPreCria &&
+        (isViewMode ? (
+          <CampoLectura label="PL larva" value={plLabel} />
+        ) : (
+          <Select
+            label={requiredLabel("PL larva")}
+            placeholder="Seleccionar PL"
+            options={plLarva}
+            value={formData.plSiembra}
+            onChange={(value) => onChange("plSiembra", value)}
+            labelStyle={styles.requiredLabel}
+            selectStyle={hasError("plSiembra") ? styles.inputError : null}
+          />
+        ))}
+
+      {isViewMode ? (
+        <CampoLectura
+          label="Certificado de larva"
+          value={formData.certificadoLarva}
+        />
+      ) : (
+        <Input
+          label={requiredLabel("Certificado de larva")}
+          placeholder="Ej: 1823092503E"
+          value={formData.certificadoLarva}
+          onChangeText={(value) => onChange("certificadoLarva", value)}
+          labelStyle={styles.requiredLabel}
+          style={hasError("certificadoLarva") ? styles.inputError : null}
+        />
+      )}
 
       {/* Modal: lista o formulario */}
       <Modal
@@ -250,7 +293,10 @@ export default function DatosLarvaSection({
               </Text>
             )}
 
-            <ScrollView style={styles.listaScroll} showsVerticalScrollIndicator={false}>
+            <ScrollView
+              style={styles.listaScroll}
+              showsVerticalScrollIndicator={false}
+            >
               {opcionesCampoActivo.map((item) => (
                 <View key={item.value} style={styles.itemListaFila}>
                   <Text style={styles.itemListaNombre}>{item.label}</Text>

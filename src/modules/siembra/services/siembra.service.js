@@ -83,3 +83,4 @@ export const eliminarSiembra = async (id) => {
     throw error;
   }
 };
+

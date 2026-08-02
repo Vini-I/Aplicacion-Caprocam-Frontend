@@ -51,7 +51,6 @@
  *
  * =========================================================================
  */
-import { useState } from "react";
 import { View, Text, ScrollView } from "react-native";
 import { styles } from "../styles/SiembraListStyles";
 
@@ -60,6 +59,7 @@ import Icon from "../../../shared/components/Icons";
 import EmptyState from "../../../shared/components/EmptyState";
 import SearchBar from "../../../shared/components/SearchBar";
 import FilterButton from "../../../shared/components/FilterButton";
+import Alert from "../../../shared/components/Alert";
 import { ICONS } from "../../../theme/icons";
 import { COLORS } from "../../../theme/colors";
 import { STYLE } from "../../../theme/style";
@@ -74,14 +74,9 @@ export default function SiembraListScreen() {
     mensaje,
     mensajeVariant,
     filtros,
+    setFiltros,
     tiposRegistro,
     siembrasFiltradas,
-    filtroVisible,
-    categoriasSeleccionadas,
-    handleToggleFiltroVisible,
-    handleToggleChip,
-    handleAplicarFiltro,
-    handleLimpiarFiltro,
     handleNuevaSiembra,
     handleDetalleSiembra,
   } = useSiembraList();
@@ -115,39 +110,17 @@ export default function SiembraListScreen() {
               onChangeText={setBusqueda}
               placeholder="Buscar finca, estanque, lote, proveedor..."
               containerStyle={styles.searchBarContainer}
-              inputStyle={styles.searchInputSinFoco}
             />
-
-            <Button
-              variant="outline"
-              onPress={handleToggleFiltroVisible}
-              style={styles.filtroToggleButton}
-            >
-              <Icon icon={ICONS.filter} color={COLORS.primary} />
-              <Text style={styles.filtroToggleText}>Filtrar</Text>
-            </Button>
+            <FilterButton
+              categories={tiposRegistro}
+              suppliers={[]}
+              units={[]}
+              activeFilters={filtros}
+              onApply={setFiltros}
+              showLowStock={false}
+              showExpiryDate={false}
+            />
           </View>
-
-          {filtroVisible && (
-            <View style={styles.filtroPanelWrapper}>
-              <FilterPanel title="Filtrar por tipo">
-                <View style={styles.filtroChipsRow}>
-                  {tiposRegistro.map((tipo) => (
-                    <FilterChip
-                      key={tipo.value}
-                      label={tipo.label}
-                      active={categoriasSeleccionadas.includes(tipo.value)}
-                      onPress={() => handleToggleChip(tipo.value)}
-                    />
-                  ))}
-                </View>
-                <FilterActions
-                  onClear={handleLimpiarFiltro}
-                  onApply={handleAplicarFiltro}
-                />
-              </FilterPanel>
-            </View>
-          )}
 
           <Text style={styles.contadorResultados}>
             {siembrasFiltradas.length}{" "}

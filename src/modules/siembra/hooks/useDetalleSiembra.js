@@ -56,7 +56,7 @@ import { useError } from "../../../shared/context/ErrorContext";
 import { fincaService } from "../../finca/services/finca.service";
 import { estanqueService } from "../../estanques/services/estanque.service";
 
-import { getSiembraById, updateSiembra } from "../services/siembra.service";
+import { getSiembraById, updateSiembra, finalizarSiembra } from "../services/siembra.service";
 import {
   getPrecriaById,
   updatePrecria,
@@ -783,6 +783,24 @@ export default function useDetalleSiembra(id) {
     });
   }, [construirParamsSiembraDesdePrecria, router]);
 
+  const handleFinalizarSiembra = useCallback(async () => {
+    setGuardando(true);
+    try {
+      await finalizarSiembra(id);
+      setSiembra((prev) => ({ ...prev, estado: "Finalizada" }));
+      setFormData((prev) => ({ ...prev, estado: "Finalizada" }));
+      mostrarMensaje("Siembra finalizada correctamente.", "success");
+    } catch (err) {
+      const mensajeBackend = err.response?.data?.message;
+      mostrarMensaje(
+        mensajeBackend || "No fue posible finalizar la siembra.",
+        "danger",
+      );
+    } finally {
+      setGuardando(false);
+    }
+  }, [id]);
+
   return {
     siembra,
     formData,
@@ -807,6 +825,7 @@ export default function useDetalleSiembra(id) {
     cancelarEdicion,
     guardar,
     handleFinalizarPreCria,
+    handleFinalizarSiembra,
     handleCrearSiembraDesdePrecria,
     datosCierrePreCriaCompletos,
     handleAgregarProveedorLarva,

@@ -68,7 +68,7 @@
  *
  * =========================================================================
  */
-import React from "react";
+import React, { useRef, useEffect } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { View, ScrollView } from "react-native";
 
@@ -126,6 +126,13 @@ export default function EditarSiembraScreen() {
     fieldHelpers,
   } = useDetalleSiembra(id);
 
+  const scrollRef = useRef(null);
+  useEffect(() => {
+    if (mensaje !== "" && mensajeVariant === "danger") {
+      scrollRef.current?.scrollToEnd({ animated: true });
+    }
+  }, [mensaje, mensajeVariant]);
+
   if (!siembra || !formData) {
     return (
       <NavbarRegistro
@@ -156,6 +163,7 @@ export default function EditarSiembraScreen() {
         Icono="shrimp"
       />
       <ScrollView
+        ref={scrollRef}
         style={STYLE.container}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
@@ -279,18 +287,6 @@ export default function EditarSiembraScreen() {
                         ? "Actualizar Pre-Cría"
                         : "Actualizar Siembra"}
                 </Text>
-              </View>
-            </Button>
-
-            <Button
-              variant="outline"
-              style={styles.button}
-              onPress={cancelarEdicion}
-              textStyle={styles.textoBoton}
-            >
-              <View style={styles.buttonContent}>
-                <Icon icon={ICONS.close} color={COLORS.primary} />
-                <Text style={styles.textoBoton}>Cancelar</Text>
               </View>
             </Button>
           </View>
