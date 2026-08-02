@@ -1,37 +1,62 @@
 /**
  * ============================================================
- * SCREEN EDITAR CRECIMIENTO
+ * PANTALLA EDITAR CRECIMIENTO
  * ============================================================
- * Mismo patrón que EditarAlimentacionScreen del compañero.
+ * Calco de FincaCrecimientoScreen: misma UI, carga por id y update.
  */
-import React from "react";
-import { View, ScrollView } from "react-native";
+
+import { ScrollView, View } from "react-native";
 import { useRouter } from "expo-router";
-import NavbarRegistro from "../../../shared/components/NavbarRegistro";
-import Card from "../../../shared/components/Card";
-import Text from "../../../shared/components/Text";
-import Button from "../../../shared/components/Button";
-import Icon from "../../../shared/components/Icons";
-import Input from "../../../shared/components/Input";
-import NumberInput from "../../../shared/components/NumberInput";
-import DateInput from "../../../shared/components/DateInput";
-import Alert from "../../../shared/components/Alert";
-import useEditarCrecimiento from "../hooks/useEditarCrecimiento";
-import { COLORS } from "../../../theme/colors";
-import { ICONS } from "../../../theme/icons";
-import { STYLE } from "../../../theme/style";
+import { styles } from "../../../modules/mantCrecimiento/styles/CrecimientoStyle.js";
+import { STYLE } from "../../../theme/style.js";
+import Alert from "../../../shared/components/Alert.jsx";
+import BadgeLabel from "../../../shared/components/Badge.jsx";
+import Button from "../../../shared/components/Button.jsx";
+import Card from "../../../shared/components/Card.jsx";
+import Calendario from "../../../shared/components/DateInput.jsx";
+import Icon from "../../../shared/components/Icons.jsx";
+import NavbarRegistro from "../../../shared/components/NavbarRegistro.jsx";
+import NumberInput from "../../../shared/components/NumberInput.jsx";
+import Select from "../../../shared/components/Select";
+import Text from "../../../shared/components/Text.jsx";
+import Title from "../../../shared/components/Title.jsx";
+import { COLORS } from "../../../theme/colors.js";
+import { ICONS } from "../../../theme/icons.js";
+import useEditarCrecimiento from "../hooks/useEditarCrecimiento.js";
 
 export default function EditarCrecimientoScreen({ registroId }) {
   const router = useRouter();
   const {
-    form,
-    updateField,
-    cargando,
+    fincaSeleccionada,
+    estanqueSeleccionado,
+    pesoActual,
+    fechaRegistro,
+    opcionesFincas,
+    estanquesFiltrados,
+    estanqueSeleccionadoObj,
+    estanque,
+
+    opcionesColaboradores,
+    colaboradorSeleccionado,
+
+    setEstanqueSeleccionado,
+    setPesoActual,
+    setFechaRegistro,
+    handleFincaChange,
+    guardarDatos,
+
+    handleColaboradorChange,
+
     submitted,
-    errores,
-    alerta,
-    guardando,
-    handleGuardar,
+    successMessage,
+    errorMessage,
+    pesoAnteriorLabel,
+    mostrarErrorFinca,
+    mostrarErrorEstanque,
+    mostrarErrorPeso,
+    mostrarErrorFecha,
+    mostrarErrorColaborador,
+    cargando,
   } = useEditarCrecimiento(registroId, () => {
     router.replace({
       pathname: "/registros/Reporteria",
@@ -41,76 +66,128 @@ export default function EditarCrecimientoScreen({ registroId }) {
 
   if (!registroId) {
     return (
-      <View>
+      <View style={styles.screenContainer}>
         <NavbarRegistro Titulo="Crecimiento" Subtitulo="Editar registro" Icono="growth" />
-        <View style={STYLE.contentWrapper}>
-          <Text style={{ textAlign: "center", marginTop: 24 }}>
-            No se encontró el registro a editar.
-          </Text>
-        </View>
+        <Text style={{ textAlign: "center", marginTop: 24 }}>No se encontró el registro a editar.</Text>
       </View>
     );
   }
 
   if (cargando) {
     return (
-      <View>
+      <View style={styles.screenContainer}>
         <NavbarRegistro Titulo="Crecimiento" Subtitulo="Editar registro" Icono="growth" />
-        <View style={STYLE.contentWrapper}>
-          <Text style={{ textAlign: "center", marginTop: 24 }}>Cargando registro...</Text>
-        </View>
+        <Text style={{ textAlign: "center", marginTop: 24 }}>Cargando registro...</Text>
       </View>
     );
   }
 
+
   return (
-    <>
-      <NavbarRegistro Titulo="Crecimiento" Subtitulo="Editar registro" Icono="growth" />
+    <View style={styles.screenContainer}>
+      <NavbarRegistro
+        Titulo="Crecimiento"
+        Subtitulo="Editar registro"
+        Icono="growth"
+      />
       <ScrollView
         style={STYLE.container}
-        contentContainerStyle={STYLE.contentWrapper}
-        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={styles.contentScroll}
       >
-        <Card>
-          <DateInput
-            label="Fecha de registro *"
-            value={form.fechaRegistro}
-            onChangeText={(v) => updateField("fechaRegistro", v)}
+        <Card style={STYLE.contentWrapper}>
+          <View style={styles.headerRow}>
+            <Icon
+              icon={ICONS.growth}
+              size={22}
+              color={COLORS.primary}
+              style={styles.headerIcon}
+            />
+            <Text style={styles.cardTitle}>Peso y crecimiento</Text>
+          </View>
+
+          <Select
+            label="Seleccione la finca *"
+            placeholder="Seleccione una finca"
+            options={opcionesFincas}
+            value={fincaSeleccionada}
+            onChange={handleFincaChange}
+            selectStyle={mostrarErrorFinca ? styles.inputError : null}
           />
-          {submitted && errores.fecha ? (
-            <Text size={12} color={COLORS.error}>{errores.fecha}</Text>
+
+          <Select
+            label="Seleccione el estanque *"
+            placeholder="Seleccione un estanque"
+            options={estanquesFiltrados}
+            value={estanqueSeleccionado}
+            onChange={setEstanqueSeleccionado}
+            disabled={
+              estanqueSeleccionado !== "" && estanquesFiltrados.length === 0
+            }
+            selectStyle={mostrarErrorEstanque ? styles.inputError : null}
+          />
+
+          <Select
+            label="Colaborador asignado *"
+            placeholder="Seleccione colaborador"
+            options={opcionesColaboradores}
+            value={colaboradorSeleccionado}
+            onChange={handleColaboradorChange}
+            selectStyle={mostrarErrorColaborador ? styles.inputError : null}
+          />
+
+
+          <View style={styles.badgeRow}>
+            <BadgeLabel
+              label={`Días de cultivo: ${estanqueSeleccionadoObj?.diasCultivo ?? "-"}`}
+              variant="success"
+              style={styles.badgeItem}
+            />
+            <BadgeLabel
+              label={pesoAnteriorLabel}
+              variant="warning"
+              style={styles.badgeItem}
+            />
+          </View>
+
+          <View style={styles.inputColumn}>
+            <Calendario
+              label="Fecha de registro *"
+              value={fechaRegistro}
+              onChangeText={setFechaRegistro}
+              inputStyle={mostrarErrorFecha ? styles.inputError : null}
+            />
+            <View>
+              <NumberInput
+                label="Peso actual (g) *"
+                style={[styles.sameInput, mostrarErrorPeso && styles.inputError]}
+                value={pesoActual}
+                onChangeText={setPesoActual}
+                step={0.5}
+                min={0}
+                max={1000}
+              />
+            </View>
+          </View>
+
+          {submitted && errorMessage ? (
+            <Alert variant="danger" message={errorMessage} />
+          ) : null}
+          {submitted && successMessage ? (
+            <Alert variant="success" message={successMessage} />
           ) : null}
 
-          <NumberInput
-            label="Peso actual (g) *"
-            value={form.pesoActual}
-            onChangeText={(v) => updateField("pesoActual", v)}
-          />
-          {submitted && errores.peso ? (
-            <Text size={12} color={COLORS.error}>{errores.peso}</Text>
-          ) : null}
-
-          <Text size={12} color={COLORS.textQuaternary} style={{ marginTop: 8 }}>
-            Finca / estanque / colaborador se mantienen del registro original
-            (ids: {form.finca} / {form.estanque} / {form.colaborador}).
-          </Text>
+          <Button
+            variant="outline"
+            onPress={guardarDatos}
+            style={styles.submitButton}
+          >
+            <View style={styles.buttonContent}>
+              <Icon icon={ICONS.save} size={24} color={COLORS.primary} />
+              <Text style={styles.buttonText}>Guardar cambios</Text>
+            </View>
+          </Button>
         </Card>
-
-        {alerta.visible && (
-          <Alert
-            variant={alerta.variant === "error" ? "danger" : alerta.variant}
-            message={alerta.mensaje}
-            style={{ marginVertical: 12 }}
-          />
-        )}
-
-        <Button variant="outline" onPress={handleGuardar} disabled={guardando}>
-          <Icon icon={ICONS.save} size={22} color={COLORS.primary} />
-          <Text color={COLORS.primary}>
-            {guardando ? " Guardando..." : " Guardar cambios"}
-          </Text>
-        </Button>
       </ScrollView>
-    </>
+    </View>
   );
 }
