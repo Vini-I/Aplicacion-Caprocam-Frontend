@@ -180,8 +180,15 @@ export default function RaleoForm({
           label="Porcentaje de raleo (%) *"
           placeholder="Ej: 30"
           value={String(form.porcentajeRaleo ?? "")}
-          keyboardType="numeric"
-          onChangeText={(v) => updateField("porcentajeRaleo", v.replace(/[^0-9]/g, ""))}
+          keyboardType="number-pad"
+          onChangeText={(v) => {
+            // Solo valores enteros de 0 a 100
+            let valor = v.replace(/[^0-9]/g, "");
+            // Evitar ceros infinitos al inicio
+            valor = valor.replace(/^0+(?=\d)/, "");
+            if (Number(valor) > 100) {valor = "100";}
+            updateField("porcentajeRaleo", valor);
+          }}
           style={invalidoPorcentaje ? bordeError : null}
         />
 
@@ -190,15 +197,37 @@ export default function RaleoForm({
           placeholder="Ej: 10.5"
           value={String(form.pesoPromedio ?? "")}
           keyboardType="decimal-pad"
-          onChangeText={(v) => updateField("pesoPromedio", v.replace(/[^0-9.]/g, ""))}
+          onChangeText={(v) => {
+            let valor = v.replace(/[^0-9.]/g, "");
+            // Evitar más de un punto decimal
+            const partes = valor.split(".");
+            if (partes.length > 2) {
+            valor = `${partes[0]}.${partes.slice(1).join("")}`;}
+            // Evitar ceros infinitos antes del decimal
+            if (!valor.includes(".")) {valor = valor.replace(/^0+(?=\d)/, "");}
+            // Máximo 5 dígitos contando solo números
+            const numeros = valor.replace(".", "");
+            if (numeros.length > 5) {return;}
+            updateField("pesoPromedio", valor);
+          }}
           style={invalidoPesoPromedio ? bordeError : null}
         />
         <Input
           label="Biomasa actual del estanque (kg) *"
-          placeholder="Ej: 800"
+          placeholder="Ej: 800.5"
           value={String(form.biomasaActual ?? "")}
           keyboardType="decimal-pad"
-          onChangeText={(v) => updateField("biomasaActual", v.replace(/[^0-9.]/g, ""))}
+          onChangeText={(v) => {
+            let valor = v.replace(/[^0-9.]/g, "");
+            // Evitar más de un punto decimal
+            const partes = valor.split(".");
+            if (partes.length > 2) {
+            valor = `${partes[0]}.${partes.slice(1).join("")}`;}
+            // Máximo 5 dígitos contando solo números
+            const numeros = valor.replace(".", "");
+            if (numeros.length > 5) {return;}
+            updateField("biomasaActual", valor);
+          }}
           style={invalidoBiomasaTotal ? bordeError : null}
         />
         <Input
