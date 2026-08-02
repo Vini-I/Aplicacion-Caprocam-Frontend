@@ -1,12 +1,13 @@
 /**
- * ============================================================
- * HTTP CLIENT: Autenticación
- * ============================================================
+ * CLIENTE HTTP: httpAuthClient
  *
- * Helper compartido por authService.js para hacer peticiones
- * fetch hacia los endpoints de autenticación, manejando de
- * forma centralizada errores de red y de estatus HTTP. Antes
- * esta lógica estaba duplicada entre login() y register().
+ * Encapsula la comunicación HTTP (fetch/axios) para los endpoints de autenticación,
+ * procesando respuestas y estructurando errores de servidor y red de forma unificada.
+ *
+ * @dependencies - api (cliente HTTP centralizado)
+ *               - AUTH_MESSAGES de constants/authMessages
+ * @validations  - Mapeo centralizado de códigos de respuesta HTTP (401, 409, 422, 500).
+ * @navigation   - N/A (cliente HTTP puro).
  */
 
 import { AUTH_MESSAGES } from '../constants/authMessages';
@@ -15,16 +16,27 @@ import api from '../../../api/api';
 /**
  * mapStatusError(status, data, statusMessages)
  *
- * Traduce un status HTTP de error a un mensaje legible.
+ * Prioridad de mensajes:
+ * 1. Mensaje explícito del backend (data.message) — fuente de verdad.
+ * 2. Override del frontend por status (statusMessages) — solo cuando
+ *    se sabe que el mensaje del backend sería demasiado técnico para
+ *    mostrar al usuario (ej.: "Unauthorized" → "Credenciales incorrectas").
+ * 3. Fallback genérico si el backend no responde con ningún mensaje.
  */
 const mapStatusError = (status, data, statusMessages) => {
+  // 1. El backend mandó un mensaje claro → usarlo
+  if (data?.message) {
+    return new Error(data.message);
+  }
+  // 2. Sin mensaje del backend → usar override legible del frontend si existe
   if (statusMessages[status]) {
     return new Error(statusMessages[status]);
   }
+  // 3. Fallback genérico
   if (status >= 500) {
     return new Error(AUTH_MESSAGES.ERROR_SERVER);
   }
-  return new Error(data?.message || AUTH_MESSAGES.ERROR_UNKNOWN);
+  return new Error(AUTH_MESSAGES.ERROR_UNKNOWN);
 };
 
 /**

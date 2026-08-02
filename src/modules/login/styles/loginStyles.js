@@ -1,9 +1,10 @@
 /**
- * ============================================================
- * ESTILOS: LoginScreen
- * ============================================================
- *
+ * ESTILOS: loginStyles
  * Centraliza el layout y la apariencia de la pantalla de login.
+ *
+ * @dependencies - COLORS de theme/colors, TYPOGRAPHY de theme/typography
+ * @validations  - Reglas de flexbox y alineaciones del formulario y tarjeta hero.
+ * @navigation   - N/A (archivo de estilos).
  */
 
 import { StyleSheet } from 'react-native';
@@ -176,6 +177,12 @@ const styles = StyleSheet.create({
     fontFamily: TYPOGRAPHY.fontFamily.medium,
     fontSize: 16,
   },
+  
+  alertTextDark: {
+    color: COLORS.textPrimary,
+  },
+  
+
 });
 
 export default styles;

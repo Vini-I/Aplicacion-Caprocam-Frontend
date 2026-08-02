@@ -2,36 +2,19 @@
  * ============================================================
  * PANTALLA: DetalleMantenimiento
  * ============================================================
- * 
- * Módulo: Mantenimiento de Equipos
- * 
- * RESPONSABILIDAD:
- * - Presentación detallada de la información de un ticket de mantenimiento específico
- *   del sistema, con el desglose de tareas, máquina vinculada y costo.
- * 
- * FUNCIONALIDAD:
- * - Recupera el ID del ticket y muestra la ficha completa y desglose de costos.
- * - Despliega los detalles técnicos del equipo/máquina asociado a través de EquipoDetail.
- * - Muestra la lista de tareas asignadas (con badge dinámico de Realizada/Pendiente).
- * - Muestra un banner de éxito temporal si el ticket acaba de ser editado.
- * 
- * DATOS / VARIABLES:
- * - id: Identificador único del ticket seleccionado recuperado de useLocalSearchParams.
- * - ticket: Objeto cargado de forma reactiva con la información completa.
- * - equipo: Datos técnicos de la máquina vinculada obtenidos de EQUIPOS_MOCK.
- * 
- * VALIDACIONES / REGLAS:
- * - Comportamiento seguro si el ticket no existe en memoria.
- * - Muestra el badge de estado e icono correcto según si cada tarea está realizada o pendiente.
- * 
- * NAVEGACIÓN:
- * - "Regresar" y "Eliminar" (éxito) redirigen a /equipos/mantEquipo.
- * - "Editar" redirige a /equipos/EditarMantenimiento?id={id}.
- * 
- * DEPENDENCIAS:
- * - Card, Button, Icon, CustomText, Alert, BadgeEstado, ModalConfirmarEliminar, EquipoDetail
- * - mantEquipoService, colors, style, icons, typography
- * ============================================================
+ *
+ * Muestra la ficha completa de un ticket de mantenimiento:
+ * datos del ticket, equipo asociado, lista de tareas con su
+ * estado, desglose de costos y banner temporal de éxito.
+ *
+ * @dependencies - useDetalleMantenimiento (hooks)
+ *               - Card, Button, Icon, CustomText, Alert, BadgeEstado (shared)
+ *               - ModalConfirmarEliminar, EquipoDetail (mantEquipo)
+ *               - mantEquipoStyles, getTareaBadgeStyle, getTareaBadgeTextStyle
+ * @validations  - Comportamiento seguro si el ticket no existe (estado null).
+ *               - Badge de estado e icono dinámicos por tarea (realizada/pendiente).
+ * @navigation   - "Regresar" y éxito de eliminar → /equipos/mantEquipo.
+ *               - "Editar" → /equipos/EditarMantenimiento?id={id}.
  */
 
 import React from "react";
@@ -42,6 +25,7 @@ import Button from "../../../shared/components/Button.jsx";
 import Icon from "../../../shared/components/Icons.jsx";
 import Card from "../../../shared/components/Card.jsx";
 import Alert from "../../../shared/components/Alert.jsx";
+import Spinner from "../../../shared/components/Spinner.jsx";
 
 import { ICONS } from "../../../theme/icons.js";
 import { COLORS } from "../../../theme/colors.js";
@@ -53,6 +37,8 @@ import EquipoDetail from "../components/EquipoDetailTicket.jsx";
 import { formatDate } from "../../../shared/utils/dateUtils.js";
 
 import { useDetalleMantenimiento } from "../hooks/useDetalleMantenimiento.js";
+import { getTareaBadgeStyle, getTareaBadgeTextStyle } from "../styles/mantEquipoStyles.js";
+import { TEXTOS_MODAL_AGREGAR } from "../constants/mantEquipoMensajes.js";
 
 export default function DetalleMantenimientoScreen({
   id,
@@ -66,6 +52,7 @@ export default function DetalleMantenimientoScreen({
     ticket,
     equipo,
     alerta,
+    cargando,
     showConfirmModal,
     tareasCatalog,
     productosSeleccionados,
@@ -73,6 +60,14 @@ export default function DetalleMantenimientoScreen({
     cerrarModalEliminar,
     confirmDelete,
   } = useDetalleMantenimiento({ id, alertaTipo, alertaMensaje, onNavigateToMain });
+
+  if (cargando) {
+    return (
+      <View style={[STYLE.container, styles.spinnerContainer]}>
+        <Spinner />
+      </View>
+    );
+  }
 
   if (!ticket) {
     return (
@@ -96,9 +91,8 @@ export default function DetalleMantenimientoScreen({
     <ScrollView style={STYLE.container} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
       <View style={[STYLE.contentWrapper, styles.screenFormContent]}>
 
-        {/* Banner de alerta interna de edición */}
         {alerta && (
-          <Alert variant={alerta.tipo} message={alerta.mensaje} style={styles.alertBottom} textStyle={{ color: "#000000" }} />
+          <Alert variant={alerta.tipo} message={alerta.mensaje} style={styles.alertBottom} textStyle={styles.alertTextDark} />
         )}
 
         {/* Sección: IDENTIFICACIÓN Y GENERAL */}
@@ -153,39 +147,37 @@ export default function DetalleMantenimientoScreen({
         <Card style={[styles.card, styles.cardSection]}>
           <SectionTitle icon={ICONS.clipboard} title="TAREAS ASIGNADAS" />
           <View style={styles.tareaGapList}>
-           {ticket.tareas && ticket.tareas.length > 0 ? (
+        {ticket.tareas && ticket.tareas.length > 0 ? (
               ticket.tareas.map((t, idx) => {
-                const fullTask = tareasCatalog.find((d) => d.id === t.value) || t;
                 const realizadaColor = t.realizada ? COLORS.success : COLORS.textTertiary;
-                const realizadaBg    = t.realizada ? COLORS.successLight : COLORS.surface;
                 return (
                   <View key={idx} style={styles.tareaItemContainer}>
                     <View style={styles.tareaItemHeader}>
                       <View style={styles.tareaItemLeft}>
                         <Icon icon={t.realizada ? ICONS.check : ICONS.clock} size={14} color={realizadaColor} />
                         <CustomText style={styles.tareaItemNombre}>
-                          {fullTask.label || fullTask.nombre}
+                          {t.nombre || t.label}
                         </CustomText>
                       </View>
-                      <View style={{ borderWidth: 1, borderColor: realizadaColor, backgroundColor: realizadaBg, borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2 }}>
-                        <CustomText style={{ fontSize: 10, fontWeight: "600", color: realizadaColor }}>
+                      <View style={[styles.tareaBadgeBase, getTareaBadgeStyle(t.realizada)]}>
+                        <CustomText style={[styles.tareaBadgeTextBase, getTareaBadgeTextStyle(t.realizada)]}>
                           {t.realizada ? "Realizada" : "Pendiente"}
                         </CustomText>
                       </View>
                     </View>
-                    {fullTask.categoria && (
+                    {t.categoria && (
                       <CustomText style={styles.tareaItemMeta}>
-                        Categoría: {fullTask.categoria === "preventivo" ? "Preventivo" : "Correctivo"}
+                        Categoría: {t.categoria === "preventivo" || t.categoria === "Preventivo" ? "Preventivo" : "Correctivo"}
                       </CustomText>
                     )}
-                    {fullTask.duracionEstimada !== undefined && (
+                    {t.duracionEstimada !== undefined && t.duracionEstimada > 0 && (
                       <CustomText style={styles.tareaItemMetaMin}>
-                        Duración estimada: {fullTask.duracionEstimada} hrs
+                        Duración estimada: {t.duracionEstimada} hrs
                       </CustomText>
                     )}
-                    {fullTask.descripcion && (
+                    {t.descripcion && (
                       <CustomText style={styles.tareaItemMetaTop}>
-                        {fullTask.descripcion}
+                        {t.descripcion}
                       </CustomText>
                     )}
                   </View>
@@ -201,49 +193,75 @@ export default function DetalleMantenimientoScreen({
         <Card style={[styles.card, styles.cardSection]}>
           <SectionTitle icon={ICONS.money} title="COSTOS DEL TICKET" />
 
-          <View style={styles.costoBox}>
-            {productosSeleccionados.length > 0 ? (
-              productosSeleccionados.map((p) => (
-                <View key={p.id} style={[styles.equipoDetailRow, styles.costoProductoRow]}>
-                  <CustomText style={styles.equipoDetailLabel}>Producto: {p.nombre}</CustomText>
-                  <CustomText style={styles.equipoDetailVal}>₡{(p.precioUnidad || 0).toLocaleString("es-CR")}</CustomText>
-                </View>
-              ))
-            ) : (
-              <View style={[styles.equipoDetailRow, styles.costoProductoRow]}>
-                <CustomText style={styles.equipoDetailLabel}>Productos utilizados:</CustomText>
-                <CustomText style={[styles.equipoDetailVal, styles.costoItalic]}>Ninguno</CustomText>
-              </View>
-            )}
+          {(() => {
+            const costoManoObraVal = parseFloat(ticket.costoManoObra) || 0;
+            const costoProductosTotal = productosSeleccionados.reduce((sum, p) => {
+              const cant = parseInt(p.cantidad || 1, 10);
+              const pu = parseFloat(p.precioUnidad || p.precio || 0);
+              const sub = p.subtotal !== undefined ? parseFloat(p.subtotal) : (cant * pu);
+              return sum + sub;
+            }, 0);
 
-            <View style={styles.equipoDetailRow}>
-              <CustomText style={styles.equipoDetailLabel}>Costo de Mano de Obra:</CustomText>
-              <CustomText style={styles.equipoDetailVal}>₡{(ticket.costoManoObra || 0).toLocaleString("es-CR")}</CustomText>
-            </View>
-            <View style={[styles.equipoDetailRow, styles.costoTotalRow]}>
-              <CustomText style={[styles.equipoDetailLabel, styles.costoTotalRowLabel]}>Costo Total:</CustomText>
-              <CustomText style={[styles.equipoDetailVal, styles.costoTotalRowValor]}>₡{(ticket.costoTotal || 0).toLocaleString("es-CR")}</CustomText>
-            </View>
-          </View>
+            const costoTotalCalculado = costoManoObraVal + costoProductosTotal;
+            const costoTotalFinal = (ticket.costoTotal !== undefined && ticket.costoTotal >= costoTotalCalculado)
+              ? ticket.costoTotal
+              : costoTotalCalculado;
+
+            return (
+              <View style={styles.costoBox}>
+                {/* Subtítulo de productos en negrita al estilo 'Detalles de la máquina' */}
+                <View style={styles.equipoDetailHeader}>
+                  <CustomText style={styles.equipoDetailTitle}>Productos utilizados</CustomText>
+                </View>
+
+                {productosSeleccionados.length > 0 ? (
+                  productosSeleccionados.map((p) => {
+                    const cant = parseInt(p.cantidad || 1, 10);
+                    const pu = parseFloat(p.precioUnidad || p.precio || 0);
+                    const subtotal = p.subtotal !== undefined ? parseFloat(p.subtotal) : (cant * pu);
+                    return (
+                      <View key={p.id || p.productoId} style={[styles.equipoDetailRow, styles.costoProductoRow]}>
+                        <CustomText style={styles.equipoDetailLabel}>{p.nombre} {cant > 1 ? `(x${cant})` : ""}</CustomText>
+                        <CustomText style={styles.equipoDetailVal}>₡{subtotal.toLocaleString("es-CR")}</CustomText>
+                      </View>
+                    );
+                  })
+                ) : (
+                  <View style={[styles.equipoDetailRow, styles.costoProductoRow]}>
+                    <CustomText style={[styles.equipoDetailVal, styles.costoItalic]}>Ninguno</CustomText>
+                  </View>
+                )}
+
+                <View style={[styles.equipoDetailRow, styles.equipoDetailRowTop]}>
+                  <CustomText style={styles.equipoDetailLabel}>Costo de Mano de Obra:</CustomText>
+                  <CustomText style={styles.equipoDetailVal}>₡{costoManoObraVal.toLocaleString("es-CR")}</CustomText>
+                </View>
+
+                <View style={[styles.equipoDetailRow, styles.costoTotalRow]}>
+                  <CustomText style={[styles.equipoDetailLabel, styles.costoTotalRowLabel]}>Costo Total:</CustomText>
+                  <CustomText style={[styles.equipoDetailVal, styles.costoTotalRowValor]}>₡{costoTotalFinal.toLocaleString("es-CR")}</CustomText>
+                </View>
+              </View>
+            );
+          })()}
         </Card>
 
-        {/* Botones de Acción */}
         <View style={styles.formFooter}>
           <Button
             variant="outline"
             onPress={() => onNavigateToEdit(ticket.id)}
-            style={[styles.btnCancel, { flex: 1 }]}
+            style={[styles.btnCancel, styles.btnFooterFlex]}
           >
             <Icon icon={ICONS.edit} size={15} color={COLORS.primary} />
-            <CustomText style={styles.btnTextPrimary}>Editar</CustomText>
+            <CustomText style={styles.btnTextPrimary}>{TEXTOS_MODAL_AGREGAR.btnActualizar}</CustomText>
           </Button>
           <Button
             variant="outline"
             onPress={() => abrirModalEliminar()}
-            style={[styles.btnCancel, { flex: 1, borderColor: COLORS.error }]}
+            style={[styles.btnCancel, styles.btnFooterFlexError]}
           >
             <Icon icon={ICONS.delete} size={15} color={COLORS.error} />
-            <CustomText style={styles.btnTextError}>Eliminar</CustomText>
+            <CustomText style={styles.btnTextError}>{TEXTOS_MODAL_AGREGAR.btnEliminar}</CustomText>
           </Button>
         </View>
 

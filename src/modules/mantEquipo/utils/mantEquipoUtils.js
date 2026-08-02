@@ -1,30 +1,17 @@
 /**
- * ============================================================
  * UTILIDADES: mantEquipoUtils
- * ============================================================
- * 
- * Responsabilidad: Funciones puras de apoyo para formateo de datos,
- * generación de IDs y filtrado de elementos en el módulo de
- * Mantenimiento de Equipos.
- * 
- * Datos:
- * - Recibe objetos ticket, equipo y tareas para procesar sus campos.
- * 
- * Validaciones:
- * - Formatea fechas cortas.
- * - Determina las etiquetas legibles y variantes de color según el estado.
- * - Construye cadenas formateadas con el detalle extendido de tareas.
- * 
- * Navegación:
- * - Ninguna.
- * 
- * Dependencias:
- * - ESTADOS de mantEquipoService.js.
- * - TAREAS_DEMO de mantEquipoMensajes.js.
+ * Funciones puras de apoyo para formateo de datos, generación de IDs
+ * y filtrado de elementos en el módulo de Mantenimiento de Equipos.
+ *
+ * @dependencies - ESTADOS de mantEquipoService.js
+ *               - TAREAS_DEMO de mantEquipoMensajes.js
+ * @validations  - Formatea fechas cortas.
+ *               - Determina etiquetas legibles y variantes de color según estado.
+ *               - Construye cadenas formateadas con el detalle extendido de tareas.
+ * @navigation   - N/A (utilidad pura).
  */
 
 import { ESTADOS } from "../services/mantEquipoService.js";
-import { TAREAS_DEMO } from "../services/tareasService.js";
 import { formatDate } from "../../../shared/utils/dateUtils.js";
 
 export function formatearFechaCorta(fecha) {
@@ -33,31 +20,27 @@ export function formatearFechaCorta(fecha) {
 }
 
 export function etiquetaPorEstado(estado) {
-  if (estado === ESTADOS.EN_ESPERA)        return "En espera";
+  if (estado === ESTADOS.EN_ESPERA) return "En espera";
   if (estado === ESTADOS.EN_MANTENIMIENTO) return "En mantenimiento";
-  if (estado === ESTADOS.TICKET_RESUELTO)  return "Terminado";
+  if (estado === ESTADOS.TICKET_RESUELTO) return "Terminado";
   return estado;
 }
 
 export function variantePorEstado(estado) {
-  if (estado === ESTADOS.EN_ESPERA)        return "warning";
+  if (estado === ESTADOS.EN_ESPERA) return "warning";
   if (estado === ESTADOS.EN_MANTENIMIENTO) return "info";
-  if (estado === ESTADOS.TICKET_RESUELTO)   return "success";
+  if (estado === ESTADOS.TICKET_RESUELTO) return "success";
   return "info";
-}
-
-export function generarNuevoId(tickets) {
-  const nums = tickets.map((t) => parseInt(t.id.replace(/\D/g,""), 10)).filter((n) => !isNaN(n));
-  return `A${String(nums.length > 0 ? Math.max(...nums) + 1 : 1).padStart(3,"0")}`;
 }
 
 export function filtrarEquipos(equipos, texto) {
   if (!texto || !texto.trim()) return equipos;
   const q = texto.toLowerCase();
   return equipos.filter((e) =>
-    e.nombre.toLowerCase().includes(q) || e.serie.toLowerCase().includes(q) ||
-    e.tipo.toLowerCase().includes(q)   || e.marca.toLowerCase().includes(q) ||
-    e.ubicacion.toLowerCase().includes(q)
+    (e.nombre || '').toLowerCase().includes(q) ||
+    (e.codigo || '').toLowerCase().includes(q) ||
+    (e.tipo || '').toLowerCase().includes(q) ||
+    (e.descripcion || '').toLowerCase().includes(q)
   );
 }
 
@@ -75,16 +58,14 @@ export function filtrarTickets(tickets, texto, columna) {
       return val.includes(q);
     }
     // Sin columna: busca en todos los campos string y en tareas
-    const coincideCampos = ["id","herramienta","descripcion","titulo","creadoPor","estado"].some(
+    const coincideCampos = ["id", "herramienta", "descripcion", "titulo", "creadoPor", "estado"].some(
       (k) => String(t[k] ?? "").toLowerCase().includes(q)
     );
     if (coincideCampos) return true;
-    
-    // Buscar también coincidencia en el nombre o descripción de las tareas
+
+    // Buscar también coincidencia en el nombre de las tareas
     return Array.isArray(t.tareas) && t.tareas.some((tar) => {
-      const fullTask = TAREAS_DEMO.find((d) => d.value === tar.value) || tar;
-      return (fullTask.nombre || fullTask.label || "").toLowerCase().includes(q) ||
-             (fullTask.descripcion || "").toLowerCase().includes(q);
+      return (tar.nombre || tar.label || "").toLowerCase().includes(q);
     });
   });
 }
@@ -93,10 +74,7 @@ export function filtrarTickets(tickets, texto, columna) {
 export function etiquetasTareas(tareas) {
   if (!Array.isArray(tareas) || tareas.length === 0) return "—";
   return tareas.map((t) => {
-    const fullTask = TAREAS_DEMO.find((d) => d.value === t.value) || t;
-    const desc = fullTask.descripcion ? `: ${fullTask.descripcion}` : "";
-    const hrs = fullTask.duracionEstimada ? ` (${fullTask.duracionEstimada} hrs)` : "";
-    return `${fullTask.nombre || fullTask.label}${desc}${hrs}`;
+    return t.nombre || t.label || "Tarea";
   }).join("\n");
 }
 
@@ -123,5 +101,5 @@ export function validarCostoManoObra(valor) {
  */
 export function formatearNombreHerramienta(equipo) {
   if (!equipo) return '';
-  return `${equipo.nombre} ${equipo.serie}`;
+  return `${equipo.nombre} ${equipo.codigo || equipo.id}`;
 }

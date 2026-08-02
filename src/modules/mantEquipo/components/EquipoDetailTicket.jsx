@@ -11,13 +11,15 @@
  * 
  * Validaciones:
  * - Renderizado condicional si no hay equipo seleccionado.
+ * - Alineación perfecta de "Horas de uso al ingresar" y "Horas para mantenimiento" sin saltos de línea.
  * 
  * Navegación:
  * - Permite ejecutar callback para desvincular el equipo seleccionado.
  * 
- * Dependencias:
+ * DEPENDENCIAS:
  * - CustomText, Button, Icon
  * - theme/icons, theme/colors, mantEquipoStyles, mantEquipoMensajes
+ * ============================================================
  */
 
 import React from "react";
@@ -32,31 +34,21 @@ import { LABELS_EQUIPO_DETALLE } from "../constants/mantEquipoMensajes.js";
 
 export default function EquipoDetail({ equipo, onQuitar, horasUsoIngreso }) {
   if (!equipo) return null;
+
   return (
     <View style={styles.equipoDetailCard}>
-      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-        <CustomText style={{ fontSize: 13, fontWeight: "700", color: COLORS.textSecondary }}>
+      <View style={styles.equipoDetailHeader}>
+        <CustomText style={styles.equipoDetailTitle}>
           {onQuitar ? "Detalles del equipo seleccionado" : "Detalles de la máquina"}
         </CustomText>
         {onQuitar && (
           <Button
             variant="outline"
             onPress={onQuitar}
-            style={{
-              borderColor: COLORS.error,
-              width: 90,
-              height: 32,
-              paddingVertical: 0,
-              paddingHorizontal: 10,
-              marginTop: 0,
-              justifyContent: "center",
-              alignItems: "center",
-              flexDirection: "row",
-              gap: 4
-            }}
+            style={styles.btnQuitarEquipo}
           >
             <Icon icon={ICONS.delete} size={12} color={COLORS.error} />
-            <CustomText style={{ color: COLORS.error, fontSize: 11, fontWeight: "600" }}>
+            <CustomText style={styles.btnQuitarEquipoText}>
               Eliminar
             </CustomText>
           </Button>
@@ -70,18 +62,15 @@ export default function EquipoDetail({ equipo, onQuitar, horasUsoIngreso }) {
         </View>
       ))}
 
-      {/* Si se pasa horasUsoIngreso o si mostramos el valor por defecto */}
-      {horasUsoIngreso !== undefined ? (
-        <View style={[styles.equipoDetailRow, { borderTopWidth: 1, borderTopColor: COLORS.secondary, paddingTop: 6, marginTop: 4 }]}>
-          <CustomText style={[styles.equipoDetailLabel, { width: 145 }]}>Horas de uso al ingresar:</CustomText>
-          <CustomText style={styles.equipoDetailVal}>{horasUsoIngreso} hrs</CustomText>
-        </View>
-      ) : (
-        <View style={styles.equipoDetailRow}>
-          <CustomText style={styles.equipoDetailLabel}>Horas de uso actual:</CustomText>
-          <CustomText style={styles.equipoDetailVal}>{equipo.horasUso ?? 0} hrs</CustomText>
-        </View>
-      )}
+      {/* Horas de uso al ingresar o actual */}
+      <View style={styles.equipoDetailRowTop}>
+        <CustomText style={styles.equipoDetailLabel}>
+          {horasUsoIngreso !== undefined ? "Horas de uso al ingresar:" : "Horas de uso actual:"}
+        </CustomText>
+        <CustomText style={styles.equipoDetailVal}>
+          {horasUsoIngreso !== undefined ? horasUsoIngreso : (equipo.horasUso ?? 0)} hrs
+        </CustomText>
+      </View>
 
       {/* Horas para mantenimiento del equipo (restantes) */}
       <View style={styles.equipoDetailRow}>

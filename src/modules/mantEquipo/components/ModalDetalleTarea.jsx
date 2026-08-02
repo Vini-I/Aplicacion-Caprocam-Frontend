@@ -7,17 +7,12 @@
  * Responsabilidad:
  * Modal de solo lectura que muestra el detalle completo de una tarea.
  *
- * Props:
- * - visible: boolean
- * - tarea: objeto con los datos de la tarea
- * - onClose: función para cerrar el modal
- *
- * Dependencias:
- * - shared/components (Modal, Button, Icon, Text)
- * - theme (COLORS, ICONS)
- * - constants/tareasMensajes
- * - styles/tareasStyles
- * ============================================================
+ * @dependencies - shared/components: Modal, Button, Icon, Text
+ *               - theme: COLORS, ICONS
+ *               - constants/tareasMensajes
+ *               - styles/tareasStyles
+ * @validations  - Ninguna (solo lectura)
+ * @navigation   - Ninguna
  */
 
 import React from 'react';
@@ -77,7 +72,7 @@ export default function ModalDetalleTarea({ visible, tarea, onClose }) {
         </View>
         <View style={styles.detalleRow}>
           <CustomText style={styles.equipoDetailLabel}>Productos</CustomText>
-          <View style={{ flex: 1 }}>
+          <View style={styles.productosListFlex}>
             {tarea.productos && tarea.productos.length > 0 ? (
               tarea.productos.map((p) => (
                 <CustomText key={p.productoId} style={styles.equipoDetailVal}>

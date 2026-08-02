@@ -2,37 +2,20 @@
  * ============================================================
  * PANTALLA: EditarMantenimiento
  * ============================================================
- * 
- * Módulo: Mantenimiento de Equipos
- * 
- * RESPONSABILIDAD:
- * - Provee un formulario interactivo para la modificación de un ticket de mantenimiento 
- *   existente en el sistema, permitiendo actualizar datos, tareas y estado.
- * 
- * FUNCIONALIDAD:
- * - Recupera el ID del ticket por parámetros y precarga sus datos en el formulario.
- * - Presentación detallada del equipo seleccionado.
- * - Edición de horas de ingreso, tipo de personal, costos y tareas.
- * - Guardado persistente de las modificaciones.
- * 
- * DATOS / VARIABLES:
- * - id: Identificador único del ticket a editar obtenido por useLocalSearchParams.
- * - Estados locales vinculados a los campos del formulario (titulo, descripcion, costoManoObra).
- * - errores: Objeto para registrar fallas de validación.
- * 
- * VALIDACIONES / REGLAS:
- * - Campos requeridos (Título, Descripción, Tarea, Equipo y Costo) marcados con asterisco.
- * - El borde en rojo de validación aparece únicamente después de presionar "Actualizar" si el campo está vacío.
- * - Si el estado es "Terminado", el costo de mano de obra es obligatorio. De lo contrario, es opcional.
- * 
- * NAVEGACIÓN:
- * - Al actualizar con éxito, redirige a /equipos/DetalleMantenimiento?id={id} con banner.
- * - Al cancelar, regresa a /equipos/DetalleMantenimiento?id={id}.
- * 
- * DEPENDENCIAS:
- * - Input, Select, Button, Icon, CustomText, Card, Alert
- * - mantEquipoService, colors, style, icons, typography
- * ============================================================
+ *
+ * Formulario interactivo para modificar un ticket de mantenimiento
+ * existente. Precarga todos sus datos desde el backend y permite
+ * actualizar estado, tareas, costos y tipo de personal.
+ *
+ * @dependencies - useEditarMantenimiento (hooks)
+ *               - Input, Select, Button, Icon, CustomText, Card, Alert (shared)
+ *               - MantenimientoEquipoSelect, SelectorPills, ProductosSeleccionadosList
+ *               - mantEquipoService, mantEquipoStyles, colors, style, icons
+ * @validations  - Campos requeridos marcados con asterisco (*).
+ *               - Borde rojo visible solo tras presionar "Actualizar" con campo vacío.
+ *               - Si el estado es "Terminado", el costo de mano de obra es obligatorio.
+ * @navigation   - Actualizar con éxito → /equipos/DetalleMantenimiento?id={id} con banner.
+ *               - Cancelar → /equipos/DetalleMantenimiento?id={id}.
  */
 
 import React from "react";
@@ -44,6 +27,7 @@ import Input from "../../../shared/components/Input.jsx";
 import Icon from "../../../shared/components/Icons.jsx";
 import Card from "../../../shared/components/Card.jsx";
 import Alert from "../../../shared/components/Alert.jsx";
+import Spinner from "../../../shared/components/Spinner.jsx";
 
 import { ICONS } from "../../../theme/icons.js";
 import { COLORS } from "../../../theme/colors.js";
@@ -51,23 +35,25 @@ import { STYLE } from "../../../theme/style.js";
 import { styles } from "../styles/mantEquipoStyles.js";
 
 import { TEXTOS_MODAL_AGREGAR, LISTA_ESTADOS_TICKET, LISTA_TIPOS_PERSONAL } from "../constants/mantEquipoMensajes.js";
+import { useUsuarioSesion } from "../hooks/useUsuarioSesion.js";
 import * as MantService from "../services/mantEquipoService.js";
 import MantenimientoEquipoSelect from "../components/MantenimientoEquipoSelect.jsx";
 import MantenimientoTareaSelect from "../components/MantenimientoTareaSelect.jsx";
 import EquipoDetail from "../components/EquipoDetailTicket.jsx";
 import SelectorPills from "../components/SelectorPills.jsx";
 import TareasSeleccionadasList from "../components/TareasSeleccionadasList.jsx";
-import Select from "../../../shared/components/Select.jsx";
-import ProductosSeleccionadosList from "../components/ProductosSeleccionadosList.jsx";
 import DateInput from "../../../shared/components/DateInput.jsx";
+import MantenimientoProductoSelect from "../components/MantenimientoProductoSelect.jsx";
+import ProductosSeleccionadosList from "../components/ProductosSeleccionadosList.jsx";
 
 import { useEditarMantenimiento } from "../hooks/useEditarMantenimiento.js";
-
-
+import { getFieldErrorStyle } from "../styles/mantEquipoStyles.js";
 export default function EditarMantenimientoScreen({ id, onNavigateToDetail = () => { }, onNavigateToMain = () => { } }) {
+  const usuarioSesion = useUsuarioSesion();
 
   const {
     ticketOriginal,
+    cargando,
     titulo, setTitulo,
     descripcion, setDescripcion,
     equipoId,
@@ -80,15 +66,25 @@ export default function EditarMantenimientoScreen({ id, onNavigateToDetail = () 
     estadoTicket, setEstadoTicket,
     productosList,
     productosSeleccionados,
+    alertaStock, setAlertaStock,
     costoTotal,
     errores, setErrores,
     submitted,
     seleccionarEquipoById,
     quitarEquipo,
-    seleccionarProducto,
+    agregarProducto,
+    cambiarCantidadProducto,
     quitarProducto,
     handleGuardar,
   } = useEditarMantenimiento({ id, onNavigateToDetail, onNavigateToMain });
+
+  if (cargando) {
+    return (
+      <View style={[STYLE.container, styles.spinnerContainer]}>
+        <Spinner />
+      </View>
+    );
+  }
 
   if (!ticketOriginal) {
     return (
@@ -130,7 +126,7 @@ export default function EditarMantenimientoScreen({ id, onNavigateToDetail = () 
               <View style={styles.comboContainer}>
                 <CustomText style={styles.comboLabel}>{TEXTOS_MODAL_AGREGAR.labelCreadoPor}</CustomText>
                 <View style={[styles.comboInput, styles.readOnlyField]}>
-                  <CustomText style={styles.readOnlyText}>{ticketOriginal.creadoPor || USUARIO_SESION}</CustomText>
+                  <CustomText style={styles.readOnlyText}>{ticketOriginal.creadoPor || usuarioSesion}</CustomText>
                 </View>
               </View>
             </View>
@@ -141,7 +137,7 @@ export default function EditarMantenimientoScreen({ id, onNavigateToDetail = () 
             label={TEXTOS_MODAL_AGREGAR.labelFechaHora}
             value={fecha}
             onChangeText={setFecha}
-            containerStyle={{ marginBottom: 12 }}
+            containerStyle={styles.marginBottom12}
             inputStyle={styles.comboInput}
             labelStyle={styles.comboLabel}
           />
@@ -156,8 +152,8 @@ export default function EditarMantenimientoScreen({ id, onNavigateToDetail = () 
                 if (errores.titulo) setErrores((prev) => { const s = { ...prev }; delete s.titulo; return s; });
               }}
               placeholder={TEXTOS_MODAL_AGREGAR.placeholderTitulo}
-              containerStyle={{ marginBottom: 0 }}
-              style={[styles.comboInput, submitted && errores.titulo && { borderColor: COLORS.error }]}
+              containerStyle={styles.noMarginBottom}
+              style={[styles.comboInput, getFieldErrorStyle(submitted && errores.titulo)]}
             />
           </View>
 
@@ -173,8 +169,8 @@ export default function EditarMantenimientoScreen({ id, onNavigateToDetail = () 
               placeholder={TEXTOS_MODAL_AGREGAR.placeholderDesc}
               multiline
               numberOfLines={4}
-              containerStyle={{ marginBottom: 0 }}
-              style={[styles.comboInput, styles.inputMultiline, submitted && errores.descripcion && { borderColor: COLORS.error }]}
+              containerStyle={styles.noMarginBottom}
+              style={[styles.comboInput, styles.inputMultiline, getFieldErrorStyle(submitted && errores.descripcion)]}
             />
           </View>
         </Card>
@@ -210,7 +206,18 @@ export default function EditarMantenimientoScreen({ id, onNavigateToDetail = () 
           <MantenimientoTareaSelect
             tareasSeleccionadas={tareasSeleccionadas}
             onAgregarTarea={(taskObj) => {
-              setTareasSeleccionadas(prev => [...prev, { value: taskObj.id, label: taskObj.nombre, realizada: false }]);
+              // Guardar el objeto completo: tareaId es necesario para vincularTareas al guardar
+              setTareasSeleccionadas(prev => [
+                ...prev,
+                {
+                  ...taskObj,
+                  tareaId:  taskObj.tareaId || taskObj.id,
+                  value:    String(taskObj.tareaId || taskObj.id),
+                  label:    taskObj.nombre || taskObj.label,
+                  nombre:   taskObj.nombre || taskObj.label,
+                  realizada: false,
+                }
+              ]);
               if (errores.tareas) setErrores(e => { const copy = { ...e }; delete copy.tareas; return copy; });
             }}
             error={submitted && errores.tareas}
@@ -232,34 +239,24 @@ export default function EditarMantenimientoScreen({ id, onNavigateToDetail = () 
             value={tipoPersonal}
             onChange={(v) => {
               setTipoPersonal(v);
-              if (v === "interno") setCostoManoObra("0");
+              if (v === "interno") setCostoManoObra("");
             }}
             opciones={LISTA_TIPOS_PERSONAL}
           />
 
-          {/* Selector de Producto / Insumo */}
-          <Select
-            label="Productos utilizados"
-            value=""
-            options={[
-              ...productosList
-                .filter(p => !productosSeleccionados.some(x => x.id === p.id))
-                .map(p => ({
-                  label: `${p.nombre} (Precio: ₡${p.precioUnidad})`,
-                  value: String(p.id)
-                }))
-            ]}
-            onChange={seleccionarProducto}
-            placeholder="Seleccione productos..."
-            containerStyle={{ marginBottom: 12 }}
-            selectStyle={[styles.comboInput, styles.selectMinHeight]}
-            labelStyle={styles.comboLabel}
-            showsVerticalScrollIndicator={false}
+          {/* Selector de Producto / Insumo con cantidad */}
+          <MantenimientoProductoSelect
+            productosSeleccionados={productosSeleccionados}
+            onAgregarProducto={agregarProducto}
+            alertaStock={alertaStock}
+            setAlertaStock={setAlertaStock}
           />
 
+          {/* Lista de productos seleccionados */}
           <ProductosSeleccionadosList
             productosSeleccionados={productosSeleccionados}
             onQuitar={quitarProducto}
+            onCambiarCantidad={cambiarCantidadProducto}
           />
 
           {/* Costo de Mano de Obra */}
@@ -268,13 +265,14 @@ export default function EditarMantenimientoScreen({ id, onNavigateToDetail = () 
             <Input
               value={costoManoObra}
               onChangeText={(v) => {
-                setCostoManoObra(v);
+                const soloNumeros = v.replace(/[^0-9]/g, '').slice(0, 7);
+                setCostoManoObra(soloNumeros);
                 if (errores.costoManoObra) setErrores((prev) => { const s = { ...prev }; delete s.costoManoObra; return s; });
               }}
-              placeholder="Ej: 3000"
+              placeholder="Ej: 15000"
               keyboardType="numeric"
-              containerStyle={{ marginBottom: 0 }}
-              style={[styles.comboInput, submitted && errores.costoManoObra && { borderColor: COLORS.error }]}
+              containerStyle={styles.noMarginBottom}
+              style={[styles.comboInput, getFieldErrorStyle(submitted && errores.costoManoObra)]}
             />
           </View>
 
@@ -297,7 +295,7 @@ export default function EditarMantenimientoScreen({ id, onNavigateToDetail = () 
         {submitted && (errores.titulo || errores.equipoId || errores.descripcion || errores.tareas || errores.costoManoObra) && (
           <Alert
             variant="danger"
-            message="Revisa los campos obligatorios marcados con * antes de guardar."
+            message={TEXTOS_MODAL_AGREGAR.errorValidacion}
             containerStyle={styles.alertTopMargin}
             textStyle={styles.alertValidacionTexto}
           />
@@ -307,7 +305,7 @@ export default function EditarMantenimientoScreen({ id, onNavigateToDetail = () 
         {submitted && errores.tareasPendientes && (
           <Alert
             variant="danger"
-            message="No se puede terminar el ticket si existen tareas pendientes."
+            message={TEXTOS_MODAL_AGREGAR.errorTareasPendientes}
             containerStyle={styles.alertSecondMargin}
             textStyle={styles.alertValidacionTexto}
           />
@@ -318,7 +316,7 @@ export default function EditarMantenimientoScreen({ id, onNavigateToDetail = () 
           <Button
             variant="outline"
             onPress={handleGuardar}
-            style={[styles.btnAccept, { flex: 1 }]}
+            style={[styles.btnAccept, styles.btnFooterFlex]}
           >
             <Icon icon={ICONS.check} size={15} color={COLORS.primary} />
             <CustomText style={styles.btnTextPrimary}>

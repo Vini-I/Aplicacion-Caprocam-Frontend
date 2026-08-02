@@ -150,28 +150,14 @@ export default function EquipoCard({ equipo, onPress, onToggle }) {
             e?.stopPropagation?.();
             onToggle?.(equipo.id);
           }}
-          style={[
-            styles.toggleBtn,
-            {
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 6,
-              borderColor: COLORS.primary,
-              backgroundColor: "transparent",
-              paddingVertical: 10,
-              borderRadius: 8,
-              marginTop: 0,
-              borderWidth: 1,
-            },
-          ]}
+          style={[styles.toggleBtn, styles.toggleBtnOutline]}
         >
           <Icon
             icon={equipo.encendido ? ICONS.check : ICONS.close}
             size={16}
             color={COLORS.primary}
           />
-          <CustomText style={{ color: COLORS.primary, fontWeight: "600", fontSize: 14 }}>
+          <CustomText style={styles.toggleBtnLabel}>
             {equipo.encendido ? "Encendido" : "Apagado"}
           </CustomText>
         </Button>

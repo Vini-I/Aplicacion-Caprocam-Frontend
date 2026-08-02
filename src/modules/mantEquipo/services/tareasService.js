@@ -17,25 +17,9 @@ import api from "../../../api/api";
 
 // ─── MAPEO DE DATOS ─────────────────────────────────────────────
 
-// Mapeo de categorías del frontend (minúsculas) al backend (primera letra mayúscula)
-const categoriaMap = {
-  'preventivo': 'Preventivo',
-  'correctivo': 'Correctivo',
-  'predictivo': 'Predictivo',
-  'emergencia': 'Emergencia',
-};
-
-// Mapeo de estados del frontend al backend
-const estadoMap = {
-  'no_iniciada': 'Pendiente',
-  'pendiente': 'Pendiente',
-  'en_ejecucion': 'En proceso',
-  'en_proceso': 'En proceso',
-  'finalizada': 'Finalizada',
-  'cancelada': 'Cancelada',
-};
-
 function mapBackendToFrontend(data) {
+  if (!data) return {};
+
   const estadoMapInverso = {
     'Pendiente': 'no_iniciada',
     'En proceso': 'en_ejecucion',
@@ -44,103 +28,107 @@ function mapBackendToFrontend(data) {
   };
 
   const estadoFrontend = estadoMapInverso[data.estado] || data.estado || 'no_iniciada';
+  const idVal = data.id ?? data.tarea_id ?? data.tareaId ?? data.codigo_tarea ?? data.codigoTarea;
+  const nombreVal = data.nombre ?? data.nombre_tarea ?? data.nombreTarea ?? data.label ?? (idVal ? `Tarea ${idVal}` : 'Tarea');
 
   return {
-    id: data.id,
-    codigoTarea: data.codigoTarea || data.codigo_tarea,
-    nombre: data.nombre,
-    descripcion: data.descripcion,
-    categoria: data.categoria,
-    duracionEstimada: Number(data.horas) || 0,
+    id: idVal,
+    nombre: nombreVal,
+    descripcion: data.descripcion || '',
+    categoria: data.categoria || '',
+    duracionEstimada: Number(data.horas) || Number(data.duracion_estimada) || 0,
     estado: estadoFrontend,
-    colaboradorId: data.colaborador_id,
-    equipoId: data.equipo_id,
+    colaboradorId: data.colaborador_id || data.colaboradorId,
+    equipoId: data.equipo_id || data.equipoId,
     productos: data.productos || [],
-    createdAt: data.fecha_creacion,
-    updatedAt: data.fecha_actualizacion,
+    createdAt: data.fecha_creacion || data.createdAt,
+    updatedAt: data.fecha_actualizacion || data.updatedAt,
   };
 }
 
-// ─── GENERACIÓN DE CÓDIGO ÚNICO ────────────────────────────────
+function prepareForBackend(data) {
+  // Mapeo de estados del frontend al backend
+  const estadoMap = {
+    'no_iniciada': 'Pendiente',
+    'pendiente': 'Pendiente',
+    'en_ejecucion': 'En proceso',
+    'en_proceso': 'En proceso',
+    'finalizada': 'Finalizada',
+    'cancelada': 'Cancelada',
+  };
 
-let lastTimestamp = 0;
-let counter = 0;
+  // Mapeo de categorías: backend requiere capitalizada
+  const categoriaMap = {
+    'preventivo':  'Preventivo',
+    'correctivo':  'Correctivo',
+    'predictivo':  'Predictivo',
+    'emergencia':  'Emergencia',
+    'Preventivo':  'Preventivo',
+    'Correctivo':  'Correctivo',
+    'Predictivo':  'Predictivo',
+    'Emergencia':  'Emergencia',
+  };
 
-function generarCodigoTareaUnico() {
-  const now = Date.now();
-  if (now === lastTimestamp) {
-    counter++;
-  } else {
-    counter = 0;
-    lastTimestamp = now;
-  }
-  const base = now.toString(36).toUpperCase();
-  const sufijo = (counter > 0 ? counter.toString(36).toUpperCase() : '');
-  let combined = (base + sufijo).slice(-7);
-  while (combined.length < 7) combined = '0' + combined;
-  const codigo = `TAR${combined}`;
-  return codigo;
-}
-
-// ─── PREPARACIÓN DE PAYLOAD ────────────────────────────────────
-
-function prepareForBackend(data, codigoTarea) {
-  if (!codigoTarea) {
-    codigoTarea = generarCodigoTareaUnico();
-  }
-
-  // Mapear categoría a la forma esperada por el backend
-  let categoriaBackend = data.categoria;
-  if (categoriaBackend) {
-    // Si la categoría está en minúsculas, mapear
-    const mapeada = categoriaMap[categoriaBackend.toLowerCase()];
-    if (mapeada) {
-      categoriaBackend = mapeada;
-    } else {
-      // Si no está en el mapa, intentar capitalizar primer letra
-      categoriaBackend = categoriaBackend.charAt(0).toUpperCase() + categoriaBackend.slice(1).toLowerCase();
-    }
-  }
-
+  const codigoTarea = data.codigo || data.codigoTarea || `TAR-${String(Date.now()).slice(-6)}`;
+  
   const estadoFrontend = data.estado || 'no_iniciada';
-  const estadoBackend = estadoMap[estadoFrontend.toLowerCase()] || 'Pendiente';
-
-  const payload = {
-    grupoDatos: data.grupoDatos || 1,
-    colaboradorId: data.colaboradorId || null,
-    equipoId: data.equipoId || null,
-    nombre: data.nombre?.trim() || "",
-    descripcion: data.descripcion?.trim() || "",
-    categoria: categoriaBackend || "",
-    horas: Number(data.horas) || Number(data.duracionEstimada) || 0,
-    estado: estadoBackend,
-    codigoTarea: codigoTarea,
+  const estadoBackend  = estadoMap[estadoFrontend.toLowerCase()] || 'Pendiente';
+  const categoriaBack  = categoriaMap[data.categoria] || data.categoria || 'Preventivo';
+  
+  return {
+    nombre:       data.nombre?.trim() || "",
+    descripcion:  data.descripcion?.trim() || "",
+    categoria:    categoriaBack,
+    horas:        Number(data.horas) || Number(data.duracionEstimada) || 0,
+    estado:       estadoBackend,
+    codigo_tarea: codigoTarea,
   };
-
-  return payload;
 }
+
 
 // ─── FUNCIONES PRINCIPALES ──────────────────────────────────────
 
+/**
+ * Obtiene todas las tareas activas del backend.
+ * Permite filtrar por categoría y estado.
+ */
 async function getTareas(filtros = {}) {
   try {
     const response = await api.get("/tareas");
-    let data = response.data.data || [];
-    if (filtros.categoria) {
+    const raw = response.data;
+    let data = [];
+    if (Array.isArray(raw)) {
+      data = raw;
+    } else if (Array.isArray(raw?.data)) {
+      data = raw.data;
+    } else if (Array.isArray(raw?.datos)) {
+      data = raw.datos;
+    }
+    
+    if (filtros && filtros.categoria) {
       data = data.filter((t) => t.categoria === filtros.categoria);
     }
-    if (filtros.estado) {
+    if (filtros && filtros.estado) {
       data = data.filter((t) => t.estado === filtros.estado);
     }
+    
     return data.map(mapBackendToFrontend);
   } catch (error) {
     if (error.response && error.response.status === 404) {
       return [];
     }
-    throw new Error(error.response?.data?.message || error.message || "Error al obtener tareas");
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Error al obtener tareas";
+    throw new Error(message);
   }
 }
 
+/**
+ * Obtiene una tarea por su ID.
+ * Ruta corregida: /tareas/${id}
+ */
 async function getTareaById(id) {
   try {
     const response = await api.get(`/tareas/${id}`);
@@ -148,68 +136,77 @@ async function getTareaById(id) {
     if (!data) throw new Error("Tarea no encontrada");
     return mapBackendToFrontend(data);
   } catch (error) {
-    throw new Error(error.response?.data?.message || error.message || "Error al obtener tarea");
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Error al obtener tarea";
+    throw new Error(message);
   }
 }
 
-// ─── CREACIÓN CON REINTENTOS ────────────────────────────────────
-
-async function createTarea(data, intentos = 0) {
+/**
+ * Crea una nueva tarea.
+ * Ruta corregida: /tareas
+ */
+async function createTarea(data) {
   try {
-    const codigo = generarCodigoTareaUnico();
-    const payload = prepareForBackend(data, codigo);
+    const payload = prepareForBackend(data);
     const response = await api.post("/tareas", payload);
     return mapBackendToFrontend(response.data.data);
   } catch (error) {
-    if (error.response) {
-      console.error('   Status:', error.response.status);
-      console.error('   Data:', error.response.data);
-    } else if (error.request) {
-      console.error('   No se recibió respuesta del servidor');
-    } else {
-      console.error('   Mensaje:', error.message);
-    }
-
-    const errorMsg = error.response?.data?.message || error.message || '';
-    const esDuplicado = errorMsg.toLowerCase().includes('código') ||
-                        errorMsg.toLowerCase().includes('codigo') ||
-                        errorMsg.toLowerCase().includes('duplicate') ||
-                        errorMsg.toLowerCase().includes('unique');
-    if (esDuplicado && intentos < 5) {
-      console.log(`🔄 Reintentando con nuevo código (intento ${intentos + 1})...`);
-      return createTarea(data, intentos + 1);
-    }
-    throw new Error(error.response?.data?.message || error.message || "Error al crear tarea");
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Error al crear tarea";
+    throw new Error(message);
   }
 }
 
+/**
+ * Actualiza una tarea existente.
+ * Ruta corregida: /tareas/${id}
+ */
 async function updateTarea(id, data) {
   try {
-    const payload = prepareForBackend(data, null);
-    delete payload.codigoTarea; // no se envía en actualización
+    const payload = prepareForBackend(data);
     const response = await api.put(`/tareas/${id}`, payload);
     return mapBackendToFrontend(response.data.data);
   } catch (error) {
-    throw new Error(error.response?.data?.message || error.message || "Error al actualizar tarea");
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Error al actualizar tarea";
+    throw new Error(message);
   }
 }
 
+/**
+ * Elimina (borrado lógico) una tarea.
+ * Ruta corregida: /tareas/${id}
+ */
 async function deleteTarea(id) {
   try {
     const response = await api.delete(`/tareas/${id}`);
     return response.data.data ? true : false;
   } catch (error) {
-    throw new Error(error.response?.data?.message || error.message || "Error al eliminar tarea");
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Error al eliminar tarea";
+    throw new Error(message);
   }
 }
 
+/**
+ * Obtiene catálogo de tareas para selects.
+ * Ruta corregida: /tareas/catalogo
+ */
 async function getCatalogoTareas() {
   try {
     const response = await api.get("/tareas/catalogo");
     const data = response.data.data || [];
     return data.map((t) => ({
       id: t.id,
-      codigoTarea: t.codigoTarea || t.codigo_tarea,
       nombre: t.nombre,
       value: t.id,
       label: t.nombre,
@@ -222,6 +219,8 @@ async function getCatalogoTareas() {
   }
 }
 
+// ─── EXPORTACIÓN ────────────────────────────────────────────────
+
 export const tareasService = {
   getTareas,
   getTareaById,
@@ -231,6 +230,7 @@ export const tareasService = {
   getCatalogoTareas,
 };
 
+// Alias para compatibilidad con código existente
 export const obtenerTareas = getTareas;
 export const obtenerTareaPorId = getTareaById;
 export const crearTarea = createTarea;
