@@ -359,6 +359,7 @@ export default function useNuevaSiembra() {
           finca: precria.finca_id || previo.finca,
           estanque: precria.estanque_id || previo.estanque,
           cantidadSobrevivientePrecria: precria.cantidad_final || "",
+          cantidadSembrada: String(precria.cantidad_final || ""),
           duracionPrecria: precria.duracion_dias || "",
           fechaSalidaPrecria: formatearFechaDesdeISO(precria.fecha_fin),
           pasoPorPrecria: "si",

@@ -54,36 +54,12 @@ export const styles = StyleSheet.create({
     flex: 1,
     minHeight: 44,
   },
-  filtroChipsRow: {
-    flexDirection: "row",
-    gap: 8,
-  },
   barraBusqueda: {
     flexDirection: "row",
     alignItems: "flex-start",
     gap: 8,
     marginBottom: 12,
   },
-  filtroToggleButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 6,
-    minHeight: 44,
-    marginTop: 0,
-    paddingHorizontal: 14,
-  },
-  filtroToggleText: {
-    color: COLORS.primary,
-    fontSize: 14,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-  },
-  filtroPanelWrapper: {
-    marginBottom: 12,
-  },
-  searchInputSinFoco: {
-  outlineStyle: "none",
-},
   buttonWrapper: {
     position: "absolute",
     bottom: 16,

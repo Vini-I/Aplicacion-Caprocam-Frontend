@@ -126,6 +126,8 @@ export default function DetalleSiembraScreen() {
     etapa,
     progreso,
     guardando,
+    handleFinalizarPreCria,
+    handleFinalizarSiembra,
     handleCrearSiembraDesdePrecria,
     fieldHelpers,
   } = useDetalleSiembra(id);
@@ -340,6 +342,23 @@ export default function DetalleSiembraScreen() {
                   <View style={styles.buttonContent}>
                     <Icon icon={ICONS.check} color={COLORS.primary} />
                     <Text style={styles.textoBoton}>Finalizar Pre-Cría</Text>
+                  </View>
+                </Button>
+              )}
+            {formData.tipoRegistro === "siembra" &&
+              formData.estado !== "Finalizada" && (
+                <Button
+                  style={styles.button}
+                  onPress={handleFinalizarSiembra}
+                  disabled={guardando}
+                  textStyle={styles.textoBoton}
+                  variant="outline"
+                >
+                  <View style={styles.buttonContent}>
+                    <Icon icon={ICONS.check} color={COLORS.primary} />
+                    <Text style={styles.textoBoton}>
+                      {guardando ? "Finalizando..." : "Finalizar Siembra"}
+                    </Text>
                   </View>
                 </Button>
               )}

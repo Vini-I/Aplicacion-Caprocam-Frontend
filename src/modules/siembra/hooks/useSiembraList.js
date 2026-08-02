@@ -44,9 +44,13 @@ import { getLotes } from "../services/lote.service";
 import { formatearFechaDesdeISO } from "./dateUtils";
 
 function haFinalizado(registro) {
-  if (registro.tipoRegistro === "precria")
+  if (registro.tipoRegistro === "precria") {
     return registro.estado === "Finalizada";
-  return calcularProgresoCiclo(registro).progreso >= 100;
+  }
+  return (
+    registro.estado === "Finalizada" ||
+    calcularProgresoCiclo(registro).progreso >= 100
+  );
 }
 
 export default function useSiembraList() {
@@ -94,35 +98,6 @@ export default function useSiembraList() {
 
   const [fincas, setFincas] = useState([]);
   const [estanques, setEstanques] = useState([]);
-
-  const [filtroVisible, setFiltroVisible] = useState(false);
-  const [categoriasSeleccionadas, setCategoriasSeleccionadas] = useState(
-    filtros.categories,
-  );
-
-  function handleToggleFiltroVisible() {
-    if (!filtroVisible) {
-      setCategoriasSeleccionadas(filtros.categories);
-    }
-    setFiltroVisible((v) => !v);
-  }
-
-  function handleToggleChip(value) {
-    setCategoriasSeleccionadas((prev) =>
-      prev.includes(value) ? prev.filter((c) => c !== value) : [...prev, value],
-    );
-  }
-
-  function handleAplicarFiltro() {
-    setFiltros({ categories: categoriasSeleccionadas });
-    setFiltroVisible(false);
-  }
-
-  function handleLimpiarFiltro() {
-    setCategoriasSeleccionadas([]);
-    setFiltros({ categories: [] });
-    setFiltroVisible(false);
-  }
 
   useEffect(() => {
     fincaService
@@ -256,22 +231,17 @@ export default function useSiembraList() {
   );
 
   return {
-  siembrasFiltradas,
-  busqueda,
-  setBusqueda,
-  filtros,
-  tiposRegistro,
-  cargando,
-  mensaje,
-  mensajeVariant,
-  filtroVisible,
-  categoriasSeleccionadas,
-  handleToggleFiltroVisible,
-  handleToggleChip,
-  handleAplicarFiltro,
-  handleLimpiarFiltro,
-  handleNuevaSiembra,
-  handleDetalleSiembra,
-  recargar: cargar,
-};
+    siembrasFiltradas,
+    busqueda,
+    setBusqueda,
+    filtros,
+    setFiltros,
+    tiposRegistro,
+    cargando,
+    mensaje,
+    mensajeVariant,
+    handleNuevaSiembra,
+    handleDetalleSiembra,
+    recargar: cargar,
+  };
 }
