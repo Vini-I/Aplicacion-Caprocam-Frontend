@@ -21,12 +21,12 @@
  *
  * Navegación:
  * - Botón "Editar" abre el formulario de registro/edición.
- * - Botón "Eliminar" abre ModalEliminar y, al confirmar, elimina y regresa.
+ * - Botón "Eliminar" abre ModalEliminar y, al confirmar, elimina y regresa a la lista con alerta verde.
  * - Clic en el estanque asociado navega a detalle del estanque.
  *
  * Dependencias:
  * - equiposService
- * - shared/components (NavbarRegistro, Card, Icon, Button, ModalEliminar, Alert, etc.)
+ * - shared/components (NavbarRegistro, Card, Icon, Button, ModalEliminar, etc.)
  * - styles/tareasStyles (reutiliza algunos estilos)
  *
  * NOTA: "marca", "modelo", "serie", "subcategoria", "ultimoMantenimiento"
@@ -87,10 +87,6 @@ const ESTADO_VARIANTS = {
 };
 
 // Calcula las horas restantes para el próximo mantenimiento.
-// (Antes vivía como export en equiposService.js; se quedó como función
-// interna ahí durante la reconexión, así que se recalcula aquí mismo
-// con los mismos campos que ya trae el equipo mapeado: horasMantenimiento
-// y horasUso.)
 function horasRestantesMantenimiento(equipo) {
   if (!equipo.horasMantenimiento) return 0;
   const restantes = equipo.horasMantenimiento - equipo.horasUso;
@@ -130,7 +126,7 @@ export default function DetalleEquipoScreen() {
   const [error, setError] = useState(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
-  const [alert, setAlert] = useState(null);
+  const [alertError, setAlertError] = useState(null); // solo errores en detalle
 
   const cargarDatos = useCallback(async () => {
     try {
@@ -141,8 +137,6 @@ export default function DetalleEquipoScreen() {
       setEquipo(data);
 
       if (data.estanqueId) {
-        // El backend no expone GET /estanques/:id, así que se busca
-        // dentro de la lista de estanques disponibles.
         const estanques = await equiposService.getEstanquesDisponibles();
         const encontrado = estanques.find((e) => e.value === String(data.estanqueId));
         setEstanque(encontrado || null);
@@ -179,11 +173,18 @@ export default function DetalleEquipoScreen() {
   const confirmDelete = async () => {
     try {
       await equiposService.deleteEquipo(equipo.id);
-      setAlert({ type: 'danger', message: `Equipo "${equipo.nombre}" eliminado.` });
       setShowConfirmModal(false);
-      setTimeout(() => router.replace('/equipos/equipos'), 1500);
+      // Navegar a la lista con alerta de éxito (verde)
+      router.replace({
+        pathname: '/equipos/equipos',
+        params: {
+          alertType: 'success',
+          alertMessage: `Equipo "${equipo.nombre}" eliminado correctamente.`
+        }
+      });
     } catch (err) {
-      setAlert({ type: 'danger', message: err.message || 'No se pudo eliminar el equipo.' });
+      // Error: mostrar alerta roja en esta misma pantalla
+      setAlertError({ type: 'danger', message: err.message || 'No se pudo eliminar el equipo.' });
       setShowConfirmModal(false);
     }
   };
@@ -304,9 +305,10 @@ export default function DetalleEquipoScreen() {
           </Card>
         )}
 
-        {alert && (
+        {/* Alertas de error (solo errores de eliminación) */}
+        {alertError && (
           <View style={equipoDetalleStyles.alertWrapper}>
-            <Alert variant={alert.type} message={alert.message} />
+            <Alert variant={alertError.type} message={alertError.message} />
           </View>
         )}
 

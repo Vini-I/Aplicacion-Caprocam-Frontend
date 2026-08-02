@@ -31,7 +31,7 @@
 
 import React, { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { View, ScrollView } from "react-native";
-import { useRouter, useFocusEffect } from "expo-router";
+import { useRouter, useLocalSearchParams, useFocusEffect } from "expo-router";
 import { useEquipos } from "../hooks/useEquipos";
 import EquipoCard from "../components/EquipoCard";
 import EquipoForm from "../components/EquipoForm";
@@ -55,6 +55,7 @@ import { equiposService } from "../services/equiposService";
 
 export default function EquiposListScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams();
   const formRef = useRef();
 
   // --------------------------------------------------------
@@ -71,9 +72,6 @@ export default function EquiposListScreen() {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   // Estanques disponibles para asociar en el formulario.
-  // getEstanquesDisponibles() es async (llama al backend), por lo
-  // que se resuelve aquí y se guarda en estado en vez de pasar
-  // la Promise directamente al EquipoForm.
   const [estanquesDisponibles, setEstanquesDisponibles] = useState([]);
 
   useEffect(() => {
@@ -139,8 +137,18 @@ export default function EquiposListScreen() {
     setAlert({ type, message });
     alertTimeoutRef.current = setTimeout(() => {
       setAlert(null);
-    }, 4000);
+    }, 3000);
   };
+
+  // ─── Mostrar alerta desde parámetros de ruta ──────────────
+  useEffect(() => {
+    const { alertType, alertMessage } = params;
+    if (alertType && alertMessage) {
+      showAlert(alertType, alertMessage);
+      // Limpiar parámetros para que no se repitan al recargar
+      router.setParams({ alertType: undefined, alertMessage: undefined });
+    }
+  }, [params.alertType, params.alertMessage]);
 
   // --------------------------------------------------------
   // FILTRADO LOCAL
@@ -181,9 +189,6 @@ export default function EquiposListScreen() {
       )
         return false;
 
-      // El filtro de "estado" en FilterButton usa los valores
-      // encendido/apagado, que corresponden al booleano equipo.encendido
-      // (no al estadoOperativo activo/inactivo/mantenimiento).
       if (filtros.suppliers.length > 0) {
         const valorEncendido = equipo.encendido ? "encendido" : "apagado";
         if (!filtros.suppliers.includes(valorEncendido)) return false;
@@ -234,7 +239,7 @@ export default function EquiposListScreen() {
 
     try {
       await eliminarEquipo(deleteTarget.id);
-      showAlert("danger", `El equipo "${deleteTarget.nombre}" ha sido eliminado correctamente`);
+      showAlert("success", `El equipo "${deleteTarget.nombre}" ha sido eliminado correctamente`);
       setShowConfirmModal(false);
       setDeleteTarget(null);
       setCodigoConfirmacion("");
@@ -325,8 +330,9 @@ export default function EquiposListScreen() {
           </Button>
         </View>
 
+        {/* Alerta flotante - ahora con el mismo ancho que los demás elementos */}
         {alert && (
-          <View style={styles.alertWrapper}>
+          <View style={[STYLE.contentWrapper, { marginTop: 6, marginBottom: 6 }]}>
             <Alert variant={alert.type} message={alert.message} />
           </View>
         )}
