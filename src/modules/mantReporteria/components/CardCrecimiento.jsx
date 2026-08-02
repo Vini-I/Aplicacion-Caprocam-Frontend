@@ -109,7 +109,7 @@ export default function CardCrecimiento({ fincaId, estanqueId, onEditar, onAlert
 
                         <Button
                             style={styles.Editar}
-                            onPress={() => onEditar?.(registro.id)}
+                            onPress={() => {onEditar(registro.id)}}
                         >
                             <Icon icon={ICONS.edit} color={COLORS.primary} size={20} />
                             <Text size={12} color={COLORS.primary}>

@@ -42,18 +42,13 @@ import { ICONS } from "../../../theme/icons.js";
 import { STYLE } from "../../../theme/style.js";
 import { styles } from "../styles/DetalleReporteStyle.js";
 
-export default function DetalleReporteScreen({ onEditarAlimentacion }) {
+export default function DetalleReporteScreen({ onEditar }) {
   
   const router = useRouter();
 
-  const handleEditarAlimentacion = (id) => {
-    if (onEditarAlimentacion) {
-      onEditarAlimentacion(id);
-      return;
-    }
-    
+  const handleEditar = (ruta) => (id) => {
     router.push({
-      pathname: "/registros/EditarAlimentacion",
+      pathname: ruta,
       params: { id: String(id) },
     });
   };
@@ -176,6 +171,7 @@ export default function DetalleReporteScreen({ onEditarAlimentacion }) {
                       fincaId={finca}
                       estanqueId={estanque}
                       onAlertChange={setAlert}
+                      onEditar={handleEditar("/registros/EditarCrecimiento")}
                     />
                   )}
 
@@ -184,6 +180,7 @@ export default function DetalleReporteScreen({ onEditarAlimentacion }) {
                       fincaId={finca}
                       estanqueId={estanque}
                       onAlertChange={setAlert}
+                      onEditar={handleEditar("/registros/EditarParasitologia")}
                     />
                   )}
 
@@ -192,6 +189,7 @@ export default function DetalleReporteScreen({ onEditarAlimentacion }) {
                       fincaId={finca}
                       estanqueId={estanque}
                       onAlertChange={setAlert}
+                      onEditar={handleEditar("/registros/EditarEnfermedad")}
                     />
                   )}
 
@@ -200,6 +198,7 @@ export default function DetalleReporteScreen({ onEditarAlimentacion }) {
                       fincaId={finca}
                       estanqueId={estanque}
                       onAlertChange={setAlert}
+                      onEditar={handleEditar("/registros/EditarRaleo")}
                     />
                   )}
 
@@ -208,7 +207,7 @@ export default function DetalleReporteScreen({ onEditarAlimentacion }) {
                       fincaId={finca}
                       estanqueId={estanque}
                       onAlertChange={setAlert}
-                      onEditar={handleEditarAlimentacion}
+                      onEditar={handleEditar("/registros/EditarAlimentacion")}
                     />
                   )}
 
@@ -217,6 +216,7 @@ export default function DetalleReporteScreen({ onEditarAlimentacion }) {
                       fincaId={finca}
                       estanqueId={estanque}
                       onAlertChange={setAlert}
+                      onEditar={handleEditar("/registros/EditarDensidadPoblacional")}
                     />
                   )}
 
