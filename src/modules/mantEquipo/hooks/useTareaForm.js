@@ -1,37 +1,10 @@
 /**
- * ============================================================
  * HOOK: useTareaForm
- * ============================================================
+ * Maneja el estado, precarga, validaciones y envío del formulario de creación y edición de tareas.
  *
- * Responsabilidad:
- * Manejar el estado, validaciones y envío del formulario de tareas.
- *
- * Funcionalidad:
- * - Recibe un id de tarea para edición (desde parámetros de ruta).
- * - Carga los datos de la tarea si es edición.
- * - Mantiene estado de los campos, productos seleccionados, errores y submitted.
- * - Permite agregar/eliminar productos de la lista.
- * - Valida campos obligatorios (nombre, descripción, categoría, duración).
- * - Guarda la tarea (crear o actualizar) y navega de vuelta a la lista.
- * - Prepara opciones para el Select de productos (con búsqueda).
- *
- * Datos:
- * - id: string | undefined (id de la tarea a editar, opcional)
- *
- * Validaciones:
- * - Nombre: obligatorio, mínimo 3 caracteres.
- * - Descripción: obligatoria, mínimo 5 caracteres.
- * - Categoría: obligatoria.
- * - Duración: obligatoria, mayor a 0.
- *
- * Navegación:
- * - Al guardar exitosamente, navega a la lista de tareas ('/equipos/tareas').
- * - Al cancelar, navega a la lista de tareas.
- *
- * Dependencias:
- * - tareasService (obtenerTareaPorId, crearTarea, actualizarTarea)
- * - useRouter, useLocalSearchParams de expo-router
- * - getProductosInventario de InventarioService
+ * @dependencies - tareasService.js (services/tareasService.js), expo-router (useRouter, useLocalSearchParams)
+ * @validations  - Valida que nombre, descripción, categoría y duración estimada sean obligatorios.
+ * @navigation   - Navega a la lista de tareas ('/equipos/tareas') al guardar o cancelar.
  */
 
 // src/modules/mantEquipo/hooks/useTareaForm.js

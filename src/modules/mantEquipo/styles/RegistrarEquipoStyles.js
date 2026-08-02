@@ -1,12 +1,10 @@
 /**
- * ============================================================
- * ESTILOS: RegistrarEquipo
- * ============================================================
- * Módulo: Mantenimiento de Equipos
+ * ESTILOS: RegistrarEquipoStyles
+ * Estilos visuales y maquetación del formulario de registro y edición de equipos.
  *
- * Contiene la maquetación y la jerarquía visual del formulario
- * de registro de equipos.
- * ============================================================
+ * @dependencies - colors.js (theme/colors.js), typography.js (theme/typography.js)
+ * @validations  - Estructuración de contenedores, tarjetas y campos del formulario.
+ * @navigation   - Ninguna
  */
 
 import { StyleSheet } from "react-native";

@@ -6,14 +6,11 @@
  * Módulo: Mantenimiento de Equipos
  *
  * RESPONSABILIDAD:
- * - Desplegar las tarjetas de tareas seleccionadas en los formularios de
- *   agregado y modificación, con botones "Realizado" y "Eliminar".
+ * - Componente personalizado que reutiliza elementos de shared/components.
+ * - Desplegar las tarjetas de tareas seleccionadas con botones de estado "Realizado" y "Eliminar".
  *
- * @dependencies - CustomText, Button, Icon de shared/components
- *               - COLORS, ICONS de theme
- *               - obtenerTareas de tareasService
- *               - TareasSeleccionadasListStyles
- * @validations  - Toggle de realizada por tarea
+ * @dependencies - Text.jsx, Button.jsx, Icons.jsx (shared/components), tareasService.js (services), TareasSeleccionadasListStyles.js (styles)
+ * @validations  - Toggle del estado realizada por tarea.
  * @navigation   - Ninguna
  */
 

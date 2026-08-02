@@ -24,7 +24,7 @@ import Input from '../../../shared/components/Input';
 
 import { COLORS } from '../../../theme/colors';
 import { ICONS } from '../../../theme/icons';
-import { LOGIN_MESSAGES } from '../constants/messages';
+import { LOGIN_MESSAGES } from '../constants/authMessages';
 import { useLoginFlow } from '../hooks/useLoginFlow';
 import SearchBar from '../../../shared/components/SearchBar';
 import styles from '../styles/loginStyles';

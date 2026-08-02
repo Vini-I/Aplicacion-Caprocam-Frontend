@@ -1,21 +1,10 @@
-// src/modules/mantEquipo/hooks/useTareas.js
-
 /**
- * ============================================================
  * HOOK: useTareas
- * ============================================================
+ * Gestiona el estado, recarga asíncrona, filtrado por texto/categoría/estado y operaciones CRUD de tareas.
  *
- * Hook personalizado para gestionar las tareas de mantenimiento.
- * Proporciona estado, carga, filtrado y operaciones CRUD.
- * También maneja los filtros de categoría y estado, y las opciones
- * para los selects del FilterButton.
- *
- * Retorna:
- * - tareas, tareasFiltradas, busqueda, setBusqueda, loading, error
- * - cargarTareas, crearTarea, actualizarTarea, eliminarTarea
- * - filtros, setFiltros, opcionesCategoria, opcionesEstado
- * - tareasFinales (ya filtradas por categoría y estado)
- * ============================================================
+ * @dependencies - tareasService.js (services/tareasService.js), tareasMensajes.js (constants/tareasMensajes.js)
+ * @validations  - Filtra tareas por coincidencia de texto, categoría y estado operativo.
+ * @navigation   - Ninguna
  */
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";

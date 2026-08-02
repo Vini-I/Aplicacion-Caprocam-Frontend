@@ -1,28 +1,10 @@
 /**
- * ============================================================
- * HOOK PERSONALIZADO: useEquipos
- * ============================================================
+ * HOOK: useEquipos
+ * Encapsula la obtención, filtrado y manipulación CRUD de la lista de equipos conectados al backend.
  *
- * Hook que encapsula la lógica de obtención y manipulación
- * de equipos. Utiliza el servicio equiposService (ya conectado
- * al backend real) y mantiene estado local (lista, loading, error).
- *
- * Parámetros:
- * - initialFilters: objeto con filtros iniciales
- *
- * Retorna:
- * - equipos: array de equipos
- * - loading: boolean
- * - error: string | null
- * - filters: objeto con filtros actuales
- * - setFilters: función para actualizar filtros
- * - fetchEquipos: función para recargar datos
- * - crearEquipo, actualizarEquipo, eliminarEquipo, toggleEquipo: funciones asíncronas
- * - equiposProximosMantenimiento: array de equipos que necesitan mantenimiento
- * - estadisticas: objeto con estadísticas generales
- *
- * Ejemplo:
- * const { equipos, loading, crearEquipo } = useEquipos({ tipo: 'aireacion' });
+ * @dependencies - equiposService.js (services/equiposService.js)
+ * @validations  - Mantiene estado local de carga, errores de red y filtros de búsqueda.
+ * @navigation   - Ninguna
  */
 
 // ============================================================

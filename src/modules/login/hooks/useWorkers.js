@@ -1,42 +1,10 @@
 /**
- * ============================================================
  * HOOK: useWorkers
- * ============================================================
+ * Obtiene la lista de trabajadores/colaboradores al montar el componente, gestionando estados de carga y errores.
  *
- * Hook personalizado para manejar la logica de obtener
- * trabajadores.
- *
- * CONCEPTO DE HOOKS:
- * Los hooks son funciones reutilizables que encapsulan logica
- * de React. Permiten separar la logica de datos de la logica
- * de presentacion (componentes).
- *
- * VENTAJAS:
- * - Reutilizable en multiples componentes
- * - Maneja loading/error automáticamente
- * - Código más limpio y organizado
- *
- * ============================================================
- * COMO USARLO EN UN COMPONENTE
- * ============================================================
- *
- * import { useWorkers } from '../hooks/useWorkers';
- *
- * export default function LoginScreen() {
- *   const { workers, loading, error } = useWorkers();
- *
- *   if (loading) return <Text>Cargando trabajadores...</Text>;
- *   if (error) return <Text>Error: {error}</Text>;
- *
- *   return (
- *     <FlatList
- *       data={workers}
- *       renderItem={({ item }) => <Text>{item.name}</Text>}
- *     />
- *   );
- * }
- *
- * ============================================================
+ * @dependencies - workerService.js (services/workerService.js)
+ * @validations  - Ejecuta la petición una sola vez al montar (useEffect).
+ * @navigation   - Ninguna
  */
 
 import { useState, useEffect } from 'react';

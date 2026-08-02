@@ -1,36 +1,10 @@
 /**
- * ============================================================
  * HOOK: useRegistrarEquipo
- * ============================================================
- * Módulo: Mantenimiento de Equipos
+ * Gestiona el estado, validación por intento de guardado y armado del payload para crear o editar equipos.
  *
- * Encapsula el estado del formulario de registro/edición de equipo,
- * la validación por intento de guardado y el armado del payload.
- *
- * Funcionalidad:
- * - Mantiene el estado del formulario y los errores.
- * - Valida campos obligatorios al intentar guardar.
- * - Soporta edición: recibe initialData y isEditing.
- * - Si es edición, actualiza el equipo; si no, lo crea.
- * - Al guardar exitosamente en creación, limpia el formulario.
- * - En edición, mantiene los datos.
- *
- * Datos:
- * - formulario: objeto con todos los campos del equipo.
- * - errores: objeto con mensajes de error por campo.
- * - submitted: booleano que indica si ya se intentó guardar.
- * - guardando: booleano de estado de carga.
- * - isEditing: booleano.
- *
- * Validaciones:
- * - Todos los campos excepto estanqueId y horasMantenimiento son
- *   obligatorios.
- * - La fecha debe tener formato dd/mm/aaaa válido.
- *
- * Dependencias:
- * - registrarEquipoService (crearEquipoPayload, agregarEquipo, actualizarEquipo)
- * - TIPOS_EQUIPO, ESTADOS_OPERATIVOS_EQUIPO desde el servicio
- * ============================================================
+ * @dependencies - registrarEquipoService.js (services/registrarEquipoService.js)
+ * @validations  - Valida campos obligatorios y formato de fecha (dd/mm/aaaa) al intentar guardar.
+ * @navigation   - Ninguna
  */
 
 import { useState, useEffect } from 'react';

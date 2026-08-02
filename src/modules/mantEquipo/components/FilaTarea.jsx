@@ -2,22 +2,16 @@
  * ============================================================
  * COMPONENTE: FilaTarea
  * ============================================================
+ *
  * Módulo: Mantenimiento de Equipos
  *
- * Responsabilidad:
- * Renderiza una fila de la tabla de tareas con la información
- * de una tarea. Al hacer clic en la fila navega al detalle.
+ * RESPONSABILIDAD:
+ * - Componente personalizado que reutiliza elementos de shared/components.
+ * - Renderizar una fila interactiva de la tabla de tareas con sus datos principales.
  *
- * Props:
- * - tarea: objeto con los datos de la tarea
- * - onPressFila: función que recibe la tarea al hacer clic en la fila
- *
- * Dependencias:
- * - shared/components (Button, Icon, Text)
- * - theme (COLORS, ICONS)
- * - constants/tareasMensajes (OPCIONES_CATEGORIA, OPCIONES_ESTADO)
- * - styles/tareasStyles
- * ============================================================
+ * @dependencies - Text.jsx (shared/components), tareasMensajes.js (constants), tareasStyles.js (styles)
+ * @validations  - Traduce valores de categoría y estado a sus etiquetas legibles.
+ * @navigation   - Recibe callback onPressFila para seleccionar o ver detalle de la tarea.
  */
 
 import React from 'react';

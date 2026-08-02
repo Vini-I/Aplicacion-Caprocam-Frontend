@@ -1,13 +1,17 @@
 /**
- * COMPONENTE: FilaTicket (TablaTicket)
- * Renderiza cada ticket como un CardPress interactivo.
- * Tocar en cualquier parte del card abre el detalle del ticket.
+ * ============================================================
+ * COMPONENTE: TablaTicket
+ * ============================================================
  *
- * @dependencies - CardPress, BadgeEstado (shared)
- *               - styles de mantEquipoStyles, formatearFechaCorta (mantEquipoUtils)
+ * Módulo: Mantenimiento de Equipos
+ *
+ * RESPONSABILIDAD:
+ * - Componente personalizado que reutiliza elementos de shared/components.
+ * - Renderizar cada ticket como un CardPress interactivo en la tabla principal.
+ *
+ * @dependencies - CardPress.jsx (shared/components), BadgeEstado.jsx (components), mantEquipoUtils.js (utils), mantEquipoStyles.js (styles)
  * @validations  - Truncamiento estricto a 1 línea (numberOfLines={1}, ellipsizeMode="tail").
- *               - Si isMobile, aplica anchos fijos para scroll horizontal en teléfono.
- * @navigation   - Presionar el card → callback onVerDetalle(ticket).
+ * @navigation   - Presionar el card ejecuta el callback onVerDetalle(ticket).
  */
 
 import React from "react";
@@ -59,4 +63,4 @@ export default function FilaTicket({ ticket, onVerDetalle, isMobile = false }) {
       </View>
     </CardPress>
   );
-}
+}
