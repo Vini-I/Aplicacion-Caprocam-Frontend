@@ -1,148 +1,180 @@
 /**
- * ============================================================
- * HOOK USEEDITARPARASITOLOGIA
- * ============================================================
+ * Calco de useParasitologiaScreen para edición.
  */
-import { useState, useEffect, useCallback } from "react";
+import { useEffect, useMemo, useState } from "react";
 import parasitologiaService from "../services/ParasitologiaService.js";
+import { fincaService } from "../../finca/services/finca.service.js";
+import { estanqueService } from "../../estanques/services/estanque.service.js";
 
-function registroAForm(registro) {
-  if (!registro) return {};
-  let fecha = registro.fechaReporte ?? registro.fecha ?? "";
+function convertirFechaParaBackend(fecha) {
+  if (!fecha) return "";
+  if (fecha.includes("-") && !fecha.includes("/")) return fecha.slice(0, 10);
+  const [d, m, y] = fecha.split("/");
+  return `${y}-${m}-${d}`;
+}
+
+function formatearFechaUI(fecha) {
+  if (!fecha) return "";
   if (typeof fecha === "string" && /^\d{4}-\d{2}-\d{2}/.test(fecha)) {
     const [y, m, d] = fecha.slice(0, 10).split("-");
-    fecha = `${d}/${m}/${y}`;
+    return `${d}/${m}/${y}`;
   }
-  return {
-    fincaId: String(registro.fincaId ?? registro.finca_id ?? ""),
-    estanqueId: String(registro.estanqueId ?? registro.estanque_id ?? ""),
-    fechaReporte: fecha,
-    parasito: registro.parasito ?? "",
-    camaronesMuestreados: String(registro.camaronesMuestreados ?? ""),
-    camaronesInfectados: String(registro.camaronesInfectados ?? ""),
-    observaciones: registro.observaciones ?? "",
-  };
-}
-
-function formADto(form) {
-  let fechaBackend = form.fechaReporte;
-  if (fechaBackend && fechaBackend.includes("/")) {
-    const [d, m, y] = fechaBackend.split("/");
-    fechaBackend = `${y}-${m}-${d}`;
-  }
-  return {
-    fincaId: Number(form.fincaId),
-    estanqueId: Number(form.estanqueId),
-    fechaReporte: fechaBackend,
-    parasito: form.parasito,
-    camaronesMuestreados: Number(form.camaronesMuestreados) || 0,
-    camaronesInfectados: Number(form.camaronesInfectados) || 0,
-    observaciones: (form.observaciones || "").trim() || null,
-  };
-}
-
-function validarForm(form) {
-  const errores = {};
-  if (!form.fechaReporte) errores.fechaReporte = "Obligatorio";
-  if (!form.parasito) errores.parasito = "Obligatorio";
-  return { valido: Object.keys(errores).length === 0, errores };
+  return fecha;
 }
 
 export default function useEditarParasitologia(registroId, onGuardado) {
-  const [form, setForm] = useState({
-    fincaId: "",
-    estanqueId: "",
-    fechaReporte: "",
-    parasito: "",
-    camaronesMuestreados: "",
-    camaronesInfectados: "",
-    observaciones: "",
-  });
-  const [cargando, setCargando] = useState(true);
+  const [finca, setFinca] = useState("");
+  const [estanque, setEstanque] = useState("");
+  const [fechaReporte, setFechaReporte] = useState("");
+  const [responsable, setResponsable] = useState("");
+  const [parasito, setParasito] = useState("");
+  const [camaronesMuestreados, setCamaronesMuestreados] = useState("");
+  const [camaronesInfectados, setCamaronesInfectados] = useState("");
+  const [observaciones, setObservaciones] = useState("");
+  const [fincas, setFincas] = useState([]);
+  const [estanques, setEstanques] = useState([]);
+  const [catalogo, setCatalogo] = useState([]);
   const [submitted, setSubmitted] = useState(false);
-  const [guardando, setGuardando] = useState(false);
-  const [errores, setErrores] = useState({});
-  const [alerta, setAlerta] = useState({
-    visible: false,
-    variant: "success",
-    mensaje: "",
-  });
+  const [mensaje, setMensaje] = useState("");
+  const [tipoMensaje, setTipoMensaje] = useState("info");
+  const [loading, setLoading] = useState(false);
+  const [cargandoRegistro, setCargandoRegistro] = useState(true);
+  const [cargandoOpciones, setCargandoOpciones] = useState(true);
 
-  const updateField = useCallback((campo, valor) => {
-    setForm((prev) => ({ ...prev, [campo]: valor }));
+  useEffect(() => {
+    let activo = true;
+    (async () => {
+      try {
+        setCargandoOpciones(true);
+        const [f, e, c] = await Promise.all([
+          fincaService.getFincas(),
+          estanqueService.getEstanques(),
+          parasitologiaService.getAll?.() ?? Promise.resolve([]),
+        ]);
+        if (!activo) return;
+        setFincas(Array.isArray(f) ? f : []);
+        setEstanques(Array.isArray(e) ? e : []);
+        setCatalogo(Array.isArray(c) ? c : []);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        if (activo) setCargandoOpciones(false);
+      }
+    })();
+    return () => { activo = false; };
   }, []);
 
   useEffect(() => {
-    if (!registroId) {
-      setCargando(false);
-      return;
-    }
+    if (!registroId) { setCargandoRegistro(false); return; }
     let activo = true;
-    setCargando(true);
-    parasitologiaService
-      .getById(registroId)
-      .then((registro) => {
-        if (!activo) return;
-        setForm((prev) => ({ ...prev, ...registroAForm(registro) }));
+    setCargandoRegistro(true);
+    parasitologiaService.getById(registroId)
+      .then((r) => {
+        if (!activo || !r) return;
+        setFinca(String(r.fincaId ?? r.finca_id ?? ""));
+        setEstanque(String(r.estanqueId ?? r.estanque_id ?? ""));
+        setFechaReporte(formatearFechaUI(r.fechaReporte ?? r.fecha));
+        setResponsable(r.responsable ?? "");
+        setParasito(r.parasito ?? "");
+        setCamaronesMuestreados(String(r.camaronesMuestreados ?? ""));
+        setCamaronesInfectados(String(r.camaronesInfectados ?? ""));
+        setObservaciones(r.observaciones ?? "");
       })
-      .catch(() => {
-        if (activo) {
-          setAlerta({
-            visible: true,
-            variant: "error",
-            mensaje: "No se pudo cargar el registro.",
-          });
-        }
-      })
-      .finally(() => {
-        if (activo) setCargando(false);
-      });
-    return () => {
-      activo = false;
-    };
+      .catch(() => setMensaje("No se pudo cargar el registro."))
+      .finally(() => { if (activo) setCargandoRegistro(false); });
+    return () => { activo = false; };
   }, [registroId]);
 
-  const handleGuardar = useCallback(async () => {
+  const muestreadosN = Number(camaronesMuestreados) || 0;
+  const infectadosN = Number(camaronesInfectados) || 0;
+  const gradoCalculado = muestreadosN > 0
+    ? ((infectadosN / muestreadosN) * 100).toFixed(1)
+    : "0.0";
+  const colorGrado = Number(gradoCalculado) >= 50 ? "error" : Number(gradoCalculado) >= 20 ? "warning" : "success";
+
+  const opcionesFincas = useMemo(
+    () => fincas.map((f) => ({ label: f.nombreFinca, value: String(f.id) })),
+    [fincas],
+  );
+  const opcionesEstanques = useMemo(
+    () =>
+      estanques
+        .filter((e) => Number(e.idFinca ?? e.fincaId) === Number(finca))
+        .map((e) => ({ label: e.codigo, value: String(e.id) })),
+    [estanques, finca],
+  );
+  const opcionesParasitos = useMemo(() => {
+    if (!Array.isArray(catalogo) || catalogo.length === 0) return [];
+    return catalogo.map((x) =>
+      typeof x === "string"
+        ? { label: x, value: x }
+        : { label: x.nombre ?? x.label ?? x.value, value: x.value ?? x.codigo ?? x.nombre }
+    );
+  }, [catalogo]);
+
+  const cambiarFinca = (v) => { setFinca(String(v)); setEstanque(""); setMensaje(""); };
+  const cambiarEstanque = (v) => { setEstanque(String(v)); setMensaje(""); };
+  const cambiarFechaReporte = (v) => { setFechaReporte(v); setMensaje(""); };
+  const cambiarParasito = (v) => { setParasito(String(v)); setMensaje(""); };
+  const cambiarCamaronesMuestreados = (v) => { setCamaronesMuestreados(String(v)); setMensaje(""); };
+  const cambiarCamaronesInfectados = (v) => { setCamaronesInfectados(String(v)); setMensaje(""); };
+  const cambiarObservaciones = (v) => { setObservaciones(v); setMensaje(""); };
+
+  const registrarParasitologia = async () => {
     setSubmitted(true);
-    const { valido, errores: err } = validarForm(form);
-    setErrores(err);
-    if (!valido) {
-      setAlerta({
-        visible: true,
-        variant: "error",
-        mensaje: "Revisá los campos marcados.",
-      });
+    setMensaje("");
+    if (!finca || !estanque || !fechaReporte || !parasito) {
+      setTipoMensaje("danger");
+      setMensaje("Rellene los datos requeridos correctamente.");
       return;
     }
-    setGuardando(true);
+    setLoading(true);
     try {
-      await parasitologiaService.update(registroId, formADto(form));
-      setAlerta({
-        visible: true,
-        variant: "success",
-        mensaje: "Registro actualizado correctamente.",
+      await parasitologiaService.update(registroId, {
+        fincaId: Number(finca),
+        estanqueId: Number(estanque),
+        fechaReporte: convertirFechaParaBackend(fechaReporte),
+        parasito,
+        camaronesMuestreados: muestreadosN,
+        camaronesInfectados: infectadosN,
+        observaciones: observaciones.trim() || null,
       });
+      setTipoMensaje("success");
+      setMensaje("Parasitologia actualizada correctamente.");
       onGuardado?.();
-    } catch (error) {
-      setAlerta({
-        visible: true,
-        variant: "error",
-        mensaje:
-          error.response?.data?.message || "No se pudo actualizar el registro.",
-      });
+    } catch (e) {
+      setTipoMensaje("danger");
+      setMensaje(e.response?.data?.message || "No se pudo actualizar.");
     } finally {
-      setGuardando(false);
+      setLoading(false);
     }
-  }, [form, registroId, onGuardado]);
+  };
 
   return {
-    form,
-    updateField,
-    cargando,
-    submitted,
-    errores,
-    alerta,
-    guardando,
-    handleGuardar,
+    finca, estanque, fechaReporte, responsable, parasito,
+    camaronesMuestreados, camaronesInfectados, observaciones,
+    opcionesFincas, opcionesEstanques, opcionesParasitos,
+    placeholderFinca: "Seleccione una finca",
+    placeholderEstanque: "Seleccione un estanque",
+    placeholderParasito: "Seleccione un parasito",
+    gradoCalculado, colorGrado,
+    gridStyle: undefined, itemStyle: undefined, itemFullStyle: undefined,
+    errorFinca: submitted && !finca,
+    errorEstanque: submitted && !estanque,
+    errorFechaReporte: submitted && !fechaReporte,
+    errorParasito: submitted && !parasito,
+    errorMuestreados: false,
+    errorInfectados: false,
+    mensaje, tipoMensaje,
+    loading: loading || cargandoOpciones,
+    cargandoRegistro,
+    cambiarFinca,
+    setEstanque: cambiarEstanque,
+    setFechaReporte: cambiarFechaReporte,
+    setParasito: cambiarParasito,
+    setCamaronesMuestreados: cambiarCamaronesMuestreados,
+    setCamaronesInfectados: cambiarCamaronesInfectados,
+    setObservaciones: cambiarObservaciones,
+    registrarParasitologia,
   };
 }
