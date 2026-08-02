@@ -15,11 +15,14 @@
  * - fincaId: ID de finca (se asigna automáticamente para external_owner)
  * - onCancel: función para cerrar el modal sin guardar
  * - serverError: mensaje de error del servidor (opcional)
+ * - roleOptions: array de { label, value } para el select de roles (opcional)
  */
 
 // ============================================================
 // IMPORTS
 // ============================================================
+// src/modules/colaboradores/components/ColaboradorForm.jsx
+
 import React from "react";
 import { View } from "react-native";
 import Input from "../../../shared/components/Input";
@@ -33,9 +36,6 @@ import { styles } from "../styles/colaboradorFormStyles";
 import { ICONS } from "../../../theme/icons";
 import { COLORS } from "../../../theme/colors";
 
-// ============================================================
-// COMPONENTE PRINCIPAL
-// ============================================================
 export default function ColaboradorForm({
   initialData = {},
   onSubmit,
@@ -44,6 +44,8 @@ export default function ColaboradorForm({
   fincaId,
   onCancel,
   serverError = "",
+  roleOptions,
+  fincasOptions = [],
 }) {
   const {
     form,
@@ -51,20 +53,35 @@ export default function ColaboradorForm({
     submitted,
     validationMessage,
     rolesDisponibles,
+    fincasOptions: hookFincasOptions,
     handleChange,
     handleCedulaChange,
     handleTelefonoChange,
     handleNombreChange,
     handleApellidosChange,
     handleSubmit,
-  } = useColaboradorForm({ initialData, isEditing, userRole, fincaId, onSubmit });
+  } = useColaboradorForm({
+    initialData,
+    isEditing,
+    userRole,
+    fincaId,
+    onSubmit,
+    availableRoles: roleOptions,
+    fincasOptions,
+  });
 
-  // Prioridad: validación de campos obligatorios (local) > error del servidor
+  const opcionesFincas = hookFincasOptions || fincasOptions || [];
+
+  // Roles que requieren una finca asociada (IDs)
+  const ROLES_CON_FINCA = [3, 5]; // Gerente de Finca, Operario de Campo
+  const rolId = Number(form.rol);
+  const mostrarSelectFinca = form.rol !== "" && ROLES_CON_FINCA.includes(rolId);
+
   const mensajeMostrar = (submitted && validationMessage) || serverError;
 
   return (
     <View style={styles.container}>
-      {/* Cédula - Solo números, máximo 9 dígitos */}
+      {/* Cédula */}
       <Input
         label="Cédula *"
         value={form.cedula}
@@ -75,7 +92,7 @@ export default function ColaboradorForm({
         style={submitted && errors.cedula ? styles.inputError : null}
       />
 
-      {/* Nombre - Solo letras */}
+      {/* Nombre */}
       <Input
         label="Nombre *"
         value={form.nombre}
@@ -85,7 +102,7 @@ export default function ColaboradorForm({
         style={submitted && errors.nombre ? styles.inputError : null}
       />
 
-      {/* Apellidos - Solo letras */}
+      {/* Apellidos */}
       <Input
         label="Apellidos *"
         value={form.apellidos}
@@ -95,7 +112,7 @@ export default function ColaboradorForm({
         style={submitted && errors.apellidos ? styles.inputError : null}
       />
 
-      {/* Teléfono - Solo números, máximo 8 dígitos */}
+      {/* Teléfono */}
       <Input
         label="Teléfono (8 dígitos)"
         value={form.telefono}
@@ -105,7 +122,7 @@ export default function ColaboradorForm({
         style={submitted && errors.telefono ? styles.inputError : null}
       />
 
-      {/* Correo electrónico */}
+      {/* Correo */}
       <Input
         label="Correo electrónico"
         value={form.email}
@@ -122,20 +139,22 @@ export default function ColaboradorForm({
         options={rolesDisponibles}
         value={form.rol}
         onChange={(v) => handleChange("rol", v)}
+        placeholder="Seleccione una opción"
       />
 
-      {/* ID de Finca (solo para dueños externos) */}
-      {userRole === "camprocam_admin" && form.rol === "external_owner" && (
-        <Input
-          label="ID de Finca *"
+      {/* Finca - Solo para roles que requieren finca y hay un rol seleccionado */}
+      {mostrarSelectFinca && (
+        <Select
+          label="Finca asociada *"
+          options={opcionesFincas}
           value={form.fincaId}
-          onChangeText={(v) => handleChange("fincaId", v)}
-          placeholder="Ej: finca1, finca2, finca3"
-          style={submitted && errors.fincaId ? styles.inputError : null}
+          onChange={(v) => handleChange("fincaId", v)}
+          placeholder="Seleccione una finca"
+          selectStyle={submitted && errors.fincaId ? styles.inputError : null}
         />
       )}
 
-      {/* ─── MENSAJE DE ERROR (validación local o servidor, excluyente) ─── */}
+      {/* Mensaje de error */}
       {mensajeMostrar !== "" && (
         <View style={{ marginBottom: 12 }}>
           <Alert
@@ -149,14 +168,10 @@ export default function ColaboradorForm({
 
       {/* Botón de acción */}
       <View style={styles.buttonContainer}>
-        <Button
-          variant="outline"
-          onPress={handleSubmit}
-          style={styles.submitButton}
-        >
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+        <Button variant="outline" onPress={handleSubmit} style={styles.submitButton}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
             <Icon icon={ICONS.save} size={18} color={COLORS.primary} />
-            <Text style={{ color: COLORS.primary, fontWeight: '600' }}>
+            <Text style={{ color: COLORS.primary, fontWeight: "600" }}>
               {isEditing ? "Actualizar" : "Registrar"}
             </Text>
           </View>

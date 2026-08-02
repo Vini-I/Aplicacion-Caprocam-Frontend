@@ -12,6 +12,7 @@
  * - userRole: "camprocam_admin" o "external_owner"
  * - fincaId: ID de finca (para asignación automática)
  * - onSubmit: función que recibe los datos al enviar
+ * - availableRoles: opciones de roles para el select (array de {label, value})
  *
  * Retorna:
  * - form, errors, submitted, validationMessage
@@ -20,6 +21,8 @@
  * - handleCedulaChange, handleTelefonoChange, handleNombreChange, handleApellidosChange
  * ============================================================
  */
+
+// src/modules/colaboradores/hooks/useColaboradorForm.js
 
 import { useState } from "react";
 
@@ -36,7 +39,15 @@ const validarEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 const validarNombre = (nombre) => nombre.trim().length >= 2;
 const validarApellidos = (apellidos) => apellidos.trim().length >= 2;
 
-export function useColaboradorForm({ initialData, isEditing, userRole, fincaId, onSubmit }) {
+export function useColaboradorForm({
+  initialData,
+  isEditing,
+  userRole,
+  fincaId,
+  onSubmit,
+  availableRoles,
+  fincasOptions = [],
+}) {
   const [form, setForm] = useState({
     cedula: initialData.cedula || "",
     nombre: initialData.nombre?.split(" ")[0] || "",
@@ -51,29 +62,27 @@ export function useColaboradorForm({ initialData, isEditing, userRole, fincaId, 
   const [submitted, setSubmitted] = useState(false);
   const [validationMessage, setValidationMessage] = useState("");
 
-  const rolesDisponibles = userRole === "camprocam_admin" ? ROLES_CAMPROCAM : ROLES_EXTERNO;
+  const rolesDisponibles =
+    availableRoles ||
+    (userRole === "camprocam_admin" ? ROLES_CAMPROCAM : ROLES_EXTERNO);
 
   // ─── FUNCIONES DE FILTRADO POR CAMPO ──────────────────────
 
-  // Cédula: solo números, máximo 9 dígitos
   const handleCedulaChange = (value) => {
     const soloNumeros = value.replace(/\D/g, "").slice(0, 9);
     handleChange("cedula", soloNumeros);
   };
 
-  // Teléfono: solo números, máximo 8 dígitos
   const handleTelefonoChange = (value) => {
     const soloNumeros = value.replace(/\D/g, "").slice(0, 8);
     handleChange("telefono", soloNumeros);
   };
 
-  // Nombre: solo letras (con acentos, ñ, espacios) - elimina números y caracteres especiales
   const handleNombreChange = (value) => {
     const soloLetras = value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, "");
     handleChange("nombre", soloLetras);
   };
 
-  // Apellidos: solo letras (con acentos, ñ, espacios) - elimina números y caracteres especiales
   const handleApellidosChange = (value) => {
     const soloLetras = value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, "");
     handleChange("apellidos", soloLetras);
@@ -129,8 +138,11 @@ export function useColaboradorForm({ initialData, isEditing, userRole, fincaId, 
       hasError = true;
     }
 
-    if (userRole === "camprocam_admin" && form.rol === "external_owner" && !form.fincaId) {
-      newErrors.fincaId = "El ID de finca es obligatorio para dueños externos";
+    // Validar fincaId SOLO si el rol requiere finca asociada (IDs 3 y 5)
+    const ROLES_CON_FINCA = [3, 5];
+    const rolId = Number(form.rol);
+    if (ROLES_CON_FINCA.includes(rolId) && !form.fincaId) {
+      newErrors.fincaId = "La finca es obligatoria para este rol";
       hasError = true;
     }
 
@@ -160,6 +172,7 @@ export function useColaboradorForm({ initialData, isEditing, userRole, fincaId, 
     submitted,
     validationMessage,
     rolesDisponibles,
+    fincasOptions,
     handleChange,
     handleCedulaChange,
     handleTelefonoChange,
