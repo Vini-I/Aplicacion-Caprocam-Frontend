@@ -1,32 +1,34 @@
 /**
  * ============================================================
- * HOOK DE ALIMENTACIÓN
+ * HOOK DE DENSIDAD POBLACIONAL
  * ============================================================
- * 
+ *
  * Autocontenido: carga sus propios registros, maneja el modal
  * de eliminación y el alert de resultado, sin depender de la
  * screen para recargar ni para reenviar callbacks de recarga.
+ *
+ * Sigue exactamente el mismo patrón que useAlimentacion.
  */
 import { useState, useEffect } from "react";
-import alimentacionService from "../../alimentacion/services/Alimentacion.service.js";
+import densidadPoblacionalService from "../../densidadPoblacional/services/DensidadPoblacional.service.js";
 import { obtenerDetalleReporte } from "../services/detalleReporte.service.js";
 import useModalEliminar from "../hooks/useModalEliminar.js";
 
 import { fincaService } from "../../finca/services/finca.service.js";
 import { estanqueService } from "../../estanques/services/estanque.service.js";
 
-export default function useAlimentacion(fincaId, estanqueId, onAlertChange) {
-  const [alimentaciones, setAlimentaciones] = useState([]);
+export default function useDensidadPoblacional(fincaId, estanqueId, onAlertChange) {
+  const [densidades, setDensidades] = useState([]);
   const [loading, setLoading] = useState(true);
   const [alert, setAlert] = useState(null);
 
-  async function cargarAlimentaciones() {
+  async function cargarDensidades() {
     try {
       setLoading(true);
 
       const [data, fincasData, estanquesData] = await Promise.all([
         obtenerDetalleReporte({
-          tipoRegistro: "alimentacion",
+          tipoRegistro: "densidad_poblacional",
           fincaId,
           estanqueId,
         }),
@@ -43,36 +45,47 @@ export default function useAlimentacion(fincaId, estanqueId, onAlertChange) {
 
       const enriquecidos = data.map((registro) => ({
         ...registro,
-        nombreFinca: registro.nombreFinca || fincasMap[Number(registro.idFinca || registro.fincaId || registro.finca_id)] || "No encontrada",
-        codigoEstanque: registro.codigoEstanque || estanquesMap[Number(registro.idEstanque || registro.estanqueId || registro.estanque_id)] || "No encontrado",
+        nombreFinca:
+          registro.nombreFinca ||
+          fincasMap[Number(registro.idFinca || registro.fincaId || registro.finca_id)] ||
+          "No encontrada",
+        codigoEstanque:
+          registro.codigoEstanque ||
+          estanquesMap[Number(registro.idEstanque || registro.estanqueId || registro.estanque_id)] ||
+          "No encontrado",
+        usuarioNombre:
+          registro.usuarioNombre || registro.nombreColaborador || "No encontrado",
       }));
 
-      setAlimentaciones(enriquecidos);
+      setDensidades(enriquecidos);
     } catch (error) {
-      console.error("Error al cargar alimentaciones", error);
+      console.error("Error al cargar densidades poblacionales", error);
+      setDensidades([]);
     } finally {
       setLoading(false);
     }
   }
 
   useEffect(() => {
-    cargarAlimentaciones();
+    if (fincaId && estanqueId) {
+      cargarDensidades();
+    }
   }, [fincaId, estanqueId]);
 
-  async function eliminarAlimentacion(id) {
-    await alimentacionService.deleteById(id);
-    await cargarAlimentaciones();
+  async function eliminarDensidad(id) {
+    await densidadPoblacionalService.deleteById(id);
+    await cargarDensidades();
     setAlert("deleted");
   }
 
   const {
     modalVisible,
-    itemSeleccionado: alimentacionSeleccionada,
+    itemSeleccionado: densidadSeleccionada,
     loadingEliminar,
     abrirModalEliminar,
     cancelarEliminar,
     confirmarEliminar,
-  } = useModalEliminar(eliminarAlimentacion);
+  } = useModalEliminar(eliminarDensidad);
 
   useEffect(() => {
     onAlertChange?.(alert);
@@ -85,12 +98,12 @@ export default function useAlimentacion(fincaId, estanqueId, onAlertChange) {
   }, [alert]);
 
   return {
-    alimentaciones,
+    densidades,
     loading,
     alert,
 
     modalVisible,
-    alimentacionSeleccionada,
+    densidadSeleccionada,
     loadingEliminar,
     abrirModalEliminar,
     cancelarEliminar,

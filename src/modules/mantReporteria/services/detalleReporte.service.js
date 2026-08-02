@@ -1,7 +1,7 @@
-import { getCrecimiento } from "../../mantCrecimiento/services/mantCrecimiento.service";
+import crecimientoService from "../../mantCrecimiento/services/mantCrecimiento.service";
 import parasitologiaService from "../../parasitologia/services/ParasitologiaService";
 import enfermedadesService from "../../enfermedades/services/EnfermedadesService";
-import raleoService from "../../raleo/services/Raleo.service";
+import raleoService from "../../raleo/services/Raleo.service.js";
 import alimentacionService from "../../alimentacion/services/Alimentacion.service";
 import densidadPoblacionalService from "../../densidadPoblacional/services/DensidadPoblacional.service";
 
@@ -13,14 +13,15 @@ export async function obtenerDetalleReporte({
 
   switch(tipoRegistro){
     
-    case "crecimiento": 
-      const registros = await getCrecimiento();
+case "crecimiento": {
+  const registros = await crecimientoService.getAll();
 
-      return registros.filter(
-        (r) => 
-          Number(r.finca_id) === Number(fincaId) &&
-          Number(r.estanque_id) === Number(estanqueId)
-      )
+  return registros.filter(
+    (r) =>
+      Number(r.finca ?? r.finca_id ?? r.fincaId) === Number(fincaId) &&
+      Number(r.estanque ?? r.estanque_id ?? r.estanqueId) === Number(estanqueId)
+  );
+}
 
     case "parasitologia": 
 
@@ -32,15 +33,15 @@ export async function obtenerDetalleReporte({
           Number(r.estanqueId) === Number(estanqueId)
       )
 
-    case "enfermedades":
+case "enfermedades": {
+  const registrosEnf = await enfermedadesService.getAll();
 
-      const registrosEnf = await enfermedadesService.getAll();
-      
-      return registrosEnf.filter(
-        (r) => 
-          Number(r.fincaId) === Number(fincaId) &&
-          Number(r.estanqueId) === Number(estanqueId)
-      )
+  return registrosEnf.filter(
+    (r) =>
+      Number(r.fincaId ?? r.finca_id ?? r.finca) === Number(fincaId) &&
+      Number(r.estanqueId ?? r.estanque_id ?? r.estanque) === Number(estanqueId)
+  );
+}
   
     case "raleo":
       const registrosRaleo = await raleoService.getAll();
