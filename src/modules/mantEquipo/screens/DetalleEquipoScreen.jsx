@@ -319,7 +319,7 @@ export default function DetalleEquipoScreen() {
             style={[equipoDetalleStyles.boton, equipoDetalleStyles.botonEditar]}
           >
             <Icon icon={ICONS.edit} size={18} color={COLORS.primary} />
-            <CustomText style={equipoDetalleStyles.botonTexto}>Editar</CustomText>
+            <CustomText style={equipoDetalleStyles.botonTexto}>Editar Equipo</CustomText>
           </Button>
           <Button
             variant="outline"
@@ -327,7 +327,7 @@ export default function DetalleEquipoScreen() {
             style={[equipoDetalleStyles.boton, equipoDetalleStyles.botonEliminar]}
           >
             <Icon icon={ICONS.delete} size={18} color={COLORS.error} />
-            <CustomText style={equipoDetalleStyles.botonTextoEliminar}>Eliminar</CustomText>
+            <CustomText style={equipoDetalleStyles.botonTextoEliminar}>Eliminar Equipo</CustomText>
           </Button>
         </View>
       </ScrollView>
