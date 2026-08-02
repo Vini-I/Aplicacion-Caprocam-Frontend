@@ -2,14 +2,17 @@
  * ============================================================
  * ESTILOS: equiposListStyles
  * ============================================================
- * Módulo: Mantenimiento de Equipos
  *
- * Estilos para la pantalla EquiposListScreen y componentes asociados.
- * Utiliza la paleta de COLORS del tema central.
+ * Estilos para la pantalla EquiposListScreen y sus componentes
+ * internos: EquipoCard, modales de confirmación y detalle,
+ * estadísticas y barra de búsqueda/filtros.
  *
- * Dependencias:
- * - COLORS desde theme/colors
- * ============================================================
+ * @dependencies - StyleSheet de react-native
+ *               - COLORS de theme/colors
+ * @validations  - No hardcodear colores; usar únicamente COLORS.
+ *               - Las clases formScroll* y formAlert* fueron eliminadas
+ *                 (pertenecían a EquipoForm.jsx, nunca se usaron aquí).
+ * @navigation   - N/A (archivo de estilos).
  */
 
 import { StyleSheet } from "react-native";
@@ -69,6 +72,25 @@ export const styles = StyleSheet.create({
     borderColor: COLORS.textTertiary,
     marginTop: 0,
     alignSelf: "center",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 12,
+  },
+
+  filterGroupLabel: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: COLORS.textSecondary,
+    marginBottom: 6,
+    marginTop: 4,
+  },
+
+  filterChipsRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginBottom: 8,
   },
 
   scrollView: {
@@ -225,19 +247,6 @@ export const styles = StyleSheet.create({
     borderWidth: 0,
   },
 
-  toggleBtnOn: {
-    backgroundColor: COLORS.error,
-  },
-
-  toggleBtnOff: {
-    backgroundColor: COLORS.success,
-  },
-
-  toggleBtnText: {
-    color: COLORS.white,
-    fontWeight: "600",
-    fontSize: 14,
-  },
 touchableContainer: {
   width: '100%',
   maxWidth: 900,
@@ -472,5 +481,27 @@ touchableContainer: {
   errorInput: {
     borderColor: COLORS.error,
     borderWidth: 1.5,
+  },
+
+
+  // ── EquipoCard — botón toggle ─────────────────────────────
+  // Reemplaza el objeto inline con todas las propiedades estáticas del botón
+  toggleBtnOutline: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    borderColor: COLORS.primary,
+    backgroundColor: 'transparent',
+    paddingVertical: 10,
+    borderRadius: 8,
+    marginTop: 0,
+    borderWidth: 1,
+  },
+  // Reemplaza { color: COLORS.primary, fontWeight: '600', fontSize: 14 } inline
+  toggleBtnLabel: {
+    color: COLORS.primary,
+    fontWeight: '600',
+    fontSize: 14,
   },
 });

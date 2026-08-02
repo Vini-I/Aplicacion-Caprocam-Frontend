@@ -101,7 +101,6 @@ tableHeader: {
   colCategoria: { flex: 1, minWidth: 90 },
   colDuracion: { width: 90 },
   colEstado: { width: 110, minWidth: 90 },
-  colAcciones: { width: 180 },
 
   // Fila
 row: {
@@ -362,6 +361,78 @@ flatListContent: {
     justifyContent: 'center',
     alignItems: 'center',
   },
+
+  // ── DetalleTareaScreen ──────────────────────────────────
+  // Contenedor de pantalla mientras carga (reemplaza { justifyContent, alignItems } inline)
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  // Contenedor de pantalla de error (mismo layout que loading)
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  // Texto de error en pantalla de error
+  errorText: {
+    color: COLORS.error,
+  },
+  // Wrapper del Alert de acción (reemplaza { marginBottom: 12 } inline)
+  alertMarginBottom: {
+    marginBottom: 12,
+  },
+  // Fila de botones Editar / Eliminar (reemplaza { flexDirection, gap, marginTop } inline)
+  botonesRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 16,
+  },
+  // Botón Editar en DetalleTarea (reemplaza { flex: 1, borderColor: COLORS.primary } inline)
+  botonDetalleEditar: {
+    flex: 1,
+    borderColor: COLORS.primary,
+  },
+  // Botón Eliminar en DetalleTarea (reemplaza { flex: 1, borderColor: COLORS.error } inline)
+  botonDetalleEliminar: {
+    flex: 1,
+    borderColor: COLORS.error,
+  },
+  // Fila interior de cada botón (reemplaza { flexDirection, alignItems, gap } inline)
+  botonInnerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  // Texto del botón Editar
+  botonTexto: {
+    color: COLORS.primary,
+    fontWeight: '600',
+  },
+  // Texto del botón Eliminar
+  botonTextoEliminar: {
+    color: COLORS.error,
+    fontWeight: '600',
+  },
+  // Flex para el View de productos en ModalDetalleTarea
+  productosListFlex: {
+    flex: 1,
+  },
+
+  // ── DetalleEquipoScreen ───────────────────────────────────
+  // Texto de error (reemplaza { color: COLORS.error } inline)
+  errorTextLine: {
+    color: COLORS.error,
+  },
+
+  // ── FilaTarea — estado en negrita ─────────────────────────
+  // Reemplaza [styles.cellText, { fontWeight: '600' }] inline
+  cellTextBold: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    fontWeight: '600',
+  },
 });
 
 // ============================================================
@@ -371,6 +442,7 @@ flatListContent: {
 
 // Estilos para filas con ícono (usado en DetalleEquipo y DetalleTarea)
 export const detalleStyles = StyleSheet.create({
+
   fila: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -2,17 +2,16 @@
  * ============================================================
  * UTILIDAD: authValidator
  * ============================================================
- * 
- * Responsabilidad: Reglas de validación pura para el formulario de Login.
- * 
- * FUNCIONALIDAD:
- * - Valida si el usuario y la contraseña no están vacíos.
- * 
- * VALIDACIONES:
- * - Campo obligatorio (ERROR_REQUIRED) para ambos inputs.
- * 
- * DEPENDENCIAS:
- * - authMessages.js
+ *
+ * Reglas de validación pura para el formulario de login web.
+ * Valida username y password y agrupa el resultado en un objeto
+ * de errores para su uso por useAuth.
+ *
+ * @dependencies - AUTH_MESSAGES de constants/authMessages
+ * @validations  - username y password no pueden estar vacíos (ERROR_REQUIRED).
+ *               - Las funciones son puras: sin efectos secundarios.
+ *               - getAuthButtonVariant fue eliminada (ambas ramas = 'primary').
+ * @navigation   - N/A (utilidad pura).
  */
 
 import { AUTH_MESSAGES } from '../constants/authMessages';
@@ -33,7 +32,4 @@ export const validateAuthForm = (username, password) => ({
 });
 
 export const isAuthFormValid = (errors) =>
-  errors.username === '' && errors.password === '';
-
-export const getAuthButtonVariant = (isValid) =>
-  isValid ? 'primary' : 'primary';
+  errors.username === '' && errors.password === '';

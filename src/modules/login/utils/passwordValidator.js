@@ -1,26 +1,20 @@
 /**
- * ============================================================
- * UTILIDAD: Validador de Contraseña (compartido)
- * ============================================================
+ * UTILIDAD: passwordValidator
+ * Regla única de validación de contraseña compartida entre login y registro.
  *
- * Regla única de contraseña, reutilizada por authValidator.js
- * (login) y registerValidator.js (registro), ya que ambas
- * pantallas exigen exactamente la misma política:
- * - Obligatoria
- * - Mínimo 8 caracteres
- * - Al menos una letra mayúscula
- * - Al menos 4 dígitos numéricos
- *
- * Recibe el objeto de mensajes (AUTH_MESSAGES o REGISTER_MESSAGES)
- * como parámetro, ya que ambos exponen las mismas llaves de
- * error de contraseña (ERROR_PASSWORD_*).
+ * @dependencies - Objeto de mensajes (AUTH_MESSAGES o REGISTER_MESSAGES)
+ * @validations  - Mínimo 8 caracteres, mayúscula, minúscula, dígito y carácter especial.
+ * @navigation   - N/A (utilidad pura).
  */
 
 /**
  * validatePassword(password, messages)
  *
+ * Validaciones según regex del backend:
+ * /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&._\-#])[A-Za-z\d@$!%*?&._\-#]{8,}$/
+ *
  * @param {string} password
- * @param {Object} messages - AUTH_MESSAGES o REGISTER_MESSAGES
+ * @param {Object} messages - AUTH_MESSAGES
  * @returns {string} mensaje de error, o '' si es válida
  */
 export const validatePassword = (password, messages) => {
@@ -32,15 +26,21 @@ export const validatePassword = (password, messages) => {
     return messages.ERROR_PASSWORD_LENGTH;
   }
 
-  const hasUppercase = /[A-Z]/.test(password);
-  if (!hasUppercase) {
+  if (!/[A-Z]/.test(password)) {
     return messages.ERROR_PASSWORD_UPPERCASE;
   }
 
-  const digitCount = (password.match(/\d/g) || []).length;
-  if (digitCount < 4) {
-    return messages.ERROR_PASSWORD_NUMERIC;
+  if (!/[a-z]/.test(password)) {
+    return messages.ERROR_PASSWORD_LOWERCASE;
+  }
+
+  if (!/\d/.test(password)) {
+    return messages.ERROR_PASSWORD_DIGIT;
+  }
+
+  if (!/[@$!%*?&._\-#]/.test(password)) {
+    return messages.ERROR_PASSWORD_SYMBOL;
   }
 
   return '';
-};
+};

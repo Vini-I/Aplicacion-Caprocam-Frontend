@@ -7,11 +7,11 @@
  * Responsabilidad: Exponer la pantalla principal de listado de tickets.
  * 
  * Dependencias:
- * - ManteniminetoPrincipal.jsx
+ * - MantenimientoPrincipal.jsx
  * ============================================================
  */
 
-import ManteniminetoPrincipal from "../../../modules/mantEquipo/screens/ManteniminetoPrincipal";
+import MantenimientoPrincipal from "../../../modules/mantEquipo/screens/MantenimientoPrincipal";
 import { useRouter, useLocalSearchParams } from "expo-router";
 
 export default function MantEquipo() {
@@ -19,7 +19,7 @@ export default function MantEquipo() {
   const params = useLocalSearchParams();
 
   return (
-    <ManteniminetoPrincipal
+    <MantenimientoPrincipal
       onNavigateToCreate={() => router.push("/equipos/AgregarMantenimiento")}
       onNavigateToDetail={(id) => router.push({ pathname: "/equipos/DetalleMantenimiento", params: { id } })}
       onNavigateToTareas={() => router.push("/equipos/tareas")}

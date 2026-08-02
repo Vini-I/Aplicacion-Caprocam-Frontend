@@ -2,28 +2,19 @@
  * ============================================================
  * COMPONENTE: TareasSeleccionadasList
  * ============================================================
- * 
+ *
  * Módulo: Mantenimiento de Equipos
- * 
+ *
  * RESPONSABILIDAD:
- * - Desplegar el listado de tarjetas de tareas seleccionadas en los formularios de
- *   agregado y modificación, proveyendo los botones de "Realizado" y "Eliminar".
- * 
- * DATOS / PROPS:
- * - tareasSeleccionadas: Array<{value: string, label: string, realizada: boolean}>
- * - setTareasSeleccionadas: function (Setter reactivo del listado de tareas)
- * 
- * VALIDACIONES:
- * - Permite alternar (toggle) la propiedad de realizada sobre la tarea y removerla del arreglo.
- * 
- * NAVEGACIÓN:
- * - Ninguna.
- * 
- * DEPENDENCIAS:
- * - CustomText, Button, Icon de shared
- * - COLORS, ICONS de theme
- * - obtenerTareas de tareasService
- * ============================================================
+ * - Desplegar las tarjetas de tareas seleccionadas en los formularios de
+ *   agregado y modificación, con botones "Realizado" y "Eliminar".
+ *
+ * @dependencies - CustomText, Button, Icon de shared/components
+ *               - COLORS, ICONS de theme
+ *               - obtenerTareas de tareasService
+ *               - TareasSeleccionadasListStyles
+ * @validations  - Toggle de realizada por tarea
+ * @navigation   - Ninguna
  */
 
 import React, { useState, useEffect } from "react";
@@ -34,6 +25,7 @@ import Icon from "../../../shared/components/Icons.jsx";
 import { COLORS } from "../../../theme/colors.js";
 import { ICONS } from "../../../theme/icons.js";
 import { obtenerTareas } from "../services/tareasService.js";
+import { styles } from "../styles/TareasSeleccionadasListStyles.js";
 
 export default function TareasSeleccionadasList({ tareasSeleccionadas, setTareasSeleccionadas }) {
   const [tareasCatalog, setTareasCatalog] = useState([]);
@@ -45,67 +37,46 @@ export default function TareasSeleccionadasList({ tareasSeleccionadas, setTareas
   if (tareasSeleccionadas.length === 0) return null;
 
   return (
-    <View style={{ gap: 8, marginBottom: 12 }}>
-      {tareasSeleccionadas.map((t) => {
-        const fullTask = tareasCatalog.find(x => x.id === t.value) || t;
+    <View style={styles.listContainer}>
+      {tareasSeleccionadas.map((t, idx) => {
+        const itemKey = String(t.value || t.tareaId || t.id || idx);
         return (
-          <View
-            key={t.value}
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-              backgroundColor: COLORS.surface,
-              borderWidth: 1,
-              borderColor: COLORS.secondary,
-              borderRadius: 8,
-              padding: 12,
-            }}
-          >
-            <View style={{ flex: 1, marginRight: 12 }}>
-              <CustomText style={{ fontSize: 13, fontWeight: "700", color: COLORS.textSecondary }}>
-                {fullTask.nombre || fullTask.label}
+          <View key={itemKey} style={styles.tareaCard}>
+            <View style={styles.infoCol}>
+              <CustomText style={styles.nombreText}>
+                {t.nombre || t.label}
               </CustomText>
-              {fullTask.categoria && (
-                <CustomText style={{ fontSize: 11, color: COLORS.textTertiary, marginTop: 2 }}>
-                  Categoría: {fullTask.categoria === "preventivo" ? "Preventivo" : "Correctivo"}
+              {t.categoria && (
+                <CustomText style={styles.categoriaText}>
+                  Categoría: {t.categoria === 'preventivo' || t.categoria === 'Preventivo' ? 'Preventivo' : 'Correctivo'}
                 </CustomText>
               )}
-              {fullTask.duracionEstimada !== undefined && (
-                <CustomText style={{ fontSize: 11, color: COLORS.textTertiary, marginTop: 1 }}>
-                  Duración estimada: {fullTask.duracionEstimada} hrs
+              {t.duracionEstimada !== undefined && t.duracionEstimada > 0 && (
+                <CustomText style={styles.duracionText}>
+                  Duración estimada: {t.duracionEstimada} hrs
                 </CustomText>
               )}
-              {fullTask.descripcion && (
-                <CustomText style={{ fontSize: 11, color: COLORS.textTertiary, marginTop: 4, lineHeight: 16 }}>
-                  {fullTask.descripcion}
+              {t.descripcion && (
+                <CustomText style={styles.descripcionText}>
+                  {t.descripcion}
                 </CustomText>
               )}
             </View>
-            <View style={{ gap: 6, width: 90 }}>
+            <View style={styles.accionesCol}>
               <Button
                 variant="outline"
                 onPress={() => {
                   setTareasSeleccionadas(prev =>
-                    prev.map(x => x.value === t.value ? { ...x, realizada: !x.realizada } : x)
+                    prev.map(x => String(x.value || x.tareaId || x.id) === itemKey ? { ...x, realizada: !x.realizada } : x)
                   );
                 }}
-                style={{
-                  borderColor: t.realizada ? COLORS.success : COLORS.textTertiary,
-                  backgroundColor: t.realizada ? COLORS.successLight : "transparent",
-                  width: "100%",
-                  height: 32,
-                  paddingVertical: 0,
-                  paddingHorizontal: 10,
-                  marginTop: 0,
-                  justifyContent: "center",
-                  alignItems: "center",
-                  flexDirection: "row",
-                  gap: 4
-                }}
+                style={[
+                  styles.btnAccion,
+                  t.realizada ? styles.btnRealizado : styles.btnPendiente,
+                ]}
               >
                 <Icon icon={t.realizada ? ICONS.check : ICONS.clock} size={12} color={t.realizada ? COLORS.success : COLORS.textTertiary} />
-                <CustomText style={{ color: t.realizada ? COLORS.success : COLORS.textTertiary, fontSize: 11, fontWeight: "600" }}>
+                <CustomText style={t.realizada ? styles.textRealizado : styles.textPendiente}>
                   {t.realizada ? "Realizado" : "Pendiente"}
                 </CustomText>
               </Button>
@@ -113,23 +84,12 @@ export default function TareasSeleccionadasList({ tareasSeleccionadas, setTareas
               <Button
                 variant="outline"
                 onPress={() => {
-                  setTareasSeleccionadas(prev => prev.filter(x => x.value !== t.value));
+                  setTareasSeleccionadas(prev => prev.filter(x => String(x.value || x.tareaId || x.id) !== itemKey));
                 }}
-                style={{
-                  borderColor: COLORS.error,
-                  width: "100%",
-                  height: 32,
-                  paddingVertical: 0,
-                  paddingHorizontal: 10,
-                  marginTop: 0,
-                  justifyContent: "center",
-                  alignItems: "center",
-                  flexDirection: "row",
-                  gap: 4
-                }}
+                style={[styles.btnAccion, styles.btnEliminar]}
               >
                 <Icon icon={ICONS.delete} size={12} color={COLORS.error} />
-                <CustomText style={{ color: COLORS.error, fontSize: 11, fontWeight: "600" }}>
+                <CustomText style={styles.textEliminar}>
                   Eliminar
                 </CustomText>
               </Button>

@@ -20,7 +20,7 @@ export default function DetalleMantenimientoRoute() {
   const { id } = params;
 
   const handleNavigateToEdit = (ticketId) => {
-    router.push({
+    router.replace({
       pathname: "/equipos/EditarMantenimiento",
       params: { id: ticketId }
     });
