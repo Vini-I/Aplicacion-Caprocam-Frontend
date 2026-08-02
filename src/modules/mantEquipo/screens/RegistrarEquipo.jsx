@@ -185,7 +185,7 @@ export default function RegistrarEquipoScreen() {
             label="Número de serie / Identificador"
             value={formulario.codigoInterno}
             onChangeText={(valor) => actualizarCampo('codigoInterno', valor)}
-            placeholder="Ej: EQ-001"
+            placeholder="Ej: EQ001"
             editable={!isEditing}
             required
             submitted={submitted}
