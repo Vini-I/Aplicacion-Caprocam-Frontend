@@ -7,18 +7,26 @@
  * formulario (useRaleo) y el guardado real del registro.
  *
  * Funcionalidad:
- * - BUG FUNCIONAL GRAVE corregido: el botón "Registrar Raleo"
- *   tenía onPress={() => {}} y no guardaba ni validaba nada.
- *   Ahora handleGuardar activa `submitted = true`, valida con
- *   validarForm() de useRaleo, y solo si es válido persiste el
- *   registro con Raleo.service.js, muestra el modal de éxito y
- *   reinicia el formulario (resetForm + submitted=false).
- * - El feedback de guardado (éxito, campos incompletos, error de
- *   guardado) se muestra con los componentes globales Modal +
- *   Alert de shared/components/, en vez de window.alert/
- *   Alert.alert nativos (mismo patrón de AlimentacionScreen.jsx).
+ * - Toda la orquestación (formulario, validación, guardado y
+ *   alerta) vive en hooks/useRaleoScreen.js; esta screen solo
+ *   arma el layout, conecta el ModalError global y dispara el
+ *   scroll automático hacia la alerta cuando aparece (estándar de
+ *   alert de error sobre el botón de registrar).
+ * - idColaborador se agrega al registro (antes faltaba por
+ *   completo: el backend lo exigia como requerido y cada guardado
+ *   fallaba con "El campo idColaborador es requerido"). Es
+ *   opcional a nivel de columna en la base de datos, pero
+ *   useRaleo.js lo valida como obligatorio en la UI, igual que
+ *   Crecimiento.
+ * - El feedback de éxito y de validación (campos incompletos) se
+ *   muestra en línea con el componente global Alert de
+ *   shared/components/. Los errores que devuelve el backend al
+ *   guardar se muestran aparte, con el ModalError global
+ *   (useError().mostrarError, montado en app/_layout.jsx) — no con
+ *   el Alert en línea. Ninguno de los dos usa window.alert/
+ *   Alert.alert nativos.
  * - `observaciones` no es obligatorio: si el usuario no escribe
- *   nada, handleGuardar lo completa con "No se realizan
+ *   nada, useRaleoScreen.js lo completa con "No se realizan
  *   observaciones" antes de persistir el registro.
  * - Usa NavbarRegistro (header celeste con botón volver) en vez
  *   del Header.jsx compartido, igual que Alimentación y Densidad
@@ -29,12 +37,11 @@
  * <RaleoScreen />
  */
 
-import React, { useState,useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { View, ScrollView } from "react-native";
 import Button from "../../../shared/components/Button";
 import Icon from "../../../shared/components/Icons";
 import Text from "../../../shared/components/Text";
-import Title from "../../../shared/components/Title";
 import RaleoForm from "../components/RaleoForm";
 import NavbarRegistro from "../../../shared/components/NavbarRegistro";
 import Alert from "../../../shared/components/Alert";
@@ -42,66 +49,29 @@ import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
 import { styles } from "../styles/RaleoStyles";
 import { STYLE } from "../../../theme/style";
-import useRaleo from "../hooks/useRaleo";
-import raleoService from "../services/Raleo.service";
+import useRaleoScreen from "../hooks/useRaleoScreen";
+import { useError } from "../../../shared/context/ErrorContext.js";
 
 export default function RaleoScreen() {
-  const { form, updateField, resetForm, validarForm } = useRaleo();
-  const [submitted, setSubmitted] = useState(false);
-  const [errores, setErrores] = useState({});
-  const [alerta, setAlerta] = useState({ visible: false, variant: "success", mensaje: "" });
-//Constantes para el calculo de biomasa estimada
-const biomasaActual = Number(form.biomasaActual);
-const porcentaje = Number(form.porcentajeRaleo);
+  const {
+    form,
+    updateField,
+    biomasaRestante,
+    submitted,
+    errores,
+    alerta,
+    handleGuardar,
+  } = useRaleoScreen();
 
-const biomasaRestante =
-  form.biomasaActual !== "" &&
-  form.porcentajeRaleo !== ""
-    ? biomasaActual * (1 - porcentaje / 100)
-    : "";
+  const { mostrarError } = useError();
 
-useEffect(() => {
-  if (!alerta.visible) return;
+  const scrollRef = useRef(null);
 
-  const timer = setTimeout(() => {
-    if (alerta.variant === "success") {
-      resetForm();
-      setSubmitted(false);
-      setErrores({});
+  useEffect(() => {
+    if (alerta.visible) {
+      scrollRef.current?.scrollToEnd({ animated: true });
     }
-
-    setAlerta((prev) => ({
-      ...prev,
-      visible: false,
-    }));
-  }, 3000);
-
-  return () => clearTimeout(timer);
-}, [alerta.visible]);
-
-  const handleGuardar = async () => {
-    setSubmitted(true);
-    const { valido, errores: erroresValidacion } = validarForm();
-    setErrores(erroresValidacion);
-
-    if (!valido) {
-      setAlerta({ visible: true, variant: "danger", mensaje: "Rellenar campos obligatorios." });
-      return;
-    }
-
-    try {
-      const registro = {
-        ...form,
-        observaciones: form.observaciones?.trim()
-          ? form.observaciones
-          : "No se realizan observaciones",
-      };
-      await raleoService.create(registro);
-      setAlerta({ visible: true, variant: "success", mensaje: "Raleo registrado correctamente" });
-    } catch {
-      setAlerta({ visible: true, variant: "danger", mensaje: "No se pudo guardar el registro" });
-    }
-  };
+  }, [alerta.visible]);
 
   return (
     <>
@@ -115,6 +85,7 @@ useEffect(() => {
 
 
     <ScrollView
+      ref={scrollRef}
       contentContainerStyle={STYLE.contentWrapper}
       showsVerticalScrollIndicator={false}
     >
@@ -136,7 +107,7 @@ useEffect(() => {
           />
         )}
       </View>
-      <Button variant="outline" onPress={handleGuardar} style={styles.submitButton}>
+      <Button variant="outline" onPress={() => handleGuardar(mostrarError)} style={styles.submitButton}>
         <View style={styles.buttonContent}>
           <Icon icon={ICONS.save} size={24} color={COLORS.primary}/>
           <Text style={styles.buttonText}>

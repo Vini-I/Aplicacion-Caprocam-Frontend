@@ -24,7 +24,7 @@
  *   estanquesActivos={2}
  * />
  */
-
+ 
 import React from "react";
 import { View, StyleSheet } from "react-native";
 import Card from "../../../shared/components/Card";

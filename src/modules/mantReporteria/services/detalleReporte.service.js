@@ -4,6 +4,7 @@ import enfermedadesService from "../../enfermedades/services/EnfermedadesService
 import raleoService from "../../raleo/services/Raleo.service.js";
 import alimentacionService from "../../alimentacion/services/Alimentacion.service";
 import densidadPoblacionalService from "../../densidadPoblacional/services/DensidadPoblacional.service";
+import { getLecturas } from "../../mantAgua/services/FisicoQuimicaServices.js";
 
 export async function obtenerDetalleReporte({
   tipoRegistro,
@@ -69,6 +70,15 @@ case "enfermedades": {
           Number(r.idFinca) === Number(fincaId) &&
           Number(r.idEstanque) === Number(estanqueId)
       )
+
+      case "fisico_quimico": {
+  const registrosFq = await getLecturas();
+  return (Array.isArray(registrosFq) ? registrosFq : []).filter(
+    (r) =>
+      Number(r.fincaId ?? r.finca_id ?? r.finca) === Number(fincaId) &&
+      Number(r.estanqueId ?? r.estanque_id ?? r.estanque) === Number(estanqueId)
+  );
+}
 
     default: 
       return [];

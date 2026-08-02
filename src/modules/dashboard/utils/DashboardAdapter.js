@@ -4,33 +4,29 @@ CABEZA DE ARCHIVO
 //////////////////////////////////////////////////////////
 Archivo: DashboardAdapter.js
 Autor: Gerald Andres Alfaro Solorzano
-Fecha: 30/07/2026
+Fecha: 01/08/2026
 Modulo: Dashboard
 Descripcion:
 Adapta y normaliza los datos utilizados por el Dashboard.
+Relaciona cada estanque con su siembra mas reciente para
+obtener los dias de cultivo.
 //////////////////////////////////////////////////////////
 */
 
 function obtenerValor(objeto, campos) {
-  if (!objeto || !Array.isArray(campos)) {
-    return null;
-  }
+  if (!objeto || !Array.isArray(campos)) return null;
 
   for (let i = 0; i < campos.length; i++) {
     const valor = objeto[campos[i]];
 
-    if (valor !== undefined && valor !== null && String(valor).trim() !== "") {
-      return valor;
-    }
+    if (valor !== undefined && valor !== null && String(valor).trim() !== "") return valor;
   }
 
   return null;
 }
 
 function obtenerNumero(valor) {
-  if (valor === undefined || valor === null || String(valor).trim() === "") {
-    return 0;
-  }
+  if (valor === undefined || valor === null || String(valor).trim() === "") return 0;
 
   const numero = Number(String(valor).replace(",", "."));
   return Number.isNaN(numero) ? 0 : numero;
@@ -41,13 +37,8 @@ function obtenerTexto(valor, respaldo = "") {
 }
 
 function obtenerArreglo(valor) {
-  if (Array.isArray(valor)) {
-    return valor;
-  }
-
-  if (typeof valor !== "string" || valor.trim() === "") {
-    return [];
-  }
+  if (Array.isArray(valor)) return valor;
+  if (typeof valor !== "string" || valor.trim() === "") return [];
 
   try {
     const arreglo = JSON.parse(valor);
@@ -75,17 +66,17 @@ function obtenerEstanqueId(objeto) {
 }
 
 function buscarPorId(lista, id) {
-  return Array.isArray(lista) ? lista.find(function (item) {
-    return obtenerId(item) === Number(id);
-  }) ?? null : null;
+  return Array.isArray(lista)
+    ? lista.find(function (item) {
+        return obtenerId(item) === Number(id);
+      }) ?? null
+    : null;
 }
 
 function obtenerNombreFinca(finca, estanque) {
   const nombreFinca = obtenerValor(finca, ["nombreFinca", "nombre_finca", "nombre"]);
 
-  if (nombreFinca !== null) {
-    return String(nombreFinca);
-  }
+  if (nombreFinca !== null) return String(nombreFinca);
 
   return obtenerTexto(obtenerValor(estanque, ["fincaNombre", "nombreFinca", "finca"]), "Sin finca");
 }
@@ -95,20 +86,16 @@ function obtenerCodigoEstanque(estanque) {
 }
 
 function convertirFecha(fechaTexto) {
-  if (!fechaTexto) {
-    return null;
-  }
+  if (!fechaTexto) return null;
 
   if (fechaTexto instanceof Date) {
-    return Number.isNaN(fechaTexto.getTime()) ? null : fechaTexto;
+    return Number.isNaN(fechaTexto.getTime()) ? null : new Date(fechaTexto);
   }
 
   const texto = String(fechaTexto).slice(0, 10);
   const partes = texto.includes("-") ? texto.split("-") : texto.includes("/") ? texto.split("/") : [];
 
-  if (partes.length !== 3) {
-    return null;
-  }
+  if (partes.length !== 3) return null;
 
   const fecha = texto.includes("-")
     ? new Date(Number(partes[0]), Number(partes[1]) - 1, Number(partes[2]))
@@ -120,9 +107,7 @@ function convertirFecha(fechaTexto) {
 function calcularDiasCultivo(fechaTexto) {
   const fechaInicio = convertirFecha(fechaTexto);
 
-  if (!fechaInicio) {
-    return 0;
-  }
+  if (!fechaInicio) return 0;
 
   const hoy = new Date();
   hoy.setHours(0, 0, 0, 0);
@@ -132,16 +117,30 @@ function calcularDiasCultivo(fechaTexto) {
   return diferencia > 0 ? Math.floor(diferencia / 86400000) : 0;
 }
 
-function calcularPromedio(mediciones) {
-  const valores = obtenerArreglo(mediciones).map(function (medicion) {
-    return Number(String(medicion?.valor ?? "").replace(",", "."));
-  }).filter(function (valor) {
-    return Number.isFinite(valor);
+function obtenerSiembraReciente(siembras, estanqueId) {
+  if (!Array.isArray(siembras)) return null;
+
+  const relacionadas = siembras.filter(function (siembra) {
+    return Number(siembra.estanqueId) === Number(estanqueId) && convertirFecha(siembra.fechaSiembra) !== null;
   });
 
-  if (valores.length === 0) {
-    return 0;
-  }
+  relacionadas.sort(function (a, b) {
+    return convertirFecha(b.fechaSiembra).getTime() - convertirFecha(a.fechaSiembra).getTime();
+  });
+
+  return relacionadas[0] ?? null;
+}
+
+function calcularPromedio(mediciones) {
+  const valores = obtenerArreglo(mediciones)
+    .map(function (medicion) {
+      return Number(String(medicion?.valor ?? "").replace(",", "."));
+    })
+    .filter(function (valor) {
+      return Number.isFinite(valor);
+    });
+
+  if (valores.length === 0) return 0;
 
   const suma = valores.reduce(function (total, valor) {
     return total + valor;
@@ -151,15 +150,15 @@ function calcularPromedio(mediciones) {
 }
 
 function contarEstanquesFinca(estanques, fincaId) {
-  return Array.isArray(estanques) ? estanques.filter(function (estanque) {
-    return obtenerFincaId(estanque) === Number(fincaId);
-  }).length : 0;
+  return Array.isArray(estanques)
+    ? estanques.filter(function (estanque) {
+        return obtenerFincaId(estanque) === Number(fincaId);
+      }).length
+    : 0;
 }
 
 export function adaptarFincasDashboard(fincas, estanques) {
-  if (!Array.isArray(fincas)) {
-    return [];
-  }
+  if (!Array.isArray(fincas)) return [];
 
   return fincas.map(function (finca) {
     const id = obtenerId(finca);
@@ -180,14 +179,11 @@ export function adaptarFincasDashboard(fincas, estanques) {
 }
 
 export function adaptarEstanquesDashboard(estanques, fincas) {
-  if (!Array.isArray(estanques)) {
-    return [];
-  }
+  if (!Array.isArray(estanques)) return [];
 
   return estanques.map(function (estanque) {
     const fincaId = obtenerFincaId(estanque);
     const finca = buscarPorId(fincas, fincaId);
-    const fechaSiembra = obtenerValor(estanque, ["fechaSiembra", "fecha_siembra"]);
     const largo = obtenerNumero(estanque.largo);
     const ancho = obtenerNumero(estanque.ancho);
     const area = largo > 0 && ancho > 0 ? Number(((largo * ancho) / 10000).toFixed(2)) : 0;
@@ -202,15 +198,12 @@ export function adaptarEstanquesDashboard(estanques, fincas) {
       fincaNombre,
       codigo: obtenerCodigoEstanque(estanque),
       area,
-      diasCultivo: calcularDiasCultivo(fechaSiembra),
     };
   });
 }
 
 export function adaptarAlimentacionesDashboard(alimentaciones, fincas, estanques) {
-  if (!Array.isArray(alimentaciones)) {
-    return [];
-  }
+  if (!Array.isArray(alimentaciones)) return [];
 
   return alimentaciones.map(function (alimentacion) {
     const fincaId = obtenerFincaId(alimentacion);
@@ -238,9 +231,7 @@ export function adaptarAlimentacionesDashboard(alimentaciones, fincas, estanques
 }
 
 export function adaptarSiembrasDashboard(siembras, fincas, estanques) {
-  if (!Array.isArray(siembras)) {
-    return [];
-  }
+  if (!Array.isArray(siembras)) return [];
 
   return siembras.map(function (siembra) {
     const id = obtenerId(siembra);
@@ -278,9 +269,7 @@ export function adaptarSiembrasDashboard(siembras, fincas, estanques) {
 }
 
 export function adaptarInventarioDashboard(inventario) {
-  if (!Array.isArray(inventario)) {
-    return [];
-  }
+  if (!Array.isArray(inventario)) return [];
 
   return inventario.map(function (registro) {
     const producto = registro.producto ?? registro;
@@ -301,9 +290,7 @@ export function adaptarInventarioDashboard(inventario) {
 }
 
 export function adaptarEquiposDashboard(equipos, fincas, estanques) {
-  if (!Array.isArray(equipos)) {
-    return [];
-  }
+  if (!Array.isArray(equipos)) return [];
 
   return equipos.map(function (equipo) {
     const estanqueId = obtenerEstanqueId(equipo);
@@ -343,9 +330,7 @@ export function adaptarEquiposDashboard(equipos, fincas, estanques) {
 }
 
 export function adaptarEnfermedadesDashboard(registros, fincas, estanques) {
-  if (!Array.isArray(registros)) {
-    return [];
-  }
+  if (!Array.isArray(registros)) return [];
 
   return registros.map(function (registro) {
     const fincaId = obtenerFincaId(registro);
@@ -426,9 +411,7 @@ export function adaptarResumenEnfermedadesDashboard(resumen) {
 }
 
 export function adaptarParasitologiasDashboard(registros, fincas, estanques) {
-  if (!Array.isArray(registros)) {
-    return [];
-  }
+  if (!Array.isArray(registros)) return [];
 
   return registros.map(function (registro) {
     const fincaId = obtenerFincaId(registro);
@@ -482,9 +465,7 @@ export function adaptarResumenParasitologiasDashboard(resumen) {
 }
 
 export function adaptarFisicoQuimicosDashboard(registros, fincas, estanques) {
-  if (!Array.isArray(registros)) {
-    return [];
-  }
+  if (!Array.isArray(registros)) return [];
 
   return registros.map(function (registro) {
     const fincaId = obtenerFincaId(registro);
@@ -525,13 +506,26 @@ export function adaptarDatosDashboard(datos = {}) {
   const estanquesRaw = Array.isArray(datos.estanques) ? datos.estanques : [];
 
   const fincas = adaptarFincasDashboard(fincasRaw, estanquesRaw);
-  const estanques = adaptarEstanquesDashboard(estanquesRaw, fincas);
+  const estanquesBase = adaptarEstanquesDashboard(estanquesRaw, fincas);
+  const siembras = adaptarSiembrasDashboard(datos.siembras, fincas, estanquesBase);
+
+  const estanques = estanquesBase.map(function (estanque) {
+    const siembra = obtenerSiembraReciente(siembras, estanque.id);
+
+    return {
+      ...estanque,
+      siembraId: siembra?.siembraId ?? null,
+      fechaSiembra: siembra?.fechaSiembra ?? null,
+      diasCultivo: siembra?.diasCultivo ?? null,
+      tieneSiembra: siembra !== null,
+    };
+  });
 
   return {
     fincas,
     estanques,
+    siembras,
     alimentaciones: adaptarAlimentacionesDashboard(datos.alimentaciones, fincas, estanques),
-    siembras: adaptarSiembrasDashboard(datos.siembras, fincas, estanques),
     inventario: adaptarInventarioDashboard(datos.inventario),
     equipos: adaptarEquiposDashboard(datos.equipos, fincas, estanques),
     enfermedades: adaptarEnfermedadesDashboard(datos.enfermedades, fincas, estanques),

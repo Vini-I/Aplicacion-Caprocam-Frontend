@@ -3,57 +3,104 @@
  * SERVICE RALEO.SERVICE
  * ============================================================
  *
- * Persiste los registros de raleo en AsyncStorage bajo la clave
- * "raleos_v1". Sigue exactamente el mismo patrón que
- * Alimentacion.service.js.
+ * Conecta el módulo de Raleo con el backend real (Express +
+ * MySQL) usando axios.
  *
- * Funcionalidad:
- * - getAll(): retorna todos los registros guardados.
- * - create(registro): agrega un registro nuevo con id y timestamp.
- * - deleteById(id): elimina un registro por id.
- * - clearAll(): elimina todos los registros guardados.
+ * Endpoint base: /raleo (definido en app.js del backend como
+ * /api/v0/raleo, y api.js ya apunta a EXPO_PUBLIC_API_URL que
+ * debe incluir ese prefijo /api/v0).
+ *
+ * Corregido: antes apuntaba a `/raleos` (con "s"), que no existe
+ * en el backend (mount real es `/api/v0/raleo`, sin "s") — todas
+ * las llamadas daban 404. También devolvía `respuesta.data`
+ * (el sobre completo { success, message, data }) en vez de
+ * `respuesta.data.data` (el payload real), igual que corrigieron
+ * los otros services (Alimentacion/DensidadPoblacional).
  *
  * Importante:
- * - Este archivo NO valida los datos que recibe: la validación
- *   de campos obligatorios ocurre antes, en useRaleo.validarForm().
+ * - Este archivo NO valida ni mapea nombres de campo: es un
+ *   passthrough puro (mismo patrón que los otros 2 services).
+ *   La validación ocurre en useRaleo.validarForm(), y el mapeo de
+ *   nombres de campo (finca -> idFinca, etc.) ocurre en
+ *   RaleoScreen.jsx antes de llamar a create()/update().
  *
  * Ejemplo:
- * await raleoService.create(form);
+ * await raleoService.create(raleoDTO);
  */
 
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import api from "../../../api/api.js";
 
-const CLAVE = "raleos_v1";
+async function getAll() {
+  try {
+    const response = await api.get("/raleo");
+    return response.data.data;
+  } catch (error) {
+    console.error(
+      "Error al obtener los raleos",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+}
+
+async function getById(id) {
+  try {
+    const response = await api.get(`/raleo/${id}`);
+    return response.data.data;
+  } catch (error) {
+    console.error(
+      "Error al obtener el raleo",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+}
+
+async function create(raleoDTO) {
+  try {
+    const response = await api.post("/raleo", raleoDTO);
+    return response.data.data;
+  } catch (error) {
+    console.error(
+      "Error al crear el raleo",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+}
+
+async function update(id, raleoDTO) {
+  try {
+    const response = await api.put(`/raleo/${id}`, raleoDTO);
+    return response.data.data;
+  } catch (error) {
+    console.error(
+      "Error al actualizar el raleo",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+}
+
+async function deleteById(id) {
+  try {
+    const response = await api.delete(`/raleo/${id}`);
+    return response.data.data;
+  } catch (error) {
+    console.error(
+      "Error al eliminar el raleo",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+}
 
 const raleoService = {
-    getAll: async () => {
-        try {
-            const datos = await AsyncStorage.getItem(CLAVE);
-            return datos ? JSON.parse(datos) : [];
-        } catch {
-            return [];
-        }
-    },
-
-    create: async (registro) => {
-        const lista = await raleoService.getAll();
-        const nuevo = {
-            ...registro,
-            id:        Date.now().toString(),
-            timestamp: new Date().toISOString(),
-        };
-        await AsyncStorage.setItem(CLAVE, JSON.stringify([...lista, nuevo]));
-        return nuevo;
-    },
-
-    deleteById: async (id) => {
-        const lista = await raleoService.getAll();
-        await AsyncStorage.setItem(CLAVE, JSON.stringify(lista.filter(r => r.id !== id)));
-    },
-
-    clearAll: async () => {
-        await AsyncStorage.removeItem(CLAVE);
-    },
+  getAll,
+  getById,
+  create,
+  update,
+  deleteById,
 };
 
 export default raleoService;
