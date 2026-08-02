@@ -1,154 +1,185 @@
 /**
- * ============================================================
- * HOOK USEEDITARENFERMEDAD
- * ============================================================
+ * Calco de useEnfermedadesScreen para edición (misma API `pantalla`).
  */
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import enfermedadesService from "../services/EnfermedadesService.js";
+import { fincaService } from "../../finca/services/finca.service.js";
+import { estanqueService } from "../../estanques/services/estanque.service.js";
 
-function registroAForm(registro) {
-  if (!registro) return {};
-  let fecha = registro.fechaReporte ?? registro.fecha ?? "";
+function obtenerFechaActual() {
+  const h = new Date();
+  return `${String(h.getDate()).padStart(2, "0")}/${String(h.getMonth() + 1).padStart(2, "0")}/${h.getFullYear()}`;
+}
+
+function convertirFechaParaBackend(fecha) {
+  if (!fecha) return "";
+  if (fecha.includes("-") && !fecha.includes("/")) return fecha.slice(0, 10);
+  const [d, m, y] = fecha.split("/");
+  return `${y}-${m}-${d}`;
+}
+
+function formatearFechaUI(fecha) {
+  if (!fecha) return "";
   if (typeof fecha === "string" && /^\d{4}-\d{2}-\d{2}/.test(fecha)) {
     const [y, m, d] = fecha.slice(0, 10).split("-");
-    fecha = `${d}/${m}/${y}`;
+    return `${d}/${m}/${y}`;
   }
-  return {
-    fincaId: String(registro.fincaId ?? registro.finca_id ?? ""),
-    estanqueId: String(registro.estanqueId ?? registro.estanque_id ?? ""),
-    fechaReporte: fecha,
-    enfermedad: registro.enfermedad ?? "",
-    severidad: registro.severidad ?? "",
-    mortalidadRegistrada: String(
-      registro.mortalidadRegistrada ?? registro.mortalidad ?? "0"
-    ),
-    reporte: registro.reporte ?? "",
-  };
-}
-
-function formADto(form) {
-  let fechaBackend = form.fechaReporte;
-  if (fechaBackend && fechaBackend.includes("/")) {
-    const [d, m, y] = fechaBackend.split("/");
-    fechaBackend = `${y}-${m}-${d}`;
-  }
-  return {
-    fincaId: Number(form.fincaId),
-    estanqueId: Number(form.estanqueId),
-    fechaReporte: fechaBackend,
-    enfermedad: form.enfermedad,
-    severidad: form.severidad,
-    mortalidadRegistrada: Number(form.mortalidadRegistrada) || 0,
-    reporte: (form.reporte || "").trim(),
-  };
-}
-
-function validarForm(form) {
-  const errores = {};
-  if (!form.fechaReporte) errores.fechaReporte = "Obligatorio";
-  if (!form.enfermedad) errores.enfermedad = "Obligatorio";
-  if (!form.severidad) errores.severidad = "Obligatorio";
-  if (!(form.reporte || "").trim()) errores.reporte = "Obligatorio";
-  const mort = Number(form.mortalidadRegistrada);
-  if (Number.isNaN(mort) || mort < 0) errores.mortalidad = "Inválido";
-  return { valido: Object.keys(errores).length === 0, errores };
+  return fecha;
 }
 
 export default function useEditarEnfermedad(registroId, onGuardado) {
-  const [form, setForm] = useState({
-    fincaId: "",
-    estanqueId: "",
-    fechaReporte: "",
-    enfermedad: "",
-    severidad: "",
-    mortalidadRegistrada: "",
-    reporte: "",
-  });
-  const [cargando, setCargando] = useState(true);
+  const [finca, setFinca] = useState("");
+  const [estanque, setEstanque] = useState("");
+  const [fechaReporte, setFechaReporte] = useState(obtenerFechaActual());
+  const [enfermedad, setEnfermedad] = useState("");
+  const [severidad, setSeveridad] = useState("");
+  const [mortalidad, setMortalidad] = useState("");
+  const [reporte, setReporte] = useState("");
+  const [fincas, setFincas] = useState([]);
+  const [estanques, setEstanques] = useState([]);
+  const [catalogoEnf, setCatalogoEnf] = useState([]);
+  const [catalogoSev, setCatalogoSev] = useState([]);
   const [submitted, setSubmitted] = useState(false);
-  const [guardando, setGuardando] = useState(false);
-  const [errores, setErrores] = useState({});
-  const [alerta, setAlerta] = useState({
-    visible: false,
-    variant: "success",
-    mensaje: "",
-  });
+  const [mensaje, setMensaje] = useState("");
+  const [tipoMensaje, setTipoMensaje] = useState("info");
+  const [loading, setLoading] = useState(false);
+  const [cargandoRegistro, setCargandoRegistro] = useState(true);
+  const [cargandoOpciones, setCargandoOpciones] = useState(true);
 
-  const updateField = useCallback((campo, valor) => {
-    setForm((prev) => ({ ...prev, [campo]: valor }));
+  useEffect(() => {
+    let activo = true;
+    (async () => {
+      try {
+        setCargandoOpciones(true);
+        const [f, e, ce, cs] = await Promise.all([
+          fincaService.getFincas(),
+          estanqueService.getEstanques(),
+          enfermedadesService.getCatalogo?.() ?? Promise.resolve([]),
+          enfermedadesService.getCatalogoSeveridades?.() ?? Promise.resolve([]),
+        ]);
+        if (!activo) return;
+        setFincas(Array.isArray(f) ? f : []);
+        setEstanques(Array.isArray(e) ? e : []);
+        setCatalogoEnf(Array.isArray(ce) ? ce : []);
+        setCatalogoSev(Array.isArray(cs) ? cs : []);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        if (activo) setCargandoOpciones(false);
+      }
+    })();
+    return () => { activo = false; };
   }, []);
 
   useEffect(() => {
-    if (!registroId) {
-      setCargando(false);
-      return;
-    }
+    if (!registroId) { setCargandoRegistro(false); return; }
     let activo = true;
-    setCargando(true);
-    enfermedadesService
-      .getById(registroId)
-      .then((registro) => {
-        if (!activo) return;
-        setForm((prev) => ({ ...prev, ...registroAForm(registro) }));
+    setCargandoRegistro(true);
+    enfermedadesService.getById(registroId)
+      .then((r) => {
+        if (!activo || !r) return;
+        setFinca(String(r.fincaId ?? r.finca_id ?? ""));
+        setEstanque(String(r.estanqueId ?? r.estanque_id ?? ""));
+        setFechaReporte(formatearFechaUI(r.fechaReporte ?? r.fecha));
+        setEnfermedad(r.enfermedad ?? "");
+        setSeveridad(r.severidad ?? "");
+        setMortalidad(String(r.mortalidadRegistrada ?? r.mortalidad ?? ""));
+        setReporte(r.reporte ?? "");
       })
-      .catch(() => {
-        if (activo) {
-          setAlerta({
-            visible: true,
-            variant: "error",
-            mensaje: "No se pudo cargar el registro.",
-          });
-        }
-      })
-      .finally(() => {
-        if (activo) setCargando(false);
-      });
-    return () => {
-      activo = false;
-    };
+      .catch(() => setMensaje("No se pudo cargar el registro."))
+      .finally(() => { if (activo) setCargandoRegistro(false); });
+    return () => { activo = false; };
   }, [registroId]);
 
-  const handleGuardar = useCallback(async () => {
+  const opcionesFincas = useMemo(
+    () => fincas.map((f) => ({ label: f.nombreFinca, value: String(f.id) })),
+    [fincas],
+  );
+  const opcionesEstanques = useMemo(
+    () =>
+      estanques
+        .filter((e) => Number(e.idFinca ?? e.fincaId) === Number(finca))
+        .map((e) => ({ label: e.codigo, value: String(e.id) })),
+    [estanques, finca],
+  );
+  const opcionesEnfermedades = useMemo(() => {
+    if (!Array.isArray(catalogoEnf) || catalogoEnf.length === 0) return [];
+    return catalogoEnf.map((x) =>
+      typeof x === "string"
+        ? { label: x, value: x }
+        : { label: x.nombre ?? x.label ?? x.value, value: x.value ?? x.codigo ?? x.nombre }
+    );
+  }, [catalogoEnf]);
+  const opcionesSeveridades = useMemo(() => {
+    if (!Array.isArray(catalogoSev) || catalogoSev.length === 0) return [];
+    return catalogoSev.map((x) =>
+      typeof x === "string"
+        ? { label: x, value: x }
+        : { label: x.nombre ?? x.label ?? x.value, value: x.value ?? x.codigo ?? x.nombre }
+    );
+  }, [catalogoSev]);
+
+  const cambiarFinca = (v) => { setFinca(String(v)); setEstanque(""); setMensaje(""); };
+  const cambiarEstanque = (v) => { setEstanque(String(v)); setMensaje(""); };
+  const cambiarFechaReporte = (v) => { setFechaReporte(v); setMensaje(""); };
+  const cambiarEnfermedad = (v) => { setEnfermedad(String(v)); setMensaje(""); };
+  const cambiarSeveridad = (v) => { setSeveridad(String(v)); setMensaje(""); };
+  const cambiarMortalidad = (v) => { setMortalidad(String(v)); setMensaje(""); };
+  const cambiarReporte = (v) => { setReporte(v); setMensaje(""); };
+
+  const validar = () => {
+    const m = Number(mortalidad);
+    return Boolean(finca && estanque && fechaReporte && enfermedad && severidad && reporte.trim() && !Number.isNaN(m) && m >= 0);
+  };
+
+  const guardarEnfermedad = async () => {
     setSubmitted(true);
-    const { valido, errores: err } = validarForm(form);
-    setErrores(err);
-    if (!valido) {
-      setAlerta({
-        visible: true,
-        variant: "error",
-        mensaje: "Revisá los campos marcados.",
-      });
+    setMensaje("");
+    if (!validar()) {
+      setTipoMensaje("danger");
+      setMensaje("Rellene los datos requeridos correctamente.");
       return;
     }
-    setGuardando(true);
+    setLoading(true);
     try {
-      await enfermedadesService.update(registroId, formADto(form));
-      setAlerta({
-        visible: true,
-        variant: "success",
-        mensaje: "Registro actualizado correctamente.",
+      await enfermedadesService.update(registroId, {
+        fincaId: Number(finca),
+        estanqueId: Number(estanque),
+        fechaReporte: convertirFechaParaBackend(fechaReporte),
+        enfermedad,
+        severidad,
+        mortalidadRegistrada: Number(mortalidad) || 0,
+        reporte: reporte.trim(),
       });
+      setTipoMensaje("success");
+      setMensaje("Enfermedad actualizada correctamente.");
       onGuardado?.();
-    } catch (error) {
-      setAlerta({
-        visible: true,
-        variant: "error",
-        mensaje:
-          error.response?.data?.message || "No se pudo actualizar el registro.",
-      });
+    } catch (e) {
+      setTipoMensaje("danger");
+      setMensaje(e.response?.data?.message || "No se pudo actualizar.");
     } finally {
-      setGuardando(false);
+      setLoading(false);
     }
-  }, [form, registroId, onGuardado]);
+  };
 
   return {
-    form,
-    updateField,
-    cargando,
-    submitted,
-    errores,
-    alerta,
-    guardando,
-    handleGuardar,
+    finca, estanque, fechaReporte, responsable: "", enfermedad, severidad, mortalidad, reporte,
+    opcionesFincas, opcionesEstanques, opcionesEnfermedades, opcionesSeveridades,
+    placeholderFinca: "Seleccione una finca",
+    placeholderEstanque: "Seleccione un estanque",
+    placeholderEnfermedad: "Seleccione enfermedad",
+    placeholderSeveridad: "Seleccione severidad",
+    gridStyle: undefined, itemStyle: undefined, itemFullStyle: undefined,
+    errorFinca: submitted && !finca,
+    errorEstanque: submitted && !estanque,
+    errorFechaReporte: submitted && !fechaReporte,
+    errorEnfermedad: submitted && !enfermedad,
+    errorSeveridad: submitted && !severidad,
+    errorReporte: submitted && !reporte.trim(),
+    mensaje, tipoMensaje,
+    loading: loading || cargandoOpciones,
+    cargandoRegistro,
+    cambiarFinca, cambiarEstanque, cambiarFechaReporte, cambiarEnfermedad,
+    cambiarSeveridad, cambiarMortalidad, cambiarReporte, guardarEnfermedad,
   };
 }
