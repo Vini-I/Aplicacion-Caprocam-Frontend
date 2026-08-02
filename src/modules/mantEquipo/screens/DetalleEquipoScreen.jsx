@@ -9,36 +9,23 @@
  * Incluye información general, horas de uso, alerta de mantenimiento,
  * y acciones (editar, eliminar).
  *
- * Datos:
- * - Obtiene el id del equipo desde los parámetros de ruta.
- * - Carga el equipo usando equiposService.getEquipoById (conectado al backend real).
- * - Si el equipo tiene estanqueId, resuelve el estanque asociado consultando
- *   equiposService.getEstanquesDisponibles() (el backend no expone un
- *   endpoint de estanque individual, así que se busca dentro de la lista).
- *
- * Validaciones:
- * - Si el equipo no existe, muestra mensaje de error.
- *
- * Navegación:
- * - Botón "Editar" abre el formulario de registro/edición.
- * - Botón "Eliminar" abre ModalEliminar y, al confirmar, elimina y regresa.
- * - Clic en el estanque asociado navega a detalle del estanque.
- *
- * Dependencias:
- * - equiposService
- * - shared/components (NavbarRegistro, Card, Icon, Button, ModalEliminar, Alert, etc.)
- * - styles/tareasStyles (reutiliza algunos estilos)
+ * @dependencies - NavbarRegistro, Card, Icon, Button, CustomText, Spinner,
+ *               - ModalEliminar, Alert de shared/components
+ *               - equiposService
+ *               - styles/tareasStyles, theme/colors, theme/style, theme/icons
+ * @validations  - Si el equipo no existe muestra mensaje de error
+ * @navigation   - "✎ Editar Equipo" → /equipos/registrarEquipo?edit={id}
+ *               - "🗑 Eliminar Equipo" → ModalEliminar y luego /equipos/equipos
+ *               - Clic en estanque → /estanques/detalle?id={estanqueId}
  *
  * NOTA: "marca", "modelo", "serie", "subcategoria", "ultimoMantenimiento"
- * y "registrosEncendido" se quitaron de esta pantalla porque el backend
- * real (equipo.dto.js / equipo.model.js) no tiene esos campos — eran
- * parte del mock anterior y nunca van a llegar con datos reales.
+ * y "registrosEncendido" se quitaron porque el backend real no tiene esos campos.
  * ============================================================
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React from 'react';
 import { View, ScrollView, TouchableOpacity } from 'react-native';
-import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 
 import NavbarRegistro from '../../../shared/components/NavbarRegistro';
 import Card from '../../../shared/components/Card';
@@ -48,12 +35,13 @@ import CustomText from '../../../shared/components/Text';
 import Spinner from '../../../shared/components/Spinner';
 import ModalEliminar from '../../../shared/components/ModalEliminar';
 import Alert from '../../../shared/components/Alert';
+import Badge from '../../../shared/components/Badge';
 
 import { COLORS } from '../../../theme/colors';
 import { ICONS } from '../../../theme/icons';
 import { STYLE } from '../../../theme/style';
-import { equiposService } from '../services/equiposService';
 import { styles, detalleStyles, equipoDetalleStyles } from '../styles/tareasStyles';
+import { useDetalleEquipoScreen } from '../hooks/useDetalleEquipoScreen';
 
 // Mapeo de tipos a iconos
 const TIPOS_ICONS = {
@@ -98,7 +86,13 @@ function horasRestantesMantenimiento(equipo) {
 }
 
 // Componente para fila con ícono alineado a la izquierda
+// valueColor es un string de color (ej: COLORS.primary) o undefined;
+// se aplica mediante un objeto de estilo plano para cumplir el estándar
+// sin usar estilos inline {{ ... }} en el JSX.
 function FilaDetalleIcono({ icon, label, value, valueColor, onPress }) {
+  const valorEstilo = valueColor
+    ? [detalleStyles.valor, { color: valueColor }]
+    : detalleStyles.valor;
   return (
     <View style={detalleStyles.fila}>
       <View style={detalleStyles.iconoWrapper}>
@@ -111,7 +105,7 @@ function FilaDetalleIcono({ icon, label, value, valueColor, onPress }) {
             <CustomText style={detalleStyles.valorLink}>{value || '—'}</CustomText>
           </TouchableOpacity>
         ) : (
-          <CustomText style={[detalleStyles.valor, valueColor && { color: valueColor }]}>
+          <CustomText style={valorEstilo}>
             {value || '—'}
           </CustomText>
         )}
@@ -124,80 +118,20 @@ export default function DetalleEquipoScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
 
-  const [equipo, setEquipo] = useState(null);
-  const [estanque, setEstanque] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState(null);
-  const [alert, setAlert] = useState(null);
-
-  const cargarDatos = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const data = await equiposService.getEquipoById(id);
-      setEquipo(data);
-
-      if (data.estanqueId) {
-        // El backend no expone GET /estanques/:id, así que se busca
-        // dentro de la lista de estanques disponibles.
-        const estanques = await equiposService.getEstanquesDisponibles();
-        const encontrado = estanques.find((e) => e.value === String(data.estanqueId));
-        setEstanque(encontrado || null);
-      } else {
-        setEstanque(null);
-      }
-    } catch (err) {
-      setError(err.message || 'No se pudo cargar el equipo.');
-    } finally {
-      setLoading(false);
-    }
-  }, [id]);
-
-  useEffect(() => {
-    if (id) cargarDatos();
-    else setError('ID de equipo no proporcionado.');
-  }, [id, cargarDatos]);
-
-  useFocusEffect(
-    useCallback(() => {
-      if (id) cargarDatos();
-    }, [id, cargarDatos])
-  );
-
-  const handleEditar = () => {
-    router.push(`/equipos/registrarEquipo?edit=${equipo.id}`);
-  };
-
-  const handleEliminarPress = () => {
-    setDeleteTarget(equipo);
-    setShowConfirmModal(true);
-  };
-
-  const confirmDelete = async () => {
-    try {
-      await equiposService.deleteEquipo(equipo.id);
-      setAlert({ type: 'danger', message: `Equipo "${equipo.nombre}" eliminado.` });
-      setShowConfirmModal(false);
-      setTimeout(() => router.replace('/equipos/equipos'), 1500);
-    } catch (err) {
-      setAlert({ type: 'danger', message: err.message || 'No se pudo eliminar el equipo.' });
-      setShowConfirmModal(false);
-    }
-  };
-
-  const cancelDelete = () => {
-    setShowConfirmModal(false);
-    setDeleteTarget(null);
-  };
-
-  const handleEstanquePress = () => {
-    if (estanque) {
-      router.push(`/estanques/detalle?id=${estanque.value}`);
-    }
-  };
+  const {
+    equipo,
+    estanque,
+    loading,
+    error,
+    alert,
+    showConfirmModal,
+    deleteTarget,
+    handleEditar,
+    handleEliminarPress,
+    confirmDelete,
+    cancelDelete,
+    handleEstanquePress,
+  } = useDetalleEquipoScreen({ id, router });
 
   if (loading) {
     return (
@@ -212,7 +146,7 @@ export default function DetalleEquipoScreen() {
       <>
         <NavbarRegistro Titulo="Detalle de Equipo" Subtitulo="Error" Icono="tools" />
         <View style={styles.centerContainer}>
-          <CustomText style={{ color: COLORS.error }}>
+          <CustomText style={styles.errorTextLine}>
             {error || 'Equipo no encontrado'}
           </CustomText>
         </View>

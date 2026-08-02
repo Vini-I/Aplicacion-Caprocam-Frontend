@@ -2,37 +2,20 @@
  * ============================================================
  * PANTALLA: AgregarMantenimiento
  * ============================================================
- * 
- * Módulo: Mantenimiento de Equipos
- * 
- * RESPONSABILIDAD:
- * - Provee un formulario interactivo para registrar un nuevo ticket de mantenimiento
- *   de equipos, capturando detalles técnicos, tareas asociadas y costos.
- * 
- * FUNCIONALIDAD:
- * - Selección de equipo. Al seleccionarlo, se precargan sus datos y horas de uso actual.
- * - Selección de tipo de personal (Trabajador Interno o Trabajador Externo).
- * - Selección y asignación de múltiples tareas con su respectivo estado de realizado.
- * - Validación condicional de costos e inyección al payload de guardado.
- * 
- * DATOS / VARIABLES:
- * - Formulario reactivo y estados locales para cada campo (titulo, descripcion, equipoId, costoManoObra).
- * - errores: Objeto para persistir campos faltantes al intentar guardar.
- * - submitted: Booleano para activar la visualización del borde rojo tras intentar guardar.
- * 
- * VALIDACIONES / REGLAS:
- * - Campos requeridos (Título, Descripción, Tarea, Equipo y Costo) marcados con asterisco.
- * - El borde en rojo de validación aparece únicamente después de presionar "Aceptar" si el campo está vacío.
- * - Si el estado es "Terminado", el costo de mano de obra es obligatorio. De lo contrario, es opcional.
- * 
- * NAVEGACIÓN:
- * - Al guardar con éxito, redirecciona a /equipos/mantEquipo con banner verde.
- * - Al cancelar, regresa a /equipos/mantEquipo sin guardar.
- * 
- * DEPENDENCIAS:
- * - Input, Select, Button, Icon, CustomText, Card, Alert
- * - mantEquipoService, colors, style, icons, typography
- * ============================================================
+ *
+ * Formulario para registrar un nuevo ticket de mantenimiento.
+ * Permite seleccionar equipo, tipo de personal, tareas múltiples
+ * y validar costos antes de guardar.
+ *
+ * @dependencies - useAgregarMantenimiento (hooks)
+ *               - Input, Select, Button, Icon, CustomText, Card, Alert (shared)
+ *               - MantenimientoEquipoSelect, SelectorPills, ProductosSeleccionadosList
+ *               - mantEquipoStyles, colors, style, icons
+ * @validations  - Campos requeridos marcados con asterisco (*).
+ *               - Borde rojo visible solo tras presionar "Aceptar" con campo vacío.
+ *               - Si el estado es "Terminado", el costo de mano de obra es obligatorio.
+ * @navigation   - Guardar con éxito → /equipos/mantEquipo con banner verde.
+ *               - Cancelar → /equipos/mantEquipo sin guardar.
  */
 
 import React from "react";
@@ -50,8 +33,9 @@ import { COLORS } from "../../../theme/colors.js";
 import { STYLE } from "../../../theme/style.js";
 import { styles } from "../styles/mantEquipoStyles.js";
 
-import { TEXTOS_MODAL_AGREGAR, USUARIO_SESION, LISTA_ESTADOS_TICKET, LISTA_TIPOS_PERSONAL }
+import { TEXTOS_MODAL_AGREGAR, LISTA_ESTADOS_TICKET, LISTA_TIPOS_PERSONAL }
   from "../constants/mantEquipoMensajes.js";
+import { useUsuarioSesion } from "../hooks/useUsuarioSesion.js";
 import * as MantService from "../services/mantEquipoService.js";
 import MantenimientoEquipoSelect from "../components/MantenimientoEquipoSelect.jsx";
 import MantenimientoTareaSelect from "../components/MantenimientoTareaSelect.jsx";
@@ -63,7 +47,9 @@ import MantenimientoProductoSelect from "../components/MantenimientoProductoSele
 import ProductosSeleccionadosList from "../components/ProductosSeleccionadosList.jsx";
 
 import { useAgregarMantenimiento } from "../hooks/useAgregarMantenimiento.js";
+import { getFieldErrorStyle } from "../styles/mantEquipoStyles.js";
 export default function AgregarMantenimientoScreen({ onNavigateToMain = () => { } }) {
+  const usuarioSesion = useUsuarioSesion();
 
   const {
     titulo, setTitulo,
@@ -113,7 +99,7 @@ export default function AgregarMantenimientoScreen({ onNavigateToMain = () => { 
                 label={TEXTOS_MODAL_AGREGAR.labelFechaHora}
                 value={fecha}
                 onChangeText={setFecha}
-                containerStyle={{ marginBottom: 0 }}
+                containerStyle={styles.noMarginBottom}
                 inputStyle={styles.comboInput}
                 labelStyle={styles.comboLabel}
               />
@@ -122,7 +108,7 @@ export default function AgregarMantenimientoScreen({ onNavigateToMain = () => { 
               <View style={styles.comboContainer}>
                 <CustomText style={styles.comboLabel}>{TEXTOS_MODAL_AGREGAR.labelCreadoPor}</CustomText>
                 <View style={[styles.comboInput, styles.readOnlyField]}>
-                  <CustomText style={styles.readOnlyText}>{USUARIO_SESION}</CustomText>
+                  <CustomText style={styles.readOnlyText}>{usuarioSesion}</CustomText>
                 </View>
               </View>
             </View>
@@ -138,8 +124,8 @@ export default function AgregarMantenimientoScreen({ onNavigateToMain = () => { 
                 if (errores.titulo) setErrores((prev) => { const s = { ...prev }; delete s.titulo; return s; });
               }}
               placeholder={TEXTOS_MODAL_AGREGAR.placeholderTitulo}
-              containerStyle={{ marginBottom: 0 }}
-              style={[styles.comboInput, submitted && errores.titulo && { borderColor: COLORS.error }]}
+              containerStyle={styles.noMarginBottom}
+              style={[styles.comboInput, getFieldErrorStyle(submitted && errores.titulo)]}
             />
           </View>
 
@@ -155,9 +141,8 @@ export default function AgregarMantenimientoScreen({ onNavigateToMain = () => { 
               placeholder={TEXTOS_MODAL_AGREGAR.placeholderDesc}
               multiline
               numberOfLines={4}
-              containerStyle={{ marginBottom: 0 }}
-              style={[styles.comboInput, styles.inputMultiline, submitted && errores.descripcion &&
-                { borderColor: COLORS.error }]}
+              containerStyle={styles.noMarginBottom}
+              style={[styles.comboInput, styles.inputMultiline, getFieldErrorStyle(submitted && errores.descripcion)]}
             />
           </View>
         </Card>
@@ -193,7 +178,18 @@ export default function AgregarMantenimientoScreen({ onNavigateToMain = () => { 
           <MantenimientoTareaSelect
             tareasSeleccionadas={tareasSeleccionadas}
             onAgregarTarea={(taskObj) => {
-              setTareasSeleccionadas(prev => [...prev, { value: taskObj.id, label: taskObj.nombre, realizada: false }]);
+              // Guardar el objeto completo: tareaId es necesario para vincularTareas al guardar
+              setTareasSeleccionadas(prev => [
+                ...prev,
+                {
+                  ...taskObj,
+                  tareaId:  taskObj.tareaId || taskObj.id,
+                  value:    String(taskObj.tareaId || taskObj.id),
+                  label:    taskObj.nombre || taskObj.label,
+                  nombre:   taskObj.nombre || taskObj.label,
+                  realizada: false,
+                }
+              ]);
               if (errores.tareas) setErrores(e => { const copy = { ...e }; delete copy.tareas; return copy; });
             }}
             error={submitted && errores.tareas}
@@ -215,14 +211,13 @@ export default function AgregarMantenimientoScreen({ onNavigateToMain = () => { 
             value={tipoPersonal}
             onChange={(v) => {
               setTipoPersonal(v);
-              if (v === "interno") setCostoManoObra("0");
+              if (v === "interno") setCostoManoObra("");
             }}
             opciones={LISTA_TIPOS_PERSONAL}
           />
 
           {/* Selector de Producto / Insumo con cantidad */}
           <MantenimientoProductoSelect
-            productosList={productosList}
             productosSeleccionados={productosSeleccionados}
             onAgregarProducto={agregarProducto}
             alertaStock={alertaStock}
@@ -242,13 +237,14 @@ export default function AgregarMantenimientoScreen({ onNavigateToMain = () => { 
             <Input
               value={costoManoObra}
               onChangeText={(v) => {
-                setCostoManoObra(v);
+                const soloNumeros = v.replace(/[^0-9]/g, '').slice(0, 7);
+                setCostoManoObra(soloNumeros);
                 if (errores.costoManoObra) setErrores((prev) => { const s = { ...prev }; delete s.costoManoObra; return s; });
               }}
-              placeholder="Ej: 3000"
+              placeholder="Ej: 15000"
               keyboardType="numeric"
-              containerStyle={{ marginBottom: 0 }}
-              style={[styles.comboInput, submitted && errores.costoManoObra && { borderColor: COLORS.error }]}
+              containerStyle={styles.noMarginBottom}
+              style={[styles.comboInput, getFieldErrorStyle(submitted && errores.costoManoObra)]}
             />
           </View>
 
@@ -271,7 +267,7 @@ export default function AgregarMantenimientoScreen({ onNavigateToMain = () => { 
         {submitted && Object.keys(errores).length > 0 && (
           <Alert
             variant="danger"
-            message={errores.tareasPendientes ? "No se puede terminar el ticket si existen tareas pendientes." : "Revisa los campos obligatorios marcados con * antes de guardar."}
+            message={errores.tareasPendientes ? TEXTOS_MODAL_AGREGAR.errorTareasPendientes : TEXTOS_MODAL_AGREGAR.errorValidacion}
             containerStyle={styles.alertValidacion}
             textStyle={styles.alertValidacionTexto}
           />
@@ -282,7 +278,7 @@ export default function AgregarMantenimientoScreen({ onNavigateToMain = () => { 
           <Button
             variant="outline"
             onPress={handleCrear}
-            style={[styles.btnAccept, { flex: 1 }]}
+            style={[styles.btnAccept, styles.btnFooterFlex]}
           >
             <Icon icon={ICONS.add} size={15} color={COLORS.primary} />
             <CustomText style={styles.btnTextPrimary}>

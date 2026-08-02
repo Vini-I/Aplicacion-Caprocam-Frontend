@@ -1,156 +1,472 @@
+/**
+ * ============================================================
+ * SERVICIO: mantEquipoService
+ * ============================================================
+ *
+ * Conecta el módulo de Mantenimiento de Equipos con el backend
+ * real mediante la API REST. Expone funciones para tickets,
+ * tareas y productos de mantenimiento.
+ *
+ * @dependencies - api (axios con interceptor de tokens) de api/api.js
+ *               - equiposService, tareasService, InventarioService
+ *               - mantEquipoMensajes (constantes de mapeo de estados)
+ * @validations  - Endpoints bajo /api/v0/:
+ *                 GET|POST|PUT|DELETE /mantenimientos
+ *                 GET|POST|PUT|DELETE /mantenimientos/:id/tareas
+ *                 GET|POST|PUT|DELETE /mantenimientos/:id/productos
+ * @navigation   - N/A (capa de servicio).
+ */
+
 import api from "../../../api/api.js";
 import { equiposService } from "./equiposService.js";
+import { obtenerTareas } from "./tareasService.js";
+import { getProductosInventario } from "../../inventarios/services/InventarioService.js";
+import {
+  ESTADO_BACKEND_A_FRONTEND,
+  ESTADO_FRONTEND_A_BACKEND,
+  TIPO_PERSONAL_A_BACKEND,
+  TIPO_PERSONAL_A_FRONTEND,
+  LISTA_ESTADOS_EQUIPO,
+} from "../constants/mantEquipoMensajes.js";
 
-export const ESTADOS = {
-  EN_ESPERA: "en_espera",
-  EN_MANTENIMIENTO: "en_mantenimiento",
-  TICKET_RESUELTO: "Terminado",
+// Re-exportar para compatibilidad
+export {
+  ESTADO_BACKEND_A_FRONTEND,
+  ESTADO_FRONTEND_A_BACKEND,
+  TIPO_PERSONAL_A_BACKEND,
+  TIPO_PERSONAL_A_FRONTEND,
+  LISTA_ESTADOS_EQUIPO,
+  LISTA_ESTADOS_EQUIPO as ESTADOS_EQUIPO,
 };
 
-export const ESTADOS_EQUIPO = [
-  { label: "Activo", value: "activo" },
-  { label: "Inactivo", value: "inactivo" },
-  { label: "En mantenimiento", value: "mantenimiento" },
-];
-
-// Array mutable para demo — actualizarEstadoEquipo lo modifica en memoria
-export let EQUIPOS_MOCK = [
-  { id: "eq-001", nombre: "MAKITA", serie: "9-0050", tipo: "Aireación", marca: "Makita", ubicacion: "Estanque 1", fechaInstalacion: "2022-03-15", funcionEquipo: "Oxigenación del estanque principal", estado: "activo", horasUso: 1247, horasMantenimiento: 500 },
-  { id: "eq-002", nombre: "FT", serie: "9-0024", tipo: "Bombeo", marca: "FT Industrial", ubicacion: "Estanque 2", fechaInstalacion: "2021-07-20", funcionEquipo: "Bombeo y circulación estanque 2", estado: "activo", horasUso: 876, horasMantenimiento: 500 },
-  { id: "eq-003", nombre: "MAKITA", serie: "9-0052", tipo: "Aireación", marca: "Makita", ubicacion: "Estanque 3", fechaInstalacion: "2023-01-10", funcionEquipo: "Aireación secundaria estanque 3", estado: "activo", horasUso: 876, horasMantenimiento: 500 },
-  { id: "eq-004", nombre: "ERABLUE", serie: "9-0015", tipo: "Monitoreo", marca: "Erablue", ubicacion: "Estanque 4", fechaInstalacion: "2022-11-05", funcionEquipo: "Monitoreo de parámetros del agua", estado: "activo", horasUso: 567, horasMantenimiento: 1000 },
-  { id: "eq-005", nombre: "BOSCH", serie: "9-0003", tipo: "Mantenimiento", marca: "Bosch", ubicacion: "General", fechaInstalacion: "2020-06-18", funcionEquipo: "Herramienta eléctrica de mantenimiento", estado: "activo", horasUso: 432, horasMantenimiento: 500 },
-  { id: "eq-006", nombre: "CRAFTSMAN", serie: "9-0013", tipo: "Alimentación", marca: "Craftsman", ubicacion: "Estanque 5", fechaInstalacion: "2021-09-22", funcionEquipo: "Sistema automático de alimentación", estado: "activo", horasUso: 432, horasMantenimiento: 500 },
-  { id: "eq-007", nombre: "Westinghouse", serie: "9-0003", tipo: "Bombeo", marca: "Westinghouse", ubicacion: "Estanque 6", fechaInstalacion: "2019-04-30", funcionEquipo: "Motor de bombeo principal", estado: "activo", horasUso: 3210, horasMantenimiento: 1000 },
-];
-
-// Mock de empleados para mostrar ID debajo del nombre
-export const EMPLEADOS_MOCK = {
-  "Amalia": { id: "EMP-001" },
-  "Juli": { id: "EMP-002" },
-  "Usuario": { id: "EMP-003" },
-};
-
-const TICKETS_INICIALES = [
-  { id: "A026", equipoId: "eq-001", herramienta: "MAKITA 9-0050", titulo: "Preventivo MAKITA", descripcion: "Cambio de aceite y filtros (500 hrs)", tareas: [{ value: "T001", label: "Cambio de aceite y filtros" }], estado: ESTADOS.EN_MANTENIMIENTO, creadoPor: "Amalia", fechaCreacion: new Date("2024-03-12T03:55:00") },
-  { id: "A025", equipoId: "eq-002", herramienta: "FT 9-0024", titulo: "Limpieza FT", descripcion: "Limpieza profunda y calibración", tareas: [{ value: "T002", label: "Limpieza de intercambiadores de calor" }], estado: ESTADOS.EN_ESPERA, creadoPor: "Amalia", fechaCreacion: new Date("2024-03-12T03:55:00") },
-  { id: "A024", equipoId: "eq-003", herramienta: "MAKITA 9-0052", titulo: "Inspección MAKITA", descripcion: "Inspección estructural completa", tareas: [{ value: "T004", label: "Revisión de sistema de alimentación automática" }], estado: ESTADOS.EN_MANTENIMIENTO, creadoPor: "Amalia", fechaCreacion: new Date("2024-02-14T08:20:00") },
-  { id: "A022", equipoId: "eq-004", herramienta: "ERABLUE 9-0015", titulo: "Rodamientos ERABLUE", descripcion: "Sustitución de rodamientos desgastados", tareas: [{ value: "T004", label: "Revisión de sistema de alimentación automática" }], estado: ESTADOS.TICKET_RESUELTO, creadoPor: "Amalia", fechaCreacion: new Date("2023-11-05T03:49:00") },
-  { id: "A021", equipoId: "eq-005", herramienta: "BOSCH 9-0003", titulo: "Update BOSCH", descripcion: "Instalación de actualización de software", tareas: [{ value: "T002", label: "Limpieza de intercambiadores de calor" }], estado: ESTADOS.EN_MANTENIMIENTO, creadoPor: "Juli", fechaCreacion: new Date("2023-05-26T04:55:00") },
-  { id: "A020", equipoId: "eq-006", herramienta: "CRAFTSMAN 9-0013", titulo: "Diagnóstico CRAFTSMAN", descripcion: "Diagnóstico de vibración y ruido", tareas: [{ value: "T003", label: "Calibración de sensores de pH" }], estado: ESTADOS.EN_ESPERA, creadoPor: "Juli", fechaCreacion: new Date("2023-05-26T04:55:00") },
-  { id: "A019", equipoId: "eq-006", herramienta: "CRAFTSMAN 9-0013", titulo: "Seguridad CRAFTSMAN", descripcion: "Revisión general de seguridad", tareas: [{ value: "T001", label: "Cambio de aceite y filtros" }], estado: ESTADOS.EN_MANTENIMIENTO, creadoPor: "Juli", fechaCreacion: new Date("2023-05-26T04:55:00") },
-  { id: "A018", equipoId: "eq-007", herramienta: "Westinghouse 9-0003", titulo: "Preventivo Westinghouse", descripcion: "Mantenimiento preventivo anual", tareas: [{ value: "T001", label: "Cambio de aceite y filtros" }], estado: ESTADOS.TICKET_RESUELTO, creadoPor: "Juli", fechaCreacion: new Date("2023-05-26T04:55:00") },
-];
-
-export let TICKETS_MOCK = [...TICKETS_INICIALES];
-
+// ─── Adaptador: respuesta backend → objeto frontend ───────────────────────────
 function adaptBackendTicket(item) {
+  if (!item || !item.id) throw new Error('adaptBackendTicket: item inválido');
+
+  const estadoRaw    = item.estadoTicket || 'En espera';
+  const estadoFront  = ESTADO_BACKEND_A_FRONTEND[estadoRaw] || 'en_espera';
+  const equipoId     = item.equipoId ? String(item.equipoId) : null;
+  const tipoRaw      = item.tipoPersonal || 'TrabajadorInterno';
+  const tipoPersonal = TIPO_PERSONAL_A_FRONTEND[tipoRaw] || 'interno';
+
+  // ID visual: número consecutivo del backend
+  const idVisual = String(item.id);
+
+  // Tareas vinculadas al ticket (tabla junction mantenimiento_equipo_tareas)
+  const tareas = Array.isArray(item.tareas) ? item.tareas.map(t => {
+    const nombreDefaut = t.nombre || t.label || t.tarea?.nombre || `Tarea ${t.tareaId || t.id}`;
+    return {
+      id:               t.id,
+      tareaId:          t.tareaId || t.tarea_id,
+      value:            String(t.tareaId || t.tarea_id || t.id),
+      label:            nombreDefaut,
+      nombre:           nombreDefaut,
+      categoria:        t.categoria || t.tarea?.categoria || '',
+      duracionEstimada: Number(t.duracionEstimada || t.duracion_estimada || t.horas || t.tarea?.horas) || 0,
+      descripcion:      t.descripcion || t.tarea?.descripcion || '',
+      estado:           t.estadoTarea || t.estado_tarea || 'Pendiente',
+      realizada:        (t.estadoTarea || t.estado_tarea) === 'Realizado',
+    };
+  }) : [];
+
+  // Productos vinculados al ticket (tabla junction mantenimiento_equipo_productos)
+  const productos = Array.isArray(item.productos) ? item.productos.map(p => ({
+    id:          p.id,
+    productoId:  p.productoId || p.producto_id,
+    cantidad:    Number(p.cantidad) || 1,
+    costoUnitario: Number(p.costoUnitario || p.costo_unitario) || 0,
+    subtotal:    Number(p.subtotal) || 0,
+    nombre:      p.nombre || p.producto?.nombre || `Producto ${p.productoId || p.id}`,
+  })) : [];
+
   return {
-    id: item.codigoTicket || (item.id ? `A${String(item.id).padStart(3, "0")}` : "A001"),
-    dbId: item.id,
-    equipoId: item.equipoId || item.equipo_id,
-    herramienta: item.herramienta || (item.equipoId ? `Equipo ${item.equipoId}` : "Equipo General"),
-    titulo: item.tituloTicket || item.titulo || "Mantenimiento",
-    descripcion: item.descripcionTicket || item.descripcion || "",
-    tareas: item.tareas || [],
-    estado: item.estadoTicket || item.estado || ESTADOS.EN_ESPERA,
-    creadoPor: item.creadoPor || "Usuario",
-    fechaCreacion: item.fechaCreacion ? new Date(item.fechaCreacion) : new Date(),
-    tipoPersonal: item.tipoPersonal || item.tipo_personal || "interno",
-    costoManoObra: Number(item.costoManoObra || item.costo_mano_obra || 0),
-    costoTotal: Number(item.costoTotalEstimado || item.costoTotal || item.costo_total_estimado || 0),
-    productos: item.productos || [],
+    id:                 idVisual,
+    dbId:               item.id,
+    equipoId,
+    herramienta:        equipoId ? `Equipo ${equipoId}` : 'Equipo General',
+    titulo:             item.tituloTicket      || 'Mantenimiento',
+    descripcion:        item.descripcionTicket || '',
+    tareas,
+    productos,
+    estado:             estadoFront,
+    creadoPor:          item.nombreCreador || (item.creadoPorUsuarioId ? String(item.creadoPorUsuarioId) : 'Usuario'),
+    fechaCreacion:      new Date(item.fechaMantenimiento || item.fechaCreacion || Date.now()),
+    estadoEquipo:       item.estadoEquipo || '',
+    tipoPersonal,
+    costoManoObra:      Number(item.costoManoObra)      || 0,
+    costoProductos:     Number(item.costoProductos)     || 0,
+    costoTotalEstimado: Number(item.costoTotalEstimado) || 0,
+    costoTotal:         Number(item.costoTotalEstimado) || 0,
   };
 }
 
+// ─── OBTENER todos los tickets ─────────────────────────────────────────────────
 export async function obtenerTickets() {
-  try {
-    const response = await api.get("/mantenimientos");
-    const data = response.data?.datos || response.data?.data || response.data;
-    if (Array.isArray(data) && data.length > 0) {
-      const adaptados = data.map(adaptBackendTicket);
-      TICKETS_MOCK = adaptados;
-      return adaptados;
-    }
-  } catch (e) {
-    // Si no responde la API o falla la conexión, retorna la lista en memoria de respaldo
+  const response = await api.get('/mantenimientos');
+  const data = response.data?.data || response.data;
+
+  if (!Array.isArray(data)) {
+    throw new Error('obtenerTickets: la respuesta del servidor no es un arreglo');
   }
-  return [...TICKETS_MOCK];
-}
 
-// Muta EQUIPOS_MOCK en memoria y sincroniza con el catálogo de equipos general
-export function actualizarEstadoEquipo(equipoId, nuevoEstado) {
-  EQUIPOS_MOCK = EQUIPOS_MOCK.map((e) =>
-    e.id === equipoId ? { ...e, estado: nuevoEstado } : e
+  // Resolver nombres de usuarios únicos en paralelo
+  const idsUnicos = [...new Set(
+    data.map(t => t.creado_por_usuario_id || t.creadoPorUsuarioId).filter(Boolean)
+  )];
+  const mapaUsuarios = {};
+  await Promise.allSettled(
+    idsUnicos.map(async (uid) => {
+      try {
+        const res = await api.get(`/login/${uid}`);
+        const u = res.data?.data || res.data;
+        mapaUsuarios[String(uid)] = u?.nombre || u?.nombreUsuario || u?.email || String(uid);
+      } catch (_) {
+        mapaUsuarios[String(uid)] = String(uid);
+      }
+    })
   );
-  equiposService.updateEquipo(equipoId, { estado: nuevoEstado }).catch(() => {});
+
+  return data.map(item => adaptBackendTicket({
+    ...item,
+    nombreCreador: mapaUsuarios[String(item.creado_por_usuario_id || item.creadoPorUsuarioId)] || null,
+  }));
 }
 
-// Reinicia el contador de horas de uso de un equipo (cuando el ticket se completa a Terminado)
+
+// ─── OBTENER un ticket por ID con sus tareas y productos ──────────────────────
+export async function obtenerTicketPorId(id) {
+  const numericId = String(id).replace(/\D/g, '');
+
+  if (!numericId) {
+    throw new Error(`obtenerTicketPorId: ID inválido recibido: "${id}"`);
+  }
+
+  try {
+    const [resTicket, resTareas, resProductos, resCatTareas, resCatProductos] = await Promise.allSettled([
+      api.get(`/mantenimientos/${numericId}`),
+      api.get(`/mantenimientos/${numericId}/tareas`),
+      api.get(`/mantenimientos/${numericId}/productos`),
+      obtenerTareas(),
+      getProductosInventario(),
+    ]);
+
+    if (resTicket.status === 'rejected') {
+      throw resTicket.reason;
+    }
+
+    const item = resTicket.value.data?.data || resTicket.value.data;
+
+    // Catálogo de tareas para resolver nombres
+    const catTareas = resCatTareas.status === 'fulfilled'
+      ? (Array.isArray(resCatTareas.value) ? resCatTareas.value : [])
+      : [];
+
+    // Catálogo de productos para resolver nombres
+    const rawProd = resCatProductos.status === 'fulfilled' ? resCatProductos.value : [];
+    const catProductos = Array.isArray(rawProd) ? rawProd : (Array.isArray(rawProd?.data) ? rawProd.data : []);
+
+    // Tareas del ticket enriquecidas con todos los campos del catálogo
+    const tareasVal = resTareas.status === 'fulfilled' ? resTareas.value.data : null;
+    const tareasRaw = Array.isArray(tareasVal?.data) ? tareasVal.data : (Array.isArray(tareasVal) ? tareasVal : []);
+    const tareas = tareasRaw.map(t => {
+      const tareaId = String(t.tareaId || t.tarea_id || t.id || '');
+      const c = catTareas.find(x =>
+        String(x.id) === tareaId ||
+        String(x.tareaId) === tareaId ||
+        String(x.value) === tareaId
+      );
+      return {
+        ...t,
+        tareaId,
+        nombre:           t.nombre || c?.nombre || c?.label || `Tarea ${tareaId}`,
+        label:            t.label  || t.nombre  || c?.nombre || c?.label || `Tarea ${tareaId}`,
+        categoria:        t.categoria        || c?.categoria || '',
+        descripcion:      t.descripcion      || c?.descripcion || '',
+        duracionEstimada: t.duracionEstimada || c?.duracionEstimada || Number(c?.horas) || 0,
+      };
+    });
+
+    // Productos del ticket enriquecidos con nombre del catálogo
+    const productosVal = resProductos.status === 'fulfilled' ? resProductos.value.data : null;
+    const productosRaw = Array.isArray(productosVal?.data) ? productosVal.data : (Array.isArray(productosVal) ? productosVal : []);
+    const productos = productosRaw.map(p => {
+      const prodId = String(p.productoId || p.producto_id || p.id || '');
+      const enCatalogo = catProductos.find(c =>
+        String(c.productoId || c.producto_id || c.id) === prodId ||
+        String(c.id) === prodId
+      );
+      return {
+        ...p,
+        nombre: p.nombre || enCatalogo?.nombre || enCatalogo?.nombreProducto || `Producto ${prodId}`,
+      };
+    });
+
+    // Nombre del usuario creador
+    let nombreCreador = null;
+    if (item.creadoPorUsuarioId) {
+      try {
+        const resUsuario = await api.get(`/login/${item.creadoPorUsuarioId}`);
+        const uData = resUsuario.data?.data || resUsuario.data;
+        nombreCreador = uData?.nombre || uData?.nombreUsuario || uData?.email || null;
+      } catch (_) {
+        // Si no se puede obtener el nombre, se mostrará el ID
+      }
+    }
+
+    return adaptBackendTicket({ ...item, tareas, productos, nombreCreador });
+  } catch (errorDirecto) {
+    // Si GET /:id falla, intentar buscar en el listado completo
+    const todos = await obtenerTickets();
+    const encontrado = todos.find(
+      t => t.id === id || String(t.dbId) === numericId
+    );
+    if (!encontrado) {
+      throw new Error(`obtenerTicketPorId: ticket con ID "${id}" no encontrado`);
+    }
+    return encontrado;
+  }
+}
+
+// ─── Actualizar estado operativo del equipo ───────────────────────────────────
+export async function actualizarEstadoEquipo(equipoId, nuevoEstado) {
+  if (!equipoId || !nuevoEstado) return;
+  try {
+    // Obtener el equipo completo para hacer un PUT con todos los campos
+    const equipo = await equiposService.getEquipoById(equipoId);
+    if (!equipo) return;
+    // updateEquipo mapea data.estado → estadoOperativo en el backend
+    await equiposService.updateEquipo(equipoId, { ...equipo, estado: nuevoEstado });
+  } catch (err) {
+    console.warn('actualizarEstadoEquipo:', err?.message || err);
+  }
+}
+
+// ─── Reiniciar estado operativo del equipo a Activo ──────────────────────────
 export function reiniciarHorasEquipo(equipoId) {
-  EQUIPOS_MOCK = EQUIPOS_MOCK.map((e) =>
-    e.id === equipoId ? { ...e, horasUso: 0, estado: "activo" } : e
-  );
-  equiposService.updateEquipo(equipoId, { horasUso: 0, estado: "activo" }).catch(() => {});
+  if (!equipoId) return;
+  equiposService.updateEquipo(equipoId, { estadoOperativo: 'Activo' })
+    .catch(err => console.warn('reiniciarHorasEquipo:', err?.message || err));
 }
 
-// Funciones CRUD para TICKETS_MOCK con llamadas a la API
+// ─── Construir payload para POST / PUT ────────────────────────────────────────
+function buildPayload(ticket) {
+  if (!ticket.equipoId) throw new Error('buildPayload: equipoId es obligatorio');
+  if (!ticket.titulo)   throw new Error('buildPayload: titulo es obligatorio');
+
+  const estadoBackend       = ESTADO_FRONTEND_A_BACKEND[ticket.estado]     || 'En espera';
+  const tipoPersonalBackend = TIPO_PERSONAL_A_BACKEND[ticket.tipoPersonal] || 'TrabajadorInterno';
+
+  const fechaISO = ticket.fechaCreacion instanceof Date
+    ? ticket.fechaCreacion.toISOString().slice(0, 19).replace('T', ' ')
+    : new Date().toISOString().slice(0, 19).replace('T', ' ');
+
+  const codigoTicket = (ticket.codigoTicket || ticket.codigo || `MT-${String(Date.now()).slice(-6)}`).slice(0, 10);
+
+  return {
+    codigoTicket,
+    fechaMantenimiento: fechaISO,
+    tituloTicket:       ticket.titulo,
+    descripcionTicket:  ticket.descripcion,
+    equipoId:           Number(ticket.equipoId),
+    estadoTicket:       estadoBackend,
+    tipoPersonal:       tipoPersonalBackend,
+    costoManoObra:      Number(ticket.costoManoObra)  || 0,
+    costoProductos:     Number(ticket.costoProductos  || ticket.costoTotal) || 0,
+    costoTotalEstimado: Number(ticket.costoTotal)      || 0,
+  };
+}
+
+// ─── Vincular tareas al ticket (tabla junction) ───────────────────────────────
+async function vincularTareas(mantenimientoEquipoId, tareas) {
+  if (!Array.isArray(tareas) || tareas.length === 0) return;
+
+  const calls = tareas.map(t => {
+    const tareaId = t.tareaId || t.value || t.id;
+    if (!tareaId) return null;
+    return api.post('/mantenimientos/tareas', {
+      mantenimientoEquipoId,
+      tareaId: Number(tareaId),
+      estadoTarea: t.realizada ? 'Realizado' : 'Pendiente',
+    }).catch(err => console.warn(`vincularTareas: no se pudo vincular tarea ${tareaId}:`, err?.message));
+  }).filter(Boolean);
+
+  await Promise.allSettled(calls);
+}
+
+// ─── Vincular productos al ticket (tabla junction) ────────────────────────────
+async function vincularProductos(mantenimientoEquipoId, productos) {
+  if (!Array.isArray(productos) || productos.length === 0) return;
+
+  const calls = productos.map(p => {
+    const productoId = p.productoId || p.id;
+    if (!productoId) return null;
+    const cantidad     = Number(p.cantidad) || 1;
+    const costoUnitario = Number(p.precioUnidad || p.precio || p.costoUnitario) || 0;
+    const subtotal     = cantidad * costoUnitario;
+
+    return api.post('/mantenimientos/productos', {
+      mantenimientoEquipoId,
+      productoId: Number(productoId),
+      cantidad,
+      costoUnitario,
+      subtotal,
+    }).catch(err => console.warn(`vincularProductos: no se pudo vincular producto ${productoId}:`, err?.message));
+  }).filter(Boolean);
+
+  await Promise.allSettled(calls);
+}
+
+// ─── CREAR ticket ──────────────────────────────────────────────────────────────
 export async function agregarTicket(ticket) {
-  TICKETS_MOCK = [ticket, ...TICKETS_MOCK];
+  const payload = buildPayload(ticket);
+  const res = await api.post('/mantenimientos', payload);
+  const backendData = res.data?.data || res.data;
+  const nuevoTicket = adaptBackendTicket(backendData);
+
+  // Vincular tareas y productos en paralelo después de crear el ticket
+  await Promise.allSettled([
+    vincularTareas(nuevoTicket.dbId, ticket.tareas),
+    vincularProductos(nuevoTicket.dbId, ticket.productos || []),
+  ]);
+
+  return nuevoTicket;
+}
+
+// ─── Sincronizar tareas al actualizar ticket (diff inteligente) ───────────────
+async function sincronizarTareas(mantenimientoEquipoId, tareasNuevas) {
   try {
-    const payload = {
-      tituloTicket: ticket.titulo,
-      descripcionTicket: ticket.descripcion,
-      equipoId: ticket.equipoId,
-      estadoTicket: ticket.estado,
-      estadoEquipo: ticket.estadoEquipo,
-      tipoPersonal: ticket.tipoPersonal,
-      costoManoObra: ticket.costoManoObra,
-      costoTotalEstimado: ticket.costoTotal,
-      tareas: ticket.tareas,
-      productos: ticket.productos,
-    };
-    const res = await api.post("/mantenimientos", payload);
-    const backendData = res.data?.datos || res.data?.data || res.data;
-    if (backendData && backendData.id) {
-      ticket.dbId = backendData.id;
+    const res = await api.get(`/mantenimientos/${mantenimientoEquipoId}/tareas`);
+    const raw = res.data?.data ?? res.data;
+    const existentes = Array.isArray(raw) ? raw : [];
+
+    const safeTareasNuevas = Array.isArray(tareasNuevas) ? tareasNuevas : [];
+    const procesadosExistentesIds = new Set();
+
+    for (const t of safeTareasNuevas) {
+      const tareaId = t.tareaId || t.value || t.id;
+      if (!tareaId) continue;
+
+      const estadoNuevo = t.realizada ? 'Realizado' : 'Pendiente';
+      const existente = existentes.find(x => String(x.tareaId || x.tarea_id) === String(tareaId));
+
+      if (existente) {
+        procesadosExistentesIds.add(existente.id);
+        const estadoActual = existente.estadoTarea || existente.estado_tarea;
+        if (estadoActual !== estadoNuevo) {
+          await api.put(`/mantenimientos/tareas/${existente.id}`, { estadoTarea: estadoNuevo })
+            .catch(err => console.warn(`sincronizarTareas PUT failed for ${existente.id}:`, err?.message));
+        }
+      } else {
+        await api.post('/mantenimientos/tareas', {
+          mantenimientoEquipoId,
+          tareaId: Number(tareaId),
+          estadoTarea: estadoNuevo,
+        }).catch(err => console.warn(`sincronizarTareas POST failed for tarea ${tareaId}:`, err?.message));
+      }
+    }
+
+    for (const ex of existentes) {
+      if (!procesadosExistentesIds.has(ex.id)) {
+        await api.delete(`/mantenimientos/tareas/${ex.id}`)
+          .catch(err => console.warn(`sincronizarTareas DELETE failed for ${ex.id}:`, err?.message));
+      }
     }
   } catch (e) {
-    // Si el backend no responde, se conserva localmente
+    console.warn('sincronizarTareas falló:', e?.message || e);
   }
-  return ticket;
 }
 
+// ─── Sincronizar productos al actualizar ticket (diff inteligente) ────────────
+async function sincronizarProductos(mantenimientoEquipoId, productosNuevos) {
+  try {
+    const res = await api.get(`/mantenimientos/${mantenimientoEquipoId}/productos`);
+    const raw = res.data?.data ?? res.data;
+    const existentes = Array.isArray(raw) ? raw : [];
+
+    const safeProductosNuevos = Array.isArray(productosNuevos) ? productosNuevos : [];
+    const procesadosExistentesIds = new Set();
+
+    for (const p of safeProductosNuevos) {
+      const productoId = p.productoId || p.id;
+      if (!productoId) continue;
+
+      const cantidad = Number(p.cantidad) || 1;
+      const costoUnitario = Number(p.precioUnidad || p.precio || p.costoUnitario) || 0;
+      const subtotal = cantidad * costoUnitario;
+
+      const existente = existentes.find(x => String(x.productoId || x.producto_id) === String(productoId));
+
+      if (existente) {
+        procesadosExistentesIds.add(existente.id);
+        const cantActual = Number(existente.cantidad);
+        const costoActual = Number(existente.costoUnitario || existente.costo_unitario);
+        if (cantActual !== cantidad || costoActual !== costoUnitario) {
+          await api.put(`/mantenimientos/productos/${existente.id}`, {
+            cantidad,
+            costoUnitario,
+            subtotal,
+          }).catch(err => console.warn(`sincronizarProductos PUT failed for ${existente.id}:`, err?.message));
+        }
+      } else {
+        await api.post('/mantenimientos/productos', {
+          mantenimientoEquipoId,
+          productoId: Number(productoId),
+          cantidad,
+          costoUnitario,
+          subtotal,
+        }).catch(err => console.warn(`sincronizarProductos POST failed for producto ${productoId}:`, err?.message));
+      }
+    }
+
+    for (const ex of existentes) {
+      if (!procesadosExistentesIds.has(ex.id)) {
+        await api.delete(`/mantenimientos/productos/${ex.id}`)
+          .catch(err => console.warn(`sincronizarProductos DELETE failed for ${ex.id}:`, err?.message));
+      }
+    }
+  } catch (e) {
+    console.warn('sincronizarProductos falló:', e?.message || e);
+  }
+}
+
+// ─── ACTUALIZAR ticket ─────────────────────────────────────────────────────────
 export async function actualizarTicket(ticket) {
-  TICKETS_MOCK = TICKETS_MOCK.map((t) => (t.id === ticket.id ? { ...t, ...ticket } : t));
-  try {
-    const targetId = ticket.dbId || ticket.id;
-    const payload = {
-      tituloTicket: ticket.titulo,
-      descripcionTicket: ticket.descripcion,
-      equipoId: ticket.equipoId,
-      estadoTicket: ticket.estado,
-      estadoEquipo: ticket.estadoEquipo,
-      tipoPersonal: ticket.tipoPersonal,
-      costoManoObra: ticket.costoManoObra,
-      costoTotalEstimado: ticket.costoTotal,
-      tareas: ticket.tareas,
-      productos: ticket.productos,
-    };
-    await api.put(`/mantenimientos/${targetId}`, payload);
-  } catch (e) {
-    // Si el backend no responde, se conserva localmente
-  }
-  return ticket;
+  const targetId = ticket.dbId || String(ticket.id).replace(/\D/g, '');
+  if (!targetId) throw new Error('actualizarTicket: no se puede determinar el ID del ticket');
+
+  const payload = buildPayload(ticket);
+  await api.put(`/mantenimientos/${targetId}`, payload);
+
+  // Sincronización inteligente por diffing de tareas y productos
+  await Promise.allSettled([
+    sincronizarTareas(Number(targetId), ticket.tareas),
+    sincronizarProductos(Number(targetId), ticket.productos),
+  ]);
+
+  // Re-obtener el ticket actualizado para asegurar sincronización con la BD
+  return await obtenerTicketPorId(targetId);
 }
 
+// ─── ELIMINAR ticket ───────────────────────────────────────────────────────────
 export async function eliminarTicket(id) {
-  const target = TICKETS_MOCK.find((t) => t.id === id);
-  TICKETS_MOCK = TICKETS_MOCK.filter((t) => t.id !== id);
-  try {
-    const targetId = target?.dbId || id;
-    await api.delete(`/mantenimientos/${targetId}`);
-  } catch (e) {
-    // Si el backend no responde, se elimina localmente
-  }
+  const targetId = String(id).replace(/\D/g, '');
+  if (!targetId) throw new Error('eliminarTicket: ID inválido');
+  await api.delete(`/mantenimientos/${targetId}`);
+}
+
+// ─── Actualizar estado de una tarea en el ticket ──────────────────────────────
+export async function actualizarEstadoTareaEnTicket(vinculoId, estadoTarea) {
+  // estadoTarea: 'Pendiente' | 'Realizado'
+  const res = await api.put(`/mantenimientos/tareas/${vinculoId}`, { estadoTarea });
+  return res.data?.data || res.data;
+}
+
+// ─── Eliminar una tarea del ticket ────────────────────────────────────────────
+export async function eliminarTareaDelTicket(vinculoId) {
+  await api.delete(`/mantenimientos/tareas/${vinculoId}`);
+}
+
+// ─── Eliminar un producto del ticket ─────────────────────────────────────────
+export async function eliminarProductoDelTicket(vinculoId) {
+  await api.delete(`/mantenimientos/productos/${vinculoId}`);
 }

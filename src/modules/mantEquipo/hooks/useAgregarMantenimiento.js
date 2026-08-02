@@ -3,20 +3,25 @@
  * HOOK: useAgregarMantenimiento
  * ============================================================
  *
- * Módulo: Mantenimiento de Equipos
- *
- * Responsabilidad:
  * Encapsula toda la lógica de estado, validación y submit del
- * formulario de creación de un ticket de mantenimiento.
- * Sigue el patrón del módulo finca (useFincaEditar).
+ * formulario de creación de un ticket de mantenimiento. Sigue
+ * el patrón del módulo finca (useFincaEditar).
+ *
+ * @dependencies - MantService (mantEquipoService) para crear y actualizar tickets
+ *               - getProductosInventario (InventarioService)
+ *               - mantEquipoUtils, dateUtils (shared)
+ * @validations  - Campos obligatorios: titulo, equipoId, descripcion, tareas.
+ *               - No existe límite de tickets por equipo; esa validación
+ *                 fue descartada y no debe reintroducirse.
+ * @navigation   - onNavigateToMain → pantalla principal de mantenimiento.
  */
 
 import { useState, useEffect } from 'react';
 import { getProductosInventario } from '../../inventarios/services/InventarioService.js';
 import * as MantService from '../services/mantEquipoService.js';
-import { generarNuevoId, obtenerFechaHoraActual, validarCostoManoObra, formatearNombreHerramienta } from '../utils/mantEquipoUtils.js';
+import { obtenerFechaHoraActual, validarCostoManoObra, formatearNombreHerramienta } from '../utils/mantEquipoUtils.js';
 import { parseDate } from '../../../shared/utils/dateUtils.js';
-import { USUARIO_SESION } from '../constants/mantEquipoMensajes.js';
+
 
 export function useAgregarMantenimiento({ onNavigateToMain }) {
 
@@ -30,7 +35,7 @@ export function useAgregarMantenimiento({ onNavigateToMain }) {
   const [fecha, setFecha]                                 = useState(obtenerFechaHoraActual());
 
   const [tipoPersonal, setTipoPersonal]                   = useState('interno');
-  const [costoManoObra, setCostoManoObra]                 = useState('0');
+  const [costoManoObra, setCostoManoObra]                 = useState('');
   const [estadoTicket, setEstadoTicket]                   = useState('en_espera');
 
   // ── Productos / insumos ──────────────────────────────────────
@@ -44,11 +49,24 @@ export function useAgregarMantenimiento({ onNavigateToMain }) {
 
   // ── Carga inicial de productos ────────────────────────────────
   useEffect(() => {
-    const list = (getProductosInventario() || []).map(p => ({
-      ...p,
-      stockMaximo: p.cantidad !== undefined ? p.cantidad : 999,
-    }));
-    setProductosList(list);
+    async function cargarProductos() {
+      try {
+        const data = await getProductosInventario();
+        const raw = Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : []);
+        const list = raw.map(p => ({
+          ...p,
+          id: p.id || p.producto_id || p.productoId,
+          nombre: p.nombre || p.nombreProducto || p.producto?.nombre || `Producto ${p.id}`,
+          precioUnidad: p.precioUnidad || p.precio_unidad || p.precio || 0,
+          stockMaximo: p.cantidad !== undefined ? p.cantidad : (p.stock !== undefined ? p.stock : 999),
+        }));
+        setProductosList(list);
+      } catch (err) {
+        console.error('Error al cargar productos del inventario:', err);
+        setProductosList([]);
+      }
+    }
+    cargarProductos();
   }, []);
 
   // ── Cálculo reactivo del costo total ─────────────────────────
@@ -134,40 +152,36 @@ export function useAgregarMantenimiento({ onNavigateToMain }) {
     setSubmitted(true);
     if (!validar()) return;
 
-    const nuevo = {
-      id:              generarNuevoId(MantService.TICKETS_MOCK),
+    const payload = {
       equipoId,
-      herramienta:     formatearNombreHerramienta(equipoSeleccionado),
       titulo:          titulo.trim(),
       descripcion:     descripcion.trim(),
       tareas:          tareasSeleccionadas,
+      productos:       productosSeleccionados,
       estado:          estadoTicket,
-      creadoPor:       USUARIO_SESION,
+      estadoEquipo,
       fechaCreacion:   parseDate(fecha) || new Date(),
-      horasUsoIngreso: equipoSeleccionado ? equipoSeleccionado.horasUso : 0,
       tipoPersonal,
-      costoMiscelaneo: 0,
       costoManoObra:   parseFloat(costoManoObra) || 0,
       costoTotal,
-      productos:       productosSeleccionados.map(p => {
+      costoProductos:  productosSeleccionados.reduce((s, p) => {
         const cant = parseInt(p.cantidad || 1, 10);
-        const pu = parseFloat(p.precioUnidad || p.precio || 0);
-        return {
-          id: p.id,
-          nombre: p.nombre,
-          precio: pu,
-          precioUnidad: pu,
-          cantidad: cant,
-          subtotal: cant * pu,
-        };
-      }),
+        const pu   = parseFloat(p.precioUnidad || p.precio || 0);
+        return s + cant * pu;
+      }, 0),
     };
 
-    await MantService.agregarTicket(nuevo);
-    if (estadoEquipo) MantService.actualizarEstadoEquipo(equipoId, estadoEquipo);
-    if (estadoTicket === 'Terminado') MantService.reiniciarHorasEquipo(equipoId);
-
-    onNavigateToMain({ alertaTipo: 'success', alertaMensaje: `Ticket ${nuevo.id} creado con éxito.` });
+    try {
+      const creado = await MantService.agregarTicket(payload);
+      if (estadoEquipo) MantService.actualizarEstadoEquipo(equipoId, estadoEquipo);
+      if (estadoTicket === 'Terminado') MantService.reiniciarHorasEquipo(equipoId);
+      const idFinal = creado?.id || '';
+      onNavigateToMain({ alertaTipo: 'success', alertaMensaje: `Ticket ${idFinal} creado con éxito.` });
+    } catch (e) {
+      console.error("Error al crear ticket de mantenimiento:", e?.response?.data || e?.message || e);
+      const mensajeError = e?.response?.data?.error || e?.response?.data?.message || e?.message || 'No se pudo guardar el ticket. Verifica la conexión.';
+      onNavigateToMain({ alertaTipo: 'danger', alertaMensaje: mensajeError });
+    }
   };
 
   return {
