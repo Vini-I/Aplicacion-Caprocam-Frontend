@@ -115,4 +115,7 @@ export const styles = StyleSheet.create({
         maxWidth: 900,
         alignSelf: "center",
     },
+    loadingContainer: {
+        justifyContent: "center",
+    }
 });

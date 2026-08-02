@@ -15,7 +15,7 @@
  * - Adapta el comportamiento visual según el tamaño de pantalla.
  */
 import { useWindowDimensions } from "react-native";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useFinca } from "../context/FincaContext.js";
 import { useEstanque } from "../../estanques/context/EstanqueContext.js"
 

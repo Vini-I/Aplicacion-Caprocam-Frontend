@@ -4,25 +4,44 @@
  * ============================================================
  * Módulo: Mantenimiento de Equipos
  *
- * Pantalla principal del módulo de equipos. Lista, busca, crea,
- * edita y elimina equipos. Ofrece acceso al módulo de mantenimiento.
- * Usa EmptyState diferenciado según si hay filtros activos o no hay datos.
+ * Pantalla principal del módulo de equipos.
+ * Muestra el listado de equipos registrados, permite buscar, agregar,
+ * editar y eliminar equipos, y ofrece acceso al módulo de mantenimiento
+ * de equipos (tickets).
  *
- * @dependencies - useEquiposListScreen (hooks)
- *               - SearchBar, Button, Alert, EmptyState, Spinner, FilterPanel, FilterChip (shared)
- *               - EquipoCard, EquipoDetalleScreen (mantEquipo)
- *               - STYLE (theme/style), COLORS, ICONS, equiposListStyles
- * @validations  - Confirmación de eliminación requiere coincidencia de código de equipo.
- *               - El filtro usa FilterPanel + FilterChip de shared/components.
- *               - El hook interno usa categories/suppliers; solo la presentación usa
- *                 nombres del dominio (tipo/estado).
- * @navigation   - navigateToMantEquipo → pantalla principal de mantenimiento.
+ * Funcionalidad:
+ * - Lista equipos con búsqueda y filtros (por tipo de equipo y estado,
+ *   mediante FilterButton ubicado junto a la barra de búsqueda).
+ * - Modal para crear/editar equipos con validaciones.
+ * - Modal de detalle de equipo.
+ * - Modal de confirmación para eliminar.
+ * - Alertas de éxito/error al crear, editar o eliminar.
+ * - Botón "Añadir equipo" fijo en la parte inferior de la lista,
+ *   independiente del scroll (mismo estándar de ancho que en Tareas).
+ * - Muestra EmptyState cuando no hay equipos o no hay coincidencias,
+ *   con mensaje diferenciado y botón de acción cuando no hay filtros.
+ *
+ * Dependencias:
+ * - useEquipos hook para manejar datos y operaciones CRUD
+ * - SearchBar y FilterButton compartidos desde inventarios
+ * - Layout global STYLE
+ * - Componentes compartidos de la aplicación
+ *
+ * Estándares cumplidos:
+ * - Botón flotante "Añadir equipo" (#1)
+ * - Alertas de éxito/error con timeout de 3s (#2)
+ * - Alert de error de validación mostrado sobre los botones del modal (#3)
+ * - Botones CRUD con texto "Registrar equipo" / "Actualizar equipo" (#4)
+ * - Navegación a detalle mediante CardPress (#5)
+ * - Gaps controlados (#6)
+ * - Formulario dentro de modal (separado de detalle) (#7)
  * ============================================================
  */
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { View, ScrollView } from "react-native";
-import { useEquiposListScreen } from "../hooks/useEquiposListScreen";
+import { useRouter, useLocalSearchParams, useFocusEffect } from "expo-router";
+import { useEquipos } from "../hooks/useEquipos";
 import EquipoCard from "../components/EquipoCard";
 import EquipoForm from "../components/EquipoForm";
 import EquipoDetalleScreen from "./EquipoDetalleScreen";
@@ -36,54 +55,241 @@ import Icon from "../../../shared/components/Icons";
 import Alert from "../../../shared/components/Alert";
 import EmptyState from "../../../shared/components/EmptyState";
 import SearchBar from "../../../shared/components/SearchBar";
-import FilterPanel, { FilterActions } from "../../../shared/components/FilterPanel";
-import FilterChip from "../../../shared/components/FilterChip";
+import FilterButton from "../../../shared/components/FilterButton";
+import { STYLE } from "../../../theme/style";
 import { ICONS } from "../../../theme/icons";
 import { COLORS } from "../../../theme/colors";
 import { styles } from "../styles/equiposListStyles";
 import { equiposService } from "../services/equiposService";
 
 export default function EquiposListScreen() {
+  const router = useRouter();
+  const params = useLocalSearchParams();
+  const formRef = useRef();
+
+  // --------------------------------------------------------
+  // ESTADOS
+  // --------------------------------------------------------
+  const [modalVisible, setModalVisible] = useState(false);
+  const [codigoError, setCodigoError] = useState("");
+  const [validationError, setValidationError] = useState("");
+  const [editingEquipo, setEditingEquipo] = useState(null);
+  const [selectedEquipoId, setSelectedEquipoId] = useState(null);
+  const [searchText, setSearchText] = useState("");
+  const [codigoConfirmacion, setCodigoConfirmacion] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+
+  // Estanques disponibles para asociar en el formulario.
+  const [estanquesDisponibles, setEstanquesDisponibles] = useState([]);
+
+  useEffect(() => {
+    let activo = true;
+    equiposService.getEstanquesDisponibles().then((data) => {
+      if (activo) setEstanquesDisponibles(data);
+    });
+    return () => {
+      activo = false;
+    };
+  }, []);
+
+  // Filtros adicionales (tipo de equipo y estado), aplicados sobre la
+  // búsqueda por texto ya resuelta en equiposFiltrados
+  const [filtros, setFiltros] = useState({
+    categories: [],
+    suppliers: [],
+    units: [],
+    lowStock: false,
+    expiryDate: "",
+  });
+
+  // Estado para alertas globales
+  const [alert, setAlert] = useState(null);
+  const alertTimeoutRef = useRef(null);
+
+  // --------------------------------------------------------
+  // HOOK DE DATOS
+  // --------------------------------------------------------
   const {
     equipos,
+    equiposProximosMantenimiento,
+    estadisticas,
     loading,
     error,
-    modalVisible,
-    setModalVisible,
-    setValidationError,
-    editingEquipo,
-    selectedEquipoId,
-    setSelectedEquipoId,
-    searchText,
-    setSearchText,
-    codigoConfirmacion,
-    setCodigoConfirmacion,
-    codigoError,
-    setCodigoError,
-    deleteTarget,
-    setDeleteTarget,
-    showConfirmModal,
-    setShowConfirmModal,
-    estanquesDisponibles,
-    filtros,
-    setFiltros,
-    alert,
-    formRef,
-    equiposFinales,
-    opcionesTipo,
-    opcionesEstado,
-    hayFiltrosActivos,
-    handleAdd,
-    handleDeletePress,
-    confirmDelete,
-    handleSubmit,
-    handleToggle,
-    openDetail,
-    navigateToMantEquipo,
-  } = useEquiposListScreen();
+    crearEquipo,
+    actualizarEquipo,
+    eliminarEquipo,
+    toggleEquipo,
+    fetchEquipos,
+  } = useEquipos({});
 
-  // Controla visibilidad del panel de filtros
-  const [filtroVisible, setFiltroVisible] = useState(false);
+  // Limpiar timeout al desmontar
+  useEffect(() => {
+    return () => {
+      if (alertTimeoutRef.current) {
+        clearTimeout(alertTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchEquipos();
+    }, [fetchEquipos])
+  );
+
+  // Función para mostrar alerta con auto‑cierre (3 segundos)
+  const showAlert = (type, message) => {
+    if (alertTimeoutRef.current) {
+      clearTimeout(alertTimeoutRef.current);
+    }
+    setAlert({ type, message });
+    alertTimeoutRef.current = setTimeout(() => {
+      setAlert(null);
+    }, 3000);
+  };
+
+  // Mostrar alerta desde parámetros de ruta (ej. después de eliminar)
+  useEffect(() => {
+    const { alertType, alertMessage } = params;
+    if (alertType && alertMessage) {
+      showAlert(alertType, alertMessage);
+      router.setParams({ alertType: undefined, alertMessage: undefined });
+    }
+  }, [params.alertType, params.alertMessage]);
+
+  // --------------------------------------------------------
+  // FILTRADO LOCAL
+  // --------------------------------------------------------
+  const equiposFiltrados = equipos.filter((equipo) => {
+    if (!searchText) return true;
+    const q = searchText.toLowerCase().trim();
+
+    const coincideCampos =
+      equipo.nombre.toLowerCase().includes(q) ||
+      equipo.codigo.toLowerCase().includes(q) ||
+      equipo.descripcion.toLowerCase().includes(q) ||
+      (equipo.estado && equipo.estado.toLowerCase().includes(q));
+
+    const palabrasClave = ["mantenimiento", "requiere", "necesita"];
+    const contienePalabraClave = palabrasClave.some((palabra) => q.includes(palabra));
+    const requiereMantenimiento = equipo.horasUso >= equipo.horasMantenimiento;
+
+    const coincidePorMantenimiento = contienePalabraClave && requiereMantenimiento;
+
+    return coincideCampos || coincidePorMantenimiento;
+  });
+
+  const opcionesTipo = (equiposService.getTiposEquipo() || []).map((tipo) =>
+    typeof tipo === "string" ? { label: tipo, value: tipo } : tipo
+  );
+
+  const opcionesEstado = [
+    { label: "Encendido", value: "encendido" },
+    { label: "Apagado", value: "apagado" },
+  ];
+
+  const equiposFinales = useMemo(() => {
+    return equiposFiltrados.filter((equipo) => {
+      if (
+        filtros.categories.length > 0 &&
+        !filtros.categories.includes(equipo.tipo)
+      )
+        return false;
+
+      if (filtros.suppliers.length > 0) {
+        const valorEncendido = equipo.encendido ? "encendido" : "apagado";
+        if (!filtros.suppliers.includes(valorEncendido)) return false;
+      }
+
+      return true;
+    });
+  }, [equiposFiltrados, filtros]);
+
+  const hayFiltrosActivos =
+    searchText.trim() !== "" ||
+    filtros.categories.length > 0 ||
+    filtros.suppliers.length > 0;
+
+  // --------------------------------------------------------
+  // MANEJADORES
+  // --------------------------------------------------------
+  const handleAdd = () => {
+    router.push("/equipos/registrarEquipo");
+  };
+
+  const handleEdit = (equipo) => {
+    setEditingEquipo(equipo);
+    setModalVisible(true);
+    setValidationError("");
+  };
+
+  const handleDeletePress = (id) => {
+    const equipo = equipos.find(e => e.id === id);
+    if (equipo) {
+      setDeleteTarget(equipo);
+      setCodigoConfirmacion("");
+      setShowConfirmModal(true);
+    }
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) {
+      setCodigoError("Equipo no encontrado");
+      return;
+    }
+
+    if (codigoConfirmacion !== deleteTarget.codigo) {
+      setCodigoError("El código ingresado no coincide con el del equipo");
+      return;
+    }
+
+    try {
+      await eliminarEquipo(deleteTarget.id);
+      showAlert("success", `El equipo "${deleteTarget.nombre}" ha sido eliminado correctamente`);
+      setShowConfirmModal(false);
+      setDeleteTarget(null);
+      setCodigoConfirmacion("");
+      setCodigoError("");
+      fetchEquipos();
+    } catch (error) {
+      setCodigoError("No se pudo eliminar el equipo");
+    }
+  };
+
+  const handleSubmit = async (formData) => {
+    try {
+      if (editingEquipo) {
+        await actualizarEquipo(editingEquipo.id, formData);
+        showAlert("success", `Equipo "${formData.nombre}" actualizado correctamente`);
+      } else {
+        await crearEquipo(formData);
+        showAlert("success", `Equipo "${formData.nombre}" creado correctamente`);
+      }
+      setModalVisible(false);
+      setEditingEquipo(null);
+      fetchEquipos();
+    } catch (error) {
+      showAlert("danger", error.message || "Ocurrió un error al guardar el equipo");
+    }
+  };
+
+  const handleToggle = async (id) => {
+    try {
+      await toggleEquipo(id);
+      fetchEquipos();
+    } catch (error) {
+      showAlert("danger", "No se pudo cambiar el estado del equipo");
+    }
+  };
+
+  const openDetail = (equipoId) => {
+    router.push(`/equipos/detalleEquipo?id=${equipoId}`);
+  };
+
+  const navigateToMantEquipo = () => {
+    router.push("/equipos/mantEquipo");
+  };
 
   // --------------------------------------------------------
   // RENDERIZADO CONDICIONAL
@@ -104,16 +310,23 @@ export default function EquiposListScreen() {
             placeholder="Buscar por nombre, código o descripción"
             containerStyle={styles.searchInput}
           />
-          <Button
-              variant={hayFiltrosActivos ? "primary" : "outline"}
-              onPress={() => setFiltroVisible((v) => !v)}
-              style={styles.filterButtonStyle}
-            >
-              <Icon icon={ICONS.filter} size={15} color={hayFiltrosActivos ? COLORS.white : COLORS.primary} />
-              <CustomText style={{ color: hayFiltrosActivos ? COLORS.white : COLORS.primary }}>
-                {hayFiltrosActivos ? "Filtros activos" : "Filtrar"}
-              </CustomText>
-            </Button>
+          <FilterButton
+            categories={opcionesTipo}
+            suppliers={opcionesEstado}
+            activeFilters={filtros}
+            onApply={(f) =>
+              setFiltros({
+                categories: f.categories || [],
+                suppliers: f.suppliers || [],
+                units: [],
+                lowStock: false,
+                expiryDate: "",
+              })
+            }
+            showLowStock={false}
+            showExpiryDate={false}
+            buttonStyle={styles.filterButtonStyle}
+          />
           <Button
             variant="outline"
             onPress={navigateToMantEquipo}
@@ -124,53 +337,7 @@ export default function EquiposListScreen() {
           </Button>
         </View>
 
-        {filtroVisible && (
-          <FilterPanel title="Filtros">
-            <CustomText style={styles.filterGroupLabel}>Tipo de equipo</CustomText>
-            <View style={styles.filterChipsRow}>
-              {opcionesTipo.map((op) => {
-                const opNorm = typeof op === "string" ? { label: op, value: op } : op;
-                return (
-                  <FilterChip
-                    key={opNorm.value}
-                    label={opNorm.label}
-                    active={(filtros.categories || []).includes(opNorm.value)}
-                    onPress={() => setFiltros((prev) => {
-                      const arr = prev.categories || [];
-                      const exists = arr.includes(opNorm.value);
-                      return { ...prev, categories: exists ? arr.filter((v) => v !== opNorm.value) : [...arr, opNorm.value] };
-                    })}
-                  />
-                );
-              })}
-            </View>
-
-            <CustomText style={styles.filterGroupLabel}>Estado del equipo</CustomText>
-            <View style={styles.filterChipsRow}>
-              {opcionesEstado.map((op) => {
-                const opNorm = typeof op === "string" ? { label: op, value: op } : op;
-                return (
-                  <FilterChip
-                    key={opNorm.value}
-                    label={opNorm.label}
-                    active={(filtros.suppliers || []).includes(opNorm.value)}
-                    onPress={() => setFiltros((prev) => {
-                      const arr = prev.suppliers || [];
-                      const exists = arr.includes(opNorm.value);
-                      return { ...prev, suppliers: exists ? arr.filter((v) => v !== opNorm.value) : [...arr, opNorm.value] };
-                    })}
-                  />
-                );
-              })}
-            </View>
-
-            <FilterActions
-              onClear={() => setFiltros({ categories: [], suppliers: [], units: [], lowStock: false, expiryDate: "" })}
-              onApply={() => setFiltroVisible(false)}
-            />
-          </FilterPanel>
-        )}
-
+        {/* Alerta flotante (éxito/error) */}
         {alert && (
           <View style={[STYLE.contentWrapper, { marginTop: 6, marginBottom: 6 }]}>
             <Alert variant={alert.type} message={alert.message} />
@@ -238,6 +405,17 @@ export default function EquiposListScreen() {
               />
             </ScrollView>
 
+            {/* Alert de error de validación (justo encima de los botones) */}
+            {validationError && (
+              <View style={{ paddingHorizontal: 16, paddingBottom: 8 }}>
+                <Alert
+                  variant="danger"
+                  message={validationError}
+                  style={{ marginBottom: 0 }}
+                />
+              </View>
+            )}
+
             <View style={styles.modalFooterButtons}>
               <Button
                 variant="outline"
@@ -255,7 +433,7 @@ export default function EquiposListScreen() {
               >
                 <Icon icon={ICONS.save} size={18} color={COLORS.primary} />
                 <CustomText style={styles.modalFooterButtonText}>
-                  {editingEquipo ? "Actualizar" : "Registrar"}
+                  {editingEquipo ? "Actualizar equipo" : "Registrar equipo"}
                 </CustomText>
               </Button>
             </View>

@@ -2,6 +2,7 @@ import { View, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import Text from "../../../shared/components/Text";
+import Alert from "../../../shared/components/Alert";
 import { COLORS } from "../../../theme/colors";
 
 import Chip from "../components/Chip";
@@ -9,29 +10,6 @@ import ModuloCard from "../components/ModuloCard";
 import useRegistro from "../hooks/useRegistro";
 import { MODULOS, FINCAS } from "./RegistroData";
 import { styles } from "../styles/RegistroStyles";
-
-/**
- * ============================================================
- * PANTALLA REGISTRO
- * ============================================================
- *
- * Punto de entrada del flujo de registro: el usuario elige
- * finca + estanque y luego un modulo para registrar informacion.
- *
- * El estado de seleccion de finca/estanque vive en useRegistro().
- * Los datos estaticos vienen desde RegistroData.js.
- *
- * La navegacion entre modulos NO la maneja esta pantalla.
- * RegistroScreen solo ejecuta los callbacks que recibe por props.
- *
- * Modulos conectados:
- * - Fisico-Quimica
- * - Alimentacion
- * - Mortalidad
- * - Crecimiento
- * - Enfermedades
- * - Parasitologia
- */
 
 export default function RegistroScreen({
   onFisicoQuimica,
@@ -41,7 +19,8 @@ export default function RegistroScreen({
   onEnfermedades,
   onParasitologia,
   onRaleo,
-  onReporteria
+  onReporteria,
+  successMessage = "",
 }) {
   const {
     fincaSeleccionada,
@@ -52,15 +31,6 @@ export default function RegistroScreen({
     estanque,
     handleFinca,
   } = useRegistro();
-
-  /**
-   * ============================================================
-   * OBTENER ACCION DEL MODULO
-   * ============================================================
-   *
-   * Retorna la funcion de navegacion correspondiente segun
-   * el modulo seleccionado.
-   */
 
   function obtenerAccionModulo(moduloId) {
     let accion = null;
@@ -106,6 +76,13 @@ export default function RegistroScreen({
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
       >
+        {Boolean(successMessage) && (
+          <Alert
+            variant="success"
+            message={successMessage}
+            style={{ marginBottom: 16 }}
+          />
+        )}
         {/* Modulos */}
         <Text
           size={11}

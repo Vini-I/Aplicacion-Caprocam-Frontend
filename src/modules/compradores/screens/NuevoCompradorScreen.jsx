@@ -46,7 +46,7 @@ import { ICONS } from "../../../theme/icons";
 import { STYLE } from "../../../theme/style";
 import { styles, ICON_SIZES } from "../styles/StylesNuevoComprador";
 
-import { useNuevoCompradorScreen, TELEFONO_MAX_LENGTH } from "../hooks/useNuevoCompradorScreen";
+import { useNuevoCompradorScreen, TELEFONO_MAX_LENGTH, CEDULA_MAX_LENGTH } from "../hooks/useNuevoCompradorScreen";
 
 export default function NuevoCompradorScreen() {
   const {
@@ -66,6 +66,7 @@ export default function NuevoCompradorScreen() {
     errorCorreo,
     mensajeError,  
     guardadoExitoso,
+    guardando,
     handleCedulaChange,
     handleTelefonoChange,
     handleSubmit,
@@ -82,11 +83,11 @@ export default function NuevoCompradorScreen() {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        <Card
-          title="Información del comprador"
-          style={styles.card}
-          titleStyle={styles.cardTitle}
-        >
+        <Card style={styles.card}>
+           <View style={styles.cardHeader}>
+             <Icon icon={ICONS.addUser} color={COLORS.primary} size={22} />
+             <Text style={styles.cardTitle}>Información del comprador</Text>
+           </View>
           {/* Campos del formulario */}
           <Input
             label="Nombre del comprador *"
@@ -98,12 +99,13 @@ export default function NuevoCompradorScreen() {
             labelStyle={styles.label}
           />
 
-          <Input
+           <Input
             label="Cédula *"
             value={cedula}
             onChangeText={handleCedulaChange}
-            placeholder="Ej. 1-0234-0567"
+            placeholder="Ej. 102340567"
             keyboardType="numeric"
+            maxLength={CEDULA_MAX_LENGTH}
             containerStyle={styles.field}
             style={[styles.input, errorCedula && styles.inputError]}
             labelStyle={styles.label}
@@ -113,7 +115,7 @@ export default function NuevoCompradorScreen() {
             label="Teléfono *"
             value={telefono}
             onChangeText={handleTelefonoChange}
-            placeholder="+506 7689-9087"
+            placeholder="88881234"
             keyboardType="phone-pad"
             maxLength={TELEFONO_MAX_LENGTH}
             containerStyle={styles.field}
@@ -154,13 +156,7 @@ export default function NuevoCompradorScreen() {
             labelStyle={styles.label}
           />
 
-          {/* Botón para guardar, dispara la validación */}
-          <Button variant="outline" onPress={handleSubmit} style={styles.saveButton}>
-            <View style={styles.buttonContent}>
-               <Icon icon={ICONS.save} size={ICON_SIZES.save} color={COLORS.primary} />
-               <Text style={styles.saveButtonText}>Guardar comprador</Text>
-            </View>
-          </Button>
+          
 
           {guardadoExitoso && (
             <Alert
@@ -179,6 +175,18 @@ export default function NuevoCompradorScreen() {
               textStyle={styles.alertText}
             />
           )}
+
+
+          {/* Botón para guardar, dispara la validación */}
+          <Button variant="outline" onPress={handleSubmit} disabled={guardando} style={styles.saveButton}>
+            <View style={styles.buttonContent}>
+               <Icon icon={ICONS.add} size={ICON_SIZES.save} color={COLORS.primary} />
+               <Text style={styles.saveButtonText}>
+                 {guardando ? "Guardando..." : "Guardar comprador"}
+               </Text>
+            </View>
+          </Button>
+          
         </Card>
       </ScrollView>
     </View>

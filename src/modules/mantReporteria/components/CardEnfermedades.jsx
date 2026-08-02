@@ -24,7 +24,7 @@ export default function CardEnfermedades({ fincaId, estanqueId, onEditar, onAler
         modalVisible,
         enfermedadSeleccionada,
         loadingEliminar,
-        
+
         abrirModalEliminar,
         cancelarEliminar,
         confirmarEliminar,
@@ -59,6 +59,16 @@ export default function CardEnfermedades({ fincaId, estanqueId, onEditar, onAler
                         style={[styles.cardRegistro, { borderLeftColor: COLORS.Enfermedades }]}
                     >
                         <View style={styles.infoGrid}>
+                            <View style={styles.infoItem}>
+                                <Text style={styles.label}>Finca</Text>
+                                <Text style={styles.value}>{registro.nombreFinca}</Text>
+                            </View>
+
+                            <View style={styles.infoItem}>
+                                <Text style={styles.label}>Estanque</Text>
+                                <Text style={styles.value}>{registro.codigoEstanque}</Text>
+                            </View>
+
                             <View style={styles.infoItem}>
                                 <Text style={styles.label}>
                                     Colaborador
