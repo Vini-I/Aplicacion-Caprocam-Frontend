@@ -1,10 +1,25 @@
 import { StyleSheet } from "react-native";
 import { COLORS } from '../../../theme/colors';
 
-
 export const styles = StyleSheet.create({
-  container: { 
-    paddingVertical: 8 
+  container: {
+    flex: 1,
+    paddingVertical: 8,
+  },
+  cardContainer: {
+    padding: 16,
+    marginBottom: 12,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: COLORS.textSecondary,
+    marginLeft: 8,
   },
   buttonContainer: {
     flexDirection: "row",
@@ -17,15 +32,15 @@ export const styles = StyleSheet.create({
   cancelButton: {
     flex: 1,
   },
-  loader: { 
-    marginTop: 4, 
-    marginBottom: 8 
+  loader: {
+    marginTop: 4,
+    marginBottom: 8,
   },
-    inputError: {
+  inputError: {
     borderColor: COLORS.error,
     borderWidth: 1.5,
   },
-    alertContainer: {
+  alertContainer: {
     width: "100%",
     alignItems: "center",
     justifyContent: "center",

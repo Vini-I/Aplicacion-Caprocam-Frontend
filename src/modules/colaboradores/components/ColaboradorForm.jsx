@@ -1,3 +1,5 @@
+// src/modules/colaboradores/components/ColaboradorForm.jsx
+
 /**
  * ============================================================
  * COMPONENTE: ColaboradorForm
@@ -16,12 +18,8 @@
  * - onCancel: función para cerrar el modal sin guardar
  * - serverError: mensaje de error del servidor (opcional)
  * - roleOptions: array de { label, value } para el select de roles (opcional)
+ * - fincasOptions: array de { label, value } para el select de fincas (opcional)
  */
-
-// ============================================================
-// IMPORTS
-// ============================================================
-// src/modules/colaboradores/components/ColaboradorForm.jsx
 
 import React from "react";
 import { View } from "react-native";
@@ -31,6 +29,7 @@ import Button from "../../../shared/components/Button";
 import Alert from "../../../shared/components/Alert";
 import Icon from "../../../shared/components/Icons";
 import Text from "../../../shared/components/Text";
+import Card from "../../../shared/components/Card";
 import { useColaboradorForm } from "../hooks/useColaboradorForm";
 import { styles } from "../styles/colaboradorFormStyles";
 import { ICONS } from "../../../theme/icons";
@@ -81,92 +80,92 @@ export default function ColaboradorForm({
 
   return (
     <View style={styles.container}>
-      {/* Cédula */}
-      <Input
-        label="Cédula *"
-        value={form.cedula}
-        onChangeText={handleCedulaChange}
-        placeholder="Ej: 123456789"
-        keyboardType="numeric"
-        editable={!isEditing}
-        style={submitted && errors.cedula ? styles.inputError : null}
-      />
-
-      {/* Nombre */}
-      <Input
-        label="Nombre *"
-        value={form.nombre}
-        onChangeText={handleNombreChange}
-        placeholder="Ej: Juan"
-        editable={!isEditing}
-        style={submitted && errors.nombre ? styles.inputError : null}
-      />
-
-      {/* Apellidos */}
-      <Input
-        label="Apellidos *"
-        value={form.apellidos}
-        onChangeText={handleApellidosChange}
-        placeholder="Ej: Pérez Solano"
-        editable={!isEditing}
-        style={submitted && errors.apellidos ? styles.inputError : null}
-      />
-
-      {/* Teléfono */}
-      <Input
-        label="Teléfono (8 dígitos)"
-        value={form.telefono}
-        onChangeText={handleTelefonoChange}
-        placeholder="Ej: 88881234"
-        keyboardType="numeric"
-        style={submitted && errors.telefono ? styles.inputError : null}
-      />
-
-      {/* Correo */}
-      <Input
-        label="Correo electrónico"
-        value={form.email}
-        onChangeText={(v) => handleChange("email", v)}
-        placeholder="Ej: juan@example.com"
-        keyboardType="email-address"
-        autoCapitalize="none"
-        style={submitted && errors.email ? styles.inputError : null}
-      />
-
-      {/* Rol */}
-      <Select
-        label="Rol"
-        options={rolesDisponibles}
-        value={form.rol}
-        onChange={(v) => handleChange("rol", v)}
-        placeholder="Seleccione una opción"
-      />
-
-      {/* Finca - Solo para roles que requieren finca y hay un rol seleccionado */}
-      {mostrarSelectFinca && (
-        <Select
-          label="Finca asociada *"
-          options={opcionesFincas}
-          value={form.fincaId}
-          onChange={(v) => handleChange("fincaId", v)}
-          placeholder="Seleccione una finca"
-          selectStyle={submitted && errors.fincaId ? styles.inputError : null}
-        />
-      )}
-
-      {/* Mensaje de error */}
-      {mensajeMostrar !== "" && (
-        <View style={{ marginBottom: 12 }}>
-          <Alert
-            variant="danger"
-            message={mensajeMostrar}
-            style={styles.alertContainer}
-            textStyle={styles.alertText}
-          />
+      {/* ─── Card con el formulario ─── */}
+      <Card style={styles.cardContainer}>
+        <View style={styles.cardHeader}>
+          <Icon icon={ICONS.user} size={20} color={COLORS.primary} />
+          <Text style={styles.cardTitle}>Información del colaborador</Text>
         </View>
-      )}
 
-      {/* Botón de acción */}
+        <Input
+          label="Cédula *"
+          value={form.cedula}
+          onChangeText={handleCedulaChange}
+          placeholder="Ej: 123456789"
+          keyboardType="numeric"
+          editable={!isEditing}
+          style={submitted && errors.cedula ? styles.inputError : null}
+        />
+
+        <Input
+          label="Nombre *"
+          value={form.nombre}
+          onChangeText={handleNombreChange}
+          placeholder="Ej: Juan"
+          editable={!isEditing}
+          style={submitted && errors.nombre ? styles.inputError : null}
+        />
+
+        <Input
+          label="Apellidos *"
+          value={form.apellidos}
+          onChangeText={handleApellidosChange}
+          placeholder="Ej: Pérez Solano"
+          editable={!isEditing}
+          style={submitted && errors.apellidos ? styles.inputError : null}
+        />
+
+        <Input
+          label="Teléfono (8 dígitos)"
+          value={form.telefono}
+          onChangeText={handleTelefonoChange}
+          placeholder="Ej: 88881234"
+          keyboardType="numeric"
+          style={submitted && errors.telefono ? styles.inputError : null}
+        />
+
+        <Input
+          label="Correo electrónico"
+          value={form.email}
+          onChangeText={(v) => handleChange("email", v)}
+          placeholder="Ej: juan@example.com"
+          keyboardType="email-address"
+          autoCapitalize="none"
+          style={submitted && errors.email ? styles.inputError : null}
+        />
+
+        <Select
+          label="Rol"
+          options={rolesDisponibles}
+          value={form.rol}
+          onChange={(v) => handleChange("rol", v)}
+          placeholder="Seleccione una opción"
+        />
+
+        {mostrarSelectFinca && (
+          <Select
+            label="Finca asociada *"
+            options={opcionesFincas}
+            value={form.fincaId}
+            onChange={(v) => handleChange("fincaId", v)}
+            placeholder="Seleccione una finca"
+            selectStyle={submitted && errors.fincaId ? styles.inputError : null}
+          />
+        )}
+
+        {mensajeMostrar !== "" && (
+          <View style={{ marginBottom: 12 }}>
+            <Alert
+              variant="danger"
+              message={mensajeMostrar}
+              style={styles.alertContainer}
+              textStyle={styles.alertText}
+            />
+          </View>
+        )}
+      </Card>
+
+      {/* ─── Botón de acción fuera del Card ─── */}
       <View style={styles.buttonContainer}>
         <Button variant="outline" onPress={handleSubmit} style={styles.submitButton}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
