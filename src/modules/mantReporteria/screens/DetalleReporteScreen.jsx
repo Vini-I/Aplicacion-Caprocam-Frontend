@@ -72,7 +72,7 @@ export default function DetalleReporteScreen() {
         <View style={STYLE.container}>
           <View style={STYLE.contentWrapper}>
             {alert === "deleted" && (
-              <Alert style={styles.alertIncorrect}>
+              <Alert style={styles.alertCorrect}>
                 Registro eliminado correctamente
               </Alert>
             )}
