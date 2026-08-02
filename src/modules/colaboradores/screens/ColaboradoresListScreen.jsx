@@ -15,9 +15,7 @@
  * ============================================================
  */
 
-// src/modules/colaboradores/screens/ColaboradoresListScreen.jsx
-
-import React, { useCallback, useState, useMemo } from 'react';
+import React, { useCallback, useState, useMemo, useRef, useEffect } from 'react';
 import { View, ScrollView } from 'react-native';
 import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 
@@ -52,6 +50,9 @@ export default function ColaboradoresListScreen() {
   const params = useLocalSearchParams();
   const editId = params.editId;
 
+  // Flag para evitar redirecciones múltiples
+  const redirectedRef = useRef(false);
+
   const {
     colaboradores,
     loading,
@@ -67,6 +68,7 @@ export default function ColaboradoresListScreen() {
     cedulaError,
     setCedulaError,
     alert,
+    showAlert,
     handleDeletePress,
     confirmDelete,
   } = useColaboradoresList();
@@ -79,6 +81,16 @@ export default function ColaboradoresListScreen() {
     lowStock: false,
     expiryDate: '',
   });
+
+  // ─── Mostrar alerta desde parámetros de ruta ──────────────
+  useEffect(() => {
+    const { alertType, alertMessage } = params;
+    if (alertType && alertMessage) {
+      showAlert(alertType, alertMessage);
+      // Limpiar parámetros para que no se repitan al recargar
+      router.setParams({ alertType: undefined, alertMessage: undefined });
+    }
+  }, [params.alertType, params.alertMessage]);
 
   // ─── FILTRADO DE BÚSQUEDA CON MANEJO DE NULL ──────────────
   const listaFiltrada = useMemo(() => {
@@ -103,10 +115,11 @@ export default function ColaboradoresListScreen() {
     return result;
   }, [colaboradores, searchText, filtros]);
 
-  // Redirigir desde detalle con editId al formulario
+  // ─── Redirección desde detalle (solo si editId está presente) ───
   useFocusEffect(
     useCallback(() => {
-      if (editId) {
+      if (editId && !redirectedRef.current) {
+        redirectedRef.current = true;
         router.replace({
           pathname: '/(drawer)/colaboradores/form',
           params: { id: editId },
@@ -145,6 +158,9 @@ export default function ColaboradoresListScreen() {
     ? 'No se encontraron colaboradores con los criterios de búsqueda seleccionados.'
     : 'Comienza agregando tu primer colaborador.';
 
+  // Contador de resultados
+  const contador = `${listaFiltrada.length} ${listaFiltrada.length === 1 ? 'colaborador encontrado' : 'colaboradores encontrados'}`;
+
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.white }}>
       {/* Barra de búsqueda y filtro */}
@@ -166,7 +182,12 @@ export default function ColaboradoresListScreen() {
         />
       </View>
 
-      {/* Alerta flotante */}
+      {/* Contador de resultados (alineado con search bar) */}
+      <View style={styles.contadorWrapper}>
+        <CustomText style={styles.contadorResultados}>{contador}</CustomText>
+      </View>
+
+      {/* Alerta flotante - ahora con el mismo ancho que los demás elementos */}
       {alert && (
         <View style={styles.alertWrapper}>
           <Alert variant={alert.type} message={alert.message} />

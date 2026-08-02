@@ -12,12 +12,14 @@
  * - userRole: "camprocam_admin" o "external_owner"
  * - fincaId: ID de finca (para asignación automática)
  * - onSubmit: función que recibe los datos al enviar
+ * - availableRoles: opciones de roles para el select (array de {label, value})
  *
  * Retorna:
- * - form, errors, submitted, validationMessage
+ * - form, errors, submitted, validationMessage (mensaje específico)
  * - handleChange, handleSubmit
  * - rolesDisponibles
  * - handleCedulaChange, handleTelefonoChange, handleNombreChange, handleApellidosChange
+ * - resetForm: función para limpiar el formulario y estados de validación
  * ============================================================
  */
 
@@ -36,7 +38,25 @@ const validarEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 const validarNombre = (nombre) => nombre.trim().length >= 2;
 const validarApellidos = (apellidos) => apellidos.trim().length >= 2;
 
-export function useColaboradorForm({ initialData, isEditing, userRole, fincaId, onSubmit }) {
+const INITIAL_FORM = {
+  cedula: "",
+  nombre: "",
+  apellidos: "",
+  telefono: "",
+  email: "",
+  rol: "",
+  fincaId: "",
+};
+
+export function useColaboradorForm({
+  initialData,
+  isEditing,
+  userRole,
+  fincaId,
+  onSubmit,
+  availableRoles,
+  fincasOptions = [],
+}) {
   const [form, setForm] = useState({
     cedula: initialData.cedula || "",
     nombre: initialData.nombre?.split(" ")[0] || "",
@@ -51,29 +71,27 @@ export function useColaboradorForm({ initialData, isEditing, userRole, fincaId, 
   const [submitted, setSubmitted] = useState(false);
   const [validationMessage, setValidationMessage] = useState("");
 
-  const rolesDisponibles = userRole === "camprocam_admin" ? ROLES_CAMPROCAM : ROLES_EXTERNO;
+  const rolesDisponibles =
+    availableRoles ||
+    (userRole === "camprocam_admin" ? ROLES_CAMPROCAM : ROLES_EXTERNO);
 
   // ─── FUNCIONES DE FILTRADO POR CAMPO ──────────────────────
 
-  // Cédula: solo números, máximo 9 dígitos
   const handleCedulaChange = (value) => {
     const soloNumeros = value.replace(/\D/g, "").slice(0, 9);
     handleChange("cedula", soloNumeros);
   };
 
-  // Teléfono: solo números, máximo 8 dígitos
   const handleTelefonoChange = (value) => {
     const soloNumeros = value.replace(/\D/g, "").slice(0, 8);
     handleChange("telefono", soloNumeros);
   };
 
-  // Nombre: solo letras (con acentos, ñ, espacios) - elimina números y caracteres especiales
   const handleNombreChange = (value) => {
     const soloLetras = value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, "");
     handleChange("nombre", soloLetras);
   };
 
-  // Apellidos: solo letras (con acentos, ñ, espacios) - elimina números y caracteres especiales
   const handleApellidosChange = (value) => {
     const soloLetras = value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, "");
     handleChange("apellidos", soloLetras);
@@ -127,10 +145,16 @@ export function useColaboradorForm({ initialData, isEditing, userRole, fincaId, 
     if (form.email && !validarEmail(form.email)) {
       newErrors.email = "Correo electrónico inválido";
       hasError = true;
+    } else if (form.email && form.email.trim() === "") {
+      newErrors.email = "El correo electrónico es obligatorio";
+      hasError = true;
     }
 
-    if (userRole === "camprocam_admin" && form.rol === "external_owner" && !form.fincaId) {
-      newErrors.fincaId = "El ID de finca es obligatorio para dueños externos";
+    // Validar fincaId SOLO si el rol requiere finca asociada (IDs 3 y 5)
+    const ROLES_CON_FINCA = [3, 5];
+    const rolId = Number(form.rol);
+    if (ROLES_CON_FINCA.includes(rolId) && !form.fincaId) {
+      newErrors.fincaId = "La finca es obligatoria para este rol";
       hasError = true;
     }
 
@@ -138,12 +162,34 @@ export function useColaboradorForm({ initialData, isEditing, userRole, fincaId, 
     return { hasError, errors: newErrors };
   };
 
+  // Construye el mensaje: campos obligatorios genérico + correo específico
+  const buildValidationMessage = (errorsObj) => {
+    const hasRequiredError = !!(
+      errorsObj.cedula ||
+      errorsObj.nombre ||
+      errorsObj.apellidos ||
+      errorsObj.telefono ||
+      errorsObj.fincaId
+    );
+    const hasEmailError = !!errorsObj.email;
+
+    let message = "";
+    if (hasRequiredError) {
+      message = "Revisa los campos obligatorios marcados con *";
+    }
+    if (hasEmailError) {
+      const emailMsg = errorsObj.email;
+      message = message ? `${message} · ${emailMsg}` : emailMsg;
+    }
+    return message;
+  };
+
   const handleSubmit = () => {
     setSubmitted(true);
-    const { hasError } = validateForm();
+    const { hasError, errors: errorsObj } = validateForm();
 
     if (hasError) {
-      setValidationMessage("Revisa los campos obligatorios marcados con *");
+      setValidationMessage(buildValidationMessage(errorsObj));
       return;
     }
 
@@ -154,17 +200,35 @@ export function useColaboradorForm({ initialData, isEditing, userRole, fincaId, 
     onSubmit(submitData);
   };
 
+  // ─── RESET FORM ──────────────────────────────────────────────
+  const resetForm = () => {
+    setForm({
+      cedula: "",
+      nombre: "",
+      apellidos: "",
+      telefono: "",
+      email: "",
+      rol: userRole === "camprocam_admin" ? "camprocam_worker" : "external_worker",
+      fincaId: fincaId || "",
+    });
+    setErrors({});
+    setSubmitted(false);
+    setValidationMessage("");
+  };
+
   return {
     form,
     errors,
     submitted,
     validationMessage,
     rolesDisponibles,
+    fincasOptions,
     handleChange,
     handleCedulaChange,
     handleTelefonoChange,
     handleNombreChange,
     handleApellidosChange,
     handleSubmit,
+    resetForm,
   };
 }

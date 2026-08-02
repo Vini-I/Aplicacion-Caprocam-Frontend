@@ -1,5 +1,3 @@
-// src/modules/mantEquipo/hooks/useTareaForm.js
-
 /**
  * ============================================================
  * HOOK: useTareaForm
@@ -36,6 +34,8 @@
  * - getProductosInventario de InventarioService
  */
 
+// src/modules/mantEquipo/hooks/useTareaForm.js
+
 import { useState, useEffect, useMemo } from "react";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import * as tareasService from "../services/tareasService";
@@ -59,10 +59,46 @@ export function useTareaForm() {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [cargandoDatos, setCargandoDatos] = useState(isEditing);
+  const [productosDisponibles, setProductosDisponibles] = useState([]);
 
-  const productosDisponibles = getProductosInventario();
+  // Estados para mensajes de feedback
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
-  // Cargar datos si es edición
+  // ─── Limpiar mensajes automáticamente ──────────────────────────
+  useEffect(() => {
+    if (successMessage) {
+      const timer = setTimeout(() => setSuccessMessage(""), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage]);
+
+  useEffect(() => {
+    if (errorMessage) {
+      const timer = setTimeout(() => setErrorMessage(""), 6000);
+      return () => clearTimeout(timer);
+    }
+  }, [errorMessage]);
+
+  // ─── Cargar productos del inventario ──────────────────────────
+  useEffect(() => {
+    let isMounted = true;
+    getProductosInventario()
+      .then((data) => {
+        if (isMounted) {
+          setProductosDisponibles(Array.isArray(data) ? data : []);
+        }
+      })
+      .catch((error) => {
+        console.error("Error al cargar productos de inventario:", error);
+        if (isMounted) {
+          setProductosDisponibles([]);
+        }
+      });
+    return () => { isMounted = false; };
+  }, []);
+
+  // ─── Cargar datos si es edición ──────────────────────────────
   useEffect(() => {
     if (isEditing) {
       const cargarTarea = async () => {
@@ -84,18 +120,22 @@ export function useTareaForm() {
     }
   }, [isEditing, id]);
 
-  // ─── FILTRADO DE PRODUCTOS ────────────────────────────────────
+  // ─── FILTRADO DE PRODUCTOS (con fallback por si productosDisponibles no es array) ──
   const productosFiltrados = useMemo(() => {
+    // Asegurar que productosDisponibles sea siempre un array
+    const disponibles = Array.isArray(productosDisponibles) ? productosDisponibles : [];
     const busqueda = busquedaProducto.trim().toLowerCase();
-    if (!busqueda) return productosDisponibles;
-    return productosDisponibles.filter((p) =>
+    if (!busqueda) return disponibles;
+    return disponibles.filter((p) =>
       p.nombre.toLowerCase().includes(busqueda)
     );
   }, [productosDisponibles, busquedaProducto]);
 
-  // ─── OPCIONES PARA EL SELECT ──────────────────────────────────
+  // ─── OPCIONES PARA EL SELECT (con fallback adicional) ────────
   const opcionesProductos = useMemo(() => {
-    return productosFiltrados.map((p) => ({
+    // Asegurar que productosFiltrados sea siempre un array
+    const filtrados = Array.isArray(productosFiltrados) ? productosFiltrados : [];
+    return filtrados.map((p) => ({
       label: `${p.nombre} (${p.unidad}) - Stock: ${p.cantidad}`,
       value: p.id,
     }));
@@ -178,12 +218,35 @@ export function useTareaForm() {
     return Object.keys(e).length === 0;
   };
 
+  // ─── RESET FORMULARIO ──────────────────────────────────────────
+  const resetFormulario = () => {
+    setNombre("");
+    setDescripcion("");
+    setCategoria("");
+    setDuracion("");
+    setEstado("no_iniciada");
+    setProductos([]);
+    setBusquedaProducto("");
+    setProductoSeleccionado(null);
+    setCantidadProducto("");
+    setErrores({});
+    setSubmitted(false);
+    setSuccessMessage("");
+    setErrorMessage("");
+  };
+
   // ─── GUARDAR ────────────────────────────────────────────────────
   const guardar = async () => {
     setSubmitted(true);
-    if (!validar()) return;
+    if (!validar()) {
+      setErrorMessage("Revisa los campos obligatorios marcados con *");
+      return;
+    }
 
     setLoading(true);
+    setSuccessMessage("");
+    setErrorMessage("");
+
     try {
       const datos = {
         nombre: nombre.trim(),
@@ -196,22 +259,27 @@ export function useTareaForm() {
 
       if (isEditing) {
         await tareasService.actualizarTarea(id, datos);
+        setSuccessMessage("Tarea actualizada correctamente.");
       } else {
         await tareasService.crearTarea(datos);
+        setSuccessMessage("Tarea guardada correctamente.");
+        // Limpiar formulario solo en creación
+        resetFormulario();
+        setSubmitted(false);
       }
-
-      router.back();
     } catch (error) {
-      setErrores({ general: error.message || "Ocurrió un error al guardar la tarea." });
+      setErrorMessage(error.message || "Ocurrió un error al guardar la tarea.");
     } finally {
       setLoading(false);
     }
   };
 
+  // ─── CANCELAR ──────────────────────────────────────────────────
   const cancelar = () => {
     router.back();
   };
 
+  // ─── RETORNO ──────────────────────────────────────────────────
   return {
     nombre,
     descripcion,
@@ -230,6 +298,9 @@ export function useTareaForm() {
     productosFiltrados,
     opcionesProductos,
     hayResultados,
+    successMessage,
+    errorMessage,
+    resetFormulario,
     handleChange,
     handleBusquedaProducto,
     seleccionarProducto,

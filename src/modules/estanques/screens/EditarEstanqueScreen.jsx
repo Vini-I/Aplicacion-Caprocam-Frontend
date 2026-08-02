@@ -35,204 +35,43 @@ import { STYLE } from "../../../theme/style";
 import { useEstanque } from "../context/EstanqueContext";
 import { useFinca } from "../../finca/context/FincaContext";
 
+import useEditarEstanque from "../hooks/useEditarEstanque";
+import { SectionTitle, OptionButton } from "../components/componentsEstanque";
 import {
-  obtenerOpcionesEstanqueSeleccionado,
-} from "../services/AireadoresEstanqueService";
-import {
-  AIREADORES_EXISTENTES,
-  ESPECIES,
   ESTADOS_ESTANQUE,
   FUENTES_AGUA,
-  METODOS_ALIMENTACION,
-  OPCIONES_AIREADORES,
-  OPCIONES_ALIMENTADOR,
   OPCIONES_PRECRIA,
   TIPOS_ESTANQUE,
-  construirEstanqueEditado,
-  obtenerCambioAireadores,
-  obtenerParametro,
-  obtenerValoresInicialesEditar,
   validarFormularioEstanque,
-} from "../services/EstanqueScreenService";
+} from "../hooks/useEstanque";
 
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
 import { TYPOGRAPHY } from "../../../theme/typography";
 
-export default function EditarEstanqueScreen({ navigation, codigoCBO, id }) {
-  const router = useRouter();
+export default function EditarEstanqueScreen({ codigoCBO, id }) {
+  const {
+    finca,
+    loading,
+    estanqueOriginal,
 
-  const [finca, setFinca] = useState(null);
+    codigo,    setCodigo,
+    estado,    setEstado,
+    tipoEstanque,    setTipoEstanque,
+    largo,    setLargoState,
+    ancho,    setAnchoState,
+    profundidad,    setProfundidadState,
+    fuenteAgua,    setFuenteAgua,
 
-  const [loading, setLoading] = useState(true);
+    fechaMantenimiento,    setFechaMantenimiento,
+    precria,    setPrecria,
 
-  const { buscarFinca } = useFinca();
-  
-  const { editarEstanque, buscarEstanque } = useEstanque();
-  const [estanqueOriginal, setEstanqueOriginal] = useState(null);
+    mensaje,
+    tipoMensaje,
+    submitted,
 
-  const [codigo, setCodigo] = useState("");
-  const [estado, setEstado] = useState("");
-  const [tipoEstanque, setTipoEstanque] = useState("");
-  const [largo, setLargo] = useState("");
-  const [ancho, setAncho] = useState("");
-  const [profundidad, setProfundidad] = useState("");
-  const [fuenteAgua, setFuenteAgua] = useState("");
-  const [especie, setEspecie] = useState("");
-  const [fechaSiembra, setFechaSiembra] = useState("");
-  const [fechaInicioEngorde, setFechaInicioEngorde] = useState("");
-  const [fechaMantenimiento, setFechaMantenimiento] = useState("");
-  const [densidadSiembra, setDensidadSiembra] = useState("");
-  const [precria, setPrecria] = useState("");
-  const [metodoAlimentacion, setMetodoAlimentacion] = useState("");
-  const [proveedorAlimento, setProveedorAlimento] = useState("");
-  const [numeroAireadores, setNumeroAireadores] = useState("0");
-  const [tieneAireadores, setTieneAireadores] = useState("no");
-  const [codigoAireador, setCodigoAireador] = useState("");
-  const [tieneAlimentadorAutomatico, setTieneAlimentadorAutomatico] = useState("");
-
-  const [mensaje, setMensaje] = useState("");
-  const [tipoMensaje, setTipoMensaje] = useState("info");
-  const [submitted, setSubmitted] = useState(false);
-
-  useEffect(() => {
-    async function cargar() {
-      try {
-        const data = await buscarEstanque(id);
-
-        setEstanqueOriginal(data);
-
-        setCodigo(data.codigo ?? "");
-        setEstado(data.estado ?? "");
-        setTipoEstanque(data.tipoEstanque ?? "");
-        setLargo(String(data.largo ?? ""));
-        setAncho(String(data.ancho ?? ""));
-        setProfundidad(String(data.profundidad ?? ""));
-        setFuenteAgua(data.fuenteAgua ?? "");
-        setEspecie(data.especie ?? "");
-        setFechaSiembra(data.fechaSiembra ?? "");
-        setFechaInicioEngorde(data.fechaInicioEngorde ?? "");
-        setFechaMantenimiento(data.fechaMantenimiento ?? "");
-        setDensidadSiembra(String(data.densidadSiembra ?? ""));
-        setPrecria(data.precria ? "si" : "no");
-        setMetodoAlimentacion(data.metodoAlimentacion ?? "");
-        setProveedorAlimento(data.proveedorAlimento ?? "");
-        setNumeroAireadores(String(data.numeroAireadores ?? "0"));
-        setTieneAlimentadorAutomatico(data.tieneAlimentadorAutomatico ? "si" : "no");
-      } catch (error) {
-        setTipoMensaje("danger");
-        setMensaje("No se pudo cargar el estanque.");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    if (id) {
-      cargar();
-    }
-  }, [id]);
-
-  async function obtenerFinca(){
-    const data = await buscarFinca(codigoCBO);
-    setFinca(data);
-  }
-
-  useEffect(() => {
-    obtenerFinca();
-  }, []);
-
-  function cancelar() {
-    if (navigation) {
-      navigation.goBack();
-      return;
-    }
-
-    router.back();
-  }
-
-  function mostrarError(texto) {
-    setTipoMensaje("warning");
-    setMensaje(texto);
-  }
-
-  function manejarTieneAireadores(valor) {
-    const cambio = obtenerCambioAireadores(valor, codigoAireador);
-
-    setTieneAireadores(valor);
-    setNumeroAireadores(cambio.numeroAireadores);
-    setCodigoAireador(cambio.codigoAireador);
-  }
-
-  function validarFormulario() {
-    setSubmitted(true);
-
-    const resultado = validarFormularioEstanque({
-      codigo: codigo,
-      tipoEstanque: tipoEstanque,
-      largo: largo,
-      ancho: ancho,
-      profundidad: profundidad,
-      fechaSiembra: fechaSiembra,
-      densidadSiembra: densidadSiembra,
-      tieneAireadores: tieneAireadores,
-      codigoAireador: codigoAireador,
-    });
-
-    if (resultado.valido === false) {
-      setTipoMensaje(resultado.tipoMensaje);
-      setMensaje(resultado.mensaje);
-    }
-
-    return resultado.valido;
-  }
-
-  async function guardarCambios() {
-    if (validarFormulario() === false) {
-      return;
-    }
-
-    const estanque = await buscarEstanque(id);
-
-    const { EstanqueEditadoDTO } = construirEstanqueEditado({
-      idFinca: estanqueOriginal.idFinca,
-      codigo: codigo,
-      estado: estado,
-      tipoEstanque: tipoEstanque,
-      largo: Number(largo),
-      ancho: Number(ancho),
-      profundidad: Number(profundidad),
-      fuenteAgua: fuenteAgua,
-      especie: especie,
-      fechaSiembra: fechaSiembra,
-      fechaInicioEngorde: fechaInicioEngorde,
-      fechaMantenimiento: fechaMantenimiento,
-      densidadSiembra: Number(densidadSiembra),
-      precria: precria,
-      metodoAlimentacion: metodoAlimentacion,
-      proveedorAlimento: proveedorAlimento,
-      numeroAireadores: Number(numeroAireadores),
-      tieneAireadores: tieneAireadores,
-      codigoAireador: codigoAireador,
-      tieneAlimentadorAutomatico: tieneAlimentadorAutomatico,
-    }
-    );
-
-    try {
-      await editarEstanque(id, EstanqueEditadoDTO)
-
-      setTipoMensaje("success");
-      setMensaje("Cambios guardados correctamente.");
-
-      setTimeout(function () {
-        router.push({
-          pathname: `/finca/detalle?id=${estanque.idFinca}`,
-        });
-      }, 900);
-    } catch (error) {
-      setTipoMensaje("danger");
-      setMensaje(error.response?.data?.message || "Error al guardar los cambios.");
-    }
-  }
+    guardarCambios,
+  } = useEditarEstanque(codigoCBO, id);
 
   if (loading) {
     return <CustomText>Cargando...</CustomText>;
@@ -240,11 +79,7 @@ export default function EditarEstanqueScreen({ navigation, codigoCBO, id }) {
 
   if (!estanqueOriginal) {
     return (
-      <>
-        {mensaje !== "" && (
-          <Alert variant={tipoMensaje} message={mensaje} />
-        )}
-      </>
+      <>{mensaje !== "" && <Alert variant={tipoMensaje} message={mensaje} />}</>
     );
   }
 
@@ -315,7 +150,7 @@ export default function EditarEstanqueScreen({ navigation, codigoCBO, id }) {
                   required={true}
                   submitted={submitted}
                   value={largo}
-                  onChangeText={setLargo}
+                  onChangeText={setLargoState}
                   placeholder="Ej: 100"
                   keyboardType="numeric"
                   numericOnly
@@ -329,7 +164,7 @@ export default function EditarEstanqueScreen({ navigation, codigoCBO, id }) {
                   required={true}
                   submitted={submitted}
                   value={ancho}
-                  onChangeText={setAncho}
+                  onChangeText={setAnchoState}
                   placeholder="Ej: 80"
                   keyboardType="numeric"
                   numericOnly
@@ -343,7 +178,7 @@ export default function EditarEstanqueScreen({ navigation, codigoCBO, id }) {
               required={true}
               submitted={submitted}
               value={profundidad}
-              onChangeText={setProfundidad}
+              onChangeText={setProfundidadState}
               placeholder="Ej: 0.80"
               keyboardType="numeric"
               numericOnly
@@ -352,6 +187,8 @@ export default function EditarEstanqueScreen({ navigation, codigoCBO, id }) {
 
             <Select
               label="Fuente de agua"
+              required={true}
+              submitted={submitted}
               options={FUENTES_AGUA}
               value={fuenteAgua}
               onChange={setFuenteAgua}
@@ -363,130 +200,22 @@ export default function EditarEstanqueScreen({ navigation, codigoCBO, id }) {
           <Card>
             <SectionTitle title="Siembra y fechas" icon={ICONS.calendar} />
 
-            <Select
-              label="Especie"
-              options={ESPECIES}
-              value={especie}
-              onChange={setEspecie}
-              placeholder="Seleccione la especie"
-              labelStyle={styles.label}
-            />
-
             <DateInput
-              label="Fecha de siembra"
+              label="Fecha último mantenimiento"
               required={true}
-              submitted={submitted}
-              value={fechaSiembra}
-              onChangeText={setFechaSiembra}
-              labelStyle={styles.label}
-            />
-
-            <DateInput
-              label="Fecha inicio de engorde"
-              value={fechaInicioEngorde}
-              onChangeText={setFechaInicioEngorde}
-              labelStyle={styles.label}
-            />
-
-            <DateInput
-              label="Fecha mantenimiento"
               value={fechaMantenimiento}
               onChangeText={setFechaMantenimiento}
               labelStyle={styles.label}
             />
 
-            <NumberInput
-              label="Densidad de siembra (ind/m2)"
+            <Select
+              label="Se usa precria"
               required={true}
               submitted={submitted}
-              value={densidadSiembra}
-              onChangeText={setDensidadSiembra}
-              min={0}
-              max={9999}
-              step={1}
-              labelStyle={styles.label}
-            />
-
-            <Select
-              label="Precria"
               options={OPCIONES_PRECRIA}
               value={precria}
               onChange={setPrecria}
               placeholder="Seleccione si usa precria"
-              labelStyle={styles.label}
-            />
-          </Card>
-
-          <Card>
-            <SectionTitle title="Alimentacion y equipos" icon={ICONS.food} />
-
-            <Select
-              label="Metodo de alimentacion"
-              options={METODOS_ALIMENTACION}
-              value={metodoAlimentacion}
-              onChange={setMetodoAlimentacion}
-              placeholder="Seleccione el metodo"
-              labelStyle={styles.label}
-            />
-
-            <Input
-              label="Proveedor de alimento"
-              value={proveedorAlimento}
-              onChangeText={setProveedorAlimento}
-              placeholder="Ej: Biomar"
-              labelStyle={styles.label}
-            />
-
-            <Select
-              label="Tiene aireadores"
-              options={OPCIONES_AIREADORES}
-              value={tieneAireadores}
-              onChange={manejarTieneAireadores}
-              placeholder="Seleccione una opcion"
-              labelStyle={styles.label}
-            />
-
-            {tieneAireadores === "si" && (
-              <View style={styles.aeratorBox}>
-                <Select
-                  label="Codigo del aireador"
-                  required={true}
-                  submitted={submitted}
-                  options={AIREADORES_EXISTENTES}
-                  value={codigoAireador}
-                  onChange={setCodigoAireador}
-                  placeholder="Seleccione el codigo"
-                  labelStyle={styles.label}
-                />
-
-                <Select
-                  label="Estanque seleccionado"
-                  options={obtenerOpcionesEstanqueSeleccionado(
-                    codigo,
-                      `${finca?.nombreFinca ?? "Cargando..."}`
-                  )}
-                  value={codigo}
-                  disabled={true}
-                  placeholder="Ingrese primero el codigo del estanque"
-                  labelStyle={styles.label}
-                />
-
-                <CustomText
-                  size={13}
-                  color={COLORS.textTertiary}
-                  style={styles.helperText}
-                >
-                  El aireador se asigna automaticamente al estanque actual.
-                </CustomText>
-              </View>
-            )}
-
-            <Select
-              label="Tiene alimentador automatico"
-              options={OPCIONES_ALIMENTADOR}
-              value={tieneAlimentadorAutomatico}
-              onChange={setTieneAlimentadorAutomatico}
-              placeholder="Seleccione una opcion"
               labelStyle={styles.label}
             />
           </Card>
@@ -520,51 +249,5 @@ export default function EditarEstanqueScreen({ navigation, codigoCBO, id }) {
         </View>
       </ScrollView>
     </>
-  );
-}
-
-function SectionTitle({ title, icon }) {
-  return (
-    <View style={styles.sectionTitleRow}>
-      <Icon icon={icon} size={18} color={COLORS.primary} />
-
-      <Title
-        level={5}
-        color={COLORS.textSecondary}
-        fuente={TYPOGRAPHY.fontFamily.bold}
-        style={styles.sectionTitle}
-      >
-        {title}
-      </Title>
-    </View>
-  );
-}
-
-function OptionButton({ label, value, selectedValue, onPress }) {
-  let buttonStyle = [styles.optionButton];
-  let textColor = COLORS.textSecondary;
-  let textFont = TYPOGRAPHY.fontFamily.medium;
-
-  if (value === selectedValue) {
-    buttonStyle.push(styles.optionButtonSelected);
-    textColor = COLORS.primary;
-    textFont = TYPOGRAPHY.fontFamily.bold;
-  }
-
-  function handlePress() {
-    onPress(value);
-  }
-
-  return (
-    <Button variant="outline" onPress={handlePress} style={buttonStyle}>
-      <CustomText
-        size={13}
-        color={textColor}
-        align="center"
-        style={{ fontFamily: textFont }}
-      >
-        {label}
-      </CustomText>
-    </Button>
   );
 }

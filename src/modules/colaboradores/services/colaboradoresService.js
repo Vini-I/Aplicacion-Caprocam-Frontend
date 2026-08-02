@@ -8,12 +8,6 @@
  * Todas las funciones son asíncronas y devuelven los datos
  * mapeados al formato usado por el frontend.
  *
- * Nota: El backend espera el campo 'pinHash'. Dado que no podemos
- * hashear el PIN en el frontend, enviamos el PIN en texto plano
- * en el campo 'pinHash' para que la base de datos reciba un valor
- * no nulo. Esto es temporal hasta que el backend implemente la
- * generación/hasheo automático del PIN.
- *
  * Dependencias:
  * - api (axios) desde src/api/api.js (ya incluye el interceptor de tokens)
  * ============================================================
@@ -21,73 +15,97 @@
 
 import api from "../../../api/api";
 
-// Mapeo de roles
+// Mapeo de roles (frontend -> backend) - se mantiene para compatibilidad,
+// pero ahora también se puede usar directamente un rolId numérico.
 const rolMapToId = {
-  camprocam_worker: 1,  // CORREGIR CUANDO HAYAN MAS ROLES (ADMIN TEMP)
-  external_owner: 1,    // CORREGIR CUANDO HAYAN MAS ROLES (ADMIN TEMP)
-  external_worker: 1,   // CORREGIR CUANDO HAYAN MAS ROLES (ADMIN TEMP)
+  camprocam_worker: 1,
+  external_owner: 2,
+  external_worker: 3,
 };
 
-const rolMapToTipo = {
-  camprocam_worker: "caprocam_collab",
-  external_owner: "external_owner",
-  external_worker: "external_collab",
-};
+// Este mapeo aún se usa para determinar tipoColaborador a partir del rolId numérico.
+// Pero prepareForBackend lo determinará automáticamente.
 
-const rolIdToRol = {
-  1: (tipo) => {
-    if (tipo === "caprocam_collab") return "camprocam_worker";// CORREGIR CUANDO HAYAN MAS ROLES (ADMIN TEMP)
-    if (tipo === "external_collab") return "external_worker"; // CORREGIR CUANDO HAYAN MAS ROLES (ADMIN TEMP)
-    if (tipo === "external_owner") return "external_owner";   // CORREGIR CUANDO HAYAN MAS ROLES (ADMIN TEMP)
-    return "external_worker";
-  },
-};
-
-// Mapeo de backend a frontend
+// ─── MAPEO BACKEND → FRONTEND ──────────────────────────────────────
 function mapBackendToFrontend(data) {
+  // Determinar el rol a partir del rol_id (numérico)
   let rol = "camprocam_worker";
-  if (data.rolId === 1) {
-    rol = rolIdToRol[1](data.tipoColaborador);
-  }
+  if (data.rol_id === 2) rol = "external_owner";
+  else if (data.rol_id === 3) rol = "external_worker";
+
+  // Si el backend no guardó la cédula en la columna 'cedula',
+  // se toma de 'nombre_usuario' (donde sí está)
+  const cedula = data.cedula || data.nombre_usuario || "";
+
   return {
     id: data.id,
     nombre: `${data.nombre} ${data.apellidos}`,
-    cedula: data.nombreUsuario,  // NOMBRE  DE DATO DIFERENTE CORREGIRRRR
+    cedula: cedula,
     telefono: data.telefono,
     email: data.email,
-    rol,
-    fincaId: data.fincaId,
+    rol: rol,
+    fincaId: data.finca_id,
     activo: Boolean(data.activo),
   };
 }
 
-// Preparar payload para backend
+// ─── PREPARAR PAYLOAD PARA BACKEND ─────────────────────────────────
 function prepareForBackend(data, pinHash = null) {
   const [nombre, ...apellidosParts] = data.nombre.split(" ");
   const apellidos = apellidosParts.join(" ") || "";
+
+  // 1. Determinar rolId:
+  // Si es número (ej: 3), usarlo directamente.
+  // Si es string (ej: "external_owner"), mapearlo.
+  let rolId = data.rol;
+  if (typeof data.rol === "string" && rolMapToId[data.rol]) {
+    rolId = rolMapToId[data.rol];
+  }
+  // Si no se pudo determinar, usar 3 (external_worker) por defecto.
+  if (!rolId || isNaN(Number(rolId))) {
+    rolId = 3;
+  }
+  const rolIdNumerico = Number(rolId);
+
+  // 2. Determinar tipoColaborador basado en el rolId para cumplir con el ENUM de la DB.
+  let tipoColaborador = "external_collab"; // default
+  if (rolIdNumerico === 1 || rolIdNumerico === 2) {
+    tipoColaborador = "caprocam_collab";
+  } else if (rolIdNumerico === 3) {
+    tipoColaborador = "external_owner";
+  }
+  // Nota: para roles 4 y 5, ¿qué tipoColaborador? Según el backend, parece que solo usa caprocam_collab, external_owner, external_collab.
+  // Para roles 4 y 5, probablemente sea caprocam_collab, o podríamos dejar external_collab por defecto.
+  // Decisión: si rolId > 3, usaremos "caprocam_collab" porque son roles internos.
+  if (rolIdNumerico >= 4) {
+    tipoColaborador = "caprocam_collab";
+  }
+
   const payload = {
     nombre: nombre || "",
     apellidos,
-    nombreUsuario: data.cedula,
-    rolId: rolMapToId[data.rol] || 3,
+    nombreUsuario: data.cedula, // temporal: cédula como nombre de usuario
+    cedula: data.cedula,
+    rolId: rolIdNumerico,
     fincaId: data.fincaId ? Number(data.fincaId) : null,
     telefono: data.telefono || null,
     email: data.email || null,
-    tipoColaborador: rolMapToTipo[data.rol] || "external_collab",
+    tipoColaborador: tipoColaborador,
     grupoDatos: 1, // temporal hasta autenticación
   };
+
   if (pinHash) {
     payload.pinHash = pinHash;
   }
+
   return payload;
 }
 
-// ─── FUNCIONES PRINCIPALES ──────────────────────────────────────
+// ─── FUNCIONES PRINCIPALES ──────────────────────────────────────────
 
 /**
  * Obtiene todos los colaboradores activos del backend.
  * Filtra por fincaId, rol, activo si se pasan.
- * Ruta corregida: /colaboradores (sin /api/v0)
  */
 async function getColaboradores(filtros = {}) {
   try {
@@ -95,7 +113,7 @@ async function getColaboradores(filtros = {}) {
     let data = response.data.data || [];
 
     if (filtros.fincaId) {
-      data = data.filter((c) => c.fincaId === Number(filtros.fincaId));
+      data = data.filter((c) => c.finca_id === Number(filtros.fincaId));
     }
     if (filtros.rol) {
       data = data.filter((c) => {
@@ -119,7 +137,6 @@ async function getColaboradores(filtros = {}) {
 
 /**
  * Obtiene un colaborador por su ID.
- * Ruta corregida: /colaboradores/${id}
  */
 async function getColaboradorById(id) {
   try {
@@ -140,7 +157,6 @@ async function getColaboradorById(id) {
  * Crea un nuevo colaborador.
  * Genera un PIN de 4 dígitos y lo envía en pinHash.
  * Devuelve el colaborador creado y el PIN en texto plano.
- * Ruta corregida: /colaboradores
  */
 async function createColaborador(data) {
   try {
@@ -167,7 +183,6 @@ async function createColaborador(data) {
 /**
  * Actualiza un colaborador existente.
  * Si se proporciona un nuevo PIN, se envía en pinHash.
- * Ruta corregida: /colaboradores/${id}
  */
 async function updateColaborador(id, data, newPin = null) {
   try {
@@ -186,7 +201,6 @@ async function updateColaborador(id, data, newPin = null) {
 
 /**
  * Elimina (borrado lógico) un colaborador.
- * Ruta corregida: /colaboradores/${id}
  */
 async function deleteColaborador(id) {
   try {
@@ -201,14 +215,12 @@ async function deleteColaborador(id) {
   }
 }
 
-// ─── FUNCIONES AUXILIARES (mock) ──────────────────────────────
+// ─── FUNCIONES AUXILIARES (mock) ────────────────────────────────────
 
 /**
  * Obtiene estadísticas de un colaborador (mock).
- * (El backend no tiene este endpoint aún)
  */
 async function getEstadisticasColaborador(colaboradorId) {
-  // TODO: implementar cuando el backend lo soporte
   return {
     alimentaciones: 0,
     estanquesCreados: 0,
@@ -221,11 +233,10 @@ async function getEstadisticasColaborador(colaboradorId) {
  * Obtiene trabajadores externos asociados a un dueño (mock).
  */
 async function getTrabajadoresByOwner(ownerId) {
-  // TODO: implementar cuando el backend lo soporte
   return [];
 }
 
-// ─── EXPORTACIÓN ────────────────────────────────────────────────
+// ─── EXPORTACIÓN ────────────────────────────────────────────────────
 
 export const colaboradoresService = {
   getColaboradores,

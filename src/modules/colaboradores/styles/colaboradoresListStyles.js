@@ -9,11 +9,13 @@
  *
  * Dependencias:
  * - COLORS desde theme/colors
+ * - TYPOGRAPHY desde theme/typography
  * ============================================================
  */
 
 import { StyleSheet } from "react-native";
 import { COLORS } from "../../../theme/colors";
+import { TYPOGRAPHY } from "../../../theme/typography";
 
 export const styles = StyleSheet.create({
   container: {
@@ -42,6 +44,22 @@ export const styles = StyleSheet.create({
     marginTop: 0,
     alignSelf: "center",
   },
+
+  // Contador de resultados
+  contadorWrapper: {
+    width: "100%",
+    maxWidth: 900,
+    alignSelf: "center",
+    paddingHorizontal: 0,
+    marginTop: 8,
+    marginBottom: 4,
+  },
+  contadorResultados: {
+    fontSize: 13,
+    color: COLORS.textTertiary,
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
+  },
+
   list: {
     padding: 0,
     paddingBottom: 110, // espacio para el botón flotante
@@ -59,8 +77,10 @@ export const styles = StyleSheet.create({
     flex: 1,
   },
   alertWrapper: {
-    marginBottom: 12,
-    paddingHorizontal: 16,
+    marginTop: 6,           // ← separación de la barra de búsqueda
+    marginBottom: 12,        // ← separación de los cards
+    paddingHorizontal: 0,
+    paddingVertical: 0,     // o 16 si quieres padding interno, pero el Alert ya tiene padding
     width: '100%',
     maxWidth: 900,
     alignSelf: 'center',
@@ -192,7 +212,7 @@ export const styles = StyleSheet.create({
     justifyContent: "center",
     padding: 16,
   },
-    emptyStateButton: {
+  emptyStateButton: {
     marginTop: 16,
     paddingVertical: 12,
     paddingHorizontal: 20,

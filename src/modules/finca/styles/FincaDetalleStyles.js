@@ -77,6 +77,7 @@ export const styles = StyleSheet.create({
   },
 
   titleText: {
+    alignSelf: "center",
     marginBottom: 8,
     color: COLORS.textTertiary,
   },
@@ -152,8 +153,7 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 6,
     marginHorizontal: 2,
-    paddingHorizontal: 6,
-    paddingVertical: 4,
+    height: "70%",
   },
 
   Editar: {
@@ -166,8 +166,7 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 6,
     marginHorizontal: 2,
-    paddingHorizontal: 12,
-    paddingVertical: 4,
+    height: "70%",
   },
 
   alertCorrect: {

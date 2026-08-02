@@ -75,10 +75,6 @@ const ESTADO_VARIANTS = {
 };
 
 // Calcula las horas restantes para el próximo mantenimiento.
-// (Antes vivía como export en equiposService.js; se quedó como función
-// interna ahí durante la reconexión, así que se recalcula aquí mismo
-// con los mismos campos que ya trae el equipo mapeado: horasMantenimiento
-// y horasUso.)
 function horasRestantesMantenimiento(equipo) {
   if (!equipo.horasMantenimiento) return 0;
   const restantes = equipo.horasMantenimiento - equipo.horasUso;
@@ -238,9 +234,10 @@ export default function DetalleEquipoScreen() {
           </Card>
         )}
 
-        {alert && (
+        {/* Alertas de error (solo errores de eliminación) */}
+        {alertError && (
           <View style={equipoDetalleStyles.alertWrapper}>
-            <Alert variant={alert.type} message={alert.message} />
+            <Alert variant={alertError.type} message={alertError.message} />
           </View>
         )}
 
@@ -251,7 +248,7 @@ export default function DetalleEquipoScreen() {
             style={[equipoDetalleStyles.boton, equipoDetalleStyles.botonEditar]}
           >
             <Icon icon={ICONS.edit} size={18} color={COLORS.primary} />
-            <CustomText style={equipoDetalleStyles.botonTexto}>Editar</CustomText>
+            <CustomText style={equipoDetalleStyles.botonTexto}>Editar Equipo</CustomText>
           </Button>
           <Button
             variant="outline"
@@ -259,7 +256,7 @@ export default function DetalleEquipoScreen() {
             style={[equipoDetalleStyles.boton, equipoDetalleStyles.botonEliminar]}
           >
             <Icon icon={ICONS.delete} size={18} color={COLORS.error} />
-            <CustomText style={equipoDetalleStyles.botonTextoEliminar}>Eliminar</CustomText>
+            <CustomText style={equipoDetalleStyles.botonTextoEliminar}>Eliminar Equipo</CustomText>
           </Button>
         </View>
       </ScrollView>

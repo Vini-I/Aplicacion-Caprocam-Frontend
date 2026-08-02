@@ -1,6 +1,6 @@
 /**
  * ============================================================
- * HOOK DE ALIMENTACIÓN
+ * HOOK DE PARSITIOLOGÍA
  * ============================================================
  * 
  * Autocontenido: carga sus propios registros, maneja el modal
@@ -8,49 +8,49 @@
  * screen para recargar ni para reenviar callbacks de recarga.
  */
 import { useState, useEffect } from "react";
-import alimentacionService from "../../alimentacion/services/Alimentacion.service.js";
+import parasitologiaService from "../../parasitologia/services/ParasitologiaService.js";
 import { obtenerDetalleReporte } from "../services/detalleReporte.service.js";
 import useModalEliminar from "../hooks/useModalEliminar.js";
 
-export default function useAlimentacion(fincaId, estanqueId, onAlertChange) {
-  const [alimentaciones, setAlimentaciones] = useState([]);
+export default function useParasitologia(fincaId, estanqueId, onAlertChange) {
+  const [parasitologia, setParasitologia] = useState([]);
   const [loading, setLoading] = useState(true);
   const [alert, setAlert] = useState(null);
 
-  async function cargarAlimentaciones() {
+  async function cargarParasitologia() {
     try {
       setLoading(true);
       const data = await obtenerDetalleReporte({
-        tipoRegistro: "alimentacion",
+        tipoRegistro: "parasitologia",
         fincaId,
         estanqueId,
       });
-      setAlimentaciones(data);
+      setParasitologia(data);
     } catch (error) {
-      console.error("Error al cargar alimentaciones", error);
+      console.error("Error al cargar parasitología", error);
     } finally {
       setLoading(false);
     }
   }
 
   useEffect(() => {
-    cargarAlimentaciones();
+    cargarParasitologia();
   }, [fincaId, estanqueId]);
 
-  async function eliminarAlimentacion(id) {
-    await alimentacionService.deleteById(id);
-    await cargarAlimentaciones();
+  async function eliminarParasitologia(id) {
+    await parasitologiaService.deleteById(id);
+        await cargarParasitologia();
     setAlert("deleted");
   }
 
   const {
     modalVisible,
-    itemSeleccionado: alimentacionSeleccionada,
+    itemSeleccionado: parasitologiaSeleccionada,
     loadingEliminar,
     abrirModalEliminar,
     cancelarEliminar,
     confirmarEliminar,
-  } = useModalEliminar(eliminarAlimentacion);
+  } = useModalEliminar(eliminarParasitologia);
 
   useEffect(() => {
     onAlertChange?.(alert);
@@ -63,12 +63,12 @@ export default function useAlimentacion(fincaId, estanqueId, onAlertChange) {
   }, [alert]);
 
   return {
-    alimentaciones,
+    parasitologia,
     loading,
     alert,
 
     modalVisible,
-    alimentacionSeleccionada,
+    parasitologiaSeleccionada,
     loadingEliminar,
     abrirModalEliminar,
     cancelarEliminar,

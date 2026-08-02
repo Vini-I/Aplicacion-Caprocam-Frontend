@@ -12,6 +12,8 @@
  * - Valida campos obligatorios al intentar guardar.
  * - Soporta edición: recibe initialData y isEditing.
  * - Si es edición, actualiza el equipo; si no, lo crea.
+ * - Al guardar exitosamente en creación, limpia el formulario.
+ * - En edición, mantiene los datos.
  *
  * Datos:
  * - formulario: objeto con todos los campos del equipo.
@@ -221,7 +223,10 @@ export function useRegistrarEquipo(initialData = null) {
         await agregarEquipo(payload);
       }
 
-      resetFormulario();
+      // Solo limpiar si es creación, no en edición
+      if (!isEditing) {
+        resetFormulario();
+      }
     } catch (error) {
       throw new Error(error.message || 'No se pudo guardar el equipo. Intente nuevamente.');
     } finally {

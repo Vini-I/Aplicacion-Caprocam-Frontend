@@ -90,8 +90,8 @@ export default function FincaDetalleScreen({
 
           <Card>
             <View>
-              <Text color={COLORS.textTertiary} style={styles.titleText}>
-                DATOS DE LA FINCA
+              <Text color={COLORS.textTertiary} weight="500" style={styles.titleText}>
+                Datos De La Finca
               </Text>
             </View>
 
@@ -158,14 +158,14 @@ export default function FincaDetalleScreen({
                 size={18}
               />
               <Text size={15}>
-                {loadingPdf ? "GENERANDO..." : "GENERAR REPORTE FINCA"}
+                {loadingPdf ? "Generando..." : "Generar Reporte Finca"}
               </Text>
             </Button>
           </Card>
           <Button style={styles.addButton} onPress={() => onEstanque(finca.codigoCBO)}>
             <Icon style={styles.addButtonText} icon={ICONS.add} size={15} />
             <Text style={styles.addButtonText} size={15}>
-              REGISTRAR NUEVO ESTANQUE
+              Añadir Estanque
             </Text>
           </Button>
 

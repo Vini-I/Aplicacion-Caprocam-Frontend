@@ -341,11 +341,12 @@ touchableContainer: {
   },
 
   alertWrapper: {
-    marginBottom: 12,
-    paddingHorizontal: 16,
-    width: '100%',
-    maxWidth: 900,
-    alignSelf: 'center',
+  marginTop: 12,
+  marginBottom: 12,
+  paddingHorizontal: 0,
+  width: '100%',
+  maxWidth: 900,
+  alignSelf: 'center',
   },
 
   // ----- Modal de detalle -----

@@ -172,7 +172,7 @@ export default function EquiposListScreen() {
         )}
 
         {alert && (
-          <View style={styles.alertWrapper}>
+          <View style={[STYLE.contentWrapper, { marginTop: 6, marginBottom: 6 }]}>
             <Alert variant={alert.type} message={alert.message} />
           </View>
         )}
@@ -203,7 +203,7 @@ export default function EquiposListScreen() {
         <View style={styles.floatingButtonContainer}>
           <Button variant="outline" onPress={handleAdd} style={styles.floatingButton}>
             <Icon icon={ICONS.add} size={16} color={COLORS.primary} />
-            <CustomText style={styles.floatingButtonText}>Agregar equipo</CustomText>
+            <CustomText style={styles.floatingButtonText}>Añadir equipo</CustomText>
           </Button>
         </View>
 

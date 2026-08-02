@@ -113,15 +113,15 @@ export function useVentaEditar({ id, onGuardado } = {}) {
         if (!activo) return;
 
         setVentaOriginal(venta);
-        setFincaSeleccionadaState(venta?.finca_id ?? "");
-        setEstanqueSeleccionado(venta?.estanque_id ?? "");
-        setPesoPromedio(String(venta?.peso_promedio ?? "0.1"));
-        setTamanoPromedio(String(venta?.tamano_promedio ?? "0.1"));
-        setKilosVendidos(String(venta?.cantidad_vendida ?? "0"));
-        setPrecioKilo(String(venta?.precio_kilo ?? "0"));
+        setFincaSeleccionadaState(venta?.finca ?? "");
+        setEstanqueSeleccionado(venta?.estanque ?? "");
+        setPesoPromedio(String(venta?.pesoPromedio ?? "0.1"));
+        setTamanoPromedio(String(venta?.tamanoPromedio ?? "0.1"));
+        setKilosVendidos(String(venta?.cantVendida ?? "0"));
+        setPrecioKilo(String(venta?.precioKilo ?? "0"));
         setFechaVenta(formatearFechaDesdeBackend(venta?.fecha));
-        setColaboradorSeleccionado(venta?.colaborador_id ?? "");
-        setCompradorSeleccionado(venta?.comprador_id ?? CLIENTE_GENERICO);
+        setColaboradorSeleccionado(venta?.colaborador ?? "");
+        setCompradorSeleccionado(venta?.comprador ?? CLIENTE_GENERICO);
       } catch (error) {
         console.error("No se pudo cargar la venta a editar:", error);
       } finally {
