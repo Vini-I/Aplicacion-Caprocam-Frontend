@@ -16,7 +16,7 @@
  *   asociado (opcional), horas para mantenimiento y estado.
  * - Valida campos obligatorios al intentar guardar.
  * - Muestra alerta de éxito (verde, 3s) al guardar correctamente
- *   y redirige a la lista de equipos.
+ *   y permanece en la misma pantalla (en creación limpia el formulario).
  * - Muestra alerta de error (rojo, 6s) si hay campos incompletos
  *   o inválidos, con ScrollToEnd automático al alert.
  * - Botón "Guardar Equipo" / "Actualizar Equipo" con ícono.
@@ -28,7 +28,7 @@
  * @dependencies - STYLE (estilos globales)
  * @validations  - Campos obligatorios: codigoInterno, nombre, descripción,
  *                 tipo, fechaInstalacion, funcionEquipo, estadoOperativo.
- * @navigation   - Redirige a '/equipos/equipos' tras guardar con éxito.
+ * @navigation   - No redirige al guardar, permanece en la misma pantalla.
  * ============================================================
  */
 
@@ -99,6 +99,7 @@ export default function RegistrarEquipoScreen() {
     estadosOperativos,
     actualizarCampo,
     guardarEquipo,
+    resetFormulario,
   } = useRegistrarEquipo(equipoEdicion);
 
   const [estanquesDisponibles, setEstanquesDisponibles] = useState([]);
@@ -126,19 +127,19 @@ export default function RegistrarEquipoScreen() {
   const handleGuardar = async () => {
     try {
       await guardarEquipo();
+      // Éxito: mostrar alerta y NO redirigir
       showAlert(
         'success',
         isEditing ? 'Equipo actualizado correctamente.' : 'Equipo registrado correctamente.',
-        ALERT_DURACION_EXITO,
+        ALERT_DURACION_EXITO
       );
-      setTimeout(() => {
-        router.replace('/equipos/equipos');
-      }, 1500);
+      // Si es edición, no se limpia el formulario (el hook no lo hace)
+      // Si es creación, el hook ya limpió el formulario y reinició submitted
     } catch (error) {
       showAlert(
         'danger',
         error.message || 'Ocurrió un error al guardar el equipo.',
-        ALERT_DURACION_ERROR,
+        ALERT_DURACION_ERROR
       );
       // ScrollToEnd para llevar al usuario al alert de error (Estándar 3)
       setTimeout(() => {
