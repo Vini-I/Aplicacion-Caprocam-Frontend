@@ -136,37 +136,35 @@ export default function DetalleReporteScreen() {
 
               {loading ? (
                 <View style={styles.emptyState}>
-                  <Text style={styles.emptyTitle}>Cargando registros...</Text>
+                  <Text style={styles.emptyTitle}>
+                    Cargando registros...
+                  </Text>
                 </View>
+
               ) : !filtrosCompletos ? (
+
                 <View style={styles.emptyState}>
+
                   <Icon
                     icon={ICONS.filter}
                     size={48}
                     color={COLORS.textQuaternary}
                   />
-                  <Text style={styles.emptyTitle}>Seleccione los filtros</Text>
+
+                  <Text style={styles.emptyTitle}>
+                    Seleccione los filtros
+                  </Text>
+
                   <Text style={styles.emptyDescription}>
                     Seleccione un registro, finca y estanque para consultar.
                   </Text>
+
                 </View>
-              ) : !TIPOS_AUTOGESTIONADOS.includes(registroTipo) &&
-                registros.length === 0 ? (
-                <View style={styles.emptyState}>
-                  <Icon
-                    icon={ICONS.document}
-                    size={48}
-                    color={COLORS.textQuaternary}
-                  />
-                  <Text style={styles.emptyTitle}>
-                    No hay registros disponibles
-                  </Text>
-                  <Text style={styles.emptyDescription}>
-                    No se encontraron registros con los filtros seleccionados.
-                  </Text>
-                </View>
+
               ) : (
+
                 <View style={styles.lista}>
+
                   {registroTipo === "crecimiento" && (
                     <CardCrecimiento
                       fincaId={finca}
@@ -176,11 +174,19 @@ export default function DetalleReporteScreen() {
                   )}
 
                   {registroTipo === "parasitologia" && (
-                    <CardParasitologia data={registros} />
+                    <CardParasitologia
+                      fincaId={finca}
+                      estanqueId={estanque}
+                      onAlertChange={setAlert}
+                    />
                   )}
 
                   {registroTipo === "enfermedades" && (
-                    <CardEnfermedades data={registros} />
+                    <CardEnfermedades
+                      fincaId={finca}
+                      estanqueId={estanque}
+                      onAlertChange={setAlert}
+                    />
                   )}
 
                   {registroTipo === "raleo" && (
@@ -191,73 +197,6 @@ export default function DetalleReporteScreen() {
                     />
                   )}
 
-                    <Text style={styles.emptyTitle}>
-                      No hay registros disponibles
-                    </Text>
-
-                    <Text style={styles.emptyDescription}>
-                      No se encontraron registros con los filtros seleccionados.
-                    </Text>
-
-                  </View>
-
-
-                ) : (
-
-                  <View style={styles.lista}>
-
-                    {
-                      registroTipo === "crecimiento" && (
-                        <CardCrecimiento
-                          data={registros}
-                        />
-                      )
-                    }
-
-                    {
-                      registroTipo === "parasitologia" && (
-                        <CardParasitologia
-                          fincaId={finca}
-                          estanqueId={estanque}
-                          onAlertChange={setAlert}
-                        />
-                      )
-                    }
-
-                    {
-                      registroTipo === "enfermedades" && (
-                        <CardEnfermedades
-                          fincaId={finca}
-                          estanqueId={estanque}
-                          onAlertChange={setAlert}
-                        />
-                      )
-                    }
-
-                    {
-                      registroTipo === "raleo" && (
-                        <CardRaleo
-                          data={registros}
-                        />
-                      )
-                    }
-
-                    {registroTipo === "alimentacion" && (
-                      <CardAlimentacion
-                        fincaId={finca}
-                        estanqueId={estanque}
-                        onAlertChange={setAlert}
-                      />
-                    )}
-
-                    {
-                      registroTipo === "densidad_poblacional" && (
-                        <CardDensidadPoblacional
-                          data={registros}
-                        />
-                      )
-                    }
-                    
                   {registroTipo === "alimentacion" && (
                     <CardAlimentacion
                       fincaId={finca}
@@ -273,6 +212,7 @@ export default function DetalleReporteScreen() {
                       onAlertChange={setAlert}
                     />
                   )}
+
                 </View>
               )}
             </Card>
