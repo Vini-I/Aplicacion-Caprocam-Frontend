@@ -51,7 +51,10 @@ export default function CardAlimentacion({ fincaId, estanqueId, onEditar, onAler
     return (
         <>
             {alimentaciones.map((registro) => (
-                <Card key={registro.id} style={styles.cardRegistro}>
+                <Card 
+                key={registro.id} 
+                style={[styles.cardRegistro,{ borderLeftColor: COLORS.Alimentacion }]}
+                >
                     <View style={styles.infoGrid}>
                         <View style={styles.infoItem}>
                             <Text style={styles.label}>Producto</Text>

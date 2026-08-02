@@ -3,10 +3,14 @@
  * PANTALLA DE DETALLE DE REGISTROS DEL MÓDULO DE REGISTROS
  * ============================================================
  *
- * Muestra el historial de registros filtrado por tipo_registro finca, estanque y fecha,
- * permitiendo revisar los registros de forma organizada.
+ * Muestra el historial de registros filtrado por tipo_registro,
+ * finca y estanque, permitiendo revisar los registros de forma
+ * organizada.
+ *
+ * Los tipos en TIPOS_AUTOGESTIONADOS (alimentación, crecimiento,
+ * densidad poblacional) cargan y eliminan sus propios datos
+ * desde sus Cards/hooks, notificando el alert a esta pantalla.
  */
-
 
 import { ScrollView, View } from "react-native";
 
@@ -25,7 +29,10 @@ import CardAlimentacion from "../components/CardAlimentacion.jsx";
 import CardDensidadPoblacional from "../components/CardDensidadPoblacional.jsx";
 
 import { useDetalleReporte } from "../hooks/useDetalleReporte.js";
-import { TIPOS_REGISTRO, TIPOS_AUTOGESTIONADOS } from "../constants/tipoReporte.js";
+import {
+  TIPOS_REGISTRO,
+  TIPOS_AUTOGESTIONADOS,
+} from "../constants/tipoReporte.js";
 
 import { COLORS } from "../../../theme/colors.js";
 import { ICONS } from "../../../theme/icons.js";
@@ -34,7 +41,6 @@ import { STYLE } from "../../../theme/style.js";
 import { styles } from "../styles/DetalleReporteStyle.js";
 
 export default function DetalleReporteScreen() {
-
   const {
     registroTipo,
     finca,
@@ -78,7 +84,12 @@ export default function DetalleReporteScreen() {
             <Card>
               <View>
                 <Text size={16} style={styles.filterTitle}>
-                  <Icon style={styles.icon} icon={ICONS.filter} color={COLORS.primary} size={18} />
+                  <Icon
+                    style={styles.icon}
+                    icon={ICONS.filter}
+                    color={COLORS.primary}
+                    size={18}
+                  />
                   Filtrar Detalle
                 </Text>
 
@@ -99,7 +110,6 @@ export default function DetalleReporteScreen() {
                     />
                   </View>
                 </View>
-
 
                 <View style={styles.inputs}>
                   <View style={styles.inputItem}>
@@ -124,46 +134,62 @@ export default function DetalleReporteScreen() {
                 </View>
               </View>
 
-              {
-                loading ? (
-
-                  <View style={styles.emptyState}>
-                    <Text style={styles.emptyTitle}>
-                      Cargando registros...
-                    </Text>
-                  </View>
-
-
-                ) : !filtrosCompletos ? (
-
-                  <View style={styles.emptyState}>
-
-                    <Icon
-                      icon={ICONS.filter}
-                      size={48}
-                      color={COLORS.textQuaternary}
+              {loading ? (
+                <View style={styles.emptyState}>
+                  <Text style={styles.emptyTitle}>Cargando registros...</Text>
+                </View>
+              ) : !filtrosCompletos ? (
+                <View style={styles.emptyState}>
+                  <Icon
+                    icon={ICONS.filter}
+                    size={48}
+                    color={COLORS.textQuaternary}
+                  />
+                  <Text style={styles.emptyTitle}>Seleccione los filtros</Text>
+                  <Text style={styles.emptyDescription}>
+                    Seleccione un registro, finca y estanque para consultar.
+                  </Text>
+                </View>
+              ) : !TIPOS_AUTOGESTIONADOS.includes(registroTipo) &&
+                registros.length === 0 ? (
+                <View style={styles.emptyState}>
+                  <Icon
+                    icon={ICONS.document}
+                    size={48}
+                    color={COLORS.textQuaternary}
+                  />
+                  <Text style={styles.emptyTitle}>
+                    No hay registros disponibles
+                  </Text>
+                  <Text style={styles.emptyDescription}>
+                    No se encontraron registros con los filtros seleccionados.
+                  </Text>
+                </View>
+              ) : (
+                <View style={styles.lista}>
+                  {registroTipo === "crecimiento" && (
+                    <CardCrecimiento
+                      fincaId={finca}
+                      estanqueId={estanque}
+                      onAlertChange={setAlert}
                     />
+                  )}
 
-                    <Text style={styles.emptyTitle}>
-                      Seleccione los filtros
-                    </Text>
+                  {registroTipo === "parasitologia" && (
+                    <CardParasitologia data={registros} />
+                  )}
 
-                    <Text style={styles.emptyDescription}>
-                      Seleccione un registro, finca y estanque para consultar.
-                    </Text>
+                  {registroTipo === "enfermedades" && (
+                    <CardEnfermedades data={registros} />
+                  )}
 
-                  </View>
-
-
-                ) : !TIPOS_AUTOGESTIONADOS.includes(registroTipo) && registros.length === 0 ? (
-
-                  <View style={styles.emptyState}>
-
-                    <Icon
-                      icon={ICONS.document}
-                      size={48}
-                      color={COLORS.textQuaternary}
+                  {registroTipo === "raleo" && (
+                    <CardRaleo
+                      fincaId={finca}
+                      estanqueId={estanque}
+                      onAlertChange={setAlert}
                     />
+                  )}
 
                     <Text style={styles.emptyTitle}>
                       No hay registros disponibles
@@ -231,14 +257,28 @@ export default function DetalleReporteScreen() {
                         />
                       )
                     }
+                    
+                  {registroTipo === "alimentacion" && (
+                    <CardAlimentacion
+                      fincaId={finca}
+                      estanqueId={estanque}
+                      onAlertChange={setAlert}
+                    />
+                  )}
 
-                  </View>
-                )
-              }
+                  {registroTipo === "densidad_poblacional" && (
+                    <CardDensidadPoblacional
+                      fincaId={finca}
+                      estanqueId={estanque}
+                      onAlertChange={setAlert}
+                    />
+                  )}
+                </View>
+              )}
             </Card>
           </View>
         </View>
       </ScrollView>
     </View>
-  )
+  );
 }
