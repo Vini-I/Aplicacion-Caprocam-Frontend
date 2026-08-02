@@ -156,6 +156,23 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginBottom: 12,
   },
+  errorText: {
+    color: COLORS.textPrimary,
+  },
+  centerContent: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  buttonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  buttonText: {
+    marginLeft: 6,
+    color: COLORS.primary,
+    fontFamily: TYPOGRAPHY.fontFamily.medium,
+    fontSize: 16,
+  },
 });
 
 export default styles;

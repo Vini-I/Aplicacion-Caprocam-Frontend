@@ -4,6 +4,9 @@
  * ============================================================
  *
  * Selecciona un colaborador y valida su PIN para continuar.
+ * @dependencies - Alert, Avatar, Button, Card, Icon, Modal, Text, Title, Input, SearchBar, useLoginFlow
+ * @validations - El PIN debe contener 4 dígitos obligatoriamente.
+ * @navigation - Navega a la pantalla principal si el login es exitoso.
  */
 
 import { useState } from 'react';
@@ -23,7 +26,7 @@ import { COLORS } from '../../../theme/colors';
 import { ICONS } from '../../../theme/icons';
 import { LOGIN_MESSAGES } from '../constants/messages';
 import { useLoginFlow } from '../hooks/useLoginFlow';
-import WorkerSearchBar from '../components/WorkerSearchBar';
+import SearchBar from '../../../shared/components/SearchBar';
 import styles from '../styles/loginStyles';
 import { STYLE } from '../../../theme/style';
 
@@ -114,17 +117,12 @@ function WorkerSection({
     // Por ahora alterna entre éxito y error para demostración
     const result = Math.random() > 0.5 ? 'success' : 'danger';
     setSyncStatus(result);
+    setTimeout(() => setSyncStatus(null), result === 'success' ? 3000 : 6000);
     if (onSyncData) onSyncData();
   };
 
   return (
     <Card style={styles.sectionCard}>
-      <Title level={4} color={COLORS.textPrimary} align="center">
-        {LOGIN_MESSAGES.WORKER_TITLE}
-      </Title>
-      <Button onPress={handleSync} variant="outline" disabled={isSyncDisabled} style={styles.syncButton}>
-        {LOGIN_MESSAGES.SYNC_BUTTON_TEXT}
-      </Button>
       {syncStatus === 'success' && (
         <Alert
           variant="success"
@@ -139,24 +137,34 @@ function WorkerSection({
           style={styles.syncAlert}
         />
       )}
-      <WorkerSearchBar
+      <Title level={4} color={COLORS.textPrimary} align="center">
+        {LOGIN_MESSAGES.WORKER_TITLE}
+      </Title>
+      <Button onPress={handleSync} variant="outline" disabled={isSyncDisabled} style={styles.syncButton}>
+        <View style={styles.buttonContent}>
+          <Icon icon={ICONS.refresh || ICONS.update} size={18} color={COLORS.primary} />
+          <Text style={styles.buttonText}>{LOGIN_MESSAGES.SYNC_BUTTON_TEXT}</Text>
+        </View>
+      </Button>
+      <SearchBar
         value={searchText}
         onChangeText={onSearchTextChange}
         placeholder={LOGIN_MESSAGES.SEARCH_PLACEHOLDER}
+        containerStyle={styles.searchContainer}
       />
       {loading && <SectionStatus message={LOGIN_MESSAGES.LOADING} />}
       {error && (
         <Alert
           variant="danger"
           message="No se encontraron colaboradores."
-          style={[styles.syncAlert, { }]}
-          textStyle={{ color: '#000000' }}
+          style={styles.syncAlert}
+          textStyle={styles.errorText}
         />
       )}
       {!loading && !error && (
         <View style={styles.workersList}>
           {workers.length === 0 ? (
-            <View style={[styles.workersScroll, syncStatus && styles.workersScrollCompressed, { justifyContent: 'center', alignItems: 'center' }]}>
+            <View style={[styles.workersScroll, syncStatus && styles.workersScrollCompressed, styles.centerContent]}>
               <SectionStatus message={LOGIN_MESSAGES.NO_WORKERS_FOUND} />
             </View>
           ) : (
@@ -180,7 +188,10 @@ function WorkerSection({
       )}
       <View style={styles.actionSection}>
         <Button onPress={onContinue} variant="outline" disabled={!isFormValid} style={styles.continueButton}>
-          {LOGIN_MESSAGES.BUTTON_TEXT}
+          <View style={styles.buttonContent}>
+            <Icon icon={ICONS.enter} size={18} color={isFormValid ? COLORS.primary : COLORS.textTertiary} />
+            <Text style={[styles.buttonText, !isFormValid && { color: COLORS.textTertiary }]}>{LOGIN_MESSAGES.BUTTON_TEXT}</Text>
+          </View>
         </Button>
       </View>
     </Card>
