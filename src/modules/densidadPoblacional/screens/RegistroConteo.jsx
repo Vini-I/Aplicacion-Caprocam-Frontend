@@ -3,33 +3,33 @@
  * SCREEN REGISTROCONTEO
  * ============================================================
  *
- * Card con la fecha de registro del conteo y el método de
+ * Card con la fecha de registro del conteo y el metodo de
  * conteo usado.
  *
  * Funcionalidad:
- * - Corrige un bug funcional: este componente recibía las props
+ * - Corrige un bug funcional: este componente recibia las props
  *   `fecha`/`cambiarFecha` de su padre pero las ignoraba por
  *   completo, usando su propio estado local de fecha. Esto
  *   desconectaba el valor real de fecha del resto del formulario
  *   y del guardado. Ahora usa directamente las props recibidas
  *   (value={fecha}, onChangeText={cambiarFecha}).
  * - Elimina el import no usado de Icon (no se usaba en este
- *   archivo) y un <Text> vacío sin contenido que no cumplía
- *   ninguna función.
- * - El campo "Método de conteo" es intencionalmente un Input
- *   deshabilitado con value="Directo" fijo: este módulo no ofrece
- *   más de un método de conteo (a diferencia de Alimentación o
+ *   archivo) y un <Text> vacio sin contenido que no cumplia
+ *   ninguna funcion.
+ * - El campo "Metodo de conteo" es intencionalmente un Input
+ *   deshabilitado con value="Directo" fijo: este modulo no ofrece
+ *   mas de un metodo de conteo (a diferencia de Alimentacion o
  *   Raleo), por lo que es un valor fijo del sistema y no un
  *   bug ni un campo editable por el usuario.
  * - Aplica asterisco a la Fecha de Registro (obligatoria) y
- *   muestra borde rojo/mensaje de error vía la prop `inputStyle`
+ *   muestra borde rojo/mensaje de error via la prop `inputStyle`
  *   de DateInput cuando `submitted && !fecha`.
  *
  * Props principales:
  * - fecha: fecha actual del registro (string dd/mm/aaaa), viene
- *   de useDensidadPoblacional a través de la screen.
+ *   de useDensidadPoblacional a traves de la screen.
  * - cambiarFecha: setter de fecha (setFecha de useDensidadPoblacional).
- * - submitted / errores: estado de validación.
+ * - submitted / errores: estado de validacion.
  *
  * Ejemplo:
  * <RegistroConteo
@@ -50,16 +50,12 @@ import { ICONS } from "../../../theme/icons";
 import Icon from "../../../shared/components/Icons";
 import { styles } from "../styles/DensidadPoblacionalStyles";
 
-const bordeError = { borderColor: COLORS.error, borderWidth: 1.5 };
-
 export default function RegistroConteo({
   fecha,
   cambiarFecha,
   submitted = false,
   errores = {},
 }) {
-  const invalidoFecha = submitted && !fecha;
-
   return (
     <Card>
       <View style={styles.sectionTitleRow}>
@@ -69,11 +65,13 @@ export default function RegistroConteo({
           </Text>
               </View>
       <DateInput
-        label="Fecha de Registro *"
+        label="Fecha de Registro"
         value={fecha}
         onChangeText={cambiarFecha}
         allowFutureDates={true}
-        inputStyle={invalidoFecha ? bordeError : null}
+        required
+        submitted={submitted}
+        error={submitted ? (errores.fecha || "") : ""}
       />
 
       <Input
@@ -84,3 +82,4 @@ export default function RegistroConteo({
     </Card>
   );
 }
+
