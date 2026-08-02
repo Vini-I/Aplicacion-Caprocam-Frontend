@@ -1,159 +1,149 @@
 /**
- * ============================================================
- * HOOK USEEDITARDENSIDAD
- * ============================================================
+ * Calco de useDensidadPoblacional para edición.
  */
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import densidadPoblacionalService from "../services/DensidadPoblacional.service.js";
+import useFincaEstanqueDensidad from "./useFincaEstanqueDensidad";
 
-function registroAForm(registro) {
-  if (!registro) return {};
-  let fecha = registro.fecha ?? "";
+function hoy() {
+  const d = new Date();
+  return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
+}
+
+function toMysqlDate(fecha) {
+  if (!fecha) return "";
+  if (fecha.includes("-") && !fecha.includes("/")) return fecha.slice(0, 10);
+  const [d, m, y] = fecha.split("/");
+  return `${y}-${m}-${d}`;
+}
+
+function formatearFechaUI(fecha) {
+  if (!fecha) return hoy();
   if (typeof fecha === "string" && /^\d{4}-\d{2}-\d{2}/.test(fecha)) {
     const [y, m, d] = fecha.slice(0, 10).split("-");
-    fecha = `${d}/${m}/${y}`;
+    return `${d}/${m}/${y}`;
   }
-  return {
-    idFinca: String(registro.idFinca ?? registro.fincaId ?? ""),
-    idEstanque: String(registro.idEstanque ?? registro.estanqueId ?? ""),
-    fecha,
-    numeroCamarones: String(registro.numeroCamarones ?? ""),
-    tirosAtarraya: String(registro.tirosAtarraya ?? ""),
-    areaAtarraya: String(registro.areaAtarraya ?? ""),
-    promedioPorTiro: String(registro.promedioPorTiro ?? ""),
-    sobrevivencia: String(registro.sobrevivencia ?? registro.supervivencia ?? ""),
-    cantidadSiembra: String(registro.cantidadSiembra ?? registro.siembraPorM2 ?? ""),
-    areaEstanque: String(registro.areaEstanque ?? ""),
-    notasConteo: registro.notasConteo ?? "",
-  };
-}
-
-function formADto(form) {
-  let fechaBackend = form.fecha;
-  if (fechaBackend && fechaBackend.includes("/")) {
-    const [d, m, y] = fechaBackend.split("/");
-    fechaBackend = `${y}-${m}-${d}`;
-  }
-  return {
-    idFinca: Number(form.idFinca),
-    idEstanque: Number(form.idEstanque),
-    fecha: fechaBackend,
-    numeroCamarones: Number(form.numeroCamarones) || 0,
-    tirosAtarraya: Number(form.tirosAtarraya) || 0,
-    areaAtarraya: Number(form.areaAtarraya) || 0,
-    promedioPorTiro: Number(form.promedioPorTiro) || 0,
-    sobrevivencia: Number(form.sobrevivencia) || 0,
-    notasConteo: (form.notasConteo || "").trim() || "No hay notas",
-    cantidadSiembra: Number(form.cantidadSiembra) || 0,
-    areaEstanque: Number(form.areaEstanque) || 0,
-  };
-}
-
-function validarForm(form) {
-  const errores = {};
-  if (!form.fecha) errores.fecha = "Obligatorio";
-  return { valido: Object.keys(errores).length === 0, errores };
+  return fecha;
 }
 
 export default function useEditarDensidad(registroId, onGuardado) {
-  const [form, setForm] = useState({
-    idFinca: "",
-    idEstanque: "",
-    fecha: "",
-    numeroCamarones: "",
-    tirosAtarraya: "",
-    areaAtarraya: "",
-    promedioPorTiro: "",
-    sobrevivencia: "",
-    cantidadSiembra: "",
-    areaEstanque: "",
-    notasConteo: "",
-  });
-  const [cargando, setCargando] = useState(true);
+  const [finca, setFinca] = useState(null);
+  const [estanque, setEstanque] = useState(null);
+  const [fecha, setFecha] = useState(hoy());
   const [submitted, setSubmitted] = useState(false);
-  const [guardando, setGuardando] = useState(false);
   const [errores, setErrores] = useState({});
-  const [alerta, setAlerta] = useState({
-    visible: false,
-    variant: "success",
-    mensaje: "",
-  });
+  const [alerta, setAlerta] = useState({ visible: false, variant: "success", mensaje: "" });
+  const [cargando, setCargando] = useState(true);
 
-  const updateField = useCallback((campo, valor) => {
-    setForm((prev) => ({ ...prev, [campo]: valor }));
+  const [numeroCamarones, setNumeroCamarones] = useState("");
+  const [tirosAtarraya, setTirosAtarraya] = useState("");
+  const [areaAtarraya, setAreaAtarraya] = useState("");
+  const [promedioPorTiro, setPromedioPorTiro] = useState("");
+  const [supervivencia, setSupervivencia] = useState("");
+  const [siembraPorM2, setSiembraPorM2] = useState("");
+  const [areaEstanque, setAreaEstanque] = useState("");
+  const [notasConteo, setNotasConteo] = useState("");
+
+  const { fincasOptions, estanquesOptions } = useFincaEstanqueDensidad(finca);
+  const fincas = fincasOptions;
+  const estanques = estanquesOptions;
+
+  const setFincaYResetEstanque = useCallback((v) => {
+    setFinca(v);
+    setEstanque(null);
   }, []);
 
   useEffect(() => {
-    if (!registroId) {
-      setCargando(false);
-      return;
-    }
+    if (!registroId) { setCargando(false); return; }
     let activo = true;
     setCargando(true);
-    densidadPoblacionalService
-      .getById(registroId)
-      .then((registro) => {
-        if (!activo) return;
-        setForm((prev) => ({ ...prev, ...registroAForm(registro) }));
+    densidadPoblacionalService.getById(registroId)
+      .then((r) => {
+        if (!activo || !r) return;
+        setFinca(r.idFinca ?? r.fincaId ?? null);
+        setEstanque(r.idEstanque ?? r.estanqueId ?? null);
+        setFecha(formatearFechaUI(r.fecha));
+        setNumeroCamarones(String(r.numeroCamarones ?? ""));
+        setTirosAtarraya(String(r.tirosAtarraya ?? ""));
+        setAreaAtarraya(String(r.areaAtarraya ?? ""));
+        setPromedioPorTiro(String(r.promedioPorTiro ?? ""));
+        setSupervivencia(String(r.sobrevivencia ?? r.supervivencia ?? ""));
+        setSiembraPorM2(String(r.cantidadSiembra ?? r.siembraPorM2 ?? ""));
+        setAreaEstanque(String(r.areaEstanque ?? ""));
+        setNotasConteo(r.notasConteo ?? "");
       })
       .catch(() => {
-        if (activo) {
-          setAlerta({
-            visible: true,
-            variant: "error",
-            mensaje: "No se pudo cargar el registro.",
-          });
-        }
+        if (activo) setAlerta({ visible: true, variant: "danger", mensaje: "No se pudo cargar el registro." });
       })
-      .finally(() => {
-        if (activo) setCargando(false);
-      });
-    return () => {
-      activo = false;
-    };
+      .finally(() => { if (activo) setCargando(false); });
+    return () => { activo = false; };
   }, [registroId]);
 
   const handleGuardar = useCallback(async () => {
     setSubmitted(true);
-    const { valido, errores: err } = validarForm(form);
+    const err = {};
+    if (!finca) err.finca = "La finca es obligatoria";
+    if (!estanque) err.estanque = "El estanque es obligatorio";
+    if (!fecha) err.fecha = "La fecha es obligatoria";
     setErrores(err);
-    if (!valido) {
-      setAlerta({
-        visible: true,
-        variant: "error",
-        mensaje: "Revisá los campos marcados.",
-      });
+    if (Object.keys(err).length) {
+      setAlerta({ visible: true, variant: "danger", mensaje: "Por favor complete todos los campos obligatorios." });
       return;
     }
-    setGuardando(true);
     try {
-      await densidadPoblacionalService.update(registroId, formADto(form));
-      setAlerta({
-        visible: true,
-        variant: "success",
-        mensaje: "Registro actualizado correctamente.",
+      await densidadPoblacionalService.update(registroId, {
+        idFinca: finca,
+        idEstanque: estanque,
+        fecha: toMysqlDate(fecha),
+        numeroCamarones,
+        tirosAtarraya,
+        areaAtarraya,
+        promedioPorTiro,
+        sobrevivencia: supervivencia,
+        notasConteo: notasConteo?.trim() ? notasConteo : "No hay notas",
+        cantidadSiembra: siembraPorM2,
+        areaEstanque,
       });
+      setAlerta({ visible: true, variant: "success", mensaje: "Registro actualizado exitosamente" });
       onGuardado?.();
-    } catch (error) {
+    } catch (e) {
       setAlerta({
         visible: true,
-        variant: "error",
-        mensaje:
-          error.response?.data?.message || "No se pudo actualizar el registro.",
+        variant: "danger",
+        mensaje: e.response?.data?.message || "No se pudo actualizar el registro.",
       });
-    } finally {
-      setGuardando(false);
     }
-  }, [form, registroId, onGuardado]);
+  }, [finca, estanque, fecha, numeroCamarones, tirosAtarraya, areaAtarraya, promedioPorTiro, supervivencia, siembraPorM2, areaEstanque, notasConteo, registroId, onGuardado]);
 
   return {
-    form,
-    updateField,
-    cargando,
+    finca,
+    setFinca: setFincaYResetEstanque,
+    estanque,
+    setEstanque,
+    fecha,
+    setFecha,
+    fincas,
+    estanques,
     submitted,
     errores,
     alerta,
-    guardando,
     handleGuardar,
+    cargando,
+    numeroCamarones,
+    setNumeroCamarones,
+    tirosAtarraya,
+    setTirosAtarraya,
+    areaAtarraya,
+    setAreaAtarraya,
+    promedioPorTiro,
+    setPromedioPorTiro,
+    supervivencia,
+    setSupervivencia,
+    siembraPorM2,
+    setSiembraPorM2,
+    areaEstanque,
+    setAreaEstanque,
+    notasConteo,
+    setNotasConteo,
   };
 }
