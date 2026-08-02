@@ -211,8 +211,8 @@ export function useRegistrarEquipo(initialData = null) {
     try {
       const payload = crearEquipoPayload(formulario, {
         isEditing,
-        estadoActual: initialData?.estado,
-        horasActualesActual: initialData?.horasActuales,
+        estadoActual: initialData?.encendido ? 'Encendido' : 'Apagado',
+        horasActualesActual: initialData?.horasUso,
       });
 
       if (isEditing) {

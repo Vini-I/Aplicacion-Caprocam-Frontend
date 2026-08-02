@@ -2,50 +2,47 @@
  * ============================================================
  * COMPONENTE: EquipoFechaInput
  * ============================================================
+ * Módulo: Mantenimiento de Equipos
  *
- * Adaptador local para la fecha de instalación.
- * En móvil usa DateInput nativo y en web un Input editable,
- * manteniendo el mismo contrato de onChangeText.
- * Ruta: src/modules/mantEquipo/components/EquipoFechaInput.jsx
+ * Descripción:
+ * Adaptador local para la fecha de instalación del equipo.
+ * Delega completamente al componente compartido DateInput, que
+ * ya maneja web (input type="date") y móvil (DateTimePicker)
+ * de forma interna, sin necesidad de bifurcación por Platform.
+ *
+ * @dependencies - DateInput (shared/components/DateInput)
+ * @validations  - Ninguna propia; el componente DateInput
+ *                 gestiona el estado de error vía props `error`,
+ *                 `required` y `submitted`.
+ * @navigation   - No navega a ninguna pantalla.
+ * ============================================================
  */
 
-import React from "react";
-// Watcher trigger
-import { Platform } from "react-native";
-
-import DateInput from "../../../shared/components/DateInput.jsx";
-import Input from "../../../shared/components/Input.jsx";
+import React from 'react';
+import DateInput from '../../../shared/components/DateInput.jsx';
 
 export default function EquipoFechaInput({
-  label = "",
-  value = "",
+  label = '',
+  value = '',
   onChangeText,
-  placeholder = "Seleccione la fecha de instalacaaión",
+  placeholder = 'Seleccione la fecha de instalación',
+  disabled = false,
+  required = false,
+  submitted = false,
+  error = '',
   inputStyle,
   labelStyle,
 }) {
-  if (Platform.OS === "web") {
-    return (
-      <Input
-        label={label}
-        value={value}
-        onChangeText={onChangeText}
-        placeholder="dd/mm/aaaa"
-        inputMode="numeric"
-        maxLength={10}
-        containerStyle={{ width: "100%" }}
-        style={inputStyle}
-        labelStyle={labelStyle}
-      />
-    );
-  }
-
   return (
     <DateInput
       label={label}
       value={value}
       onChangeText={onChangeText}
       placeholder={placeholder}
+      disabled={disabled}
+      required={required}
+      submitted={submitted}
+      error={error}
       inputStyle={inputStyle}
       labelStyle={labelStyle}
     />

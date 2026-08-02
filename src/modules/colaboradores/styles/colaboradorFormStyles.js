@@ -26,7 +26,6 @@ export const styles = StyleSheet.create({
     borderWidth: 1.5,
   },
     alertContainer: {
-    marginBottom: 12,
     width: "100%",
     alignItems: "center",
     justifyContent: "center",
