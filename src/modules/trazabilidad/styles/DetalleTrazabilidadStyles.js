@@ -1,20 +1,14 @@
 /**
  * ============================================================
- * ESTILOS - DETALLE TRAZABILIDAD
+ * ESTILOS DetalleTrazabilidadStyles
  * ============================================================
  *
  * Descripción:
- * Estilos para la pantalla de detalle de un registro de
- * trazabilidad (lectura única, no editable). Incluye layout
- * para mostrar origen/destino y metadatos del movimiento.
+ * Estilos centralizados para la pantalla de detalle de trazabilidad.
  *
- * Reglas importantes:
- * - Mantener la pantalla como solo lectura (sin botones de
- *   edición o borrado).
- * - Usar colores y tipografías del tema del proyecto.
- *
- * Restricciones:
- * - Este archivo sólo contiene estilos (StyleSheet).
+ * @dependencies StyleSheet, COLORS, TYPOGRAPHY
+ * @validations N/A
+ * @navigation N/A
  */
 
 import { StyleSheet } from "react-native";
@@ -94,6 +88,7 @@ export const styles = StyleSheet.create({
 
   inputLectura: {
     backgroundColor: COLORS.secondary,
+    dropShadow: "none",
   },
 
   labelLectura: {

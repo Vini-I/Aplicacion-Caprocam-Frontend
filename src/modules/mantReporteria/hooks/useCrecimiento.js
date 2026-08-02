@@ -50,28 +50,35 @@ export default function useCrecimiento(fincaId, estanqueId, onAlertChange) {
       );
 
       const enriquecidos = data.map((registro) => ({
-        ...registro,
-        nombreFinca:
-          fincasMap[
-            Number(registro.finca_id || registro.fincaId || registro.idFinca)
-          ] ?? "No encontrada",
-        codigoEstanque:
-          estanquesMap[
-            Number(
-              registro.estanque_id ||
-                registro.estanqueId ||
-                registro.idEstanque,
-            )
-          ] ?? "No encontrado",
-        nombreColaborador:
-          colaboradoresMap[
-            Number(
-              registro.colaborador_id ||
-                registro.colaboradorId ||
-                registro.idColaborador,
-            )
-          ] ?? "No encontrado",
-      }));
+  ...registro,
+  nombreFinca:
+    fincasMap[
+      Number(
+        registro.finca ??
+          registro.finca_id ??
+          registro.fincaId ??
+          registro.idFinca
+      )
+    ] ?? "No encontrada",
+  codigoEstanque:
+    estanquesMap[
+      Number(
+        registro.estanque ??
+          registro.estanque_id ??
+          registro.estanqueId ??
+          registro.idEstanque
+      )
+    ] ?? "No encontrado",
+  nombreColaborador:
+    colaboradoresMap[
+      Number(
+        registro.colaborador ??
+          registro.colaborador_id ??
+          registro.colaboradorId ??
+          registro.idColaborador
+      )
+    ] ?? "No encontrado",
+}));
 
       setCrecimientos(enriquecidos);
     } catch (error) {

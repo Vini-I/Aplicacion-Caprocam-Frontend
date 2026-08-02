@@ -23,6 +23,9 @@ import { StyleSheet } from "react-native";
 import { COLORS } from "../../../theme/colors"
 
 export const styles = StyleSheet.create({
+  content:{
+    paddingBottom: 55,
+  },
 
   filaDetalle: {
     flexDirection: "row",
@@ -69,6 +72,16 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 8,
     marginVertical: 20,
+  },
+
+  addButtonContainer: {
+    position: "absolute",
+    bottom: 0,
+    left: 16,
+    right: 16,
+    backgroundColor: "transparent",
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   addButtonText: {

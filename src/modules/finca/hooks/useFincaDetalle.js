@@ -45,7 +45,24 @@ export default function useFincaDetalle() {
 
   const { crearPDFFinca, loading: loadingPdf } = usePdf();
 
-  const handleGenerar = () => crearPDFFinca(finca, estanquesFinca);
+  const handleGenerar = async () => {
+  try {
+    // Cargar el detalle completo de cada estanque (incluye equipos)
+    const estanquesCompletos = await Promise.all(
+      estanquesFinca.map(async (e) => {
+        try {
+          return await estanqueService.getEstanqueById(e.id);
+        } catch {
+          return e; // si falla, al menos usa el resumen
+        }
+      })
+    );
+
+    await crearPDFFinca(finca, estanquesCompletos);
+  } catch (error) {
+    console.log("Error al preparar datos del PDF:", error);
+  }
+};
 
   function abrirModalEliminar(estanque) {
     setEstanqueSeleccionado(estanque);

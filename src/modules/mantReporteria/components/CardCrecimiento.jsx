@@ -83,7 +83,8 @@ export default function CardCrecimiento({ fincaId, estanqueId, onEditar, onAlert
                         <View style={styles.infoItem}>
                             <Text style={styles.label}>Fecha</Text>
                             <Text style={styles.value}>
-                                {new Date(registro.fecha_registro || registro.fecha).toLocaleDateString("es-CR")}
+                                
+                                {new Date(registro.fechaRegistro || registro.fecha_registro || registro.fecha).toLocaleDateString("es-CR")}
                             </Text>
                         </View>
                     </View>

@@ -8,7 +8,6 @@
  */
 
 import { getCurrentDate } from "../../../shared/utils/dateUtils";
-import { estanques } from "../../finca/screens/EstanqueData";
 
 export const TIPOS_ESTANQUE = [
   {
@@ -112,49 +111,68 @@ export function obtenerValor(estanque, params, campo, respaldo) {
 }
 
 export function validarFormularioEstanque(datos) {
-  const camposObligatorios = [
-    "codigo",
-    "tipoEstanque",
-    "estado",
-    "largo",
-    "ancho",
-    "profundidad",
-    "fuenteAgua",
-    "fechaMantenimiento",
-    "precria",
-  ];
+  const errores = {};
 
-  for (const campo of camposObligatorios) {
-    const valor = datos[campo];
+  if (!datos.codigo || String(datos.codigo).trim() === "") {
+    errores.codigo = "Código del estanque es requerido. Ej: EST-01";
+  }
 
+  if (!datos.tipoEstanque || String(datos.tipoEstanque).trim() === "") {
+    errores.tipoEstanque = "Seleccione el tipo de estanque.";
+  }
+
+  if (!datos.estado || String(datos.estado).trim() === "") {
+    errores.estado = "Seleccione el estado del estanque.";
+  }
+
+  const validarNumero = (valor, nombre, ejemplo) => {
     if (valor === "" || valor === undefined || valor === null) {
-      return {
-        valido: false,
-        tipoMensaje: "danger",
-        mensaje: "Rellene los datos requeridos.",
-      };
+      return `${nombre} es requerido. Ej: ${ejemplo}`;
     }
+    const num = Number(String(valor).replace(/,/g, "."));
+    if (isNaN(num) || num <= 0) {
+      return `${nombre} debe ser un número mayor que 0. Ej: ${ejemplo}`;
+    }
+    return null;
+  };
+
+  const errLargo = validarNumero(datos.largo, "Largo (m)", "100");
+  if (errLargo) errores.largo = errLargo;
+
+  const errAncho = validarNumero(datos.ancho, "Ancho (m)", "80");
+  if (errAncho) errores.ancho = errAncho;
+
+  const errProf = validarNumero(datos.profundidad, "Profundidad (m)", "0.80");
+  if (errProf) errores.profundidad = errProf;
+
+  if (!datos.fuenteAgua || String(datos.fuenteAgua).trim() === "") {
+    errores.fuenteAgua = "Seleccione la fuente de agua.";
+  }
+
+  if (!datos.fechaMantenimiento || String(datos.fechaMantenimiento).trim() === "") {
+    errores.fechaMantenimiento = "Fecha de último mantenimiento es requerida.";
+  }
+
+  if (datos.precria === undefined || datos.precria === null || String(datos.precria).trim() === "") {
+    errores.precria = "Indique si utiliza precría.";
+  }
+
+  const keys = Object.keys(errores);
+  if (keys.length > 0) {
+    return {
+      valido: false,
+      tipoMensaje: "danger",
+      mensaje: errores[keys[0]] || "Rellene los datos requeridos.",
+      errores,
+    };
   }
 
   return {
     valido: true,
-    tipoMensaje: "info",
-    mensaje: "Rellene los datos requeridos.",
+    tipoMensaje: "success",
+    mensaje: "",
+    errores: {},
   };
-}
-
-export function eliminarEstanqueLocal(codigo) {
-  let eliminado = false;
-
-  for (let index = 0; index < estanques.length; index++) {
-    if (estanques[index].codigo === codigo) {
-      estanques.splice(index, 1);
-      eliminado = true;
-      break;
-    }
-  }
-
-  return eliminado;
 }
 
 export function obtenerOpcionesEstanqueSeleccionado(codigoEstanque, fincaNombre) {

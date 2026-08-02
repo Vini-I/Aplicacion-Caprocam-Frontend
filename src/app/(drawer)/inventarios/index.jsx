@@ -9,7 +9,7 @@ export default function InventariosIndex() {
   };
 
   const handleNuevoProducto = () => {
-    router.push("/inventarios/productForm");
+    router.push("/inventarios/agregarProducto");
   };
 
   const handleInicio = () => {

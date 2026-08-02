@@ -28,16 +28,19 @@
  */
 
 import React from "react";
-import { View, FlatList } from "react-native";
+import { View, FlatList, ActivityIndicator } from "react-native";
 
 import Card from "../../../shared/components/Card";
+import CardPress from "../../../shared/components/CardPress";
 import Button from "../../../shared/components/Button";
 import Icon from "../../../shared/components/Icons";
 import Text from "../../../shared/components/Text";
 import SearchBar from "../../../shared/components/SearchBar";
 import FilterButton from "../../../shared/components/FilterButton";
 import EmptyState from "../../../shared/components/EmptyState";
+import Alert from "../../../shared/components/Alert";
 
+import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
 import { STYLE } from "../../../theme/style";
 import { styles, ICON_STYLES } from "../styles/CompradorStyles";
@@ -48,6 +51,9 @@ import { useCompradorScreen } from "../hooks/useCompradorScreen";
 export default function CompradorScreen() {
   const {
     compradoresFiltrados,
+    cargando,
+    error,
+    recargar,
     busqueda,
     setBusqueda,
     filtros,
@@ -60,7 +66,7 @@ export default function CompradorScreen() {
   // Renderiza la tarjeta de cada comprador con su info de contacto
   function renderComprador(comprador) {
     return (
-      <Card style={[styles.card, STYLE.contentWrapper]}>
+      <CardPress onPress={() => handleVerDetalle(comprador.id)} style={[styles.card, STYLE.contentWrapper]}>
         {/* Encabezado con avatar, nombre, tipo y botón de detalle */}
         <View style={styles.cardHeader}>
           <View style={styles.avatar}>
@@ -75,13 +81,7 @@ export default function CompradorScreen() {
             </Text>
           </View>
 
-          <Button
-            variant="outline"
-            onPress={() => handleVerDetalle(comprador.id)}
-            style={styles.btnVerDetalle}
-          >
-            <Text style={styles.btnVerDetalleText}>Ver Detalle</Text>
-          </Button>
+          
         </View>
 
         {/* Teléfono formateado con el patrón +506 XXXX-XXXX */}
@@ -105,7 +105,7 @@ export default function CompradorScreen() {
           />
           <Text style={styles.contactText}>{comprador.correo}</Text>
         </View>
-      </Card>
+      </CardPress>
     );
   }
 
@@ -135,29 +135,49 @@ export default function CompradorScreen() {
         />
       </View>
 
+      {/* Alerta de error al cargar, con botón para reintentar */}
+      {!!error && (
+        <View style={[STYLE.contentWrapper, styles.barraBusqueda]}>
+          <Alert variant="danger" message={error} style={{ flex: 1 }} />
+          <Button variant="outline" onPress={recargar} style={styles.btnVerDetalle}>
+            <Text style={styles.btnVerDetalleText}>Reintentar</Text>
+          </Button>
+        </View>
+      )}
+
       {/* Contenedor con flex:1 para que la lista ocupe el espacio disponible
           y el botón de agregar quede siempre anclado al fondo de la pantalla */}
       <View style={styles.listaContainer}>
-        <FlatList
-          data={compradoresFiltrados}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => renderComprador(item)}
-          contentContainerStyle={[styles.lista, STYLE.contentWrapper]}
-          ListHeaderComponent={
-            <Text style={styles.contadorResultados}>
-              {compradoresFiltrados.length}{" "}
-              {compradoresFiltrados.length === 1
-                ? "comprador encontrado"
-                : "compradores encontrados"}
-            </Text>
-          }
-          ListEmptyComponent={
-            <EmptyState
-              title="Sin compradores"
-              description="No se encontraron compradores con esa búsqueda."
-            />
-          }
-        />
+        {cargando ? (
+          <ActivityIndicator
+            size="large"
+            color={COLORS.primary}
+            style={styles.loadingIndicator}
+          />
+        ) : (
+          <FlatList
+            data={compradoresFiltrados}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={({ item }) => renderComprador(item)}
+            contentContainerStyle={[styles.lista, STYLE.contentWrapper]}
+            refreshing={cargando}
+            onRefresh={recargar}
+            ListHeaderComponent={
+              <Text style={styles.contadorResultados}>
+                {compradoresFiltrados.length}{" "}
+                {compradoresFiltrados.length === 1
+                  ? "comprador encontrado"
+                  : "compradores encontrados"}
+              </Text>
+            }
+            ListEmptyComponent={
+              <EmptyState
+                title="Sin compradores"
+                description="No se encontraron compradores con esa búsqueda."
+              />
+            }
+          />
+        )}
       </View>
 
       {/* Botón de agregar fijo en la parte inferior */}

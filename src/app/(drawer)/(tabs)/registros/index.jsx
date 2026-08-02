@@ -6,11 +6,22 @@
  * Conecta RegistroScreen con las pantallas reales de cada modulo.
  */
 
+import { useState, useEffect } from "react";
 import RegistroScreen from "../../../../modules/registro/screens/RegistroScreen";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 
 export default function RegistrosIndex() {
   const router = useRouter();
+  const params = useLocalSearchParams();
+  const [visibleSuccessMessage, setVisibleSuccessMessage] = useState(params?.successMessage || "");
+
+  useEffect(() => {
+    if (params?.successMessage) {
+      setVisibleSuccessMessage(params.successMessage);
+      const timer = setTimeout(() => setVisibleSuccessMessage(""), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [params?.successMessage]);
 
   const irAFisicoQuimica = () => {
     router.push("/(drawer)/(tabs)/registros/FisicoQuimica");
@@ -46,6 +57,7 @@ export default function RegistrosIndex() {
 
   return (
     <RegistroScreen
+      successMessage={visibleSuccessMessage}
       onFisicoQuimica={irAFisicoQuimica}
       onAlimentacion={irAAlimentacion}
       onDensidadPoblacional={irADensidadPoblacional}

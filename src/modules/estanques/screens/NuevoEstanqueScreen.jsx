@@ -62,8 +62,11 @@ export default function NuevoEstanqueScreen({ codigoCBO }) {
     mensaje,
     tipoMensaje,
     submitted,
+    errores,
 
     registrarEstanque,
+    displayErrorMessage,
+    displayErrorVariant,
   } = useNuevoEstanque({ codigoCBO });
 
   return (
@@ -86,6 +89,7 @@ export default function NuevoEstanqueScreen({ codigoCBO }) {
               value={codigo}
               onChangeText={setCodigo}
               placeholder="Ej: EST-01"
+              error={errores?.codigo || ""}
               labelStyle={styles.label}
             />
 
@@ -98,6 +102,7 @@ export default function NuevoEstanqueScreen({ codigoCBO }) {
               onChange={setTipoEstanque}
               placeholder="Seleccione el tipo"
               labelStyle={styles.label}
+              error={errores?.tipoEstanque || ""}
             />
 
             <CustomText
@@ -138,6 +143,7 @@ export default function NuevoEstanqueScreen({ codigoCBO }) {
                   keyboardType="numeric"
                   numericOnly
                   labelStyle={styles.label}
+                  error={errores?.largo || ""}
                 />
               </View>
 
@@ -152,6 +158,7 @@ export default function NuevoEstanqueScreen({ codigoCBO }) {
                   keyboardType="numeric"
                   numericOnly
                   labelStyle={styles.label}
+                  error={errores?.ancho || ""}
                 />
               </View>
             </View>
@@ -166,6 +173,7 @@ export default function NuevoEstanqueScreen({ codigoCBO }) {
               keyboardType="numeric"
               numericOnly
               labelStyle={styles.label}
+              error={errores?.profundidad || ""}
             />
 
             <Select
@@ -177,6 +185,7 @@ export default function NuevoEstanqueScreen({ codigoCBO }) {
               onChange={setFuenteAgua}
               placeholder="Seleccione la fuente"
               labelStyle={styles.label}
+              error={errores?.fuenteAgua || ""}
             />
           </Card>
 
@@ -189,6 +198,7 @@ export default function NuevoEstanqueScreen({ codigoCBO }) {
               value={fechaMantenimiento}
               onChangeText={setFechaMantenimiento}
               labelStyle={styles.label}
+              error={errores?.fechaMantenimiento || ""}
             />
 
             <Select
@@ -200,13 +210,14 @@ export default function NuevoEstanqueScreen({ codigoCBO }) {
               onChange={setPrecria}
               placeholder="Seleccione si usa precria"
               labelStyle={styles.label}
+              error={errores?.precria || ""}
             />
           </Card>
           
-          {mensaje !== "" && (
+          {displayErrorMessage && (
             <Alert
-              variant={tipoMensaje}
-              message={mensaje}
+              variant={displayErrorVariant}
+              message={displayErrorMessage}
               style={styles.alert}
               textStyle={styles.alertText}
             />

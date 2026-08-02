@@ -63,12 +63,15 @@ export default function EditarEstanqueScreen({ codigoCBO, id }) {
     profundidad,    setProfundidadState,
     fuenteAgua,    setFuenteAgua,
 
-    fechaMantenimiento,    setFechaMantenimiento,
+      fechaMantenimiento,    setFechaMantenimiento,
     precria,    setPrecria,
 
-    mensaje,
-    tipoMensaje,
-    submitted,
+      mensaje,
+      tipoMensaje,
+      submitted,
+      errores,
+      displayErrorMessage,
+      displayErrorVariant,
 
     guardarCambios,
   } = useEditarEstanque(codigoCBO, id);
@@ -104,6 +107,7 @@ export default function EditarEstanqueScreen({ codigoCBO, id }) {
               onChangeText={setCodigo}
               placeholder="Ej: EST-01"
               labelStyle={styles.label}
+              error={errores?.codigo || ""}
             />
 
             <Select
@@ -115,6 +119,7 @@ export default function EditarEstanqueScreen({ codigoCBO, id }) {
               onChange={setTipoEstanque}
               placeholder="Seleccione el tipo"
               labelStyle={styles.label}
+              error={errores?.tipoEstanque || ""}
             />
 
             <CustomText
@@ -155,6 +160,7 @@ export default function EditarEstanqueScreen({ codigoCBO, id }) {
                   keyboardType="numeric"
                   numericOnly
                   labelStyle={styles.label}
+                  error={errores?.largo || ""}
                 />
               </View>
 
@@ -169,6 +175,7 @@ export default function EditarEstanqueScreen({ codigoCBO, id }) {
                   keyboardType="numeric"
                   numericOnly
                   labelStyle={styles.label}
+                  error={errores?.ancho || ""}
                 />
               </View>
             </View>
@@ -183,6 +190,7 @@ export default function EditarEstanqueScreen({ codigoCBO, id }) {
               keyboardType="numeric"
               numericOnly
               labelStyle={styles.label}
+              error={errores?.profundidad || ""}
             />
 
             <Select
@@ -194,6 +202,7 @@ export default function EditarEstanqueScreen({ codigoCBO, id }) {
               onChange={setFuenteAgua}
               placeholder="Seleccione la fuente"
               labelStyle={styles.label}
+              error={errores?.fuenteAgua || ""}
             />
           </Card>
 
@@ -206,6 +215,7 @@ export default function EditarEstanqueScreen({ codigoCBO, id }) {
               value={fechaMantenimiento}
               onChangeText={setFechaMantenimiento}
               labelStyle={styles.label}
+              error={errores?.fechaMantenimiento || ""}
             />
 
             <Select
@@ -217,13 +227,14 @@ export default function EditarEstanqueScreen({ codigoCBO, id }) {
               onChange={setPrecria}
               placeholder="Seleccione si usa precria"
               labelStyle={styles.label}
+              error={errores?.precria || ""}
             />
           </Card>
 
-          {mensaje !== "" && (
+          {displayErrorMessage && (
             <Alert
-              variant={tipoMensaje}
-              message={mensaje}
+              variant={displayErrorVariant}
+              message={displayErrorMessage}
               style={styles.alert}
               textStyle={styles.alertText}
             />
