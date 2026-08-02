@@ -21,64 +21,40 @@
  * Ejemplo:
  * await densidadPoblacionalService.create(registro);
  */
-import api from "../../../api/api";
 
-async function getAll() {
-  try {
-    const response = await api.get("/densidad-poblacional");
-    return response.data.data;
-  } catch (error) {
-    console.error("Error al obtener densidades poblacionales", error.response?.data || error.message);
-    throw error;
-  }
-}
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-async function getById(id) {
-  try {
-    const response = await api.get(`/densidad-poblacional/${id}`);
-    return response.data.data;
-  } catch (error) {
-    console.error("Error al obtener la densidad poblacional", error.response?.data || error.message);
-    throw error;
-  }
-}
-
-async function create(densidadDTO) {
-  try {
-    const response = await api.post("/densidad-poblacional", densidadDTO);
-    return response.data.data;
-  } catch (error) {
-    console.error("Error al crear la densidad poblacional", error.response?.data || error.message);
-    throw error;
-  }
-}
-
-async function update(id, densidadDTO) {
-  try {
-    const response = await api.put(`/densidad-poblacional/${id}`, densidadDTO);
-    return response.data.data;
-  } catch (error) {
-    console.error("Error al actualizar la densidad poblacional", error.response?.data || error.message);
-    throw error;
-  }
-}
-
-async function deleteById(id) {
-  try {
-    const response = await api.delete(`/densidad-poblacional/${id}`);
-    return response.data.data;
-  } catch (error) {
-    console.error("Error al eliminar la densidad poblacional", error.response?.data || error.message);
-    throw error;
-  }
-}
+const CLAVE = "densidad_poblacional_v1";
 
 const densidadPoblacionalService = {
-  getAll,
-  getById,
-  create,
-  update,
-  deleteById,
+    getAll: async () => {
+        try {
+            const datos = await AsyncStorage.getItem(CLAVE);
+            return datos ? JSON.parse(datos) : [];
+        } catch {
+            return [];
+        }
+    },
+
+    create: async (registro) => {
+        const lista = await densidadPoblacionalService.getAll();
+        const nuevo = {
+            ...registro,
+            id:        Date.now().toString(),
+            timestamp: new Date().toISOString(),
+        };
+        await AsyncStorage.setItem(CLAVE, JSON.stringify([...lista, nuevo]));
+        return nuevo;
+    },
+
+    deleteById: async (id) => {
+        const lista = await densidadPoblacionalService.getAll();
+        await AsyncStorage.setItem(CLAVE, JSON.stringify(lista.filter(r => r.id !== id)));
+    },
+
+    clearAll: async () => {
+        await AsyncStorage.removeItem(CLAVE);
+    },
 };
 
 export default densidadPoblacionalService;

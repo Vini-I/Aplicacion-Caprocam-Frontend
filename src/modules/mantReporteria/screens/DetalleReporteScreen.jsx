@@ -72,7 +72,7 @@ export default function DetalleReporteScreen() {
         <View style={STYLE.container}>
           <View style={STYLE.contentWrapper}>
             {alert === "deleted" && (
-              <Alert style={styles.alertCorrect}>
+              <Alert style={styles.alertIncorrect}>
                 Registro eliminado correctamente
               </Alert>
             )}
@@ -165,9 +165,7 @@ export default function DetalleReporteScreen() {
                     No se encontraron registros con los filtros seleccionados.
                   </Text>
                 </View>
-
               ) : (
-
                 <View style={styles.lista}>
                   {registroTipo === "crecimiento" && (
                     <CardCrecimiento
@@ -178,19 +176,11 @@ export default function DetalleReporteScreen() {
                   )}
 
                   {registroTipo === "parasitologia" && (
-                    <CardParasitologia
-                      fincaId={finca}
-                      estanqueId={estanque}
-                      onAlertChange={setAlert}
-                    />
+                    <CardParasitologia data={registros} />
                   )}
 
                   {registroTipo === "enfermedades" && (
-                    <CardEnfermedades
-                      fincaId={finca}
-                      estanqueId={estanque}
-                      onAlertChange={setAlert}
-                    />
+                    <CardEnfermedades data={registros} />
                   )}
 
                   {registroTipo === "raleo" && (
@@ -201,6 +191,73 @@ export default function DetalleReporteScreen() {
                     />
                   )}
 
+                    <Text style={styles.emptyTitle}>
+                      No hay registros disponibles
+                    </Text>
+
+                    <Text style={styles.emptyDescription}>
+                      No se encontraron registros con los filtros seleccionados.
+                    </Text>
+
+                  </View>
+
+
+                ) : (
+
+                  <View style={styles.lista}>
+
+                    {
+                      registroTipo === "crecimiento" && (
+                        <CardCrecimiento
+                          data={registros}
+                        />
+                      )
+                    }
+
+                    {
+                      registroTipo === "parasitologia" && (
+                        <CardParasitologia
+                          fincaId={finca}
+                          estanqueId={estanque}
+                          onAlertChange={setAlert}
+                        />
+                      )
+                    }
+
+                    {
+                      registroTipo === "enfermedades" && (
+                        <CardEnfermedades
+                          fincaId={finca}
+                          estanqueId={estanque}
+                          onAlertChange={setAlert}
+                        />
+                      )
+                    }
+
+                    {
+                      registroTipo === "raleo" && (
+                        <CardRaleo
+                          data={registros}
+                        />
+                      )
+                    }
+
+                    {registroTipo === "alimentacion" && (
+                      <CardAlimentacion
+                        fincaId={finca}
+                        estanqueId={estanque}
+                        onAlertChange={setAlert}
+                      />
+                    )}
+
+                    {
+                      registroTipo === "densidad_poblacional" && (
+                        <CardDensidadPoblacional
+                          data={registros}
+                        />
+                      )
+                    }
+                    
                   {registroTipo === "alimentacion" && (
                     <CardAlimentacion
                       fincaId={finca}
