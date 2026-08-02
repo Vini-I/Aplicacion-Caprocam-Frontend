@@ -33,7 +33,7 @@ export function useColaboradoresList() {
   const showAlert = (type, message) => {
     if (alertTimeoutRef.current) clearTimeout(alertTimeoutRef.current);
     setAlert({ type, message });
-    alertTimeoutRef.current = setTimeout(() => setAlert(null), 4000);
+    alertTimeoutRef.current = setTimeout(() => setAlert(null), 3000);
   };
 
   // Obtener todos los colaboradores activos (sin filtrar por rol)

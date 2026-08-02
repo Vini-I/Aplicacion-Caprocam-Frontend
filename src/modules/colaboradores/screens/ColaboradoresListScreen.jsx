@@ -15,9 +15,7 @@
  * ============================================================
  */
 
-// src/modules/colaboradores/screens/ColaboradoresListScreen.jsx
-
-import React, { useCallback, useState, useMemo } from 'react';
+import React, { useCallback, useState, useMemo, useRef } from 'react';
 import { View, ScrollView } from 'react-native';
 import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 
@@ -51,6 +49,9 @@ export default function ColaboradoresListScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const editId = params.editId;
+
+  // Flag para evitar redirecciones múltiples
+  const redirectedRef = useRef(false);
 
   const {
     colaboradores,
@@ -103,10 +104,11 @@ export default function ColaboradoresListScreen() {
     return result;
   }, [colaboradores, searchText, filtros]);
 
-  // Redirigir desde detalle con editId al formulario
+  // ─── Redirección desde detalle (solo si editId está presente) ───
   useFocusEffect(
     useCallback(() => {
-      if (editId) {
+      if (editId && !redirectedRef.current) {
+        redirectedRef.current = true;
         router.replace({
           pathname: '/(drawer)/colaboradores/form',
           params: { id: editId },
@@ -145,6 +147,9 @@ export default function ColaboradoresListScreen() {
     ? 'No se encontraron colaboradores con los criterios de búsqueda seleccionados.'
     : 'Comienza agregando tu primer colaborador.';
 
+  // Contador de resultados
+  const contador = `${listaFiltrada.length} ${listaFiltrada.length === 1 ? 'colaborador encontrado' : 'colaboradores encontrados'}`;
+
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.white }}>
       {/* Barra de búsqueda y filtro */}
@@ -164,6 +169,11 @@ export default function ColaboradoresListScreen() {
           showExpiryDate={false}
           buttonStyle={styles.filterButtonStyle}
         />
+      </View>
+
+      {/* Contador de resultados (alineado con search bar) */}
+      <View style={styles.contadorWrapper}>
+        <CustomText style={styles.contadorResultados}>{contador}</CustomText>
       </View>
 
       {/* Alerta flotante */}

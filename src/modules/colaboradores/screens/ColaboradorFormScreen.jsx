@@ -18,7 +18,7 @@
  *
  * Navegación:
  * - Botón "Volver" (NavbarRegistro) regresa a la lista.
- * - Botón "Guardar" dispara el envío y vuelve a la lista.
+ * - Botón "Guardar" dispara el envío y NO navega; se queda en la pantalla.
  * ============================================================
  */
 // src/modules/colaboradores/screens/ColaboradorFormScreen.jsx
@@ -31,14 +31,13 @@ import NavbarRegistro from "../../../shared/components/NavbarRegistro";
 import ColaboradorForm from "../components/ColaboradorForm";
 import Spinner from "../../../shared/components/Spinner";
 import CustomText from "../../../shared/components/Text";
-import Alert from "../../../shared/components/Alert";
 
 import { STYLE } from "../../../theme/style";
 import { COLORS } from "../../../theme/colors";
 
 import { colaboradoresService } from "../services/colaboradoresService";
 import { getRolesOptions } from "../services/rolesService";
-import { getFincasOptions } from "../services/fincaService"; // <-- NUEVO
+import { getFincasOptions } from "../services/fincaService";
 
 export default function ColaboradorFormScreen() {
   const router = useRouter();
@@ -48,9 +47,10 @@ export default function ColaboradorFormScreen() {
   const [colaborador, setColaborador] = useState(null);
   const [loading, setLoading] = useState(isEditing);
   const [error, setError] = useState(null);
-  const [alert, setAlert] = useState(null);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
   const [roleOptions, setRoleOptions] = useState([]);
-  const [fincasOptions, setFincasOptions] = useState([]); // <-- NUEVO
+  const [fincasOptions, setFincasOptions] = useState([]);
 
   // Cargar roles disponibles
   useEffect(() => {
@@ -95,28 +95,33 @@ export default function ColaboradorFormScreen() {
     }
   }, [id]);
 
+  // Limpiar mensajes después de 3 segundos (estándar 2)
+  useEffect(() => {
+    if (successMessage) {
+      const timer = setTimeout(() => setSuccessMessage(""), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage]);
+
   const handleSubmit = async (formData) => {
-    setAlert(null);
+    setErrorMessage("");
+    setSuccessMessage("");
     try {
       if (isEditing) {
         await colaboradoresService.updateColaborador(id, formData);
-        setAlert({ type: "success", message: "Colaborador actualizado correctamente." });
-        setTimeout(() => router.replace("/(drawer)/colaboradores"), 1500);
+        setSuccessMessage("Colaborador actualizado correctamente.");
       } else {
         await colaboradoresService.createColaborador(formData);
-        setAlert({ type: "success", message: "Colaborador creado correctamente." });
-        setTimeout(() => router.replace("/(drawer)/colaboradores"), 1500);
+        setSuccessMessage("Colaborador creado correctamente.");
       }
     } catch (err) {
-      setAlert({ type: "danger", message: err.message || "No se pudo guardar el colaborador." });
+      setErrorMessage(err.message || "No se pudo guardar el colaborador.");
     }
   };
 
   const handleCancel = () => {
     router.back();
   };
-
-  const serverError = alert && alert.type === "danger" ? alert.message : "";
 
   if (loading) {
     return (
@@ -142,11 +147,6 @@ export default function ColaboradorFormScreen() {
   return (
     <>
       <ScrollView style={STYLE.container} contentContainerStyle={STYLE.contentWrapper}>
-        {alert && alert.type === "success" && (
-          <View style={{ marginBottom: 12 }}>
-            <Alert variant="success" message={alert.message} />
-          </View>
-        )}
         <ColaboradorForm
           initialData={initialData}
           isEditing={isEditing}
@@ -154,9 +154,10 @@ export default function ColaboradorFormScreen() {
           fincaId={fincaId}
           onSubmit={handleSubmit}
           onCancel={handleCancel}
-          serverError={serverError}
+          serverError={errorMessage}      // se pasa como error al formulario
+          successMessage={successMessage} // se pasa como éxito al formulario
           roleOptions={roleOptions}
-          fincasOptions={fincasOptions} // <-- PASAMOS LAS FINCAS
+          fincasOptions={fincasOptions}
         />
       </ScrollView>
     </>

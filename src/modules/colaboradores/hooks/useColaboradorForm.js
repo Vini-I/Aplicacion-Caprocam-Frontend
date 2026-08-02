@@ -15,14 +15,12 @@
  * - availableRoles: opciones de roles para el select (array de {label, value})
  *
  * Retorna:
- * - form, errors, submitted, validationMessage
+ * - form, errors, submitted, validationMessage (mensaje específico)
  * - handleChange, handleSubmit
  * - rolesDisponibles
  * - handleCedulaChange, handleTelefonoChange, handleNombreChange, handleApellidosChange
  * ============================================================
  */
-
-// src/modules/colaboradores/hooks/useColaboradorForm.js
 
 import { useState } from "react";
 
@@ -136,6 +134,9 @@ export function useColaboradorForm({
     if (form.email && !validarEmail(form.email)) {
       newErrors.email = "Correo electrónico inválido";
       hasError = true;
+    } else if (form.email && form.email.trim() === "") {
+      newErrors.email = "El correo electrónico es obligatorio";
+      hasError = true;
     }
 
     // Validar fincaId SOLO si el rol requiere finca asociada (IDs 3 y 5)
@@ -150,12 +151,34 @@ export function useColaboradorForm({
     return { hasError, errors: newErrors };
   };
 
+  // Construye el mensaje: campos obligatorios genérico + correo específico
+  const buildValidationMessage = (errorsObj) => {
+    const hasRequiredError = !!(
+      errorsObj.cedula ||
+      errorsObj.nombre ||
+      errorsObj.apellidos ||
+      errorsObj.telefono ||
+      errorsObj.fincaId
+    );
+    const hasEmailError = !!errorsObj.email;
+
+    let message = "";
+    if (hasRequiredError) {
+      message = "Revisa los campos obligatorios marcados con *";
+    }
+    if (hasEmailError) {
+      const emailMsg = errorsObj.email;
+      message = message ? `${message} · ${emailMsg}` : emailMsg;
+    }
+    return message;
+  };
+
   const handleSubmit = () => {
     setSubmitted(true);
-    const { hasError } = validateForm();
+    const { hasError, errors: errorsObj } = validateForm();
 
     if (hasError) {
-      setValidationMessage("Revisa los campos obligatorios marcados con *");
+      setValidationMessage(buildValidationMessage(errorsObj));
       return;
     }
 

@@ -289,7 +289,7 @@ export default function DetalleColaboradorScreen() {
             style={[styles.boton, { borderColor: COLORS.primary }]}
           >
             <Icon icon={ICONS.edit} size={18} color={COLORS.primary} />
-            <CustomText style={{ color: COLORS.primary, fontWeight: '600' }}>Editar</CustomText>
+            <CustomText style={{ color: COLORS.primary, fontWeight: '600' }}>Editar Colaborador</CustomText>
           </Button>
           <Button
             variant="outline"
@@ -299,7 +299,7 @@ export default function DetalleColaboradorScreen() {
           >
             <Icon icon={ICONS.delete} size={18} color={COLORS.error} />
             <CustomText style={{ color: COLORS.error, fontWeight: '600' }}>
-              {eliminando ? 'Eliminando...' : 'Eliminar'}
+              {eliminando ? 'Eliminando Colaborador...' : 'Eliminar Colaborador'}
             </CustomText>
           </Button>
         </View>

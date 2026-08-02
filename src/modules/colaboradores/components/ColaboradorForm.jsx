@@ -17,11 +17,12 @@
  * - fincaId: ID de finca (se asigna automáticamente para external_owner)
  * - onCancel: función para cerrar el modal sin guardar
  * - serverError: mensaje de error del servidor (opcional)
+ * - successMessage: mensaje de éxito (opcional)
  * - roleOptions: array de { label, value } para el select de roles (opcional)
  * - fincasOptions: array de { label, value } para el select de fincas (opcional)
  */
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { View } from "react-native";
 import Input from "../../../shared/components/Input";
 import Select from "../../../shared/components/Select";
@@ -43,6 +44,7 @@ export default function ColaboradorForm({
   fincaId,
   onCancel,
   serverError = "",
+  successMessage = "",
   roleOptions,
   fincasOptions = [],
 }) {
@@ -76,7 +78,41 @@ export default function ColaboradorForm({
   const rolId = Number(form.rol);
   const mostrarSelectFinca = form.rol !== "" && ROLES_CON_FINCA.includes(rolId);
 
-  const mensajeMostrar = (submitted && validationMessage) || serverError;
+  // Estado local para controlar la visibilidad del alert (reaparece en cada submit)
+  const [localErrorVisible, setLocalErrorVisible] = useState(false);
+  const [localMessage, setLocalMessage] = useState("");
+
+  // Cuando cambia validationMessage, actualizamos la visibilidad y el mensaje
+  useEffect(() => {
+    if (validationMessage) {
+      setLocalMessage(validationMessage);
+      setLocalErrorVisible(true);
+      // Programar ocultación después de 6 segundos
+      const timer = setTimeout(() => {
+        setLocalErrorVisible(false);
+      }, 6000);
+      return () => clearTimeout(timer);
+    } else {
+      setLocalErrorVisible(false);
+      setLocalMessage("");
+    }
+  }, [validationMessage]);
+
+  // También manejar serverError (errores del backend)
+  useEffect(() => {
+    if (serverError) {
+      setLocalMessage(serverError);
+      setLocalErrorVisible(true);
+      const timer = setTimeout(() => {
+        setLocalErrorVisible(false);
+      }, 6000);
+      return () => clearTimeout(timer);
+    }
+  }, [serverError]);
+
+  // Si hay mensaje de éxito, se muestra sin temporizador (se maneja en el padre)
+  const mensajeError = localErrorVisible ? localMessage : "";
+  const mostrarError = localErrorVisible && mensajeError !== "";
 
   return (
     <View style={styles.container}>
@@ -152,18 +188,31 @@ export default function ColaboradorForm({
             selectStyle={submitted && errors.fincaId ? styles.inputError : null}
           />
         )}
-
-        {mensajeMostrar !== "" && (
-          <View style={{ marginBottom: 12 }}>
-            <Alert
-              variant="danger"
-              message={mensajeMostrar}
-              style={styles.alertContainer}
-              textStyle={styles.alertText}
-            />
-          </View>
-        )}
       </Card>
+
+      {/* ─── Alert de error (fuera del Card, encima del botón) ─── */}
+      {mostrarError && (
+        <View style={{ marginBottom: 12 }}>
+          <Alert
+            variant="danger"
+            message={mensajeError}
+            style={styles.alertContainer}
+            textStyle={styles.alertText}
+          />
+        </View>
+      )}
+
+      {/* ─── Alert de éxito (fuera del Card, encima del botón) ─── */}
+      {successMessage !== "" && !mostrarError && (
+        <View style={{ marginBottom: 12 }}>
+          <Alert
+            variant="success"
+            message={successMessage}
+            style={styles.alertContainer}
+            textStyle={styles.alertText}
+          />
+        </View>
+      )}
 
       {/* ─── Botón de acción fuera del Card ─── */}
       <View style={styles.buttonContainer}>
@@ -171,7 +220,7 @@ export default function ColaboradorForm({
           <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
             <Icon icon={ICONS.save} size={18} color={COLORS.primary} />
             <Text style={{ color: COLORS.primary, fontWeight: "600" }}>
-              {isEditing ? "Actualizar" : "Registrar"}
+              {isEditing ? "Editar Colaborador" : "Registrar Colaborador"}
             </Text>
           </View>
         </Button>
