@@ -3,22 +3,16 @@
  * VALIDADORES DE CONTACTO (TELÉFONO / CORREO)
  * ============================================================
  *
- * Breve: Validador local del modulo proveedores para telefono y
- * correo, pensado para que useNuevoProveedorScreen.js y
- * useEditarProveedorScreen.js dejen de definir cada uno su propio
- * TELEFONO_REGEX / CORREO_REGEX y compartan la misma logica.
+ * Validador local del módulo Proveedores para teléfono y correo,
+ * usado por useNuevoProveedorScreen.js y useEditarProveedorScreen.js.
  *
- * No vive en shared/: es un util interno del modulo, no un
- * validador global de la app.
+ * FUNCIONALIDAD:
+ * 1. validarTelefono / validarCorreo: validan lo escrito en el formulario.
+ * 2. formatearTelefono: formato visual para listados y detalle.
+ * 3. normalizarTelefonoParaBackend: formato estricto +506 XXXX-XXXX
+ *    para el payload (usado por ProveedorDTO).
  *
- * Uso:
- *   const errorTelefono = validarTelefono(telefono, {
- *     mensajeInvalido: "Ingrese un teléfono válido. Ej: +506 2222-3344",
- *   });
- *
- * Los mensajes son configurables (mensajeObligatorio / mensajeInvalido)
- * para que cada screen pueda mantener su copy actual sin duplicar el
- * regex ni la logica de validacion.
+ * IMPORTANTE: no vive en shared/, es interno del módulo.
  */
 
 export const TELEFONO_REGEX = /^(\+?506[\s-]?)?\d{4}[\s-]?\d{4}$/;
@@ -50,13 +44,7 @@ export function validarCorreo(
   return "";
 }
 
-/**
- * Da formato visual al teléfono (XXXX-XXXX, con "+506 " adelante si
- * aplica) para que no se muestre pegado en el listado ni en el
- * detalle, sin importar si el valor guardado ya trae o no separadores.
- * Si el valor no calza con 8 dígitos locales, se devuelve tal cual
- * llegó 
- */
+// Formato visual del teléfono (XXXX-XXXX, con "+506 " si aplica).
 export function formatearTelefono(valor) {
   const limpio = (valor || "").replace(/[^\d+]/g, "");
   const tienePrefijo = limpio.startsWith("+506");
@@ -66,4 +54,14 @@ export function formatearTelefono(valor) {
 
   const numeroFormateado = `${soloNumero.slice(0, 4)}-${soloNumero.slice(4)}`;
   return tienePrefijo ? `+506 ${numeroFormateado}` : numeroFormateado;
+}
+
+// Formato estricto +506 XXXX-XXXX que exige el backend.
+export function normalizarTelefonoParaBackend(telefono) {
+  const limpio = (telefono || "").replace(/[^\d]/g, "");
+  const soloNumero = limpio.startsWith("506") ? limpio.slice(3) : limpio;
+
+  if (soloNumero.length !== 8) return telefono || "";
+
+  return `+506 ${soloNumero.slice(0, 4)}-${soloNumero.slice(4)}`;
 }

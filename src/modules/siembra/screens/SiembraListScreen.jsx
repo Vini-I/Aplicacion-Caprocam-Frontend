@@ -57,8 +57,8 @@ import { styles } from "../styles/SiembraListStyles";
 import Button from "../../../shared/components/Button";
 import Icon from "../../../shared/components/Icons";
 import EmptyState from "../../../shared/components/EmptyState";
-import SearchBar from "../../inventarios/components/SearchBar";
-import FilterButton from "../../inventarios/components/FilterButton";
+import SearchBar from "../../../shared/components/SearchBar";
+import FilterButton from "../../../shared/components/FilterButton";
 import { ICONS } from "../../../theme/icons";
 import { COLORS } from "../../../theme/colors";
 import { STYLE } from "../../../theme/style";
@@ -68,8 +68,6 @@ import useSiembraList from "../hooks/useSiembraList";
 
 export default function SiembraListScreen() {
   const {
-    fincaLabels,
-
     busqueda,
     setBusqueda,
 
@@ -77,7 +75,6 @@ export default function SiembraListScreen() {
     setFiltros,
 
     tiposRegistro,
-    proveedoresRegistro,
 
     siembrasFiltradas,
 
@@ -112,7 +109,7 @@ export default function SiembraListScreen() {
             <View style={styles.filterColumn}>
               <FilterButton
                 categories={tiposRegistro}
-                suppliers={proveedoresRegistro}
+                suppliers={[]}
                 units={[]}
                 activeFilters={filtros}
                 onApply={setFiltros}
@@ -136,7 +133,10 @@ export default function SiembraListScreen() {
           </View>
 
           <Text style={styles.contadorResultados}>
-            {siembrasFiltradas.length} {siembrasFiltradas.length === 1 ? "registro encontrado" : "registros encontrados"}
+            {siembrasFiltradas.length}{" "}
+            {siembrasFiltradas.length === 1
+              ? "registro encontrado"
+              : "registros encontrados"}
           </Text>
 
           {siembrasFiltradas.length === 0 ? (
@@ -147,10 +147,11 @@ export default function SiembraListScreen() {
           ) : (
             siembrasFiltradas.map((registro) => (
               <SiembraCard
-                key={registro.siembraId}
+                key={`${registro.tipoRegistro}-${registro.id}`}
                 registro={registro}
-                fincaLabel={fincaLabels[registro.finca] || registro.finca}
-                onVerDetalle={() => handleDetalleSiembra(registro.siembraId)}
+                fincaLabel={registro.fincaLabel}
+                estanqueLabel={registro.estanqueLabel}
+                onVerDetalle={() => handleDetalleSiembra(registro)}
               />
             ))
           )}

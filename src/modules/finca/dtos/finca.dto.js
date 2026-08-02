@@ -14,8 +14,6 @@ export class fincaDTO {
         espejosAgua,
 
     }) {
-        
-        this.grupoDatos = 1; //Esto se tiene que cambiara cuando este el backend
 
         this.codigoCBO = codigoCBO;
 

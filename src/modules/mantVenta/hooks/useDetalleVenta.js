@@ -128,7 +128,7 @@ export function useDetalleVenta({ onEdit  } = {}) {
       (item) => item.id === ventaSeleccionada.estanque_id,
     );
 
-    return `${finca?.nombreFinca ?? "Finca"} • ${estanque?.codigo ?? "Estanque"} (${ventaSeleccionada.fecha ?? ""})`;
+    return `${finca?.nombreFinca ?? "Finca"} • ${estanque?.codigo ?? "Estanque"}`;
   }, [ventaSeleccionada, fincas, estanques]);
 
   const handleFincaChange = useCallback((value) => {

@@ -19,10 +19,12 @@
  *    Guardar proveedor), nunca mientras el usuario escribe.
  * 
  * 5. mensajeError expone el mensaje general que se muestra arriba
- *    del boton "Guardar proveedor".
+ *    del boton "Guardar proveedor". Puede venir de la validacion local
+ *    o del backend (ej. nombre duplicado, telefono con formato
+ *    invalido segun el backend).
  * 
- * 6. Al guardar correctamente, el proveedor se agrega a proveedoresMock
- *    (agregarProveedor), para que el listado (ProveedorScreen) lo vea
+ * 6. Al guardar correctamente, el proveedor se crea contra el backend
+ *    (createProveedor), para que el listado (ProveedorScreen) lo vea
  *    reflejado al volver a esa pantalla.
  * 
  * 7. guardadoExitoso habilita la alerta de confirmacion tras un
@@ -30,10 +32,14 @@
  * 
  * 8. La validacion de telefono/correo reutiliza el validador comun del
  *    modulo (utils/contactValidators), sin regex propio duplicado.
+ *
+ * 9. guardando expone si la peticion de creacion esta en curso, para
+ *    poder deshabilitar el boton de Guardar desde la screen.
  */
 import { useState } from "react";
 import { validarTelefono, validarCorreo } from "../utils/contactValidators";
-import { agregarProveedor } from "../services/ProveedorData";
+import { createProveedor } from "../services/proveedor.service";
+import { ProveedorDTO } from "../dtos/proveedor.dto";
 
 export const TELEFONO_MAX_LENGTH = 14;
 
@@ -64,12 +70,22 @@ export function useNuevoProveedorScreen() {
   const [errores, setErrores] = useState({});
   const [mensajeError, setMensajeError] = useState("");
   const [guardadoExitoso, setGuardadoExitoso] = useState(false);
+  const [guardando, setGuardando] = useState(false);
 
   function handleTelefonoChange(valor) {
     setTelefono(valor.replace(/[^\d\s\-+]/g, ""));
   }
 
-  function handleSubmit() {
+  function limpiarFormulario() {
+    setNombre("");
+    setTipoProducto("");
+    setTelefono("");
+    setCorreo("");
+    setDireccion("");
+    setNotas("");
+  }
+
+  async function handleSubmit() {
     const nuevosErrores = {};
 
     if (!nombre.trim()) {
@@ -107,18 +123,32 @@ export function useNuevoProveedorScreen() {
 
     setErrores({});
     setMensajeError("");
-    setGuardadoExitoso(true);
+    setGuardando(true);
 
-    const proveedor = {
-      nombre: nombre.trim(),
+    const proveedorDTO = new ProveedorDTO({
+      nombre,
       tipoProducto,
-      telefono: telefono.trim(),
-      correo: correo.trim(),
-      direccion: direccion.trim(),
-      notas: notas.trim(),
-    };
+      telefono,
+      correo,
+      direccion,
+      notas,
+    });
 
-    agregarProveedor(proveedor);
+    try {
+      await createProveedor(proveedorDTO);
+
+      setGuardadoExitoso(true);
+      limpiarFormulario();
+    } catch (error) {
+      setGuardadoExitoso(false);
+
+      const mensajeBackend = error.response?.data?.message;
+      setMensajeError(
+        mensajeBackend || "No fue posible guardar el proveedor.",
+      );
+    } finally {
+      setGuardando(false);
+    }
   }
 
   return {
@@ -136,6 +166,7 @@ export function useNuevoProveedorScreen() {
     errores,
     mensajeError,
     guardadoExitoso,
+    guardando,
     handleTelefonoChange,
     handleSubmit,
   };

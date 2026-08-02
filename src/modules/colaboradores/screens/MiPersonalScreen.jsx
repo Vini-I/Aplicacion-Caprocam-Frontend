@@ -26,7 +26,7 @@ import Button from '../../../shared/components/Button';
 import Input from '../../../shared/components/Input';
 import CustomText from '../../../shared/components/Text';
 import Icon from '../../../shared/components/Icons';
-import SearchBar from '../../inventarios/components/SearchBar';
+import SearchBar from '../../../shared/components/SearchBar';
 import Alert from '../../../shared/components/Alert';
 import { STYLE } from '../../../theme/style';
 import { ICONS } from '../../../theme/icons';

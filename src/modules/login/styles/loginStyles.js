@@ -45,6 +45,9 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   searchContainer: {
+    width: "100%",
+    maxWidth: 450,
+    alignSelf: "center",
     marginBottom: 12,
   },
   searchInputContainer: {
@@ -155,6 +158,23 @@ const styles = StyleSheet.create({
     maxWidth: 450,
     alignSelf: 'center',
     marginBottom: 12,
+  },
+  errorText: {
+    color: COLORS.textPrimary,
+  },
+  centerContent: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  buttonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  buttonText: {
+    marginLeft: 6,
+    color: COLORS.primary,
+    fontFamily: TYPOGRAPHY.fontFamily.medium,
+    fontSize: 16,
   },
 });
 

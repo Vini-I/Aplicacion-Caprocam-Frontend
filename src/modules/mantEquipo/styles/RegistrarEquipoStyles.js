@@ -32,6 +32,19 @@ export const styles = StyleSheet.create({
     marginBottom: 14,
     overflow: "visible",
   },
+
+  // Header del card: ícono + título (Estándar 9)
+  cardHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 16,
+  },
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: COLORS.textSecondary,
+  },
   sectionTitle: {
     fontWeight: "700",
     letterSpacing: 0.3,
@@ -81,21 +94,9 @@ export const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "600",
   },
-  invalidField: {
-    borderColor: COLORS.error,
-  },
-  errorBox: {
-    borderWidth: 1,
-    borderColor: COLORS.error,
-    backgroundColor: COLORS.errorLight,
-    borderRadius: 10,
-    padding: 12,
-    marginBottom: 12,
-  },
-  errorText: {
-    color: COLORS.error,
-    fontWeight: "600",
-  },
+  // Nota: invalidField, errorBox y errorText eliminados.
+  // La validación visual (borde rojo) la manejan los componentes
+  // Input, Select y DateInput via las props `required` + `submitted`.
 
   // Pantalla de carga
   loadingContainer: {

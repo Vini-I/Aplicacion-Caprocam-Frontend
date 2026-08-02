@@ -119,6 +119,7 @@ export default function NuevaSiembraScreen() {
     handleChangeEstanque,
 
     handleCrearSiembra,
+    guardando,
 
     handleAgregarProveedorLarva,
 
@@ -314,6 +315,7 @@ export default function NuevaSiembraScreen() {
 
           <Button
             onPress={handleCrearSiembra}
+            disabled={guardando}
             style={styles.createButton}
             textStyle={styles.createButtonText}
             variant="outline"
@@ -321,9 +323,11 @@ export default function NuevaSiembraScreen() {
             <View style={styles.createButtonContent}>
               <Icon icon={ICONS.save} color={COLORS.primary} />
               <Text style={styles.createButtonText}>
-                {formData.tipoRegistro === "precria"
-                  ? "Guardar Pre-Cría"
-                  : "Guardar Siembra"}
+                {guardando
+                  ? "Guardando..."
+                  : formData.tipoRegistro === "precria"
+                    ? "Guardar Pre-Cría"
+                    : "Guardar Siembra"}
               </Text>
             </View>
           </Button>

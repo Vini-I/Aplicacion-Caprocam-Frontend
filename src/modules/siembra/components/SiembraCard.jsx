@@ -32,7 +32,7 @@ import { ICONS } from "../../../theme/icons";
 import { COLORS } from "../../../theme/colors";
 import { styles } from "../styles/SiembraListStyles";
 
-export default function SiembraCard({ registro, fincaLabel, onVerDetalle }) {
+export default function SiembraCard({ registro, fincaLabel, estanqueLabel, onVerDetalle }) {
   const esPreCria = registro.tipoRegistro === "precria";
 
   return (
@@ -41,7 +41,7 @@ export default function SiembraCard({ registro, fincaLabel, onVerDetalle }) {
         <View>
           <View style={styles.cardTitleRow}>
             <Icon icon={ICONS.water} color={COLORS.primary} />
-            <Text style={styles.cardTitle}>Estanque {registro.estanque}</Text>
+            <Text style={styles.cardTitle}>Estanque {estanqueLabel || registro.estanque}</Text>
           </View>
           <View style={styles.cardSubtitleRow}>
             <Text style={styles.cardSubtitle}>{fincaLabel}</Text>
