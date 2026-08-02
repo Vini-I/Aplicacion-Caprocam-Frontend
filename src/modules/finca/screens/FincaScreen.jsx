@@ -127,7 +127,7 @@ export default function FincasScreen({ onDetail, onNew, onEdit }) {
         <Button style={styles.addButton} onPress={() => onNew()}>
           <Icon style={styles.addButtonText} icon={ICONS.add} size={15} />
           <Text style={styles.addButtonText} size={15}>
-            REGISTRAR NUEVA FINCA
+            Añadir Finca
           </Text>
         </Button>
 
