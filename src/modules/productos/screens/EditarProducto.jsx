@@ -238,11 +238,13 @@ export default function EditarProducto() {
             <Button
               variant="outline"
               onPress={handleSubmit}
-              disabled={!canSave || guardadoExitoso || guardando}
-              style={[styles.saveButton, !canSave && styles.saveButtonDisabled]}
-              textStyle={styles.saveButtonText}
+              disabled={guardadoExitoso || guardando}
+              style={styles.saveButton}
             >
-              {guardando ? "Guardando..." : "Guardar cambios"}
+              <Icon icon={ICONS.add} size={20} color={COLORS.primary} />
+              <Text style={styles.saveButtonText}>
+               {guardando ? "Guardando..." : "Guardar Cambios"}
+              </Text>
             </Button>
           </Card>
         </ScrollView>

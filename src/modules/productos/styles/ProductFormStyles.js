@@ -98,9 +98,13 @@ export const styles = StyleSheet.create({
     borderColor: COLORS.error,
   },
   saveButton: {
-    marginTop: 10,
-    borderRadius: 14,
-    paddingVertical: 14,
+  marginTop: 10,
+  borderRadius: 14,
+  paddingVertical: 14,
+  flexDirection: "row",
+  justifyContent: "center",
+  alignItems: "center",
+  gap: 8,
   },
   saveButtonDisabled: {
     opacity: 0.5,
