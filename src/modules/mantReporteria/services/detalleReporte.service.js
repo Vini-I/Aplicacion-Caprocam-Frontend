@@ -1,7 +1,7 @@
-import { getCrecimiento } from "../../mantCrecimiento/services/mantCrecimiento.service";
+import crecimientoService from "../../mantCrecimiento/services/mantCrecimiento.service";
 import parasitologiaService from "../../parasitologia/services/ParasitologiaService";
 import enfermedadesService from "../../enfermedades/services/EnfermedadesService";
-import raleoService from "../../raleo/services/Raleo.service";
+import raleoService from "../../raleo/services/Raleo.service.js";
 import alimentacionService from "../../alimentacion/services/Alimentacion.service";
 import densidadPoblacionalService from "../../densidadPoblacional/services/DensidadPoblacional.service";
 
@@ -14,7 +14,7 @@ export async function obtenerDetalleReporte({
   switch(tipoRegistro){
     
     case "crecimiento": 
-      const registros = await getCrecimiento();
+      const registros = await crecimientoService.getAll();
 
       return registros.filter(
         (r) => 
