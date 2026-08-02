@@ -27,6 +27,7 @@ import CardEnfermedades from "../components/CardEnfermedades.jsx";
 import CardRaleo from "../components/CardRaleo.jsx";
 import CardAlimentacion from "../components/CardAlimentacion.jsx";
 import CardDensidadPoblacional from "../components/CardDensidadPoblacional.jsx";
+import CardFisicoQuimico from "../components/CardFisicoQuimico.jsx";
 
 import { useDetalleReporte } from "../hooks/useDetalleReporte.js";
 import {
@@ -136,35 +137,24 @@ export default function DetalleReporteScreen() {
 
               {loading ? (
                 <View style={styles.emptyState}>
-                  <Text style={styles.emptyTitle}>
-                    Cargando registros...
-                  </Text>
+                  <Text style={styles.emptyTitle}>Cargando registros...</Text>
                 </View>
-
               ) : !filtrosCompletos ? (
-
                 <View style={styles.emptyState}>
-
                   <Icon
                     icon={ICONS.filter}
                     size={48}
                     color={COLORS.textQuaternary}
                   />
 
-                  <Text style={styles.emptyTitle}>
-                    Seleccione los filtros
-                  </Text>
+                  <Text style={styles.emptyTitle}>Seleccione los filtros</Text>
 
                   <Text style={styles.emptyDescription}>
                     Seleccione un registro, finca y estanque para consultar.
                   </Text>
-
                 </View>
-
               ) : (
-
                 <View style={styles.lista}>
-
                   {registroTipo === "crecimiento" && (
                     <CardCrecimiento
                       fincaId={finca}
@@ -213,6 +203,13 @@ export default function DetalleReporteScreen() {
                     />
                   )}
 
+                  {registroTipo === "fisico_quimico" && (
+                    <CardFisicoQuimico
+                      fincaId={finca}
+                      estanqueId={estanque}
+                      onAlertChange={setAlert}
+                    />
+                  )}
                 </View>
               )}
             </Card>
@@ -222,5 +219,3 @@ export default function DetalleReporteScreen() {
     </View>
   );
 }
-
-
