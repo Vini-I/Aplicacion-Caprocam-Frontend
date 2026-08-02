@@ -567,6 +567,10 @@ export const styles = StyleSheet.create({
     left: 26,
   },
 
+  donutTotalNumber: {
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
+  },
+
   legendBlue: {
     width: 10,
     height: 10,
@@ -743,6 +747,32 @@ export const styles = StyleSheet.create({
     padding: 14,
     marginBottom: 10,
     gap: 10,
+  },
+
+  caseBadges: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    flexWrap: "wrap",
+    gap: 6,
+    marginLeft: 8,
+  },
+
+  badgeTipo: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+    borderWidth: 1,
+  },
+
+  badgeTipoEnfermedad: {
+    backgroundColor: COLORS.errorLight,
+    borderColor: COLORS.error,
+  },
+
+  badgeTipoParasitologia: {
+    backgroundColor: COLORS.secondary,
+    borderColor: VIOLET,
   },
 
   badge: {

@@ -10,7 +10,7 @@ import { COLORS } from "../../../theme/colors.js";
 
 import { styles } from "../styles/DetalleReporteStyle.js";
 
-export default function CardCrecimiento({ data }) {
+export default function CardRaleo({ data }) {
 
     return (
         <>
@@ -18,7 +18,7 @@ export default function CardCrecimiento({ data }) {
                 data.map((registro) => (
                     <Card
                         key={registro.id}
-                        style={[styles.cardRegistro, { borderLeftColor: COLORS.Crecimiento }]}
+                        style={[styles.cardRegistro, { borderLeftColor: COLORS.Raleo }]}
 
                     >
                         <View style={styles.infoGrid}> 
@@ -55,19 +55,54 @@ export default function CardCrecimiento({ data }) {
                                     Fecha
                                 </Text>
                                 <Text style={styles.value}>
-                                    {new Date(registro.fecha_registro).toLocaleDateString("es-CR")}
+                                    {new Date(registro.fecha).toLocaleDateString("es-CR")}
                                 </Text>
                             </View>
-                        </View>
 
-                        <View style={styles.pesoContainer}>
-                            <Text style={styles.label}>
-                                Peso actual
-                            </Text>
+                            <View style={styles.infoItem}>
+                                <Text style={styles.label}>
+                                    Metodo de Raleo
+                                </Text>
+                                <Text style={styles.value}>
+                                    {registro.metodo}
+                                </Text>
+                            </View>
 
-                            <Text style={styles.peso}>
-                                {registro.peso_actual} g
-                            </Text>
+                            <View style={styles.infoItem}>
+                                <Text style={styles.label}>
+                                    Peso Estimado
+                                </Text>
+                                <Text style={styles.value}>
+                                    {registro.pesoEstimado} g
+                                </Text>
+                            </View>
+
+                            <View style={styles.infoItem}>
+                                <Text style={styles.label}>
+                                    Biomasa Estimada
+                                </Text>
+                                <Text style={styles.value}>
+                                    {registro.biomasaEstimado} Kg
+                                </Text>
+                            </View>
+
+                            <View style={styles.infoItem}>
+                                <Text style={styles.label}>
+                                    Objetivo de Raleo
+                                </Text>
+                                <Text style={styles.value}>
+                                    {registro.objetivo} g
+                                </Text>
+                            </View>
+
+                            <View style={styles.infoItem}>
+                                <Text style={styles.label}>
+                                    Observaciones
+                                </Text>
+                                <Text style={styles.value}>
+                                    {registro.observaciones}
+                                </Text>
+                            </View>
                         </View>
 
                         <View style={styles.Buttons}>

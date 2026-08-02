@@ -68,7 +68,7 @@ function GraficaPastelEstanques({ activos, cosechados }) {
               color: COLORS.textSecondary,
               fontSize: 26,
               fontWeight: 900,
-              fontFamily: TYPOGRAPHY.fontFamily.bold,
+              fontFamily: TYPOGRAPHY.fontFamily.regular,
               lineHeight: "28px",
             }}
           >
@@ -97,7 +97,12 @@ function GraficaPastelEstanques({ activos, cosechados }) {
         <View style={[styles.donutHarvestSegment, { width: `${100 - porcentajeActivos}%` }]} />
 
         <View style={styles.donutInner}>
-          <CustomText size={26} weight="900" color={COLORS.textSecondary}>
+          <CustomText
+            size={26}
+            weight="900"
+            color={COLORS.textSecondary}
+            style={styles.donutTotalNumber}
+          >
             {total}
           </CustomText>
 

@@ -38,11 +38,21 @@ function primeraMayuscula(texto) {
 }
 
 function obtenerIdFinca(finca) {
-  return Number(finca.id ?? finca.fincaId ?? finca.idFinca ?? finca.finca_id);
+  return Number(
+    finca.id ??
+    finca.fincaId ??
+    finca.idFinca ??
+    finca.finca_id
+  );
 }
 
 function obtenerIdEstanque(estanque) {
-  return Number(estanque.id ?? estanque.estanqueId ?? estanque.idEstanque ?? estanque.estanque_id);
+  return Number(
+    estanque.id ??
+    estanque.estanqueId ??
+    estanque.idEstanque ??
+    estanque.estanque_id
+  );
 }
 
 function obtenerFincaIdEstanque(estanque) {
@@ -58,20 +68,34 @@ function normalizarCatalogo(catalogo) {
   if (!Array.isArray(catalogo)) return [];
 
   return catalogo
-    .map((item) => {
+    .map(function (item) {
       if (typeof item === "string") {
-        return { label: primeraMayuscula(item), value: item };
+        return {
+          label: primeraMayuscula(item),
+          value: item,
+        };
       }
 
-      const value = item.value ?? item.valor ?? item.codigo ?? item.nombre ?? "";
-      const label = item.label ?? item.nombre ?? primeraMayuscula(String(value));
+      const value =
+        item.value ??
+        item.valor ??
+        item.codigo ??
+        item.nombre ??
+        "";
+
+      const label =
+        item.label ??
+        item.nombre ??
+        primeraMayuscula(String(value));
 
       return {
         label: String(label),
         value: String(value),
       };
     })
-    .filter((item) => item.value !== "");
+    .filter(function (item) {
+      return item.value !== "";
+    });
 }
 
 export default function useEnfermedadesScreen() {
@@ -93,15 +117,16 @@ export default function useEnfermedadesScreen() {
   const [fechaReporte, setFechaReporte] = useState(obtenerFechaActual());
   const [enfermedad, setEnfermedad] = useState("");
   const [severidad, setSeveridad] = useState("");
-  const [mortalidad, setMortalidad] = useState("0");
+  const [mortalidad, setMortalidad] = useState("");
   const [reporte, setReporte] = useState("");
 
   const [cargandoOpciones, setCargandoOpciones] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
   const [mensaje, setMensaje] = useState("");
   const [tipoMensaje, setTipoMensaje] = useState("info");
 
-  useEffect(() => {
-    const cargarOpciones = async () => {
+  useEffect(function () {
+    async function cargarOpciones() {
       try {
         setCargandoOpciones(true);
 
@@ -118,58 +143,83 @@ export default function useEnfermedadesScreen() {
       } finally {
         setCargandoOpciones(false);
       }
-    };
+    }
 
     cargarOpciones();
   }, []);
 
-  const opcionesFincas = useMemo(() => {
+  const opcionesFincas = useMemo(function () {
     return fincas
-      .map((item) => {
+      .map(function (item) {
         const id = obtenerIdFinca(item);
-        const label = item.nombreFinca ?? item.nombre_finca ?? item.nombre ?? item.codigoCBO ?? `Finca ${id}`;
+        const label =
+          item.nombreFinca ??
+          item.nombre_finca ??
+          item.nombre ??
+          item.codigoCBO ??
+          `Finca ${id}`;
 
-        return { label, value: String(id) };
+        return {
+          label,
+          value: String(id),
+        };
       })
-      .filter((item) => Number(item.value) > 0);
+      .filter(function (item) {
+        return Number(item.value) > 0;
+      });
   }, [fincas]);
 
-  const opcionesEstanques = useMemo(() => {
+  const opcionesEstanques = useMemo(function () {
     if (!finca) return [];
 
     return estanques
-      .filter((item) => obtenerFincaIdEstanque(item) === Number(finca))
-      .map((item) => {
+      .filter(function (item) {
+        return obtenerFincaIdEstanque(item) === Number(finca);
+      })
+      .map(function (item) {
         const id = obtenerIdEstanque(item);
         const label = item.codigo ?? item.nombre ?? `Estanque ${id}`;
 
-        return { label, value: String(id) };
+        return {
+          label,
+          value: String(id),
+        };
       })
-      .filter((item) => Number(item.value) > 0);
+      .filter(function (item) {
+        return Number(item.value) > 0;
+      });
   }, [finca, estanques]);
 
-  const opcionesEnfermedades = useMemo(() => {
+  const opcionesEnfermedades = useMemo(function () {
     return normalizarCatalogo(catalogoEnfermedades);
   }, [catalogoEnfermedades]);
 
-  const opcionesSeveridades = useMemo(() => {
+  const opcionesSeveridades = useMemo(function () {
     return normalizarCatalogo(catalogoSeveridades);
   }, [catalogoSeveridades]);
 
   const esTablet = width >= 768;
 
-  const gridStyle = useMemo(() => ({
-    width: "100%",
-    flexDirection: esTablet ? "row" : "column",
-    flexWrap: esTablet ? "wrap" : "nowrap",
-    gap: 12,
-  }), [esTablet]);
+  const gridStyle = useMemo(function () {
+    return {
+      width: "100%",
+      flexDirection: esTablet ? "row" : "column",
+      flexWrap: esTablet ? "wrap" : "nowrap",
+      gap: 12,
+    };
+  }, [esTablet]);
 
-  const itemStyle = useMemo(() => ({
-    width: esTablet ? "48.5%" : "100%",
-  }), [esTablet]);
+  const itemStyle = useMemo(function () {
+    return {
+      width: esTablet ? "48.5%" : "100%",
+    };
+  }, [esTablet]);
 
-  const itemFullStyle = useMemo(() => ({ width: "100%" }), []);
+  const itemFullStyle = useMemo(function () {
+    return {
+      width: "100%",
+    };
+  }, []);
 
   const placeholderFinca = cargandoOpciones
     ? "Cargando fincas..."
@@ -190,6 +240,13 @@ export default function useEnfermedadesScreen() {
   const placeholderSeveridad = opcionesSeveridades.length > 0
     ? "Seleccione la severidad"
     : "No se encuentran opciones o valores";
+
+  const errorFinca = submitted && finca === "";
+  const errorEstanque = submitted && estanque === "";
+  const errorFechaReporte = submitted && fechaReporte.trim() === "";
+  const errorEnfermedad = submitted && enfermedad === "";
+  const errorSeveridad = submitted && severidad === "";
+  const errorReporte = submitted && reporte.trim() === "";
 
   function limpiarMensaje() {
     setMensaje("");
@@ -253,11 +310,13 @@ export default function useEnfermedadesScreen() {
     setFechaReporte(obtenerFechaActual());
     setEnfermedad("");
     setSeveridad("");
-    setMortalidad("0");
+    setMortalidad("");
     setReporte("");
+    setSubmitted(false);
   }
 
   async function guardarEnfermedad() {
+    setSubmitted(true);
     setMensaje("");
 
     if (!validarFormulario()) {
@@ -276,7 +335,8 @@ export default function useEnfermedadesScreen() {
       reporte: reporte.trim(),
     };
 
-    const nuevaEnfermedad = await guardarEnfermedadBackend(enfermedadDTO);
+    const nuevaEnfermedad =
+      await guardarEnfermedadBackend(enfermedadDTO);
 
     if (!nuevaEnfermedad) return;
 
@@ -308,6 +368,13 @@ export default function useEnfermedadesScreen() {
     gridStyle,
     itemStyle,
     itemFullStyle,
+
+    errorFinca,
+    errorEstanque,
+    errorFechaReporte,
+    errorEnfermedad,
+    errorSeveridad,
+    errorReporte,
 
     mensaje,
     tipoMensaje,

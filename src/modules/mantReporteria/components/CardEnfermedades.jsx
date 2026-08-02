@@ -10,7 +10,7 @@ import { COLORS } from "../../../theme/colors.js";
 
 import { styles } from "../styles/DetalleReporteStyle.js";
 
-export default function CardCrecimiento({ data }) {
+export default function CardEnfermedades({ data }) {
 
     return (
         <>
@@ -18,8 +18,7 @@ export default function CardCrecimiento({ data }) {
                 data.map((registro) => (
                     <Card
                         key={registro.id}
-                        style={[styles.cardRegistro, { borderLeftColor: COLORS.Crecimiento }]}
-
+                        style={[styles.cardRegistro, { borderLeftColor: COLORS. Enfermedades }]}
                     >
                         <View style={styles.infoGrid}> 
                             <View style={styles.infoItem}>
@@ -45,7 +44,7 @@ export default function CardCrecimiento({ data }) {
                                     Colaborador
                                 </Text>
                                 <Text style={styles.value}>
-                                    {registro.nombreColaborador}
+                                    {registro.nombreColaborador?registro.nombreColaborador.charAt(0).toUpperCase() + registro.nombreColaborador.slice(1): ""}
                                 </Text>
                             </View>
 
@@ -55,21 +54,47 @@ export default function CardCrecimiento({ data }) {
                                     Fecha
                                 </Text>
                                 <Text style={styles.value}>
-                                    {new Date(registro.fecha_registro).toLocaleDateString("es-CR")}
+                                    {new Date(registro.fechaReporte).toLocaleDateString("es-CR")}
                                 </Text>
                             </View>
+
+                            <View style={styles.infoItem}>
+                                <Text style={styles.label}>
+                                    Nombre Enfermedad
+                                </Text>
+                                <Text style={styles.value}>
+                                    {registro.enfermedad?registro.enfermedad.charAt(0).toUpperCase() + registro.enfermedad.slice(1): ""}
+                                </Text>
+                            </View>
+
+                            <View style={styles.infoItem}>
+                                <Text style={styles.label}>
+                                    Severidad
+                                </Text>
+                                <Text style={styles.value}>
+                                    {registro.severidad?registro.severidad.charAt(0).toUpperCase() + registro.severidad.slice(1): ""}
+                                </Text>
+                            </View>
+
+                            <View style={styles.infoItem}>
+                                <Text style={styles.label}>
+                                    Mortalidad
+                                </Text>
+                                <Text style={styles.value}>
+                                    {registro.mortalidadRegistrada}
+                                </Text>
+                            </View>
+
+                            <View style={styles.infoItem}>
+                                <Text style={styles.label}>
+                                    Reporte
+                                </Text>
+                                <Text style={styles.value}>
+                                    {registro.reporte}
+                                </Text>
+                            </View>
+
                         </View>
-
-                        <View style={styles.pesoContainer}>
-                            <Text style={styles.label}>
-                                Peso actual
-                            </Text>
-
-                            <Text style={styles.peso}>
-                                {registro.peso_actual} g
-                            </Text>
-                        </View>
-
                         <View style={styles.Buttons}>
                             <Button
                                 style={styles.Eliminar}

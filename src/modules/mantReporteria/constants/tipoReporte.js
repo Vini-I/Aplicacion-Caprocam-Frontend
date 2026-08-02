@@ -36,3 +36,7 @@ export const TIPOS_REGISTRO = [
   },
 
 ];
+
+export const TIPOS_AUTOGESTIONADOS = [
+  "alimentacion",
+];
