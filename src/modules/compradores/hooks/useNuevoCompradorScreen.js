@@ -18,6 +18,10 @@
  *    (errorNombre, errorCedula, errorTelefono, errorCorreo) para
  *    pintar el borde rojo, y UN SOLO mensaje general (mensajeError)
  *    para mostrar debajo del formulario.
+ * 4. Al guardar con éxito, YA NO navega a la lista: muestra el
+ *    alert de "guardado" por 3 segundos y luego limpia todo el
+ *    formulario (campos y errores) para que se pueda cargar otro
+ *    comprador sin salir de la pantalla.
  *
  * IMPORTANTE:
  * - Los errores solo se calculan dentro de handleSubmit: nunca
@@ -36,12 +40,15 @@
 
 
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
+import { compradorService } from "../services/comprador.service";
 
 // Regex para validar teléfonos con o sin código de país +506
-const TELEFONO_REGEX = /^(\+?506[\s-]?)?\d{4}[\s-]?\d{4}$/;
-export const TELEFONO_MAX_LENGTH = 14;
+const TELEFONO_REGEX = /^\d{8}$/;
+
+export const TELEFONO_MAX_LENGTH = 8;
+export const CEDULA_MAX_LENGTH = 10;
 
 // Regex básico para validar formato de correo electrónico
 const CORREO_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -55,6 +62,7 @@ function esCorreoValido(valor) {
 }
 
 const MENSAJE_ERROR_GENERAL = "Revisa los campos obligatorios marcados con * antes de guardar.";
+const MENSAJE_ERROR_GUARDADO = "No se pudo guardar el comprador. Intenta de nuevo.";
 
 export function useNuevoCompradorScreen() {
   const router = useRouter();
@@ -74,19 +82,28 @@ export function useNuevoCompradorScreen() {
   const [errorCorreo, setErrorCorreo] = useState(false);
   const [mensajeError, setMensajeError] = useState("");
   const [guardadoExitoso, setGuardadoExitoso] = useState(false);
+  const [guardando, setGuardando] = useState(false);
 
-  // Permite solo dígitos, espacios, guiones y el símbolo + en el teléfono
+  // el alert de error se autolimpia a los 6 segundos
+  useEffect(() => {
+    if (mensajeError) {
+      const t = setTimeout(() => setMensajeError(""), 6000);
+      return () => clearTimeout(t);
+    }
+  }, [mensajeError]);
+
+    // Permite solo dígitos en el teléfono
   const handleTelefonoChange = (valor) => {
-    setTelefono(valor.replace(/[^\d\s\-+]/g, ""));
+    setTelefono(valor.replace(/[^\d]/g, ""));
   };
 
-  // Permite solo dígitos y guiones en la cédula
+  // Permite solo dígitos en la cédula
   const handleCedulaChange = (valor) => {
-    setCedula(valor.replace(/[^\d-]/g, ""));
+    setCedula(valor.replace(/[^\d]/g, ""));
   };
 
   // Valida los campos y guarda el comprador si no hay errores
-  function handleSubmit() {
+  async function handleSubmit() {
     const errNombre = nombre.trim() === "";
     const errCedula = cedula.trim() === "";
     const errTel = !esTelefonoValido(telefono);
@@ -103,9 +120,6 @@ export function useNuevoCompradorScreen() {
       return;
     }
 
-    setMensajeError("");
-    setGuardadoExitoso(true);
-
     const comprador = {
       nombre: nombre.trim(),
       cedula: cedula.trim(),
@@ -115,10 +129,36 @@ export function useNuevoCompradorScreen() {
       notas: notas.trim(),
     };
 
-    console.log("Comprador guardado:", comprador);
+    setGuardando(true);
+    try {
+      await compradorService.crearComprador(comprador);
+    } catch (error) {
+      setMensajeError(MENSAJE_ERROR_GUARDADO);
+      setGuardadoExitoso(false);
+      setGuardando(false);
+      return;
+    }
+    setGuardando(false);
+
+    setMensajeError("");
+    setGuardadoExitoso(true);
+
+    // Ya no navegamos fuera de la pantalla: mostramos el alert de
+    // éxito por 3 segundos y luego limpiamos el formulario para que
+    // el usuario pueda registrar otro comprador sin salir de acá.
     setTimeout(() => {
-      router.replace("/(drawer)/compradores/compradorScreen");
-    }, 900);
+      setGuardadoExitoso(false);
+      setNombre("");
+      setCedula("");
+      setTelefono("");
+      setCorreo("");
+      setDireccion("");
+      setNotas("");
+      setErrorNombre(false);
+      setErrorCedula(false);
+      setErrorTelefono(false);
+      setErrorCorreo(false);
+    }, 3000);
   }
 
   function handleVolver() {
@@ -142,6 +182,7 @@ export function useNuevoCompradorScreen() {
     errorCorreo,
     mensajeError, 
     guardadoExitoso,
+    guardando,
     handleCedulaChange,
     handleTelefonoChange,
     handleSubmit,

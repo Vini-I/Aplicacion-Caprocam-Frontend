@@ -39,7 +39,8 @@
       "expo-font",
       "@react-native-community/datetimepicker",
       "expo-sharing",
-      "expo-image"
+      "expo-image",
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true,
