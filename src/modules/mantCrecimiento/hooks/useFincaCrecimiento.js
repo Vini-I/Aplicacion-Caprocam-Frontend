@@ -14,7 +14,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { fincaService } from "../../finca/services/finca.service.js";
 import { colaboradorService } from "../../colaboradores/services/colaborador.service.js";
 
-import { createCrecimiento } from "../services/mantCrecimiento.service.js";
+import crecimientoService from "../services/mantCrecimiento.service.js";
 import { mantCrecmientoDTO } from "../dtos/mantCrecmiento.dto.js";
 import { estanqueService } from "../../estanques/services/estanque.service.js";
 
@@ -252,7 +252,7 @@ export function useFincaCrecimiento() {
         colaborador: Number(colaboradorSeleccionado),
       });
 
-      await createCrecimiento(crecimientoDTO);
+      await crecimientoService.create(crecimientoDTO);
 
       setSuccessMessage("Guardado exitosamente");
 
