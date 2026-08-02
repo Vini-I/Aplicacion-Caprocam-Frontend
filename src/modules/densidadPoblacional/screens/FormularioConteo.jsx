@@ -121,9 +121,17 @@ export default function FormularioConteo({
         label="Supervivencia (%)"
         placeholder="Ej: 85"
         value={supervivencia}
-        onChangeText={(v) => setSupervivencia(v.replace(/[^0-9.]/g, ""))}
-        keyboardType="numeric"
-        maxLength={6}
+        onChangeText={(v) => {
+          // Solo valores enteros de 0 a 100
+          let valor = v.replace(/[^0-9]/g, "");
+          // Evitar ceros infinitos al inicio
+          valor = valor.replace(/^0+(?=\d)/, "");
+          // Limitar máximo a 100
+          if (Number(valor) > 100) {valor = "100";}
+          setSupervivencia(valor);
+        }}
+        keyboardType="number-pad"
+        maxLength={3}
         required
         submitted={submitted}
         error={submitted ? (errores.supervivencia || "") : ""}
