@@ -20,79 +20,40 @@
  * Ejemplo:
  * await raleoService.create(form);
  */
-import api from "../../../api/api.js";
 
-async function getAll() {
-  try {
-    const response = await api.get("/raleo");
-    return response.data.data;
-  } catch (error) {
-    console.error(
-      "Error al obtener los raleos",
-      error.response?.data || error.message
-    );
-    throw error;
-  }
-}
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-async function getById(id) {
-  try {
-    const response = await api.get(`/raleo/${id}`);
-    return response.data.data;
-  } catch (error) {
-    console.error(
-      "Error al obtener el raleo",
-      error.response?.data || error.message
-    );
-    throw error;
-  }
-}
-
-async function create(raleoDTO) {
-  try {
-    const response = await api.post("/raleo", raleoDTO);
-    return response.data.data;
-  } catch (error) {
-    console.error(
-      "Error al crear el raleo",
-      error.response?.data || error.message
-    );
-    throw error;
-  }
-}
-
-async function update(id, raleoDTO) {
-  try {
-    const response = await api.put(`/raleo/${id}`, raleoDTO);
-    return response.data.data;
-  } catch (error) {
-    console.error(
-      "Error al actualizar el raleo",
-      error.response?.data || error.message
-    );
-    throw error;
-  }
-}
-
-async function deleteById(id) {
-  try {
-    const response = await api.delete(`/raleo/${id}`);
-    return response.data.data;
-  } catch (error) {
-    console.error(
-      "Error al eliminar el raleo",
-      error.response?.data || error.message
-    );
-    throw error;
-  }
-}
+const CLAVE = "raleos_v1";
 
 const raleoService = {
-  getAll,
-  getById,
-  create,
-  update,
-  deleteById,
+    getAll: async () => {
+        try {
+            const datos = await AsyncStorage.getItem(CLAVE);
+            return datos ? JSON.parse(datos) : [];
+        } catch {
+            return [];
+        }
+    },
+
+    create: async (registro) => {
+        const lista = await raleoService.getAll();
+        const nuevo = {
+            ...registro,
+            id:        Date.now().toString(),
+            timestamp: new Date().toISOString(),
+        };
+        await AsyncStorage.setItem(CLAVE, JSON.stringify([...lista, nuevo]));
+        return nuevo;
+    },
+
+    deleteById: async (id) => {
+        const lista = await raleoService.getAll();
+        await AsyncStorage.setItem(CLAVE, JSON.stringify(lista.filter(r => r.id !== id)));
+    },
+
+    clearAll: async () => {
+        await AsyncStorage.removeItem(CLAVE);
+    },
 };
 
 export default raleoService;
