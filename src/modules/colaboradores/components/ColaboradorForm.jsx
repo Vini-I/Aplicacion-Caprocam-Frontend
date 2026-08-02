@@ -199,29 +199,27 @@ const ColaboradorForm = forwardRef(function ColaboradorForm(
         )}
       </Card>
 
-      {/* ─── Alert de error (fuera del Card, encima del botón) ─── */}
-      {mostrarError && (
-        <View style={{ marginBottom: 12 }}>
-          <Alert
-            variant="danger"
-            message={mensajeError}
-            style={styles.alertContainer}
-            textStyle={styles.alertText}
-          />
-        </View>
-      )}
+{/* ─── Alert de error (fuera del Card, encima del botón) ─── */}
+{mostrarError && (
+  <View style={styles.alertContainer}>
+    <Alert
+      variant="danger"
+      message={mensajeError}
+      textStyle={styles.alertText}
+    />
+  </View>
+)}
 
-      {/* ─── Alert de éxito (fuera del Card, encima del botón) ─── */}
-      {successMessage !== "" && !mostrarError && (
-        <View style={{ marginBottom: 12 }}>
-          <Alert
-            variant="success"
-            message={successMessage}
-            style={styles.alertContainer}
-            textStyle={styles.alertText}
-          />
-        </View>
-      )}
+{/* ─── Alert de éxito (fuera del Card, encima del botón) ─── */}
+{successMessage !== "" && !mostrarError && (
+  <View style={styles.alertContainer}>
+    <Alert
+      variant="success"
+      message={successMessage}
+      textStyle={styles.alertText}
+    />
+  </View>
+)}
 
       {/* ─── Botón de acción fuera del Card ─── */}
       <View style={styles.buttonContainer}>

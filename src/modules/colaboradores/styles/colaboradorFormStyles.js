@@ -24,7 +24,7 @@ export const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: "row",
     gap: 12,
-    marginTop: 16,
+    marginTop: 12,
   },
   submitButton: {
     flex: 1,
@@ -44,6 +44,7 @@ export const styles = StyleSheet.create({
     width: "100%",
     alignItems: "center",
     justifyContent: "center",
+    marginBottom: 0, // <--- reducido de 12 a 4
   },
   alertText: {
     textAlign: "center",
