@@ -42,7 +42,7 @@ import { ICONS } from "../../../theme/icons.js";
 import { STYLE } from "../../../theme/style.js";
 import { styles } from "../styles/DetalleReporteStyle.js";
 
-export default function DetalleReporteScreen({ onEditar, onEditarAlimentacion }) {
+export default function DetalleReporteScreen({ onEditar }) {
   
   const router = useRouter();
 
@@ -171,6 +171,7 @@ export default function DetalleReporteScreen({ onEditar, onEditarAlimentacion })
                       fincaId={finca}
                       estanqueId={estanque}
                       onAlertChange={setAlert}
+                      onEditar={handleEditar("/registros/EditarCrecimiento")}
                     />
                   )}
 
