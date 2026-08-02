@@ -45,6 +45,9 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   searchContainer: {
+    width: "100%",
+    maxWidth: 450,
+    alignSelf: "center",
     marginBottom: 12,
   },
   searchInputContainer: {
