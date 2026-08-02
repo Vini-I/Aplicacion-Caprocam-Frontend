@@ -191,7 +191,9 @@ export default function DetalleReporteScreen() {
                     {
                       registroTipo === "parasitologia" && (
                         <CardParasitologia
-                          data={registros}
+                          fincaId={finca}
+                          estanqueId={estanque}
+                          onAlertChange={setAlert}
                         />
                       )
                     }
