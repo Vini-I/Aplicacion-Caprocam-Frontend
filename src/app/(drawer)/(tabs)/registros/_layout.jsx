@@ -28,6 +28,18 @@ export default function RegistrosStackLayout() {
 
       <Stack.Screen name="Reporteria" options={{ title: "Reporteria" }}/>
 
+      <Stack.Screen name="EditarAlimentacion" options={{ title: "Editar Alimentación" }} />
+
+      <Stack.Screen name="EditarCrecimiento" options={{ title: "Editar Crecimiento" }} />
+      
+      <Stack.Screen name="EditarEnfermedad" options={{ title: "Editar Enfermedad" }} />
+
+      <Stack.Screen name="EditarParasitologia" options={{ title: "Editar Parasitología" }} />
+
+      <Stack.Screen name="EditarRaleo" options={{ title: "Editar Raleo" }} />
+
+      <Stack.Screen name="EditarDensidadPoblacional" options={{ title: "Editar Densidad" }} />
+
     </Stack>
   );
 }

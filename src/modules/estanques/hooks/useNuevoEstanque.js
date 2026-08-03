@@ -115,7 +115,6 @@ export default function useNuevoEstanque({ navigation, codigoCBO }) {
       fechaMantenimiento: fechaMantenimiento,
       precria: precria,
     });
-    console.log("NuevoEstanqueDTO", NuevoEstanqueDTO);
     try {
       await crearEstanque(NuevoEstanqueDTO);
       router.push({
