@@ -52,14 +52,19 @@ export const styles = StyleSheet.create({
   },
   searchBarContainer: {
     flex: 1,
-    minHeight: 44,
+    marginBottom: 0,
   },
   barraBusqueda: {
     flexDirection: "row",
-    alignItems: "flex-start",
+    alignItems: "center",
     gap: 8,
     marginBottom: 12,
   },
+  filterButton: {
+  alignSelf: "center",
+  marginTop: 0,
+  height: 43,
+},
   buttonWrapper: {
     position: "absolute",
     bottom: 16,

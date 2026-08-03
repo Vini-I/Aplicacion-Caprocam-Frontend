@@ -119,6 +119,7 @@ export default function SiembraListScreen() {
               onApply={setFiltros}
               showLowStock={false}
               showExpiryDate={false}
+              buttonStyle={styles.filterButton}
             />
           </View>
 

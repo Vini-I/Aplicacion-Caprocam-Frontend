@@ -88,7 +88,6 @@ export class SiembraDTO {
     this.densidad_poblacional = formData.densidadPoblacional ? Number(formData.densidadPoblacional) : null;
     this.cantidad_sembrada = Number(formData.cantidadSembrada || 0);
     this.pl_siembra = numeroDesdePL(formData.plSiembra);
-    this.estado = formData.estado === "Finalizada" ? "FINALIZADA" : "ACTIVA";
     this.duracion_ciclo = formData.duracionCiclo ? Number(formData.duracionCiclo) : null;
   }
 }
