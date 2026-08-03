@@ -56,6 +56,7 @@ export const styles = StyleSheet.create({
   },
   contadorResultados: {
     fontSize: 13,
+    left: 4,
     color: COLORS.textTertiary,
     fontFamily: TYPOGRAPHY.fontFamily.regular,
   },
@@ -64,7 +65,7 @@ export const styles = StyleSheet.create({
     padding: 0,
     paddingBottom: 110, // espacio para el botón flotante
     width: '100%',
-    left: 0,
+    left: 8,
     maxWidth: 900,
     alignSelf: 'center',
   },

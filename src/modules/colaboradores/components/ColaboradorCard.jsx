@@ -12,9 +12,9 @@ import { ICONS } from "../../../theme/icons";
 
 export default function ColaboradorCard({ colaborador, onPress, onEdit, onDelete }) {
   const rolLabels = {
-    camprocam_worker: "Trabajador Camprocam",
-    external_owner: "Dueño Externo",
-    external_worker: "Trabajador Externo",
+    camprocam_worker: "Colaborador Camprocam",
+    external_owner: "Propietario Externo",
+    external_worker: "Colaborador Externo",
   };
 
   const rolVariant = {
