@@ -6,22 +6,38 @@
  * - Carga el listado de productos desde la API mediante InventarioService.
  * - Centraliza el estado de la barra de búsqueda y los filtros activos.
  * - Aplica filtros múltiples (categoría, proveedor, unidad, caducidad, stock).
+ * - Muestra el alert de éxito cuando Productos navega de vuelta a esta
+ *   pantalla luego de guardar o eliminar un producto.
  *
  * REGLAS IMPORTANTES:
- * - Los filtros se aplican a los datos cargados en memoria.
  * - Se manejan errores globales usando ErrorContext.
+ * - El aviso de guardado/eliminado NO se calcula en este módulo: llega
+ *   por parámetro de navegación (useLocalSearchParams) desde Productos,
+ *   que al terminar de guardar o eliminar un producto navega así:
+ *     router.replace({
+ *       pathname: "/(drawer)/inventarios",
+ *       params: { alertaProducto: "guardado" | "eliminado" },
+ *     });
+ *   Este hook solo lee ese parámetro (alertaProducto) y muestra el
+ *   alert correspondiente durante 3 segundos, según el estándar de
+ *   alerts de acciones exitosas. No se depende del estado interno de
+ *   ningún hook de Productos.
  *
  * @dependencies - React, expo-router, InventarioService, ErrorContext
  * @validations - N/A
  * @navigation - N/A
  */
 
-import { useCallback, useRef, useState } from "react";
-import { useFocusEffect } from "expo-router";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useFocusEffect, useLocalSearchParams } from "expo-router";
 
 import { getProductosInventario } from "../services/InventarioService.js";
 import { useError } from "../../../shared/context/ErrorContext.js";
 
+const mensajesAlertaProducto = {
+  guardado: "Producto guardado correctamente.",
+  eliminado: "Producto eliminado correctamente.",
+};
 
 function parsearFechaDDMMAAAA(fecha) {
   if (!fecha) return null;
@@ -37,9 +53,11 @@ function parsearFechaDDMMAAAA(fecha) {
 export function useInventario() {
   const flatListRef = useRef(null);
   const { mostrarError } = useError();
+  const { alertaProducto } = useLocalSearchParams();
 
   const [productos, setProductos] = useState([]);
   const [busqueda, setBusqueda] = useState("");
+  const [feedback, setFeedback] = useState(null);
 
   const [filtros, setFiltros] = useState({
     categories: [],
@@ -70,6 +88,15 @@ export function useInventario() {
       };
     }, []),
   );
+
+  useEffect(() => {
+    const mensaje = mensajesAlertaProducto[alertaProducto];
+    if (mensaje) {
+      setFeedback({ variant: "success", message: mensaje });
+      const t = setTimeout(() => setFeedback(null), 3000);
+      return () => clearTimeout(t);
+    }
+  }, [alertaProducto]);
 
   const categorias = Array.isArray(productos)
     ? [...new Set(productos.map((p) => p.categoria).filter(Boolean))]
@@ -141,5 +168,6 @@ export function useInventario() {
     unidades,
     productosFiltrados,
     cantidadStockBajo,
+    feedback,
   };
 }
