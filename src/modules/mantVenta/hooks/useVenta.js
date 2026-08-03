@@ -103,7 +103,6 @@ export function validarVentaFormulario({
   if (Number(tamanoPromedio) <= 0) errores.tamanoPromedio = true;
   if (Number(kilosVendidos) <= 0) errores.kilosVendidos = true;
   if (precioKiloNumero <= 0) errores.precioKilo = true;
-  if (!colaboradorSeleccionado) errores.colaborador = true;
   if (!compradorSeleccionado) errores.comprador = true;
 
   return errores;
@@ -342,7 +341,7 @@ export function useVenta() {
     const ventaDTO = new MantVentaDTO({
       finca: Number(fincaSeleccionada),
       estanque: Number(estanqueSeleccionado),
-      colaborador: Number(colaboradorSeleccionado),
+      colaborador: colaboradorSeleccionado ? Number(colaboradorSeleccionado) : null,
       comprador: Number(compradorSeleccionado),
       pesoPromedio: Number(pesoPromedio),
       tamanoPromedio: Number(tamanoPromedio),
@@ -409,6 +408,7 @@ export function useVenta() {
     kilosVendidos,
     precioKilo,
     fechaVenta,
+    colaboradorSeleccionado,
     compradorSeleccionado,
     mensaje,
     tipoMensaje,
@@ -418,6 +418,7 @@ export function useVenta() {
     errorInputStyle,
     opcionesFincas,
     estanquesFiltrados,
+    opcionesColaboradores,
     opcionesCompradores,
     precioKiloNumero,
     totalVenta,
@@ -431,6 +432,7 @@ export function useVenta() {
     handleKilosVendidosChange,
     handlePrecioChange,
     handleCompradorChange,
+    handleColaboradorChange,
     handleFechaChange,
     limpiarError,
     guardarVenta,
