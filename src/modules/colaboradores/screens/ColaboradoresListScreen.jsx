@@ -71,6 +71,7 @@ export default function ColaboradoresListScreen() {
     showAlert,
     handleDeletePress,
     confirmDelete,
+    fetchColaboradores, // <--- OBTENEMOS LA FUNCIÓN PARA REFRESCAR
   } = useColaboradoresList();
 
   // Estado de filtros del FilterButton
@@ -126,6 +127,18 @@ export default function ColaboradoresListScreen() {
         });
       }
     }, [editId, router])
+  );
+
+  // ─── REFRESCAR LISTA AL VOLVER A LA PANTALLA ──────────────
+  // Usamos una referencia para evitar la doble carga inicial
+  const firstFocus = useRef(true);
+  useFocusEffect(
+    useCallback(() => {
+      if (!firstFocus.current) {
+        fetchColaboradores();
+      }
+      firstFocus.current = false;
+    }, [fetchColaboradores])
   );
 
   // Navegaciones
