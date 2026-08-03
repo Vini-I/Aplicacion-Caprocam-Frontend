@@ -56,13 +56,17 @@ import { useError } from "../../../shared/context/ErrorContext";
 import { fincaService } from "../../finca/services/finca.service";
 import { estanqueService } from "../../estanques/services/estanque.service";
 
-import { getSiembraById, updateSiembra, finalizarSiembra } from "../services/siembra.service";
+import {
+  getSiembraById,
+  updateSiembra,
+  finalizarSiembra,
+} from "../services/siembra.service";
 import {
   getPrecriaById,
   updatePrecria,
   finalizarPrecria,
 } from "../services/precria.service";
-import { getLoteById, updateLote } from "../services/lote.service";
+import { getLoteById } from "../services/lote.service";
 import {
   getProveedoresLarva,
   createProveedorLarva,
@@ -347,6 +351,9 @@ export default function useDetalleSiembra(id) {
     }));
   }, []);
 
+  const [fincas, setFincas] = useState([]);
+  const [estanques, setEstanques] = useState([]);
+
   const handleChangeEstanque = useCallback(
     (value) => {
       const estanque = estanques.find((e) => e.value === value);
@@ -362,11 +369,8 @@ export default function useDetalleSiembra(id) {
         ),
       }));
     },
-    [formData],
+    [estanques],
   );
-
-  const [fincas, setFincas] = useState([]);
-  const [estanques, setEstanques] = useState([]);
 
   useEffect(() => {
     fincaService
@@ -626,10 +630,7 @@ export default function useDetalleSiembra(id) {
     setGuardando(true);
     try {
       let actualizado;
-      const loteActualizado = await updateLote(
-        formData.loteId,
-        new LoteLarvaDTO(formData),
-      );
+      const loteActualizado = await getLoteById(formData.loteId)
 
       if (formData.tipoRegistro === "precria") {
         actualizado = await updatePrecria(
@@ -721,10 +722,7 @@ export default function useDetalleSiembra(id) {
         new FinalizarPrecriaDTO(formData),
       );
 
-      const loteActualizado = await updateLote(
-        formData.loteId,
-        new LoteLarvaDTO(formData),
-      );
+     const loteActualizado = await getLoteById(formData.loteId);
 
       const mapeado = mapPrecriaAFormData(registro, loteActualizado);
 
@@ -732,7 +730,6 @@ export default function useDetalleSiembra(id) {
       setFormData(mapeado);
       setSubmitted(false);
       mostrarMensaje("Pre-Cría finalizada correctamente.", "success");
-      router.back();
       return mapeado;
     } catch (err) {
       const mensajeBackend = err.response?.data?.message;
@@ -786,9 +783,11 @@ export default function useDetalleSiembra(id) {
   const handleFinalizarSiembra = useCallback(async () => {
     setGuardando(true);
     try {
-      await finalizarSiembra(id);
-      setSiembra((prev) => ({ ...prev, estado: "Finalizada" }));
-      setFormData((prev) => ({ ...prev, estado: "Finalizada" }));
+      const registro = await finalizarSiembra(id);
+      const estadoMostrado =
+        registro.estado === "FINALIZADA" ? "Finalizada" : "Activa";
+      setSiembra((prev) => ({ ...prev, estado: estadoMostrado }));
+      setFormData((prev) => ({ ...prev, estado: estadoMostrado }));
       mostrarMensaje("Siembra finalizada correctamente.", "success");
     } catch (err) {
       const mensajeBackend = err.response?.data?.message;

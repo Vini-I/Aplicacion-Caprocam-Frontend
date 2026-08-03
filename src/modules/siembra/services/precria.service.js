@@ -89,3 +89,15 @@ export const eliminarPrecria = async (id) => {
     throw error;
   }
 };
+
+/*
+CREAR LOTE + PRE-CRÍA EN UNA SOLA PETICIÓN (evita el lote huérfano)
+*/
+export const createPrecriaConLote = async (precriaConLoteDTO) => {
+  try {
+    const response = await api.post("/precrias/con-lote", precriaConLoteDTO);
+    return response.data.data; // { lote, precria }
+  } catch (error) {
+    throw error;
+  }
+};

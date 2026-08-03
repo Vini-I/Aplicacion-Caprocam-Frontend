@@ -84,3 +84,14 @@ export const eliminarSiembra = async (id) => {
   }
 };
 
+/*
+CREAR LOTE + SIEMBRA EN UNA SOLA PETICIÓN (evita el lote huérfano)
+*/
+export const createSiembraConLote = async (siembraConLoteDTO) => {
+  try {
+    const response = await api.post("/siembras/con-lote", siembraConLoteDTO);
+    return response.data.data; // { lote, siembra }
+  } catch (error) {
+    throw error;
+  }
+};
