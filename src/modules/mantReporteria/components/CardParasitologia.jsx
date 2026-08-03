@@ -71,15 +71,6 @@ export default function CardParasitologia({ fincaId, estanqueId, onEditar, onAle
 
                             <View style={styles.infoItem}>
                                 <Text style={styles.label}>
-                                    Colaborador
-                                </Text>
-                                <Text style={styles.value}>
-                                    {registro.nombreCreadoPor}
-                                </Text>
-                            </View>
-
-                            <View style={styles.infoItem}>
-                                <Text style={styles.label}>
                                     Fecha Reporte
                                 </Text>
                                 <Text style={styles.value}>
@@ -120,6 +111,15 @@ export default function CardParasitologia({ fincaId, estanqueId, onEditar, onAle
                                 </Text>
                                 <Text style={styles.value}>
                                     {registro.camaronesInfectados}
+                                </Text>
+                            </View>
+
+                            <View style={styles.infoItem}>
+                                <Text style={styles.label}>
+                                    Colaborador
+                                </Text>
+                                <Text style={styles.value}>
+                                    {registro.nombreColaborador ? registro.nombreColaborador.charAt(0).toUpperCase() + registro.nombreColaborador.slice(1) : ""}
                                 </Text>
                             </View>
                         </View>

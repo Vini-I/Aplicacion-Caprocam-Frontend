@@ -51,7 +51,7 @@ export function OptionButton({ label, value, selectedValue, onPress }) {
 export function Info({ label, value }) {
   return (
     <View style={styles.infoRow}>
-      <CustomText size={13} color={COLORS.black} weight="600" style={styles.infoLabel}>
+      <CustomText size={13} color={COLORS.textTertiary} style={styles.infoLabel}>
         {label}
       </CustomText>
       <CustomText size={15} color={COLORS.textSecondary} style={styles.infoValue}>

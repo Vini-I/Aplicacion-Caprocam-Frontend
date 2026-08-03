@@ -67,13 +67,8 @@ export default function CardAlimentacion({ fincaId, estanqueId, onEditar, onAler
                         </View>
 
                         <View style={styles.infoItem}>
-                            <Text style={styles.label}>Colaborador</Text>
-                            <Text style={styles.value}>{registro.nombreCreadoPor}</Text>
-                        </View>
-
-                        <View style={styles.infoItem}>
                             <Text style={styles.label}>Producto</Text>
-                            <Text style={styles.value}>{registro.nombreProducto}</Text>
+                            <Text style={styles.value}>{registro.idProducto}</Text>
                         </View>
 
                         <View style={styles.infoItem}>

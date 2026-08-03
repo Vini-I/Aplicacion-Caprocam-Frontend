@@ -36,11 +36,16 @@ export default function EditarCrecimientoScreen({ registroId }) {
     estanqueSeleccionadoObj,
     estanque,
 
+    opcionesColaboradores,
+    colaboradorSeleccionado,
+
     setEstanqueSeleccionado,
     setPesoActual,
     setFechaRegistro,
     handleFincaChange,
     guardarDatos,
+
+    handleColaboradorChange,
 
     submitted,
     successMessage,
@@ -50,6 +55,7 @@ export default function EditarCrecimientoScreen({ registroId }) {
     mostrarErrorEstanque,
     mostrarErrorPeso,
     mostrarErrorFecha,
+    mostrarErrorColaborador,
     cargando,
   } = useEditarCrecimiento(registroId, () => {
     router.replace({
@@ -120,7 +126,22 @@ export default function EditarCrecimientoScreen({ registroId }) {
             selectStyle={mostrarErrorEstanque ? styles.inputError : null}
           />
 
+          <Select
+            label="Colaborador asignado *"
+            placeholder="Seleccione colaborador"
+            options={opcionesColaboradores}
+            value={colaboradorSeleccionado}
+            onChange={handleColaboradorChange}
+            selectStyle={mostrarErrorColaborador ? styles.inputError : null}
+          />
+
+
           <View style={styles.badgeRow}>
+            <BadgeLabel
+              label={`Días de cultivo: ${estanqueSeleccionadoObj?.diasCultivo ?? "-"}`}
+              variant="success"
+              style={styles.badgeItem}
+            />
             <BadgeLabel
               label={pesoAnteriorLabel}
               variant="warning"

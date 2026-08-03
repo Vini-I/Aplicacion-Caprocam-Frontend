@@ -24,7 +24,6 @@ import NavbarRegistro from "../../../shared/components/NavbarRegistro";
 import useDetalleEstanque from "../hooks/useDetalleEstanque";
 import { SectionTitle, Info } from "../components/componentsEstanque";
 
-import { STYLE } from "../../../theme/style";
 import { styles } from "../styles/EstanqueStyle";
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
@@ -48,8 +47,8 @@ export default function DetalleEstanqueScreen() {
   
   if (loading) {
     return (
-      <ScrollView style={STYLE.container} showsVerticalScrollIndicator={false}>
-        <View style={STYLE.contentWrapper}>
+      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+        <View style={styles.content}>
           <CustomText style={{ padding: 20, textAlign: "center" }}>
             Cargando información del estanque...
           </CustomText>
@@ -60,8 +59,8 @@ export default function DetalleEstanqueScreen() {
   
   if (!estanque || !estanque.codigo) {
     return (
-      <ScrollView style={STYLE.container} showsVerticalScrollIndicator={false}>
-        <View style={STYLE.contentWrapper}>
+      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+        <View style={styles.content}>
           <Alert
             variant="warning"
             message="No se encontró la información del estanque."
@@ -86,8 +85,8 @@ export default function DetalleEstanqueScreen() {
         Icono="document"
       />
 
-      <ScrollView style={STYLE.container} showsVerticalScrollIndicator={false}>
-        <View style={STYLE.contentWrapper}>
+      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+        <View style={styles.content}>
           <Card>
             <SectionTitle title="Informacion general" icon={ICONS.document} />
 
@@ -110,11 +109,11 @@ export default function DetalleEstanqueScreen() {
             <SectionTitle title="Mantenimiento y precría" icon={ICONS.tools} />
 
             <Info
-              label="Fecha de último mantenimiento"
+              label="Fecha de mantenimiento"
               value={estanque.fechaMantenimiento}
             />
 
-            <Info label="Se usa precría" value={estanque.precria === true || estanque.precria === "true" ? "Sí, se usa Precría":"No se usa Precría"} />
+            <Info label="Se usa precría" value={estanque.precria === true || estanque.precria === "true" ? "Sí":"No"} />
           </Card>
 
           <Card>

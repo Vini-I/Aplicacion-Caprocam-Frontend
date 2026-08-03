@@ -77,7 +77,7 @@ export default function CardCrecimiento({ fincaId, estanqueId, onEditar, onAlert
 
                         <View style={styles.infoItem}>
                             <Text style={styles.label}>Colaborador</Text>
-                            <Text style={styles.value}>{registro.nombreCreadoPor}</Text>
+                            <Text style={styles.value}>{registro.nombreColaborador}</Text>
                         </View>
 
                         <View style={styles.infoItem}>

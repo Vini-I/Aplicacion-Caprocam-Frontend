@@ -54,6 +54,7 @@ import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
 import { ICONS } from "../../../theme/icons";
 import { useFincaEstanqueRaleo } from "../hooks/useFincaEstanqueRaleo";
+import { colaboradorService } from "../../colaboradores/services/colaborador.service";
 import { styles as formStyles } from "../styles/RaleoStyles";
 
 const OBJETIVOS = [
@@ -79,6 +80,7 @@ export default function RaleoForm({
 }) {
   const invalidoFinca = submitted && !!errores.finca;
   const invalidoEstanque = submitted && !!errores.estanque;
+  const invalidoColaborador = submitted && !!errores.colaborador;
   const invalidoFecha = submitted && !!errores.fecha;
   const invalidoPorcentaje = submitted && !!errores.porcentajeRaleo;
   const invalidoPesoPromedio = submitted && !!errores.pesoPromedio;
@@ -87,6 +89,32 @@ export default function RaleoForm({
   const invalidoMetodo = submitted && !!errores.metodo;
 
   const { fincasOptions, estanquesOptions } = useFincaEstanqueRaleo(form.finca);
+
+  // Colaboradores: mismo patrón de fetch-una-vez que fincas/estanques,
+  // pero sin filtrado (no depende de ninguna otra seleccion).
+  const [colaboradores, setColaboradores] = useState([]);
+
+  useEffect(() => {
+    let activo = true;
+
+    (async () => {
+      try {
+        const data = await colaboradorService.getColaboradores();
+        if (activo) setColaboradores(data || []);
+      } catch {
+        if (activo) setColaboradores([]);
+      }
+    })();
+
+    return () => {
+      activo = false;
+    };
+  }, []);
+
+  const colaboradoresOptions = colaboradores.map((c) => ({
+    label: c.nombre,
+    value: c.id,
+  }));
 
   const handleFincaChange = (idFinca) => {
     updateField("finca", idFinca);
@@ -127,6 +155,15 @@ export default function RaleoForm({
           options={estanquesOptions}
           placeholder="Seleccionar estanque"
           selectStyle={invalidoEstanque ? bordeError : null}
+        />
+
+        <Select
+          label="Colaborador asignado *"
+          value={form.colaborador}
+          onChange={(v) => updateField("colaborador", v)}
+          options={colaboradoresOptions}
+          placeholder="Seleccionar colaborador"
+          selectStyle={invalidoColaborador ? bordeError : null}
         />
 
       </Card>

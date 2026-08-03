@@ -21,6 +21,15 @@ export const styles = StyleSheet.create({
     backgroundColor: COLORS.surface,
   },
 
+  content: {
+    width: "100%",
+    maxWidth: 900,
+    alignSelf: "center",
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 32,
+  },
+
   alert: {
     marginBottom: 16,
   },
@@ -160,11 +169,10 @@ export const styles = StyleSheet.create({
 
   infoLabel: {
     fontFamily: TYPOGRAPHY.fontFamily.medium,
-    marginTop: 4,
   },
 
   infoValue: {
-    marginTop: 6,
+    marginTop: 2,
     fontFamily: TYPOGRAPHY.fontFamily.regular,
   },
 
