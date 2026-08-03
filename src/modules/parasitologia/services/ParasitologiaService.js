@@ -71,7 +71,7 @@ async function getResumenDashboard() {
 
 async function getCatalogo() {
   try {
-    const response = await api.get("/parasitologias/catalogos/parasitos");
+    const response = await api.get("/parasitologias/catalogo");
     return response.data.data;
   } catch (error) {
     console.error("Error al obtener el catalogo de parasitos", error.response?.data || error.message);

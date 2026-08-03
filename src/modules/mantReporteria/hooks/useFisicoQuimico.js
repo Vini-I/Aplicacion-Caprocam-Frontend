@@ -1,68 +1,38 @@
 /**
  * ============================================================
- * HOOK DE FÍSICO-QUÍMICO (REPORTERÍA)
+ * HOOK DE FÍSICO-QUÍMICO
  * ============================================================
  *
- * Autocontenido: carga sus propios registros, maneja el modal
- * de eliminación y el alert de resultado, sin depender de la
- * screen para recargar ni para reenviar callbacks de recarga.
- *
- * Sigue exactamente el mismo patrón que useCrecimiento / useAlimentacion.
+ * Autocontenido: carga, eliminación y alert.
+ * Enriquece: nombreFinca, codigoEstanque, nombreColaborador, nombreCreadoPor
  */
 import { useState, useEffect } from "react";
-import {
-  getLecturas,
-  eliminarLectura,
-} from "../../mantAgua/services/FisicoQuimicaServices.js";
+import { eliminarLectura } from "../../mantAgua/services/FisicoQuimicaServices.js";
 import { obtenerDetalleReporte } from "../services/detalleReporte.service.js";
 import useModalEliminar from "../hooks/useModalEliminar.js";
-
-import { fincaService } from "../../finca/services/finca.service.js";
-import { estanqueService } from "../../estanques/services/estanque.service.js";
+import { cargarYEnriquecerRegistros } from "../utils/enriquecerRegistros.js";
+import { useError } from "../../../shared/context/ErrorContext.js";
 
 export default function useFisicoQuimico(fincaId, estanqueId, onAlertChange) {
   const [lecturas, setLecturas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [alert, setAlert] = useState(null);
+  const { mostrarError } = useError();
 
   async function cargarLecturas() {
     try {
       setLoading(true);
 
-      const [data, fincasData, estanquesData] = await Promise.all([
-        obtenerDetalleReporte({
-          tipoRegistro: "fisico_quimico",
-          fincaId,
-          estanqueId,
-        }),
-        fincaService.getFincas(),
-        estanqueService.getEstanques(),
-      ]);
+      const data = await obtenerDetalleReporte({
+        tipoRegistro: "fisico_quimico",
+        fincaId,
+        estanqueId,
+      });
 
-      const fincasMap = Object.fromEntries(
-        fincasData.map((f) => [Number(f.id), f.nombreFinca])
-      );
-      const estanquesMap = Object.fromEntries(
-        estanquesData.map((e) => [Number(e.id), e.codigo])
-      );
-
-      const enriquecidos = (Array.isArray(data) ? data : []).map((registro) => ({
-        ...registro,
-        nombreFinca:
-          fincasMap[
-            Number(registro.fincaId ?? registro.finca_id ?? registro.finca)
-          ] ?? "No encontrada",
-        codigoEstanque:
-          estanquesMap[
-            Number(
-              registro.estanqueId ?? registro.estanque_id ?? registro.estanque
-            )
-          ] ?? "No encontrado",
-      }));
-
+      const enriquecidos = await cargarYEnriquecerRegistros(data);
       setLecturas(enriquecidos);
     } catch (error) {
-      console.error("Error al cargar lecturas físico-químicas", error);
+      mostrarError(error);
       setLecturas([]);
     } finally {
       setLoading(false);
@@ -104,7 +74,6 @@ export default function useFisicoQuimico(fincaId, estanqueId, onAlertChange) {
     lecturas,
     loading,
     alert,
-
     modalVisible,
     lecturaSeleccionada,
     loadingEliminar,

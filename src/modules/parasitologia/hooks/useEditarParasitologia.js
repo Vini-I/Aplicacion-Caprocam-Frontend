@@ -49,7 +49,7 @@ export default function useEditarParasitologia(registroId, onGuardado) {
         const [f, e, c] = await Promise.all([
           fincaService.getFincas(),
           estanqueService.getEstanques(),
-          parasitologiaService.getAll?.() ?? Promise.resolve([]),
+          parasitologiaService.getCatalogo?.() ?? Promise.resolve([]),
         ]);
         if (!activo) return;
         setFincas(Array.isArray(f) ? f : []);

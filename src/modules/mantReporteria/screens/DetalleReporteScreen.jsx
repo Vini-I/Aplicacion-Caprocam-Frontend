@@ -225,6 +225,7 @@ export default function DetalleReporteScreen({ onEditar }) {
                       fincaId={finca}
                       estanqueId={estanque}
                       onAlertChange={setAlert}
+                      onEditar={handleEditar("/registros/EditarFisicoQuimica")}
                     />
                   )}
                 </View>
