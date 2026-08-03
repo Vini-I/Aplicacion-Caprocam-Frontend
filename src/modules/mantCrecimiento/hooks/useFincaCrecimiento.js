@@ -7,7 +7,6 @@
  * opciones de selección para la pantalla de finca de crecimiento.
  */
 
-
 import { useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -16,6 +15,7 @@ import { fincaService } from "../../finca/services/finca.service.js";
 import crecimientoService from "../services/mantCrecimiento.service.js";
 import { mantCrecmientoDTO } from "../dtos/mantCrecmiento.dto.js";
 import { estanqueService } from "../../estanques/services/estanque.service.js";
+import { useError } from "../../../shared/context/ErrorContext.js";
 
 function getFechaHoy() {
   const hoy = new Date();
@@ -42,6 +42,7 @@ export function convertirFechaParaBackend(fechaDDMMYYYY) {
 }
 
 export function useFincaCrecimiento() {
+  const { mostrarError } = useError();
   const { id } = useLocalSearchParams();
   const parsedId = useMemo(() => {
     if (!id) return null;
@@ -51,6 +52,7 @@ export function useFincaCrecimiento() {
 
   const [fincas, setFincas] = useState([]);
   const [estanques, setEstanques] = useState([]);
+  const [crecimientos, setCrecimientos] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
 
@@ -66,30 +68,44 @@ export function useFincaCrecimiento() {
 
   const [isSaving, setIsSaving] = useState(false);
 
+  async function cargarDatos() {
+    setIsLoading(true);
+    setLoadError("");
+
+    try {
+      const [fincasData, estanquesData, crecimientosData] = await Promise.all([
+        fincaService.getFincas(),
+        estanqueService.getEstanques(),
+        crecimientoService.getAll(),
+      ]);
+
+      setFincas(fincasData);
+      setEstanques(estanquesData);
+      setCrecimientos(Array.isArray(crecimientosData) ? crecimientosData : []);
+    } catch (error) {
+      mostrarError(error);
+      setLoadError("Ocurrio un error al cargar fincas y estanques");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   useEffect(() => {
-    const cargarDatos = async () => {
-      setIsLoading(true);
-      setLoadError("");
-
-      try {
-        const [fincasData, estanquesData] = await Promise.all([
-          fincaService.getFincas(),
-          estanqueService.getEstanques(),
-        ]);
-
-        setFincas(fincasData);
-        setEstanques(estanquesData);
-
-      } catch (error) {
-        setLoadError("Ocurrio un error al cargar fincas y estanques");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     cargarDatos();
-    
   }, []);
+
+  // Alert de éxito o error de validación: se oculta a los 3s
+  useEffect(() => {
+    if (!successMessage && !errorMessage) return;
+
+    const timer = setTimeout(() => {
+      setSuccessMessage("");
+      setErrorMessage("");
+      setSubmitted(false);
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [successMessage, errorMessage]);
 
   const searchEstanqueById = useCallback(
     (targetId) => estanques.find((item) => item.id === targetId) ?? null,
@@ -125,7 +141,9 @@ export function useFincaCrecimiento() {
     }
 
     return estanques
-      .filter((estanqueItem) => estanqueItem.idFinca === Number(fincaSeleccionada))
+      .filter(
+        (estanqueItem) => estanqueItem.idFinca === Number(fincaSeleccionada),
+      )
       .map((estanqueItem) => ({
         label: estanqueItem.codigo,
         value: estanqueItem.id,
@@ -222,22 +240,70 @@ export function useFincaCrecimiento() {
 
       await crecimientoService.create(crecimientoDTO);
 
-      setSuccessMessage("Guardado exitosamente");
+      try {
+        const actualizados = await crecimientoService.getAll();
+        setCrecimientos(Array.isArray(actualizados) ? actualizados : []);
+      } catch {
+        setCrecimientos((prev) => [
+          {
+            estanque: Number(estanqueSeleccionado),
+            estanqueId: Number(estanqueSeleccionado),
+            pesoActual: Number(pesoActual),
+            fechaRegistro: convertirFechaParaBackend(fechaRegistro),
+          },
+          ...(Array.isArray(prev) ? prev : []),
+        ]);
+      }
 
+      // Limpiar campos (submitted se mantiene true para que el Alert se vea)
+      setFincaSeleccionada("");
+      setEstanqueSeleccionado("");
+      setPesoActual("");
+      setFechaRegistro(getFechaHoy());
+      setErrors({});
+
+      setSuccessMessage("Guardado exitosamente");
     } catch (error) {
-      setErrorMessage("Ocurrio un error al guardar el crecimiento");
+      // Error fuera del formulario → ModalError (ErrorContext)
+      mostrarError(error);
     } finally {
       setIsSaving(false);
     }
-  }, [validarCampos, fincaSeleccionada, estanqueSeleccionado, pesoActual, fechaRegistro]);
+  }, [
+    validarCampos,
+    fincaSeleccionada,
+    estanqueSeleccionado,
+    pesoActual,
+    fechaRegistro,
+    mostrarError,
+  ]);
 
+  // Peso anterior = último registro de crecimiento de ese estanque
   const pesoAnteriorLabel = useMemo(() => {
-    const pesoSemanaAnterior = estanqueSeleccionadoObj?.pesoSemanaAnterior;
+    if (!estanqueSeleccionado) return "Peso anterior: -";
 
-    return pesoSemanaAnterior !== undefined && pesoSemanaAnterior !== null
-      ? `Peso anterior: ${pesoSemanaAnterior} g`
+    const delEstanque = (crecimientos || []).filter((c) => {
+      const idEst = Number(c.estanque ?? c.estanqueId ?? c.estanque_id);
+      return idEst === Number(estanqueSeleccionado);
+    });
+
+    if (delEstanque.length === 0) return "Peso anterior: -";
+
+    const ordenados = [...delEstanque].sort((a, b) => {
+      const fa = String(a.fechaRegistro ?? a.fecha_registro ?? a.fecha ?? "");
+      const fb = String(b.fechaRegistro ?? b.fecha_registro ?? b.fecha ?? "");
+      const porFecha = fb.localeCompare(fa);
+      if (porFecha !== 0) return porFecha;
+      return Number(b.id ?? 0) - Number(a.id ?? 0);
+    });
+
+    const ultimo = ordenados[0];
+    const peso = ultimo?.pesoActual ?? ultimo?.peso_actual;
+
+    return peso !== undefined && peso !== null && peso !== ""
+      ? `Peso anterior: ${peso} g`
       : "Peso anterior: -";
-  }, [estanqueSeleccionadoObj]);
+  }, [estanqueSeleccionado, crecimientos]);
 
   const mostrarErrorFinca = submitted && Boolean(errors.finca);
   const mostrarErrorEstanque = submitted && Boolean(errors.estanque);

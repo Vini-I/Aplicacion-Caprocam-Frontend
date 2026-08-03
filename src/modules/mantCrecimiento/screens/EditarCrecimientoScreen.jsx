@@ -122,11 +122,6 @@ export default function EditarCrecimientoScreen({ registroId }) {
 
           <View style={styles.badgeRow}>
             <BadgeLabel
-              label={`Días de cultivo: ${estanqueSeleccionadoObj?.diasCultivo ?? "-"}`}
-              variant="success"
-              style={styles.badgeItem}
-            />
-            <BadgeLabel
               label={pesoAnteriorLabel}
               variant="warning"
               style={styles.badgeItem}
