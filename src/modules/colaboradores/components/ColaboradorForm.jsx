@@ -20,6 +20,8 @@
  * - successMessage: mensaje de éxito (opcional)
  * - roleOptions: array de { label, value } para el select de roles (opcional)
  * - fincasOptions: array de { label, value } para el select de fincas (opcional)
+ * - onResetPin: función para restablecer el PIN (solo en edición)
+ * - resetLoading: booleano para mostrar estado de carga en el botón de reset
  */
 
 import React, { forwardRef, useImperativeHandle, useEffect, useState } from "react";
@@ -48,6 +50,8 @@ const ColaboradorForm = forwardRef(function ColaboradorForm(
     successMessage = "",
     roleOptions,
     fincasOptions = [],
+    onResetPin,
+    resetLoading = false,
   },
   ref
 ) {
@@ -75,31 +79,24 @@ const ColaboradorForm = forwardRef(function ColaboradorForm(
     fincasOptions,
   });
 
-  // Exponer resetForm al padre
   useImperativeHandle(ref, () => ({
     resetForm,
   }));
 
   const opcionesFincas = hookFincasOptions || fincasOptions || [];
 
-  // Roles que requieren una finca asociada (IDs)
-  const ROLES_CON_FINCA = [3, 5]; // Gerente de Finca, Operario de Campo
+  const ROLES_CON_FINCA = [3, 5];
   const rolId = Number(form.rol);
   const mostrarSelectFinca = form.rol !== "" && ROLES_CON_FINCA.includes(rolId);
 
-  // Estado local para controlar la visibilidad del alert (reaparece en cada submit)
   const [localErrorVisible, setLocalErrorVisible] = useState(false);
   const [localMessage, setLocalMessage] = useState("");
 
-  // Cuando cambia validationMessage, actualizamos la visibilidad y el mensaje
   useEffect(() => {
     if (validationMessage) {
       setLocalMessage(validationMessage);
       setLocalErrorVisible(true);
-      // Programar ocultación después de 6 segundos
-      const timer = setTimeout(() => {
-        setLocalErrorVisible(false);
-      }, 6000);
+      const timer = setTimeout(() => setLocalErrorVisible(false), 6000);
       return () => clearTimeout(timer);
     } else {
       setLocalErrorVisible(false);
@@ -107,25 +104,20 @@ const ColaboradorForm = forwardRef(function ColaboradorForm(
     }
   }, [validationMessage]);
 
-  // También manejar serverError (errores del backend)
   useEffect(() => {
     if (serverError) {
       setLocalMessage(serverError);
       setLocalErrorVisible(true);
-      const timer = setTimeout(() => {
-        setLocalErrorVisible(false);
-      }, 6000);
+      const timer = setTimeout(() => setLocalErrorVisible(false), 6000);
       return () => clearTimeout(timer);
     }
   }, [serverError]);
 
-  // Si hay mensaje de éxito, se muestra sin temporizador (se maneja en el padre)
   const mensajeError = localErrorVisible ? localMessage : "";
   const mostrarError = localErrorVisible && mensajeError !== "";
 
   return (
     <View style={styles.container}>
-      {/* ─── Card con el formulario ─── */}
       <Card style={styles.cardContainer}>
         <View style={styles.cardHeader}>
           <Icon icon={ICONS.user} size={20} color={COLORS.primary} />
@@ -199,29 +191,18 @@ const ColaboradorForm = forwardRef(function ColaboradorForm(
         )}
       </Card>
 
-{/* ─── Alert de error (fuera del Card, encima del botón) ─── */}
-{mostrarError && (
-  <View style={styles.alertContainer}>
-    <Alert
-      variant="danger"
-      message={mensajeError}
-      textStyle={styles.alertText}
-    />
-  </View>
-)}
+      {mostrarError && (
+        <View style={styles.alertContainer}>
+          <Alert variant="danger" message={mensajeError} textStyle={styles.alertText} />
+        </View>
+      )}
 
-{/* ─── Alert de éxito (fuera del Card, encima del botón) ─── */}
-{successMessage !== "" && !mostrarError && (
-  <View style={styles.alertContainer}>
-    <Alert
-      variant="success"
-      message={successMessage}
-      textStyle={styles.alertText}
-    />
-  </View>
-)}
+      {successMessage !== "" && !mostrarError && (
+        <View style={styles.alertContainer}>
+          <Alert variant="success" message={successMessage} textStyle={styles.alertText} />
+        </View>
+      )}
 
-      {/* ─── Botón de acción fuera del Card ─── */}
       <View style={styles.buttonContainer}>
         <Button variant="outline" onPress={handleSubmit} style={styles.submitButton}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
@@ -232,6 +213,26 @@ const ColaboradorForm = forwardRef(function ColaboradorForm(
           </View>
         </Button>
       </View>
+
+      {/* Botón de restablecer PIN (solo en edición) */}
+      {isEditing && (
+        <View style={styles.resetButtonContainer}>
+          <Button
+            variant="outline"
+            onPress={onResetPin}
+            disabled={resetLoading}
+            style={styles.resetButton}
+          >
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+              {/* Usamos ICONS.update porque es un icono existente en el tema */}
+              <Icon icon={ICONS.update} size={18} color={COLORS.primary} />
+              <Text style={{ color: COLORS.primary, fontWeight: "600" }}>
+                {resetLoading ? "Restableciendo..." : "Restablecer PIN"}
+              </Text>
+            </View>
+          </Button>
+        </View>
+      )}
     </View>
   );
 });

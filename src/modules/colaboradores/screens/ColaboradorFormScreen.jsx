@@ -49,6 +49,7 @@ export default function ColaboradorFormScreen() {
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [resetLoading, setResetLoading] = useState(false); // <--- NUEVO
   const [roleOptions, setRoleOptions] = useState([]);
   const [fincasOptions, setFincasOptions] = useState([]);
 
@@ -105,6 +106,15 @@ export default function ColaboradorFormScreen() {
     }
   }, [successMessage]);
 
+  // Limpiar mensaje de error después de 6 segundos (estándar 3)
+  useEffect(() => {
+    if (errorMessage) {
+      const timer = setTimeout(() => setErrorMessage(""), 6000);
+      return () => clearTimeout(timer);
+    }
+  }, [errorMessage]);
+
+  // --- Manejadores ---
   const handleSubmit = async (formData) => {
     setErrorMessage("");
     setSuccessMessage("");
@@ -126,6 +136,21 @@ export default function ColaboradorFormScreen() {
 
   const handleCancel = () => {
     router.back();
+  };
+
+  // <--- NUEVO: restablecer PIN
+  const handleResetPin = async () => {
+    setResetLoading(true);
+    setErrorMessage("");
+    setSuccessMessage("");
+    try {
+      await colaboradoresService.resetPin(id);
+      setSuccessMessage("PIN restablecido correctamente.");
+    } catch (err) {
+      setErrorMessage(err.message || "No se pudo restablecer el PIN.");
+    } finally {
+      setResetLoading(false);
+    }
   };
 
   if (loading) {
@@ -164,6 +189,9 @@ export default function ColaboradorFormScreen() {
           successMessage={successMessage}
           roleOptions={roleOptions}
           fincasOptions={fincasOptions}
+          // <--- NUEVAS PROPS
+          onResetPin={handleResetPin}
+          resetLoading={resetLoading}
         />
       </ScrollView>
     </>

@@ -44,11 +44,23 @@ export const styles = StyleSheet.create({
     width: "100%",
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 0, // <--- reducido de 12 a 4
+    marginBottom: 4,
   },
   alertText: {
     textAlign: "center",
     fontSize: 13,
     width: "100%",
+  },
+  resetButtonContainer: {
+    marginTop: 8,
+    width: "100%",
+    alignItems: "center",
+  },
+  resetButton: {
+    width: "100%",
+    borderColor: COLORS.primary,
+    backgroundColor: "transparent",
+    paddingVertical: 12,
+    borderRadius: 8,
   },
 });

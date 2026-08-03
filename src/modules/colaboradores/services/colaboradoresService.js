@@ -23,9 +23,6 @@ const rolMapToId = {
   external_worker: 3,
 };
 
-// Este mapeo aún se usa para determinar tipoColaborador a partir del rolId numérico.
-// Pero prepareForBackend lo determinará automáticamente.
-
 // ─── MAPEO BACKEND → FRONTEND ──────────────────────────────────────
 function mapBackendToFrontend(data) {
   // IMPORTANTE: el backend no es 100% consistente con el formato de sus
@@ -236,6 +233,28 @@ async function deleteColaborador(id) {
   }
 }
 
+/**
+ * Restablece el PIN de un colaborador.
+ * @param {string|number} id - ID del colaborador.
+ * @returns {Promise<{message: string}>}
+ */
+async function resetPin(id) {
+  try {
+    // Simulación: esperar 1 segundo y devolver éxito
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    return { message: "PIN restablecido correctamente" };
+    // Cuando el backend esté listo, descomentar:
+    // const response = await api.post(`/colaboradores/${id}/reset-pin`);
+    // return response.data;
+  } catch (error) {
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Error al restablecer el PIN";
+    throw new Error(message);
+  }
+}
+
 // ─── FUNCIONES AUXILIARES (mock) ────────────────────────────────────
 
 /**
@@ -265,6 +284,7 @@ export const colaboradoresService = {
   createColaborador,
   updateColaborador,
   deleteColaborador,
+  resetPin, // <--- NUEVO MÉTODO
   getEstadisticasColaborador,
   getTrabajadoresByOwner,
 };
