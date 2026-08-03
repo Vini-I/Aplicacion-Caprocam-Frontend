@@ -10,9 +10,9 @@ export const estanqueService = {
       const response = await api.get("/estanques");
 
       return response.data.data;
-      console.log("Estanques obtenidos:", response.data.data);
+
     } catch (error) {
-      if (error.response?.status === 404 || error.response?.status === 500) {
+      if (error.response?.status === 404 || error.response?.status === 500 || error.response?.status === 422 || error.response?.status === 400) {
         throw error;
       }
 
@@ -30,7 +30,7 @@ export const estanqueService = {
 
       return response.data.data;
     } catch (error) {
-      if (error.response?.status === 404 || error.response?.status === 500) {
+      if (error.response?.status === 404 || error.response?.status === 500 || error.response?.status === 422 || error.response?.status === 400) {
         throw error;
       }
 
@@ -48,7 +48,13 @@ export const estanqueService = {
 
       return response.data;
     } catch (error) {
-      if (error.response?.status === 404 || error.response?.status === 500) {
+      if (
+        error.response?.status === 404 ||
+        error.response?.status === 500 ||
+        error.response?.status === 422 ||
+        error.response?.status === 400 ||
+        error.response?.status === 409
+      ) {
         throw error;
       }
 
@@ -66,7 +72,8 @@ export const estanqueService = {
 
       return response.data;
     } catch (error) {
-      if (error.response?.status === 404 || error.response?.status === 500) {
+
+      if (error.response?.status === 404 || error.response?.status === 500 || error.response?.status === 422 || error.response?.status === 400 || error.response?.status === 409) {
         throw error;
       }
 
@@ -84,8 +91,13 @@ export const estanqueService = {
 
       return response.data;
     } catch (error) {
-      console.error("Error al eliminar estanque:", error.response?.data || error.message);
-      if (error.response?.status === 404 || error.response?.status === 500) {
+      if (
+        error.response?.status === 404 ||
+        error.response?.status === 500 ||
+        error.response?.status === 422 ||
+        error.response?.status === 400 ||
+        error.response?.status === 409
+      ) {
         throw error;
       }
       throw new Error("No se pudo eliminar el estanque.");
