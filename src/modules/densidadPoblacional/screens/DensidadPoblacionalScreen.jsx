@@ -300,7 +300,7 @@ export default function DensidadPoblacionalScreen({ onBack }) {
 
                 <Text style={styles.buttonText}>
 
-                  Guardar
+                  Registrar Densidad Poblacional
 
                 </Text>
 

@@ -42,16 +42,11 @@ export default function FincaCrecimientoScreen() {
     estanqueSeleccionadoObj,
     estanque,
 
-    opcionesColaboradores,
-    colaboradorSeleccionado,
-
     setEstanqueSeleccionado,
     setPesoActual,
     setFechaRegistro,
     handleFincaChange,
     guardarDatos,
-
-    handleColaboradorChange,
 
     submitted,
     successMessage,
@@ -61,7 +56,6 @@ export default function FincaCrecimientoScreen() {
     mostrarErrorEstanque,
     mostrarErrorPeso,
     mostrarErrorFecha,
-    mostrarErrorColaborador
   } = useFincaCrecimiento();
 
   return (
@@ -107,22 +101,7 @@ export default function FincaCrecimientoScreen() {
             selectStyle={mostrarErrorEstanque ? styles.inputError : null}
           />
 
-          <Select
-            label="Colaborador asignado *"
-            placeholder="Seleccione colaborador"
-            options={opcionesColaboradores}
-            value={colaboradorSeleccionado}
-            onChange={handleColaboradorChange}
-            selectStyle={mostrarErrorColaborador ? styles.inputError : null}
-          />
-
-
           <View style={styles.badgeRow}>
-            <BadgeLabel
-              label={`Días de cultivo: ${estanqueSeleccionadoObj?.diasCultivo ?? "-"}`}
-              variant="success"
-              style={styles.badgeItem}
-            />
             <BadgeLabel
               label={pesoAnteriorLabel}
               variant="warning"
@@ -164,7 +143,7 @@ export default function FincaCrecimientoScreen() {
           >
             <View style={styles.buttonContent}>
               <Icon icon={ICONS.save} size={24} color={COLORS.primary} />
-              <Text style={styles.buttonText}>Guardar</Text>
+              <Text style={styles.buttonText}>Registrar Crecimiento</Text>
             </View>
           </Button>
         </Card>
