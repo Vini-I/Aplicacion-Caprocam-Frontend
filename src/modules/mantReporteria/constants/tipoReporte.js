@@ -41,4 +41,5 @@ export const TIPOS_AUTOGESTIONADOS = [
   "crecimiento",
   "densidad_poblacional",
   "raleo",
+  "fisico_quimico",
 ];

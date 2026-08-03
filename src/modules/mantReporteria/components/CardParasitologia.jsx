@@ -151,7 +151,7 @@ export default function CardParasitologia({ fincaId, estanqueId, onEditar, onAle
 
                             <Button
                                 style={styles.Editar}
-                                onPress={() => onEstanqueEditar(finca.codigoCBO, estanque.id)}
+                                onPress={() => {onEditar(registro.id)}}
                             >
                                 <Icon
                                     icon={ICONS.edit}

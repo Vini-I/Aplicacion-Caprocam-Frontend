@@ -142,7 +142,7 @@ export default function CardEnfermedades({ fincaId, estanqueId, onEditar, onAler
 
                             <Button
                                 style={styles.Editar}
-                                onPress={() => onEstanqueEditar(finca.codigoCBO, estanque.id)}
+                                onPress={() => onEditar(registro.id)}
                             >
                                 <Icon
                                     icon={ICONS.edit}
