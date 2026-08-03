@@ -124,7 +124,7 @@ export default function GestionAlimentacion({
             />
 
             <Text style={styles.buttonText}>
-              Guardar
+              Registrar Alimentación
             </Text>
           </View>
         </Button>

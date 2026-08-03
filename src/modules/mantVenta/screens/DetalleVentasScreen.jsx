@@ -25,43 +25,40 @@ import { useDetalleVenta } from "../hooks/useDetalleVenta.js";
 import { styles } from "../styles/VentaStyles.js";
 import { STYLE } from "../../../theme/style.js";
 
-export default function DetalleVentasScreen({
-  onEdit,
-  success,
-  message,
-}) {
-  
+export default function DetalleVentasScreen({ onEdit, success, message }) {
   const {
-  SectionTitle,
-  FilaDetalle,
-  TarjetaVenta,
-  fincaFiltro,
-  estanqueFiltro,
-  opcionesFincas,
-  opcionesEstanques,
-  ventasFiltradas,
-  mensajeDetalle,
-  isWide,
-  modalVisible,
-  descripcionEliminar,
-  cancelarEliminar,
-  confirmarEliminar,
-  handleFincaChange,
-  handleEstanqueChange,
-} = useDetalleVenta({ onEdit });
+    SectionTitle,
+    FilaDetalle,
+    TarjetaVenta,
+    fincaFiltro,
+    estanqueFiltro,
+    opcionesFincas,
+    opcionesEstanques,
+    ventasFiltradas,
+    mensajeDetalle,
+    isWide,
+    modalVisible,
+    descripcionEliminar,
+    cancelarEliminar,
+    confirmarEliminar,
+    handleFincaChange,
+    handleEstanqueChange,
+    mostrarExito,
+    mensajeExito,
+  } = useDetalleVenta({ onEdit, success, message });
 
   const gridStyle = isWide ? styles.inputRow : styles.inputGrid;
 
   return (
     <ScrollView style={STYLE.container} showsVerticalScrollIndicator={false}>
-          {success === "1" && message && (
-          <Alert
-            variant="success"
-            message={message}
-            style={styles.successAlert}
-            textStyle={styles.successAlertText}
-          />
-        )}
+      {mostrarExito && mensajeExito && (
+        <Alert
+          variant="success"
+          message={mensajeExito}
+          style={styles.successAlert}
+          textStyle={styles.successAlertText}
+        />
+      )}
 
       <Card style={STYLE.contentWrapper}>
         <View style={styles.headerRow}>
