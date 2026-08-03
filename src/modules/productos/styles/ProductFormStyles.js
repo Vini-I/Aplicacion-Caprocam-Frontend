@@ -60,16 +60,21 @@ export const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     borderColor: COLORS.secondary,
   },
+  cardHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginBottom: 16,
+  },
   cardTitle: {
     fontSize: 19,
-    fontWeight: undefined,   // ← anula cualquier peso interno del Card
+    fontWeight: undefined,   
     color: COLORS.textSecondary,
-    marginBottom: 16,
   },
   field: { marginBottom: 14 },
   label: {
     fontSize: 14,
-    fontWeight: undefined,   // ← agrega esto para anular el fontWeight interno
+    fontWeight: undefined,   
     color: COLORS.black,
     marginBottom: 6,
   },

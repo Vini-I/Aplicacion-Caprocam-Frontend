@@ -39,7 +39,6 @@ export function useDetalleProducto() {
   const [error, setError] = useState(null);
 
   const [modalEliminarVisible, setModalEliminarVisible] = useState(false);
-  const [eliminado, setEliminado] = useState(false);
   const [eliminando, setEliminando] = useState(false);
 
   // Carga el producto activo desde la API por su id, y resuelve el
@@ -91,7 +90,11 @@ export function useDetalleProducto() {
     setModalEliminarVisible(true);
   }
 
-  // Confirma la eliminación: desactiva el producto en el back y vuelve al listado
+  /* inventarios */
+  // Confirma la eliminación: desactiva el producto en el back y
+  // navega al módulo de Inventario, que ahora es
+  // quien muestra el alert de "producto eliminado" por 3
+  // segundos (le avisamos con el param alertaProducto).
   async function confirmarEliminar() {
     if (!producto) return;
     setEliminando(true);
@@ -99,10 +102,10 @@ export function useDetalleProducto() {
     try {
       await productoService.desactivarProducto(producto.id);
       setModalEliminarVisible(false);
-      setEliminado(true);
-      setTimeout(() => {
-        router.replace("/(drawer)/inventarios");
-      }, 900);
+      router.replace({
+        pathname: "/(drawer)/inventarios",
+        params: { alertaProducto: "eliminado" },  // Avisamos al módulo Inventarios que el producto fue eliminado
+      });
     } catch (err) {
       setModalEliminarVisible(false);
       setError("No se pudo eliminar el producto. Intenta de nuevo.");
@@ -129,7 +132,6 @@ export function useDetalleProducto() {
     precioFormateado,
     stockTotalFormateado,
     modalEliminarVisible,
-    eliminado,
     eliminando,
     handleEditar,
     handleEliminar,
