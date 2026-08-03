@@ -125,8 +125,11 @@ export function useVenta() {
   const [fincas, setFincas] = useState([]);
   const [estanques, setEstanques] = useState([]);
   const [compradoresData, setCompradoresData] = useState([]);
-  const [mensaje, setMensaje] = useState("");
-  const [tipoMensaje, setTipoMensaje] = useState("");
+
+  const [submitted, setSubmitted] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+
   const [errores, setErrores] = useState({});
   const [guardando, setGuardando] = useState(false);
   const [ventas, setVentas] = useState([]);
@@ -220,9 +223,22 @@ export function useVenta() {
     });
   }, []);
 
+  useEffect(() => {
+    if (!successMessage && !errorMessage) return;
+
+    const timer = setTimeout(() => {
+      setSuccessMessage("");
+      setErrorMessage("");
+      setSubmitted(false);
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [successMessage, errorMessage]);
+
   const limpiarMensaje = useCallback(() => {
-    setMensaje("");
-    setTipoMensaje("");
+    setSuccessMessage("");
+    setErrorMessage("");
+    setSubmitted(false);
   }, []);
 
   useFocusEffect(
@@ -238,6 +254,8 @@ export function useVenta() {
     (value) => {
       setPesoPromedio(normalizarDecimal(value));
       limpiarError("pesoPromedio");
+      setSuccessMessage("");
+      setErrorMessage("");
     },
     [limpiarError],
   );
@@ -246,6 +264,8 @@ export function useVenta() {
     (value) => {
       setTamanoPromedio(normalizarDecimal(value));
       limpiarError("tamanoPromedio");
+      setSuccessMessage("");
+      setErrorMessage("");
     },
     [limpiarError],
   );
@@ -254,6 +274,8 @@ export function useVenta() {
     (value) => {
       setKilosVendidos(normalizarDecimal(value));
       limpiarError("kilosVendidos");
+      setSuccessMessage("");
+      setErrorMessage("");
     },
     [limpiarError],
   );
@@ -262,6 +284,8 @@ export function useVenta() {
     (value) => {
       setColaboradorSeleccionado(value);
       limpiarError("colaborador");
+      setSuccessMessage("");
+      setErrorMessage("");
     },
     [limpiarError],
   );
@@ -270,7 +294,11 @@ export function useVenta() {
     (value) => {
       setFincaSeleccionada(value);
       setEstanqueSeleccionado("");
+
       limpiarError("finca");
+
+      setSuccessMessage("");
+      setErrorMessage("");
     },
     [limpiarError],
   );
@@ -279,6 +307,8 @@ export function useVenta() {
     (value) => {
       setPrecioKilo(String(Math.max(0, Math.round(Number(value) || 0))));
       limpiarError("precioKilo");
+      setSuccessMessage("");
+      setErrorMessage("");
     },
     [limpiarError],
   );
@@ -287,6 +317,8 @@ export function useVenta() {
     (value) => {
       setCompradorSeleccionado(value);
       limpiarError("comprador");
+      setSuccessMessage("");
+      setErrorMessage("");
     },
     [limpiarError],
   );
@@ -317,6 +349,11 @@ export function useVenta() {
   }, []);
 
   const guardarVenta = useCallback(async () => {
+
+    setSubmitted(true);
+    setSuccessMessage("");
+    setErrorMessage("");
+
     const nuevosErrores = validarVentaFormulario({
       fincaSeleccionada,
       estanqueSeleccionado,
@@ -331,8 +368,7 @@ export function useVenta() {
     setErrores(nuevosErrores);
 
     if (Object.keys(nuevosErrores).length > 0) {
-      setTipoMensaje("error");
-      setMensaje("Completa los datos obligatorios para guardar venta");
+      setErrorMessage("Rellenar campos obligatorios.");
       return;
     }
 
@@ -355,17 +391,15 @@ export function useVenta() {
       await createVenta(ventaDTO);
 
       setVentas((actual) => [ventaDTO, ...actual]);
-      setTipoMensaje("success");
-
-      setMensaje("Venta guardada correctamente.")
 
       limpiarFormulario();
 
+      setSuccessMessage("Venta guardada correctamente.");
+
     } catch (error) {
 
-      setTipoMensaje("error");
-
-      setMensaje("No fue posible guardar la venta.");
+      setSubmitted(true);
+      setErrorMessage("No fue posible guardar la venta.");
 
     } finally {
 
@@ -410,8 +444,11 @@ export function useVenta() {
     fechaVenta,
     colaboradorSeleccionado,
     compradorSeleccionado,
-    mensaje,
-    tipoMensaje,
+
+    submitted,
+    successMessage,
+    errorMessage,
+
     errores,
     guardando,
     gridStyle,
