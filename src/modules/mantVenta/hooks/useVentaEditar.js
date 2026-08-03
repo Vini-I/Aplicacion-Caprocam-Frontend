@@ -41,6 +41,21 @@ function formatearFechaDesdeBackend(fechaBackend) {
   return formatearFechaParaInput(soloFecha);
 }
 
+function mensajeDeError(error) {
+  if (typeof error === "string") return error;
+
+  const detalles = error?.response?.data?.error;
+  if (Array.isArray(detalles) && detalles.length > 0) {
+    return detalles.join(" ");
+  }
+
+  return (
+    error?.response?.data?.message ||
+    error?.message ||
+    "Ocurrió un error inesperado."
+  );
+}
+
 export function useVentaEditar({ id, onGuardado } = {}) {
   const { width } = useWindowDimensions();
   const isWide = width >= 700;
@@ -97,7 +112,6 @@ export function useVentaEditar({ id, onGuardado } = {}) {
     };
   }, []);
 
-  // Venta a editar: precarga el formulario
   useEffect(() => {
     let activo = true;
 
@@ -123,7 +137,8 @@ export function useVentaEditar({ id, onGuardado } = {}) {
         setColaboradorSeleccionado(venta?.colaborador ?? "");
         setCompradorSeleccionado(venta?.comprador ?? CLIENTE_GENERICO);
       } catch (error) {
-        console.error("No se pudo cargar la venta a editar:", error);
+        setTipoMensaje("error");
+        setMensaje(mensajeDeError(error));
       } finally {
         if (activo) setCargandoVenta(false);
       }
@@ -291,13 +306,12 @@ export function useVentaEditar({ id, onGuardado } = {}) {
       setTipoMensaje("success");
       setMensaje("Venta actualizada correctamente.");
       onGuardado?.({
-    success: true,
-    message: "Venta actualizada correctamente.",
-    });
+        success: true,
+        message: "Venta actualizada correctamente.",
+      });
     } catch (error) {
-      console.error("No se pudo actualizar la venta:", error);
       setTipoMensaje("error");
-      setMensaje("No fue posible guardar los cambios.");
+      setMensaje(mensajeDeError(error));
     } finally {
       setGuardando(false);
     }
