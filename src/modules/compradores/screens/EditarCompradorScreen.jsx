@@ -11,13 +11,14 @@
  *    correo, dirección y notas sí se pueden modificar.
  * 2. Teléfono y correo son obligatorios y se validan con formato,
  *    solo al presionar "Guardar comprador" (useEditarCompradorScreen).
- * 3. Muestra una única alerta general arriba del formulario:
- *    error, advertencia o éxito según corresponda.
+ * 3. Muestra una única alerta general debajo del formulario, arriba
+ *    del botón de guardar: error, advertencia o éxito según
+ *    corresponda.
  *
  * IMPORTANTE:
  * - El borde rojo de Teléfono/Correo se activa por campo, pero el
- *   texto de error es un solo mensaje general (la alerta de
- *   arriba), no uno por campo, según el estándar 1.5.
+ *   texto de error es un solo mensaje general (la alerta de abajo),
+ *   no uno por campo, según el estándar 1.5.
  * - guardar() no navega a otra pantalla: solo muestra la alerta de
  *   resultado en el mismo formulario.
  * - El campo "Tipo de producto" se eliminó del formulario: las
@@ -88,18 +89,6 @@ export default function EditarCompradorScreen() {
            <Icon icon={ICONS.edit} color={COLORS.primary} size={22} />
            <Text style={styles.cardTitle}>Información del comprador</Text>
          </View>
-          {/* Alerta general: error, advertencia o confirmación de guardado */}
-          {alerta && (
-            <Alert
-              variant={alerta.variant}
-              message={alerta.message}
-              style={[
-                styles.alertContainer,
-                alerta.variant === "warning" && styles.alertWarningComoError,
-              ]}
-              textStyle={alerta.variant === "warning" && styles.alertWarningComoErrorTexto}
-            />
-          )}
 
           {/* Alerta si no se pudo cargar el comprador desde el back */}
           {!!errorCarga && (
@@ -142,9 +131,6 @@ export default function EditarCompradorScreen() {
             style={[styles.input, errorTelefono !== "" && styles.inputError]}
             labelStyle={styles.label}
           />
-          {errorTelefono !== "" && (
-            <Text style={styles.errorText}>{errorTelefono}</Text>
-          )}
 
           <Input
             label="Correo electrónico"
@@ -156,9 +142,6 @@ export default function EditarCompradorScreen() {
             style={[styles.input, errorCorreo !== "" && styles.inputError]}
             labelStyle={styles.label}
           />
-          {errorCorreo !== "" && (
-            <Text style={styles.errorText}>{errorCorreo}</Text>
-          )}
 
           <Input
             label="Dirección"
@@ -180,6 +163,20 @@ export default function EditarCompradorScreen() {
             style={styles.input}
             labelStyle={styles.label}
           />
+
+          {/* Alerta general: error, advertencia o confirmación de guardado.
+              Va debajo del formulario y arriba del botón de guardar. */}
+          {alerta && (
+            <Alert
+              variant={alerta.variant}
+              message={alerta.message}
+              style={[
+                styles.alertContainer,
+                alerta.variant === "warning" && styles.alertWarningComoError,
+              ]}
+              textStyle={alerta.variant === "warning" && styles.alertWarningComoErrorTexto}
+            />
+          )}
 
           {/* Botón para guardar, dispara la validación completa */}
           <Button
