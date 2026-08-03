@@ -14,9 +14,9 @@
  * 2. Valida al presionar "Guardar comprador" (useNuevoCompradorScreen):
  *    pinta de rojo cada campo inválido y muestra un solo mensaje
  *    general debajo del botón.
- * 3. Al guardar exitosamente, muestra una alerta de éxito en la
- *    misma pantalla (el guardado real queda pendiente de
- *    integración con backend).
+ * 3. Al guardar exitosamente, navega a CompradorScreen (la lista),
+ *    donde se muestra el alert de éxito por 3 segundos (ver
+ *    useNuevoCompradorScreen.js).
  *
  * IMPORTANTE:
  * - Mismo regex y misma regla de teléfono/correo que
@@ -65,7 +65,6 @@ export default function NuevoCompradorScreen() {
     errorTelefono,
     errorCorreo,
     mensajeError,  
-    guardadoExitoso,
     guardando,
     handleCedulaChange,
     handleTelefonoChange,
@@ -157,15 +156,6 @@ export default function NuevoCompradorScreen() {
           />
 
           
-
-          {guardadoExitoso && (
-            <Alert
-              variant="success"
-              message="Comprador guardado correctamente."
-              style={styles.alertBox}
-              textStyle={styles.alertText}
-            />
-          )}
 
           {mensajeError !== "" && (
             <Alert
