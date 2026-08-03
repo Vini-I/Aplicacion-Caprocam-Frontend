@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { fincaService } from "../../finca/services/finca.service.js";
 import { estanqueService } from "../../estanques/services/estanque.service.js";
 import crecimientoService from "../services/mantCrecimiento.service.js";
+import { useError } from "../../../shared/context/ErrorContext.js";
 
 function convertirFechaParaBackend(fechaDDMMYYYY) {
   if (!fechaDDMMYYYY) return "";
@@ -26,7 +27,8 @@ function formatearFechaParaUI(fecha) {
 }
 
 export default function useEditarCrecimiento(registroId, onGuardado) {
-  const [fincas, setFincas] = useState([]);
+    const { mostrarError } = useError();
+const [fincas, setFincas] = useState([]);
   const [estanques, setEstanques] = useState([]);
   const [cargando, setCargando] = useState(true);
 
@@ -76,8 +78,7 @@ export default function useEditarCrecimiento(registroId, onGuardado) {
         setFechaRegistro(formatearFechaParaUI(r.fechaRegistro ?? r.fecha_registro ?? r.fecha));
       })
       .catch((e) => {
-        console.error(e);
-        if (activo) setErrorMessage("No se pudo cargar el registro.");
+        if (activo) mostrarError(e);
       })
       .finally(() => {
         if (activo) setCargando(false);
@@ -145,19 +146,55 @@ export default function useEditarCrecimiento(registroId, onGuardado) {
       setSuccessMessage("Actualizado exitosamente");
       onGuardado?.();
     } catch (e) {
-      console.error(e);
-      setErrorMessage("Ocurrio un error al actualizar el crecimiento");
+      // Error fuera del formulario → ModalError (ErrorContext)
+      mostrarError(e);
     } finally {
       setIsSaving(false);
     }
   }, [validarCampos, fincaSeleccionada, estanqueSeleccionado, pesoActual, fechaRegistro, registroId, onGuardado]);
 
+  const [crecimientos, setCrecimientos] = useState([]);
+
+  useEffect(() => {
+    let activo = true;
+    crecimientoService
+      .getAll()
+      .then((data) => {
+        if (activo) setCrecimientos(Array.isArray(data) ? data : []);
+      })
+      .catch(() => {
+        if (activo) setCrecimientos([]);
+      });
+    return () => {
+      activo = false;
+    };
+  }, []);
+
+  // Peso anterior = último registro de ese estanque (excluye el actual)
   const pesoAnteriorLabel = useMemo(() => {
-    const peso = estanqueSeleccionadoObj?.pesoSemanaAnterior;
-    return peso !== undefined && peso !== null
+    if (!estanqueSeleccionado) return "Peso anterior: -";
+
+    const delEstanque = (crecimientos || []).filter((c) => {
+      if (registroId != null && String(c.id) === String(registroId)) return false;
+      const idEst = Number(c.estanque ?? c.estanqueId ?? c.estanque_id);
+      return idEst === Number(estanqueSeleccionado);
+    });
+
+    if (delEstanque.length === 0) return "Peso anterior: -";
+
+    const ordenados = [...delEstanque].sort((a, b) => {
+      const fa = String(a.fechaRegistro ?? a.fecha_registro ?? a.fecha ?? "");
+      const fb = String(b.fechaRegistro ?? b.fecha_registro ?? b.fecha ?? "");
+      return fb.localeCompare(fa);
+    });
+
+    const ultimo = ordenados[0];
+    const peso = ultimo?.pesoActual ?? ultimo?.peso_actual;
+
+    return peso !== undefined && peso !== null && peso !== ""
       ? `Peso anterior: ${peso} g`
       : "Peso anterior: -";
-  }, [estanqueSeleccionadoObj]);
+  }, [estanqueSeleccionado, crecimientos, registroId]);
 
   return {
     fincaSeleccionada,
