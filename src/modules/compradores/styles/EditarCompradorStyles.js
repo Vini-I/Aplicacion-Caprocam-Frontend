@@ -152,6 +152,10 @@ export const styles = StyleSheet.create({
   alertWarningComoErrorTexto: {
     color: COLORS.error,
   },
+
+  loadingContainer: {
+    justifyContent: "center",
+  },
 });
 
 export const ICON_STYLES = {

@@ -2,39 +2,47 @@
  * ============================================================
  * HOOK DE ALIMENTACIÓN
  * ============================================================
- * 
- * Autocontenido: carga sus propios registros, maneja el modal
- * de eliminación y el alert de resultado, sin depender de la
- * screen para recargar ni para reenviar callbacks de recarga.
+ *
+ * Autocontenido: carga, eliminación y alert.
+ * Enriquece: nombreFinca, codigoEstanque, nombreColaborador, nombreCreadoPor
  */
 import { useState, useEffect } from "react";
 import alimentacionService from "../../alimentacion/services/Alimentacion.service.js";
 import { obtenerDetalleReporte } from "../services/detalleReporte.service.js";
 import useModalEliminar from "../hooks/useModalEliminar.js";
+import { cargarYEnriquecerRegistros } from "../utils/enriquecerRegistros.js";
+import { useError } from "../../../shared/context/ErrorContext.js";
 
 export default function useAlimentacion(fincaId, estanqueId, onAlertChange) {
   const [alimentaciones, setAlimentaciones] = useState([]);
   const [loading, setLoading] = useState(true);
   const [alert, setAlert] = useState(null);
+  const { mostrarError } = useError();
 
   async function cargarAlimentaciones() {
     try {
       setLoading(true);
+
       const data = await obtenerDetalleReporte({
         tipoRegistro: "alimentacion",
         fincaId,
         estanqueId,
       });
-      setAlimentaciones(data);
+
+      const enriquecidos = await cargarYEnriquecerRegistros(data);
+      setAlimentaciones(enriquecidos);
     } catch (error) {
-      console.error("Error al cargar alimentaciones", error);
+      mostrarError(error);
+      setAlimentaciones([]);
     } finally {
       setLoading(false);
     }
   }
 
   useEffect(() => {
-    cargarAlimentaciones();
+    if (fincaId && estanqueId) {
+      cargarAlimentaciones();
+    }
   }, [fincaId, estanqueId]);
 
   async function eliminarAlimentacion(id) {
@@ -66,7 +74,6 @@ export default function useAlimentacion(fincaId, estanqueId, onAlertChange) {
     alimentaciones,
     loading,
     alert,
-
     modalVisible,
     alimentacionSeleccionada,
     loadingEliminar,

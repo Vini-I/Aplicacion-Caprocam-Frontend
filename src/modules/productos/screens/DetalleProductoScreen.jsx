@@ -25,9 +25,9 @@
 
 
 
-import { View, ScrollView } from "react-native";
+import { View, ScrollView, ActivityIndicator } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { getProductoById, deleteProducto } from "../../inventarios/services/InventarioService.js";
+
 
 import Navbar from "../../../shared/components/Navbar";
 import Icon from "../../../shared/components/Icons";
@@ -35,6 +35,7 @@ import Card from "../../../shared/components/Card";
 import Button from "../../../shared/components/Button";
 import Text from "../../../shared/components/Text";
 import Title from "../../../shared/components/Title";
+import ModalEliminar from "../../../shared/components/ModalEliminar";
 import Badge from "../../../shared/components/Badge";
 import Modal from "../../../shared/components/Modal";
 import Alert from "../../../shared/components/Alert";
@@ -67,6 +68,9 @@ function FilaDetalle({ etiqueta, valor, resaltado = false }) {
 export default function DetalleProductoScreen() {
   const {
     producto,
+    cargando,
+    error,
+    eliminando,
     tieneStockBajo,
     colores,
     precioFormateado,
@@ -79,6 +83,14 @@ export default function DetalleProductoScreen() {
     handleCerrarModal,
     eliminado,
   } = useDetalleProducto();
+
+  if (cargando) {
+    return (
+      <View style={[STYLE.container, styles.loadingContainer]}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+      </View>
+    );
+  }
 
   if (!producto) {
     return (
@@ -97,7 +109,7 @@ export default function DetalleProductoScreen() {
           }
         />
         <View style={styles.emptyContainer}>
-          <Text>El producto no existe</Text>
+          <Text>{error || "El producto no existe"}</Text>
         </View>
       </View>
     );
@@ -172,34 +184,29 @@ export default function DetalleProductoScreen() {
                 {/* Alert de éxito al pie de la pantalla, igual que al guardar un producto */}
                 {eliminado && (
                     <Alert
-                        variant="danger"
+                        variant="success"
                         message="Producto eliminado correctamente."
+                        style={styles.alertEliminado}
+                    />
+                )}
+
+                {/* Si falla la desactivación en el back, se muestra el error aquí */}
+                {!!error && !eliminado && (
+                    <Alert
+                        variant="danger"
+                        message={error}
                         style={styles.alertEliminado}
                     />
                 )}
             </ScrollView>
 
-            <Modal
+            <ModalEliminar
                 visible={modalEliminarVisible}
-                onClose={handleCerrarModal}
-                closeText="Cancelar"
-                buttonStyle={styles.modalCancelButton}
-                overlayStyle={styles.modalOverlay}
-                containerStyle={styles.modalContainer}
-            >
-                <Title level={5} style={styles.modalTitulo}>
-                    Eliminar producto
-                </Title>
-                <Text size={14} color={COLORS.textSecondary} style={styles.modalTexto}>
-                    ¿Está seguro que desea eliminar "{producto.nombre}"? Esta acción no se puede deshacer.
-                </Text>
-                <Button style={styles.botonModalEliminar} onPress={confirmarEliminar}>
-                    <Icon icon={ICONS.delete} size={18} color={COLORS.white} />
-                    <Text color={COLORS.white} weight="600" size={14}>
-                        Eliminar
-                    </Text>
-                </Button>
-            </Modal>
+                title="producto"
+                message={producto.nombre}
+                onCancel={handleCerrarModal}
+                onConfirm={confirmarEliminar}
+            />
         </View>        
     );
 }

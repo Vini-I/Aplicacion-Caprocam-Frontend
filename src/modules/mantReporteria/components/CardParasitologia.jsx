@@ -60,6 +60,25 @@ export default function CardParasitologia({ fincaId, estanqueId, onEditar, onAle
                     >
                         <View style={styles.infoGrid}>
                             <View style={styles.infoItem}>
+                                <Text style={styles.label}>Finca</Text>
+                                <Text style={styles.value}>{registro.nombreFinca}</Text>
+                            </View>
+
+                            <View style={styles.infoItem}>
+                                <Text style={styles.label}>Estanque</Text>
+                                <Text style={styles.value}>{registro.codigoEstanque}</Text>
+                            </View>
+
+                            <View style={styles.infoItem}>
+                                <Text style={styles.label}>
+                                    Colaborador
+                                </Text>
+                                <Text style={styles.value}>
+                                    {registro.nombreCreadoPor}
+                                </Text>
+                            </View>
+
+                            <View style={styles.infoItem}>
                                 <Text style={styles.label}>
                                     Fecha Reporte
                                 </Text>
@@ -103,15 +122,6 @@ export default function CardParasitologia({ fincaId, estanqueId, onEditar, onAle
                                     {registro.camaronesInfectados}
                                 </Text>
                             </View>
-
-                            <View style={styles.infoItem}>
-                                <Text style={styles.label}>
-                                    Colaborador
-                                </Text>
-                                <Text style={styles.value}>
-                                    {registro.nombreColaborador ? registro.nombreColaborador.charAt(0).toUpperCase() + registro.nombreColaborador.slice(1) : ""}
-                                </Text>
-                            </View>
                         </View>
 
                         <View style={styles.pesoContainer}>
@@ -141,7 +151,7 @@ export default function CardParasitologia({ fincaId, estanqueId, onEditar, onAle
 
                             <Button
                                 style={styles.Editar}
-                                onPress={() => onEstanqueEditar(finca.codigoCBO, estanque.id)}
+                                onPress={() => {onEditar(registro.id)}}
                             >
                                 <Icon
                                     icon={ICONS.edit}

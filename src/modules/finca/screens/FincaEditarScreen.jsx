@@ -39,6 +39,7 @@ export default function FincaEditarScreen({ onFinca, id }) {
     telefonos,
     errores,
     finca,
+    displayErrorMessage,
 
     actualizarCampo,
     actualizarTelefono,
@@ -46,8 +47,6 @@ export default function FincaEditarScreen({ onFinca, id }) {
     eliminarTelefono,
 
     registrarFinca,
-
-    isLargeScreen,
   } = useFincaEditar({ onFinca, id });
 
   return (
@@ -58,10 +57,7 @@ export default function FincaEditarScreen({ onFinca, id }) {
         Icono="edit"
       />
       <ScrollView
-        style={[
-          STYLE.container,
-          { paddingHorizontal: isLargeScreen ? 40 : 16 },
-        ]}
+        style={STYLE.container}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
@@ -95,8 +91,15 @@ export default function FincaEditarScreen({ onFinca, id }) {
 
             <View style={styles.phoneHeader}>
               <View style={styles.phoneTitle}>
-                <Icon icon={ICONS.phone} size={18} color={COLORS.primary} style={styles.sectionIcon} />
-                <Text size={14} weight="600" color={COLORS.textPrimary}>Teléfonos</Text>
+                <Icon
+                  icon={ICONS.phone}
+                  size={18}
+                  color={COLORS.primary}
+                  style={styles.sectionIcon}
+                />
+                <Text size={14} weight="600" color={COLORS.textPrimary}>
+                  Teléfonos
+                </Text>
               </View>
               <Button style={styles.addPhoneButton} onPress={agregarTelefono}>
                 <Icon icon={ICONS.add} size={18} color={COLORS.black} />
@@ -117,8 +120,11 @@ export default function FincaEditarScreen({ onFinca, id }) {
                     }
                   />
                 </View>
-                <Button style={styles.removePhoneButton} onPress={() => eliminarTelefono(index)}>
-                  <Icon icon={ICONS.delete} size={20} color={COLORS.error}/>
+                <Button
+                  style={styles.removePhoneButton}
+                  onPress={() => eliminarTelefono(index)}
+                >
+                  <Icon icon={ICONS.delete} size={20} color={COLORS.error} />
                 </Button>
               </View>
             ))}
@@ -148,10 +154,10 @@ export default function FincaEditarScreen({ onFinca, id }) {
             </View>
           </Card>
 
-          {Object.keys(errores).length > 0 && (
+          {displayErrorMessage && (
             <CustomAlert
               variant="danger"
-              message={"Rellene los espacios importantes para continuar"}
+              message={String(displayErrorMessage)}
               containerStyle={[styles.errorAlertContainer]}
               textStyle={[styles.errorAlertItems]}
               style={[styles.errorAlertItems]}

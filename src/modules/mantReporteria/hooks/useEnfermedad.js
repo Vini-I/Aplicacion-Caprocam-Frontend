@@ -2,39 +2,47 @@
  * ============================================================
  * HOOK DE ENFERMEDADES
  * ============================================================
- * 
- * Autocontenido: carga sus propios registros, maneja el modal
- * de eliminación y el alert de resultado, sin depender de la
- * screen para recargar ni para reenviar callbacks de recarga.
+ *
+ * Autocontenido: carga, eliminación y alert.
+ * Enriquece: nombreFinca, codigoEstanque, nombreColaborador, nombreCreadoPor
  */
 import { useState, useEffect } from "react";
 import enfermedadesService from "../../enfermedades/services/EnfermedadesService.js";
 import { obtenerDetalleReporte } from "../services/detalleReporte.service.js";
 import useModalEliminar from "../hooks/useModalEliminar.js";
+import { cargarYEnriquecerRegistros } from "../utils/enriquecerRegistros.js";
+import { useError } from "../../../shared/context/ErrorContext.js";
 
 export default function useEnfermedad(fincaId, estanqueId, onAlertChange) {
   const [enfermedades, setEnfermedades] = useState([]);
   const [loading, setLoading] = useState(true);
   const [alert, setAlert] = useState(null);
+  const { mostrarError } = useError();
 
   async function cargarEnfermedades() {
     try {
       setLoading(true);
+
       const data = await obtenerDetalleReporte({
         tipoRegistro: "enfermedades",
         fincaId,
         estanqueId,
       });
-      setEnfermedades(data);
+
+      const enriquecidos = await cargarYEnriquecerRegistros(data);
+      setEnfermedades(enriquecidos);
     } catch (error) {
-      console.error("Error al cargar enfermedades", error);
+      mostrarError(error);
+      setEnfermedades([]);
     } finally {
       setLoading(false);
     }
   }
 
   useEffect(() => {
-    cargarEnfermedades();
+    if (fincaId && estanqueId) {
+      cargarEnfermedades();
+    }
   }, [fincaId, estanqueId]);
 
   async function eliminarEnfermedad(id) {
@@ -66,7 +74,6 @@ export default function useEnfermedad(fincaId, estanqueId, onAlertChange) {
     enfermedades,
     loading,
     alert,
-
     modalVisible,
     enfermedadSeleccionada,
     loadingEliminar,

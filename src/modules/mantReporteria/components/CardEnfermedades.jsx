@@ -24,7 +24,7 @@ export default function CardEnfermedades({ fincaId, estanqueId, onEditar, onAler
         modalVisible,
         enfermedadSeleccionada,
         loadingEliminar,
-        
+
         abrirModalEliminar,
         cancelarEliminar,
         confirmarEliminar,
@@ -60,11 +60,21 @@ export default function CardEnfermedades({ fincaId, estanqueId, onEditar, onAler
                     >
                         <View style={styles.infoGrid}>
                             <View style={styles.infoItem}>
+                                <Text style={styles.label}>Finca</Text>
+                                <Text style={styles.value}>{registro.nombreFinca}</Text>
+                            </View>
+
+                            <View style={styles.infoItem}>
+                                <Text style={styles.label}>Estanque</Text>
+                                <Text style={styles.value}>{registro.codigoEstanque}</Text>
+                            </View>
+
+                            <View style={styles.infoItem}>
                                 <Text style={styles.label}>
                                     Colaborador
                                 </Text>
                                 <Text style={styles.value}>
-                                    {registro.nombreColaborador ? registro.nombreColaborador.charAt(0).toUpperCase() + registro.nombreColaborador.slice(1) : ""}
+                                    {registro.nombreCreadoPor}
                                 </Text>
                             </View>
 
@@ -132,7 +142,7 @@ export default function CardEnfermedades({ fincaId, estanqueId, onEditar, onAler
 
                             <Button
                                 style={styles.Editar}
-                                onPress={() => onEstanqueEditar(finca.codigoCBO, estanque.id)}
+                                onPress={() => onEditar(registro.id)}
                             >
                                 <Icon
                                     icon={ICONS.edit}

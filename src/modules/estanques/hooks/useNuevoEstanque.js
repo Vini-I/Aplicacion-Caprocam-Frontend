@@ -1,3 +1,14 @@
+/**
+ * ============================================================
+ * HOOK: useNuevoEstanque
+ * ============================================================
+ * Maneja la lógica del formulario para registrar un nuevo estanque.
+ * - Carga la finca por `codigoCBO`.
+ * - Normaliza valores numéricos.
+ * - Valida datos usando `validarFormularioEstanque`.
+ * - Expone `errores` y `displayErrorMessage` para la UI.
+ */
+
 import { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
 
@@ -35,6 +46,7 @@ export default function useNuevoEstanque({ navigation, codigoCBO }) {
   const [mensaje, setMensaje] = useState("");
   const [tipoMensaje, setTipoMensaje] = useState("info");
   const [submitted, setSubmitted] = useState(false);
+  const [errores, setErrores] = useState({});
 
   const setLargoState = (valor) => setLargo(normalizarNumeroDecimal(valor));
   const setAnchoState = (valor) => setAncho(normalizarNumeroDecimal(valor));
@@ -80,6 +92,7 @@ export default function useNuevoEstanque({ navigation, codigoCBO }) {
     if (resultado.valido === false) {
       setTipoMensaje(resultado.tipoMensaje);
       setMensaje(resultado.mensaje);
+      setErrores(resultado.errores || {});
     }
 
     return resultado.valido;
@@ -102,7 +115,6 @@ export default function useNuevoEstanque({ navigation, codigoCBO }) {
       fechaMantenimiento: fechaMantenimiento,
       precria: precria,
     });
-    console.log("NuevoEstanqueDTO", NuevoEstanqueDTO);
     try {
       await crearEstanque(NuevoEstanqueDTO);
       router.push({
@@ -134,6 +146,10 @@ export default function useNuevoEstanque({ navigation, codigoCBO }) {
     tipoMensaje,
     submitted,
 
+    errores,
     registrarEstanque,
+    // Mensaje único para mostrar en UI (validación o servidor)
+    displayErrorMessage: mensaje || null,
+    displayErrorVariant: tipoMensaje || null,
   };
 }

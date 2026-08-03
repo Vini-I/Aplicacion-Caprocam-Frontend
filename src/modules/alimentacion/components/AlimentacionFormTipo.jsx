@@ -14,7 +14,7 @@
  * Ejemplo:
  * <AlimentacionFormTipo form={form} updateField={updateField} submitted={submitted} errores={errores} />
  */
-
+ 
 import React from "react";
 import { View } from "react-native";
 import Card from "../../../shared/components/Card";
@@ -23,11 +23,8 @@ import Text from "../../../shared/components/Text";
 import Icon from "../../../shared/components/Icons";
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
-import { TIPOS, PRESENTACION, METODOS } from "../constants/alimentacionOpciones";
-
-const bordeError = { borderColor: COLORS.error, borderWidth: 1.5 };
-const sectionTitleRow = { flexDirection: "row", alignItems: "center", marginBottom: 10 };
-const sectionIcon = { marginRight: 8 };
+import { TIPOS, PRESENTACION, METODOS } from "../constants/AlimentacionOpciones";
+import { styles } from "../styles/AlimentacionStyles";
 
 export default function AlimentacionFormTipo({
   form = {},
@@ -35,44 +32,46 @@ export default function AlimentacionFormTipo({
   submitted = false,
   errores = {},
 }) {
-  const invalidoMetodo = submitted && !!errores.metodo;
-  const invalidoTipoAlimento = submitted && !!errores.tipoAlimento;
-  const invalidoPresentacion = submitted && !!errores.presentacion;
-
   return (
     <Card>
-      <View style={sectionTitleRow}>
-        <Icon icon={ICONS.food} size={18} color={COLORS.primary} style={sectionIcon} />
+      <View style={styles.sectionTitleRow}>
+        <Icon icon={ICONS.food} size={18} color={COLORS.primary} style={styles.sectionIcon} />
         <Text size={18} weight="700" color={COLORS.textSecondary}>
           Tipo de Alimentación
         </Text>
       </View>
 
       <Select
-        label="Tipo *"
+        label="Tipo"
         value={form.tipoAlimento}
         onChange={(v) => updateField("tipoAlimento", v)}
         options={TIPOS}
         placeholder="Seleccionar tipo"
-        selectStyle={invalidoTipoAlimento ? bordeError : null}
+        required
+        submitted={submitted}
+        error={submitted ? (errores.tipoAlimento || "") : ""}
       />
 
       <Select
-        label="Presentación *"
+        label="Presentación"
         value={form.presentacion}
         onChange={(v) => updateField("presentacion", v)}
         options={PRESENTACION}
         placeholder="Seleccionar presentación"
-        selectStyle={invalidoPresentacion ? bordeError : null}
+        required
+        submitted={submitted}
+        error={submitted ? (errores.presentacion || "") : ""}
       />
 
       <Select
-        label="Método *"
+        label="Método"
         value={form.metodo}
         onChange={(v) => updateField("metodo", v)}
         options={METODOS}
         placeholder="Seleccionar método"
-        selectStyle={invalidoMetodo ? bordeError : null}
+        required
+        submitted={submitted}
+        error={submitted ? (errores.metodo || "") : ""}
       />
     </Card>
   );

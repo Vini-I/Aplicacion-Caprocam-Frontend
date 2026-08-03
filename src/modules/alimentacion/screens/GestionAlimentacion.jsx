@@ -27,20 +27,21 @@
  *   handleGuardar={handleGuardar}
  * />
  */
-
-import React from "react";
+ 
+import React, { useEffect, useRef } from "react";
 import { View, ScrollView } from "react-native";
+
 import AlimentacionStats from "../components/AlimentacionStats";
-import AlimentacionList from "../components/AlimentacionList";
 import AlimentacionForm from "../components/AlimentacionForm";
+
 import Text from "../../../shared/components/Text";
+import Alert from "../../../shared/components/Alert";
+import Button from "../../../shared/components/Button";
+import Icon from "../../../shared/components/Icons";
+
 import { styles } from "../styles/AlimentacionStyles";
 import { COLORS } from "../../../theme/colors";
-import { ICONS } from "../../../theme/icons.js";
-import Icon from "../../../shared/components/Icons.jsx";
-import Alert from "../../../shared/components/Alert.jsx";
-import Footer from "../../../shared/components/Footer";
-import Button from "../../../shared/components/Button";
+import { ICONS } from "../../../theme/icons";
 import { STYLE } from "../../../theme/style";
 
 export default function GestionAlimentacion({
@@ -49,23 +50,51 @@ export default function GestionAlimentacion({
   updateField,
   submitted,
   errores,
-  handleGuardar,
   alerta,
-  onBack,
+  handleGuardar,
 }) {
-  const calcularStats = (data) => ({
-    registrosHoy: data.length,
-    kgSuministrados: data.reduce(
-      (acc, a) => acc + Number(a.cantidadKg || 0),
-      0,
-    ),
-    estanquesActivos: new Set(data.map((a) => a.estanque)).size,
-  });
+  const scrollRef = useRef(null);
+
+  useEffect(() => {
+    if (alerta.visible) {
+      scrollRef.current?.scrollToEnd({
+        animated: true,
+      });
+    }
+  }, [alerta.visible]);
+
+  const calcularStats = (registros = []) => {
+    const registrosHoy = registros.length;
+
+    const kgSuministrados = registros.reduce((total, registro) => {
+      return total + Number(registro.cantidadKg || 0);
+    }, 0);
+
+    const estanquesActivos = new Set(
+      registros
+        .map((registro) => registro.estanque)
+        .filter(Boolean)
+    ).size;
+
+    return {
+      registrosHoy,
+      kgSuministrados,
+      estanquesActivos,
+    };
+  };
 
   return (
-    <ScrollView style={STYLE.container} showsVerticalScrollIndicator={false}>
+    <ScrollView
+      ref={scrollRef}
+      style={STYLE.container}
+      contentContainerStyle={styles.scrollContent}
+      showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
+    >
       <View style={STYLE.contentWrapper}>
-        <AlimentacionStats {...calcularStats(alimentaciones)} />
+        <AlimentacionStats
+          {...calcularStats(alimentaciones)}
+        />
 
         <AlimentacionForm
           form={form}
@@ -75,25 +104,30 @@ export default function GestionAlimentacion({
         />
 
         {alerta.visible && (
-  <Alert
-    variant={alerta.variant}
-    message={alerta.mensaje}
-    style={styles.alert}
-  />
-)}
-          <Button variant="outline" onPress={handleGuardar} style={styles.submitButton}>
-            <View style={styles.buttonContent}>
-              <Icon icon={ICONS.save} size={24} color={COLORS.primary}/>
-              <Text style={styles.buttonText}>
-                Guardar
-              </Text>
-            </View>
-          </Button>
-        {/* <Text style={styles.secLabel}>
-          REGISTROS DEL DÍA
-        </Text>
+          <Alert
+            variant={alerta.variant}
+            message={alerta.mensaje}
+            style={styles.alert}
+          />
+        )}
 
-        <AlimentacionList alimentaciones={alimentaciones} /> */}
+        <Button
+          variant="outline"
+          onPress={handleGuardar}
+          style={styles.submitButton}
+        >
+          <View style={styles.buttonContent}>
+            <Icon
+              icon={ICONS.save}
+              size={24}
+              color={COLORS.primary}
+            />
+
+            <Text style={styles.buttonText}>
+              Registrar Alimentación
+            </Text>
+          </View>
+        </Button>
 
         <View style={styles.spacer} />
       </View>

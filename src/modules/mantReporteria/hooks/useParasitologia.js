@@ -1,45 +1,53 @@
 /**
  * ============================================================
- * HOOK DE PARSITIOLOGÍA
+ * HOOK DE PARASITOLOGÍA
  * ============================================================
- * 
- * Autocontenido: carga sus propios registros, maneja el modal
- * de eliminación y el alert de resultado, sin depender de la
- * screen para recargar ni para reenviar callbacks de recarga.
+ *
+ * Autocontenido: carga, eliminación y alert.
+ * Enriquece: nombreFinca, codigoEstanque, nombreColaborador, nombreCreadoPor
  */
 import { useState, useEffect } from "react";
 import parasitologiaService from "../../parasitologia/services/ParasitologiaService.js";
 import { obtenerDetalleReporte } from "../services/detalleReporte.service.js";
 import useModalEliminar from "../hooks/useModalEliminar.js";
+import { cargarYEnriquecerRegistros } from "../utils/enriquecerRegistros.js";
+import { useError } from "../../../shared/context/ErrorContext.js";
 
 export default function useParasitologia(fincaId, estanqueId, onAlertChange) {
   const [parasitologia, setParasitologia] = useState([]);
   const [loading, setLoading] = useState(true);
   const [alert, setAlert] = useState(null);
+  const { mostrarError } = useError();
 
   async function cargarParasitologia() {
     try {
       setLoading(true);
+
       const data = await obtenerDetalleReporte({
         tipoRegistro: "parasitologia",
         fincaId,
         estanqueId,
       });
-      setParasitologia(data);
+
+      const enriquecidos = await cargarYEnriquecerRegistros(data);
+      setParasitologia(enriquecidos);
     } catch (error) {
-      console.error("Error al cargar parasitología", error);
+      mostrarError(error);
+      setParasitologia([]);
     } finally {
       setLoading(false);
     }
   }
 
   useEffect(() => {
-    cargarParasitologia();
+    if (fincaId && estanqueId) {
+      cargarParasitologia();
+    }
   }, [fincaId, estanqueId]);
 
   async function eliminarParasitologia(id) {
     await parasitologiaService.deleteById(id);
-        await cargarParasitologia();
+    await cargarParasitologia();
     setAlert("deleted");
   }
 
@@ -66,7 +74,6 @@ export default function useParasitologia(fincaId, estanqueId, onAlertChange) {
     parasitologia,
     loading,
     alert,
-
     modalVisible,
     parasitologiaSeleccionada,
     loadingEliminar,
