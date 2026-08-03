@@ -11,7 +11,9 @@
  *
  * @dependencies - ColaboradorForm, servicios de roles/fincas.
  * @validations  - Las validaciones se delegan en useColaboradorForm.
- * @navigation   - Botón "Volver" regresa a la lista.
+ * @navigation   - Al guardar exitosamente redirige a la lista de
+ *                 colaboradores con un mensaje de éxito en los
+ *                 parámetros de la ruta.
  * ============================================================
  */
 
@@ -40,7 +42,6 @@ export default function ColaboradorFormScreen() {
   const [colaborador, setColaborador] = useState(null);
   const [loading, setLoading] = useState(isEditing);
   const [error, setError] = useState(null);
-  const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [resetLoading, setResetLoading] = useState(false);
   const [roleOptions, setRoleOptions] = useState([]);
@@ -90,14 +91,7 @@ export default function ColaboradorFormScreen() {
     }
   }, [id]);
 
-  // ─── Limpieza automática de mensajes ──────────────────────────
-  useEffect(() => {
-    if (successMessage) {
-      const timer = setTimeout(() => setSuccessMessage(""), 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [successMessage]);
-
+  // ─── Limpieza automática de mensajes de error ──────────────
   useEffect(() => {
     if (errorMessage) {
       const timer = setTimeout(() => setErrorMessage(""), 6000);
@@ -109,15 +103,25 @@ export default function ColaboradorFormScreen() {
 
   const handleSubmit = async (formData) => {
     setErrorMessage("");
-    setSuccessMessage("");
     try {
       if (isEditing) {
         await colaboradoresService.updateColaborador(id, formData);
-        setSuccessMessage("Colaborador actualizado correctamente.");
+        router.replace({
+          pathname: "/(drawer)/colaboradores",
+          params: {
+            alertType: "success",
+            alertMessage: "Colaborador actualizado correctamente.",
+          },
+        });
       } else {
         await colaboradoresService.createColaborador(formData);
-        setSuccessMessage("Colaborador creado correctamente.");
-        formRef.current?.resetForm();
+        router.replace({
+          pathname: "/(drawer)/colaboradores",
+          params: {
+            alertType: "success",
+            alertMessage: "Colaborador creado correctamente.",
+          },
+        });
       }
     } catch (err) {
       setErrorMessage(err.message || "No se pudo guardar el colaborador.");
@@ -131,10 +135,16 @@ export default function ColaboradorFormScreen() {
   const handleResetPin = async () => {
     setResetLoading(true);
     setErrorMessage("");
-    setSuccessMessage("");
     try {
       await colaboradoresService.resetPin(id);
-      setSuccessMessage("PIN restablecido correctamente.");
+      // Se muestra el éxito en la lista después de redirigir
+      router.replace({
+        pathname: "/(drawer)/colaboradores",
+        params: {
+          alertType: "success",
+          alertMessage: "PIN restablecido correctamente.",
+        },
+      });
     } catch (err) {
       setErrorMessage(err.message || "No se pudo restablecer el PIN.");
     } finally {
@@ -176,7 +186,6 @@ export default function ColaboradorFormScreen() {
           onSubmit={handleSubmit}
           onCancel={handleCancel}
           serverError={errorMessage}
-          successMessage={successMessage}
           roleOptions={roleOptions}
           fincasOptions={fincasOptions}
           onResetPin={handleResetPin}

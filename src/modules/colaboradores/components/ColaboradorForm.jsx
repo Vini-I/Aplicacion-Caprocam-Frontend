@@ -17,7 +17,6 @@
  * - fincaId: ID de finca (se asigna automáticamente para external_owner)
  * - onCancel: función para cerrar el modal sin guardar
  * - serverError: mensaje de error del servidor (opcional)
- * - successMessage: mensaje de éxito (opcional)
  * - roleOptions: array de { label, value } para el select de roles (opcional)
  * - fincasOptions: array de { label, value } para el select de fincas (opcional)
  * - onResetPin: función para restablecer el PIN (solo en edición)
@@ -47,7 +46,6 @@ const ColaboradorForm = forwardRef(function ColaboradorForm(
     fincaId,
     onCancel,
     serverError = "",
-    successMessage = "",
     roleOptions,
     fincasOptions = [],
     onResetPin,
@@ -197,12 +195,6 @@ const ColaboradorForm = forwardRef(function ColaboradorForm(
         </View>
       )}
 
-      {successMessage !== "" && !mostrarError && (
-        <View style={styles.alertContainer}>
-          <Alert variant="success" message={successMessage} textStyle={styles.alertText} />
-        </View>
-      )}
-
       <View style={styles.buttonContainer}>
         <Button variant="outline" onPress={handleSubmit} style={styles.submitButton}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
@@ -224,7 +216,6 @@ const ColaboradorForm = forwardRef(function ColaboradorForm(
             style={styles.resetButton}
           >
             <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-              {/* Usamos ICONS.update porque es un icono existente en el tema */}
               <Icon icon={ICONS.update} size={18} color={COLORS.primary} />
               <Text style={{ color: COLORS.primary, fontWeight: "600" }}>
                 {resetLoading ? "Restableciendo..." : "Restablecer PIN"}

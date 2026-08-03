@@ -27,8 +27,7 @@ import Icon from '../../../shared/components/Icons';
 import SearchBar from '../../../shared/components/SearchBar';
 import FilterButton from '../../../shared/components/FilterButton';
 import Alert from '../../../shared/components/Alert';
-import Modal from '../../../shared/components/Modal';
-import Input from '../../../shared/components/Input';
+import ModalEliminar from '../../../shared/components/ModalEliminar';
 import EmptyState from '../../../shared/components/EmptyState';
 
 import { STYLE } from '../../../theme/style';
@@ -57,17 +56,12 @@ export default function ColaboradoresListScreen() {
     error,
     searchText,
     setSearchText,
-    cedulaConfirmacion,
-    setCedulaConfirmacion,
     deleteTarget,
     setDeleteTarget,
     showConfirmModal,
     setShowConfirmModal,
-    cedulaError,
-    setCedulaError,
     alert,
     showAlert,
-    handleDeletePress,
     confirmDelete,
     fetchColaboradores,
   } = useColaboradoresList();
@@ -207,7 +201,7 @@ export default function ColaboradoresListScreen() {
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.list}
-        showsVerticalScrollIndicator={true}
+        showsVerticalScrollIndicator={false}
       >
         {listaFiltrada.length === 0 ? (
           <EmptyState title={emptyTitle} description={emptyDescription} />
@@ -218,7 +212,10 @@ export default function ColaboradoresListScreen() {
               colaborador={colab}
               onPress={() => openDetail(colab.id)}
               onEdit={handleEditNavigation}
-              onDelete={() => handleDeletePress(colab.id)}
+              onDelete={() => {
+                setDeleteTarget(colab);
+                setShowConfirmModal(true);
+              }}
             />
           ))
         )}
@@ -236,72 +233,17 @@ export default function ColaboradoresListScreen() {
         </Button>
       </View>
 
-      {/* Modal de confirmación de eliminación */}
-      <Modal
+      {/* Modal de confirmación de eliminación usando componente reutilizable */}
+      <ModalEliminar
         visible={showConfirmModal}
-        onClose={() => {
+        title="colaborador"
+        message={deleteTarget?.nombre || ''}
+        onConfirm={confirmDelete}
+        onCancel={() => {
           setShowConfirmModal(false);
-          setCedulaConfirmacion('');
           setDeleteTarget(null);
-          setCedulaError('');
         }}
-        showCloseButton={false}
-        containerStyle={styles.modalConfirmContainer}
-      >
-        <CustomText style={styles.modalTitle}>Confirmar eliminación</CustomText>
-        {deleteTarget && (
-          <>
-            <CustomText style={styles.modalText}>
-              ¿Está seguro que desea eliminar a:
-            </CustomText>
-            <CustomText style={styles.modalName}>{deleteTarget.nombre}</CustomText>
-            <CustomText style={styles.modalSubText}>
-              Para confirmar, ingrese la cédula del colaborador:
-            </CustomText>
-            <CustomText style={styles.modalCedula}>{deleteTarget.cedula}</CustomText>
-          </>
-        )}
-        <Input
-          placeholder="Ingrese la cédula para confirmar"
-          value={cedulaConfirmacion}
-          onChangeText={(text) => {
-            setCedulaConfirmacion(text);
-            setCedulaError('');
-          }}
-          keyboardType="numeric"
-          containerStyle={styles.modalInput}
-        />
-        {cedulaError !== '' && (
-          <Alert variant="danger" message={cedulaError} style={{ marginBottom: 12 }} />
-        )}
-        <View style={styles.modalButtons}>
-          <Button
-            onPress={() => {
-              setShowConfirmModal(false);
-              setCedulaConfirmacion('');
-              setDeleteTarget(null);
-              setCedulaError('');
-            }}
-            variant="outline"
-            style={styles.modalCancelBtn}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <Icon icon={ICONS.exit} size={16} color={COLORS.primary} />
-              <CustomText style={{ color: COLORS.primary, fontWeight: '600' }}>Cancelar</CustomText>
-            </View>
-          </Button>
-          <Button
-            onPress={confirmDelete}
-            variant="outline"
-            style={[styles.modalDeleteBtn, { borderColor: COLORS.error }]}
-          >
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <Icon icon={ICONS.delete} size={16} color={COLORS.error} />
-              <CustomText style={{ color: COLORS.error, fontWeight: '600' }}>Eliminar</CustomText>
-            </View>
-          </Button>
-        </View>
-      </Modal>
+      />
     </View>
   );
 }

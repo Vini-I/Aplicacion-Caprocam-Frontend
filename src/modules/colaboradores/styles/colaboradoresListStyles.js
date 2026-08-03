@@ -49,12 +49,13 @@ export const styles = StyleSheet.create({
     maxWidth: 900,
     alignSelf: "center",
     paddingHorizontal: 0,
-    marginTop: 8,
-    marginBottom: 4,
+    paddingVertical: 0,
+    marginTop: 0,
+    marginBottom: 0,
   },
   contadorResultados: {
     fontSize: 13,
-    left: 4,
+    left: 0,
     color: COLORS.textTertiary,
     fontFamily: TYPOGRAPHY.fontFamily.regular,
   },
@@ -62,7 +63,7 @@ export const styles = StyleSheet.create({
   // ── Lista de colaboradores ──────────────────────────────────
   list: {
     padding: 0,
-    paddingBottom: 110, // espacio para el botón flotante
+    paddingHorizontal: 0,
     width: '100%',
     left: 0,
     maxWidth: 900,
@@ -75,14 +76,15 @@ export const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+    textAlign: "center",
   },
 
   // ── Alertas flotantes ──────────────────────────────────────
   alertWrapper: {
     marginTop: 6,
-    marginBottom: 12,
+    marginBottom: 0,
     paddingHorizontal: 0,
-    paddingVertical: 0,
+    paddingVertical: 10,
     width: '100%',
     maxWidth: 900,
     alignSelf: 'center',
