@@ -11,11 +11,13 @@ import { eliminarLectura } from "../../mantAgua/services/FisicoQuimicaServices.j
 import { obtenerDetalleReporte } from "../services/detalleReporte.service.js";
 import useModalEliminar from "../hooks/useModalEliminar.js";
 import { cargarYEnriquecerRegistros } from "../utils/enriquecerRegistros.js";
+import { useError } from "../../../shared/context/ErrorContext.js";
 
 export default function useFisicoQuimico(fincaId, estanqueId, onAlertChange) {
   const [lecturas, setLecturas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [alert, setAlert] = useState(null);
+  const { mostrarError } = useError();
 
   async function cargarLecturas() {
     try {
@@ -30,7 +32,7 @@ export default function useFisicoQuimico(fincaId, estanqueId, onAlertChange) {
       const enriquecidos = await cargarYEnriquecerRegistros(data);
       setLecturas(enriquecidos);
     } catch (error) {
-      console.error("Error al cargar lecturas físico-químicas", error);
+      mostrarError(error);
       setLecturas([]);
     } finally {
       setLoading(false);

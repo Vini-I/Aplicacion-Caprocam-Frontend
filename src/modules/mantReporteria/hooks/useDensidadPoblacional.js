@@ -11,11 +11,13 @@ import densidadPoblacionalService from "../../densidadPoblacional/services/Densi
 import { obtenerDetalleReporte } from "../services/detalleReporte.service.js";
 import useModalEliminar from "../hooks/useModalEliminar.js";
 import { cargarYEnriquecerRegistros } from "../utils/enriquecerRegistros.js";
+import { useError } from "../../../shared/context/ErrorContext.js";
 
 export default function useDensidadPoblacional(fincaId, estanqueId, onAlertChange) {
   const [densidades, setDensidades] = useState([]);
   const [loading, setLoading] = useState(true);
   const [alert, setAlert] = useState(null);
+  const { mostrarError } = useError();
 
   async function cargarDensidades() {
     try {
@@ -30,7 +32,7 @@ export default function useDensidadPoblacional(fincaId, estanqueId, onAlertChang
       const enriquecidos = await cargarYEnriquecerRegistros(data);
       setDensidades(enriquecidos);
     } catch (error) {
-      console.error("Error al cargar densidades", error);
+      mostrarError(error);
       setDensidades([]);
     } finally {
       setLoading(false);

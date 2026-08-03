@@ -11,11 +11,13 @@ import crecimientoService from "../../mantCrecimiento/services/mantCrecimiento.s
 import { obtenerDetalleReporte } from "../services/detalleReporte.service.js";
 import useModalEliminar from "../hooks/useModalEliminar.js";
 import { cargarYEnriquecerRegistros } from "../utils/enriquecerRegistros.js";
+import { useError } from "../../../shared/context/ErrorContext.js";
 
 export default function useCrecimiento(fincaId, estanqueId, onAlertChange) {
   const [crecimientos, setCrecimientos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [alert, setAlert] = useState(null);
+  const { mostrarError } = useError();
 
   async function cargarCrecimientos() {
     try {
@@ -30,7 +32,7 @@ export default function useCrecimiento(fincaId, estanqueId, onAlertChange) {
       const enriquecidos = await cargarYEnriquecerRegistros(data);
       setCrecimientos(enriquecidos);
     } catch (error) {
-      console.error("Error al cargar crecimientos", error);
+      mostrarError(error);
       setCrecimientos([]);
     } finally {
       setLoading(false);

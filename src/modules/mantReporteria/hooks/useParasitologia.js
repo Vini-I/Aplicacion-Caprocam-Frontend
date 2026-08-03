@@ -11,11 +11,13 @@ import parasitologiaService from "../../parasitologia/services/ParasitologiaServ
 import { obtenerDetalleReporte } from "../services/detalleReporte.service.js";
 import useModalEliminar from "../hooks/useModalEliminar.js";
 import { cargarYEnriquecerRegistros } from "../utils/enriquecerRegistros.js";
+import { useError } from "../../../shared/context/ErrorContext.js";
 
 export default function useParasitologia(fincaId, estanqueId, onAlertChange) {
   const [parasitologia, setParasitologia] = useState([]);
   const [loading, setLoading] = useState(true);
   const [alert, setAlert] = useState(null);
+  const { mostrarError } = useError();
 
   async function cargarParasitologia() {
     try {
@@ -30,7 +32,7 @@ export default function useParasitologia(fincaId, estanqueId, onAlertChange) {
       const enriquecidos = await cargarYEnriquecerRegistros(data);
       setParasitologia(enriquecidos);
     } catch (error) {
-      console.error("Error al cargar parasitología", error);
+      mostrarError(error);
       setParasitologia([]);
     } finally {
       setLoading(false);
