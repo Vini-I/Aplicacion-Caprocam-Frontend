@@ -29,13 +29,13 @@ export const generarRegistroPDF = (finca, estanquesFinca = []) => {
   }
 
   function obtenerTextoSiNo(valor) {
-    let texto = "No";
+    let texto = "No usa precria";
     const normalizado = String(valor || "")
       .trim()
       .toLowerCase();
 
     if (normalizado === "si" || normalizado === "true" || normalizado === "1") {
-      texto = "Si";
+      texto = "Sí, usa precria";
     }
 
     return texto;
