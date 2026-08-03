@@ -42,16 +42,11 @@ export default function FincaCrecimientoScreen() {
     estanqueSeleccionadoObj,
     estanque,
 
-    opcionesColaboradores,
-    colaboradorSeleccionado,
-
     setEstanqueSeleccionado,
     setPesoActual,
     setFechaRegistro,
     handleFincaChange,
     guardarDatos,
-
-    handleColaboradorChange,
 
     submitted,
     successMessage,
@@ -61,7 +56,6 @@ export default function FincaCrecimientoScreen() {
     mostrarErrorEstanque,
     mostrarErrorPeso,
     mostrarErrorFecha,
-    mostrarErrorColaborador
   } = useFincaCrecimiento();
 
   return (
@@ -106,16 +100,6 @@ export default function FincaCrecimientoScreen() {
             }
             selectStyle={mostrarErrorEstanque ? styles.inputError : null}
           />
-
-          <Select
-            label="Colaborador asignado *"
-            placeholder="Seleccione colaborador"
-            options={opcionesColaboradores}
-            value={colaboradorSeleccionado}
-            onChange={handleColaboradorChange}
-            selectStyle={mostrarErrorColaborador ? styles.inputError : null}
-          />
-
 
           <View style={styles.badgeRow}>
             <BadgeLabel

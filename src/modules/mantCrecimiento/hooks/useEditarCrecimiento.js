@@ -4,7 +4,6 @@
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { fincaService } from "../../finca/services/finca.service.js";
-import { colaboradorService } from "../../colaboradores/services/colaborador.service.js";
 import { estanqueService } from "../../estanques/services/estanque.service.js";
 import crecimientoService from "../services/mantCrecimiento.service.js";
 
@@ -29,14 +28,12 @@ function formatearFechaParaUI(fecha) {
 export default function useEditarCrecimiento(registroId, onGuardado) {
   const [fincas, setFincas] = useState([]);
   const [estanques, setEstanques] = useState([]);
-  const [colaboradores, setColaboradores] = useState([]);
   const [cargando, setCargando] = useState(true);
 
   const [fincaSeleccionada, setFincaSeleccionada] = useState("");
   const [estanqueSeleccionado, setEstanqueSeleccionado] = useState("");
   const [pesoActual, setPesoActual] = useState("");
   const [fechaRegistro, setFechaRegistro] = useState("");
-  const [colaboradorSeleccionado, setColaboradorSeleccionado] = useState("");
 
   const [submitted, setSubmitted] = useState(false);
   const [errors, setErrors] = useState({});
@@ -48,15 +45,13 @@ export default function useEditarCrecimiento(registroId, onGuardado) {
     let activo = true;
     (async () => {
       try {
-        const [fincasData, estanquesData, colaboradoresData] = await Promise.all([
+        const [fincasData, estanquesData] = await Promise.all([
           fincaService.getFincas(),
           estanqueService.getEstanques(),
-          colaboradorService.getColaboradores(),
         ]);
         if (!activo) return;
         setFincas(fincasData || []);
         setEstanques(estanquesData || []);
-        setColaboradores(colaboradoresData || []);
       } catch (e) {
         console.error(e);
       }
@@ -79,7 +74,6 @@ export default function useEditarCrecimiento(registroId, onGuardado) {
         setEstanqueSeleccionado(String(r.estanque ?? r.estanqueId ?? r.estanque_id ?? ""));
         setPesoActual(String(r.pesoActual ?? r.peso_actual ?? ""));
         setFechaRegistro(formatearFechaParaUI(r.fechaRegistro ?? r.fecha_registro ?? r.fecha));
-        setColaboradorSeleccionado(String(r.colaborador ?? r.colaboradorId ?? r.colaborador_id ?? ""));
       })
       .catch((e) => {
         console.error(e);
@@ -113,11 +107,6 @@ export default function useEditarCrecimiento(registroId, onGuardado) {
       .map((e) => ({ label: e.codigo, value: e.id }));
   }, [fincaSeleccionada, estanques]);
 
-  const opcionesColaboradores = useMemo(
-    () => colaboradores.map((c) => ({ label: c.nombre, value: c.id })),
-    [colaboradores],
-  );
-
   const handleFincaChange = useCallback((value) => {
     setFincaSeleccionada(value);
     setEstanqueSeleccionado("");
@@ -126,21 +115,15 @@ export default function useEditarCrecimiento(registroId, onGuardado) {
     setErrorMessage("");
   }, []);
 
-  const handleColaboradorChange = useCallback((value) => {
-    setColaboradorSeleccionado(value);
-    setErrors((prev) => ({ ...prev, colaborador: undefined }));
-  }, []);
-
   const validarCampos = useCallback(() => {
     const next = {};
     if (!fincaSeleccionada) next.finca = "Seleccione una finca.";
     if (!estanqueSeleccionado) next.estanque = "Seleccione un estanque.";
     if (!pesoActual || Number(pesoActual) <= 0) next.peso = "Ingrese un peso actual válido.";
     if (!fechaRegistro) next.fecha = "Seleccione una fecha de registro.";
-    if (!colaboradorSeleccionado) next.colaborador = "Seleccione un colaborador";
     setErrors(next);
     return Object.keys(next).length === 0;
-  }, [fincaSeleccionada, estanqueSeleccionado, pesoActual, fechaRegistro, colaboradorSeleccionado]);
+  }, [fincaSeleccionada, estanqueSeleccionado, pesoActual, fechaRegistro]);
 
   const guardarDatos = useCallback(async () => {
     setSubmitted(true);
@@ -157,7 +140,7 @@ export default function useEditarCrecimiento(registroId, onGuardado) {
         estanque: Number(estanqueSeleccionado),
         pesoActual: Number(pesoActual),
         fechaRegistro: convertirFechaParaBackend(fechaRegistro),
-        colaborador: Number(colaboradorSeleccionado),
+        colaborador: null,
       });
       setSuccessMessage("Actualizado exitosamente");
       onGuardado?.();
@@ -167,7 +150,7 @@ export default function useEditarCrecimiento(registroId, onGuardado) {
     } finally {
       setIsSaving(false);
     }
-  }, [validarCampos, fincaSeleccionada, estanqueSeleccionado, pesoActual, fechaRegistro, colaboradorSeleccionado, registroId, onGuardado]);
+  }, [validarCampos, fincaSeleccionada, estanqueSeleccionado, pesoActual, fechaRegistro, registroId, onGuardado]);
 
   const pesoAnteriorLabel = useMemo(() => {
     const peso = estanqueSeleccionadoObj?.pesoSemanaAnterior;
@@ -185,14 +168,13 @@ export default function useEditarCrecimiento(registroId, onGuardado) {
     estanquesFiltrados,
     estanqueSeleccionadoObj,
     estanque: estanqueSeleccionadoObj,
-    opcionesColaboradores,
-    colaboradorSeleccionado,
+
     setEstanqueSeleccionado,
     setPesoActual,
     setFechaRegistro,
     handleFincaChange,
     guardarDatos,
-    handleColaboradorChange,
+
     isSaving,
     submitted,
     errors,
@@ -203,7 +185,6 @@ export default function useEditarCrecimiento(registroId, onGuardado) {
     mostrarErrorEstanque: submitted && Boolean(errors.estanque),
     mostrarErrorPeso: submitted && Boolean(errors.peso),
     mostrarErrorFecha: submitted && Boolean(errors.fecha),
-    mostrarErrorColaborador: submitted && Boolean(errors.colaborador),
     cargando,
   };
 }
