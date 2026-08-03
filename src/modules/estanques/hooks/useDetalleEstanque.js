@@ -2,10 +2,11 @@ import { useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 
 import { estanqueService } from "../services/estanque.service";
+import { useError } from "../../../shared/context/ErrorContext.js";
 
 export default function useDetalleEstanque() {
   const { id, fincaNombre } = useLocalSearchParams();
-
+  const { mostrarError } = useError();
   const [estanque, setEstanque] = useState();
   const [loading, setLoading] = useState(true);
 
@@ -30,7 +31,7 @@ export default function useDetalleEstanque() {
 
       } catch (error) {
 
-        console.error(error);
+        mostrarError(error);
 
       } finally {
 

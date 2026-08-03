@@ -104,6 +104,11 @@ function validarFormulario(formulario) {
   return nuevosErrores;
 }
 
+function capitalizarPrimeraLetra(str) {
+  if (!str) return '';
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 export function useRegistrarEquipo(initialData = null) {
   const isEditing = !!initialData;
 
@@ -114,12 +119,12 @@ export function useRegistrarEquipo(initialData = null) {
         codigoInterno: initialData.serie || initialData.codigoInterno || '',
         nombre: initialData.nombre || '',
         descripcion: initialData.descripcion || '',
-        tipo: initialData.tipo || '',
+        tipo: capitalizarPrimeraLetra(initialData.tipo) || '',
         fechaInstalacion: initialData.fechaInstalacion || obtenerFechaActual(),
         funcionEquipo: initialData.funcionEquipo || '',
         estanqueId: initialData.estanqueId || '',
         horasMantenimiento: String(initialData.horasMantenimiento || '500'),
-        estadoOperativo: initialData.estadoOperativo || '',
+        estadoOperativo: capitalizarPrimeraLetra(initialData.estado) || '',
       };
     }
     return { ...formularioInicial };
@@ -132,12 +137,12 @@ export function useRegistrarEquipo(initialData = null) {
         codigoInterno: initialData.serie || initialData.codigoInterno || '',
         nombre: initialData.nombre || '',
         descripcion: initialData.descripcion || '',
-        tipo: initialData.tipo || '',
+        tipo: capitalizarPrimeraLetra(initialData.tipo) || '',
         fechaInstalacion: initialData.fechaInstalacion || obtenerFechaActual(),
         funcionEquipo: initialData.funcionEquipo || '',
         estanqueId: initialData.estanqueId || '',
         horasMantenimiento: String(initialData.horasMantenimiento || '500'),
-        estadoOperativo: initialData.estadoOperativo || '',
+        estadoOperativo: capitalizarPrimeraLetra(initialData.estado) || '',
       });
     } else {
       setFormulario({ ...formularioInicial });

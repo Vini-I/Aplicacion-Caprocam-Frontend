@@ -77,7 +77,7 @@ export default function CardDensidadPoblacional({ fincaId, estanqueId, onEditar,
 
                         <View style={styles.infoItem}>
                             <Text style={styles.label}>Colaborador</Text>
-                            <Text style={styles.value}>{registro.usuarioNombre}</Text>
+                            <Text style={styles.value}>{registro.nombreCreadoPor}</Text>
                         </View>
 
                         <View style={styles.infoItem}>
@@ -141,7 +141,7 @@ export default function CardDensidadPoblacional({ fincaId, estanqueId, onEditar,
 
                         <Button
                             style={styles.Editar}
-                            onPress={() => onEditar?.(registro.id)}
+                            onPress={() => {onEditar(registro.id)}}
                         >
                             <Icon icon={ICONS.edit} color={COLORS.primary} size={20} />
                             <Text size={12} color={COLORS.primary}>

@@ -77,7 +77,7 @@ export default function CardCrecimiento({ fincaId, estanqueId, onEditar, onAlert
 
                         <View style={styles.infoItem}>
                             <Text style={styles.label}>Colaborador</Text>
-                            <Text style={styles.value}>{registro.nombreColaborador}</Text>
+                            <Text style={styles.value}>{registro.nombreCreadoPor}</Text>
                         </View>
 
                         <View style={styles.infoItem}>
@@ -109,7 +109,7 @@ export default function CardCrecimiento({ fincaId, estanqueId, onEditar, onAlert
 
                         <Button
                             style={styles.Editar}
-                            onPress={() => onEditar?.(registro.id)}
+                            onPress={() => {onEditar(registro.id)}}
                         >
                             <Icon icon={ICONS.edit} color={COLORS.primary} size={20} />
                             <Text size={12} color={COLORS.primary}>

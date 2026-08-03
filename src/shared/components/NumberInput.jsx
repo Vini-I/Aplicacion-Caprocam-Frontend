@@ -35,16 +35,13 @@ export default function NumberInput({
   style,
 }) {
   let showError = false;
-  let finalHelperText = helperText;
 
   if (error !== "") {
     showError = true;
-    finalHelperText = error;
   }
 
   if (submitted === true && required === true && String(value).trim() === "") {
     showError = true;
-    finalHelperText = "Este campo es obligatorio.";
   }
 
   function aumentar() {
@@ -139,13 +136,6 @@ export default function NumberInput({
         </View>
       </View>
 
-      {finalHelperText !== "" && (
-        <Text
-          style={[styles.helperText, showError === true && styles.errorText]}
-        >
-          {finalHelperText}
-        </Text>
-      )}
     </View>
   );
 }
