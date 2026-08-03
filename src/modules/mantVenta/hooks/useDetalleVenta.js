@@ -292,7 +292,7 @@ export function useDetalleVenta({ onEdit, success, message } = {}) {
     cancelarEliminar,
     handleFincaChange,
     handleEstanqueChange,
-    mostrarExito,
+  mostrarExito,
     mensajeExito: message,
   };
 }
