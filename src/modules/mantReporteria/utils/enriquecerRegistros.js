@@ -10,6 +10,7 @@ import { colaboradorService } from "../../colaboradores/services/colaborador.ser
 import { fincaService } from "../../finca/services/finca.service.js";
 import { estanqueService } from "../../estanques/services/estanque.service.js";
 import { getUsuarioById } from "../../login/services/usuarioService.js";
+import { productoService } from "../../productos/services/producto.service.js";
 
 export function nombreCompletoPersona(persona) {
   if (!persona || typeof persona !== "object") return null;
@@ -55,10 +56,11 @@ function pickId(registro, keys) {
 export async function cargarYEnriquecerRegistros(registros = []) {
   const data = Array.isArray(registros) ? registros : [];
 
-  const [fincasData, estanquesData, colaboradoresData] = await Promise.all([
+  const [fincasData, estanquesData, colaboradoresData, productosData] = await Promise.all([
     fincaService.getFincas(),
     estanqueService.getEstanques(),
     colaboradorService.getColaboradores(),
+    productoService.getProductos(),
   ]);
 
   const fincasMap = Object.fromEntries(
@@ -76,6 +78,10 @@ export async function cargarYEnriquecerRegistros(registros = []) {
         c.nombre ||
         "Sin nombre",
     ]),
+  );
+
+  const productosMap = Object.fromEntries(
+    (productosData || []).map((p) => [Number(p.id), p.nombre]),
   );
 
   const idsUsuario = [
@@ -125,6 +131,12 @@ export async function cargarYEnriquecerRegistros(registros = []) {
       "colaboradorId",
       "idColaborador",
     ]);
+    const idProducto = pickId(registro, [
+      "producto",
+      "producto_id",
+      "productoId",
+      "idProducto",
+    ]);
     const idCreadoPorColab = pickId(registro, [
       "creadoPorColaboradorId",
       "creado_por_colaborador_id",
@@ -159,6 +171,10 @@ export async function cargarYEnriquecerRegistros(registros = []) {
         registro.responsable ||
         (idColaborador && colaboradoresMap[idColaborador]) ||
         "Desconocido",
+      nombreProducto:
+        registro.nombreProducto ||
+        (idProducto && productosMap[idProducto]) ||
+        "No encontrado",
       nombreCreadoPor,
     };
   });
