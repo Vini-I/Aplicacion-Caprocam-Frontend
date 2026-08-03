@@ -5,23 +5,15 @@
  * Módulo: Colaboradores
  *
  * Responsabilidad:
- * Pantalla para crear o editar un colaborador. Reutiliza el formulario
- * ColaboradorForm y maneja la navegación y el estado de carga.
+ * Pantalla para crear o editar un colaborador. Reutiliza el
+ * formulario ColaboradorForm y maneja la carga de datos,
+ * validaciones y la navegación.
  *
- * Datos:
- * - Recibe parámetros: id (opcional), userRole, fincaId.
- * - Carga los datos del colaborador si existe id.
- *
- * Validaciones:
- * - Todas las validaciones se manejan en useColaboradorForm.
- * - Muestra alertas de éxito/error al guardar.
- *
- * Navegación:
- * - Botón "Volver" (NavbarRegistro) regresa a la lista.
- * - Botón "Guardar" dispara el envío y NO navega; se queda en la pantalla.
+ * @dependencies - ColaboradorForm, servicios de roles/fincas.
+ * @validations  - Las validaciones se delegan en useColaboradorForm.
+ * @navigation   - Botón "Volver" regresa a la lista.
  * ============================================================
  */
-// src/modules/colaboradores/screens/ColaboradorFormScreen.jsx
 
 import React, { useState, useEffect, useRef } from "react";
 import { View, ScrollView } from "react-native";
@@ -44,44 +36,44 @@ export default function ColaboradorFormScreen() {
   const { id, userRole = "camprocam_admin", fincaId } = useLocalSearchParams();
   const isEditing = !!id;
 
+  // ─── Estados del formulario y carga ──────────────────────────
   const [colaborador, setColaborador] = useState(null);
   const [loading, setLoading] = useState(isEditing);
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  const [resetLoading, setResetLoading] = useState(false); // <--- NUEVO
+  const [resetLoading, setResetLoading] = useState(false);
   const [roleOptions, setRoleOptions] = useState([]);
   const [fincasOptions, setFincasOptions] = useState([]);
 
   const formRef = useRef();
 
-  // Cargar roles disponibles
+  // ─── Carga de opciones (roles y fincas) ──────────────────────
   useEffect(() => {
     const loadRoles = async () => {
       try {
         const options = await getRolesOptions();
         setRoleOptions(options);
-      } catch (err) {
+      } catch {
         setRoleOptions([]);
       }
     };
     loadRoles();
   }, []);
 
-  // Cargar fincas disponibles
   useEffect(() => {
     const loadFincas = async () => {
       try {
         const options = await getFincasOptions();
         setFincasOptions(options);
-      } catch (err) {
+      } catch {
         setFincasOptions([]);
       }
     };
     loadFincas();
   }, []);
 
-  // Cargar datos si es edición
+  // ─── Carga de datos del colaborador (si es edición) ──────────
   useEffect(() => {
     if (isEditing) {
       const loadColaborador = async () => {
@@ -98,7 +90,7 @@ export default function ColaboradorFormScreen() {
     }
   }, [id]);
 
-  // Limpiar mensajes después de 3 segundos (estándar 2)
+  // ─── Limpieza automática de mensajes ──────────────────────────
   useEffect(() => {
     if (successMessage) {
       const timer = setTimeout(() => setSuccessMessage(""), 3000);
@@ -106,7 +98,6 @@ export default function ColaboradorFormScreen() {
     }
   }, [successMessage]);
 
-  // Limpiar mensaje de error después de 6 segundos (estándar 3)
   useEffect(() => {
     if (errorMessage) {
       const timer = setTimeout(() => setErrorMessage(""), 6000);
@@ -114,7 +105,8 @@ export default function ColaboradorFormScreen() {
     }
   }, [errorMessage]);
 
-  // --- Manejadores ---
+  // ─── Manejadores ───────────────────────────────────────────────
+
   const handleSubmit = async (formData) => {
     setErrorMessage("");
     setSuccessMessage("");
@@ -122,11 +114,9 @@ export default function ColaboradorFormScreen() {
       if (isEditing) {
         await colaboradoresService.updateColaborador(id, formData);
         setSuccessMessage("Colaborador actualizado correctamente.");
-        // En edición, no limpiamos el formulario para no perder los cambios
       } else {
         await colaboradoresService.createColaborador(formData);
         setSuccessMessage("Colaborador creado correctamente.");
-        // Limpiar formulario para agregar otro colaborador
         formRef.current?.resetForm();
       }
     } catch (err) {
@@ -138,7 +128,6 @@ export default function ColaboradorFormScreen() {
     router.back();
   };
 
-  // <--- NUEVO: restablecer PIN
   const handleResetPin = async () => {
     setResetLoading(true);
     setErrorMessage("");
@@ -153,6 +142,7 @@ export default function ColaboradorFormScreen() {
     }
   };
 
+  // ─── Render ────────────────────────────────────────────────────
   if (loading) {
     return (
       <View style={[STYLE.container, { justifyContent: "center", alignItems: "center" }]}>
@@ -189,7 +179,6 @@ export default function ColaboradorFormScreen() {
           successMessage={successMessage}
           roleOptions={roleOptions}
           fincasOptions={fincasOptions}
-          // <--- NUEVAS PROPS
           onResetPin={handleResetPin}
           resetLoading={resetLoading}
         />

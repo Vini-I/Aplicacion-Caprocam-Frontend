@@ -1,17 +1,16 @@
 /**
  * ============================================================
- * COMPONENTE: ColaboradoresListScreen
+ * PANTALLA: ColaboradoresListScreen
  * ============================================================
+ * Módulo: Colaboradores
  *
- * Pantalla principal de administración de colaboradores.
- * Muestra todos los colaboradores en una sola lista con búsqueda
- * y filtro por rol (similar al módulo de Equipos).
+ * Responsabilidad:
+ * Pantalla principal de administración de colaboradores. Muestra
+ * una lista paginada con búsqueda y filtros, y acciones de CRUD.
  *
- * Dependencias:
- * - useColaboradoresList hook para datos y estado.
- * - ColaboradorCard para cada elemento.
- * - SearchBar y FilterButton para filtrado.
- * - Botón flotante "Agregar colaborador" fijo en la parte inferior.
+ * @dependencies - useColaboradoresList, shared components.
+ * @validations  - Filtrado por texto y rol.
+ * @navigation   - Navega a detalle, edición y creación.
  * ============================================================
  */
 
@@ -37,7 +36,7 @@ import { ICONS } from '../../../theme/icons';
 import { COLORS } from '../../../theme/colors';
 import { styles } from '../styles/colaboradoresListStyles';
 
-// Opciones para el filtro por rol
+// ─── Opciones de filtro por rol ───────────────────────────────────
 const CATEGORIAS = [
   { label: 'Todos', value: 'todos' },
   { label: 'Trabajador Camprocam', value: 'camprocam_worker' },
@@ -49,10 +48,9 @@ export default function ColaboradoresListScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const editId = params.editId;
-
-  // Flag para evitar redirecciones múltiples
   const redirectedRef = useRef(false);
 
+  // ─── Hook de datos y estado de la lista ──────────────────────
   const {
     colaboradores,
     loading,
@@ -71,10 +69,10 @@ export default function ColaboradoresListScreen() {
     showAlert,
     handleDeletePress,
     confirmDelete,
-    fetchColaboradores, // <--- OBTENEMOS LA FUNCIÓN PARA REFRESCAR
+    fetchColaboradores,
   } = useColaboradoresList();
 
-  // Estado de filtros del FilterButton
+  // ─── Filtros activos (categorías, etc.) ──────────────────────
   const [filtros, setFiltros] = useState({
     categories: [],
     suppliers: [],
@@ -83,40 +81,18 @@ export default function ColaboradoresListScreen() {
     expiryDate: '',
   });
 
-  // ─── Mostrar alerta desde parámetros de ruta ──────────────
+  // ─── Efectos ──────────────────────────────────────────────────
+
+  // Mostrar alerta desde parámetros de ruta (ej. tras eliminación)
   useEffect(() => {
     const { alertType, alertMessage } = params;
     if (alertType && alertMessage) {
       showAlert(alertType, alertMessage);
-      // Limpiar parámetros para que no se repitan al recargar
       router.setParams({ alertType: undefined, alertMessage: undefined });
     }
   }, [params.alertType, params.alertMessage]);
 
-  // ─── FILTRADO DE BÚSQUEDA CON MANEJO DE NULL ──────────────
-  const listaFiltrada = useMemo(() => {
-    let result = colaboradores;
-
-    // Búsqueda por texto
-    if (searchText.trim()) {
-      const q = searchText.toLowerCase().trim();
-      result = result.filter((c) =>
-        (c.nombre?.toLowerCase() || '').includes(q) ||
-        (c.cedula?.toLowerCase() || '').includes(q) ||
-        (c.telefono?.toLowerCase() || '').includes(q) ||
-        (c.email?.toLowerCase() || '').includes(q)
-      );
-    }
-
-    // Filtro por rol (categoría)
-    if (filtros.categories.length > 0 && !filtros.categories.includes('todos')) {
-      result = result.filter((c) => filtros.categories.includes(c.rol));
-    }
-
-    return result;
-  }, [colaboradores, searchText, filtros]);
-
-  // ─── Redirección desde detalle (solo si editId está presente) ───
+  // Redirección a edición si se recibe editId
   useFocusEffect(
     useCallback(() => {
       if (editId && !redirectedRef.current) {
@@ -129,8 +105,7 @@ export default function ColaboradoresListScreen() {
     }, [editId, router])
   );
 
-  // ─── REFRESCAR LISTA AL VOLVER A LA PANTALLA ──────────────
-  // Usamos una referencia para evitar la doble carga inicial
+  // Refrescar lista al volver a la pantalla (evitando doble carga inicial)
   const firstFocus = useRef(true);
   useFocusEffect(
     useCallback(() => {
@@ -141,7 +116,28 @@ export default function ColaboradoresListScreen() {
     }, [fetchColaboradores])
   );
 
-  // Navegaciones
+  // ─── Filtrado de la lista (búsqueda y roles) ──────────────────
+  const listaFiltrada = useMemo(() => {
+    let result = colaboradores;
+
+    if (searchText.trim()) {
+      const q = searchText.toLowerCase().trim();
+      result = result.filter((c) =>
+        (c.nombre?.toLowerCase() || '').includes(q) ||
+        (c.cedula?.toLowerCase() || '').includes(q) ||
+        (c.telefono?.toLowerCase() || '').includes(q) ||
+        (c.email?.toLowerCase() || '').includes(q)
+      );
+    }
+
+    if (filtros.categories.length > 0 && !filtros.categories.includes('todos')) {
+      result = result.filter((c) => filtros.categories.includes(c.rol));
+    }
+
+    return result;
+  }, [colaboradores, searchText, filtros]);
+
+  // ─── Navegación ─────────────────────────────────────────────────
   const openDetail = (colaboradorId) => {
     router.push({
       pathname: '/(drawer)/colaboradores/detalle',
@@ -160,20 +156,20 @@ export default function ColaboradoresListScreen() {
     router.push('/(drawer)/colaboradores/form');
   };
 
-  // Estados de carga y error
+  // ─── Estados de carga / error ──────────────────────────────────
   if (loading) return <Spinner text="Cargando colaboradores..." />;
   if (error) return <CustomText style={styles.error}>Error: {error}</CustomText>;
 
-  // ─── DETERMINAR MENSAJE DEL EMPTY STATE ────────────────────
+  // ─── Mensajes del estado vacío ────────────────────────────────
   const hayFiltrosActivos = searchText.trim() !== '' || filtros.categories.length > 0;
   const emptyTitle = hayFiltrosActivos ? 'Sin resultados' : 'No hay colaboradores registrados';
   const emptyDescription = hayFiltrosActivos
     ? 'No se encontraron colaboradores con los criterios de búsqueda seleccionados.'
     : 'Comienza agregando tu primer colaborador.';
 
-  // Contador de resultados
   const contador = `${listaFiltrada.length} ${listaFiltrada.length === 1 ? 'colaborador encontrado' : 'colaboradores encontrados'}`;
 
+  // ─── Render ────────────────────────────────────────────────────
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.white }}>
       {/* Barra de búsqueda y filtro */}
@@ -195,12 +191,12 @@ export default function ColaboradoresListScreen() {
         />
       </View>
 
-      {/* Contador de resultados (alineado con search bar) */}
+      {/* Contador de resultados */}
       <View style={styles.contadorWrapper}>
         <CustomText style={styles.contadorResultados}>{contador}</CustomText>
       </View>
 
-      {/* Alerta flotante - ahora con el mismo ancho que los demás elementos */}
+      {/* Alerta flotante */}
       {alert && (
         <View style={styles.alertWrapper}>
           <Alert variant={alert.type} message={alert.message} />
@@ -214,10 +210,7 @@ export default function ColaboradoresListScreen() {
         showsVerticalScrollIndicator={true}
       >
         {listaFiltrada.length === 0 ? (
-          <EmptyState
-            title={emptyTitle}
-            description={emptyDescription}
-          />
+          <EmptyState title={emptyTitle} description={emptyDescription} />
         ) : (
           listaFiltrada.map((colab) => (
             <ColaboradorCard
@@ -231,7 +224,7 @@ export default function ColaboradoresListScreen() {
         )}
       </ScrollView>
 
-      {/* Botón flotante "Agregar colaborador" siempre visible */}
+      {/* Botón flotante "Agregar colaborador" */}
       <View style={styles.floatingButtonContainer}>
         <Button
           variant="outline"
@@ -279,11 +272,7 @@ export default function ColaboradoresListScreen() {
           containerStyle={styles.modalInput}
         />
         {cedulaError !== '' && (
-          <Alert
-            variant="danger"
-            message={cedulaError}
-            style={{ marginBottom: 12 }}
-          />
+          <Alert variant="danger" message={cedulaError} style={{ marginBottom: 12 }} />
         )}
         <View style={styles.modalButtons}>
           <Button

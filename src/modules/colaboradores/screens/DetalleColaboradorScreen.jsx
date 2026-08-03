@@ -5,27 +5,14 @@
  * Módulo: Colaboradores
  *
  * Responsabilidad:
- * Muestra el detalle completo de un colaborador en una pantalla independiente.
- * Incluye información personal, estadísticas de actividad y,
- * si es dueño externo, la lista de trabajadores a su cargo.
+ * Muestra la información detallada de un colaborador, incluyendo
+ * datos personales, estadísticas de actividad y, si es dueño
+ * externo, la lista de trabajadores a su cargo.
  *
- * Datos:
- * - Obtiene el id del colaborador desde los parámetros de ruta.
- * - Carga el colaborador usando useColaboradorDetalle.
- *
- * Validaciones:
- * - Si el colaborador no existe, muestra mensaje de error.
- *
- * Navegación:
- * - Botón "Volver" (NavbarRegistro) regresa a la lista.
- * - Botón "Editar" navega a la lista con parámetro editId para abrir el modal de edición.
- * - Botón "Eliminar" abre ModalEliminar y, al confirmar, elimina y regresa.
- * - Clic en un trabajador externo navega a su detalle.
- *
- * Dependencias:
- * - useColaboradorDetalle
- * - shared/components (NavbarRegistro, Card, Icon, Button, ModalEliminar, Alert, etc.)
- * - styles/DetalleColaboradorStyles
+ * @dependencies - useColaboradorDetalle, shared components.
+ * @validations  - N/A
+ * @navigation   - Botones para editar y eliminar; clic en trabajador
+ *                 navega a su detalle.
  * ============================================================
  */
 
@@ -51,7 +38,7 @@ import { ICONS } from '../../../theme/icons';
 import { STYLE } from '../../../theme/style';
 import { styles } from '../styles/DetalleColaboradorStyles';
 
-// Constantes de etiquetas y variantes para roles
+// ─── Constantes de etiquetas y variantes para roles ────────────
 const ROL_LABELS = {
   camprocam_worker: 'Trabajador Camprocam',
   external_owner: 'Dueño Externo',
@@ -64,7 +51,7 @@ const ROL_VARIANTS = {
   external_worker: 'success',
 };
 
-// Componente interno para fila con ícono alineado a la izquierda
+// ─── Componente interno: fila con icono y valor ──────────────
 function FilaDetalleIcono({ icon, label, value, onPress }) {
   const content = (
     <View style={styles.fila}>
@@ -88,6 +75,8 @@ function FilaDetalleIcono({ icon, label, value, onPress }) {
   return content;
 }
 
+// ─── Componente principal ──────────────────────────────────────
+
 export default function DetalleColaboradorScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
@@ -96,7 +85,7 @@ export default function DetalleColaboradorScreen() {
   const [alert, setAlert] = useState(null);
   const [eliminando, setEliminando] = useState(false);
 
-  // Obtener datos del colaborador
+  // ─── Obtener datos del colaborador ────────────────────────────
   const {
     colaborador,
     trabajadores,
@@ -106,9 +95,9 @@ export default function DetalleColaboradorScreen() {
     error,
   } = useColaboradorDetalle(id);
 
-  // Manejadores
+  // ─── Manejadores ───────────────────────────────────────────────
+
   const handleEditar = () => {
-    // Navegar a la lista con el id para que abra el modal de edición
     router.push({
       pathname: '/(drawer)/colaboradores',
       params: { editId: colaborador.id },
@@ -124,7 +113,6 @@ export default function DetalleColaboradorScreen() {
     setEliminando(true);
     try {
       await colaboradoresService.deleteColaborador(colaborador.id);
-      // Navegar a la lista con alerta de éxito (verde)
       router.replace({
         pathname: '/(drawer)/colaboradores',
         params: {
@@ -133,7 +121,6 @@ export default function DetalleColaboradorScreen() {
         }
       });
     } catch (err) {
-      // Error: mostrar alerta roja en esta misma pantalla
       setAlert({ type: 'danger', message: err.message || 'No se pudo eliminar el colaborador.' });
       setShowConfirmModal(false);
     } finally {
@@ -145,7 +132,6 @@ export default function DetalleColaboradorScreen() {
     setShowConfirmModal(false);
   };
 
-  // Navegar al detalle de un trabajador externo
   const handleSelectTrabajador = (trabajadorId) => {
     router.push({
       pathname: '/(drawer)/colaboradores/detalle',
@@ -153,7 +139,7 @@ export default function DetalleColaboradorScreen() {
     });
   };
 
-  // Estados de carga y error
+  // ─── Estados de carga y error ──────────────────────────────────
   if (loading) {
     return (
       <View style={[STYLE.container, { justifyContent: 'center', alignItems: 'center' }]}>
@@ -178,12 +164,12 @@ export default function DetalleColaboradorScreen() {
   const rolLabel = ROL_LABELS[colaborador.rol] || colaborador.rol;
   const rolVariant = ROL_VARIANTS[colaborador.rol] || 'info';
 
+  // ─── Render ────────────────────────────────────────────────────
   return (
     <>
       <ScrollView style={STYLE.container} contentContainerStyle={STYLE.contentWrapper}>
         {/* Información personal */}
         <Card>
-          {/* Cabecera: nombre + rol */}
           <View style={styles.header}>
             <View style={styles.avatar}>
               <CustomText style={styles.avatarIniciales}>
@@ -206,26 +192,10 @@ export default function DetalleColaboradorScreen() {
             </View>
           </View>
 
-          <FilaDetalleIcono
-            icon={ICONS.id}
-            label="Cédula"
-            value={colaborador.cedula}
-          />
-          <FilaDetalleIcono
-            icon={ICONS.phone}
-            label="Teléfono"
-            value={colaborador.telefono}
-          />
-          <FilaDetalleIcono
-            icon={ICONS.user}
-            label="Correo"
-            value={colaborador.email}
-          />
-          <FilaDetalleIcono
-            icon={ICONS.location}
-            label="Finca"
-            value={fincaNombre}
-          />
+          <FilaDetalleIcono icon={ICONS.id} label="Cédula" value={colaborador.cedula} />
+          <FilaDetalleIcono icon={ICONS.phone} label="Teléfono" value={colaborador.telefono} />
+          <FilaDetalleIcono icon={ICONS.user} label="Correo" value={colaborador.email} />
+          <FilaDetalleIcono icon={ICONS.location} label="Finca" value={fincaNombre} />
         </Card>
 
         {/* Estadísticas de actividad */}
@@ -253,7 +223,7 @@ export default function DetalleColaboradorScreen() {
           </Card>
         )}
 
-        {/* Si es dueño externo, mostrar trabajadores a cargo */}
+        {/* Trabajadores a cargo (si es dueño externo) */}
         {colaborador.rol === 'external_owner' && (
           <Card title="Trabajadores a cargo" titleStyle={styles.statsTitle}>
             {trabajadores && trabajadores.length > 0 ? (
@@ -278,7 +248,7 @@ export default function DetalleColaboradorScreen() {
           </Card>
         )}
 
-        {/* Alertas de error (solo errores de eliminación) */}
+        {/* Alertas de error (ej. al fallar la eliminación) */}
         {alert && (
           <View style={{ marginBottom: 12 }}>
             <Alert variant={alert.type} message={alert.message} />
