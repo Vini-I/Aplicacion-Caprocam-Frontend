@@ -66,10 +66,6 @@ export const fincaService = {
 
       return response.data;
     } catch (error) {
-      console.error(
-        "Error al eliminar finca:",
-        error.response?.data || error.message,
-      );
       if (error.response?.status === 404 || error.response?.status === 500) {
         throw error;
       }

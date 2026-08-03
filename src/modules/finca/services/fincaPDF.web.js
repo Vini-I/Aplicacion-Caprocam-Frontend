@@ -9,6 +9,7 @@
 
 import jsPDF from "jspdf/dist/jspdf.es.min.js";
 import autoTable from "jspdf-autotable";
+import { useError } from "../../../shared/context/ErrorContext";
 
 export const generarRegistroPDF = (finca, estanquesFinca = []) => {
   function formatearListaEquipos(lista) {
@@ -127,23 +128,23 @@ export const generarRegistroPDF = (finca, estanquesFinca = []) => {
           ["Profundidad", `${estanque.profundidad} m`],
           ["Fuente de agua", estanque.fuenteAgua],
           [
-            "Fecha de mantenimiento",
+            "Fecha de último mantenimiento",
             estanque.fechaMantenimiento ?? "No registrado",
           ],
-          ["Precría", obtenerTextoSiNo(estanque.precria)],
+          ["Usa Precría", obtenerTextoSiNo(estanque.precria)],
           ["Total de equipos", String(estanque.cantidadEquipos ?? 0)],
-          ["Aireación", formatearListaEquipos(estanque?.equipos?.aireacion)],
+          ["Equipos de Aireación", formatearListaEquipos(estanque?.equipos?.aireacion)],
           [
-            "Alimentación",
+            "Equipos de Alimentación",
             formatearListaEquipos(estanque?.equipos?.alimentacion),
           ],
-          ["Bombeo", formatearListaEquipos(estanque?.equipos?.bombeo)],
+          ["Equipos de Bombeo", formatearListaEquipos(estanque?.equipos?.bombeo)],
           [
-            "Mantenimiento",
+            "Equipos de Mantenimiento",
             formatearListaEquipos(estanque?.equipos?.mantenimiento),
           ],
-          ["Monitoreo", formatearListaEquipos(estanque?.equipos?.monitoreo)],
-          ["Otros", formatearListaEquipos(estanque?.equipos?.otros)],
+          ["Equipos de Monitoreo", formatearListaEquipos(estanque?.equipos?.monitoreo)],
+          ["Otros Equipos", formatearListaEquipos(estanque?.equipos?.otros)],
         ];
 
         autoTable(doc, {
@@ -181,7 +182,8 @@ export const generarRegistroPDF = (finca, estanquesFinca = []) => {
 
     return null;
   } catch (error) {
-    console.log("Error generando PDF (web):", error);
+    const { mostrarError } = useError();
+    mostrarError("Error al generar el PDF de la finca");
     throw error;
   }
 };
