@@ -121,20 +121,7 @@ export default function CompradorScreen() {
           placeholder="Buscar comprador, tipo, correo..."
           containerStyle={styles.searchBarContainer}
         />
-        <FilterButton
-          categories={TIPOS}
-          activeFilters={{
-            categories: filtros.tipos,
-            suppliers: [],
-            units: [],
-            lowStock: false,
-            expiryDate: "",
-          }}
-          onApply={(f) => setFiltros({ tipos: f.categories })}
-          showLowStock={false}
-          showExpiryDate={false}
-          buttonStyle={styles.filterButton}
-        />
+       
       </View>
 
       {/* Alerta de éxito al llegar desde "guardar comprador" */}
