@@ -36,14 +36,19 @@ export const styles = StyleSheet.create({
 
   searchBarContainer: {
     flex: 1,
+    height: 46,
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: 0,
   },
 
   filterButton: {
+    width: 120,
     alignItems: "center",
-    height: 43,
-    marginBottom: 8.5,
-    flexShrink: 0,
+    justifyContent: "center",
+    height: 46,
+    marginTop: 0,
+    marginBottom: 0,
   },
 
   alertaBanner: {

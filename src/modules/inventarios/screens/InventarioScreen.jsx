@@ -6,13 +6,19 @@
  * - Muestra el listado de productos del inventario.
  * - Integra búsqueda por texto y panel de filtros avanzados.
  * - Resalta tarjetas de productos que tengan stock bajo.
+ * - Muestra en la parte superior el alert de éxito (verde) cuando
+ *   Productos navega de vuelta a esta pantalla con el parámetro
+ *   alertaProducto ("guardado" o "eliminado").
  *
  * REGLAS IMPORTANTES:
  * - Utiliza los componentes compartidos SearchBar y FilterButton.
  * - Botón outline inferior para agregar un nuevo producto.
  * - Sin estilos inline.
+ * - El feedback (feedback) se arma en useInventario.js leyendo el
+ *   parámetro de navegación alertaProducto enviado por Productos; no
+ *   depende del estado interno de sus hooks.
  *
- * @dependencies - React, SearchBar, FilterButton, useInventario
+ * @dependencies - React, SearchBar, FilterButton, Alert, useInventario
  * @validations - N/A
  * @navigation - onDetail, onNew
  */
@@ -28,6 +34,7 @@ import EmptyState from "../../../shared/components/EmptyState";
 import Icon from "../../../shared/components/Icons";
 import SearchBar from "../../../shared/components/SearchBar";
 import FilterButton from "../../../shared/components/FilterButton";
+import Alert from "../../../shared/components/Alert";
 
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
@@ -60,9 +67,9 @@ function FilaDetalle({ etiqueta, valor, resaltado = false }) {
 
 const iconoPorCategoria = [
   { match: ["alimentación", "alimentacion"], icon: ICONS.food },
-  { match: ["tratamiento"], icon: ICONS.shieldAlert },
+  { match: ["tratamiento"], icon: ICONS.treatment },
   { match: ["químico", "quimico"], icon: ICONS.chemicalContainer },
-  { match: ["fertilizante"], icon: ICONS.growth },
+  { match: ["fertilizante"], icon: ICONS.fertilizer },
   { match: ["antibiótico", "antibiotico"], icon: ICONS.microscope },
   { match: ["probiótico", "probiotico"], icon: ICONS.microscope },
   { match: ["mantenimiento"], icon: ICONS.tools },
@@ -191,11 +198,20 @@ export default function InventarioScreen({ onDetail, onNew, onBack }) {
     unidades,
     productosFiltrados,
     cantidadStockBajo,
+    feedback,
   } = useInventario();
 
   return (
     <View style={STYLE.container}>
       <View style={[STYLE.contentWrapper, styles.zonaFiltros]}>
+        {feedback && (
+          <Alert
+            variant={feedback.variant}
+            message={feedback.message}
+            style={styles.alertFeedback}
+          />
+        )}
+
         <View style={styles.barraBusqueda}>
           <SearchBar
             value={busqueda}

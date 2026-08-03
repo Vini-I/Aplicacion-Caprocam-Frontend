@@ -16,11 +16,26 @@
  * - updateField(campo, valor): actualiza un campo del formulario.
  * - resetForm(): restaura el formulario a sus valores iniciales.
  * - validarForm(): retorna { valido, errores } verificando como
- *   obligatorios finca, estanque, fecha, porcentajeRaleo,
- *   objetivo, metodo y responsable, sin mostrar nada en pantalla
- *   (mismo patrón que useAlimentacionForm.js). `observaciones` no
- *   se valida aquí: si queda vacío, RaleoScreen.jsx lo completa
- *   con un texto por defecto antes de guardar.
+ *   obligatorios finca, estanque, colaborador, fecha,
+ *   porcentajeRaleo, pesoPromedio, biomasaActual, objetivo y
+ *   metodo. `observaciones` NO se valida aquí (es opcional): si
+ *   queda vacío, RaleoScreen.jsx lo completa con un texto por
+ *   defecto antes de guardar (mismo patrón que useAlimentacionForm.js
+ *   y useDensidadPoblacional.js con sus notas).
+ *
+ * CORREGIDO: antes `observaciones` SÍ se validaba como
+ * obligatorio aquí, contradiciendo tanto el docstring como el
+ * fallback de RaleoScreen.jsx: el formulario nunca lograba
+ * guardarse si se dejaba en blanco, aunque la UI lo mostraba como
+ * campo opcional (sin asterisco).
+ *
+ * CORREGIDO: el campo "responsable" (un Input de texto,
+ * deshabilitado y sin ninguna forma de llenarse) se reemplazó por
+ * "colaborador": un Select real con colaboradores reales del
+ * backend (mismo patrón que "Colaborador asignado" en
+ * useFincaCrecimiento.js / FincaCrecimientoScreen.jsx). Es
+ * obligatorio en la UI (estandarización con Crecimiento), aunque
+ * la columna colaborador_id en la base de datos es nullable.
  *
  * Funcionalidad:
  * - `fecha` inicia en la fecha de hoy (hoy()) y no en "": DateInput
@@ -53,7 +68,6 @@ const FORM_INICIAL = {
   biomasaActual: "",
   objetivo: "",
   metodo: "",
-  responsable: "",
   observaciones: "",
 };
 
@@ -80,8 +94,6 @@ export default function useRaleo() {
     if (!form.biomasaActual) errores.biomasaActual = "La biomasa actual estimada es obligatoria";
     if (!form.objetivo) errores.objetivo = "El objetivo del raleo es obligatorio";
     if (!form.metodo) errores.metodo = "El método es obligatorio";
-    if (!form.responsable) errores.responsable = "El responsable es obligatorio";
-    if (!form.observaciones) errores.observaciones = "Las observaciones son obligatorias";
     return { valido: Object.keys(errores).length === 0, errores };
   }
 

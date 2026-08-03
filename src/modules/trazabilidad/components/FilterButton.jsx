@@ -1,43 +1,15 @@
 /**
  * ============================================================
- * COMPONENTE FILTERBUTTON (módulo Trazabilidad)
+ * COMPONENTE FilterButton
  * ============================================================
  *
- * Botón de filtrado con modal para el listado de Trazabilidad.
- * Mismo patrón visual que el FilterButton del módulo inventarios,
- * adaptado a los filtros relevantes de este módulo.
+ * Descripción:
+ * Botón de filtrado con modal inferior para el listado de Trazabilidad.
  *
- * Funcionalidad:
- * - Abre un modal desde la parte inferior de la pantalla.
- * - Filtra por finca con chips horizontales.
- * - Filtra por colaborador responsable con chips horizontales.
- * - Filtro por fecha del movimiento con DateInput.
- * - Badge en el botón con cantidad de filtros activos.
- * - Los filtros se aplican solo al presionar Aplicar.
- *
- * Props principales:
- * - fincas: array { label, value } - fincas disponibles.
- * - colaboradores: array { label, value } - colaboradores disponibles.
- * - activeFilters: objeto con los filtros activos actuales.
- * - onApply: función que recibe el objeto de filtros al aplicar.
- *
- * Estructura del objeto que recibe onApply:
- * {
- *   fincas: string[],
- *   colaboradores: string[],
- *   fecha: string,   // fecha en formato dd/mm/aaaa, vacío si no aplica
- * }
- *
- * Ejemplo:
- * <FilterButton
- *   fincas={fincas}
- *   colaboradores={colaboradores}
- *   activeFilters={filters}
- *   onApply={(f) => setFilters(f)}
- * />
+ * @dependencies FilterButtonStyles, Modal, Chip, DateInput, Button
+ * @validations Aplica filtros al presionar Aplicar; calcula badge de filtros activos.
+ * @navigation N/A
  */
-
-import { useState } from "react";
 import { View, ScrollView } from "react-native";
 
 import Modal from "../../../shared/components/Modal";
@@ -46,11 +18,13 @@ import Icon from "../../../shared/components/Icons";
 import Title from "../../../shared/components/Title";
 import Text from "../../../shared/components/Text";
 import Badge from "../../../shared/components/Badge";
-import Input from "../../../shared/components/Input";
+import DateInput from "../../../shared/components/DateInput";
+import FilterChip from "../../../shared/components/FilterChip";
+import { useFilterButton } from "../hooks/useFilterButton";
 
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
-import { styles, sectionStyles, chipStyles } from "../styles/FilterButtonStyles";
+import { styles, sectionStyles } from "../styles/FilterButtonStyles";
 
 export default function FilterButton({
   fincas = [],
@@ -64,57 +38,27 @@ export default function FilterButton({
   style,
   containerStyle,
 }) {
-  const [modalVisible, setModalVisible] = useState(false);
-
-  const [pendingFincas, setPendingFincas] = useState([]);
-  const [pendingColaboradores, setPendingColaboradores] = useState([]);
-  const [pendingFecha, setPendingFecha] = useState("");
-
-  const activeCount =
-    (activeFilters.fincas?.length || 0) +
-    (activeFilters.colaboradores?.length || 0) +
-    (activeFilters.fecha ? 1 : 0);
+  const {
+    modalVisible,
+    pendingFincas,
+    pendingEstanques,
+    pendingColaboradores,
+    pendingFecha,
+    estanquesDisponibles,
+    activeCount,
+    setPendingFecha,
+    abrirModal,
+    cerrarModal,
+    toggleFinca,
+    toggleEstanque,
+    toggleColaborador,
+    limpiarFiltros,
+    aplicarFiltros,
+  } = useFilterButton({ activeFilters, onApply });
 
   const buttonVariant = activeCount > 0 ? "primary" : "outline";
   const buttonIconColor = activeCount > 0 ? COLORS.white : COLORS.textSecondary;
   const buttonTextColor = activeCount > 0 ? COLORS.white : COLORS.textSecondary;
-
-  function abrirModal() {
-    setPendingFincas([...(activeFilters.fincas || [])]);
-    setPendingColaboradores([...(activeFilters.colaboradores || [])]);
-    setPendingFecha(activeFilters.fecha || "");
-    setModalVisible(true);
-  }
-
-  function cerrarModal() {
-    setModalVisible(false);
-  }
-
-  function toggleItem(list, setList, value) {
-    setList((previous) =>
-      previous.includes(value)
-        ? previous.filter((item) => item !== value)
-        : [...previous, value],
-    );
-  }
-
-  function limpiarFiltros() {
-    setPendingFincas([]);
-    setPendingColaboradores([]);
-    setPendingFecha("");
-  }
-
-  function aplicarFiltros() {
-    if (onApply) {
-      onApply({
-        fincas: pendingFincas,
-        colaboradores: pendingColaboradores,
-        fecha: pendingFecha,
-      });
-    }
-
-    cerrarModal();
-  }
 
   return (
     <>
@@ -171,13 +115,24 @@ export default function FilterButton({
           {fincas.length > 0 && (
             <FilterSection label="Finca">
               {fincas.map((finca) => (
-                <Chip
+                <FilterChip
                   key={finca.value}
                   label={finca.label}
-                  selected={pendingFincas.includes(finca.value)}
-                  onPress={() =>
-                    toggleItem(pendingFincas, setPendingFincas, finca.value)
-                  }
+                  active={pendingFincas.includes(finca.value)}
+                  onPress={() => toggleFinca(finca.value)}
+                />
+              ))}
+            </FilterSection>
+          )}
+
+          {estanquesDisponibles.length > 0 && (
+            <FilterSection label="Estanque">
+              {estanquesDisponibles.map((estanque) => (
+                <FilterChip
+                  key={estanque.value}
+                  label={estanque.label}
+                  active={pendingEstanques.includes(estanque.value)}
+                  onPress={() => toggleEstanque(estanque.value)}
                 />
               ))}
             </FilterSection>
@@ -186,28 +141,21 @@ export default function FilterButton({
           {colaboradores.length > 0 && (
             <FilterSection label="Responsable">
               {colaboradores.map((colaborador) => (
-                <Chip
+                <FilterChip
                   key={colaborador.value}
                   label={colaborador.label}
-                  selected={pendingColaboradores.includes(colaborador.value)}
-                  onPress={() =>
-                    toggleItem(
-                      pendingColaboradores,
-                      setPendingColaboradores,
-                      colaborador.value,
-                    )
-                  }
+                  active={pendingColaboradores.includes(colaborador.value)}
+                  onPress={() => toggleColaborador(colaborador.value)}
                 />
               ))}
             </FilterSection>
           )}
 
           <FilterSection label="Fecha del movimiento">
-            <Input
+            <DateInput
               value={pendingFecha}
               onChangeText={setPendingFecha}
               placeholder="dd/mm/aaaa"
-              keyboardType="numbers-and-punctuation"
               containerStyle={styles.dateInput}
             />
           </FilterSection>
@@ -239,24 +187,6 @@ function FilterSection({ label, children }) {
       </Text>
       <View style={sectionStyles.chipsRow}>{children}</View>
     </View>
-  );
-}
-
-function Chip({ label, selected, onPress }) {
-  return (
-    <Button
-      variant="outline"
-      onPress={onPress}
-      style={[chipStyles.chip, selected && chipStyles.chipSelected]}
-    >
-      <Text
-        size={13}
-        color={selected ? COLORS.primary : COLORS.textSecondary}
-        weight={selected ? "600" : "400"}
-      >
-        {label}
-      </Text>
-    </Button>
   );
 }
 

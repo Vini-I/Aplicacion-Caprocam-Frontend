@@ -75,12 +75,17 @@ export const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     borderColor: COLORS.secondary,
   },
+  cardHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginBottom: 16,
+  },
   cardTitle: {
     fontSize: 19,
     fontFamily: TYPOGRAPHY.fontFamily.bold,
     fontWeight: undefined,
     color: COLORS.textSecondary,
-    marginBottom: 16,
   },
   field: {
     marginBottom: 14

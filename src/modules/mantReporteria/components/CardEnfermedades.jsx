@@ -4,40 +4,69 @@ import Card from "../../../shared/components/Card";
 import Text from "../../../shared/components/Text";
 import Button from "../../../shared/components/Button.jsx"
 import Icon from "../../../shared/components/Icons.jsx"
+import ModalEliminar from "../../../shared/components/ModalEliminar.jsx";
+import Alert from "../../../shared/components/Alert.jsx";
+
+import useEnfermedad from "../hooks/useEnfermedad.js";
 
 import { ICONS } from "../../../theme/icons.js";
 import { COLORS } from "../../../theme/colors.js";
 
 import { styles } from "../styles/DetalleReporteStyle.js";
 
-export default function CardEnfermedades({ data }) {
+export default function CardEnfermedades({ fincaId, estanqueId, onEditar, onAlertChange }) {
+
+    const {
+        enfermedades,
+        loading,
+        alert,
+
+        modalVisible,
+        enfermedadSeleccionada,
+        loadingEliminar,
+
+        abrirModalEliminar,
+        cancelarEliminar,
+        confirmarEliminar,
+    } = useEnfermedad(fincaId, estanqueId, onAlertChange);
+
+    if (loading) {
+        return (
+            <View style={styles.emptyState}>
+                <Text style={styles.emptyTitle}>Cargando registros...</Text>
+            </View>
+        );
+    }
+
+    if (enfermedades.length === 0) {
+        return (
+            <View style={styles.emptyState}>
+                <Icon icon={ICONS.document} size={48} color={COLORS.textQuaternary} />
+                <Text style={styles.emptyTitle}>No hay registros disponibles</Text>
+                <Text style={styles.emptyDescription}>
+                    No se encontraron registros con los filtros seleccionados.
+                </Text>
+            </View>
+        );
+    }
 
     return (
         <>
             {
-                data.map((registro) => (
+                enfermedades.map((registro) => (
                     <Card
                         key={registro.id}
-                        style={styles.cardRegistro}
-
+                        style={[styles.cardRegistro, { borderLeftColor: COLORS.Enfermedades }]}
                     >
-                        <View style={styles.infoGrid}> 
+                        <View style={styles.infoGrid}>
                             <View style={styles.infoItem}>
-                                <Text style={styles.label}>
-                                    Finca
-                                </Text>
-                                <Text style={styles.value}>
-                                    {registro.nombreFinca}
-                                </Text>
+                                <Text style={styles.label}>Finca</Text>
+                                <Text style={styles.value}>{registro.nombreFinca}</Text>
                             </View>
 
                             <View style={styles.infoItem}>
-                                <Text style={styles.label}>
-                                    Estanque
-                                </Text>
-                                <Text style={styles.value}>
-                                    {registro.codigoEstanque}
-                                </Text>
+                                <Text style={styles.label}>Estanque</Text>
+                                <Text style={styles.value}>{registro.codigoEstanque}</Text>
                             </View>
 
                             <View style={styles.infoItem}>
@@ -45,7 +74,7 @@ export default function CardEnfermedades({ data }) {
                                     Colaborador
                                 </Text>
                                 <Text style={styles.value}>
-                                    {registro.nombreColaborador}
+                                    {registro.nombreCreadoPor}
                                 </Text>
                             </View>
 
@@ -64,7 +93,7 @@ export default function CardEnfermedades({ data }) {
                                     Nombre Enfermedad
                                 </Text>
                                 <Text style={styles.value}>
-                                    {registro.enfermedad}
+                                    {registro.enfermedad ? registro.enfermedad.charAt(0).toUpperCase() + registro.enfermedad.slice(1) : ""}
                                 </Text>
                             </View>
 
@@ -73,7 +102,7 @@ export default function CardEnfermedades({ data }) {
                                     Severidad
                                 </Text>
                                 <Text style={styles.value}>
-                                    {registro.severidad.charAt(0).toUpperCase() + registro.severidad.slice(1)}
+                                    {registro.severidad ? registro.severidad.charAt(0).toUpperCase() + registro.severidad.slice(1) : ""}
                                 </Text>
                             </View>
 
@@ -99,29 +128,29 @@ export default function CardEnfermedades({ data }) {
                         <View style={styles.Buttons}>
                             <Button
                                 style={styles.Eliminar}
-                                onPress={() => abrirModalEliminar(estanque)}
+                                onPress={() => abrirModalEliminar(registro)}
                             >
                                 <Icon
-                                icon={ICONS.delete}
-                                color={COLORS.error}
-                                size={20}
+                                    icon={ICONS.delete}
+                                    color={COLORS.error}
+                                    size={20}
                                 />
                                 <Text size={12} color={COLORS.error}>
-                                Eliminar
+                                    Eliminar
                                 </Text>
                             </Button>
 
                             <Button
                                 style={styles.Editar}
-                                onPress={() => onEstanqueEditar(finca.codigoCBO, estanque.id)}
+                                onPress={() => onEditar(registro.id)}
                             >
                                 <Icon
-                                icon={ICONS.edit}
-                                color={COLORS.primary}
-                                size={20}
+                                    icon={ICONS.edit}
+                                    color={COLORS.primary}
+                                    size={20}
                                 />
                                 <Text size={12} color={COLORS.primary}>
-                                Editar
+                                    Editar
                                 </Text>
                             </Button>
                         </View>
@@ -130,6 +159,15 @@ export default function CardEnfermedades({ data }) {
                     </Card>
                 ))
             }
+
+            <ModalEliminar
+                visible={modalVisible}
+                title="registro de enfermedades"
+                message={enfermedadSeleccionada?.enfermedad}
+                onCancel={cancelarEliminar}
+                onConfirm={confirmarEliminar}
+                loading={loadingEliminar}
+            />
         </>
     )
 }

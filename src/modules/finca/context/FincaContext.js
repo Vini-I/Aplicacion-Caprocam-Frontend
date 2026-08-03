@@ -26,6 +26,7 @@ export function FincaProvider({ children }) {
   const [alert, setAlert] = useState(null);
   const [loading, setLoading] = useState(true);
   const { mostrarError } = useError();
+  const [ERROR, setERROR] = useState(null);
 
   async function cargarFincas() {
     try {
@@ -49,20 +50,31 @@ export function FincaProvider({ children }) {
       return data;
     } catch (error) {
       mostrarError(error);
-      throw error;
     }
   }
 
   async function crearFinca(nuevaFinca) {
-    await fincaService.createFincas(nuevaFinca);
-    await cargarFincas();
-    setAlert("created");
+    try {
+      await fincaService.createFincas(nuevaFinca);
+      await cargarFincas();
+      setAlert("created");
+    } catch (error) {
+      const msg = (error && error.message) || String(error);
+      setERROR(msg);
+      return;
+    }
   }
 
   async function editarFinca(codigoCBO, datosActualizados) {
-    await fincaService.updateFincas(datosActualizados, codigoCBO);
-    await cargarFincas();
-    setAlert("edited");
+    try {
+      await fincaService.updateFincas(datosActualizados, codigoCBO);
+      await cargarFincas();
+      setAlert("edited");
+    } catch (error) {
+      const msg = (error && error.message) || String(error);
+      setERROR(msg);
+      return;
+    }
   }
 
   async function eliminarFinca(codigoCBO) {
@@ -80,14 +92,26 @@ export function FincaProvider({ children }) {
   }
 
   useEffect(() => {
-    if (!alert) return;
+    if (alert) {
+      const timer = setTimeout(() => {
+        limpiarAlert();
+      }, 3000);
+
+      return () => clearTimeout(timer);
+    }
+    return undefined;
+  }, [alert]);
+
+  // Limpiar mensajes de error automáticamentemente después de mostrar
+  useEffect(() => {
+    if (!ERROR) return;
 
     const timer = setTimeout(() => {
-      limpiarAlert();
-    }, 3000);
+      setERROR(null);
+    }, 4000);
 
     return () => clearTimeout(timer);
-  }, [alert]);
+  }, [ERROR]);
 
   return (
     <FincaContext.Provider
@@ -96,6 +120,7 @@ export function FincaProvider({ children }) {
         fincas,
         alert,
         loading,
+        ERROR,  setERROR,
 
         // Acciones CRUD
         cargarFincas,

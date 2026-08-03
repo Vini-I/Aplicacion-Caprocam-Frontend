@@ -9,8 +9,38 @@
 
 import jsPDF from "jspdf/dist/jspdf.es.min.js";
 import autoTable from "jspdf-autotable";
+import { useError } from "../../../shared/context/ErrorContext";
 
 export const generarRegistroPDF = (finca, estanquesFinca = []) => {
+  function formatearListaEquipos(lista) {
+    if (!lista || !Array.isArray(lista) || lista.length === 0) {
+      return "Sin asignar";
+    }
+    return lista
+      .map(
+        (item) =>
+          item.nombre ||
+          item.codigo ||
+          item.nombreEquipo ||
+          item.modelo ||
+          `Equipo #${item.id}`,
+      )
+      .join(", ");
+  }
+
+  function obtenerTextoSiNo(valor) {
+    let texto = "No usa precria";
+    const normalizado = String(valor || "")
+      .trim()
+      .toLowerCase();
+
+    if (normalizado === "si" || normalizado === "true" || normalizado === "1") {
+      texto = "Sí, usa precria";
+    }
+
+    return texto;
+  }
+
   try {
     const doc = new jsPDF();
 
@@ -26,6 +56,8 @@ export const generarRegistroPDF = (finca, estanquesFinca = []) => {
     doc.line(margenIzq, y, 196, y);
     y += 8;
 
+    const cantidadEstanques = estanquesFinca.length;
+
     //Tabla de datos generales de la finca
     const filasFinca = [
       ["Nombre", finca.nombreFinca],
@@ -34,10 +66,10 @@ export const generarRegistroPDF = (finca, estanquesFinca = []) => {
       ["Cantón", finca.canton],
       ["Distrito", finca.distrito],
       ["Responsable", finca.propietarioResponsable],
-      ["Teléfonos", (finca.telefonoParse  || []).join(", ")],
+      ["Teléfonos", (finca.telefonoParse || []).join(", ")],
       ["Área total", `${finca.areaTotal}`],
       ["Espejo de agua", `${finca.espejosAgua}`],
-      ["Cantidad de estanques", `${finca.estanques}`],
+      ["Cantidad de estanques", `${cantidadEstanques}`],
     ];
 
     autoTable(doc, {
@@ -46,7 +78,11 @@ export const generarRegistroPDF = (finca, estanquesFinca = []) => {
       body: filasFinca,
       theme: "grid",
       styles: { fontSize: 10, cellPadding: 3 },
-      headStyles: { fillColor: [40, 90, 60], textColor: 255, fontStyle: "bold" },
+      headStyles: {
+        fillColor: [40, 90, 60],
+        textColor: 255,
+        fontStyle: "bold",
+      },
       columnStyles: {
         0: { fontStyle: "bold", cellWidth: 50 },
         1: { cellWidth: "auto" },
@@ -91,23 +127,25 @@ export const generarRegistroPDF = (finca, estanquesFinca = []) => {
           ["Ancho", `${estanque.ancho} m`],
           ["Profundidad", `${estanque.profundidad} m`],
           ["Fuente de agua", estanque.fuenteAgua],
-          ["Especie", estanque.especie],
-          ["Fecha de siembra", estanque.fechaSiembra],
+          [
+            "Fecha de último mantenimiento",
+            estanque.fechaMantenimiento ?? "No registrado",
+          ],
+          ["Usa Precría", obtenerTextoSiNo(estanque.precria)],
+          ["Total de equipos", String(estanque.cantidadEquipos ?? 0)],
+          ["Equipos de Aireación", formatearListaEquipos(estanque?.equipos?.aireacion)],
+          [
+            "Equipos de Alimentación",
+            formatearListaEquipos(estanque?.equipos?.alimentacion),
+          ],
+          ["Equipos de Bombeo", formatearListaEquipos(estanque?.equipos?.bombeo)],
+          [
+            "Equipos de Mantenimiento",
+            formatearListaEquipos(estanque?.equipos?.mantenimiento),
+          ],
+          ["Equipos de Monitoreo", formatearListaEquipos(estanque?.equipos?.monitoreo)],
+          ["Otros Equipos", formatearListaEquipos(estanque?.equipos?.otros)],
         ];
-
-        if (estanque.fechaInicioEngorde) {
-          filasEstanque.push(["Inicio de engorde", estanque.fechaInicioEngorde]);
-        }
-
-        filasEstanque.push(
-          ["Último mantenimiento", estanque.fechaMantenimiento],
-          ["Densidad de siembra", estanque.densidadSiembra],
-          ["Precría", estanque.precria],
-          ["Método de alimentación", estanque.metodoAlimentacion],
-          ["Proveedor de alimento", estanque.proveedorAlimento],
-          ["Aireadores", estanque.numeroAireadores],
-          ["Alimentador automático", estanque.tieneAlimentadorAutomatico]
-        );
 
         autoTable(doc, {
           startY: y,
@@ -115,7 +153,11 @@ export const generarRegistroPDF = (finca, estanquesFinca = []) => {
           body: filasEstanque,
           theme: "grid",
           styles: { fontSize: 9, cellPadding: 2.5 },
-          headStyles: { fillColor: [30, 60, 110], textColor: 255, fontStyle: "bold" },
+          headStyles: {
+            fillColor: [30, 60, 110],
+            textColor: 255,
+            fontStyle: "bold",
+          },
           columnStyles: {
             0: { fontStyle: "bold", cellWidth: 55 },
             1: { cellWidth: "auto" },
@@ -140,7 +182,8 @@ export const generarRegistroPDF = (finca, estanquesFinca = []) => {
 
     return null;
   } catch (error) {
-    console.log("Error generando PDF (web):", error);
+    const { mostrarError } = useError();
+    mostrarError("Error al generar el PDF de la finca");
     throw error;
   }
 };

@@ -1,12 +1,16 @@
 import { useEffect, useState } from "react";
+import { useRouter, useLocalSearchParams } from "expo-router";
 
 import  {obtenerDetalleReporte}  from "../services/detalleReporte.service";
+import { TIPOS_AUTOGESTIONADOS } from "../constants/tipoReporte.js";
 
 import { fincaService } from "../../finca/services/finca.service.js";
 import { estanqueService } from "../../estanques/services/estanque.service.js";
 import { colaboradorService } from "../../colaboradores/services/colaborador.service.js";
 
 export function useDetalleReporte() {
+  const router = useRouter();                    
+  const { alert: alertParam } = useLocalSearchParams();
 
   const [registroTipo, setRegistroTipo] = useState(null);
 
@@ -18,6 +22,8 @@ export function useDetalleReporte() {
   const [colaboradores, setColaboradores] = useState([]);
   const [estanquesFiltrados, setEstanquesFiltrados] = useState([]);
 
+  const [alert, setAlert] = useState(null);
+
   const [registros, setRegistros] = useState([]);
 
   const [loading, setLoading] = useState(false);
@@ -28,6 +34,12 @@ export function useDetalleReporte() {
     !!finca &&
     !!estanque;
 
+  useEffect(() => {
+    if (alertParam === "edited") {
+      setAlert("edited");
+      router.setParams({ alert: undefined });
+    }
+  }, [alertParam, setAlert, router])
 
   useEffect(() => {
     let activo = true;
@@ -110,6 +122,12 @@ export function useDetalleReporte() {
         return;
       }
 
+      if (TIPOS_AUTOGESTIONADOS.includes(registroTipo)) {
+        setRegistros([]);
+        setLoading(false);
+        return;
+      }
+
       try {
         setLoading(true);
 
@@ -161,7 +179,7 @@ export function useDetalleReporte() {
     return () => {
       activo = false;
     };
-  }, [registroTipo, finca, estanque, fincas, estanques, colaboradores]);
+  }, [registroTipo, finca, estanque, fincas, estanques, colaboradores, filtrosCompletos]);
 
 
   return {
@@ -184,6 +202,9 @@ export function useDetalleReporte() {
     setRegistroTipo,
     setFinca,
     setEstanque,
+
+    alert,
+    setAlert,
 
   };
 }

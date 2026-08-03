@@ -1,60 +1,29 @@
 /**
  * ============================================================
- * SERVICIO - AGREGAR TRAZABILIDAD
+ * SERVICIO AgregarTrazabilidadService
  * ============================================================
  *
  * Descripción:
- * Servicio que crea un nuevo registro de trazabilidad en la
- * colección local (placeholder). Construye el objeto de registro
- * a partir del `formData` y delega la persistencia a
- * `agregarRegistroTrazabilidad`.
+ * Procesa el envío de nuevos registros de trazabilidad formateando campos e integrando toMysqlDate.
  *
- * Reglas importantes:
- * - El registro es histórico: no hay edición ni borrado.
- * - Validaciones complejas deben ejecutarse antes de llamar aquí.
+ * @dependencies toMysqlDate (shared/utils/dateUtils), crearRegistro (TrazabilidadServices)
+ * @validations Convierte la fecha dd/mm/aaaa a YYYY-MM-DD MySQL antes de enviar al backend.
+ * @navigation N/A
  */
+import { toMysqlDate } from "../../../shared/utils/dateUtils";
+import { crearRegistro } from "./TrazabilidadServices";
 
-import {
-  obtenerFincas,
-  obtenerColaboradores,
-  obtenerEstanquesPorFinca,
-  obtenerRegistrosTrazabilidad,
-  agregarRegistroTrazabilidad,
-} from "./TrazabilidadServices";
-
-export function crearRegistroTrazabilidad(formData) {
-  const fincas = obtenerFincas();
-  const colaboradores = obtenerColaboradores();
-  const estanques = obtenerEstanquesPorFinca(formData.fincaId);
-  const registrosActuales = obtenerRegistrosTrazabilidad();
-
-  const finca = fincas.find((item) => item.value === formData.fincaId);
-  const colaborador = colaboradores.find(
-    (item) => item.value === formData.colaboradorId,
-  );
-  const origen = estanques.find(
-    (item) => item.value === formData.estanqueOrigenId,
-  );
-  const destino = estanques.find(
-    (item) => item.value === formData.estanqueDestinoId,
-  );
-
-  const nuevoRegistro = {
-    id: registrosActuales.length + 1,
-    fincaId: formData.fincaId,
-    fincaNombre: finca?.label ?? "",
-    estanqueOrigenId: formData.estanqueOrigenId,
-    estanqueOrigenLabel: origen?.label ?? "",
-    estanqueDestinoId: formData.estanqueDestinoId,
-    estanqueDestinoLabel: destino?.label ?? "",
-    fecha: formData.fecha,
-    colaboradorId: formData.colaboradorId,
-    colaboradorNombre: colaborador?.label ?? "",
-    tamaño: formData.tamaño,
-    dias: formData.dias,
-    pl: formData.pl,
-    tipoMovimiento: "Pre-cria a Engorde",
+export async function crearRegistroTrazabilidad(formData) {
+  const body = {
+    fincaId: Number(formData.fincaId) || formData.fincaId,
+    estanqueOrigenId: Number(formData.estanqueOrigenId) || formData.estanqueOrigenId,
+    estanqueDestinoId: Number(formData.estanqueDestinoId) || formData.estanqueDestinoId,
+    fecha: toMysqlDate(formData.fecha) || formData.fecha,
+    colaboradorId: formData.colaboradorId ? Number(formData.colaboradorId) : null,
+    tamano: Number(formData.tamaño),
+    dias: Number(formData.dias),
+    pl: Number(formData.pl),
   };
 
-  return agregarRegistroTrazabilidad(nuevoRegistro);
+  return crearRegistro(body);
 }

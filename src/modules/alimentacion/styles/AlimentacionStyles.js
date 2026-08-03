@@ -27,6 +27,7 @@
 
 import { StyleSheet, Platform, StatusBar } from "react-native";
 import { COLORS } from "../../../theme/colors";
+import { TYPOGRAPHY } from "../../../theme/typography";
 
 export const styles = StyleSheet.create({
   screen: {
@@ -46,6 +47,114 @@ export const styles = StyleSheet.create({
 
   spacer: {
     height: 20,
+  },
+
+  // Contenedor de GestionAlimentacion: scroll + botón flotante fijo.
+  gestionContainer: {
+    flex: 1,
+  },
+
+  scrollContent: {
+    paddingBottom: 96,
+  },
+
+  // Botón "Guardar" flotante, mismo ancho que las cards (margen de
+  // 16 a cada lado, igual que STYLE.container).
+  floatingFooter: {
+    position: "absolute",
+    left: 16,
+    right: 16,
+    bottom: 16,
+  },
+
+  // Alert de éxito, fijo arriba de toda la pantalla (Regla 2).
+  topAlert: {
+    marginHorizontal: 16,
+    marginTop: 8,
+  },
+
+  alert: {
+    marginTop: 12,
+    marginBottom: 4,
+  },
+
+  bordeError: {
+    borderColor: COLORS.error,
+    borderWidth: 1.5,
+  },
+
+  // Secciones de AlimentacionForm* (título + ícono de cada Card).
+  sectionTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+
+  sectionIcon: {
+    marginRight: 8,
+  },
+
+  dateLabel: {
+    fontFamily: TYPOGRAPHY.fontFamily.medium,
+  },
+
+  horaLabel: {
+    marginBottom: 6,
+  },
+
+  horasContainer: {
+    flexDirection: "row",
+    gap: 8,
+    marginTop: 4,
+  },
+
+  horasContainerInvalid: {
+    borderWidth: 1.5,
+    borderColor: COLORS.error,
+    borderRadius: 8,
+    padding: 4,
+  },
+
+  horaButton: {
+    flex: 1,
+    padding: 12,
+    borderWidth: 1.5,
+    borderRadius: 8,
+    alignItems: "center",
+    backgroundColor: COLORS.white,
+    borderColor: COLORS.secondary,
+  },
+
+  horaButtonSelected: {
+    backgroundColor: COLORS.secondary,
+    borderColor: COLORS.primary,
+  },
+
+  horaError: {
+    marginTop: 5,
+  },
+
+  // Referenciados por las screens no enrutadas actualmente
+  // (RegistroAlimentacionScreen.jsx, HistorialAlimentacionScreen.jsx).
+  total: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: COLORS.textSecondary,
+  },
+
+  btnVolver: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+  },
+
+  btnGuardar: {
+    backgroundColor: COLORS.primary,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 14,
+    marginHorizontal: 16,
+    marginBottom: 16,
   },
 
   fab: {
@@ -106,4 +215,4 @@ export const styles = StyleSheet.create({
   buttonText: {
     color: COLORS.primary
   }
-});
+}); 

@@ -111,13 +111,17 @@ export const styles = StyleSheet.create({
 
   searchBarContainer: {
     flex: 1,
+    minHeight: 46,
+    justifyContent: "center",
     marginBottom: 0,
   },
 
   filterButton: {
     alignSelf: "center",
+    width: 120,
+    justifyContent: "center",
     marginTop: 0,
-    height: 43,
+    height: 46,
   },
 
   contadorResultados: {

@@ -3,14 +3,15 @@
  * SISTEMA DE ICONOS CENTRALIZADO
  * ============================================================
  *
- * Define todos los iconos utilizados en la aplicacion.
- * Esto permite mantener consistencia visual y facilita cambios globales.
+ * Define todos los iconos utilizados en la aplicación (incluyendo acciones como add y minus).
+ * Permite mantener la consistencia visual y facilita los cambios globales en los proveedores de iconos.
  *
  * USO:
  * import { ICONS } from "../../../theme/icons";
  * import Icon from "../../../shared/components/Icons";
  *
  * <Icon icon={ICONS.add} size={15} />
+ * <Icon icon={ICONS.minus} size={15} />
  *
  */
 
@@ -92,6 +93,10 @@ export const ICONS = {
     provider: "FontAwesome",
     name: "filter",
   },
+  search: {
+    provider: "FontAwesome",
+    name: "search",
+  },
 
   // Estanques
   water: {
@@ -107,6 +112,10 @@ export const ICONS = {
   add: {
     provider: "FontAwesome6",
     name: "add",
+  },
+  minus: {
+    provider: "FontAwesome6",
+    name: "minus",
   },
   save: {
     provider: "Ionicons",
@@ -196,6 +205,10 @@ export const ICONS = {
     provider: "Feather",
     name: "trending-up",
   },
+  fertilizer: {
+    provider: "MaterialCommunityIcons",
+    name: "sprout",
+  },
   shrimp: {
     provider: "FontAwesome6",
     name: "shrimp",
@@ -235,6 +248,10 @@ export const ICONS = {
   shieldAlert: {
     provider: "MaterialCommunityIcons",
     name: "shield-alert-outline",
+  },
+  treatment: {
+    provider: "MaterialCommunityIcons",
+    name: "medical-bag",
   },
   mortality: {
     provider: "MaterialCommunityIcons",
