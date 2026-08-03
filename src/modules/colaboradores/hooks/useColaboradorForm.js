@@ -63,7 +63,7 @@ export function useColaboradorForm({
     apellidos: initialData.nombre?.split(" ").slice(1).join(" ") || "",
     telefono: initialData.telefono || "",
     email: initialData.email || "",
-    rol: initialData.rol || (userRole === "camprocam_admin" ? "camprocam_worker" : "external_worker"),
+    rol: initialData.rolId ?? initialData.rol ?? (userRole === "camprocam_admin" ? "camprocam_worker" : "external_worker"),
     fincaId: initialData.fincaId || fincaId || "",
   });
 
