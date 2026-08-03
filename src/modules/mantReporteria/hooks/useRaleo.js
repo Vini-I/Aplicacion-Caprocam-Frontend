@@ -11,11 +11,13 @@ import raleoService from "../../raleo/services/Raleo.service.js";
 import { obtenerDetalleReporte } from "../services/detalleReporte.service.js";
 import useModalEliminar from "../hooks/useModalEliminar.js";
 import { cargarYEnriquecerRegistros } from "../utils/enriquecerRegistros.js";
+import { useError } from "../../../shared/context/ErrorContext.js";
 
 export default function useRaleo(fincaId, estanqueId, onAlertChange) {
   const [raleos, setRaleos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [alert, setAlert] = useState(null);
+  const { mostrarError } = useError();
 
   async function cargarRaleos() {
     try {
@@ -30,7 +32,7 @@ export default function useRaleo(fincaId, estanqueId, onAlertChange) {
       const enriquecidos = await cargarYEnriquecerRegistros(data);
       setRaleos(enriquecidos);
     } catch (error) {
-      console.error("Error al cargar raleos", error);
+      mostrarError(error);
       setRaleos([]);
     } finally {
       setLoading(false);
