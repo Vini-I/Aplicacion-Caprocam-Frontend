@@ -82,7 +82,7 @@ export const styles = StyleSheet.create({
     textAlign: "center",
   },
   errorAlertText: {
-    color: COLORS.error,
+    color: COLORS.textPrimary,
     textAlign: "center",
   },
 });

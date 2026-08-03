@@ -66,7 +66,10 @@ export const styles = StyleSheet.create({
     fontSize: 12,
   },
   dateInput: {
-    marginTop: 8,
+    flex: 1,
+    width: "100%",
+    marginTop: 4,
+    marginBottom: 0,
   },
   actions: {
     flexDirection: "row",
