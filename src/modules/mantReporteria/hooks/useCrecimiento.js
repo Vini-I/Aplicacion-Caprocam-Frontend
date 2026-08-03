@@ -2,21 +2,44 @@
  * ============================================================
  * HOOK DE CRECIMIENTO
  * ============================================================
- *
- * Autocontenido: carga sus propios registros, maneja el modal
- * de eliminación y el alert de resultado, sin depender de la
- * screen para recargar ni para reenviar callbacks de recarga.
- *
- * Sigue exactamente el mismo patrón que useAlimentacion.
  */
 import { useState, useEffect } from "react";
 import crecimientoService from "../../mantCrecimiento/services/mantCrecimiento.service.js";
 import { obtenerDetalleReporte } from "../services/detalleReporte.service.js";
 import useModalEliminar from "../hooks/useModalEliminar.js";
-
 import { fincaService } from "../../finca/services/finca.service.js";
 import { estanqueService } from "../../estanques/services/estanque.service.js";
 import { colaboradorService } from "../../colaboradores/services/colaborador.service.js";
+import { getUsuarioById } from "../../login/services/usuarioService.js";
+
+function nombreCompletoPersona(persona) {
+  if (!persona || typeof persona !== "object") return null;
+
+  const nombre =
+    persona.nombre ??
+    persona.name ??
+    "";
+
+  const apellidos =
+    persona.apellidos ??
+    persona.apellido ??
+    persona.lastName ??
+    persona.last_name ??
+    "";
+
+  const completo = `${nombre} ${apellidos}`.trim();
+  if (completo) return completo;
+
+  return (
+    persona.nombreCompleto ??
+    persona.nombre_completo ??
+    persona.nombreUsuario ??
+    persona.nombre_usuario ??
+    persona.username ??
+    persona.email ??
+    null
+  );
+}
 
 export default function useCrecimiento(fincaId, estanqueId, onAlertChange) {
   const [crecimientos, setCrecimientos] = useState([]);
@@ -40,45 +63,105 @@ export default function useCrecimiento(fincaId, estanqueId, onAlertChange) {
         ]);
 
       const fincasMap = Object.fromEntries(
-        fincasData.map((f) => [Number(f.id), f.nombreFinca]),
+        (fincasData || []).map((f) => [Number(f.id), f.nombreFinca]),
       );
       const estanquesMap = Object.fromEntries(
-        estanquesData.map((e) => [Number(e.id), e.codigo]),
+        (estanquesData || []).map((e) => [Number(e.id), e.codigo]),
       );
       const colaboradoresMap = Object.fromEntries(
-        colaboradoresData.map((c) => [Number(c.id), c.nombre]),
+        (colaboradoresData || []).map((c) => [
+          Number(c.id),
+          `${c.nombre ?? ""} ${c.apellidos ?? ""}`.trim() || "Sin nombre",
+        ]),
       );
 
-      const enriquecidos = data.map((registro) => ({
-  ...registro,
-  nombreFinca:
-    fincasMap[
-      Number(
-        registro.finca ??
-          registro.finca_id ??
-          registro.fincaId ??
-          registro.idFinca
-      )
-    ] ?? "No encontrada",
-  codigoEstanque:
-    estanquesMap[
-      Number(
-        registro.estanque ??
-          registro.estanque_id ??
-          registro.estanqueId ??
-          registro.idEstanque
-      )
-    ] ?? "No encontrado",
-  nombreColaborador:
-    colaboradoresMap[
-      Number(
-        registro.colaborador ??
+      // IDs de usuario únicos en estos registros
+      const idsUsuario = [
+        ...new Set(
+          (data || [])
+            .map((r) =>
+              Number(
+                r.creadoPorUsuarioId ?? r.creado_por_usuario_id ?? null,
+              ),
+            )
+            .filter((id) => id && !Number.isNaN(id)),
+        ),
+      ];
+
+      // Resolver cada usuario (en paralelo)
+      const usuariosMap = {};
+      await Promise.all(
+        idsUsuario.map(async (id) => {
+          try {
+            const usuario = await getUsuarioById(id);
+            usuariosMap[id] =
+              nombreCompletoPersona(usuario) || `Usuario #${id}`;
+          } catch (e) {
+            console.warn(`No se pudo obtener usuario ${id}`, e?.response?.status, e?.response?.data || e);
+            usuariosMap[id] = `Usuario #${id}`;
+          }
+        }),
+      );
+
+      const enriquecidos = (data || []).map((registro) => {
+        const idCreadoPorColab = Number(
+          registro.creadoPorColaboradorId ??
+          registro.creado_por_colaborador_id,
+        );
+        const idCreadoPorUsuario = Number(
+          registro.creadoPorUsuarioId ?? registro.creado_por_usuario_id,
+        );
+        const idColaborador = Number(
+          registro.colaborador ??
           registro.colaborador_id ??
           registro.colaboradorId ??
-          registro.idColaborador
-      )
-    ] ?? "No encontrado",
-}));
+          registro.idColaborador,
+        );
+
+        let nombreCreadoPor = "—";
+
+        if (
+          idCreadoPorColab &&
+          !Number.isNaN(idCreadoPorColab) &&
+          colaboradoresMap[idCreadoPorColab]
+        ) {
+          nombreCreadoPor = colaboradoresMap[idCreadoPorColab];
+        } else if (
+          idCreadoPorUsuario &&
+          !Number.isNaN(idCreadoPorUsuario)
+        ) {
+          nombreCreadoPor =
+            usuariosMap[idCreadoPorUsuario] || `Usuario #${idCreadoPorUsuario}`;
+        }
+
+        return {
+          ...registro,
+          nombreFinca:
+            fincasMap[
+            Number(
+              registro.finca ??
+              registro.finca_id ??
+              registro.fincaId ??
+              registro.idFinca,
+            )
+            ] ?? "No encontrada",
+          codigoEstanque:
+            estanquesMap[
+            Number(
+              registro.estanque ??
+              registro.estanque_id ??
+              registro.estanqueId ??
+              registro.idEstanque,
+            )
+            ] ?? "No encontrado",
+          nombreColaborador:
+            (idColaborador &&
+              !Number.isNaN(idColaborador) &&
+              colaboradoresMap[idColaborador]) ||
+            "Desconocido",
+          nombreCreadoPor,
+        };
+      });
 
       setCrecimientos(enriquecidos);
     } catch (error) {
@@ -94,12 +177,12 @@ export default function useCrecimiento(fincaId, estanqueId, onAlertChange) {
       cargarCrecimientos();
     }
   }, [fincaId, estanqueId]);
-  
-async function eliminarCrecimiento(id) {
-  await crecimientoService.deleteById(id);
-  await cargarCrecimientos();
-  setAlert("deleted");
-}
+
+  async function eliminarCrecimiento(id) {
+    await crecimientoService.deleteById(id);
+    await cargarCrecimientos();
+    setAlert("deleted");
+  }
 
   const {
     modalVisible,
@@ -124,7 +207,6 @@ async function eliminarCrecimiento(id) {
     crecimientos,
     loading,
     alert,
-
     modalVisible,
     crecimientoSeleccionado,
     loadingEliminar,
