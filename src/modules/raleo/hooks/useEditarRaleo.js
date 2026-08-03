@@ -15,7 +15,6 @@ function registroAForm(registro) {
   return {
     finca: String(registro.idFinca ?? registro.fincaId ?? registro.finca ?? ""),
     estanque: String(registro.idEstanque ?? registro.estanqueId ?? registro.estanque ?? ""),
-    colaborador: String(registro.idColaborador ?? registro.colaboradorId ?? registro.colaborador ?? ""),
     fecha,
     porcentajeRaleo: String(registro.porcentajeRaleo ?? registro.porcentaje ?? ""),
     pesoPromedio: String(registro.pesoPromedio ?? registro.pesoEstimado ?? ""),
@@ -37,7 +36,6 @@ function formADto(form) {
   return {
     idFinca: form.finca,
     idEstanque: form.estanque,
-    idColaborador: form.colaborador ? Number(form.colaborador) : undefined,
     fecha: convertirFecha(form.fecha),
     porcentaje: Number(form.porcentajeRaleo),
     pesoEstimado: Number(form.pesoPromedio),

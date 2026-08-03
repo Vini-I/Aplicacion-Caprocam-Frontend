@@ -12,7 +12,6 @@ import { useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { fincaService } from "../../finca/services/finca.service.js";
-import { colaboradorService } from "../../colaboradores/services/colaborador.service.js";
 
 import crecimientoService from "../services/mantCrecimiento.service.js";
 import { mantCrecmientoDTO } from "../dtos/mantCrecmiento.dto.js";
@@ -60,9 +59,6 @@ export function useFincaCrecimiento() {
   const [pesoActual, setPesoActual] = useState("");
   const [fechaRegistro, setFechaRegistro] = useState(getFechaHoy());
 
-  const [colaboradores, setColaboradores] = useState([]);
-  const [colaboradorSeleccionado, setColaboradorSeleccionado] = useState("");
-
   const [submitted, setSubmitted] = useState(false);
   const [errors, setErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState("");
@@ -76,15 +72,13 @@ export function useFincaCrecimiento() {
       setLoadError("");
 
       try {
-        const [fincasData, estanquesData, colaboradoresData] = await Promise.all([
+        const [fincasData, estanquesData] = await Promise.all([
           fincaService.getFincas(),
           estanqueService.getEstanques(),
-          colaboradorService.getColaboradores(),
         ]);
 
         setFincas(fincasData);
         setEstanques(estanquesData);
-        setColaboradores(colaboradoresData);
 
       } catch (error) {
         setLoadError("Ocurrio un error al cargar fincas y estanques");
@@ -138,27 +132,6 @@ export function useFincaCrecimiento() {
       }));
   }, [fincaSeleccionada, estanques]);
 
-  const opcionesColaboradores = useMemo(
-    () => 
-      colaboradores.map((colaborador) => ({
-    label: colaborador.nombre,
-    value: colaborador.id,
-  })),
-    [colaboradores]
-  );
-
-  const handleColaboradorChange = useCallback(
-    (value) => {
-      setColaboradorSeleccionado(value);
-
-      setErrors((prev) => ({
-        ...prev,
-        colaborador: undefined,
-      }));
-    },
-    []
-  );
-
   const validarCampos = useCallback(() => {
     const nextErrors = {};
 
@@ -178,13 +151,9 @@ export function useFincaCrecimiento() {
       nextErrors.fecha = "Seleccione una fecha de registro.";
     }
 
-    if (!colaboradorSeleccionado) {
-      nextErrors.colaborador = "Seleccione un colaborador";
-    }
-
     setErrors(nextErrors);
     return Object.keys(nextErrors).length === 0;
-  }, [fincaSeleccionada, estanqueSeleccionado, pesoActual, fechaRegistro, colaboradorSeleccionado]);
+  }, [fincaSeleccionada, estanqueSeleccionado, pesoActual, fechaRegistro]);
 
   const handleFincaChange = useCallback((value) => {
     setFincaSeleccionada(value);
@@ -249,7 +218,6 @@ export function useFincaCrecimiento() {
         estanque: Number(estanqueSeleccionado),
         pesoActual: Number(pesoActual),
         fechaRegistro: convertirFechaParaBackend(fechaRegistro),
-        colaborador: Number(colaboradorSeleccionado),
       });
 
       await crecimientoService.create(crecimientoDTO);
@@ -275,7 +243,6 @@ export function useFincaCrecimiento() {
   const mostrarErrorEstanque = submitted && Boolean(errors.estanque);
   const mostrarErrorPeso = submitted && Boolean(errors.peso);
   const mostrarErrorFecha = submitted && Boolean(errors.fecha);
-  const mostrarErrorColaborador = submitted && Boolean(errors.colaborador);
 
   return {
     fincaSeleccionada,
@@ -292,10 +259,6 @@ export function useFincaCrecimiento() {
     handleFincaChange,
     guardarDatos,
 
-    opcionesColaboradores,
-    colaboradorSeleccionado,
-    handleColaboradorChange ,
-
     isSaving,
     submitted,
     errors,
@@ -306,6 +269,5 @@ export function useFincaCrecimiento() {
     mostrarErrorEstanque,
     mostrarErrorPeso,
     mostrarErrorFecha,
-    mostrarErrorColaborador
   };
 }
