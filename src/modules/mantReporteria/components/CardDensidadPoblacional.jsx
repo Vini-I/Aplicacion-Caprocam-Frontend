@@ -77,7 +77,7 @@ export default function CardDensidadPoblacional({ fincaId, estanqueId, onEditar,
 
                         <View style={styles.infoItem}>
                             <Text style={styles.label}>Colaborador</Text>
-                            <Text style={styles.value}>{registro.usuarioNombre}</Text>
+                            <Text style={styles.value}>{registro.nombreCreadoPor}</Text>
                         </View>
 
                         <View style={styles.infoItem}>

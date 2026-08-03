@@ -21,11 +21,13 @@ import { useEffect, useState } from "react";
 
 import { estanqueService } from "../../estanques/services/estanque.service.js";
 import { useEstanque } from "../../estanques/context/EstanqueContext.js";
+import { useError } from "../../../shared/context/ErrorContext.js";
 
 import { usePdf } from "../hooks/usePdf";
 
 export default function useFincaDetalle() {
   const { fincas, loading: loadingFincas } = useFinca();
+  const { mostrarError } = useError();
 
   const {
     estanques,
@@ -60,7 +62,7 @@ export default function useFincaDetalle() {
 
     await crearPDFFinca(finca, estanquesCompletos);
   } catch (error) {
-    console.log("Error al preparar datos del PDF:", error);
+    mostrarError("Error al generar el PDF de la finca");
   }
 };
 
