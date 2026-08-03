@@ -14,6 +14,7 @@
 import api from "../../../api/api";
 import { fincaService } from "../../finca/services/finca.service";
 import { colaboradorService } from "../../colaboradores/services/colaborador.service";
+import { isSameDate, toMysqlDate } from "../../../shared/utils/dateUtils";
 
 function decodificarJwtPayload(token) {
   if (!token) return null;
@@ -215,7 +216,11 @@ export function filtrarRegistrosTrazabilidad(registros, texto, filtros) {
         filtros.colaboradores.includes(keyResponsable) ||
         filtros.colaboradores.includes(registro.colaboradorId) ||
         filtros.colaboradores.includes(registro.colaboradorNombre)) &&
-      (filtros.fecha === "" || registro.fecha === filtros.fecha);
+      (filtros.fecha === "" ||
+        registro.fecha === filtros.fecha ||
+        isSameDate(registro.fecha, filtros.fecha) ||
+        (toMysqlDate(registro.fecha) !== "" &&
+          toMysqlDate(registro.fecha) === toMysqlDate(filtros.fecha)));
 
     return coincideBusqueda && coincideFiltros;
   });

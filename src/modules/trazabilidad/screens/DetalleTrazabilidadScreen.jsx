@@ -22,6 +22,7 @@ import Input from "../../../shared/components/Input";
 
 
 import { getRegistroPorId } from "../services/TrazabilidadServices";
+import { formatDate } from "../../../shared/utils/dateUtils";
 
 export default function DetalleTrazabilidadScreen() {
   const { id } = useLocalSearchParams();
@@ -91,7 +92,7 @@ export default function DetalleTrazabilidadScreen() {
           <Card title="Información del movimiento" titleStyle={styles.cardTitle}>
             <Input
               label="Fecha del movimiento"
-              value={registro.fecha}
+              value={formatDate(registro.fecha) || registro.fecha}
               editable={false}
               style={styles.inputLectura}
               labelStyle={styles.labelLectura}

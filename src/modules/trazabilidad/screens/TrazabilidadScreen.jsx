@@ -75,7 +75,7 @@ export default function TrazabilidadScreen() {
       <CardPress style={styles.card} onPress={() => abrirDetalle(r.id)} key={r.id}>
           <View style={styles.cardHeader}>
             <Text style={styles.fincaText}>{r.fincaNombre}</Text>
-            <Text style={styles.fechaText}>{r.fecha}</Text>
+            <Text style={styles.fechaText}>{r.fechaFormatted || r.fecha}</Text>
           </View>
 
           <Text style={styles.colaboradorText}>
@@ -218,7 +218,7 @@ export default function TrazabilidadScreen() {
       </ScrollView>
       <View style={styles.floatingButtonContainer}>
         <Button variant="outline" onPress={nuevoRegistro} style={styles.fullButton}>
-          + Registrar movimiento
+          + Añadir movimiento
         </Button>
       </View>
     </View>

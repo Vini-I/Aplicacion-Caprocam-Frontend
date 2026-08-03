@@ -24,6 +24,7 @@ import {
   filtrarRegistrosTrazabilidad,
 } from "../services/TrazabilidadServices";
 import { useError } from "../../../shared/context/ErrorContext";
+import { formatDate } from "../../../shared/utils/dateUtils";
 
 export function useTrazabilidadList() {
   const router = useRouter();
@@ -173,9 +174,11 @@ export function formatRegistroForView(registro) {
   const plFormatted = plNumber.toLocaleString();
   // "tamano" sin ñ: así lo confirmó el equipo de API en la respuesta real.
   const tamanoFormatted = registro.tamano ? `${registro.tamano}g` : "";
+  const fechaFormatted = formatDate(registro.fecha) || registro.fecha;
 
   return {
     ...registro,
+    fechaFormatted,
     plFormatted,
     tamanoFormatted,
   };
