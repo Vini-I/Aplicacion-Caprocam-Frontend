@@ -23,14 +23,30 @@ import { useLocalSearchParams } from "expo-router";
 import { useWindowDimensions } from "react-native";
 import { useError } from "../../../shared/context/ErrorContext.js";
 
-export function useDetalleVenta({ onEdit  } = {}) {
-  const { mostrarError } = useError();
+export function useDetalleVenta({ onEdit, success, message } = {}) {
   const params = useLocalSearchParams();
   const { width } = useWindowDimensions();
   const isWide = width >= 700;
 
   const [fincas, setFincas] = useState([]);
   const [estanques, setEstanques] = useState([]);
+
+  const [mostrarExito, setMostrarExito] = useState(
+    success === "1" && Boolean(message)
+  );
+
+  useEffect(() => {
+    if (success !== "1" || !message) {
+      setMostrarExito(false);
+      return;
+    }
+
+    setMostrarExito(true);
+    const timer = setTimeout(() => setMostrarExito(false), 3000);
+    return () => clearTimeout(timer);
+  }, [success, message]);
+
+  const { mostrarError } = useError();
 
   useEffect(() => {
     let activo = true;
@@ -107,8 +123,7 @@ export function useDetalleVenta({ onEdit  } = {}) {
 
   const ventasFiltradas = useMemo(() => {
     return (ventas || []).filter((venta) => {
-      const coincideFinca =
-        !fincaFiltro || venta.finca === Number(fincaFiltro);
+      const coincideFinca = !fincaFiltro || venta.finca === Number(fincaFiltro);
       const coincideEstanque =
         !estanqueFiltro || venta.estanque === Number(estanqueFiltro);
 
@@ -193,14 +208,15 @@ export function useDetalleVenta({ onEdit  } = {}) {
           <View style={styles.buttonsCrud}>
             <Button
               style={styles.delete}
-              onPress={() => abrirModalEliminar(venta)}>
+              onPress={() => abrirModalEliminar(venta)}
+            >
               <Icon icon={ICONS.delete} style={[styles.deleteIcon]} size={15} />
               <Text size={15} style={{ color: COLORS.error }}>
                 Eliminar
               </Text>
             </Button>
             <Button style={styles.edit} onPress={() => onEdit?.(venta.id)}>
-               <Icon icon={ICONS.edit} style={styles.editIcon} size={16} />
+              <Icon icon={ICONS.edit} style={styles.editIcon} size={16} />
               <Text size={15} style={{ color: COLORS.primary }}>
                 Editar
               </Text>
@@ -209,15 +225,15 @@ export function useDetalleVenta({ onEdit  } = {}) {
         </View>
 
         <View style={styles.filasDetalle}>
-          <FilaDetalle etiqueta="Fecha" valor={new Date(venta.fecha).toLocaleDateString("es-CR")} />
+          <FilaDetalle
+            etiqueta="Fecha"
+            valor={new Date(venta.fecha).toLocaleDateString("es-CR")}
+          />
           <FilaDetalle
             etiqueta="Total"
             valor={formatearMontoColones(venta.total)}
           />
-          <FilaDetalle
-            etiqueta="Kilos"
-            valor={`${venta.cantVendida} kg`}
-          />
+          <FilaDetalle etiqueta="Kilos" valor={`${venta.cantVendida} kg`} />
           <FilaDetalle
             etiqueta="Precio/kg"
             valor={`₡ ${Number(venta.precioKilo).toLocaleString("es-CR")}`}
@@ -276,6 +292,8 @@ export function useDetalleVenta({ onEdit  } = {}) {
     cancelarEliminar,
     handleFincaChange,
     handleEstanqueChange,
+    mostrarExito,
+    mensajeExito: message,
   };
 }
 
