@@ -21,8 +21,10 @@ import { styles } from "../styles/VentaStyles.js";
 import { useMemo, useState, useCallback, useEffect } from "react";
 import { useLocalSearchParams } from "expo-router";
 import { useWindowDimensions } from "react-native";
+import { useError } from "../../../shared/context/ErrorContext.js";
 
 export function useDetalleVenta({ onEdit  } = {}) {
+  const { mostrarError } = useError();
   const params = useLocalSearchParams();
   const { width } = useWindowDimensions();
   const isWide = width >= 700;
@@ -246,7 +248,7 @@ export function useDetalleVenta({ onEdit  } = {}) {
         actual.filter((venta) => venta.id !== ventaSeleccionada.id),
       );
     } catch (error) {
-      console.error("No se pudo eliminar la venta:", error);
+      mostrarError(error);
     } finally {
       setEliminando(false);
       setModalVisible(false);

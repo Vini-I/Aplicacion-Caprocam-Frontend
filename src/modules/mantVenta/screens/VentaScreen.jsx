@@ -34,7 +34,6 @@ export default function VentaScreen({ onDetalleVentas }) {
     kilosVendidos,
     precioKilo,
     fechaVenta,
-    colaboradorSeleccionado,
     compradorSeleccionado,
     mensaje,
     tipoMensaje,
@@ -42,7 +41,6 @@ export default function VentaScreen({ onDetalleVentas }) {
     guardando,
     opcionesFincas,
     estanquesFiltrados,
-    opcionesColaboradores,
     opcionesCompradores,
     totalVenta,
     ventas,
@@ -55,7 +53,6 @@ export default function VentaScreen({ onDetalleVentas }) {
     handleKilosVendidosChange,
     handlePrecioChange,
     handleCompradorChange,
-    handleColaboradorChange,
     handleFechaChange,
     limpiarError,
     guardarVenta,
@@ -170,20 +167,9 @@ export default function VentaScreen({ onDetalleVentas }) {
           </Text>
         </View>
 
-        <SectionTitle icon={ICONS.user} title="Colaborador y comprador" />
+        <SectionTitle icon={ICONS.user} title="Comprador" />
 
         <View style={gridStyle}>
-          <View style={styles.inputItem}>
-            <Select
-              label="Colaborador que realiza la venta *"
-              placeholder="Seleccione colaborador"
-              options={opcionesColaboradores}
-              value={colaboradorSeleccionado}
-              onChange={handleColaboradorChange}
-              selectStyle={errores.colaborador ? errorInputStyle : null}
-            />
-          </View>
-
           <View style={styles.inputItem}>
             <Select
               label="Comprador *"

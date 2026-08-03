@@ -13,9 +13,11 @@ export const getVentas = async () => {
 
     } catch (error) {
 
-        console.error("Error al crear venta:", error); //Mientras se prueba todo unicamente
+        if (error.response?.status === 404 || error.response?.status === 500) {
+            throw error;
+        }
 
-        throw error;
+        throw new Error("No se pudieron obtener las ventas");
 
     }
 };
@@ -33,9 +35,11 @@ export const createVenta = async (ventaDTO) => {
 
     } catch (error) {
 
-        console.error("Error al crear venta:", error.response?.data || error.message); //Mientras se prueba todo unicamente
+        if (error.response?.status === 404 || error.response?.status === 500) {
+            throw error;
+        }
 
-        throw error;
+        throw new Error("No se pudo registrar la venta");
 
     }
 }
@@ -54,9 +58,11 @@ export const getVentaById = async (id) => {
 
     } catch (error) {
 
-        console.error("Error al obtener venta:", error.response?.data || error.message);
+        if (error.response?.status === 404 || error.response?.status === 500) {
+            throw error;
+        }
 
-        throw error;
+        throw new Error("No se pudo obtener la información de la venta");
 
     }
 };
@@ -75,9 +81,11 @@ export const updateVenta = async (id, ventaDTO) => {
 
     } catch (error) {
 
-        console.error("Error al actualizar venta:", error.response?.data || error.message);
+        if (error.response?.status === 404 || error.response?.status === 500) {
+            throw error;
+        }
 
-        throw error;
+        throw new Error("No se pudieron guardar los cambios de la venta");
 
     }
 };
@@ -96,9 +104,11 @@ export const deleteVenta = async (id) => {
 
     } catch (error) {
 
-        console.error("Error al eliminar venta:", error.response?.data || error.message);
+        if (error.response?.status === 404 || error.response?.status === 500) {
+            throw error;
+        }
 
-        throw error;
+        throw new Error("No se pudo eliminar la venta");
 
     }
 };

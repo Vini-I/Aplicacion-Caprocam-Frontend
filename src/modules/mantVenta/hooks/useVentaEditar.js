@@ -325,7 +325,6 @@ export function useVentaEditar({ id, onGuardado } = {}) {
     kilosVendidos,
     precioKilo,
     fechaVenta,
-    colaboradorSeleccionado,
     compradorSeleccionado,
     mensaje,
     tipoMensaje,
@@ -334,7 +333,6 @@ export function useVentaEditar({ id, onGuardado } = {}) {
     isWide,
     opcionesFincas,
     estanquesFiltrados,
-    opcionesColaboradores,
     opcionesCompradores,
     totalVenta,
     setEstanqueSeleccionado,
@@ -344,7 +342,6 @@ export function useVentaEditar({ id, onGuardado } = {}) {
     handleKilosVendidosChange,
     handlePrecioChange,
     handleCompradorChange,
-    handleColaboradorChange,
     limpiarError,
     guardarCambios,
   };
