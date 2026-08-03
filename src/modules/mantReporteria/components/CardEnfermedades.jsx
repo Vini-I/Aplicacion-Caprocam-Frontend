@@ -74,7 +74,7 @@ export default function CardEnfermedades({ fincaId, estanqueId, onEditar, onAler
                                     Colaborador
                                 </Text>
                                 <Text style={styles.value}>
-                                    {registro.nombreColaborador ? registro.nombreColaborador.charAt(0).toUpperCase() + registro.nombreColaborador.slice(1) : ""}
+                                    {registro.nombreCreadoPor}
                                 </Text>
                             </View>
 

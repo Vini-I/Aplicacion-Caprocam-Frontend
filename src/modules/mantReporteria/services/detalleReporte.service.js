@@ -64,6 +64,7 @@ export async function obtenerDetalleReporte({
 
     case "densidad_poblacional":
       const registrosDensidad = await densidadPoblacionalService.getAll();
+      console.log("Densidad", registrosDensidad)
 
       return registrosDensidad.filter(
         (r) =>

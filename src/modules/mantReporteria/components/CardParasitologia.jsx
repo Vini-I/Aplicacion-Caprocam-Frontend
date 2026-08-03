@@ -74,7 +74,7 @@ export default function CardParasitologia({ fincaId, estanqueId, onEditar, onAle
                                     Colaborador
                                 </Text>
                                 <Text style={styles.value}>
-                                    {registro.nombreColaborador ? registro.nombreColaborador.charAt(0).toUpperCase() + registro.nombreColaborador.slice(1) : ""}
+                                    {registro.nombreCreadoPor}
                                 </Text>
                             </View>
 

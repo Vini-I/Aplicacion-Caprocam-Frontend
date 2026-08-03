@@ -3,20 +3,14 @@
  * HOOK DE RALEO
  * ============================================================
  *
- * Autocontenido: carga sus propios registros, maneja el modal
- * de eliminación y el alert de resultado, sin depender de la
- * screen para recargar ni para reenviar callbacks de recarga.
- *
- * Sigue exactamente el mismo patrón que useAlimentacion.
+ * Autocontenido: carga, eliminación y alert.
+ * Enriquece: nombreFinca, codigoEstanque, nombreColaborador, nombreCreadoPor
  */
 import { useState, useEffect } from "react";
 import raleoService from "../../raleo/services/Raleo.service.js";
 import { obtenerDetalleReporte } from "../services/detalleReporte.service.js";
 import useModalEliminar from "../hooks/useModalEliminar.js";
-
-import { fincaService } from "../../finca/services/finca.service.js";
-import { estanqueService } from "../../estanques/services/estanque.service.js";
-import { colaboradorService } from "../../colaboradores/services/colaborador.service.js";
+import { cargarYEnriquecerRegistros } from "../utils/enriquecerRegistros.js";
 
 export default function useRaleo(fincaId, estanqueId, onAlertChange) {
   const [raleos, setRaleos] = useState([]);
@@ -27,45 +21,13 @@ export default function useRaleo(fincaId, estanqueId, onAlertChange) {
     try {
       setLoading(true);
 
-      const [data, fincasData, estanquesData, colaboradoresData] = await Promise.all([
-        obtenerDetalleReporte({
-          tipoRegistro: "raleo",
-          fincaId,
-          estanqueId,
-        }),
-        fincaService.getFincas(),
-        estanqueService.getEstanques(),
-        colaboradorService.getColaboradores(),
-      ]);
+      const data = await obtenerDetalleReporte({
+        tipoRegistro: "raleo",
+        fincaId,
+        estanqueId,
+      });
 
-      const fincasMap = Object.fromEntries(
-        fincasData.map((f) => [Number(f.id), f.nombreFinca])
-      );
-      const estanquesMap = Object.fromEntries(
-        estanquesData.map((e) => [Number(e.id), e.codigo])
-      );
-      const colaboradoresMap = Object.fromEntries(
-        colaboradoresData.map((c) => [Number(c.id), c.nombre])
-      );
-
-      const enriquecidos = data.map((registro) => ({
-        ...registro,
-        nombreFinca:
-          registro.nombreFinca ||
-          fincasMap[Number(registro.idFinca || registro.fincaId || registro.finca_id)] ||
-          "No encontrada",
-        codigoEstanque:
-          registro.codigoEstanque ||
-          estanquesMap[Number(registro.idEstanque || registro.estanqueId || registro.estanque_id)] ||
-          "No encontrado",
-        nombreColaborador:
-          registro.nombreColaborador ||
-          colaboradoresMap[
-            Number(registro.idColaborador || registro.colaboradorId || registro.colaborador_id)
-          ] ||
-          "No encontrado",
-      }));
-
+      const enriquecidos = await cargarYEnriquecerRegistros(data);
       setRaleos(enriquecidos);
     } catch (error) {
       console.error("Error al cargar raleos", error);
@@ -82,7 +44,7 @@ export default function useRaleo(fincaId, estanqueId, onAlertChange) {
   }, [fincaId, estanqueId]);
 
   async function eliminarRaleo(id) {
-   await raleoService.deleteById(id);
+    await raleoService.deleteById(id);
     await cargarRaleos();
     setAlert("deleted");
   }
@@ -110,7 +72,6 @@ export default function useRaleo(fincaId, estanqueId, onAlertChange) {
     raleos,
     loading,
     alert,
-
     modalVisible,
     raleoSeleccionado,
     loadingEliminar,
