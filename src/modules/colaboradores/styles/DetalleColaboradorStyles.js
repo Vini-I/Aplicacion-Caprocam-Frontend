@@ -1,15 +1,12 @@
 /**
- * ============================================================
  * ESTILOS: DetalleColaboradorStyles
- * ============================================================
- * Módulo: Colaboradores
+ * Agrupa las hojas de estilo de la pantalla de detalle de colaborador,
+ * incluyendo información personal, estadísticas, trabajadores a cargo
+ * y botones de acción.
  *
- * Estilos para la pantalla DetalleColaboradorScreen.
- * Utiliza la paleta de COLORS del tema central.
- *
- * Dependencias:
- * - COLORS desde theme/colors
- * ============================================================
+ * @dependencies - COLORS de theme/colors.js, TYPOGRAPHY de theme/typography.js
+ * @validations  - N/A
+ * @navigation   - N/A (archivo de estilos).
  */
 
 import { StyleSheet } from 'react-native';
@@ -17,7 +14,7 @@ import { COLORS } from '../../../theme/colors';
 import { TYPOGRAPHY } from '../../../theme/typography';
 
 export const styles = StyleSheet.create({
-  // Cabecera
+  // ── Cabecera con avatar ─────────────────────────────────────
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -53,7 +50,7 @@ export const styles = StyleSheet.create({
     fontFamily: TYPOGRAPHY.fontFamily.bold,
   },
 
-  // Filas de detalle con ícono
+  // ── Filas de detalle con ícono ──────────────────────────────
   fila: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -78,7 +75,7 @@ export const styles = StyleSheet.create({
     color: COLORS.textSecondary,
   },
 
-  // Estadísticas
+  // ── Estadísticas de actividad ──────────────────────────────
   statsTitle: {
     fontSize: 16,
     fontWeight: '700',
@@ -114,7 +111,7 @@ export const styles = StyleSheet.create({
     marginTop: 8,
   },
 
-  // Trabajadores a cargo
+  // ── Trabajadores a cargo (dueño externo) ──────────────────
   trabajadorItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -143,7 +140,7 @@ export const styles = StyleSheet.create({
     paddingVertical: 12,
   },
 
-  // Botones
+  // ── Botones de acción ──────────────────────────────────────
   botonesContainer: {
     flexDirection: 'row',
     gap: 12,

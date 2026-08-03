@@ -1,11 +1,25 @@
+/**
+ * ESTILOS: colaboradorFormStyles
+ * Agrupa las hojas de estilo del formulario de colaboradores,
+ * garantizando consistencia visual y adaptabilidad.
+ *
+ * @dependencies - COLORS de theme/colors.js
+ * @validations  - Resalta campos con error (borde rojo).
+ *               - Alertas de error/éxito alineadas al centro.
+ * @navigation   - N/A (archivo de estilos).
+ */
+
 import { StyleSheet } from "react-native";
 import { COLORS } from '../../../theme/colors';
 
 export const styles = StyleSheet.create({
+  // ── Contenedor principal ────────────────────────────────────
   container: {
     flex: 1,
     paddingVertical: 8,
   },
+
+  // ── Card del formulario ─────────────────────────────────────
   cardContainer: {
     padding: 16,
     marginBottom: 12,
@@ -21,6 +35,8 @@ export const styles = StyleSheet.create({
     color: COLORS.textSecondary,
     marginLeft: 8,
   },
+
+  // ── Botones ──────────────────────────────────────────────────
   buttonContainer: {
     flexDirection: "row",
     gap: 12,
@@ -32,6 +48,8 @@ export const styles = StyleSheet.create({
   cancelButton: {
     flex: 1,
   },
+
+  // ── Estados y validación ────────────────────────────────────
   loader: {
     marginTop: 4,
     marginBottom: 8,
@@ -40,6 +58,8 @@ export const styles = StyleSheet.create({
     borderColor: COLORS.error,
     borderWidth: 1.5,
   },
+
+  // ── Alertas ──────────────────────────────────────────────────
   alertContainer: {
     width: "100%",
     alignItems: "center",
@@ -51,6 +71,8 @@ export const styles = StyleSheet.create({
     fontSize: 13,
     width: "100%",
   },
+
+  // ── Botón Restablecer PIN (solo edición) ────────────────────
   resetButtonContainer: {
     marginTop: 8,
     width: "100%",

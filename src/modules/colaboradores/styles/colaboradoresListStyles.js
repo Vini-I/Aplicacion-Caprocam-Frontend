@@ -1,16 +1,11 @@
 /**
- * ============================================================
  * ESTILOS: colaboradoresListStyles
- * ============================================================
+ * Agrupa las hojas de estilo de la pantalla principal de colaboradores,
+ * incluyendo barra de búsqueda, lista, botón flotante y modales.
  *
- * Estilos para la pantalla ColaboradoresListScreen.
- * Se eliminaron los estilos de la tabBar y se ajustó el
- * botón flotante para que quede fijo en la parte inferior.
- *
- * Dependencias:
- * - COLORS desde theme/colors
- * - TYPOGRAPHY desde theme/typography
- * ============================================================
+ * @dependencies - COLORS de theme/colors.js, TYPOGRAPHY de theme/typography.js
+ * @validations  - N/A
+ * @navigation   - N/A (archivo de estilos).
  */
 
 import { StyleSheet } from "react-native";
@@ -18,10 +13,13 @@ import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
 
 export const styles = StyleSheet.create({
+  // ── Contenedor principal ────────────────────────────────────
   container: {
     flex: 1,
     backgroundColor: COLORS.white,
   },
+
+  // ── Barra de búsqueda y filtro ─────────────────────────────
   searchRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -45,7 +43,7 @@ export const styles = StyleSheet.create({
     alignSelf: "center",
   },
 
-  // Contador de resultados
+  // ── Contador de resultados ──────────────────────────────────
   contadorWrapper: {
     width: "100%",
     maxWidth: 900,
@@ -61,11 +59,12 @@ export const styles = StyleSheet.create({
     fontFamily: TYPOGRAPHY.fontFamily.regular,
   },
 
+  // ── Lista de colaboradores ──────────────────────────────────
   list: {
     padding: 0,
     paddingBottom: 110, // espacio para el botón flotante
     width: '100%',
-    left: 8,
+    left: 0,
     maxWidth: 900,
     alignSelf: 'center',
   },
@@ -77,17 +76,19 @@ export const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
+
+  // ── Alertas flotantes ──────────────────────────────────────
   alertWrapper: {
-    marginTop: 6,           // ← separación de la barra de búsqueda
-    marginBottom: 12,        // ← separación de los cards
+    marginTop: 6,
+    marginBottom: 12,
     paddingHorizontal: 0,
-    paddingVertical: 0,     // o 16 si quieres padding interno, pero el Alert ya tiene padding
+    paddingVertical: 0,
     width: '100%',
     maxWidth: 900,
     alignSelf: 'center',
   },
 
-  // Botón flotante
+  // ── Botón flotante (Agregar) ───────────────────────────────
   floatingButtonContainer: {
     position: "absolute",
     bottom: 0,
@@ -119,85 +120,7 @@ export const styles = StyleSheet.create({
     fontSize: 13,
   },
 
-  // Estilos del modal de confirmación
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.6)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  modalContainer: {
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
-  },
-  modalContent: {
-    backgroundColor: COLORS.white,
-    borderRadius: 16,
-    padding: 24,
-    width: "85%",
-    maxWidth: 400,
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: COLORS.error,
-    marginBottom: 16,
-    textAlign: "center",
-  },
-  modalText: {
-    fontSize: 14,
-    color: COLORS.textTertiary,
-    marginBottom: 8,
-    textAlign: "center",
-  },
-  modalName: {
-    fontSize: 14,
-    fontWeight: "bold",
-    color: COLORS.textSecondary,
-    marginBottom: 16,
-    textAlign: "center",
-  },
-  modalSubText: {
-    fontSize: 14,
-    color: COLORS.textTertiary,
-    marginBottom: 8,
-    textAlign: "center",
-  },
-  modalCedula: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: COLORS.primary,
-    marginBottom: 16,
-    textAlign: "center",
-  },
-  modalInput: {
-    marginBottom: 20,
-  },
-  modalButtons: {
-    flexDirection: "row",
-    gap: 12,
-    justifyContent: "center",
-  },
-  modalConfirmContainer: {
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
-  },
-  modalCancelBtn: {
-    marginTop: 0,
-    flex: 1,
-    borderColor: COLORS.primary,
-    borderWidth: 1,
-    backgroundColor: "transparent",
-  },
-  modalDeleteBtn: {
-    marginTop: 0,
-    flex: 1,
-    borderColor: COLORS.error,
-    borderWidth: 1,
-    backgroundColor: "transparent",
-  },
+  // ── Modal de detalle (override) ─────────────────────────────
   modalDetalleContainer: {
     width: "100%",
     maxWidth: 900,
@@ -213,6 +136,8 @@ export const styles = StyleSheet.create({
     justifyContent: "center",
     padding: 16,
   },
+
+  // ── Estado vacío (EmptyState) ──────────────────────────────
   emptyStateButton: {
     marginTop: 16,
     paddingVertical: 12,
