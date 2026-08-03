@@ -9,7 +9,7 @@ export class mantCrecmientoDTO {
     }) {
         this.finca = finca;
         this.estanque = estanque; 
-        this.colaborador = colaborador ?? null;
+        this.colaborador = colaborador;
         this.fechaRegistro = fechaRegistro; //Debe venir quemada tambien. 
         this.pesoActual= pesoActual; 
     } 

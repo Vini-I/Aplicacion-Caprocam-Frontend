@@ -9,7 +9,6 @@
 
 import jsPDF from "jspdf/dist/jspdf.es.min.js";
 import autoTable from "jspdf-autotable";
-import { useError } from "../../../shared/context/ErrorContext";
 
 export const generarRegistroPDF = (finca, estanquesFinca = []) => {
   function formatearListaEquipos(lista) {
@@ -29,13 +28,13 @@ export const generarRegistroPDF = (finca, estanquesFinca = []) => {
   }
 
   function obtenerTextoSiNo(valor) {
-    let texto = "No usa precria";
+    let texto = "No";
     const normalizado = String(valor || "")
       .trim()
       .toLowerCase();
 
     if (normalizado === "si" || normalizado === "true" || normalizado === "1") {
-      texto = "Sí, usa precria";
+      texto = "Si";
     }
 
     return texto;
@@ -128,23 +127,23 @@ export const generarRegistroPDF = (finca, estanquesFinca = []) => {
           ["Profundidad", `${estanque.profundidad} m`],
           ["Fuente de agua", estanque.fuenteAgua],
           [
-            "Fecha de último mantenimiento",
+            "Fecha de mantenimiento",
             estanque.fechaMantenimiento ?? "No registrado",
           ],
-          ["Usa Precría", obtenerTextoSiNo(estanque.precria)],
+          ["Precría", obtenerTextoSiNo(estanque.precria)],
           ["Total de equipos", String(estanque.cantidadEquipos ?? 0)],
-          ["Equipos de Aireación", formatearListaEquipos(estanque?.equipos?.aireacion)],
+          ["Aireación", formatearListaEquipos(estanque?.equipos?.aireacion)],
           [
-            "Equipos de Alimentación",
+            "Alimentación",
             formatearListaEquipos(estanque?.equipos?.alimentacion),
           ],
-          ["Equipos de Bombeo", formatearListaEquipos(estanque?.equipos?.bombeo)],
+          ["Bombeo", formatearListaEquipos(estanque?.equipos?.bombeo)],
           [
-            "Equipos de Mantenimiento",
+            "Mantenimiento",
             formatearListaEquipos(estanque?.equipos?.mantenimiento),
           ],
-          ["Equipos de Monitoreo", formatearListaEquipos(estanque?.equipos?.monitoreo)],
-          ["Otros Equipos", formatearListaEquipos(estanque?.equipos?.otros)],
+          ["Monitoreo", formatearListaEquipos(estanque?.equipos?.monitoreo)],
+          ["Otros", formatearListaEquipos(estanque?.equipos?.otros)],
         ];
 
         autoTable(doc, {
@@ -182,8 +181,7 @@ export const generarRegistroPDF = (finca, estanquesFinca = []) => {
 
     return null;
   } catch (error) {
-    const { mostrarError } = useError();
-    mostrarError("Error al generar el PDF de la finca");
+    console.log("Error generando PDF (web):", error);
     throw error;
   }
 };

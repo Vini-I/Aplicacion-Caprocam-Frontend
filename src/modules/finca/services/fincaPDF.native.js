@@ -8,7 +8,6 @@
 import * as Print from "expo-print";
 import * as Sharing from "expo-sharing";
 import * as FileSystem from "expo-file-system/legacy";
-import { useError } from "../../../shared/context/ErrorContext";
 
 export const generarRegistroPDF = async (finca, estanquesFinca = []) => {
   try {
@@ -41,10 +40,10 @@ export const generarRegistroPDF = async (finca, estanquesFinca = []) => {
 
     const obtenerTextoSiNo = (valor) => {
       if (valor === true || String(valor).toLowerCase() === "si" || String(valor).toLowerCase() === "true") {
-        return "Sí, usa precría";
+        return "Sí";
       }
       if (valor === false || String(valor).toLowerCase() === "no" || String(valor).toLowerCase() === "false") {
-        return "No usa precria";
+        return "No";
       }
       return String(valor ?? "No registrado");
     };
@@ -72,15 +71,15 @@ export const generarRegistroPDF = async (finca, estanquesFinca = []) => {
                 ${filaTabla("Ancho", `${estanque.ancho} m`)}
                 ${filaTabla("Profundidad", `${estanque.profundidad} m`)}
                 ${filaTabla("Fuente de agua", estanque.fuenteAgua)}
-                ${filaTabla("Fecha de último mantenimiento", estanque.fechaMantenimiento ?? "No registrado")}
-                ${filaTabla("Usa Precría", obtenerTextoSiNo(estanque.precria))}
+                ${filaTabla("Fecha de mantenimiento", estanque.fechaMantenimiento ?? "No registrado")}
+                ${filaTabla("Precría", obtenerTextoSiNo(estanque.precria))}
                 ${filaTabla("Total de equipos", estanque.cantidadEquipos ?? 0)}
-                ${filaTabla("Equipos de Aireación", formatearListaEquipos(estanque?.equipos?.aireacion))}
-                ${filaTabla("Equipos de Alimentación", formatearListaEquipos(estanque?.equipos?.alimentacion))}
-                ${filaTabla("Equipos de Bombeo", formatearListaEquipos(estanque?.equipos?.bombeo))}
-                ${filaTabla("Equipos de Mantenimiento", formatearListaEquipos(estanque?.equipos?.mantenimiento))}
-                ${filaTabla("Equipos de Monitoreo", formatearListaEquipos(estanque?.equipos?.monitoreo))}
-                ${filaTabla("Otros Equipos", formatearListaEquipos(estanque?.equipos?.otros))}
+                ${filaTabla("Aireación", formatearListaEquipos(estanque?.equipos?.aireacion))}
+                ${filaTabla("Alimentación", formatearListaEquipos(estanque?.equipos?.alimentacion))}
+                ${filaTabla("Bombeo", formatearListaEquipos(estanque?.equipos?.bombeo))}
+                ${filaTabla("Mantenimiento", formatearListaEquipos(estanque?.equipos?.mantenimiento))}
+                ${filaTabla("Monitoreo", formatearListaEquipos(estanque?.equipos?.monitoreo))}
+                ${filaTabla("Otros", formatearListaEquipos(estanque?.equipos?.otros))}
               `;
 
               return `
@@ -143,7 +142,7 @@ export const generarRegistroPDF = async (finca, estanquesFinca = []) => {
 
     return nuevaRuta;
   } catch (error) {
-    mostrarError("Error al generar el PDF de la finca");
+    console.log("Error generando PDF (móvil):", error);
     throw error;
   }
 };

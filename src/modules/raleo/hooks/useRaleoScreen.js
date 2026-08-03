@@ -90,6 +90,7 @@ export default function useRaleoScreen() {
       const registro = {
         idFinca: form.finca,
         idEstanque: form.estanque,
+        idColaborador: form.colaborador ? Number(form.colaborador) : undefined,
         fecha: convertirFecha(form.fecha),
         porcentaje: Number(form.porcentajeRaleo),
         pesoEstimado: Number(form.pesoPromedio),

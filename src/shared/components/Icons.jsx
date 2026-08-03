@@ -8,7 +8,6 @@ import Octicons from "@expo/vector-icons/Octicons";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import Entypo from "@expo/vector-icons/Entypo";
 import Feather from "@expo/vector-icons/Feather";
-import { useError } from "../context/ErrorContext.js";
 
 import { COLORS } from "../../theme/colors";
 
@@ -37,21 +36,20 @@ const libraries = {
 };
 
 export default function Icon({ icon, size = 24, color = COLORS.black, style }) {
-  const { mostrarError } = useError();
   if (!icon) {
-    mostrarError(new Error("Icono no encontrado"));
+    console.error("Icono no encontrado en theme/icons.js");
     return null;
   }
 
   if (!icon.provider) {
-    mostrarError(new Error("El icono no está definido"));
+    console.error("El icono no tiene provider definido");
     return null;
   }
 
   const IconComponent = libraries[icon.provider];
 
   if (!IconComponent) {
-    mostrarError(new Error("Libreria de iconos no encontrada"));
+    console.error("Libreria de iconos no encontrada");
     return null;
   }
 

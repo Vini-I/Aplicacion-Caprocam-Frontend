@@ -3,36 +3,63 @@
  * HOOK DE DENSIDAD POBLACIONAL
  * ============================================================
  *
- * Autocontenido: carga, eliminación y alert.
- * Enriquece: nombreFinca, codigoEstanque, nombreColaborador, nombreCreadoPor
+ * Autocontenido: carga sus propios registros, maneja el modal
+ * de eliminación y el alert de resultado, sin depender de la
+ * screen para recargar ni para reenviar callbacks de recarga.
+ *
+ * Sigue exactamente el mismo patrón que useAlimentacion.
  */
 import { useState, useEffect } from "react";
 import densidadPoblacionalService from "../../densidadPoblacional/services/DensidadPoblacional.service.js";
 import { obtenerDetalleReporte } from "../services/detalleReporte.service.js";
 import useModalEliminar from "../hooks/useModalEliminar.js";
-import { cargarYEnriquecerRegistros } from "../utils/enriquecerRegistros.js";
-import { useError } from "../../../shared/context/ErrorContext.js";
+
+import { fincaService } from "../../finca/services/finca.service.js";
+import { estanqueService } from "../../estanques/services/estanque.service.js";
 
 export default function useDensidadPoblacional(fincaId, estanqueId, onAlertChange) {
   const [densidades, setDensidades] = useState([]);
   const [loading, setLoading] = useState(true);
   const [alert, setAlert] = useState(null);
-  const { mostrarError } = useError();
 
   async function cargarDensidades() {
     try {
       setLoading(true);
 
-      const data = await obtenerDetalleReporte({
-        tipoRegistro: "densidad_poblacional",
-        fincaId,
-        estanqueId,
-      });
+      const [data, fincasData, estanquesData] = await Promise.all([
+        obtenerDetalleReporte({
+          tipoRegistro: "densidad_poblacional",
+          fincaId,
+          estanqueId,
+        }),
+        fincaService.getFincas(),
+        estanqueService.getEstanques(),
+      ]);
 
-      const enriquecidos = await cargarYEnriquecerRegistros(data);
+      const fincasMap = Object.fromEntries(
+        fincasData.map((f) => [Number(f.id), f.nombreFinca])
+      );
+      const estanquesMap = Object.fromEntries(
+        estanquesData.map((e) => [Number(e.id), e.codigo])
+      );
+
+      const enriquecidos = data.map((registro) => ({
+        ...registro,
+        nombreFinca:
+          registro.nombreFinca ||
+          fincasMap[Number(registro.idFinca || registro.fincaId || registro.finca_id)] ||
+          "No encontrada",
+        codigoEstanque:
+          registro.codigoEstanque ||
+          estanquesMap[Number(registro.idEstanque || registro.estanqueId || registro.estanque_id)] ||
+          "No encontrado",
+        usuarioNombre:
+          registro.usuarioNombre || registro.nombreColaborador || "No encontrado",
+      }));
+
       setDensidades(enriquecidos);
     } catch (error) {
-      mostrarError(error);
+      console.error("Error al cargar densidades poblacionales", error);
       setDensidades([]);
     } finally {
       setLoading(false);
@@ -74,6 +101,7 @@ export default function useDensidadPoblacional(fincaId, estanqueId, onAlertChang
     densidades,
     loading,
     alert,
+
     modalVisible,
     densidadSeleccionada,
     loadingEliminar,

@@ -16,14 +16,12 @@
 import { createContext, useContext, useEffect, useState } from "react";
 
 import { estanqueService } from "../services/estanque.service.js";
-import { useError } from "../../../shared/context/ErrorContext.js";
 
 const EstanqueContext = createContext();
 
 export function EstanqueProvider({ children }) {
   const [estanques, setEstanques] = useState([]);
   const [alert, setAlert] = useState(null);
-  const { mostrarError } = useError();
   const [loading, setLoading] = useState(true);
 
   async function cargarEstanques() {
@@ -35,7 +33,7 @@ export function EstanqueProvider({ children }) {
     
     } catch (error) {
     
-      mostrarError(error);
+      console.error("Error cargando estanques:", error);
     
     } finally {
     
@@ -55,7 +53,7 @@ export function EstanqueProvider({ children }) {
       const data = await estanqueService.getEstanqueById(id);
       return data;
     } catch (error) {
-      mostrarError(error);
+      console.error("Error buscando estanque:", error);
       throw error;
     }
   }

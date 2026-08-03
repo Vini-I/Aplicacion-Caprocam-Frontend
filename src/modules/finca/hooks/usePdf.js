@@ -18,18 +18,16 @@
 
 import { useState } from "react";
 import { generarRegistroPDF } from "../services/fincaPDF";
-import { useError } from "../../../shared/context/ErrorContext";
 
 export const usePdf = () => {
   const [loading, setLoading] = useState(false);
-  const { mostrarError } = useError();
 
   const crearPDFFinca = async (finca, estanquesFinca = []) => {
     try {
       setLoading(true);
       await generarRegistroPDF(finca, estanquesFinca);
     } catch (error) {
-      mostrarError("Error al generar el PDF de la finca");
+      console.log(error);
     } finally {
       setLoading(false);
     }

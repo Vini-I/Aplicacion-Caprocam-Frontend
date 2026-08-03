@@ -63,6 +63,7 @@ const FORM_INICIAL = {
   fecha: hoy(),
   finca: "",
   estanque: "",
+  colaborador: "",
   porcentajeRaleo: "",
   pesoPromedio: "",
   biomasaActual: "",
@@ -86,6 +87,7 @@ export default function useRaleo() {
     const errores = {};
     if (!form.finca) errores.finca = "La finca es obligatoria";
     if (!form.estanque) errores.estanque = "El estanque es obligatorio";
+    if (!form.colaborador) errores.colaborador = "El colaborador es obligatorio";
     if (!form.fecha) errores.fecha = "La fecha es obligatoria";
     if (!form.porcentajeRaleo || Number.isNaN(Number(form.porcentajeRaleo))) {
       errores.porcentajeRaleo = "El porcentaje de raleo es obligatorio y debe ser numérico";
