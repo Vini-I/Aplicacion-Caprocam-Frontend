@@ -1,3 +1,13 @@
+/**
+ * ============================================================
+ * HOOK: useEditarEstanque
+ * ============================================================
+ * Maneja la lógica del formulario para editar un estanque.
+ * - Carga el estanque original.
+ * - Normaliza valores numéricos.
+ * - Valida datos y expone `errores` y `displayErrorMessage`.
+ */
+
 import { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
 
@@ -6,6 +16,7 @@ import { useFinca } from "../../finca/context/FincaContext";
 
 import {
   validarFormularioEstanque,
+  normalizarNumeroDecimal,
 } from "./useEstanque";
 
 export default function useEditarEstanque(codigoCBO, id) {
@@ -31,6 +42,7 @@ export default function useEditarEstanque(codigoCBO, id) {
   const [mensaje, setMensaje] = useState("");
   const [tipoMensaje, setTipoMensaje] = useState("info");
   const [submitted, setSubmitted] = useState(false);
+  const [errores, setErrores] = useState({});
 
   const setLargoState = (valor) => setLargo(normalizarNumeroDecimal(valor));
   const setAnchoState = (valor) => setAncho(normalizarNumeroDecimal(valor));
@@ -107,6 +119,7 @@ export default function useEditarEstanque(codigoCBO, id) {
     if (resultado.valido === false) {
       setTipoMensaje(resultado.tipoMensaje);
       setMensaje(resultado.mensaje);
+      setErrores(resultado.errores || {});
     }
 
     return resultado.valido;
@@ -172,6 +185,9 @@ export default function useEditarEstanque(codigoCBO, id) {
     submitted,
 
     guardarCambios,
+    errores,
+    displayErrorMessage: mensaje || null,
+    displayErrorVariant: tipoMensaje || null,
 
   };
 }
