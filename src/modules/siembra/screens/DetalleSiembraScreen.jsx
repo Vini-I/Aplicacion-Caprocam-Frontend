@@ -196,7 +196,7 @@ export default function DetalleSiembraScreen() {
             <View style={styles.etapas}>
               {(formData.tipoRegistro === "precria"
                 ? [
-                    { label: "Siembra", variant: "success" },
+                    { label: "Precria", variant: "success" },
                     { label: "Desarrollo", variant: "warning" },
                     { label: "Finalización", variant: "success" },
                   ]
@@ -299,7 +299,8 @@ export default function DetalleSiembraScreen() {
                   </View>
                 </Button>
               )}
-
+             
+            {formData.estado !== "Finalizada" && (
             <Button
               style={styles.button}
               onPress={() =>
@@ -320,6 +321,7 @@ export default function DetalleSiembraScreen() {
                 </Text>
               </View>
             </Button>
+            )}
 
             {formData.tipoRegistro === "precria" &&
               formData.estado !== "Finalizada" && (

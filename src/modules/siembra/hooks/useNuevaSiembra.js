@@ -51,10 +51,13 @@ import { useError } from "../../../shared/context/ErrorContext";
 import {
   getPrecrias,
   getPrecriaById,
-  createPrecria,
+  createPrecriaConLote,
 } from "../services/precria.service";
-import { createSiembra } from "../services/siembra.service";
-import { getLoteById, createLote } from "../services/lote.service";
+import {
+  createSiembra,
+  createSiembraConLote,
+} from "../services/siembra.service";
+import { getLoteById } from "../services/lote.service";
 import {
   getProveedoresLarva,
   createProveedorLarva,
@@ -73,7 +76,11 @@ import {
   updateProcedencia,
   eliminarProcedencia,
 } from "../services/procedencia.service";
-import { LoteLarvaDTO, PrecriaDTO, SiembraDTO } from "../dtos/siembra.dto";
+import {
+  SiembraDTO,
+  SiembraConLoteDTO,
+  PrecriaConLoteDTO,
+} from "../dtos/siembra.dto";
 
 // El backend devuelve {id, nombre}; los Select del proyecto esperan
 // {label, value} - este mapeo se repite igual en useDetalleSiembra.
@@ -351,9 +358,16 @@ export default function useNuevaSiembra() {
         ? await getLoteById(precria.lote_larva_id)
         : null;
 
+      const todosLosEstanques = await estanqueService.getEstanques();
+      const estanqueDePrecria = todosLosEstanques.find(
+        (e) => e.id === precria.estanque_id,
+      );
+      const area = estanqueDePrecria
+        ? (estanqueDePrecria.largo * estanqueDePrecria.ancho) / 10000
+        : "";
+
       setFormData((previo) => {
         const densidad = previo.densidadPoblacional || "8";
-        const area = previo.areaHectareas || "";
         const actualizado = {
           ...previo,
           finca: precria.finca_id || previo.finca,
@@ -366,7 +380,6 @@ export default function useNuevaSiembra() {
           precriaId: String(precriaId),
           densidadPoblacional: densidad,
           areaHectareas: area,
-          cantidadSembrada: calcularCantidadSembrada(area, densidad),
           loteId: precria.lote_larva_id,
           codigoLoteLarva: lote?.codigo_lote || "",
           proveedorLarva: lote?.proveedor_larva_id || "",
@@ -532,19 +545,20 @@ export default function useNuevaSiembra() {
     }
     setGuardando(true);
     try {
-      let loteId;
-      if (formData.pasoPorPrecria === "si" && formData.loteId) {
-        loteId = formData.loteId;
+      const vieneDePrecria =
+        formData.pasoPorPrecria === "si" && formData.loteId;
+
+      if (vieneDePrecria) {
+        // Lote ya existe (viene de una Pre-Cría finalizada): sigue el flujo normal.
+        await createSiembra(new SiembraDTO(formData, formData.loteId));
+      } else if (formData.tipoRegistro === "precria") {
+        // Lote nuevo + Pre-Cría en una sola petición atómica.
+        await createPrecriaConLote(new PrecriaConLoteDTO(formData));
       } else {
-        const lote = await createLote(new LoteLarvaDTO(formData));
-        loteId = lote.id;
+        // Lote nuevo + Siembra en una sola petición atómica.
+        await createSiembraConLote(new SiembraConLoteDTO(formData));
       }
 
-      if (formData.tipoRegistro === "precria") {
-        await createPrecria(new PrecriaDTO(formData, loteId));
-      } else {
-        await createSiembra(new SiembraDTO(formData, loteId));
-      }
       setSubmitted(false);
       router.push({
         pathname: "/siembra",
