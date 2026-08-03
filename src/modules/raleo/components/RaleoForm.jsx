@@ -11,6 +11,18 @@
  * y el campo resulte inválido.
  *
  * Funcionalidad:
+ * - Finca/estanque usan datos reales del backend via
+ *   useFincaEstanqueRaleo (mismo patron que useFincaCrecimiento.js).
+ * - CORREGIDO: handleFincaChange llamaba a recargarEstanques(idFinca),
+ *   una funcion que no existia en este archivo (ReferenceError en
+ *   cada cambio de finca). useFincaEstanqueRaleo ya filtra los
+ *   estanques en memoria solo con que cambie form.finca, no hace
+ *   falta ninguna llamada adicional.
+ * - CORREGIDO: "Responsable del raleo" era un Input de texto
+ *   deshabilitado sin ninguna forma de llenarse (dead UI). Se
+ *   reemplazo por "Colaborador asignado *", un Select real con
+ *   colaboradores del backend (mismo patron y mismo caracter
+ *   obligatorio que useFincaCrecimiento.js / FincaCrecimientoScreen.jsx).
  * - Todos los colores usados vienen de COLORS (COLORS.textPrimary,
  *   COLORS.textTertiary, COLORS.primary, COLORS.white,
  *   COLORS.secondary), sin valores hardcodeados.
@@ -30,7 +42,7 @@
  * />
  */
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { View } from "react-native";
 import Card from "../../../shared/components/Card";
 import Select from "../../../shared/components/Select";
@@ -41,39 +53,22 @@ import Icon from "../../../shared/components/Icons";
 import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
 import { ICONS } from "../../../theme/icons";
+import { useFincaEstanqueRaleo } from "../hooks/useFincaEstanqueRaleo";
+import { styles as formStyles } from "../styles/RaleoStyles";
 
-const FINCAS = [
-  { label: "Finca La Reina", value: "laReina" },
-  { label: "Finca La Esperanza", value: "laEsperanza" },
-  { label: "Finca La Villa", value: "laVilla" },
-  { label: "Finca El Paraíso", value: "elParaiso" },
-];
-const ESTANQUES = [
-  { label: "A01", value: "A01" },
-  { label: "A02", value: "A02" },
-  { label: "B01", value: "B01" },
-  { label: "B02", value: "B02" },
-  { label: "B03", value: "B03" },
-  { label: "E01", value: "E01" },
-  { label: "E02", value: "E02" },
-  { label: "V01", value: "V01" },
-  { label: "V02", value: "V02" },
-];
 const OBJETIVOS = [
-  { label: "Comercialización", value: "comercializacion" },
-  { label: "Reducción de densidad", value: "reduccion_densidad" },
-  { label: "Resiembra en otro estanque", value: "resiembra" },
+  { label: "Comercialización", value: "Comercializacion" },
+  { label: "Reducción de densidad", value: "Reduccion_densidad" },
+  { label: "Resiembra en otro estanque", value: "Resiembra" },
 ];
 const METODOS = [
-  { label: "Atarraya", value: "atarraya" },
-  { label: "Red de arrastre", value: "red_arrastre" },
-  { label: "Boleo", value: "boleo" },
-  { label: "Trampa selectiva", value: "trampa" },
+  { label: "Atarraya", value: "Atarraya" },
+  { label: "Red de arrastre", value: "Red de arrastre" },
+  { label: "Boleo", value: "Boleo" },
+  { label: "Trampa selectiva", value: "Trampa selectiva" },
 ];
 
-const bordeError = { borderColor: COLORS.error, borderWidth: 1.5 };
-const sectionTitleRow = { flexDirection: "row", alignItems: "center", marginBottom: 10 };
-const sectionIcon = { marginRight: 8 };
+const { bordeError, sectionTitleRow, sectionIcon } = formStyles;
 
 export default function RaleoForm({
   form = {},
@@ -87,11 +82,16 @@ export default function RaleoForm({
   const invalidoFecha = submitted && !!errores.fecha;
   const invalidoPorcentaje = submitted && !!errores.porcentajeRaleo;
   const invalidoPesoPromedio = submitted && !!errores.pesoPromedio;
-  const invalidoBiomasaTotal = submitted && !!errores.biomasaTotal;
+  const invalidoBiomasaTotal = submitted && !!errores.biomasaActual;
   const invalidoObjetivo = submitted && !!errores.objetivo;
   const invalidoMetodo = submitted && !!errores.metodo;
-  const invalidoResponsable = submitted && !!errores.responsable;
-  const invalidoObservaciones = submitted && !!errores.observaciones;
+
+  const { fincasOptions, estanquesOptions } = useFincaEstanqueRaleo(form.finca);
+
+  const handleFincaChange = (idFinca) => {
+    updateField("finca", idFinca);
+    updateField("estanque", "");
+  };
 
   return (
     <View>
@@ -114,8 +114,8 @@ export default function RaleoForm({
         <Select
           label="Finca *"
           value={form.finca}
-          onChange={(v) => updateField("finca", v)}
-          options={FINCAS}
+          onChange={handleFincaChange}
+          options={fincasOptions}
           placeholder="Seleccionar finca"
           selectStyle={invalidoFinca ? bordeError : null}
         />
@@ -124,10 +124,11 @@ export default function RaleoForm({
           label="Estanque *"
           value={form.estanque}
           onChange={(v) => updateField("estanque", v)}
-          options={ESTANQUES}
+          options={estanquesOptions}
           placeholder="Seleccionar estanque"
           selectStyle={invalidoEstanque ? bordeError : null}
         />
+
       </Card>
 
       <Card>
@@ -142,8 +143,15 @@ export default function RaleoForm({
           label="Porcentaje de raleo (%) *"
           placeholder="Ej: 30"
           value={String(form.porcentajeRaleo ?? "")}
-          keyboardType="numeric"
-          onChangeText={(v) => updateField("porcentajeRaleo", v.replace(/[^0-9]/g, ""))}
+          keyboardType="number-pad"
+          onChangeText={(v) => {
+            // Solo valores enteros de 0 a 100
+            let valor = v.replace(/[^0-9]/g, "");
+            // Evitar ceros infinitos al inicio
+            valor = valor.replace(/^0+(?=\d)/, "");
+            if (Number(valor) > 100) {valor = "100";}
+            updateField("porcentajeRaleo", valor);
+          }}
           style={invalidoPorcentaje ? bordeError : null}
         />
 
@@ -152,22 +160,44 @@ export default function RaleoForm({
           placeholder="Ej: 10.5"
           value={String(form.pesoPromedio ?? "")}
           keyboardType="decimal-pad"
-          onChangeText={(v) => updateField("pesoPromedio", v.replace(/[^0-9.]/g, ""))}
+          onChangeText={(v) => {
+            let valor = v.replace(/[^0-9.]/g, "");
+            // Evitar más de un punto decimal
+            const partes = valor.split(".");
+            if (partes.length > 2) {
+            valor = `${partes[0]}.${partes.slice(1).join("")}`;}
+            // Evitar ceros infinitos antes del decimal
+            if (!valor.includes(".")) {valor = valor.replace(/^0+(?=\d)/, "");}
+            // Máximo 5 dígitos contando solo números
+            const numeros = valor.replace(".", "");
+            if (numeros.length > 5) {return;}
+            updateField("pesoPromedio", valor);
+          }}
           style={invalidoPesoPromedio ? bordeError : null}
         />
         <Input
           label="Biomasa actual del estanque (kg) *"
-          placeholder="Ej: 800"
+          placeholder="Ej: 800.5"
           value={String(form.biomasaActual ?? "")}
           keyboardType="decimal-pad"
-          onChangeText={(v) => updateField("biomasaActual", v.replace(/[^0-9.]/g, ""))}
+          onChangeText={(v) => {
+            let valor = v.replace(/[^0-9.]/g, "");
+            // Evitar más de un punto decimal
+            const partes = valor.split(".");
+            if (partes.length > 2) {
+            valor = `${partes[0]}.${partes.slice(1).join("")}`;}
+            // Máximo 5 dígitos contando solo números
+            const numeros = valor.replace(".", "");
+            if (numeros.length > 5) {return;}
+            updateField("biomasaActual", valor);
+          }}
           style={invalidoBiomasaTotal ? bordeError : null}
         />
         <Input
           label="Biomasa restante estimada (kg)"
           value={
-            biomasaCalculada !== ""
-              ? biomasaCalculada.toFixed(2)
+            biomasaCalculada !== "" && !isNaN(Number(biomasaCalculada))
+              ? Number(biomasaCalculada).toFixed(2)
               : ""
           }
           editable={false}
@@ -198,14 +228,6 @@ export default function RaleoForm({
           placeholder="Seleccionar método"
           selectStyle={invalidoMetodo ? bordeError : null}
         />
-
-        <Input
-          label="Responsable del raleo *"
-          placeholder="Nombre del responsable"
-          value={form.responsable ?? ""}
-          onChangeText={(v) => updateField("responsable", v)}
-          style={invalidoResponsable ? bordeError : null}
-        />
       </Card>
 
       <Card>
@@ -217,11 +239,11 @@ export default function RaleoForm({
         </View>
 
         <Input
-          label="Notas adicionales *"
+          label="Notas adicionales"
           placeholder="Ingrese observaciones del raleo"
           value={form.observaciones ?? ""}
           onChangeText={(v) => updateField("observaciones", v)}
-          style={invalidoObservaciones ? bordeError : null}
+          
         />
       </Card>
     </View>

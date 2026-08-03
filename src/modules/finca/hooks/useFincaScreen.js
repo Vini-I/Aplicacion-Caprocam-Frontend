@@ -15,8 +15,9 @@
  * - Adapta el comportamiento visual según el tamaño de pantalla.
  */
 import { useWindowDimensions } from "react-native";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useFinca } from "../context/FincaContext.js";
+import { useEstanque } from "../../estanques/context/EstanqueContext.js"
 
 export function useFincaScreen() {
   const { width } = useWindowDimensions();
@@ -27,10 +28,19 @@ export function useFincaScreen() {
     alert, 
     eliminarFinca 
   } = useFinca();
+  const { estanques } = useEstanque();
+
   const [ModalVisible, setModalVisible] = useState(false);
   const [FincaNombreSeleccionada, setFincaNombreSeleccionada] = useState(null);
   const [FincaCodigoCBOSeleccionada, setFincaCodigoCBOSeleccionada] =
-    useState(null);
+  useState(null);
+
+  const fincasConConteo = useMemo(() => {
+    return fincas.map((finca) => ({
+      ...finca,
+      estanques: estanques.filter((e) => e.idFinca === finca.id).length,
+    }));
+  }, [fincas, estanques]);
 
   function abrirModalEliminar(Finca) {
     setFincaCodigoCBOSeleccionada(Finca.codigoCBO);
@@ -52,7 +62,7 @@ export function useFincaScreen() {
   }
 
   return {
-    fincas,
+    fincas: fincasConConteo,
     alert,
     isCompact,
     ModalVisible,

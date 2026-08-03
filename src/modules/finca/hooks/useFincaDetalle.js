@@ -21,11 +21,13 @@ import { useEffect, useState } from "react";
 
 import { estanqueService } from "../../estanques/services/estanque.service.js";
 import { useEstanque } from "../../estanques/context/EstanqueContext.js";
+import { useError } from "../../../shared/context/ErrorContext.js";
 
 import { usePdf } from "../hooks/usePdf";
 
 export default function useFincaDetalle() {
   const { fincas, loading: loadingFincas } = useFinca();
+  const { mostrarError } = useError();
 
   const {
     estanques,
@@ -45,7 +47,24 @@ export default function useFincaDetalle() {
 
   const { crearPDFFinca, loading: loadingPdf } = usePdf();
 
-  const handleGenerar = () => crearPDFFinca(finca, estanquesFinca);
+  const handleGenerar = async () => {
+  try {
+    // Cargar el detalle completo de cada estanque (incluye equipos)
+    const estanquesCompletos = await Promise.all(
+      estanquesFinca.map(async (e) => {
+        try {
+          return await estanqueService.getEstanqueById(e.id);
+        } catch {
+          return e; // si falla, al menos usa el resumen
+        }
+      })
+    );
+
+    await crearPDFFinca(finca, estanquesCompletos);
+  } catch (error) {
+    mostrarError("Error al generar el PDF de la finca");
+  }
+};
 
   function abrirModalEliminar(estanque) {
     setEstanqueSeleccionado(estanque);

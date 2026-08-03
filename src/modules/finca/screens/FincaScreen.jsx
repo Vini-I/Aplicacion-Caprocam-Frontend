@@ -32,7 +32,7 @@ import Icon from "../../../shared/components/Icons.jsx";
 import Badge from "../../../shared/components/Badge.jsx";
 import ModalEliminar from "../../../shared/components/ModalEliminar.jsx";
 
-export default function FincasScreen({ onDetail, onNew, onEdit }) {
+export default function FincaScreen({ onDetail, onNew, onEdit }) {
   const {
     fincas,
     isCompact,
@@ -45,100 +45,108 @@ export default function FincasScreen({ onDetail, onNew, onEdit }) {
   } = useFincaScreen();
 
   return (
-    <ScrollView style={STYLE.container} showsVerticalScrollIndicator={false}>
-      <View style={STYLE.contentWrapper}>
-        {alert === "edited" && (
-          <Alert style={styles.alertCorrect}>Finca editada correctamente</Alert>
-        )}
-        {alert === "created" && (
-          <Alert style={styles.alertCorrect}>
-            Finca registrada correctamente
-          </Alert>
-        )}
-        {alert === "deleted" && (
-          <Alert style={styles.alertIncorrect}>
-            Finca eliminada correctamente
-          </Alert>
-        )}
+    <>
+      <ScrollView style={[STYLE.container, styles.content]} showsVerticalScrollIndicator={false}>
+        <View style={STYLE.contentWrapper}>
+          {alert === "edited" && (
+            <Alert style={styles.alertCorrect}>
+              Finca editada correctamente
+            </Alert>
+          )}
+          {alert === "created" && (
+            <Alert style={styles.alertCorrect}>
+              Finca registrada correctamente
+            </Alert>
+          )}
+          {alert === "deleted" && (
+            <Alert style={styles.alertIncorrect}>
+              Finca eliminada correctamente
+            </Alert>
+          )}
 
-        {fincas.map((Finca) => (
-          <CardPress
-            key={Finca.id}
-            onPress={() => onDetail(Finca.id)}
-            style={styles.card}
-          >
-            <View style={styles.cardContent}>
-              <View style={styles.iconContainer}>
-                <Icon icon={ICONS.location} size={25} color={COLORS.primary} />
-              </View>
+          {fincas.map((Finca) => (
+            <CardPress
+              key={Finca.id}
+              onPress={() => onDetail(Finca.id)}
+              style={styles.card}
+            >
+              <View style={styles.cardContent}>
+                <View style={styles.iconContainer}>
+                  <Icon
+                    icon={ICONS.location}
+                    size={25}
+                    color={COLORS.primary}
+                  />
+                </View>
 
-              <View style={styles.flex}>
-                <Title level={4} numberOfLines={2}>
-                  {Finca.nombreFinca}
-                </Title>
+                <View style={styles.flex}>
+                  <Title level={4} numberOfLines={2}>
+                    {Finca.nombreFinca}
+                  </Title>
 
-                <Text numberOfLines={3} color={COLORS.textTertiary}>
-                  {Finca.provincia}, {Finca.canton}, {Finca.distrito}
-                </Text>
-                <Text color={COLORS.primary}>{Finca.propietarioResponsable}</Text>
+                  <Text numberOfLines={3} color={COLORS.textTertiary}>
+                    {Finca.provincia}, {Finca.canton}, {Finca.distrito}
+                  </Text>
+                  <Text color={COLORS.primary}>
+                    {Finca.propietarioResponsable}
+                  </Text>
 
-                <View
-                  style={[styles.details, isCompact && styles.detailsColumn]}
-                >
-                  <Badge
-                    label={`${Finca.estanques ?? "-"} estanques`}
-                    textStyle={styles.detail}
-                  ></Badge>
-                  <Badge
-                    label={`${Finca.areaTotal}  ha`}
-                    textStyle={styles.detail}
-                  ></Badge>
+                  <View
+                    style={[styles.details, isCompact && styles.detailsColumn]}
+                  >
+                    <Badge
+                      label={`${Finca.estanques ?? "-"} estanques`}
+                      textStyle={styles.detail}
+                    ></Badge>
+                    <Badge
+                      label={`${Finca.areaTotal}  ha`}
+                      textStyle={styles.detail}
+                    ></Badge>
+                  </View>
+                </View>
+                <View style={styles.buttonsCrud}>
+                  <Button
+                    style={styles.delete}
+                    onPress={() => abrirModalEliminar(Finca)}
+                  >
+                    <Icon
+                      icon={ICONS.delete}
+                      style={[styles.deleteIcon]}
+                      size={20}
+                    />
+                    <Text size={12} style={styles.deleteIcon}>
+                      Eliminar
+                    </Text>
+                  </Button>
+
+                  <Button style={styles.edit} onPress={() => onEdit(Finca.id)}>
+                    <Icon icon={ICONS.edit} style={styles.editIcon} size={20} />
+                    <Text size={12} style={styles.editIcon}>
+                      Editar
+                    </Text>
+                  </Button>
                 </View>
               </View>
-              <View style={styles.buttonsCrud}>
-                <Button
-                  style={styles.delete}
-                  onPress={() => abrirModalEliminar(Finca)}
-                >
-                  <Icon
-                    icon={ICONS.delete}
-                    style={[styles.deleteIcon]}
-                    size={20}
-                  />
-                  <Text size={12} style={styles.deleteIcon}>
-                    Eliminar
-                  </Text>
-                </Button>
+            </CardPress>
+          ))}
 
-                <Button
-                  style={styles.edit}
-                  onPress={() => onEdit(Finca.id)}
-                >
-                  <Icon icon={ICONS.edit} style={styles.editIcon} size={20} />
-                  <Text size={12} style={styles.editIcon}>
-                    Editar
-                  </Text>
-                </Button>
-              </View>
-            </View>
-          </CardPress>
-        ))}
-
-        <Button style={styles.addButton} onPress={() => onNew()}>
+          <ModalEliminar
+            visible={ModalVisible}
+            title="finca"
+            message={FincaNombreSeleccionada}
+            onCancel={cancelarEliminar}
+            onConfirm={confirmarEliminar}
+          />
+        </View>
+      </ScrollView>
+      <View style={styles.addButtonContainer}>
+        <Button style={[STYLE.contentWrapper, styles.addButton]} onPress={() => onNew()}>
           <Icon style={styles.addButtonText} icon={ICONS.add} size={15} />
           <Text style={styles.addButtonText} size={15}>
-            REGISTRAR NUEVA FINCA
+             Añadir Finca
           </Text>
         </Button>
-
-        <ModalEliminar
-          visible={ModalVisible}
-          title="finca"
-          message={FincaNombreSeleccionada}
-          onCancel={cancelarEliminar}
-          onConfirm={confirmarEliminar}
-        />
       </View>
-    </ScrollView>
+    </>
   );
 }

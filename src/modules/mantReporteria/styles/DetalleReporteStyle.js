@@ -54,6 +54,7 @@ export const styles = StyleSheet.create({
         width: "100%",
         maxWidth: 900,
         alignSelf: "center",
+        marginTop: 16,
     },
 
     emptyState: {
@@ -83,82 +84,99 @@ export const styles = StyleSheet.create({
     },
 
     cardRegistro: {
-        paddingVertical: 12,
+        paddingVertical: 14,
         paddingHorizontal: 16,
         marginBottom: 12,
-        borderRadius: 12,
+        borderRadius: 14,
         backgroundColor: COLORS.white,
+        borderLeftWidth: 5,
+        borderLeftColor: COLORS.primary,
         shadowColor: COLORS.black,
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.05,
-        shadowRadius: 4,
-        elevation: 2,
-    },
-
-    cardHeader: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        marginBottom: 10,
-    },
-
-    cardTitle: {
-        fontSize: 15,
-        fontWeight: "700",
-        color: COLORS.textPrimary,
-    },
-
-    actionButtons: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 12,
-    },
-
-    mainContent: {
-        flexDirection: "column",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 6,
+        elevation: 3,
     },
 
     infoGrid: {
         flexDirection: "row",
         flexWrap: "wrap",
         justifyContent: "space-between",
+        marginBottom: 4,
     },
 
     infoItem: {
         width: "48%",
-        marginBottom: 8,
+        marginBottom: 12,
+        paddingVertical: 6,
+        paddingHorizontal: 8,
+        backgroundColor: COLORS.surface,
+        borderRadius: 8,
     },
 
     label: {
         fontSize: 11,
         color: COLORS.textTertiary,
-        marginBottom: 1,
+        fontFamily: TYPOGRAPHY.fontFamily.medium,
+        marginBottom: 3,
+        textTransform: "uppercase",
+        letterSpacing: 0.4,
     },
 
     value: {
         fontSize: 14,
-        fontWeight: "600",
+        fontFamily: TYPOGRAPHY.fontFamily.bold,
         color: COLORS.textSecondary,
     },
 
+    //queridos compañeres antes que pregunten, se que el nombre de la clase es pesoContainer y peso label
+    // no son extrictamente para el peso sino para un todo,
+    // pero no se me ocurrio otro nombre y ya lo deje asi, no me juzguen por eso
     pesoContainer: {
-        marginTop: 6,
-        paddingTop: 8,
+        marginTop: 8,
+        marginBottom: 8,
+        paddingVertical: 12,
         alignItems: "center",
-        borderTopWidth: 1,
-        borderTopColor: COLORS.surface,
+        borderRadius: 10,
+        backgroundColor: COLORS.surface,
     },
 
     pesoLabel: {
         fontSize: 11,
         color: COLORS.textTertiary,
+        fontFamily: TYPOGRAPHY.fontFamily.medium,
+        textTransform: "uppercase",
+        letterSpacing: 0.4,
+        marginBottom: 4,
     },
 
     peso: {
-        fontSize: 20,
+        fontSize: 26,
+        fontFamily: TYPOGRAPHY.fontFamily.bold,
         fontWeight: "800",
         color: COLORS.Crecimiento,
     },
+
+infeccion: {
+        fontSize: 26,
+        fontFamily: TYPOGRAPHY.fontFamily.bold,
+        fontWeight: "800",
+        color: COLORS.Parasitologia,
+ },
+
+ cantidadKg: {
+        fontSize: 26,
+        fontFamily: TYPOGRAPHY.fontFamily.bold,
+        fontWeight: "800",
+        color: COLORS.Alimentacion,
+ },
+
+ Sobrevivencia: {
+        fontSize: 26,
+        fontFamily: TYPOGRAPHY.fontFamily.bold,
+        fontWeight: "800",
+        color: COLORS.Densidad,
+ },
 
     Buttons: {
         flexDirection: "row",
@@ -167,8 +185,8 @@ export const styles = StyleSheet.create({
         alignItems: "center",
         marginTop: 15,
         marginRight: 10,
-      },
-    
+    },
+
     Eliminar: {
         flex: 1,
         backgroundColor: COLORS.white,
@@ -193,5 +211,25 @@ export const styles = StyleSheet.create({
         borderRadius: 6,
         marginHorizontal: 2,
         height: "70%",
+    },
+
+    alertCorrect: {
+        alignItems: "center",
+        backgroundColor: COLORS.successLight,
+        borderWidth: 1.5,
+        borderColor: COLORS.success,
+        paddingVertical: 10,
+        borderRadius: 10,
+        marginBottom: 10,
+    },
+
+    alertIncorrect: {
+        alignItems: "center",
+        backgroundColor: COLORS.errorLight,
+        borderWidth: 1.5,
+        borderColor: COLORS.error,
+        paddingVertical: 10,
+        borderRadius: 10,
+        marginBottom: 10,
     },
 });

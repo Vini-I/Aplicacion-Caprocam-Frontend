@@ -8,6 +8,7 @@
 import * as Print from "expo-print";
 import * as Sharing from "expo-sharing";
 import * as FileSystem from "expo-file-system/legacy";
+import { useError } from "../../../shared/context/ErrorContext";
 
 export const generarRegistroPDF = async (finca, estanquesFinca = []) => {
   try {
@@ -17,6 +18,8 @@ export const generarRegistroPDF = async (finca, estanquesFinca = []) => {
         <td>${valor ?? ""}</td>
       </tr>
     `;
+
+    const cantidadEstanques = estanquesFinca.length;
 
     const htmlTablaFinca = `
       <table style="width:100%; border-collapse:collapse; margin-bottom:20px;" border="1" cellpadding="6">
@@ -32,9 +35,29 @@ export const generarRegistroPDF = async (finca, estanquesFinca = []) => {
         ${filaTabla("Teléfonos", (finca.telefonos || []).join(", "))}
         ${filaTabla("Área total", finca.areaTotal)}
         ${filaTabla("Espejo de agua", finca.espejosAgua)}
-        ${filaTabla("Cantidad de estanques", finca.estanques)}
+        ${filaTabla("Cantidad de estanques", cantidadEstanques)}
       </table>
     `;
+
+    const obtenerTextoSiNo = (valor) => {
+      if (valor === true || String(valor).toLowerCase() === "si" || String(valor).toLowerCase() === "true") {
+        return "Sí, usa precría";
+      }
+      if (valor === false || String(valor).toLowerCase() === "no" || String(valor).toLowerCase() === "false") {
+        return "No usa precria";
+      }
+      return String(valor ?? "No registrado");
+    };
+
+    const formatearListaEquipos = (lista) => {
+      if (!lista || !Array.isArray(lista) || lista.length === 0) {
+        return "Sin asignar";
+      }
+
+      return lista
+        .map((item) => item.nombre || item.codigo || item.nombreEquipo || item.modelo || `Equipo #${item.id}`)
+        .join(", ");
+    };
 
     const htmlEstanques =
       estanquesFinca.length === 0
@@ -49,22 +72,15 @@ export const generarRegistroPDF = async (finca, estanquesFinca = []) => {
                 ${filaTabla("Ancho", `${estanque.ancho} m`)}
                 ${filaTabla("Profundidad", `${estanque.profundidad} m`)}
                 ${filaTabla("Fuente de agua", estanque.fuenteAgua)}
-                ${filaTabla("Especie", estanque.especie)}
-                ${filaTabla("Fecha de siembra", estanque.fechaSiembra)}
-              `;
-
-              if (estanque.fechaInicioEngorde) {
-                filas += filaTabla("Inicio de engorde", estanque.fechaInicioEngorde);
-              }
-
-              filas += `
-                ${filaTabla("Último mantenimiento", estanque.fechaMantenimiento)}
-                ${filaTabla("Densidad de siembra", estanque.densidadSiembra)}
-                ${filaTabla("Precría", estanque.precria)}
-                ${filaTabla("Método de alimentación", estanque.metodoAlimentacion)}
-                ${filaTabla("Proveedor de alimento", estanque.proveedorAlimento)}
-                ${filaTabla("Aireadores", estanque.numeroAireadores)}
-                ${filaTabla("Alimentador automático", estanque.tieneAlimentadorAutomatico)}
+                ${filaTabla("Fecha de último mantenimiento", estanque.fechaMantenimiento ?? "No registrado")}
+                ${filaTabla("Usa Precría", obtenerTextoSiNo(estanque.precria))}
+                ${filaTabla("Total de equipos", estanque.cantidadEquipos ?? 0)}
+                ${filaTabla("Equipos de Aireación", formatearListaEquipos(estanque?.equipos?.aireacion))}
+                ${filaTabla("Equipos de Alimentación", formatearListaEquipos(estanque?.equipos?.alimentacion))}
+                ${filaTabla("Equipos de Bombeo", formatearListaEquipos(estanque?.equipos?.bombeo))}
+                ${filaTabla("Equipos de Mantenimiento", formatearListaEquipos(estanque?.equipos?.mantenimiento))}
+                ${filaTabla("Equipos de Monitoreo", formatearListaEquipos(estanque?.equipos?.monitoreo))}
+                ${filaTabla("Otros Equipos", formatearListaEquipos(estanque?.equipos?.otros))}
               `;
 
               return `
@@ -127,7 +143,7 @@ export const generarRegistroPDF = async (finca, estanquesFinca = []) => {
 
     return nuevaRuta;
   } catch (error) {
-    console.log("Error generando PDF (móvil):", error);
+    mostrarError("Error al generar el PDF de la finca");
     throw error;
   }
 };

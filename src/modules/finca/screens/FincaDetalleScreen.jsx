@@ -38,14 +38,13 @@ export default function FincaDetalleScreen({
   onEstanqueDetalle,
   onEstanqueEditar,
 }) {
-
-  const { 
-    finca, 
-    estanquesFinca, 
-    handleGenerar, 
-    loadingFincas, 
+  const {
+    finca,
+    estanquesFinca,
+    handleGenerar,
+    loadingFincas,
     loadingEstanques,
-    loadingPdf ,
+    loadingPdf,
 
     alert,
 
@@ -63,7 +62,7 @@ export default function FincaDetalleScreen({
   if (!finca) {
     return <Text>Finca no encontrada</Text>;
   }
-  
+
   return (
     <>
       <NavbarRegistro
@@ -72,26 +71,31 @@ export default function FincaDetalleScreen({
         Icono="document"
       />
       <ScrollView showsVerticalScrollIndicator={false} style={STYLE.container}>
-        <View style={STYLE.contentWrapper}>
-
+        <View style={[STYLE.contentWrapper, styles.content]}>
           {alert === "edited" && (
-            <Alert style={styles.alertCorrect}>Estanque editado correctamente</Alert>
+            <Alert style={styles.alertCorrect}>
+              Estanque editado correctamente
+            </Alert>
           )}
           {alert === "created" && (
             <Alert style={styles.alertCorrect}>
-            Estanque registrado correctamente
+              Estanque registrado correctamente
             </Alert>
           )}
-            {alert === "deleted" && (
+          {alert === "deleted" && (
             <Alert style={styles.alertIncorrect}>
-            Estanque eliminado correctamente
-          </Alert>
+              Estanque eliminado correctamente
+            </Alert>
           )}
 
           <Card>
             <View>
-              <Text color={COLORS.textTertiary} style={styles.titleText}>
-                DATOS DE LA FINCA
+              <Text
+                color={COLORS.textTertiary}
+                weight="500"
+                style={styles.titleText}
+              >
+                Datos De La Finca
               </Text>
             </View>
 
@@ -122,7 +126,9 @@ export default function FincaDetalleScreen({
 
             <View style={styles.filaDetalle}>
               <Text style={styles.etiqueta}>Otras Señas:</Text>
-              <Text numberOfLines={3} style={styles.valor}>{finca.otrasSenas}</Text>
+              <Text numberOfLines={3} style={styles.valor}>
+                {finca.otrasSenas}
+              </Text>
             </View>
 
             <View style={styles.filaDetalle}>
@@ -158,16 +164,10 @@ export default function FincaDetalleScreen({
                 size={18}
               />
               <Text size={15}>
-                {loadingPdf ? "GENERANDO..." : "GENERAR REPORTE FINCA"}
+                {loadingPdf ? "Generando..." : "Generar Reporte Finca"}
               </Text>
             </Button>
           </Card>
-          <Button style={styles.addButton} onPress={() => onEstanque(finca.codigoCBO)}>
-            <Icon style={styles.addButtonText} icon={ICONS.add} size={15} />
-            <Text style={styles.addButtonText} size={15}>
-              REGISTRAR NUEVO ESTANQUE
-            </Text>
-          </Button>
 
           {estanquesFinca?.map((estanque, index) => (
             <View key={index}>
@@ -207,11 +207,7 @@ export default function FincaDetalleScreen({
                     style={styles.Eliminar}
                     onPress={() => abrirModalEliminar(estanque)}
                   >
-                    <Icon
-                      icon={ICONS.delete}
-                      color={COLORS.error}
-                      size={20}
-                    />
+                    <Icon icon={ICONS.delete} color={COLORS.error} size={20} />
                     <Text size={12} color={COLORS.error}>
                       Eliminar
                     </Text>
@@ -219,13 +215,11 @@ export default function FincaDetalleScreen({
 
                   <Button
                     style={styles.Editar}
-                    onPress={() => onEstanqueEditar(finca.codigoCBO, estanque.id)}
+                    onPress={() =>
+                      onEstanqueEditar(finca.codigoCBO, estanque.id)
+                    }
                   >
-                    <Icon
-                      icon={ICONS.edit}
-                      color={COLORS.primary}
-                      size={20}
-                    />
+                    <Icon icon={ICONS.edit} color={COLORS.primary} size={20} />
                     <Text size={12} color={COLORS.primary}>
                       Editar
                     </Text>
@@ -244,6 +238,17 @@ export default function FincaDetalleScreen({
           />
         </View>
       </ScrollView>
+      <View style={styles.addButtonContainer}>
+        <Button
+          style={[STYLE.contentWrapper, styles.addButton]}
+          onPress={() => onEstanque(finca.codigoCBO)}
+        >
+          <Icon style={styles.addButtonText} icon={ICONS.add} size={15} />
+          <Text style={styles.addButtonText} size={15}>
+            Añadir Estanque
+          </Text>
+        </Button>
+      </View>
     </>
   );
 }

@@ -4,39 +4,77 @@ import Card from "../../../shared/components/Card";
 import Text from "../../../shared/components/Text";
 import Button from "../../../shared/components/Button.jsx"
 import Icon from "../../../shared/components/Icons.jsx"
+import ModalEliminar from "../../../shared/components/ModalEliminar.jsx";
+import Alert from "../../../shared/components/Alert.jsx";
+
+import useParasitologia from "../hooks/useParasitologia.js";
 
 import { ICONS } from "../../../theme/icons.js";
 import { COLORS } from "../../../theme/colors.js";
 
 import { styles } from "../styles/DetalleReporteStyle.js";
 
-export default function CardParasitologia({ data }) {
-    
+export default function CardParasitologia({ fincaId, estanqueId, onEditar, onAlertChange }) {
+
+    const {
+        parasitologia,
+        loading,
+        alert,
+
+        modalVisible,
+        parasitologiaSeleccionada,
+        loadingEliminar,
+        abrirModalEliminar,
+        cancelarEliminar,
+        confirmarEliminar,
+    } = useParasitologia(fincaId, estanqueId, onAlertChange);
+
+    if (loading) {
+        return (
+            <View style={styles.emptyState}>
+                <Text style={styles.emptyTitle}>Cargando registros...</Text>
+            </View>
+        );
+    }
+
+    if (parasitologia.length === 0) {
+        return (
+            <View style={styles.emptyState}>
+                <Icon icon={ICONS.document} size={48} color={COLORS.textQuaternary} />
+                <Text style={styles.emptyTitle}>No hay registros disponibles</Text>
+                <Text style={styles.emptyDescription}>
+                    No se encontraron registros con los filtros seleccionados.
+                </Text>
+            </View>
+        );
+    }
+
     return (
         <>
             {
-                data.map((registro) => (
+                parasitologia.map((registro) => (
                     <Card
                         key={registro.id}
-                        style={styles.cardRegistro}
+                        style={[styles.cardRegistro, { borderLeftColor: COLORS.Parasitologia }]}
 
                     >
-                        <View style={styles.infoGrid}> 
+                        <View style={styles.infoGrid}>
                             <View style={styles.infoItem}>
-                                <Text style={styles.label}>
-                                    Finca
-                                </Text>
-                                <Text style={styles.value}>
-                                    {registro.nombreFinca}
-                                </Text>
+                                <Text style={styles.label}>Finca</Text>
+                                <Text style={styles.value}>{registro.nombreFinca}</Text>
+                            </View>
+
+                            <View style={styles.infoItem}>
+                                <Text style={styles.label}>Estanque</Text>
+                                <Text style={styles.value}>{registro.codigoEstanque}</Text>
                             </View>
 
                             <View style={styles.infoItem}>
                                 <Text style={styles.label}>
-                                    Estanque
+                                    Colaborador
                                 </Text>
                                 <Text style={styles.value}>
-                                    {registro.codigoEstanque}
+                                    {registro.nombreCreadoPor}
                                 </Text>
                             </View>
 
@@ -54,7 +92,7 @@ export default function CardParasitologia({ data }) {
                                     Parasito
                                 </Text>
                                 <Text style={styles.value}>
-                                    {registro.parasito.charAt(0).toUpperCase() + registro.parasito.slice(1)}
+                                    {registro.parasito ? registro.parasito.charAt(0).toUpperCase() + registro.parasito.slice(1) : ""}
                                 </Text>
                             </View>
 
@@ -63,7 +101,7 @@ export default function CardParasitologia({ data }) {
                                     Grado Infeccion
                                 </Text>
                                 <Text style={styles.value}>
-                                    {registro.gradoInfeccion.charAt(0).toUpperCase() + registro.gradoInfeccion.slice(1)}
+                                    {registro.gradoInfeccion ? registro.gradoInfeccion.charAt(0).toUpperCase() + registro.gradoInfeccion.slice(1) : ""}
                                 </Text>
                             </View>
 
@@ -84,15 +122,6 @@ export default function CardParasitologia({ data }) {
                                     {registro.camaronesInfectados}
                                 </Text>
                             </View>
-
-                            <View style={styles.infoItem}>
-                                <Text style={styles.label}>
-                                    Colaborador
-                                </Text>
-                                <Text style={styles.value}>
-                                    {registro.nombreColaborador.charAt(0).toUpperCase() + registro.nombreColaborador.slice(1)}
-                                </Text>
-                            </View>
                         </View>
 
                         <View style={styles.pesoContainer}>
@@ -100,7 +129,7 @@ export default function CardParasitologia({ data }) {
                                 Porcetaje Infeccion
                             </Text>
 
-                            <Text style={styles.peso}>
+                            <Text style={styles.infeccion}>
                                 {registro.porcentajeInfeccion} %
                             </Text>
                         </View>
@@ -108,29 +137,29 @@ export default function CardParasitologia({ data }) {
                         <View style={styles.Buttons}>
                             <Button
                                 style={styles.Eliminar}
-                                onPress={() => abrirModalEliminar(estanque)}
+                                onPress={() => abrirModalEliminar(registro)}
                             >
                                 <Icon
-                                icon={ICONS.delete}
-                                color={COLORS.error}
-                                size={20}
+                                    icon={ICONS.delete}
+                                    color={COLORS.error}
+                                    size={20}
                                 />
                                 <Text size={12} color={COLORS.error}>
-                                Eliminar
+                                    Eliminar
                                 </Text>
                             </Button>
 
                             <Button
                                 style={styles.Editar}
-                                onPress={() => onEstanqueEditar(finca.codigoCBO, estanque.id)}
+                                onPress={() => {onEditar(registro.id)}}
                             >
                                 <Icon
-                                icon={ICONS.edit}
-                                color={COLORS.primary}
-                                size={20}
+                                    icon={ICONS.edit}
+                                    color={COLORS.primary}
+                                    size={20}
                                 />
                                 <Text size={12} color={COLORS.primary}>
-                                Editar
+                                    Editar
                                 </Text>
                             </Button>
                         </View>
@@ -139,6 +168,15 @@ export default function CardParasitologia({ data }) {
                     </Card>
                 ))
             }
+
+            <ModalEliminar
+                visible={modalVisible}
+                title="registro de parasitología"
+                message={parasitologiaSeleccionada?.parasito}
+                onCancel={cancelarEliminar}
+                onConfirm={confirmarEliminar}
+                loading={loadingEliminar}
+            />
         </>
     )
 }

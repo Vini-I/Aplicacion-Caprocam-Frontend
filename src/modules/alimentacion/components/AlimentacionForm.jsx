@@ -22,7 +22,7 @@
  *   errores={errores}
  * />
  */
-
+ 
 import React from "react";
 import { View } from "react-native";
 import AlimentacionFormInfoGeneral from "./AlimentacionFormInfoGeneral";
