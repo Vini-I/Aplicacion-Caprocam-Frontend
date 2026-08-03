@@ -23,6 +23,10 @@ import { StyleSheet } from "react-native";
 import { COLORS } from "../../../theme/colors.js";
 
 export const styles = StyleSheet.create({
+  content:{
+    paddingBottom: 70,
+  },
+  
   card: {
     flexDirection: "row",
   },
@@ -105,6 +109,16 @@ export const styles = StyleSheet.create({
     color: COLORS.primary,
   },
 
+  addButtonContainer: {
+    position: "absolute",
+    bottom: 20,
+    left: 16,
+    right: 16,
+    backgroundColor: "transparent", // Contenedor transparente sin sombras ni cajas raras
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
   addButton: {
     borderWidth: 2,
     color: COLORS.primary,
@@ -112,13 +126,12 @@ export const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     borderRadius: 12,
     flexDirection: "row",
-    gap: 8,
-    marginVertical: 20,
+    marginBottom: "auto",
   },
 
   addButtonText: {
     color: COLORS.primary,
-    fontWeight: 600
+    fontWeight: 600,
   },
 
   alertCorrect: {

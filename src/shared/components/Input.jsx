@@ -40,16 +40,13 @@ export default function Input({
   const containerStyles = [styles.container];
 
   let showError = false;
-  let finalHelperText = helperText;
 
   if (error !== "") {
     showError = true;
-    finalHelperText = error;
   }
 
   if (submitted === true && required === true && String(value).trim() === "") {
     showError = true;
-    finalHelperText = "Este campo es obligatorio.";
   }
 
   if (multiline === true) {
@@ -104,13 +101,6 @@ export default function Input({
         {...props}
       />
 
-      {finalHelperText !== "" && (
-        <Text
-          style={[styles.helperText, showError === true && styles.errorText]}
-        >
-          {finalHelperText}
-        </Text>
-      )}
     </View>
   );
 }
@@ -155,16 +145,5 @@ const styles = StyleSheet.create({
   disabledInput: {
     backgroundColor: COLORS.surface,
     color: COLORS.textQuaternary,
-  },
-
-  helperText: {
-    marginTop: 5,
-    fontSize: 12,
-    color: COLORS.textTertiary,
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
-  },
-
-  errorText: {
-    color: COLORS.error,
   },
 });

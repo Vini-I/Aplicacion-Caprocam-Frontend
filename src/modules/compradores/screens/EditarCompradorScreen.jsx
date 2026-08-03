@@ -27,7 +27,7 @@
  */
 
 import React from "react";
-import { View, ScrollView } from "react-native";
+import { View, ScrollView, ActivityIndicator } from "react-native";
 
 import Card from "../../../shared/components/Card";
 import Input from "../../../shared/components/Input";
@@ -45,6 +45,9 @@ import { useEditarCompradorScreen, TELEFONO_MAX_LENGTH } from "../hooks/useEdita
 
 export default function EditarCompradorScreen() {
   const {
+    cargando,
+    errorCarga,
+    guardando,
     nombre,
     cedula,
     telefono,
@@ -62,6 +65,14 @@ export default function EditarCompradorScreen() {
     guardar,
   } = useEditarCompradorScreen();
 
+  if (cargando) {
+    return (
+      <View style={[styles.container, styles.loadingContainer]}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
 
@@ -72,11 +83,11 @@ export default function EditarCompradorScreen() {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        <Card
-          title="Información del comprador"
-          style={styles.card}
-          titleStyle={styles.cardTitle}
-        >
+        <Card style={styles.card}>
+         <View style={styles.cardHeader}>
+           <Icon icon={ICONS.edit} color={COLORS.primary} size={22} />
+           <Text style={styles.cardTitle}>Información del comprador</Text>
+         </View>
           {/* Alerta general: error, advertencia o confirmación de guardado */}
           {alerta && (
             <Alert
@@ -87,6 +98,15 @@ export default function EditarCompradorScreen() {
                 alerta.variant === "warning" && styles.alertWarningComoError,
               ]}
               textStyle={alerta.variant === "warning" && styles.alertWarningComoErrorTexto}
+            />
+          )}
+
+          {/* Alerta si no se pudo cargar el comprador desde el back */}
+          {!!errorCarga && (
+            <Alert
+              variant="danger"
+              message={errorCarga}
+              style={styles.alertContainer}
             />
           )}
 
@@ -115,7 +135,7 @@ export default function EditarCompradorScreen() {
             label="Teléfono *"
             value={telefono}
             onChangeText={handleTelefonoChange}
-            placeholder="+506 2222-3344"
+            placeholder="88881234"
             keyboardType="phone-pad"
             maxLength={TELEFONO_MAX_LENGTH}
             containerStyle={styles.field}
@@ -162,10 +182,18 @@ export default function EditarCompradorScreen() {
           />
 
           {/* Botón para guardar, dispara la validación completa */}
-          <Button variant="outline" onPress={guardar} style={styles.saveButton} textStyle={styles.saveButtonText}>
+          <Button
+            variant="outline"
+            onPress={guardar}
+            disabled={guardando}
+            style={styles.saveButton}
+            textStyle={styles.saveButtonText}
+          >
             <View style={styles.buttonContent}>
-              <Icon icon={ICONS.save} size={ICON_STYLES.save.size} color={COLORS.primary} />
-              <Text style={styles.saveButtonText}>Guardar comprador</Text>
+              <Icon icon={ICONS.add} size={ICON_STYLES.save.size} color={COLORS.primary} />
+              <Text style={styles.saveButtonText}>
+                {guardando ? "Guardando..." : "Guardar comprador"}
+              </Text>
             </View>
           </Button>
         </Card>

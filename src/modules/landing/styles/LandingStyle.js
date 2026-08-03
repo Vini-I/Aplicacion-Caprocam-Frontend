@@ -1,22 +1,33 @@
 /**
  * ============================================================
- * ESTILOS: LANDING
+ * ESTILOS DE LA PÁGINA PRINCIPAL
  * ============================================================
  *
- * Modulo: Landing
+ * Define la apariencia visual y la distribución de todos los
+ * componentes que conforman la página principal de CAPROCAM,
+ * considerando su visualización en web, tabletas y móviles.
  *
- * Descripcion:
- * Estilos de la pagina informativa de CAPROCAM.
- * Incluye escritorio, tablet y dispositivo movil.
+ * Contenido:
+ * - Establece los estilos generales de la pantalla y el desplazamiento.
+ * - Define la apariencia del encabezado y el menú de navegación.
+ * - Controla el diseño del menú desplegable para dispositivos móviles.
+ * - Configura el carrusel principal, degradados, textos y estadísticas.
+ * - Define la distribución de las secciones informativas.
+ * - Estiliza las tarjetas de beneficios, servicios y productores.
+ * - Configura la apariencia de las preguntas frecuentes.
+ * - Define el diseño del llamado a la acción y el botón de WhatsApp.
+ * - Estiliza la información de contacto y el pie de página.
+ * - Incluye variantes responsivas para escritorio, tabletas y móviles.
+ * - Aplica sombras compatibles con plataformas web y dispositivos nativos.
+ * - Utiliza los colores y tipografías definidos en el tema del proyecto.
  */
-import { StyleSheet, Platform} from "react-native";
+import { StyleSheet, Platform } from "react-native";
 import { COLORS } from "../../../theme/colors";
-import {TYPOGRAPHY} from "../../../theme/typography";
+import { TYPOGRAPHY } from "../../../theme/typography";
 
 const cardShadow = Platform.select({
   web: {
-    boxShadow:
-      "0 4px 18px rgba(31, 41, 55, 0.10)",
+    boxShadow: "0 4px 18px rgba(31, 41, 55, 0.10)",
   },
 
   default: {
@@ -30,7 +41,6 @@ const cardShadow = Platform.select({
     elevation: 4,
   },
 });
-
 
 export const styles = StyleSheet.create({
   safeArea: {
@@ -46,7 +56,11 @@ export const styles = StyleSheet.create({
   scroll: {
     flex: 1,
   },
-    /*
+
+  scrollContent: {
+    paddingBottom: 36,
+  },
+  /*
   ============================================================
   HEADER
   ============================================================
@@ -73,13 +87,23 @@ export const styles = StyleSheet.create({
   },
 
   headerInnerMobile: {
-    flexWrap: "wrap",
+    position: "relative",
     paddingVertical: 12,
   },
 
+  menuButton: {
+    width: 42,
+    height: 42,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    borderRadius: 12,
+    backgroundColor: COLORS.primaryLight,
+  },
+
   brandText: {
-    fontFamily:
-      TYPOGRAPHY.fontFamily.bold,
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
     fontSize: 20,
     color: COLORS.textSecondary,
     letterSpacing: 0.6,
@@ -94,9 +118,24 @@ export const styles = StyleSheet.create({
   },
 
   navMobile: {
-    width: "100%",
-    order: 3,
-    marginTop: 5,
+    display: "none",
+    position: "absolute",
+    top: 60,
+    left: 0,
+    width: "62%",
+    minWidth: 210,
+    padding: 8,
+    borderWidth: 1,
+    borderColor: COLORS.secondary,
+    borderRadius: 14,
+    backgroundColor: COLORS.white,
+    alignItems: "stretch",
+    flexDirection: "column",
+    ...cardShadow,
+  },
+
+  navMobileOpen: {
+    display: "flex",
   },
 
   navItem: {
@@ -106,17 +145,16 @@ export const styles = StyleSheet.create({
   },
 
   navItemHover: {
-  backgroundColor: COLORS.primaryLight,
-},
+    backgroundColor: COLORS.primaryLight,
+  },
 
   navItemPressed: {
-  backgroundColor: COLORS.secondary,
-  opacity: 0.8,
-},
+    backgroundColor: COLORS.secondary,
+    opacity: 0.8,
+  },
 
   navItemText: {
-    fontFamily:
-      TYPOGRAPHY.fontFamily.medium,
+    fontFamily: TYPOGRAPHY.fontFamily.medium,
     fontSize: 14,
     color: COLORS.textSecondary,
   },
@@ -144,8 +182,7 @@ export const styles = StyleSheet.create({
   },
 
   loginButtonText: {
-    fontFamily:
-      TYPOGRAPHY.fontFamily.bold,
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
     fontSize: 14,
     color: COLORS.white,
   },
@@ -162,8 +199,7 @@ export const styles = StyleSheet.create({
     minHeight: 640,
     justifyContent: "center",
     overflow: "hidden",
-    backgroundColor:
-      COLORS.textSecondary,
+    backgroundColor: COLORS.textSecondary,
   },
 
   heroMobile: {
@@ -215,22 +251,19 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.white,
     borderRadius: 24,
-    backgroundColor:
-      "rgba(255, 255, 255, 0.14)",
+    backgroundColor: "rgba(255, 255, 255, 0.14)",
     marginBottom: 24,
   },
 
   heroBadgeText: {
-    fontFamily:
-      TYPOGRAPHY.fontFamily.medium,
+    fontFamily: TYPOGRAPHY.fontFamily.medium,
     fontSize: 12,
     color: COLORS.white,
     textAlign: "center",
   },
 
   heroTitle: {
-    fontFamily:
-      TYPOGRAPHY.fontFamily.bold,
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
     fontSize: 48,
     lineHeight: 56,
     color: COLORS.white,
@@ -261,8 +294,18 @@ export const styles = StyleSheet.create({
     width: "100%",
     maxWidth: 690,
     marginTop: 20,
-    fontFamily:
-      TYPOGRAPHY.fontFamily.regular,
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
+    fontSize: 17,
+    lineHeight: 28,
+    color: COLORS.white,
+    textAlign: "center",
+  },
+
+  heroSubtitle: {
+    width: "100%",
+    maxWidth: 690,
+    marginTop: 20,
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
     fontSize: 17,
     lineHeight: 28,
     color: COLORS.white,
@@ -281,8 +324,7 @@ export const styles = StyleSheet.create({
   },
 
   heroButtonText: {
-    fontFamily:
-      TYPOGRAPHY.fontFamily.bold,
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
     fontSize: 15,
     color: COLORS.white,
   },
@@ -295,11 +337,9 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 17,
     borderWidth: 1,
-    borderColor:
-      "rgba(255, 255, 255, 0.38)",
+    borderColor: "rgba(255, 255, 255, 0.38)",
     borderRadius: 18,
-    backgroundColor:
-      "rgba(255, 255, 255, 0.16)",
+    backgroundColor: "rgba(255, 255, 255, 0.16)",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-around",
@@ -313,11 +353,17 @@ export const styles = StyleSheet.create({
     paddingVertical: 20,
   },
 
+  statGroup: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
   statItem: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: 10,
+    paddingHorizontal: 8,
   },
 
   statDivider: {
@@ -332,8 +378,7 @@ export const styles = StyleSheet.create({
   },
 
   statNumber: {
-    fontFamily:
-      TYPOGRAPHY.fontFamily.bold,
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
     fontSize: 24,
     color: COLORS.white,
     marginBottom: 4,
@@ -341,8 +386,7 @@ export const styles = StyleSheet.create({
   },
 
   statLabel: {
-    fontFamily:
-      TYPOGRAPHY.fontFamily.regular,
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
     fontSize: 12,
     color: COLORS.white,
     textAlign: "center",
@@ -364,8 +408,7 @@ export const styles = StyleSheet.create({
     width: 9,
     height: 9,
     borderRadius: 5,
-    backgroundColor:
-      COLORS.textQuaternary,
+    backgroundColor: COLORS.textQuaternary,
     opacity: 0.85,
   },
 
@@ -383,13 +426,11 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 7,
     borderRadius: 8,
-    backgroundColor:
-      "rgba(31, 41, 55, 0.62)",
+    backgroundColor: "rgba(31, 41, 55, 0.62)",
   },
 
   heroPhotoCaptionText: {
-    fontFamily:
-      TYPOGRAPHY.fontFamily.regular,
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
     fontSize: 11,
     color: COLORS.white,
   },
@@ -403,9 +444,9 @@ export const styles = StyleSheet.create({
     borderRadius: 9999,
     backgroundColor: COLORS.white,
     transform: [
-        {
-            rotate: "-0.7deg",
-        }
+      {
+        rotate: "-0.7deg",
+      },
     ],
     zIndex: 5,
   },
@@ -448,14 +489,12 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 7,
     borderRadius: 20,
-    backgroundColor:
-      COLORS.primaryLight,
+    backgroundColor: COLORS.primaryLight,
     marginBottom: 14,
   },
 
   sectionBadgeText: {
-    fontFamily:
-      TYPOGRAPHY.fontFamily.bold,
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
     fontSize: 12,
     color: COLORS.primary,
     letterSpacing: 1,
@@ -463,8 +502,7 @@ export const styles = StyleSheet.create({
 
   sectionTitle: {
     maxWidth: 800,
-    fontFamily:
-      TYPOGRAPHY.fontFamily.bold,
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
     fontSize: 32,
     lineHeight: 39,
     color: COLORS.textSecondary,
@@ -478,8 +516,7 @@ export const styles = StyleSheet.create({
 
   sectionSubtitle: {
     maxWidth: 780,
-    fontFamily:
-      TYPOGRAPHY.fontFamily.regular,
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
     fontSize: 15,
     lineHeight: 25,
     color: COLORS.textTertiary,
@@ -510,8 +547,7 @@ export const styles = StyleSheet.create({
   },
 
   paragraph: {
-    fontFamily:
-      TYPOGRAPHY.fontFamily.regular,
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
     fontSize: 15,
     lineHeight: 26,
     color: COLORS.textTertiary,
@@ -524,6 +560,11 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 16,
+  },
+
+  benefitsGridMobile: {
+    minWidth: 0,
+    width: "100%",
   },
 
   benefitCard: {
@@ -540,6 +581,7 @@ export const styles = StyleSheet.create({
   cardFullWidth: {
     width: "100%",
     flexBasis: "100%",
+    minHeight: 120,
   },
 
   benefitIcon: {
@@ -553,8 +595,7 @@ export const styles = StyleSheet.create({
   },
 
   benefitTitle: {
-    fontFamily:
-      TYPOGRAPHY.fontFamily.medium,
+    fontFamily: TYPOGRAPHY.fontFamily.medium,
     fontSize: 14,
     color: COLORS.textSecondary,
     textAlign: "center",
@@ -597,8 +638,7 @@ export const styles = StyleSheet.create({
     width: 54,
     height: 54,
     borderRadius: 15,
-    backgroundColor:
-      COLORS.primaryLight,
+    backgroundColor: COLORS.primaryLight,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -608,16 +648,14 @@ export const styles = StyleSheet.create({
   },
 
   serviceTitle: {
-    fontFamily:
-      TYPOGRAPHY.fontFamily.bold,
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
     fontSize: 17,
     color: COLORS.textPrimary,
     marginBottom: 8,
   },
 
   serviceDescription: {
-    fontFamily:
-      TYPOGRAPHY.fontFamily.regular,
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
     fontSize: 14,
     lineHeight: 24,
     color: COLORS.textTertiary,
@@ -656,8 +694,7 @@ export const styles = StyleSheet.create({
 
   faqQuestion: {
     flex: 1,
-    fontFamily:
-      TYPOGRAPHY.fontFamily.medium,
+    fontFamily: TYPOGRAPHY.fontFamily.medium,
     fontSize: 14,
     color: COLORS.textPrimary,
   },
@@ -669,8 +706,7 @@ export const styles = StyleSheet.create({
   },
 
   faqAnswer: {
-    fontFamily:
-      TYPOGRAPHY.fontFamily.regular,
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
     fontSize: 14,
     lineHeight: 23,
     color: COLORS.textTertiary,
@@ -714,15 +750,13 @@ export const styles = StyleSheet.create({
     height: 46,
     marginBottom: 14,
     borderRadius: 14,
-    backgroundColor:
-      COLORS.primaryLight,
+    backgroundColor: COLORS.primaryLight,
     alignItems: "center",
     justifyContent: "center",
   },
 
   producerName: {
-    fontFamily:
-      TYPOGRAPHY.fontFamily.bold,
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
     fontSize: 15,
     color: COLORS.textPrimary,
     marginBottom: 8,
@@ -736,15 +770,13 @@ export const styles = StyleSheet.create({
   },
 
   producerLocationText: {
-    fontFamily:
-      TYPOGRAPHY.fontFamily.regular,
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
     fontSize: 12,
     color: COLORS.primary,
   },
 
   producerProduction: {
-    fontFamily:
-      TYPOGRAPHY.fontFamily.regular,
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
     fontSize: 12,
     color: COLORS.textQuaternary,
   },
@@ -770,8 +802,7 @@ export const styles = StyleSheet.create({
   },
 
   ctaTitle: {
-    fontFamily:
-      TYPOGRAPHY.fontFamily.bold,
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
     fontSize: 18,
     color: COLORS.white,
     textAlign: "center",
@@ -779,8 +810,7 @@ export const styles = StyleSheet.create({
   },
 
   ctaSubtitle: {
-    fontFamily:
-      TYPOGRAPHY.fontFamily.regular,
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
     fontSize: 14,
     color: COLORS.white,
     textAlign: "center",
@@ -798,8 +828,7 @@ export const styles = StyleSheet.create({
   },
 
   whatsappButtonText: {
-    fontFamily:
-      TYPOGRAPHY.fontFamily.bold,
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
     fontSize: 14,
     color: COLORS.white,
   },
@@ -813,8 +842,7 @@ export const styles = StyleSheet.create({
   footer: {
     width: "100%",
     paddingVertical: 55,
-    backgroundColor:
-      COLORS.textSecondary,
+    backgroundColor: COLORS.textSecondary,
   },
 
   footerInner: {
@@ -840,8 +868,7 @@ export const styles = StyleSheet.create({
   },
 
   footerTitle: {
-    fontFamily:
-      TYPOGRAPHY.fontFamily.bold,
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
     fontSize: 13,
     color: COLORS.primary,
     letterSpacing: 1,
@@ -866,18 +893,48 @@ export const styles = StyleSheet.create({
   },
 
   footerPrimary: {
-    fontFamily:
-      TYPOGRAPHY.fontFamily.medium,
+    fontFamily: TYPOGRAPHY.fontFamily.medium,
     fontSize: 14,
     color: COLORS.white,
     marginBottom: 3,
   },
 
   footerSecondary: {
-    fontFamily:
-      TYPOGRAPHY.fontFamily.regular,
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
     fontSize: 12,
     lineHeight: 19,
+    color: COLORS.textQuaternary,
+  },
+
+  scheduleRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 14,
+    marginBottom: 15,
+  },
+
+  scheduleRowInactive: {
+    opacity: 0.62,
+  },
+
+  scheduleTextContent: {
+    flex: 1,
+  },
+
+  scheduleDay: {
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
+    fontSize: 15,
+    color: COLORS.white,
+    marginBottom: 4,
+  },
+
+  scheduleDayInactive: {
+    color: COLORS.textQuaternary,
+  },
+
+  scheduleHours: {
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
+    fontSize: 13,
     color: COLORS.textQuaternary,
   },
 
@@ -890,13 +947,11 @@ export const styles = StyleSheet.create({
     borderColor: COLORS.primary,
     borderRadius: 12,
     justifyContent: "center",
-    backgroundColor:
-      "hsla(199, 89%, 48%, 0.12)",
+    backgroundColor: "hsla(199, 89%, 48%, 0.12)",
   },
 
   scheduleBadgeText: {
-    fontFamily:
-      TYPOGRAPHY.fontFamily.medium,
+    fontFamily: TYPOGRAPHY.fontFamily.medium,
     fontSize: 12,
     color: COLORS.primary,
   },
@@ -918,8 +973,7 @@ export const styles = StyleSheet.create({
 
   footerFarmText: {
     flex: 1,
-    fontFamily:
-      TYPOGRAPHY.fontFamily.regular,
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
     fontSize: 13,
     lineHeight: 20,
     color: COLORS.white,
@@ -930,8 +984,7 @@ export const styles = StyleSheet.create({
     height: 1,
     marginTop: 42,
     marginBottom: 28,
-    backgroundColor:
-      COLORS.textTertiary,
+    backgroundColor: COLORS.textTertiary,
     opacity: 0.35,
   },
 
@@ -948,8 +1001,7 @@ export const styles = StyleSheet.create({
 
   copyright: {
     flex: 1,
-    fontFamily:
-      TYPOGRAPHY.fontFamily.regular,
+    fontFamily: TYPOGRAPHY.fontFamily.regular,
     fontSize: 12,
     lineHeight: 20,
     color: COLORS.textQuaternary,
@@ -963,8 +1015,7 @@ export const styles = StyleSheet.create({
   },
 
   footerLink: {
-    fontFamily:
-      TYPOGRAPHY.fontFamily.medium,
+    fontFamily: TYPOGRAPHY.fontFamily.medium,
     fontSize: 13,
     color: COLORS.textQuaternary,
   },

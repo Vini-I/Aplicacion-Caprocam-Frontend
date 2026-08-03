@@ -3,8 +3,8 @@
  * SCREEN: PARASITOLOGIA
  * ============================================================
  *
- * Modulo para registrar parasitos por finca y estanque.
- * La logica del formulario vive en hooks/useParasitologiaScreen.
+ * Renderiza el formulario para registrar parasitologias.
+ * Toda la logica se encuentra en useParasitologiaScreen.
  */
 
 import React from "react";
@@ -16,23 +16,21 @@ import Card from "../../../shared/components/Card";
 import DateInput from "../../../shared/components/DateInput";
 import Icon from "../../../shared/components/Icons";
 import Input from "../../../shared/components/Input";
+import NavbarRegistro from "../../../shared/components/NavbarRegistro";
 import NumberInput from "../../../shared/components/NumberInput";
 import Select from "../../../shared/components/Select";
 import CustomText from "../../../shared/components/Text";
-import Title from "../../../shared/components/Title";
-import NavbarRegistro from "../../../shared/components/NavbarRegistro";
 
+import ParasitologiaSectionTitle from "../components/ParasitologiaSectionTitle";
 import useParasitologiaScreen from "../hooks/useParasitologiaScreen";
-import { PARASITOS_CATALOGO } from "../services/ParasitologiaService";
-import { styles } from "../styles/ParasitologiaStyle";
 
+import { styles } from "../styles/ParasitologiaStyle";
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
-import { TYPOGRAPHY } from "../../../theme/typography";
 import { STYLE } from "../../../theme/style";
 
-export default function ParasitologiaScreen({ onBack, navigation }) {
-  const pantalla = useParasitologiaScreen(onBack, navigation);
+export default function ParasitologiaScreen() {
+  const pantalla = useParasitologiaScreen();
 
   return (
     <>
@@ -43,18 +41,18 @@ export default function ParasitologiaScreen({ onBack, navigation }) {
       />
 
       <ScrollView style={STYLE.container} showsVerticalScrollIndicator={false}>
-        <View style={pantalla.contentStyle}>
-          {pantalla.error !== "" && (
+        <View style={[STYLE.contentWrapper, styles.content]}>
+          {pantalla.loading && (
             <Alert
-              variant="danger"
-              message={pantalla.error}
+              variant="info"
+              message="Cargando datos de parasitologia..."
               style={styles.alert}
               textStyle={styles.alertText}
             />
           )}
 
           <Card>
-            <SectionTitle
+            <ParasitologiaSectionTitle
               title="Ubicacion del muestreo"
               icon={ICONS.document}
             />
@@ -62,41 +60,44 @@ export default function ParasitologiaScreen({ onBack, navigation }) {
             <View style={pantalla.gridStyle}>
               <View style={pantalla.itemStyle}>
                 <Select
-                  label="Finca"
-                  required={true}
-                  submitted={pantalla.submitted}
-                  error={pantalla.erroresFormulario.finca}
+                  label="Finca *"
                   options={pantalla.opcionesFincas}
                   value={pantalla.finca}
                   onChange={pantalla.cambiarFinca}
-                  placeholder="Seleccione la finca"
+                  placeholder={pantalla.placeholderFinca}
+                  disabled={pantalla.loading}
                   labelStyle={styles.label}
+                  selectStyle={
+                    pantalla.errorFinca && styles.campoConError
+                  }
                 />
               </View>
 
               <View style={pantalla.itemStyle}>
                 <Select
-                  label="Estanque"
-                  required={true}
-                  submitted={pantalla.submitted}
-                  error={pantalla.erroresFormulario.estanque}
+                  label="Estanque *"
                   options={pantalla.opcionesEstanques}
                   value={pantalla.estanque}
                   onChange={pantalla.setEstanque}
-                  placeholder="Seleccione el estanque"
+                  placeholder={pantalla.placeholderEstanque}
+                  disabled={pantalla.loading || pantalla.finca === ""}
                   labelStyle={styles.label}
+                  selectStyle={
+                    pantalla.errorEstanque && styles.campoConError
+                  }
                 />
               </View>
 
               <View style={pantalla.itemStyle}>
                 <DateInput
-                  label="Fecha del reporte"
-                  required={true}
-                  submitted={pantalla.submitted}
-                  error={pantalla.erroresFormulario.fechaReporte}
+                  label="Fecha del reporte *"
                   value={pantalla.fechaReporte}
                   onChangeText={pantalla.setFechaReporte}
+                  disabled={pantalla.loading}
                   labelStyle={styles.label}
+                  inputStyle={
+                    pantalla.errorFechaReporte && styles.campoConError
+                  }
                 />
               </View>
 
@@ -104,7 +105,6 @@ export default function ParasitologiaScreen({ onBack, navigation }) {
                 <Input
                   label="Responsable"
                   value={pantalla.responsable}
-                  placeholder="Responsable obtenido del backend"
                   editable={false}
                   readOnly={true}
                   selectTextOnFocus={false}
@@ -115,7 +115,7 @@ export default function ParasitologiaScreen({ onBack, navigation }) {
           </Card>
 
           <Card>
-            <SectionTitle
+            <ParasitologiaSectionTitle
               title="Conteo parasitologico"
               icon={ICONS.microscope}
             />
@@ -123,56 +123,55 @@ export default function ParasitologiaScreen({ onBack, navigation }) {
             <View style={pantalla.gridStyle}>
               <View style={pantalla.itemStyle}>
                 <Select
-                  label="Parasito"
-                  required={true}
-                  submitted={pantalla.submitted}
-                  error={pantalla.erroresFormulario.parasito}
-                  options={PARASITOS_CATALOGO}
+                  label="Parasito *"
+                  options={pantalla.opcionesParasitos}
                   value={pantalla.parasito}
                   onChange={pantalla.setParasito}
-                  placeholder="Seleccione el parasito"
+                  placeholder={pantalla.placeholderParasito}
+                  disabled={pantalla.loading}
                   labelStyle={styles.label}
+                  selectStyle={
+                    pantalla.errorParasito && styles.campoConError
+                  }
                 />
               </View>
 
               <View style={pantalla.itemStyle}>
                 <NumberInput
-                  label="Camarones muestreados"
-                  required={true}
-                  submitted={pantalla.submitted}
-                  error={pantalla.erroresFormulario.camaronesMuestreados}
+                  label="Camarones muestreados *"
                   value={pantalla.camaronesMuestreados}
                   onChangeText={pantalla.setCamaronesMuestreados}
                   min={0}
                   max={999999}
                   step={1}
+                  editable={!pantalla.loading}
                   labelStyle={styles.label}
+                  style={
+                    pantalla.errorMuestreados && styles.campoConError
+                  }
                 />
               </View>
 
               <View style={pantalla.itemStyle}>
                 <NumberInput
-                  label="Camarones infectados"
-                  required={true}
-                  submitted={pantalla.submitted}
-                  error={pantalla.erroresFormulario.camaronesInfectados}
+                  label="Camarones infectados *"
                   value={pantalla.camaronesInfectados}
                   onChangeText={pantalla.setCamaronesInfectados}
                   min={0}
                   max={999999}
                   step={1}
+                  editable={!pantalla.loading}
                   labelStyle={styles.label}
+                  style={
+                    pantalla.errorInfectados && styles.campoConError
+                  }
                 />
               </View>
 
               <View style={pantalla.itemFullStyle}>
                 <View style={styles.previewCard}>
                   <View style={styles.previewHeader}>
-                    <Icon
-                      icon={ICONS.report}
-                      size={20}
-                      color={COLORS.primary}
-                    />
+                    <Icon icon={ICONS.report} size={20} color={COLORS.primary} />
 
                     <CustomText
                       size={15}
@@ -198,7 +197,7 @@ export default function ParasitologiaScreen({ onBack, navigation }) {
                         color={COLORS.textSecondary}
                         style={styles.previewValue}
                       >
-                        {pantalla.camaronesMuestreados}
+                        {pantalla.camaronesMuestreados || 0}
                       </CustomText>
                     </View>
 
@@ -216,7 +215,7 @@ export default function ParasitologiaScreen({ onBack, navigation }) {
                         color={COLORS.textSecondary}
                         style={styles.previewValue}
                       >
-                        {pantalla.camaronesInfectados}
+                        {pantalla.camaronesInfectados || 0}
                       </CustomText>
                     </View>
 
@@ -274,6 +273,7 @@ export default function ParasitologiaScreen({ onBack, navigation }) {
                   onChangeText={pantalla.setObservaciones}
                   placeholder="Describa observaciones del muestreo"
                   multiline={true}
+                  editable={!pantalla.loading}
                   labelStyle={styles.label}
                   style={styles.textArea}
                 />
@@ -304,29 +304,12 @@ export default function ParasitologiaScreen({ onBack, navigation }) {
                 color={COLORS.primary}
                 style={styles.saveText}
               >
-                Registrar parasitologia
+                Guardar
               </CustomText>
             </View>
           </Button>
         </View>
       </ScrollView>
     </>
-  );
-}
-
-function SectionTitle({ title, icon }) {
-  return (
-    <View style={styles.sectionTitleRow}>
-      <Icon icon={icon} size={18} color={COLORS.primary} />
-
-      <Title
-        level={5}
-        color={COLORS.textSecondary}
-        fuente={TYPOGRAPHY.fontFamily.bold}
-        style={styles.sectionTitle}
-      >
-        {title}
-      </Title>
-    </View>
   );
 }

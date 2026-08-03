@@ -106,9 +106,9 @@ export function useDetalleVenta({ onEdit  } = {}) {
   const ventasFiltradas = useMemo(() => {
     return (ventas || []).filter((venta) => {
       const coincideFinca =
-        !fincaFiltro || venta.finca_id === Number(fincaFiltro);
+        !fincaFiltro || venta.finca === Number(fincaFiltro);
       const coincideEstanque =
-        !estanqueFiltro || venta.estanque_id === Number(estanqueFiltro);
+        !estanqueFiltro || venta.estanque === Number(estanqueFiltro);
 
       return coincideFinca && coincideEstanque;
     });
@@ -123,9 +123,9 @@ export function useDetalleVenta({ onEdit  } = {}) {
   const descripcionEliminar = useMemo(() => {
     if (!ventaSeleccionada) return "";
 
-    const finca = fincas.find((item) => item.id === ventaSeleccionada.finca_id);
+    const finca = fincas.find((item) => item.id === ventaSeleccionada.finca);
     const estanque = estanques.find(
-      (item) => item.id === ventaSeleccionada.estanque_id,
+      (item) => item.id === ventaSeleccionada.estanque,
     );
 
     return `${finca?.nombreFinca ?? "Finca"} • ${estanque?.codigo ?? "Estanque"}`;
@@ -178,8 +178,8 @@ export function useDetalleVenta({ onEdit  } = {}) {
   }
 
   function TarjetaVenta({ venta }) {
-    const finca = fincas.find((item) => item.id === venta.finca_id);
-    const estanque = estanques.find((item) => item.id === venta.estanque_id);
+    const finca = fincas.find((item) => item.id === venta.finca);
+    const estanque = estanques.find((item) => item.id === venta.estanque);
 
     return (
       <Card style={styles.tarjeta}>
@@ -207,18 +207,18 @@ export function useDetalleVenta({ onEdit  } = {}) {
         </View>
 
         <View style={styles.filasDetalle}>
-          <FilaDetalle etiqueta="Fecha" valor={venta.fecha} />
+          <FilaDetalle etiqueta="Fecha" valor={new Date(venta.fecha).toLocaleDateString("es-CR")} />
           <FilaDetalle
             etiqueta="Total"
             valor={formatearMontoColones(venta.total)}
           />
           <FilaDetalle
             etiqueta="Kilos"
-            valor={`${venta.cantidad_vendida} kg`}
+            valor={`${venta.cantVendida} kg`}
           />
           <FilaDetalle
             etiqueta="Precio/kg"
-            valor={`₡ ${Number(venta.precio_kilo).toLocaleString("es-CR")}`}
+            valor={`₡ ${Number(venta.precioKilo).toLocaleString("es-CR")}`}
           />
         </View>
       </Card>
