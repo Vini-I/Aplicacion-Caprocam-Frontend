@@ -23,18 +23,22 @@ import Input from "../../../shared/components/Input";
 
 import { getRegistroPorId } from "../services/TrazabilidadServices";
 import { formatDate } from "../../../shared/utils/dateUtils";
+import { useError } from "../../../shared/context/ErrorContext";
 
 export default function DetalleTrazabilidadScreen() {
   const { id } = useLocalSearchParams();
+  const { mostrarError } = useError();
 
   const [registro, setRegistro] = useState(null);
   const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
-    // TODO: confirmar con API el tipo real de id (hoy se manda tal cual llega de la ruta)
     getRegistroPorId(id)
       .then(setRegistro)
-      .catch(() => setRegistro(null))
+      .catch((err) => {
+        setRegistro(null);
+        mostrarError(err);
+      })
       .finally(() => setCargando(false));
   }, [id]);
 

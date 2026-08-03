@@ -55,8 +55,8 @@ export function useTrazabilidadList() {
       return;
     }
     setSesionExpirada(false);
-    setErrorCarga(mensaje);
-    if (error) mostrarError(error);
+    setErrorCarga("");
+    mostrarError(error || new Error(mensaje));
   }
 
   function cerrarErrorCarga() {

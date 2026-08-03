@@ -136,22 +136,16 @@ export default function TrazabilidadScreen() {
             />
           ) : null}
 
-          {errorCarga !== "" && (
+          {sesionExpirada && errorCarga !== "" && (
             <>
               <Alert
                 variant="danger"
                 message={errorCarga}
                 style={styles.successAlert}
               />
-              {sesionExpirada ? (
-                <Button variant="outline" onPress={irALogin} style={styles.errorAlertButton}>
-                  Ir a iniciar sesión
-                </Button>
-              ) : (
-                <Button variant="outline" onPress={cerrarErrorCarga} style={styles.errorAlertButton}>
-                  Cerrar
-                </Button>
-              )}
+              <Button variant="outline" onPress={irALogin} style={styles.errorAlertButton}>
+                Ir a iniciar sesión
+              </Button>
             </>
           )}
 
