@@ -28,14 +28,32 @@ const rolMapToId = {
 
 // ─── MAPEO BACKEND → FRONTEND ──────────────────────────────────────
 function mapBackendToFrontend(data) {
+  // IMPORTANTE: el backend no es 100% consistente con el formato de sus
+  // llaves: algunos endpoints devuelven snake_case (finca_id, rol_id,
+  // nombre_usuario) y otros camelCase (fincaId, rolId, nombreUsuario;
+  // ver fincaService.js, que documenta que /fincas devuelve "nombreFinca").
+  // Para no perder datos silenciosamente (como pasaba con la finca del
+  // colaborador, que se guardaba bien en la BD pero nunca se leía aquí),
+  // se soportan ambos formatos.
+
+  const rolIdRaw = data.rol_id ?? data.rolId;
+  const rolId = rolIdRaw !== undefined && rolIdRaw !== null && rolIdRaw !== ""
+    ? Number(rolIdRaw)
+    : null;
+
   // Determinar el rol a partir del rol_id (numérico)
   let rol = "camprocam_worker";
-  if (data.rol_id === 2) rol = "external_owner";
-  else if (data.rol_id === 3) rol = "external_worker";
+  if (rolId === 2) rol = "external_owner";
+  else if (rolId === 3) rol = "external_worker";
 
   // Si el backend no guardó la cédula en la columna 'cedula',
   // se toma de 'nombre_usuario' (donde sí está)
-  const cedula = data.cedula || data.nombre_usuario || "";
+  const cedula = data.cedula || data.nombre_usuario || data.nombreUsuario || "";
+
+  const fincaIdRaw = data.finca_id ?? data.fincaId;
+  const fincaId = fincaIdRaw !== undefined && fincaIdRaw !== null && fincaIdRaw !== ""
+    ? Number(fincaIdRaw)
+    : null;
 
   return {
     id: data.id,
@@ -44,7 +62,8 @@ function mapBackendToFrontend(data) {
     telefono: data.telefono,
     email: data.email,
     rol: rol,
-    fincaId: data.finca_id,
+    rolId: rolId,
+    fincaId: fincaId,
     activo: Boolean(data.activo),
   };
 }
@@ -113,7 +132,9 @@ async function getColaboradores(filtros = {}) {
     let data = response.data.data || [];
 
     if (filtros.fincaId) {
-      data = data.filter((c) => c.finca_id === Number(filtros.fincaId));
+      data = data.filter(
+        (c) => Number(c.finca_id ?? c.fincaId) === Number(filtros.fincaId)
+      );
     }
     if (filtros.rol) {
       data = data.filter((c) => {

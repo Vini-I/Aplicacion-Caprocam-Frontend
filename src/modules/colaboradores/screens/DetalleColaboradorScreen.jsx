@@ -101,6 +101,7 @@ export default function DetalleColaboradorScreen() {
     colaborador,
     trabajadores,
     estadisticas,
+    fincaNombre,
     loading,
     error,
   } = useColaboradorDetalle(id);
@@ -222,8 +223,8 @@ export default function DetalleColaboradorScreen() {
           />
           <FilaDetalleIcono
             icon={ICONS.location}
-            label="Finca ID"
-            value={colaborador.fincaId}
+            label="Finca"
+            value={fincaNombre}
           />
         </Card>
 

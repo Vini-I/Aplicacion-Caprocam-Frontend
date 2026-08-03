@@ -11,11 +11,12 @@
  *
  * Retorna:
  * - colaborador, trabajadores, trabajadoresFiltrados, externalOwner,
- *   estadisticas, loading, error, searchText, setSearchText
+ *   estadisticas, fincaNombre, loading, error, searchText, setSearchText
  */
 
 import { useState, useEffect } from "react";
 import { colaboradoresService } from "../services/colaboradoresService";
+import { getFincas } from "../services/fincaService";
 
 export function useColaboradorDetalle(colaboradorId) {
   const [colaborador, setColaborador] = useState(null);
@@ -23,6 +24,7 @@ export function useColaboradorDetalle(colaboradorId) {
   const [trabajadoresFiltrados, setTrabajadoresFiltrados] = useState([]);
   const [externalOwner, setExternalOwner] = useState(null);
   const [estadisticas, setEstadisticas] = useState(null);
+  const [fincaNombre, setFincaNombre] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchText, setSearchText] = useState("");
@@ -31,12 +33,23 @@ export function useColaboradorDetalle(colaboradorId) {
     const loadData = async () => {
       try {
         setLoading(true);
-        const [colab, stats] = await Promise.all([
+        const [colab, stats, fincas] = await Promise.all([
           colaboradoresService.getColaboradorById(colaboradorId),
           colaboradoresService.getEstadisticasColaborador(colaboradorId),
+          getFincas(),
         ]);
         setColaborador(colab);
         setEstadisticas(stats);
+
+        // Resolver el nombre de la finca a partir del fincaId del colaborador.
+        // Si no tiene finca asignada o no se encuentra en el catálogo,
+        // se deja null (la pantalla mostrará "—").
+        if (colab.fincaId) {
+          const finca = fincas.find((f) => Number(f.id) === Number(colab.fincaId));
+          setFincaNombre(finca?.nombreFinca || `Finca #${colab.fincaId}`);
+        } else {
+          setFincaNombre(null);
+        }
 
         if (colab.rol === "external_owner") {
           const trabajadoresData = await colaboradoresService.getTrabajadoresByOwner(colaboradorId);
@@ -82,6 +95,7 @@ export function useColaboradorDetalle(colaboradorId) {
     trabajadoresFiltrados,
     externalOwner,
     estadisticas,
+    fincaNombre,
     loading,
     error,
     searchText,
