@@ -1,10 +1,11 @@
 /**
- * ============================================================
  * HOOK: useLoginFlow
- * ============================================================
+ * Orquesta el flujo de inicio de sesión de colaboradores: carga trabajadores,
+ * filtra por nombre, controla la ventana modal de PIN y valida credenciales.
  *
- * Orquesta el flujo de login: carga trabajadores, filtra la
- * lista, controla el PIN y administra la sincronización.
+ * @dependencies - useWorkers, formatDateInSpanish, getLoginValidationMessage, isLoginFormValid, verifyPinCredentials
+ * @validations  - Filtra lista por nombre y requiere PIN exacto de 4 dígitos.
+ * @navigation   - N/A (ejecuta el callback onLoginSuccess al autenticar PIN).
  */
 
 import { useState } from 'react';

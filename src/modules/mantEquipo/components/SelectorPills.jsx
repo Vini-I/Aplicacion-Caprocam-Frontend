@@ -6,12 +6,10 @@
  * Módulo: Mantenimiento de Equipos
  *
  * RESPONSABILIDAD:
- * - Renderiza un selector interactivo horizontal con diseño tipo pills,
- *   resaltando la opción activa mediante fondo de color suave y borde.
+ * - Componente personalizado que reutiliza elementos de shared/components.
+ * - Renderizar un selector interactivo horizontal con diseño tipo pills.
  *
- * @dependencies - CustomText y Button de shared/components
- *               - COLORS de theme/colors
- *               - styles/mantEquipoStyles
+ * @dependencies - Text.jsx, Button.jsx (shared/components), mantEquipoStyles.js (styles)
  * @validations  - Ninguna
  * @navigation   - Ninguna
  */

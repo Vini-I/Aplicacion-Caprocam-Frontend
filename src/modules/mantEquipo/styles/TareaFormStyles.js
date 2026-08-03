@@ -1,15 +1,10 @@
 /**
- * ============================================================
  * ESTILOS: TareaFormStyles
- * ============================================================
+ * Estilos específicos para el formulario de creación y modificación de tareas (TareaFormScreen).
  *
- * Responsabilidad:
- * Estilos específicos para el formulario de tareas (TareaFormScreen).
- *
- * Utiliza la paleta de COLORS del tema central y sigue el estándar global.
- *
- * Dependencias:
- * - COLORS desde theme/colors
+ * @dependencies - colors.js (theme/colors.js), typography.js (theme/typography.js)
+ * @validations  - Define espaciados, bordes y layout de las secciones del formulario.
+ * @navigation   - Ninguna
  */
 
 import { StyleSheet } from 'react-native';

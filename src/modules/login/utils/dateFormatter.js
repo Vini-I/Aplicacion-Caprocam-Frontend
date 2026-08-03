@@ -1,10 +1,10 @@
 /**
- * ============================================================
- * UTILIDAD: Formateo de Fecha
- * ============================================================
+ * UTILIDAD: dateFormatter
+ * Formatea fechas a cadenas de texto legibles en español (es-AR) con capitalización adecuada.
  *
- * Funciones para formatear fechas de manera consistente
- * en toda la aplicación, especialmente con locale es-AR.
+ * @dependencies - Ninguna
+ * @validations  - Formatea objeto Date válido o usa la fecha actual por defecto.
+ * @navigation   - Ninguna
  */
 
 /**
