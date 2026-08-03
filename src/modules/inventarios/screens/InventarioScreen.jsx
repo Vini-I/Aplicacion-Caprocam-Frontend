@@ -268,7 +268,7 @@ export default function InventarioScreen({ onDetail, onNew, onBack }) {
           <Button variant="outline" onPress={onNew} style={styles.botonAgregar}>
             <Icon icon={ICONS.add} color={COLORS.primary} />
             <CustomText size={14} weight="600" color={COLORS.primary}>
-              Registrar Producto
+              Añadir Producto
             </CustomText>
           </Button>
         </View>

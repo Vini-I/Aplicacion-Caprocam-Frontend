@@ -167,7 +167,7 @@ export default function EditarProveedorScreen() {
           >
             <View style={styles.buttonContent}>
               <Icon icon={ICONS.save} color={ICON_STYLES.save.color} />
-              <CustomText style={styles.saveButtonText}>Guardar Cambios</CustomText>
+              <CustomText style={styles.saveButtonText}>Editar Proveedor</CustomText>
             </View>
           </Button>
         </Card>
