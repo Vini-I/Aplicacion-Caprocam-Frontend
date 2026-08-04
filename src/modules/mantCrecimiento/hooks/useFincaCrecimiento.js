@@ -264,8 +264,7 @@ export function useFincaCrecimiento() {
 
       setSuccessMessage("Guardado exitosamente");
     } catch (error) {
-      // Error fuera del formulario → ModalError (ErrorContext)
-      mostrarError(error);
+      setErrorMessage(error.message)
     } finally {
       setIsSaving(false);
     }
