@@ -170,11 +170,12 @@ const ColaboradorForm = forwardRef(function ColaboradorForm(
         />
 
         <Select
-          label="Rol"
+          label="Rol *"
           options={rolesDisponibles}
           value={form.rol}
           onChange={(v) => handleChange("rol", v)}
           placeholder="Seleccione una opción"
+          selectStyle={submitted && errors.rol ? styles.inputError : null}
         />
 
         {mostrarSelectFinca && (

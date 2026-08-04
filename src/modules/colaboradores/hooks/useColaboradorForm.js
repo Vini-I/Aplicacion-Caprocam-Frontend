@@ -63,7 +63,7 @@ export function useColaboradorForm({
     apellidos: initialData.nombre?.split(" ").slice(1).join(" ") || "",
     telefono: initialData.telefono || "",
     email: initialData.email || "",
-    rol: initialData.rolId ?? initialData.rol ?? (userRole === "camprocam_admin" ? "camprocam_worker" : "external_worker"),
+    rol: initialData.rolId ?? initialData.rol ?? "",
     fincaId: initialData.fincaId || fincaId || "",
   });
 
@@ -113,6 +113,7 @@ export function useColaboradorForm({
     const newErrors = {};
     let hasError = false;
 
+    // Campos obligatorios básicos
     if (!form.cedula) {
       newErrors.cedula = "La cédula es obligatoria";
       hasError = true;
@@ -137,16 +138,9 @@ export function useColaboradorForm({
       hasError = true;
     }
 
-    if (form.telefono && !validarTelefono(form.telefono)) {
-      newErrors.telefono = "Teléfono debe tener 8 dígitos";
-      hasError = true;
-    }
-
-    if (form.email && !validarEmail(form.email)) {
-      newErrors.email = "Correo electrónico inválido";
-      hasError = true;
-    } else if (form.email && form.email.trim() === "") {
-      newErrors.email = "El correo electrónico es obligatorio";
+    // Rol obligatorio (sin valor por defecto)
+    if (!form.rol) {
+      newErrors.rol = "El rol es obligatorio";
       hasError = true;
     }
 
@@ -158,30 +152,50 @@ export function useColaboradorForm({
       hasError = true;
     }
 
+    // ─── VALIDACIÓN DE MEDIOS DE CONTACTO (teléfono o email) ───
+    const telefonoValido = form.telefono && validarTelefono(form.telefono);
+    const emailValido = form.email && validarEmail(form.email);
+
+    // Al menos uno debe estar presente y ser válido
+    if (!telefonoValido && !emailValido) {
+      // Ambos vacíos o inválidos
+      if (!form.telefono) {
+        newErrors.telefono = "Debe proporcionar al menos un medio de contacto (teléfono o correo)";
+      } else if (!validarTelefono(form.telefono)) {
+        newErrors.telefono = "Teléfono debe tener 8 dígitos";
+      }
+      if (!form.email) {
+        newErrors.email = "Debe proporcionar al menos un medio de contacto (teléfono o correo)";
+      } else if (!validarEmail(form.email)) {
+        newErrors.email = "Correo electrónico inválido";
+      }
+      hasError = true;
+    } else {
+      // Si al menos uno es válido, validar el otro si está presente
+      if (form.telefono && !validarTelefono(form.telefono)) {
+        newErrors.telefono = "Teléfono debe tener 8 dígitos";
+        hasError = true;
+      }
+      if (form.email && !validarEmail(form.email)) {
+        newErrors.email = "Correo electrónico inválido";
+        hasError = true;
+      }
+    }
+
     setErrors(newErrors);
     return { hasError, errors: newErrors };
   };
 
-  // Construye el mensaje: campos obligatorios genérico + correo específico
+  // ─── CONSTRUCCIÓN DEL MENSAJE: UN SOLO ERROR A LA VEZ ──────
+  // Orden de prioridad: cedula, nombre, apellidos, rol, fincaId, telefono, email
   const buildValidationMessage = (errorsObj) => {
-    const hasRequiredError = !!(
-      errorsObj.cedula ||
-      errorsObj.nombre ||
-      errorsObj.apellidos ||
-      errorsObj.telefono ||
-      errorsObj.fincaId
-    );
-    const hasEmailError = !!errorsObj.email;
-
-    let message = "";
-    if (hasRequiredError) {
-      message = "Revisa los campos obligatorios marcados con *";
+    const order = ['cedula', 'nombre', 'apellidos', 'rol', 'fincaId', 'telefono', 'email'];
+    for (const field of order) {
+      if (errorsObj[field]) {
+        return errorsObj[field];
+      }
     }
-    if (hasEmailError) {
-      const emailMsg = errorsObj.email;
-      message = message ? `${message} · ${emailMsg}` : emailMsg;
-    }
-    return message;
+    return "";
   };
 
   const handleSubmit = () => {
@@ -208,7 +222,7 @@ export function useColaboradorForm({
       apellidos: "",
       telefono: "",
       email: "",
-      rol: userRole === "camprocam_admin" ? "camprocam_worker" : "external_worker",
+      rol: "",
       fincaId: fincaId || "",
     });
     setErrors({});
