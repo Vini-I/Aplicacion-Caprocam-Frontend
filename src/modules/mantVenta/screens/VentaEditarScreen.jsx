@@ -220,9 +220,9 @@ export default function VentaEditarScreen({ id, onVenta }) {
               style={styles.saveButton}
             >
               <View style={styles.buttonContent}>
-                <Icon icon={ICONS.save} size={22} color={COLORS.primary} />
+                <Icon icon={ICONS.edit} size={22} color={COLORS.primary} />
                 <Text style={styles.buttonText}>
-                  {guardando ? "Guardando..." : "Guardar cambios"}
+                  {guardando ? "Editando..." : "Editar Venta"}
                 </Text>
               </View>
             </Button>
