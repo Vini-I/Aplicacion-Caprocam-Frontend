@@ -50,7 +50,6 @@ export function FincaProvider({ children }) {
       return data;
     } catch (error) {
       mostrarError(error);
-      throw error;
     }
   }
 
@@ -62,7 +61,6 @@ export function FincaProvider({ children }) {
     } catch (error) {
       const msg = (error && error.message) || String(error);
       setERROR(msg);
-      // don't rethrow: UI will read `ERROR` from context and show alert
       return;
     }
   }
