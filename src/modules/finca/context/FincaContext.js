@@ -61,7 +61,7 @@ export function FincaProvider({ children }) {
     } catch (error) {
       const msg = (error && error.message) || String(error);
       setERROR(msg);
-      return;
+      throw new Error(msg);
     }
   }
 
@@ -73,7 +73,7 @@ export function FincaProvider({ children }) {
     } catch (error) {
       const msg = (error && error.message) || String(error);
       setERROR(msg);
-      return;
+      throw new Error(msg);
     }
   }
 
