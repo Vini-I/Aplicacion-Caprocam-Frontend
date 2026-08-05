@@ -19,6 +19,9 @@
  * @dependencies - useMantEquipo (tickets, busqueda, cargando, setBusqueda)
  *               - obtenerTareas de tareasService
  *               - equiposService.getEquipos
+ *               - useError (shared/context/ErrorContext) para mostrar el
+ *                 ModalError si falla la carga de equipos (usada para el
+ *                 filtro cruzado por estado de equipo).
  * @validations  - Filtrado en memoria insensible a mayúsculas/minúsculas
  * @navigation   - Ninguna (los callbacks de navegación son props del screen)
  */
@@ -27,6 +30,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useMantEquipo } from './useMantEquipo';
 import { obtenerTareas } from '../services/tareasService';
 import { equiposService } from '../services/equiposService';
+import { useError } from '../../../shared/context/ErrorContext.js';
 
 export function useMantPrincipalScreen({ alertaTipo, alertaMensaje, refreshTimestamp }) {
   const {
@@ -35,6 +39,8 @@ export function useMantPrincipalScreen({ alertaTipo, alertaMensaje, refreshTimes
     cargando,
     setBusqueda,
   } = useMantEquipo();
+
+  const { mostrarError } = useError();
 
   // ── Filtros de estado ────────────────────────────────────────
   const [filtros, setFiltros] = useState({
@@ -52,8 +58,14 @@ export function useMantPrincipalScreen({ alertaTipo, alertaMensaje, refreshTimes
 
   useEffect(() => {
     obtenerTareas().then(data => setTareasCatalog(data || [])).catch(() => {});
-    equiposService.getEquipos().then(data => setEquiposList(data || [])).catch(() => {});
-  }, []);
+    equiposService.getEquipos()
+      .then(data => setEquiposList(data || []))
+      .catch((err) => {
+        console.error('useMantPrincipalScreen.getEquipos:', err?.message || err);
+        mostrarError('No se pudo cargar la lista de equipos. Verifica la conexión con el servidor.');
+        setEquiposList([]);
+      });
+  }, [mostrarError]);
 
   // ── Alerta por props ────────────────────────────────────────
   useEffect(() => {

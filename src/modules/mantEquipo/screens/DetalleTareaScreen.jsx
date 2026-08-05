@@ -104,16 +104,7 @@ export default function DetalleTareaScreen() {
   }
 
   if (error || !tarea) {
-    return (
-      <>
-        <NavbarRegistro Titulo="Detalle de Tarea" Subtitulo="Error" Icono="document" />
-        <View style={[STYLE.container, { justifyContent: 'center', alignItems: 'center' }]}>
-          <CustomText style={{ color: COLORS.error }}>
-            {error || 'Tarea no encontrada'}
-          </CustomText>
-        </View>
-      </>
-    );
+    return <View style={STYLE.container} />;
   }
 
   const categoriaLabel =

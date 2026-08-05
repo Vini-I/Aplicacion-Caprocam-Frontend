@@ -38,13 +38,11 @@ export default function MantenimientoEquipoSelect({ value, onChange, error }) {
       .finally(() => setCargando(false));
   }, []);
 
-  // Filtrar el equipo actual de las opciones y mapearlas
-  const opcionesEquipos = equipos
-    .filter(e => e.id !== value)
-    .map(e => ({
-      label: `${e.nombre} (${e.codigo || e.id})`,
-      value: e.id
-    }));
+  // Mapear todas las opciones de equipos disponibles en el grupo de datos
+  const opcionesEquipos = equipos.map(e => ({
+    label: `${e.nombre} (${e.codigo || e.id})`,
+    value: e.id
+  }));
 
   const handleSelect = (id) => {
     const eq = equipos.find(e => String(e.id) === String(id));

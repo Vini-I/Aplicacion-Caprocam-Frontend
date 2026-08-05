@@ -7,12 +7,19 @@
  * Presenta el listado de todos los tickets en una tabla responsiva
  * con búsqueda, filtrado y accesos rápidos al toolbar.
  *
- * @dependencies - Spinner, SearchBar, Icon, Button, Alert, FilterButton (shared)
+ * @dependencies - Spinner, SearchBar, Icon, Button, Alert, FilterButton, ModalError (shared)
+ *               - ErrorProvider/useError (shared/context/ErrorContext) para el modal
+ *                 de error al fallar la carga de equipos o mantenimientos
+ *                 (ej. backend/docker apagado).
  *               - useMantPrincipalScreen, FilaTicket, COLORS, STYLE, mantEquipoStyles
  * @validations  - Filtrado en memoria; búsqueda insensible a mayúsculas.
  *               - tableContent se construye una sola vez y se reutiliza en móvil
  *                 y PC para que ambas versiones no se desincronicen.
  *               - Sin estilos inline; todo vive en mantEquipoStyles.js.
+ *               - Errores de carga (equipos/mantenimientos) se muestran con
+ *                 ModalError en lugar de un texto rojo en pantalla. El
+ *                 ErrorProvider se declara local a esta pantalla porque es
+ *                 la única en la que se pidió aplicar el modal.
  * @navigation   - Tocar un card → /equipos/DetalleMantenimiento?id={id}.
  *               - "Registrar Ticket" → /equipos/AgregarMantenimiento.
  *               - "Ver Tareas" → /equipos/tareas.
@@ -28,6 +35,8 @@ import SearchBar from "../../../shared/components/SearchBar.jsx";
 import FilterButton from "../../../shared/components/FilterButton.jsx";
 import Icon from "../../../shared/components/Icons.jsx";
 import Alert from "../../../shared/components/Alert.jsx";
+import ModalError from "../../../shared/components/ModalError.jsx";
+import { ErrorProvider } from "../../../shared/context/ErrorContext.js";
 
 import { ICONS } from "../../../theme/icons.js";
 import { COLORS } from "../../../theme/colors.js";
@@ -52,7 +61,18 @@ const TABLE_COLS_MOBILE = [
   "colTicket", "colDue", "colStatus", "colTitleMobile", "colDescMobile", "colBy",
 ];
 
-export default function ManteniminetoPrincipal({
+// El ErrorProvider se declara aquí, local a la pantalla principal, para que
+// el ModalError esté disponible únicamente en este flujo (carga de equipos
+// y mantenimientos) sin afectar el resto de la app.
+export default function ManteniminetoPrincipalScreen(props) {
+  return (
+    <ErrorProvider>
+      <ManteniminetoPrincipal {...props} />
+    </ErrorProvider>
+  );
+}
+
+function ManteniminetoPrincipal({
   onNavigateToCreate = () => { },
   onNavigateToDetail = (id) => { },
   onNavigateToTareas = () => { },
@@ -96,6 +116,7 @@ export default function ManteniminetoPrincipal({
     return (
       <View style={[STYLE.container, styles.spinnerContainer]}>
         <Spinner />
+        <ModalError />
       </View>
     );
   }
@@ -134,6 +155,7 @@ export default function ManteniminetoPrincipal({
 
   return (
     <View style={styles.screenRoot}>
+      <ModalError />
       <ScrollView
         style={STYLE.container}
         contentContainerStyle={styles.screenScrollContent}
@@ -188,14 +210,14 @@ export default function ManteniminetoPrincipal({
         </View>
       </ScrollView>
 
-      {/* Botones de acción flotantes en la parte inferior */}
+      {/* Botones de acción flotantes fijos en la parte inferior respetando márgenes y centrado */}
       <View style={styles.floatingFooter}>
         <View style={STYLE.contentWrapper}>
           <View style={styles.bottomButtonsRow}>
             <Button
               variant="outline"
               onPress={onNavigateToCreate}
-              style={[styles.btnAddMaint, styles.btnFooterFlex]}
+              style={styles.btnAddMaint}
             >
               <Icon icon={ICONS.add} size={15} color={COLORS.primary} />
               <CustomText style={[styles.btnLabel, styles.btnLabelPrimary]}>{TEXTOS_PANTALLA.btnAgregarMant}</CustomText>
@@ -203,7 +225,7 @@ export default function ManteniminetoPrincipal({
             <Button
               variant="outline"
               onPress={onNavigateToTareas}
-              style={[styles.btnAddTask, styles.btnFooterFlex]}
+              style={styles.btnAddTask}
             >
               <Icon icon={ICONS.clipboard} size={15} color={COLORS.warning} />
               <CustomText style={[styles.btnLabel, styles.btnLabelWarning]}>{TEXTOS_PANTALLA.btnAgregarTarea}</CustomText>
