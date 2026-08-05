@@ -30,7 +30,6 @@ import Button from '../../../shared/components/Button';
 import CustomText from '../../../shared/components/Text';
 import Spinner from '../../../shared/components/Spinner';
 import ModalEliminar from '../../../shared/components/ModalEliminar';
-import Alert from '../../../shared/components/Alert';
 import Badge from '../../../shared/components/Badge';
 
 import { COLORS } from '../../../theme/colors';
@@ -63,7 +62,7 @@ function FilaDetalleIcono({ icon, label, value, onPress }) {
         <CustomText style={styles.etiqueta}>{label}</CustomText>
         {onPress ? (
           <TouchableOpacity onPress={onPress}>
-            <CustomText style={[styles.valor, { color: COLORS.primary, textDecorationLine: 'underline' }]}>
+            <CustomText style={[styles.valor, styles.valorLink]}>
               {value || '—'}
             </CustomText>
           </TouchableOpacity>
@@ -84,7 +83,6 @@ export default function DetalleColaboradorScreen() {
   const { mostrarError } = useError();
 
   const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [alert, setAlert] = useState(null);
   const [eliminando, setEliminando] = useState(false);
 
   // ─── Obtener datos del colaborador ────────────────────────────
@@ -123,7 +121,6 @@ export default function DetalleColaboradorScreen() {
         }
       });
     } catch (err) {
-      // Error de eliminación: se muestra en el modal global.
       mostrarError(err);
       setShowConfirmModal(false);
     } finally {
@@ -145,18 +142,16 @@ export default function DetalleColaboradorScreen() {
   // ─── Estados de carga y error ──────────────────────────────────
   if (loading) {
     return (
-      <View style={[STYLE.container, { justifyContent: 'center', alignItems: 'center' }]}>
+      <View style={[STYLE.container, styles.centeredContainer]}>
         <Spinner />
       </View>
     );
   }
 
-  // Si hay error (por ejemplo, no se encontró el colaborador), mostramos un mensaje,
-  // pero el modal ya se habrá mostrado para errores de red.
   if (!colaborador) {
     return (
       <>
-        <View style={[STYLE.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <View style={[STYLE.container, styles.centeredContainer]}>
           <CustomText style={{ color: COLORS.error }}>
             {error || 'Colaborador no encontrado'}
           </CustomText>
@@ -257,19 +252,19 @@ export default function DetalleColaboradorScreen() {
           <Button
             variant="outline"
             onPress={handleEditar}
-            style={[styles.boton, { borderColor: COLORS.primary }]}
+            style={[styles.boton, styles.botonEditar]}
           >
             <Icon icon={ICONS.edit} size={18} color={COLORS.primary} />
-            <CustomText style={{ color: COLORS.primary, fontWeight: '600' }}>Editar Colaborador</CustomText>
+            <CustomText style={styles.botonTextoEditar}>Editar Colaborador</CustomText>
           </Button>
           <Button
             variant="outline"
             onPress={handleEliminarPress}
-            style={[styles.boton, { borderColor: COLORS.error }]}
+            style={[styles.boton, styles.botonEliminar]}
             disabled={eliminando}
           >
             <Icon icon={ICONS.delete} size={18} color={COLORS.error} />
-            <CustomText style={{ color: COLORS.error, fontWeight: '600' }}>
+            <CustomText style={styles.botonTextoEliminar}>
               {eliminando ? 'Eliminando Colaborador...' : 'Eliminar Colaborador'}
             </CustomText>
           </Button>

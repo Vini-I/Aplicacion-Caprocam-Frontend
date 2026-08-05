@@ -85,4 +85,17 @@ export const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 8,
   },
+    buttonContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  buttonText: {
+    color: COLORS.primary,
+    fontWeight: "600",
+  },
+  centeredContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
 });

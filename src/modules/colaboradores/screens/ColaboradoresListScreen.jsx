@@ -153,10 +153,6 @@ export default function ColaboradoresListScreen() {
   // ─── Estados de carga / error ──────────────────────────────────
   if (loading) return <Spinner text="Cargando colaboradores..." />;
 
-  // Si hay error, no mostramos el mensaje en la UI (el modal global ya se encarga).
-  // Simplemente mostramos la lista vacía o un estado vacío.
-  // Podemos mostrar un EmptyState con mensaje de error, pero no es necesario.
-
   // ─── Mensajes del estado vacío ────────────────────────────────
   const hayFiltrosActivos = searchText.trim() !== '' || filtros.categories.length > 0;
   const emptyTitle = hayFiltrosActivos ? 'Sin resultados' : 'No hay colaboradores registrados';
@@ -168,7 +164,7 @@ export default function ColaboradoresListScreen() {
 
   // ─── Render ────────────────────────────────────────────────────
   return (
-    <View style={{ flex: 1, backgroundColor: COLORS.white }}>
+    <View style={styles.screenContainer}>
       {/* Barra de búsqueda y filtro */}
       <View style={styles.searchRow}>
         <SearchBar

@@ -35,6 +35,19 @@ export const styles = StyleSheet.create({
     borderTopColor: COLORS.secondary,
     paddingVertical: 12,
   },
+    itemRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 2,
+  },
+  iconSpacing: {
+    marginRight: 6,
+  },
+  itemDetailText: {
+    fontSize: 13,
+    color: COLORS.textTertiary,
+    marginBottom: 2,
+  },
   itemName: {
     fontWeight: "bold",
     color: COLORS.textSecondary,

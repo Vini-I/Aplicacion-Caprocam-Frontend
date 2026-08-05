@@ -18,6 +18,10 @@ export const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.white,
   },
+    screenContainer: {
+    flex: 1,
+    backgroundColor: COLORS.white,
+  },
 
   // ── Barra de búsqueda y filtro ─────────────────────────────
   searchRow: {

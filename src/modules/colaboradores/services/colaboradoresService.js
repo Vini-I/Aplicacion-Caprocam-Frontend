@@ -187,6 +187,9 @@ async function createColaborador(data) {
   try {
     const pin = String(Math.floor(1000 + Math.random() * 9000));
     const payload = prepareForBackend(data, pin);
+    if (!payload) {
+      throw new Error("No se pudo preparar los datos del colaborador.");
+    }
     const response = await api.post("/colaboradores", payload);
     const created = response.data.data;
     return {
@@ -215,6 +218,9 @@ async function createColaborador(data) {
 async function updateColaborador(id, data, newPin = null) {
   try {
     const payload = prepareForBackend(data, newPin);
+    if (!payload) {
+      throw new Error("No se pudo preparar los datos del colaborador.");
+    }
     if (!newPin) delete payload.pinHash;
     const response = await api.put(`/colaboradores/${id}`, payload);
     return mapBackendToFrontend(response.data.data);

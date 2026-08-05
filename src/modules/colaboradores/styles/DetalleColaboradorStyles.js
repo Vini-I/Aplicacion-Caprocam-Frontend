@@ -159,4 +159,26 @@ export const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     marginTop: 0,
   },
+    botonEditar: {
+    borderColor: COLORS.primary,
+  },
+  botonEliminar: {
+    borderColor: COLORS.error,
+  },
+  botonTextoEditar: {
+    color: COLORS.primary,
+    fontWeight: '600',
+  },
+  botonTextoEliminar: {
+    color: COLORS.error,
+    fontWeight: '600',
+  },
+  centeredContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  valorLink: {
+    color: COLORS.primary,
+    textDecorationLine: 'underline',
+  },
 });

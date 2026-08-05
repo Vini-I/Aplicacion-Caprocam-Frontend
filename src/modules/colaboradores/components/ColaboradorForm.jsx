@@ -198,9 +198,9 @@ const ColaboradorForm = forwardRef(function ColaboradorForm(
 
       <View style={styles.buttonContainer}>
         <Button variant="outline" onPress={handleSubmit} style={styles.submitButton}>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+          <View style={styles.buttonContent}>
             <Icon icon={ICONS.save} size={18} color={COLORS.primary} />
-            <Text style={{ color: COLORS.primary, fontWeight: "600" }}>
+            <Text style={styles.buttonText}>
               {isEditing ? "Editar Colaborador" : "Registrar Colaborador"}
             </Text>
           </View>
@@ -216,9 +216,9 @@ const ColaboradorForm = forwardRef(function ColaboradorForm(
             disabled={resetLoading}
             style={styles.resetButton}
           >
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+            <View style={styles.buttonContent}>
               <Icon icon={ICONS.update} size={18} color={COLORS.primary} />
-              <Text style={{ color: COLORS.primary, fontWeight: "600" }}>
+              <Text style={styles.buttonText}>
                 {resetLoading ? "Restableciendo..." : "Restablecer PIN"}
               </Text>
             </View>

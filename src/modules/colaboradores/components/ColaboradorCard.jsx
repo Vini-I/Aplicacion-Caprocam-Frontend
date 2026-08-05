@@ -34,11 +34,11 @@ export default function ColaboradorCard({ colaborador, onPress, onEdit, onDelete
       </View>
       <View style={styles.details}>
         <View style={styles.detailRow}>
-          <Icon icon={ICONS.phone} size={14} color={COLORS.textTertiary} style={{ marginRight: 6 }} />
+          <Icon icon={ICONS.phone} size={14} color={COLORS.textTertiary} style={styles.iconSpacing} />
           <CustomText style={styles.detailText}>{colaborador.telefono}</CustomText>
         </View>
         <View style={styles.detailRow}>
-          <Icon icon={ICONS.user} size={14} color={COLORS.textTertiary} style={{ marginRight: 6 }} />
+          <Icon icon={ICONS.user} size={14} color={COLORS.textTertiary} style={styles.iconSpacing} />
           <CustomText style={styles.detailText}>{colaborador.email}</CustomText>
         </View>
       </View>

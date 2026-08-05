@@ -47,6 +47,9 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 4,
   },
+    iconSpacing: {
+    marginRight: 6,
+  },
 
   // ── Acciones (editar/eliminar) ─────────────────────────────
   actions: {
