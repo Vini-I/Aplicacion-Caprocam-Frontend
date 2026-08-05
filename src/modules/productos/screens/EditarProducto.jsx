@@ -243,7 +243,7 @@ export default function EditarProducto() {
             >
               <Icon icon={ICONS.add} size={20} color={COLORS.primary} />
               <Text style={styles.saveButtonText}>
-               {guardando ? "Guardando..." : "Guardar Cambios"}
+               {guardando ? "Guardando..." : "Editar Producto"}
               </Text>
             </Button>
           </Card>

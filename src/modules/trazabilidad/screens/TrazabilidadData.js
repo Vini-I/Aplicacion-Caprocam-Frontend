@@ -6,11 +6,13 @@
  * de pre-cria), tal como lo pide la especificacion del modulo.
  */
 
+import { getCurrentDate } from "../../../shared/utils/dateUtils";
+
 export const initialForm = {
   fincaId: "",
   estanqueOrigenId: "",
   estanqueDestinoId: "",
-  fecha: "",
+  fecha: getCurrentDate(),
   tamaño: "",
   dias: "30",
   pl: "",

@@ -18,10 +18,11 @@
  *    (errorNombre, errorCedula, errorTelefono, errorCorreo) para
  *    pintar el borde rojo, y UN SOLO mensaje general (mensajeError)
  *    para mostrar debajo del formulario.
- * 4. Al guardar con éxito, YA NO navega a la lista: muestra el
- *    alert de "guardado" por 3 segundos y luego limpia todo el
- *    formulario (campos y errores) para que se pueda cargar otro
- *    comprador sin salir de la pantalla.
+ * 4. Al guardar con éxito, navega a CompradorScreen (la lista) y le
+ *    pasa el parámetro "guardado" para que esa pantalla muestre ahí
+ *    el alert de éxito por 3 segundos. Este formulario ya no
+ *    muestra ni el alert ni limpia campos: al navegar, la pantalla
+ *    se desmonta.
  *
  * IMPORTANTE:
  * - Los errores solo se calculan dentro de handleSubmit: nunca
@@ -81,7 +82,6 @@ export function useNuevoCompradorScreen() {
   const [errorTelefono, setErrorTelefono] = useState(false);
   const [errorCorreo, setErrorCorreo] = useState(false);
   const [mensajeError, setMensajeError] = useState("");
-  const [guardadoExitoso, setGuardadoExitoso] = useState(false);
   const [guardando, setGuardando] = useState(false);
 
   // el alert de error se autolimpia a los 6 segundos
@@ -116,7 +116,6 @@ export function useNuevoCompradorScreen() {
 
     if (errNombre || errCedula || errTel || errCorreo) {
       setMensajeError(MENSAJE_ERROR_GENERAL);
-      setGuardadoExitoso(false);
       return;
     }
 
@@ -134,31 +133,18 @@ export function useNuevoCompradorScreen() {
       await compradorService.crearComprador(comprador);
     } catch (error) {
       setMensajeError(MENSAJE_ERROR_GUARDADO);
-      setGuardadoExitoso(false);
       setGuardando(false);
       return;
     }
     setGuardando(false);
-
     setMensajeError("");
-    setGuardadoExitoso(true);
 
-    // Ya no navegamos fuera de la pantalla: mostramos el alert de
-    // éxito por 3 segundos y luego limpiamos el formulario para que
-    // el usuario pueda registrar otro comprador sin salir de acá.
-    setTimeout(() => {
-      setGuardadoExitoso(false);
-      setNombre("");
-      setCedula("");
-      setTelefono("");
-      setCorreo("");
-      setDireccion("");
-      setNotas("");
-      setErrorNombre(false);
-      setErrorCedula(false);
-      setErrorTelefono(false);
-      setErrorCorreo(false);
-    }, 3000);
+    // Navega a la lista de compradores; ahí se muestra el alert de
+    // "guardado" por 3 segundos (ver useCompradorScreen).
+    router.replace({
+      pathname: "/(drawer)/compradores/compradorScreen",
+      params: { guardado: "1" },
+    });
   }
 
   function handleVolver() {
@@ -181,7 +167,6 @@ export function useNuevoCompradorScreen() {
     errorTelefono,
     errorCorreo,
     mensajeError, 
-    guardadoExitoso,
     guardando,
     handleCedulaChange,
     handleTelefonoChange,

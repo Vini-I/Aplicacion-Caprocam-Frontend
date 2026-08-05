@@ -8,14 +8,19 @@
  *
  * FUNCIONALIDAD:
  * 1. Carga los datos actuales del comprador (compradoresMock[0])
- *    como valores iniciales del formulario.
- * 2. Valida teléfono y correo (obligatorios, con formato) solo al
- *    presionar "Guardar" (función guardar), nunca mientras se
- *    escribe.
- * 3. Muestra una única alerta general: error si teléfono/correo
- *    son inválidos, advertencia si faltan dirección/notas, éxito
- *    si todo está correcto.
- * 4. Expone la navegación de vuelta al detalle del comprador.
+ *    como valores iniciales del formulario, y guarda una copia
+ *    (original) para poder comparar contra lo que el usuario edite.
+ * 2. Valida teléfono (obligatorio, con formato) y correo (opcional,
+ *    pero si se llena debe tener formato válido -- igual que en
+ *    useNuevoCompradorScreen.js) solo al presionar "Guardar" (función
+ *    guardar), nunca mientras se escribe. Dirección y notas son
+ *    opcionales y no se validan.
+ * 3. Exige que haya al menos un cambio real respecto a los valores
+ *    originales antes de guardar (si no hay cambios, muestra una
+ *    advertencia en vez de llamar a la API).
+ * 4. Muestra una única alerta general: error si teléfono/correo son
+ *    inválidos, advertencia si no hay cambios, éxito si se guardó.
+ * 5. Expone la navegación de vuelta al detalle del comprador.
  *
  * IMPORTANTE:
  * - handleTelefonoChange/handleCorreoChange solo actualizan el
@@ -48,9 +53,11 @@ function validarTelefono(valor) {
   return "";
 }
 
-// Retorna mensaje de error si el correo está vacío o tiene formato inválido
+// Retorna mensaje de error si el correo tiene formato inválido (es opcional,
+// igual que en useNuevoCompradorScreen.js: solo se valida si el usuario
+// escribió algo, nunca se exige)
 function validarCorreo(valor) {
-  if (!valor) return "El correo es obligatorio.";
+  if (!valor) return "";
   if (!CORREO_REGEX.test(valor))
     return "Ingrese un correo válido. Ej: ventas@empresa.com";
   return "";
@@ -75,6 +82,17 @@ export function useEditarCompradorScreen() {
   const [correo, setCorreo] = useState("");
   const [direccion, setDireccion] = useState("");
   const [notas, setNotas] = useState("");
+
+  // Valores tal como llegaron del back, para poder comparar y saber si
+  // el usuario realmente cambió algo antes de guardar (solo los campos
+  // editables: teléfono, correo, dirección y notas -- nombre y cédula
+  // están deshabilitados en esta pantalla y nunca cambian).
+  const [original, setOriginal] = useState({
+    telefono: "",
+    correo: "",
+    direccion: "",
+    notas: "",
+  });
 
   // Errores por campo y alerta general del formulario
   const [errorTelefono, setErrorTelefono] = useState("");
@@ -102,6 +120,12 @@ export function useEditarCompradorScreen() {
       setCorreo(comprador.correo);
       setDireccion(comprador.direccion);
       setNotas(comprador.notas);
+      setOriginal({
+        telefono: comprador.telefono,
+        correo: comprador.correo,
+        direccion: comprador.direccion,
+        notas: comprador.notas,
+      });
     } catch (err) {
       setErrorCarga("No se pudo cargar el comprador.");
       mostrarError(err);
@@ -145,10 +169,16 @@ export function useEditarCompradorScreen() {
       return;
     }
 
-    if (!direccion || !notas) {
+    const hayCambios =
+      telefono !== original.telefono ||
+      correo !== original.correo ||
+      direccion !== original.direccion ||
+      notas !== original.notas;
+
+    if (!hayCambios) {
       setAlerta({
         variant: "warning",
-        message: "Hay campos sin completar. Revisa la información antes de continuar.",
+        message: "Realiza algún cambio antes de guardar.",
       });
       return;
     }
