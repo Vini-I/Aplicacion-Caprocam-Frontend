@@ -15,10 +15,12 @@
  *   tipo, modelo, fecha de instalación, función, estanque
  *   asociado (opcional), horas para mantenimiento y estado.
  * - Valida campos obligatorios al intentar guardar.
- * - Muestra alerta de éxito (verde, 3s) al guardar correctamente
- *   y permanece en la misma pantalla (en creación limpia el formulario).
- * - Muestra alerta de error (rojo, 6s) si hay campos incompletos
- *   o inválidos, con ScrollToEnd automático al alert.
+ * - Al guardar correctamente, redirige a la lista de equipos, donde se
+ *   muestra la alerta de éxito (verde, 3s) arriba de los cards y debajo
+ *   del buscador.
+ * - Muestra alerta de error (rojo, 6s) si hay campos incompletos o
+ *   inválidos, con el mensaje del campo pendiente e informando un campo
+ *   a la vez, con ScrollToEnd automático al alert.
  * - Botón "Guardar Equipo" / "Actualizar Equipo" con ícono.
  *
  * @dependencies - Button, Card, Input, NumberInput, Select, Text, Alert, Icon
@@ -28,7 +30,8 @@
  * @dependencies - STYLE (estilos globales)
  * @validations  - Campos obligatorios: codigoInterno, nombre, descripción,
  *                 tipo, fechaInstalacion, funcionEquipo, estadoOperativo.
- * @navigation   - No redirige al guardar, permanece en la misma pantalla.
+ * @navigation   - Al guardar con éxito, redirige a la lista de equipos
+ *                 (/equipos/equipos) con la alerta de éxito por parámetros.
  * ============================================================
  */
 
@@ -53,19 +56,20 @@ import EquipoFechaInput from '../components/EquipoFechaInput';
 import { useRegistrarEquipo } from '../hooks/useRegistrarEquipo';
 import { equiposService } from '../services/equiposService';
 import { styles } from '../styles/RegistrarEquipoStyles';
+import { useError } from '../../../shared/context/ErrorContext';
 
 const { width } = Dimensions.get('window');
 const isLargeScreen = width > 700;
 
-// Duración de los alertas según estándares:
-// - Éxito: 3 segundos
-// - Error: 6 segundos
-const ALERT_DURACION_EXITO = 3000;
+// Duración del alert de error en esta pantalla según estándares (6 segundos).
+// El alert de éxito ya no se muestra aquí: se muestra en la lista de
+// equipos tras la redirección (Estándar 2).
 const ALERT_DURACION_ERROR = 6000;
 
 export default function RegistrarEquipoScreen() {
   const router = useRouter();
   const { edit } = useLocalSearchParams();
+  const { mostrarError } = useError();
   const [equipoEdicion, setEquipoEdicion] = useState(null);
   const [cargandoDatos, setCargandoDatos] = useState(!!edit);
   const scrollRef = useRef(null);
@@ -79,6 +83,7 @@ export default function RegistrarEquipoScreen() {
           setEquipoEdicion(data);
         } catch (err) {
           setEquipoEdicion(null);
+          mostrarError(err);
         } finally {
           setCargandoDatos(false);
         }
@@ -87,7 +92,7 @@ export default function RegistrarEquipoScreen() {
     } else {
       setCargandoDatos(false);
     }
-  }, [edit]);
+  }, [edit, mostrarError]);
 
   const {
     formulario,
@@ -108,7 +113,7 @@ export default function RegistrarEquipoScreen() {
     equiposService.getEstanquesDisponibles().then(setEstanquesDisponibles);
   }, []);
 
-  // Estado para alertas
+  // Estado para alertas (solo errores de validación)
   const [alert, setAlert] = useState(null);
   const alertTimeoutRef = useRef(null);
 
@@ -127,24 +132,35 @@ export default function RegistrarEquipoScreen() {
   const handleGuardar = async () => {
     try {
       await guardarEquipo();
-      // Éxito: mostrar alerta y NO redirigir
-      showAlert(
-        'success',
-        isEditing ? 'Equipo actualizado correctamente.' : 'Equipo registrado correctamente.',
-        ALERT_DURACION_EXITO
-      );
-      // Si es edición, no se limpia el formulario (el hook no lo hace)
-      // Si es creación, el hook ya limpió el formulario y reinició submitted
+      // Éxito: redirige a la lista de equipos, que muestra la alerta
+      // verde arriba de los cards y debajo del buscador (Estándar 2)
+      router.replace({
+        pathname: '/equipos/equipos',
+        params: {
+          alertType: 'success',
+          alertMessage: isEditing
+            ? 'Equipo actualizado correctamente.'
+            : 'Equipo registrado correctamente.',
+        },
+      });
     } catch (error) {
-      showAlert(
-        'danger',
-        error.message || 'Ocurrió un error al guardar el equipo.',
-        ALERT_DURACION_ERROR
-      );
-      // ScrollToEnd para llevar al usuario al alert de error (Estándar 3)
-      setTimeout(() => {
-        scrollRef.current?.scrollToEnd({ animated: true });
-      }, 100);
+      // Error de validación (campo faltante) se muestra en el formulario
+      // Error de red/backend ya se mostró en el modal global, pero mostramos
+      // un mensaje local si es un error de validación controlado.
+      if (error.message && error.message.includes('obligatorio')) {
+        showAlert(
+          'danger',
+          error.message,
+          ALERT_DURACION_ERROR
+        );
+        setTimeout(() => {
+          scrollRef.current?.scrollToEnd({ animated: true });
+        }, 100);
+      } else {
+        // Ya se mostró el modal global, no mostramos alert adicional
+        // para evitar duplicación.
+        console.warn('Error no controlado:', error);
+      }
     }
   };
 
@@ -189,6 +205,7 @@ export default function RegistrarEquipoScreen() {
             editable={!isEditing}
             required
             submitted={submitted}
+            error={submitted && errores.codigoInterno ? errores.codigoInterno : ''}
             labelStyle={styles.labelMedium}
           />
 
@@ -199,6 +216,7 @@ export default function RegistrarEquipoScreen() {
             placeholder="Ej: Aireador principal"
             required
             submitted={submitted}
+            error={submitted && errores.nombre ? errores.nombre : ''}
             labelStyle={styles.labelMedium}
           />
 
@@ -209,6 +227,7 @@ export default function RegistrarEquipoScreen() {
             placeholder="Ej: Aireador de paletas para oxigenación"
             required
             submitted={submitted}
+            error={submitted && errores.descripcion ? errores.descripcion : ''}
             labelStyle={styles.labelMedium}
           />
 
@@ -220,6 +239,7 @@ export default function RegistrarEquipoScreen() {
             placeholder="Seleccione el tipo"
             required
             submitted={submitted}
+            error={submitted && errores.tipo ? errores.tipo : ''}
             labelStyle={styles.labelMedium}
           />
 
@@ -244,6 +264,7 @@ export default function RegistrarEquipoScreen() {
             multiline
             required
             submitted={submitted}
+            error={submitted && errores.funcionEquipo ? errores.funcionEquipo : ''}
             style={styles.textArea}
             labelStyle={styles.labelMedium}
           />
@@ -275,6 +296,7 @@ export default function RegistrarEquipoScreen() {
             placeholder="Seleccione el estado operativo"
             required
             submitted={submitted}
+            error={submitted && errores.estadoOperativo ? errores.estadoOperativo : ''}
             labelStyle={styles.labelMedium}
           />
         </Card>

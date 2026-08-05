@@ -61,6 +61,7 @@ import { ICONS } from '../../../theme/icons';
 import { STYLE } from '../../../theme/style';
 import { equiposService } from '../services/equiposService';
 import { styles, detalleStyles, equipoDetalleStyles } from '../styles/tareasStyles';
+import { useError } from '../../../shared/context/ErrorContext';
 
 // Mapeo de tipos a iconos
 const TIPOS_ICONS = {
@@ -126,6 +127,7 @@ function FilaDetalleIcono({ icon, label, value, valueColor, onPress }) {
 export default function DetalleEquipoScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
+  const { mostrarError } = useError();
 
   const [equipo, setEquipo] = useState(null);
   const [estanque, setEstanque] = useState(null);
@@ -133,7 +135,6 @@ export default function DetalleEquipoScreen() {
   const [error, setError] = useState(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
-  const [alertError, setAlertError] = useState(null); // solo errores en detalle
 
   const cargarDatos = useCallback(async () => {
     try {
@@ -152,10 +153,11 @@ export default function DetalleEquipoScreen() {
       }
     } catch (err) {
       setError(err.message || 'No se pudo cargar el equipo.');
+      mostrarError(err);
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, mostrarError]);
 
   useEffect(() => {
     if (id) cargarDatos();
@@ -190,8 +192,8 @@ export default function DetalleEquipoScreen() {
         }
       });
     } catch (err) {
-      // Error: mostrar alerta roja en esta misma pantalla
-      setAlertError({ type: 'danger', message: err.message || 'No se pudo eliminar el equipo.' });
+      // Error: mostrar modal global y cerrar modal de confirmación
+      mostrarError(err);
       setShowConfirmModal(false);
     }
   };
@@ -218,7 +220,6 @@ export default function DetalleEquipoScreen() {
   if (error || !equipo) {
     return (
       <>
-        <NavbarRegistro Titulo="Detalle de Equipo" Subtitulo="Error" Icono="tools" />
         <View style={styles.centerContainer}>
           <CustomText style={{ color: COLORS.error }}>
             {error || 'Equipo no encontrado'}
@@ -310,13 +311,6 @@ export default function DetalleEquipoScreen() {
               value={equipo.descripcion}
             />
           </Card>
-        )}
-
-        {/* Alertas de error (solo errores de eliminación) */}
-        {alertError && (
-          <View style={equipoDetalleStyles.alertWrapper}>
-            <Alert variant={alertError.type} message={alertError.message} />
-          </View>
         )}
 
         <View style={equipoDetalleStyles.botonesContainer}>

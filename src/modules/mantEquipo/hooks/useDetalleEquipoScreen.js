@@ -24,6 +24,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useFocusEffect } from 'expo-router';
 import { equiposService } from '../services/equiposService';
+import { useError } from '../../../shared/context/ErrorContext';
 
 export function useDetalleEquipoScreen({ id, router }) {
   const [equipo, setEquipo] = useState(null);
@@ -33,6 +34,7 @@ export function useDetalleEquipoScreen({ id, router }) {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [alert, setAlert] = useState(null);
+  const { mostrarError } = useError();
 
   const cargarDatos = useCallback(async () => {
     try {
@@ -53,10 +55,11 @@ export function useDetalleEquipoScreen({ id, router }) {
       }
     } catch (err) {
       setError(err.message || 'No se pudo cargar el equipo.');
+      mostrarError(err);
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, mostrarError]);
 
   useEffect(() => {
     if (id) cargarDatos();
@@ -87,6 +90,7 @@ export function useDetalleEquipoScreen({ id, router }) {
     } catch (err) {
       setAlert({ type: 'danger', message: err.message || 'No se pudo eliminar el equipo.' });
       setShowConfirmModal(false);
+      mostrarError(err);
     }
   };
 
