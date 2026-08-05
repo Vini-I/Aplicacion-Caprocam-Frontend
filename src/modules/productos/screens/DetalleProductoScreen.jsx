@@ -81,7 +81,6 @@ export default function DetalleProductoScreen() {
     confirmarEliminar,
     handleBack,
     handleCerrarModal,
-    eliminado,
   } = useDetalleProducto();
 
   if (cargando) {
@@ -181,17 +180,8 @@ export default function DetalleProductoScreen() {
                     </Button>
                 </View>
 
-                {/* Alert de éxito al pie de la pantalla, igual que al guardar un producto */}
-                {eliminado && (
-                    <Alert
-                        variant="success"
-                        message="Producto eliminado correctamente."
-                        style={styles.alertEliminado}
-                    />
-                )}
-
                 {/* Si falla la desactivación en el back, se muestra el error aquí */}
-                {!!error && !eliminado && (
+                {!!error && (
                     <Alert
                         variant="danger"
                         message={error}

@@ -162,7 +162,6 @@ export function useFincaNueva({ onFinca }) {
       await crearFinca(nuevaFincaDTO);
       onFinca();
     } catch (error) {
-      // crearFinca setea `ERROR` en el contexto; no relanzamos aquí
       return;
     }
   });
