@@ -27,12 +27,6 @@ export const styles = StyleSheet.create({
     padding: 12,
     paddingBottom: 28,
   },
-  containerLarge: {
-    paddingHorizontal: 40,
-  },
-  containerSmall: {
-    paddingHorizontal: 16,
-  },
   sectionTitle: {
     fontWeight: "700",
     marginBottom: 12,

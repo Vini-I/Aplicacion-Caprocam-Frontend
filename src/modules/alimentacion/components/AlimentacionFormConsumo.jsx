@@ -5,7 +5,14 @@
  *
  * Sección "Consumo" del formulario de Alimentación: cantidad en
  * Kg (obligatoria, con asterisco + borde rojo + mensaje de error
- * tras submitted) y proveedor.
+ * tras submitted), proveedor y producto.
+ *
+ * Proveedor y Producto ahora usan el catálogo real (useProveedorProductoAlimentacion),
+ * en vez de la lista fija hardcodeada que había antes: eso guardaba
+ * texto libre y dejaba proveedor_id/producto_id siempre en NULL.
+ * Al elegir un proveedor, se guarda su id (idProveedor -> proveedor_id)
+ * y también su nombre (proveedor, para mantener compatibilidad con
+ * la columna de texto libre).
  *
  * Props principales:
  * - form, updateField, submitted, errores (mismos que recibe
@@ -24,50 +31,72 @@ import Text from "../../../shared/components/Text";
 import Icon from "../../../shared/components/Icons";
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
-import { PROVEEDORES } from "../constants/alimentacionOpciones";
-
-const bordeError = { borderColor: COLORS.error, borderWidth: 1.5 };
-const sectionTitleRow = { flexDirection: "row", alignItems: "center", marginBottom: 10 };
-const sectionIcon = { marginRight: 8 };
+import { styles } from "../styles/AlimentacionStyles";
+import { useProveedorProductoAlimentacion } from "../hooks/useProveedorProductoAlimentacion";
 
 export default function AlimentacionFormConsumo({
   form = {},
-  updateField = () => {},
+  updateField = () => { },
   submitted = false,
   errores = {},
 }) {
-  const invalidoCantidadKg = submitted && !!errores.cantidadKg;
-  const invalidoProveedor = submitted && !!errores.proveedor;
+  const { proveedoresOptions, productosOptions } = useProveedorProductoAlimentacion(form.idProveedor);
+
+  const handleProveedorChange = (idProveedor) => {
+    updateField("idProveedor", idProveedor);
+    const seleccionado = proveedoresOptions.find((p) => String(p.value) === String(idProveedor));
+    updateField("proveedor", seleccionado ? seleccionado.label : "");
+    // Al cambiar de proveedor, el producto elegido ya no aplica
+    // (pertenecia al proveedor anterior).
+    updateField("idProducto", "");
+  };
 
   return (
     <Card>
-      <View style={sectionTitleRow}>
-        <Icon icon={ICONS.weight} size={18} color={COLORS.primary} style={sectionIcon} />
+      <View style={styles.sectionTitleRow}>
+        <Icon icon={ICONS.weight} size={18} color={COLORS.primary} style={styles.sectionIcon} />
         <Text size={18} weight="700" color={COLORS.textSecondary}>
           Consumo
         </Text>
       </View>
 
       <Input
-        label="Cantidad (Kg) *"
+        label="Cantidad (Kg)"
         placeholder="Ej: 20"
         value={String(form.cantidadKg ?? "")}
         keyboardType="numeric"
+        maxLength={6}
         onChangeText={(v) => {
           const soloNumeros = v.replace(/[^0-9]/g, "");
           updateField("cantidadKg", soloNumeros);
         }}
-        style={invalidoCantidadKg ? bordeError : null}
+        required
+        submitted={submitted}
+        error={submitted ? (errores.cantidadKg || "") : ""}
       />
 
       <Select
-        label="Proveedor *"
-        value={form.proveedor}
-        onChange={(v) => updateField("proveedor", v)}
-        options={PROVEEDORES}
+        label="Proveedor"
+        value={form.idProveedor}
+        onChange={handleProveedorChange}
+        options={proveedoresOptions}
         placeholder="Seleccionar proveedor"
-        selectStyle={invalidoProveedor ? bordeError : null}
+        required
+        submitted={submitted}
+        error={submitted ? (errores.proveedor || "") : ""}
+      />
+
+      <Select
+        label="Producto"
+        value={form.idProducto}
+        onChange={(v) => updateField("idProducto", v)}
+        options={productosOptions}
+        placeholder={form.idProveedor ? "Seleccionar producto" : "Primero elija un proveedor"}
+        required
+        submitted={submitted}
+        error={submitted ? (errores.producto || "") : ""}
       />
     </Card>
   );
 }
+

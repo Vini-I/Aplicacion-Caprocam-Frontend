@@ -59,5 +59,20 @@ export const styles = StyleSheet.create({
   },
   buttonText: {
     color: COLORS.primary
-  }
+  },
+
+  bordeError: {
+    borderColor: COLORS.error,
+    borderWidth: 1.5,
+  },
+
+  sectionTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+
+  sectionIcon: {
+    marginRight: 8,
+  },
 });

@@ -175,7 +175,7 @@ infeccion: {
         fontSize: 26,
         fontFamily: TYPOGRAPHY.fontFamily.bold,
         fontWeight: "800",
-        color: COLORS.DensidadPoblacional,
+        color: COLORS.Densidad,
  },
 
     Buttons: {

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useRouter, useLocalSearchParams } from "expo-router";
 
 import  {obtenerDetalleReporte}  from "../services/detalleReporte.service";
 import { TIPOS_AUTOGESTIONADOS } from "../constants/tipoReporte.js";
@@ -8,6 +9,8 @@ import { estanqueService } from "../../estanques/services/estanque.service.js";
 import { colaboradorService } from "../../colaboradores/services/colaborador.service.js";
 
 export function useDetalleReporte() {
+  const router = useRouter();                    
+  const { alert: alertParam } = useLocalSearchParams();
 
   const [registroTipo, setRegistroTipo] = useState(null);
 
@@ -31,6 +34,12 @@ export function useDetalleReporte() {
     !!finca &&
     !!estanque;
 
+  useEffect(() => {
+    if (alertParam === "edited") {
+      setAlert("edited");
+      router.setParams({ alert: undefined });
+    }
+  }, [alertParam, setAlert, router])
 
   useEffect(() => {
     let activo = true;
