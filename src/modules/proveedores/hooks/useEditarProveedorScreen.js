@@ -20,7 +20,7 @@ import { useProveedor } from "../context/ProveedorContext";
 import { validarTelefono, validarCorreo } from "../utils/contactValidators";
 import { ProveedorDTO } from "../dtos/proveedor.dto";
 
-export const TELEFONO_MAX_LENGTH = 8;
+export const telefonoMaxLength = 8;
 
 function validarDireccion(valor) {
   if (!valor || !valor.trim()) return "La dirección es obligatoria.";

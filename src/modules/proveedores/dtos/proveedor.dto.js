@@ -11,7 +11,8 @@ import { normalizarTelefonoParaBackend } from "../utils/contactValidators.js";
  * - Elimina la variable grupoDatos conforme al nuevo requerimiento.
  *
  * REGLAS IMPORTANTES:
- * - Envía las variables en camelCase y snake_case para retrocompatibilidad.
+ * - Envía todas las variables en camelCase (el DTO del backend ya
+ *   responde/acepta camelCase, por lo que no se necesita snake_case).
  * - No incluye ID; el ID se maneja en el path param del controlador.
  * - Toda limpieza de strings antes del guardado sucede exclusivamente aquí.
  *
@@ -29,23 +30,14 @@ export class ProveedorDTO {
     direccion,
     notas,
   }) {
-
-
     const nombreLimpio = (nombre || "").trim();
     const telefonoNormalizado = normalizarTelefonoParaBackend(telefono);
     const correoLimpio = (correo || "").trim();
 
     this.nombre = nombreLimpio;
-    this.nombre_empresa = nombreLimpio;
-
     this.tipoProducto = tipoProducto;
-    this.tipo_producto = tipoProducto;
-
     this.telefono = telefonoNormalizado;
-
     this.correo = correoLimpio;
-    this.correo_electronico = correoLimpio;
-
     this.direccion = (direccion || "").trim();
     this.notas = notas ? notas.trim() : "";
   }
