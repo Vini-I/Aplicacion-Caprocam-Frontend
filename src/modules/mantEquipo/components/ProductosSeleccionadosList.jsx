@@ -9,15 +9,17 @@
  * - Componente personalizado que reutiliza elementos de shared/components.
  * - Desplegar la lista de insumos/productos seleccionados con diseño responsivo.
  *
- * @dependencies - Text.jsx, Button.jsx, Icons.jsx (shared/components), ProductosSeleccionadosListStyles.js (styles)
+ * @dependencies - CustomText, Input, Button, Icon (shared/components)
+ *               - ProductosSeleccionadosListStyles.js (styles)
  * @validations  - Cantidad mínima: 1.
  * @navigation   - Ninguna
  */
 
 import React from "react";
-import { View, TouchableOpacity, TextInput } from "react-native";
+import { View, Pressable } from "react-native";
 import CustomText from "../../../shared/components/Text.jsx";
 import Button from "../../../shared/components/Button.jsx";
+import Input from "../../../shared/components/Input.jsx";
 import Icon from "../../../shared/components/Icons.jsx";
 import { COLORS } from "../../../theme/colors.js";
 import { ICONS } from "../../../theme/icons.js";
@@ -35,12 +37,13 @@ export default function ProductosSeleccionadosList({
   return (
     <View style={styles.listContainer}>
       {productosSeleccionados.map((p) => {
+        const itemKey = String(p.productoId || p.id);
         const cant = parseInt(p.cantidad || 1, 10);
-        const pu = parseFloat(p.precioUnidad) || 0;
+        const pu = parseFloat(p.precioUnidad || p.costoUnitario || p.precio) || 0;
         const subtotal = cant * pu;
 
         return (
-          <View key={p.id} style={styles.productoCard}>
+          <View key={itemKey} style={styles.productoCard}>
             {/* Fila 1: Nombre + Eliminar */}
             <View style={styles.fila1}>
               <View style={styles.infoCol}>
@@ -54,7 +57,7 @@ export default function ProductosSeleccionadosList({
 
               <Button
                 variant="outline"
-                onPress={() => onQuitar && onQuitar(p.id)}
+                onPress={() => onQuitar && onQuitar(itemKey)}
                 style={styles.btnEliminar}
               >
                 <Icon icon={ICONS.delete} size={13} color={COLORS.error} />
@@ -71,28 +74,27 @@ export default function ProductosSeleccionadosList({
                   Cantidad:
                 </CustomText>
                 <View style={styles.cantidadControl}>
-                  <TouchableOpacity
-                    onPress={() => onCambiarCantidad && onCambiarCantidad(p.id, Math.max(1, cant - 1))}
-                    activeOpacity={0.7}
+                  <Pressable
+                    onPress={() => onCambiarCantidad && onCambiarCantidad(itemKey, Math.max(1, cant - 1))}
                     style={styles.cantidadBtn}
                   >
                     <Icon icon={ICON_MINUS} size={14} color={COLORS.primary} />
-                  </TouchableOpacity>
+                  </Pressable>
 
-                  <TextInput
+                  <Input
                     value={String(cant)}
-                    onChangeText={(val) => onCambiarCantidad && onCambiarCantidad(p.id, val.replace(/[^0-9]/g, ''))}
+                    onChangeText={(val) => onCambiarCantidad && onCambiarCantidad(itemKey, val.replace(/[^0-9]/g, ''))}
                     keyboardType="numeric"
+                    containerStyle={{ marginBottom: 0 }}
                     style={styles.cantidadInput}
                   />
 
-                  <TouchableOpacity
-                    onPress={() => onCambiarCantidad && onCambiarCantidad(p.id, cant + 1)}
-                    activeOpacity={0.7}
+                  <Pressable
+                    onPress={() => onCambiarCantidad && onCambiarCantidad(itemKey, cant + 1)}
                     style={styles.cantidadBtn}
                   >
                     <Icon icon={ICONS.add} size={14} color={COLORS.primary} />
-                  </TouchableOpacity>
+                  </Pressable>
                 </View>
               </View>
 

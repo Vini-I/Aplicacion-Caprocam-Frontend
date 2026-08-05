@@ -27,6 +27,7 @@ import {
   TIPO_PERSONAL_A_BACKEND,
   TIPO_PERSONAL_A_FRONTEND,
   LISTA_ESTADOS_EQUIPO,
+  MENSAJES_SERVICIOS,
 } from "../constants/mantEquipoMensajes.js";
 
 // Re-exportar para compatibilidad
@@ -39,14 +40,81 @@ export {
   LISTA_ESTADOS_EQUIPO as ESTADOS_EQUIPO,
 };
 
+/**
+ * Obtiene el catálogo completo de productos del grupo de datos del usuario,
+ * combinando /productos e /inventario para no omitir ningún registro.
+ */
+export async function getProductosCatalogo() {
+  try {
+    const [resProductos, resInventario] = await Promise.allSettled([
+      api.get('/productos'),
+      api.get('/inventario'),
+    ]);
+
+    const prodsRaw = resProductos.status === 'fulfilled'
+      ? (resProductos.value.data?.data || resProductos.value.data || [])
+      : [];
+    const invRaw = resInventario.status === 'fulfilled'
+      ? (resInventario.value.data?.data || resInventario.value.data || [])
+      : [];
+
+    const mapaProds = new Map();
+
+    // 1. Agregar productos desde /productos
+    if (Array.isArray(prodsRaw)) {
+      prodsRaw.forEach(p => {
+        const idStr = String(p.id ?? p.producto_id ?? p.productoId ?? '');
+        if (idStr) {
+          mapaProds.set(idStr, {
+            ...p,
+            id: idStr,
+            productoId: idStr,
+            nombre: p.nombre ?? p.nombreProducto ?? p.producto?.nombre ?? `Producto ${idStr}`,
+            precioUnidad: Number(p.precioUnidad ?? p.precio_unidad ?? p.precio) || 0,
+            costoUnitario: Number(p.precioUnidad ?? p.precio_unidad ?? p.precio) || 0,
+            stockMaximo: p.cantidad !== undefined ? Number(p.cantidad) : (p.stock !== undefined ? Number(p.stock) : 999),
+          });
+        }
+      });
+    }
+
+    // 2. Fusionar/agregar productos desde /inventario
+    if (Array.isArray(invRaw)) {
+      invRaw.forEach(p => {
+        const idStr = String(p.producto_id ?? p.productoId ?? p.id ?? '');
+        if (idStr) {
+          const existente = mapaProds.get(idStr) || {};
+          mapaProds.set(idStr, {
+            ...existente,
+            ...p,
+            id: idStr,
+            productoId: idStr,
+            nombre: p.nombre ?? p.nombreProducto ?? p.producto?.nombre ?? existente.nombre ?? `Producto ${idStr}`,
+            precioUnidad: Number(p.precioUnidad ?? p.precio_unidad ?? p.precio ?? existente.precioUnidad) || 0,
+            costoUnitario: Number(p.precioUnidad ?? p.precio_unidad ?? p.precio ?? existente.costoUnitario) || 0,
+            stockMaximo: p.cantidad !== undefined ? Number(p.cantidad) : (p.stock !== undefined ? Number(p.stock) : (existente.stockMaximo ?? 999)),
+          });
+        }
+      });
+    }
+
+    return Array.from(mapaProds.values());
+  } catch (err) {
+    console.warn("getProductosCatalogo error:", err?.message || err);
+    return [];
+  }
+}
+
+
+
 // ─── Adaptador: respuesta backend → objeto frontend ───────────────────────────
 function adaptBackendTicket(item) {
-  if (!item || !item.id) throw new Error('adaptBackendTicket: item inválido');
+  if (!item || !item.id) throw new Error(MENSAJES_SERVICIOS.itemInvalido);
 
-  const estadoRaw    = item.estadoTicket || 'En espera';
-  const estadoFront  = ESTADO_BACKEND_A_FRONTEND[estadoRaw] || 'en_espera';
-  const equipoId     = item.equipoId ? String(item.equipoId) : null;
-  const tipoRaw      = item.tipoPersonal || 'TrabajadorInterno';
+  const estadoRaw = item.estadoTicket || 'En espera';
+  const estadoFront = ESTADO_BACKEND_A_FRONTEND[estadoRaw] || 'en_espera';
+  const equipoId = item.equipoId ? String(item.equipoId) : null;
+  const tipoRaw = item.tipoPersonal || 'TrabajadorInterno';
   const tipoPersonal = TIPO_PERSONAL_A_FRONTEND[tipoRaw] || 'interno';
 
   // ID visual: número consecutivo del backend
@@ -56,80 +124,85 @@ function adaptBackendTicket(item) {
   const tareas = Array.isArray(item.tareas) ? item.tareas.map(t => {
     const nombreDefaut = t.nombre || t.label || t.tarea?.nombre || `Tarea ${t.tareaId || t.id}`;
     return {
-      id:               t.id,
-      tareaId:          t.tareaId || t.tarea_id,
-      value:            String(t.tareaId || t.tarea_id || t.id),
-      label:            nombreDefaut,
-      nombre:           nombreDefaut,
-      categoria:        t.categoria || t.tarea?.categoria || '',
+      id: t.id,
+      tareaId: t.tareaId || t.tarea_id,
+      value: String(t.tareaId || t.tarea_id || t.id),
+      label: nombreDefaut,
+      nombre: nombreDefaut,
+      categoria: t.categoria || t.tarea?.categoria || '',
       duracionEstimada: Number(t.duracionEstimada || t.duracion_estimada || t.horas || t.tarea?.horas) || 0,
-      descripcion:      t.descripcion || t.tarea?.descripcion || '',
-      estado:           t.estadoTarea || t.estado_tarea || 'Pendiente',
-      realizada:        (t.estadoTarea || t.estado_tarea) === 'Realizado',
+      descripcion: t.descripcion || t.tarea?.descripcion || '',
+      estado: t.estadoTarea || t.estado_tarea || 'Pendiente',
+      realizada: (t.estadoTarea || t.estado_tarea) === 'Realizado',
     };
   }) : [];
 
   // Productos vinculados al ticket (tabla junction mantenimiento_equipo_productos)
   const productos = Array.isArray(item.productos) ? item.productos.map(p => ({
-    id:          p.id,
-    productoId:  p.productoId || p.producto_id,
-    cantidad:    Number(p.cantidad) || 1,
+    id: p.id,
+    productoId: p.productoId || p.producto_id,
+    cantidad: Number(p.cantidad) || 1,
     costoUnitario: Number(p.costoUnitario || p.costo_unitario) || 0,
-    subtotal:    Number(p.subtotal) || 0,
-    nombre:      p.nombre || p.producto?.nombre || `Producto ${p.productoId || p.id}`,
+    subtotal: Number(p.subtotal) || 0,
+    nombre: p.nombre || p.producto?.nombre || `Producto ${p.productoId || p.id}`,
   })) : [];
 
   return {
-    id:                 idVisual,
-    dbId:               item.id,
+    id: idVisual,
+    dbId: item.id,
     equipoId,
-    herramienta:        equipoId ? `Equipo ${equipoId}` : 'Equipo General',
-    titulo:             item.tituloTicket      || 'Mantenimiento',
-    descripcion:        item.descripcionTicket || '',
+    herramienta: equipoId ? `Equipo ${equipoId}` : 'Equipo General',
+    titulo: item.tituloTicket || 'Mantenimiento',
+    descripcion: item.descripcionTicket || '',
     tareas,
     productos,
-    estado:             estadoFront,
-    creadoPor:          item.nombreCreador || (item.creadoPorUsuarioId ? String(item.creadoPorUsuarioId) : 'Usuario'),
-    fechaCreacion:      new Date(item.fechaMantenimiento || item.fechaCreacion || Date.now()),
-    estadoEquipo:       item.estadoEquipo || '',
+    estado: estadoFront,
+    creadoPor: item.nombreCreador || (item.creadoPorUsuarioId ? String(item.creadoPorUsuarioId) : 'Usuario'),
+    fechaCreacion: new Date(item.fechaMantenimiento || item.fechaCreacion || Date.now()),
+    estadoEquipo: item.estadoEquipo || '',
     tipoPersonal,
-    costoManoObra:      Number(item.costoManoObra)      || 0,
-    costoProductos:     Number(item.costoProductos)     || 0,
+    costoManoObra: Number(item.costoManoObra) || 0,
+    costoProductos: Number(item.costoProductos) || 0,
     costoTotalEstimado: Number(item.costoTotalEstimado) || 0,
-    costoTotal:         Number(item.costoTotalEstimado) || 0,
+    costoTotal: Number(item.costoTotalEstimado) || 0,
   };
 }
 
 // ─── OBTENER todos los tickets ─────────────────────────────────────────────────
 export async function obtenerTickets() {
-  const response = await api.get('/mantenimientos');
-  const data = response.data?.data || response.data;
+  try {
+    const response = await api.get('/mantenimientos');
+    const data = response.data?.data || response.data;
 
-  if (!Array.isArray(data)) {
-    throw new Error('obtenerTickets: la respuesta del servidor no es un arreglo');
+    if (!Array.isArray(data)) {
+      throw new Error(MENSAJES_SERVICIOS.respuestaNoArreglo);
+    }
+
+    // Resolver nombres de usuarios únicos en paralelo
+    const idsUnicos = [...new Set(
+      data.map(t => t.creado_por_usuario_id || t.creadoPorUsuarioId).filter(Boolean)
+    )];
+    const mapaUsuarios = {};
+    await Promise.allSettled(
+      idsUnicos.map(async (uid) => {
+        try {
+          const res = await api.get(`/login/${uid}`);
+          const u = res.data?.data || res.data;
+          mapaUsuarios[String(uid)] = u?.nombre || u?.nombreUsuario || u?.email || String(uid);
+        } catch (_) {
+          mapaUsuarios[String(uid)] = String(uid);
+        }
+      })
+    );
+
+    return data.map(item => adaptBackendTicket({
+      ...item,
+      nombreCreador: mapaUsuarios[String(item.creado_por_usuario_id || item.creadoPorUsuarioId)] || null,
+    }));
+  } catch (err) {
+    console.warn('obtenerTickets error:', err?.response?.data || err?.message || err);
+    throw err;
   }
-
-  // Resolver nombres de usuarios únicos en paralelo
-  const idsUnicos = [...new Set(
-    data.map(t => t.creado_por_usuario_id || t.creadoPorUsuarioId).filter(Boolean)
-  )];
-  const mapaUsuarios = {};
-  await Promise.allSettled(
-    idsUnicos.map(async (uid) => {
-      try {
-        const res = await api.get(`/login/${uid}`);
-        const u = res.data?.data || res.data;
-        mapaUsuarios[String(uid)] = u?.nombre || u?.nombreUsuario || u?.email || String(uid);
-      } catch (_) {
-        mapaUsuarios[String(uid)] = String(uid);
-      }
-    })
-  );
-
-  return data.map(item => adaptBackendTicket({
-    ...item,
-    nombreCreador: mapaUsuarios[String(item.creado_por_usuario_id || item.creadoPorUsuarioId)] || null,
-  }));
 }
 
 
@@ -138,7 +211,7 @@ export async function obtenerTicketPorId(id) {
   const numericId = String(id).replace(/\D/g, '');
 
   if (!numericId) {
-    throw new Error(`obtenerTicketPorId: ID inválido recibido: "${id}"`);
+    throw new Error(MENSAJES_SERVICIOS.idInvalido(id));
   }
 
   try {
@@ -147,7 +220,7 @@ export async function obtenerTicketPorId(id) {
       api.get(`/mantenimientos/${numericId}/tareas`),
       api.get(`/mantenimientos/${numericId}/productos`),
       obtenerTareas(),
-      getProductosInventario(),
+      getProductosCatalogo(),
     ]);
 
     if (resTicket.status === 'rejected') {
@@ -178,10 +251,10 @@ export async function obtenerTicketPorId(id) {
       return {
         ...t,
         tareaId,
-        nombre:           t.nombre || c?.nombre || c?.label || `Tarea ${tareaId}`,
-        label:            t.label  || t.nombre  || c?.nombre || c?.label || `Tarea ${tareaId}`,
-        categoria:        t.categoria        || c?.categoria || '',
-        descripcion:      t.descripcion      || c?.descripcion || '',
+        nombre: t.nombre || c?.nombre || c?.label || `Tarea ${tareaId}`,
+        label: t.label || t.nombre || c?.nombre || c?.label || `Tarea ${tareaId}`,
+        categoria: t.categoria || c?.categoria || '',
+        descripcion: t.descripcion || c?.descripcion || '',
         duracionEstimada: t.duracionEstimada || c?.duracionEstimada || Number(c?.horas) || 0,
       };
     });
@@ -195,9 +268,15 @@ export async function obtenerTicketPorId(id) {
         String(c.productoId || c.producto_id || c.id) === prodId ||
         String(c.id) === prodId
       );
+      const costoUnit = Number(p.costoUnitario || p.costo_unitario || enCatalogo?.precioUnidad || enCatalogo?.precio_unidad || enCatalogo?.precio) || 0;
       return {
         ...p,
-        nombre: p.nombre || enCatalogo?.nombre || enCatalogo?.nombreProducto || `Producto ${prodId}`,
+        id:            prodId,
+        productoId:    prodId,
+        nombre:        p.nombre || enCatalogo?.nombre || enCatalogo?.nombreProducto || `Producto ${prodId}`,
+        precioUnidad:  costoUnit,
+        costoUnitario: costoUnit,
+        cantidad:      Number(p.cantidad) || 1,
       };
     });
 
@@ -221,7 +300,7 @@ export async function obtenerTicketPorId(id) {
       t => t.id === id || String(t.dbId) === numericId
     );
     if (!encontrado) {
-      throw new Error(`obtenerTicketPorId: ticket con ID "${id}" no encontrado`);
+      throw new Error(MENSAJES_SERVICIOS.ticketNoEncontradoId(id));
     }
     return encontrado;
   }
@@ -250,10 +329,10 @@ export function reiniciarHorasEquipo(equipoId) {
 
 // ─── Construir payload para POST / PUT ────────────────────────────────────────
 function buildPayload(ticket) {
-  if (!ticket.equipoId) throw new Error('buildPayload: equipoId es obligatorio');
-  if (!ticket.titulo)   throw new Error('buildPayload: titulo es obligatorio');
+  if (!ticket.equipoId) throw new Error(MENSAJES_SERVICIOS.equipoObligatorio);
+  if (!ticket.titulo) throw new Error(MENSAJES_SERVICIOS.tituloObligatorio);
 
-  const estadoBackend       = ESTADO_FRONTEND_A_BACKEND[ticket.estado]     || 'En espera';
+  const estadoBackend = ESTADO_FRONTEND_A_BACKEND[ticket.estado] || 'En espera';
   const tipoPersonalBackend = TIPO_PERSONAL_A_BACKEND[ticket.tipoPersonal] || 'TrabajadorInterno';
 
   const fechaISO = ticket.fechaCreacion instanceof Date
@@ -265,14 +344,14 @@ function buildPayload(ticket) {
   return {
     codigoTicket,
     fechaMantenimiento: fechaISO,
-    tituloTicket:       ticket.titulo,
-    descripcionTicket:  ticket.descripcion,
-    equipoId:           Number(ticket.equipoId),
-    estadoTicket:       estadoBackend,
-    tipoPersonal:       tipoPersonalBackend,
-    costoManoObra:      Number(ticket.costoManoObra)  || 0,
-    costoProductos:     Number(ticket.costoProductos  || ticket.costoTotal) || 0,
-    costoTotalEstimado: Number(ticket.costoTotal)      || 0,
+    tituloTicket: ticket.titulo,
+    descripcionTicket: ticket.descripcion,
+    equipoId: Number(ticket.equipoId),
+    estadoTicket: estadoBackend,
+    tipoPersonal: tipoPersonalBackend,
+    costoManoObra: Number(ticket.costoManoObra) || 0,
+    costoProductos: Number(ticket.costoProductos || ticket.costoTotal) || 0,
+    costoTotalEstimado: Number(ticket.costoTotal) || 0,
   };
 }
 
@@ -300,9 +379,9 @@ async function vincularProductos(mantenimientoEquipoId, productos) {
   const calls = productos.map(p => {
     const productoId = p.productoId || p.id;
     if (!productoId) return null;
-    const cantidad     = Number(p.cantidad) || 1;
+    const cantidad = Number(p.cantidad) || 1;
     const costoUnitario = Number(p.precioUnidad || p.precio || p.costoUnitario) || 0;
-    const subtotal     = cantidad * costoUnitario;
+    const subtotal = cantidad * costoUnitario;
 
     return api.post('/mantenimientos/productos', {
       mantenimientoEquipoId,
@@ -316,20 +395,60 @@ async function vincularProductos(mantenimientoEquipoId, productos) {
   await Promise.allSettled(calls);
 }
 
+// ─── Descontar stock de inventario cuando el ticket se marca como Terminado ───
+async function descontarStockMantenimiento(productos) {
+  if (!Array.isArray(productos) || productos.length === 0) return;
+  try {
+    const res = await api.get('/inventario');
+    const invList = res.data?.data || res.data || [];
+    if (!Array.isArray(invList)) return;
+
+    for (const prod of productos) {
+      const prodId = String(prod.productoId || prod.id);
+      const invItem = invList.find(i => String(i.producto_id || i.productoId || i.id || i.inv_id) === prodId);
+      if (invItem) {
+        const cantUsada = Number(prod.cantidad) || 1;
+        const nuevaCantidad = Math.max(0, (Number(invItem.cantidad) || 0) - cantUsada);
+        try {
+          await api.put(`/inventario/${invItem.id || invItem.inv_id}`, {
+            cantidad: nuevaCantidad,
+            proveedor_id: invItem.proveedor_id || invItem.proveedorId || null,
+            stock_minimo: invItem.stock_minimo || invItem.stockMinimo || 0,
+          });
+        } catch (_) {
+          // Fallback en caso de restricción en backend
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('descontarStockMantenimiento warning:', err?.message || err);
+  }
+}
+
 // ─── CREAR ticket ──────────────────────────────────────────────────────────────
 export async function agregarTicket(ticket) {
-  const payload = buildPayload(ticket);
-  const res = await api.post('/mantenimientos', payload);
-  const backendData = res.data?.data || res.data;
-  const nuevoTicket = adaptBackendTicket(backendData);
+  try {
+    const payload = buildPayload(ticket);
+    const res = await api.post('/mantenimientos', payload);
+    const backendData = res.data?.data || res.data;
+    const nuevoTicket = adaptBackendTicket(backendData);
 
-  // Vincular tareas y productos en paralelo después de crear el ticket
-  await Promise.allSettled([
-    vincularTareas(nuevoTicket.dbId, ticket.tareas),
-    vincularProductos(nuevoTicket.dbId, ticket.productos || []),
-  ]);
+    // Vincular tareas y productos en paralelo después de crear el ticket
+    await Promise.allSettled([
+      vincularTareas(nuevoTicket.dbId, ticket.tareas),
+      vincularProductos(nuevoTicket.dbId, ticket.productos || []),
+    ]);
 
-  return nuevoTicket;
+    // Si se crea directamente como Terminado, descontar stock de inventario
+    if (ticket.estado === 'terminado' || payload.estadoTicket === 'Terminado') {
+      await descontarStockMantenimiento(ticket.productos || []);
+    }
+
+    return nuevoTicket;
+  } catch (err) {
+    console.warn('agregarTicket error:', err?.response?.data || err?.message || err);
+    throw err;
+  }
 }
 
 // ─── Sincronizar tareas al actualizar ticket (diff inteligente) ───────────────
@@ -432,41 +551,80 @@ async function sincronizarProductos(mantenimientoEquipoId, productosNuevos) {
 // ─── ACTUALIZAR ticket ─────────────────────────────────────────────────────────
 export async function actualizarTicket(ticket) {
   const targetId = ticket.dbId || String(ticket.id).replace(/\D/g, '');
-  if (!targetId) throw new Error('actualizarTicket: no se puede determinar el ID del ticket');
+  if (!targetId) throw new Error(MENSAJES_SERVICIOS.sinIdActualizar);
 
-  const payload = buildPayload(ticket);
-  await api.put(`/mantenimientos/${targetId}`, payload);
+  try {
+    const payload = buildPayload(ticket);
+    await api.put(`/mantenimientos/${targetId}`, payload);
 
-  // Sincronización inteligente por diffing de tareas y productos
-  await Promise.allSettled([
-    sincronizarTareas(Number(targetId), ticket.tareas),
-    sincronizarProductos(Number(targetId), ticket.productos),
-  ]);
+    // Sincronización inteligente por diffing de tareas y productos.
+    // allSettled nunca rechaza por sí mismo: si una sincronización falla,
+    // no se detiene el flujo, pero sí se loguea para no perderlo en silencio.
+    const resultados = await Promise.allSettled([
+      sincronizarTareas(Number(targetId), ticket.tareas),
+      sincronizarProductos(Number(targetId), ticket.productos),
+    ]);
+    resultados.forEach((r, i) => {
+      if (r.status === 'rejected') {
+        console.warn(`actualizarTicket: falló la sincronización #${i} del ticket ${targetId}:`, r.reason?.message || r.reason);
+      }
+    });
 
-  // Re-obtener el ticket actualizado para asegurar sincronización con la BD
-  return await obtenerTicketPorId(targetId);
+    // Re-obtener el ticket actualizado para asegurar sincronización con la BD
+    const ticketActualizado = await obtenerTicketPorId(targetId);
+
+    // Si el ticket está en estado Terminado, descontar stock del inventario
+    if (ticket.estado === 'terminado' || payload.estadoTicket === 'Terminado') {
+      await descontarStockMantenimiento(ticket.productos || []);
+    }
+
+    return ticketActualizado;
+  } catch (err) {
+    console.warn(`actualizarTicket(${targetId}):`, err?.response?.data || err?.message || err);
+    throw err;
+  }
 }
 
 // ─── ELIMINAR ticket ───────────────────────────────────────────────────────────
 export async function eliminarTicket(id) {
   const targetId = String(id).replace(/\D/g, '');
-  if (!targetId) throw new Error('eliminarTicket: ID inválido');
-  await api.delete(`/mantenimientos/${targetId}`);
+  if (!targetId) throw new Error(MENSAJES_SERVICIOS.idInvalidoEliminar);
+  try {
+    await api.delete(`/mantenimientos/${targetId}`);
+  } catch (err) {
+    console.warn(`eliminarTicket(${targetId}):`, err?.response?.data || err?.message || err);
+    throw err;
+  }
 }
 
 // ─── Actualizar estado de una tarea en el ticket ──────────────────────────────
 export async function actualizarEstadoTareaEnTicket(vinculoId, estadoTarea) {
   // estadoTarea: 'Pendiente' | 'Realizado'
-  const res = await api.put(`/mantenimientos/tareas/${vinculoId}`, { estadoTarea });
-  return res.data?.data || res.data;
+  try {
+    const res = await api.put(`/mantenimientos/tareas/${vinculoId}`, { estadoTarea });
+    return res.data?.data || res.data;
+  } catch (err) {
+    console.warn(`actualizarEstadoTareaEnTicket(${vinculoId}):`, err?.response?.data || err?.message || err);
+    throw err;
+  }
 }
 
 // ─── Eliminar una tarea del ticket ────────────────────────────────────────────
 export async function eliminarTareaDelTicket(vinculoId) {
-  await api.delete(`/mantenimientos/tareas/${vinculoId}`);
+  try {
+    await api.delete(`/mantenimientos/tareas/${vinculoId}`);
+  } catch (err) {
+    console.warn(`eliminarTareaDelTicket(${vinculoId}):`, err?.response?.data || err?.message || err);
+    throw err;
+  }
 }
 
 // ─── Eliminar un producto del ticket ─────────────────────────────────────────
 export async function eliminarProductoDelTicket(vinculoId) {
-  await api.delete(`/mantenimientos/productos/${vinculoId}`);
+  try {
+    await api.delete(`/mantenimientos/productos/${vinculoId}`);
+  } catch (err) {
+    console.warn(`eliminarProductoDelTicket(${vinculoId}):`, err?.response?.data || err?.message || err);
+    throw err;
+  }
 }
