@@ -14,9 +14,9 @@ import { useState, useEffect } from 'react';
 import { getProductosInventario } from '../../inventarios/services/InventarioService.js';
 import * as MantService from '../services/mantEquipoService.js';
 import { parseDate, formatDate } from '../../../shared/utils/dateUtils.js';
-import { validarCostoManoObra, formatearNombreHerramienta } from '../utils/mantEquipoUtils.js';
+import { validarCostoManoObra, LIMITE_TITULO, LIMITE_DESCRIPCION, formatearNombreHerramienta } from '../utils/mantEquipoUtils.js';
 import { equiposService } from '../services/equiposService.js';
-import { ESTADOS_TICKET } from '../constants/mantEquipoMensajes.js';
+import { ESTADOS_TICKET, TEXTOS_MODAL_AGREGAR, ALERTAS_NOTIFICACIONES, MENSAJES_ERROR_CARGA } from '../constants/mantEquipoMensajes.js';
 
 export function useEditarMantenimiento({ id, onNavigateToDetail, onNavigateToMain }) {
 
@@ -42,6 +42,7 @@ export function useEditarMantenimiento({ id, onNavigateToDetail, onNavigateToMai
   const [productosSeleccionados, setProductosSeleccionados] = useState([]);
   const [productosList, setProductosList] = useState([]);
   const [alertaStock, setAlertaStock] = useState('');
+  const [alertaServidor, setAlertaServidor] = useState('');
 
   // ── Validación ─────────────────────────────────────────────────────────────────────
   const [errores, setErrores] = useState({});
@@ -93,44 +94,53 @@ export function useEditarMantenimiento({ id, onNavigateToDetail, onNavigateToMai
           }
         }
 
-        // 4. Catálogo de inventario para el select de productos
+        // 4. Catálogo de productos para el select
         let prodList = [];
         try {
-          const resProd = await getProductosInventario();
+          const resProd = await MantService.getProductosCatalogo();
           if (!activo) return;
           const raw = Array.isArray(resProd) ? resProd : (Array.isArray(resProd?.data) ? resProd.data : []);
-          prodList = raw.map(p => ({
-            ...p,
-            id:           p.id || p.producto_id || p.productoId,
-            nombre:       p.nombre || p.nombreProducto || p.producto?.nombre || `Producto ${p.id}`,
-            precioUnidad: Number(p.precioUnidad || p.precio_unidad || p.precio) || 0,
-            stockMaximo:  p.cantidad !== undefined ? p.cantidad : (p.stock !== undefined ? p.stock : 999),
-          }));
+          prodList = raw.map(p => {
+            const prodId = String(p.id || p.producto_id || p.productoId || '');
+            const price = Number(p.precioUnidad || p.precio_unidad || p.precio) || 0;
+            return {
+              ...p,
+              id:           prodId,
+              productoId:    prodId,
+              nombre:       p.nombre || p.nombreProducto || p.producto?.nombre || `Producto ${prodId}`,
+              precioUnidad: price,
+              costoUnitario: price,
+              stockMaximo:  p.cantidad !== undefined ? Number(p.cantidad) : (p.stock !== undefined ? Number(p.stock) : 999),
+            };
+          });
         } catch (errProd) {
           console.warn('useEditarMantenimiento: no se pudieron cargar productos:', errProd?.message);
         }
         setProductosList(prodList);
 
-        // 5. Productos del ticket — usar datos del ticket si el producto no está en inventario
+        // 5. Productos del ticket — enriquecer con catálogo o fallback
         if (Array.isArray(t.productos) && t.productos.length > 0) {
           const mapped = t.productos.map(tp => {
             const prodId = String(tp.productoId || tp.producto_id || tp.id || '');
-            const enInventario = prodList.find(p => String(p.id) === prodId);
+            const enInventario = prodList.find(p => String(p.id) === prodId || String(p.productoId) === prodId);
+            const unitCost = Number(tp.costoUnitario || tp.costo_unitario || enInventario?.precioUnidad || 0);
             if (enInventario) {
               return {
                 ...enInventario,
-                productoId:    enInventario.id,
+                id:            prodId,
+                productoId:    prodId,
                 cantidad:      Number(tp.cantidad) || 1,
-                costoUnitario: Number(tp.costoUnitario || tp.costo_unitario || enInventario.precioUnidad) || 0,
+                precioUnidad:  unitCost,
+                costoUnitario: unitCost,
               };
             }
-            // Producto no está en inventario → usar datos del ticket
+            // Producto no está en catálogo visual → usar datos del ticket
             return {
               id:            prodId,
               productoId:    prodId,
               nombre:        tp.nombre || `Producto ${prodId}`,
-              precioUnidad:  Number(tp.costoUnitario || tp.costo_unitario) || 0,
-              costoUnitario: Number(tp.costoUnitario || tp.costo_unitario) || 0,
+              precioUnidad:  unitCost,
+              costoUnitario: unitCost,
               cantidad:      Number(tp.cantidad) || 1,
               stockMaximo:   999,
             };
@@ -140,7 +150,7 @@ export function useEditarMantenimiento({ id, onNavigateToDetail, onNavigateToMai
 
       } catch (err) {
         console.error('useEditarMantenimiento.cargar:', err?.message || err);
-        if (activo) setErrorCarga('No se pudo cargar el ticket. Verifica la conexión e intenta de nuevo.');
+        if (activo) setErrorCarga(MENSAJES_ERROR_CARGA.errorCargarTicket);
       } finally {
         if (activo) setCargando(false);
       }
@@ -153,7 +163,7 @@ export function useEditarMantenimiento({ id, onNavigateToDetail, onNavigateToMai
   // ── Cálculo reactivo del costo total ─────────────────────────
   const numManoObra   = parseFloat(costoManoObra) || 0;
   const precioInsumos = productosSeleccionados.reduce(
-    (sum, p) => sum + (parseFloat(p.precioUnidad) || 0) * (Number(p.cantidad) || 1), 0
+    (sum, p) => sum + (parseFloat(p.precioUnidad || p.costoUnitario || p.precio) || 0) * (Number(p.cantidad) || 1), 0
   );
   const costoTotal = numManoObra + precioInsumos;
 
@@ -177,21 +187,23 @@ export function useEditarMantenimiento({ id, onNavigateToDetail, onNavigateToMai
   const agregarProducto = (prodConCantidad) => {
     if (!prodConCantidad) return;
     setAlertaStock('');
+    const targetId = String(prodConCantidad.productoId || prodConCantidad.id);
     setProductosSeleccionados(prev => {
-      const existe = prev.some(x => String(x.id) === String(prodConCantidad.id));
+      const existe = prev.some(x => String(x.productoId || x.id) === targetId);
       if (existe) {
-        return prev.map(x => String(x.id) === String(prodConCantidad.id)
+        return prev.map(x => String(x.productoId || x.id) === targetId
           ? { ...x, cantidad: (Number(x.cantidad) || 1) + (Number(prodConCantidad.cantidad) || 1) }
           : x
         );
       }
-      return [...prev, prodConCantidad];
+      return [...prev, { ...prodConCantidad, id: targetId, productoId: targetId }];
     });
   };
 
   const cambiarCantidadProducto = (prodId, nuevaCantidad) => {
     setAlertaStock('');
-    const prod = productosSeleccionados.find(x => String(x.id) === String(prodId));
+    const targetId = String(prodId);
+    const prod = productosSeleccionados.find(x => String(x.productoId || x.id) === targetId);
     const stockMax = prod?.stockMaximo !== undefined ? prod.stockMaximo : 999;
 
     const val = String(nuevaCantidad).replace(/[^0-9]/g, '');
@@ -199,38 +211,78 @@ export function useEditarMantenimiento({ id, onNavigateToDetail, onNavigateToMai
 
     if (qty > stockMax) {
       qty = stockMax;
-      setAlertaStock(`No hay más stock disponible para "${prod?.nombre}". (Stock máximo en inventario: ${stockMax})`);
+      setAlertaStock(ALERTAS_NOTIFICACIONES.alertaStockInsumo(prod?.nombre, stockMax));
     }
     qty = Math.max(1, qty);
     setProductosSeleccionados(prev =>
-      prev.map(p => (String(p.id) === String(prodId) ? { ...p, cantidad: qty } : p))
+      prev.map(p => (String(p.productoId || p.id) === targetId ? { ...p, cantidad: qty } : p))
     );
   };
 
   const quitarProducto = (prodId) => {
     setAlertaStock('');
-    setProductosSeleccionados(prev => prev.filter(p => String(p.id) !== String(prodId)));
+    const targetId = String(prodId);
+    setProductosSeleccionados(prev => prev.filter(p => String(p.productoId || p.id) !== targetId));
   };
 
   // ── Validación ────────────────────────────────────────────────
+  // Misma cascada de dos prioridades que useAgregarMantenimiento.js:
+  //   1) Campos vacíos primero (mensaje genérico).
+  //   2) Reglas específicas una a la vez, en orden del formulario,
+  //      solo cuando ya no falta ningún campo por llenar.
   const validar = () => {
     const err = {};
-    if (!titulo.trim())                     err.titulo           = true;
-    if (!equipoId)                          err.equipoId         = true;
-    if (!descripcion.trim())                err.descripcion      = true;
-    if (tareasSeleccionadas.length === 0)   err.tareas           = true;
-    if (!validarCostoManoObra(costoManoObra)) err.costoManoObra  = true;
-    if (estadoTicket === ESTADOS_TICKET.TERMINADO &&
-        tareasSeleccionadas.some(t => !t.realizada)) {
-      err.tareasPendientes = true;
+
+    const tituloVacio      = !titulo.trim();
+    const descripcionVacia = !descripcion.trim();
+    const equipoVacio      = !equipoId;
+    const tareasVacias     = tareasSeleccionadas.length === 0;
+    const costoVacio       = !String(costoManoObra).trim();
+
+    if (tituloVacio)      err.titulo        = true;
+    if (descripcionVacia) err.descripcion   = true;
+    if (equipoVacio)      err.equipoId      = true;
+    if (tareasVacias)     err.tareas        = true;
+    if (costoVacio)       err.costoManoObra = true;
+
+    let mensaje = null;
+
+    if (tituloVacio || descripcionVacia || equipoVacio || tareasVacias || costoVacio) {
+      mensaje = TEXTOS_MODAL_AGREGAR.errorValidacion;
+    } else {
+      const tituloLimpio      = titulo.trim();
+      const descripcionLimpia = descripcion.trim();
+
+      if (tituloLimpio.length <= LIMITE_TITULO.min) {
+        err.titulo = true;
+        mensaje = TEXTOS_MODAL_AGREGAR.errorTituloCorto;
+      } else if (tituloLimpio.length > LIMITE_TITULO.max) {
+        err.titulo = true;
+        mensaje = TEXTOS_MODAL_AGREGAR.errorTituloMax;
+      } else if (descripcionLimpia.length <= LIMITE_DESCRIPCION.min) {
+        err.descripcion = true;
+        mensaje = TEXTOS_MODAL_AGREGAR.errorDescripcionCorta;
+      } else if (descripcionLimpia.length > LIMITE_DESCRIPCION.max) {
+        err.descripcion = true;
+        mensaje = TEXTOS_MODAL_AGREGAR.errorDescripcionMax;
+      } else if (!validarCostoManoObra(costoManoObra)) {
+        err.costoManoObra = true;
+        mensaje = TEXTOS_MODAL_AGREGAR.hintCostoManoObra;
+      } else if (estadoTicket === ESTADOS_TICKET.TERMINADO &&
+                 tareasSeleccionadas.some(t => !t.realizada)) {
+        err.tareasPendientes = true;
+        mensaje = TEXTOS_MODAL_AGREGAR.errorTareasPendientes;
+      }
     }
-    setErrores(err);
+
+    setErrores({ ...err, mensaje });
     return Object.keys(err).length === 0;
   };
 
   // ── Submit ────────────────────────────────────────────────────────────────────
   const handleGuardar = async () => {
     setSubmitted(true);
+    setAlertaServidor('');
     if (!validar()) return;
 
     const ticketActualizado = {
@@ -260,19 +312,16 @@ export function useEditarMantenimiento({ id, onNavigateToDetail, onNavigateToMai
     try {
       await MantService.actualizarTicket(ticketActualizado);
       if (estadoEquipo) await MantService.actualizarEstadoEquipo(equipoId, estadoEquipo);
-      if (estadoTicket === ESTADOS_TICKET.TERMINADO) MantService.reiniciarHorasEquipo(equipoId);
+      if (estadoTicket === ESTADOS_TICKET.TERMINADO) await MantService.reiniciarHorasEquipo(equipoId);
 
       onNavigateToDetail(ticketOriginal?.id, {
         alertaTipo:    'success',
-        alertaMensaje: `Ticket ${ticketOriginal?.id} modificado correctamente.`,
+        alertaMensaje: ALERTAS_NOTIFICACIONES.exitoEditarTicket(ticketOriginal?.id),
       });
     } catch (e) {
       console.error('Error al actualizar ticket:', e?.response?.data || e?.message || e);
-      const mensajeError = e?.response?.data?.error || e?.response?.data?.message || e?.message || 'No se pudo guardar el ticket. Verifica la conexión.';
-      onNavigateToDetail(ticketOriginal?.id, {
-        alertaTipo:    'danger',
-        alertaMensaje: mensajeError,
-      });
+      const mensajeError = e?.response?.data?.error || e?.response?.data?.message || e?.message || TEXTOS_MODAL_AGREGAR.errorEditarTicket(ticketOriginal?.id);
+      setAlertaServidor(mensajeError);
     }
   };
 
@@ -293,6 +342,7 @@ export function useEditarMantenimiento({ id, onNavigateToDetail, onNavigateToMai
     productosList,
     productosSeleccionados,
     alertaStock, setAlertaStock,
+    alertaServidor,
     costoTotal,
     errores, setErrores,
     submitted,
@@ -304,5 +354,3 @@ export function useEditarMantenimiento({ id, onNavigateToDetail, onNavigateToMai
     handleGuardar,
   };
 }
-
-
