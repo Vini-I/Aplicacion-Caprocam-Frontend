@@ -36,7 +36,7 @@ function mapBackendToFrontend(data) {
     nombre: nombreVal,
     descripcion: data.descripcion || '',
     categoria: data.categoria || '',
-    duracionEstimada: Number(data.horas) || Number(data.duracion_estimada) || 0,
+    duracionEstimada: Number(data.horas) || 0,  // ← backend devuelve "horas"
     estado: estadoFrontend,
     colaboradorId: data.colaborador_id || data.colaboradorId,
     equipoId: data.equipo_id || data.equipoId,
@@ -75,14 +75,21 @@ function prepareForBackend(data) {
   const estadoBackend  = estadoMap[estadoFrontend.toLowerCase()] || 'Pendiente';
   const categoriaBack  = categoriaMap[data.categoria] || data.categoria || 'Preventivo';
   
-  return {
+  // Payload que espera el backend: codigoTarea, nombre, descripcion, categoria, horas
+  const payload = {
+    codigoTarea: codigoTarea,
     nombre:       data.nombre?.trim() || "",
     descripcion:  data.descripcion?.trim() || "",
     categoria:    categoriaBack,
-    horas:        Number(data.horas) || Number(data.duracionEstimada) || 0,
+    horas:        Number(data.duracionEstimada) || Number(data.horas) || 0,  // ← campo "horas"
     estado:       estadoBackend,
-    codigo_tarea: codigoTarea,
   };
+
+  // NOTA: el backend NO acepta "productos" en este endpoint.
+  // Si se necesita asociar productos, debe hacerse mediante otro endpoint
+  // (ej. /mantenimientos/:id/productos). Por eso no se incluyen aquí.
+
+  return payload;
 }
 
 
