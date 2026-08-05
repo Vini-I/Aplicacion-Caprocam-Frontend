@@ -18,8 +18,8 @@
  * @navigation - N/A
  */
 
-export const TELEFONO_REGEX = /^[0-9]{8}$/;
-export const CORREO_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+export const telefonoRegex = /^[0-9]{8}$/;
+export const correoRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function validarTelefono(
   valor,
@@ -30,7 +30,7 @@ export function validarTelefono(
 ) {
   const valorLimpio = (valor || "").trim();
   if (!valorLimpio) return mensajeObligatorio;
-  if (!TELEFONO_REGEX.test(valorLimpio)) return mensajeInvalido;
+  if (!telefonoRegex.test(valorLimpio)) return mensajeInvalido;
   return "";
 }
 
@@ -43,7 +43,7 @@ export function validarCorreo(
 ) {
   const valorLimpio = (valor || "").trim();
   if (!valorLimpio) return mensajeObligatorio;
-  if (!CORREO_REGEX.test(valorLimpio)) return mensajeInvalido;
+  if (!correoRegex.test(valorLimpio)) return mensajeInvalido;
   return "";
 }
 

@@ -31,10 +31,7 @@ import { ICONS } from "../../../theme/icons";
 import { STYLE } from "../../../theme/style";
 import { tiposProducto } from "../services/proveedor.service";
 
-import {
-  useEditarProveedorScreen,
-  TELEFONO_MAX_LENGTH,
-} from "../hooks/useEditarProveedorScreen";
+import { useEditarProveedorScreen, telefonoMaxLength } from "../hooks/useEditarProveedorScreen";
 
 export default function EditarProveedorScreen() {
   const {
@@ -110,7 +107,7 @@ export default function EditarProveedorScreen() {
             onChangeText={handleTelefonoChange}
             placeholder="Ej: 12345678"
             keyboardType="numeric"
-            maxLength={TELEFONO_MAX_LENGTH}
+            maxLength={telefonoMaxLength}
             containerStyle={styles.field}
             style={[styles.input, !!errores.telefono && styles.inputError]}
             labelStyle={styles.label}

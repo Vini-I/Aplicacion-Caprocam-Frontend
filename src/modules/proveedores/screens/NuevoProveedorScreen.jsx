@@ -32,10 +32,7 @@ import { STYLE } from "../../../theme/style";
 import { styles } from "../styles/NuevoProveedorStyles.js";
 import { tiposProducto } from "../services/proveedor.service.js";
 
-import {
-  useNuevoProveedorScreen,
-  TELEFONO_MAX_LENGTH,
-} from "../hooks/useNuevoProveedorScreen";
+import { useNuevoProveedorScreen, telefonoMaxLength } from "../hooks/useNuevoProveedorScreen";
 
 export default function NuevoProveedorScreen() {
   const {
@@ -116,7 +113,7 @@ export default function NuevoProveedorScreen() {
             onChangeText={handleTelefonoChange}
             placeholder="Ej: 12345678"
             keyboardType="numeric"
-            maxLength={TELEFONO_MAX_LENGTH}
+            maxLength={telefonoMaxLength}
             containerStyle={styles.field}
             style={[styles.input, errores.telefono && styles.inputError]}
             labelStyle={styles.label}

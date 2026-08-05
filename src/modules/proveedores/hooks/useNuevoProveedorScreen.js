@@ -19,9 +19,9 @@ import { validarTelefono, validarCorreo } from "../utils/contactValidators";
 import { useProveedor } from "../context/ProveedorContext";
 import { ProveedorDTO } from "../dtos/proveedor.dto";
 
-export const TELEFONO_MAX_LENGTH = 8;
+export const telefonoMaxLength = 8;
 
-const MENSAJE_CAMPOS_OBLIGATORIOS =
+const mensajeCamposObligatorios =
   "Revisa los campos obligatorios marcados con * antes de guardar.";
 
 function obtenerMensajeError(nuevosErrores) {
@@ -29,7 +29,7 @@ function obtenerMensajeError(nuevosErrores) {
   if (nuevosErrores.correoInvalido) return nuevosErrores.correo;
 
   if (Object.keys(nuevosErrores).length > 0) {
-    return MENSAJE_CAMPOS_OBLIGATORIOS;
+    return mensajeCamposObligatorios;
   }
   return "";
 }

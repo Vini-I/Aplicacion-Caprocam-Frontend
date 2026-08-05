@@ -6,7 +6,7 @@ import api from "../../../api/api";
  *
  * FUNCIONALIDAD:
  * - Operaciones CRUD contra la API de proveedores.
- * - Mapea datos (snake_case/camelCase) al formato frontend.
+ * - Mapea datos (camelCase del backend) al formato frontend.
  *
  * REGLAS IMPORTANTES:
  * - Única fuente del catálogo de tiposProducto.
@@ -17,14 +17,14 @@ import api from "../../../api/api";
  * @navigation - N/A
  */
 
-// Catálogo único de tipos de producto (value = ENUM tipoProductos del backend).
+
 export const tiposProducto = [
   { label: "Alimento", value: "Alimento" },
   { label: "Antibiótico", value: "Antibiotico" },
   { label: "Fertilizante", value: "Fertilizante" },
   { label: "Probióticos", value: "Probioticos" },
   { label: "Equipos", value: "Equipos" },
-  { label: "Otros", value: "Otros" },
+  { label: "Otro", value: "Otro" },
 ];
 
 export function getTipoProductoLabel(value) {
