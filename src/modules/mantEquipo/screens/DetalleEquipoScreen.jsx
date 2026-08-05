@@ -241,7 +241,11 @@ export default function DetalleEquipoScreen() {
 
   return (
     <>
-      <ScrollView style={STYLE.container} contentContainerStyle={STYLE.contentWrapper}>
+      <ScrollView
+        style={STYLE.container}
+        contentContainerStyle={STYLE.contentWrapper}
+        showsVerticalScrollIndicator={false}
+      >
         <Card>
           <View style={equipoDetalleStyles.header}>
             <View style={equipoDetalleStyles.avatar}>

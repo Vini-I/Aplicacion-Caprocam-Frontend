@@ -185,6 +185,7 @@ export default function RegistrarEquipoScreen() {
         isLargeScreen ? styles.contentPaddingLarge : styles.contentPaddingSmall,
       ]}
       keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
     >
       <View style={STYLE.contentWrapper}>
         {/* Card con título e ícono representativo del contenido (Estándar 9) */}

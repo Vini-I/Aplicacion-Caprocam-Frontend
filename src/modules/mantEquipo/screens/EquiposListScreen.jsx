@@ -359,7 +359,11 @@ export default function EquiposListScreen() {
             }
           />
         ) : (
-          <ScrollView style={styles.scrollView} contentContainerStyle={styles.list}>
+          <ScrollView
+            style={styles.scrollView}
+            contentContainerStyle={styles.list}
+            showsVerticalScrollIndicator={false}
+          >
             {equiposFinales.map((equipo) => (
               <EquipoCard
                 key={equipo.id}
@@ -396,6 +400,7 @@ export default function EquiposListScreen() {
             <ScrollView
               style={styles.modalScrollForm}
               contentContainerStyle={styles.modalScrollFormContent}
+              showsVerticalScrollIndicator={false}
             >
               <EquipoForm
                 ref={formRef}
