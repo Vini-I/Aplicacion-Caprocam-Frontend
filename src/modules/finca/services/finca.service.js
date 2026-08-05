@@ -1,5 +1,18 @@
 import api from "../../../api/api";
 
+function construirErrorHttp(error, mensajeGenerico) {
+  const status = error?.response?.status;
+  const mensaje = error?.response?.data?.message || error?.response?.data?.error || error?.message;
+
+  if (status) {
+    const err = new Error(mensaje || mensajeGenerico);
+    err.status = status;
+    return err;
+  }
+
+  return new Error(mensajeGenerico);
+}
+
 export const fincaService = {
   getFincas: async () => {
     try {
@@ -40,8 +53,8 @@ export const fincaService = {
 
       return response.data;
     } catch (error) {
-      if (error.response?.status === 404 || error.response?.status === 500) {
-        throw error;
+      if (error.response?.status === 404 || error.response?.status === 500 || error.response?.status === 409 || error.response?.status === 400) {
+        throw construirErrorHttp(error, "No se pudo registrar la finca.");
       }
       throw new Error("No se pudo registrar la finca.");
     }
@@ -53,8 +66,8 @@ export const fincaService = {
 
       return response.data;
     } catch (error) {
-      if (error.response?.status === 404 || error.response?.status === 500) {
-        throw error;
+      if (error.response?.status === 404 || error.response?.status === 500 || error.response?.status === 409 || error.response?.status === 400) {
+        throw construirErrorHttp(error, "No se pudieron guardar los cambios de la finca.");
       }
       throw new Error("No se pudieron guardar los cambios de la finca.");
     }
@@ -66,7 +79,7 @@ export const fincaService = {
 
       return response.data;
     } catch (error) {
-      if (error.response?.status === 404 || error.response?.status === 500) {
+      if (error.response?.status === 404 || error.response?.status === 500 || error.response?.status === 400) {
         throw error;
       }
       throw new Error("No se pudo eliminar la finca.");

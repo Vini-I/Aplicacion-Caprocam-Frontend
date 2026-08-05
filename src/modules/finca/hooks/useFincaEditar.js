@@ -166,7 +166,6 @@ export function useFincaEditar({ onFinca, id }) {
       await editarFinca(finca.codigoCBO, EditarFincaDTO);
       onFinca();
     } catch (err) {
-      // editarFinca setea `ERROR` en el contexto; no relanzamos aquí
       return;
     }
   };

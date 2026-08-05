@@ -113,6 +113,28 @@ export default function CompradorScreen() {
 
   return (
     <View style={styles.container}>
+      {/* Alerta de éxito al llegar desde "guardar comprador" */}
+      {guardadoExitoso && (
+        <View style={STYLE.contentWrapper}>
+          <Alert
+            variant="success"
+            message="Comprador guardado correctamente."
+            style={styles.alertExito}
+          />
+        </View>
+      )}
+
+      {/* Alerta de éxito al llegar desde "eliminar comprador" */}
+      {eliminadoExitoso && (
+        <View style={STYLE.contentWrapper}>
+          <Alert
+            variant="success"
+            message="Comprador eliminado correctamente."
+            style={styles.alertExito}
+          />
+        </View>
+      )}
+
       {/* Barra de búsqueda por texto y filtro por tipo de producto */}
       <View style={[styles.barraBusqueda, STYLE.contentWrapper]}>
         <SearchBar
