@@ -29,9 +29,6 @@ export const CATEGORIAS = [
   { label: "Alimentación", value: "Alimentación" },
   { label: "Tratamiento", value: "Tratamiento" },
   { label: "Químico", value: "Químico" },
-  { label: "Fertilizante", value: "Fertilizante" },
-  { label: "Antibiótico", value: "Antibiótico" },
-  { label: "Probiótico", value: "Probiótico" },
 ];
 
 export const UNIDADES = [

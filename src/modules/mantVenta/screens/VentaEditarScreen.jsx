@@ -37,7 +37,6 @@ export default function VentaEditarScreen({ id, onVenta }) {
     kilosVendidos,
     precioKilo,
     fechaVenta,
-    colaboradorSeleccionado,
     compradorSeleccionado,
     mensaje,
     tipoMensaje,
@@ -46,7 +45,6 @@ export default function VentaEditarScreen({ id, onVenta }) {
     isWide,
     opcionesFincas,
     estanquesFiltrados,
-    opcionesColaboradores,
     opcionesCompradores,
     totalVenta,
     setEstanqueSeleccionado,
@@ -56,7 +54,6 @@ export default function VentaEditarScreen({ id, onVenta }) {
     handleKilosVendidosChange,
     handlePrecioChange,
     handleCompradorChange,
-    handleColaboradorChange,
     limpiarError,
     guardarCambios,
   } = useVentaEditar({ id, onGuardado: onVenta });
@@ -192,20 +189,9 @@ export default function VentaEditarScreen({ id, onVenta }) {
             <Text style={styles.summaryValue}>{formatearMontoColones(totalVenta)}</Text>
           </View>
 
-          <SectionTitle icon={ICONS.user} title="Colaborador y comprador" />
+          <SectionTitle icon={ICONS.user} title="Comprador" />
 
           <View style={gridStyle}>
-            <View style={styles.inputItem}>
-              <Select
-                label="Colaborador que realiza la venta *"
-                placeholder="Seleccione colaborador"
-                options={opcionesColaboradores}
-                value={colaboradorSeleccionado}
-                onChange={handleColaboradorChange}
-                selectStyle={errores.colaborador ? errorInputStyle : null}
-              />
-            </View>
-
             <View style={styles.inputItem}>
               <Select
                 label="Comprador *"
@@ -234,9 +220,9 @@ export default function VentaEditarScreen({ id, onVenta }) {
               style={styles.saveButton}
             >
               <View style={styles.buttonContent}>
-                <Icon icon={ICONS.save} size={22} color={COLORS.primary} />
+                <Icon icon={ICONS.edit} size={22} color={COLORS.primary} />
                 <Text style={styles.buttonText}>
-                  {guardando ? "Guardando..." : "Guardar cambios"}
+                  {guardando ? "Editando..." : "Editar Venta"}
                 </Text>
               </View>
             </Button>

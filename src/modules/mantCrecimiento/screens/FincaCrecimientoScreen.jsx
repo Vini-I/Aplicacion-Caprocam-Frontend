@@ -143,7 +143,7 @@ export default function FincaCrecimientoScreen() {
           >
             <View style={styles.buttonContent}>
               <Icon icon={ICONS.save} size={24} color={COLORS.primary} />
-              <Text style={styles.buttonText}>Guardar</Text>
+              <Text style={styles.buttonText}>Registrar Crecimiento</Text>
             </View>
           </Button>
         </Card>
