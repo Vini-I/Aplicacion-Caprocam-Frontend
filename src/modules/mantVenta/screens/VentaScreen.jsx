@@ -34,15 +34,16 @@ export default function VentaScreen({ onDetalleVentas }) {
     kilosVendidos,
     precioKilo,
     fechaVenta,
-    colaboradorSeleccionado,
     compradorSeleccionado,
-    mensaje,
-    tipoMensaje,
+
+    submitted,
+    successMessage,
+    errorMessage,
+
     errores,
     guardando,
     opcionesFincas,
     estanquesFiltrados,
-    opcionesColaboradores,
     opcionesCompradores,
     totalVenta,
     ventas,
@@ -55,7 +56,6 @@ export default function VentaScreen({ onDetalleVentas }) {
     handleKilosVendidosChange,
     handlePrecioChange,
     handleCompradorChange,
-    handleColaboradorChange,
     handleFechaChange,
     limpiarError,
     guardarVenta,
@@ -109,8 +109,8 @@ export default function VentaScreen({ onDetalleVentas }) {
               value={pesoPromedio}
               onChangeText={handlePesoPromedioChange}
               step={0.1}
-              min={0.1}
-              max={15}
+              min={0.0}
+              max={20}
               style={errores.pesoPromedio ? errorInputStyle : null}
             />
           </View>
@@ -121,7 +121,7 @@ export default function VentaScreen({ onDetalleVentas }) {
               value={tamanoPromedio}
               onChangeText={handleTamanoPromedioChange}
               step={0.1}
-              min={0.1}
+              min={0.0}
               max={20}
               style={errores.tamanoPromedio ? errorInputStyle : null}
             />
@@ -153,7 +153,7 @@ export default function VentaScreen({ onDetalleVentas }) {
             />
           </View>
         </View>
-              
+
         <View style={styles.inputItem}>
           <DateInput
             label="Fecha *"
@@ -170,20 +170,9 @@ export default function VentaScreen({ onDetalleVentas }) {
           </Text>
         </View>
 
-        <SectionTitle icon={ICONS.user} title="Colaborador y comprador" />
+        <SectionTitle icon={ICONS.user} title="Comprador" />
 
         <View style={gridStyle}>
-          <View style={styles.inputItem}>
-            <Select
-              label="Colaborador que realiza la venta *"
-              placeholder="Seleccione colaborador"
-              options={opcionesColaboradores}
-              value={colaboradorSeleccionado}
-              onChange={handleColaboradorChange}
-              selectStyle={errores.colaborador ? errorInputStyle : null}
-            />
-          </View>
-
           <View style={styles.inputItem}>
             <Select
               label="Comprador *"
@@ -196,23 +185,23 @@ export default function VentaScreen({ onDetalleVentas }) {
           </View>
         </View>
 
-        {tipoMensaje === "error" && mensaje !== "" && (
+        {submitted && errorMessage ? (
           <Alert
             variant="danger"
-            message={mensaje}
+            message={errorMessage}
             style={styles.alert}
             textStyle={styles.alertText}
           />
-        )}
+        ) : null}
 
-        {tipoMensaje === "success" && mensaje !== "" && (
+        {submitted && successMessage ? (
           <Alert
             variant="success"
-            message={mensaje}
+            message={successMessage}
             style={styles.successAlert}
             textStyle={styles.successAlertText}
           />
-        )}
+        ) : null}
 
         <Button
           onPress={guardarVenta}

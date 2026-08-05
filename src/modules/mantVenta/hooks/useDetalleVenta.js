@@ -31,7 +31,7 @@ export function useDetalleVenta({ onEdit, success, message } = {}) {
   const [fincas, setFincas] = useState([]);
   const [estanques, setEstanques] = useState([]);
 
-const [mostrarExito, setMostrarExito] = useState(
+  const [mostrarExito, setMostrarExito] = useState(
     success === "1" && Boolean(message)
   );
 
@@ -264,7 +264,7 @@ const [mostrarExito, setMostrarExito] = useState(
         actual.filter((venta) => venta.id !== ventaSeleccionada.id),
       );
     } catch (error) {
-      mostrarError(error); 
+      mostrarError(error);
     } finally {
       setEliminando(false);
       setModalVisible(false);
@@ -292,8 +292,8 @@ const [mostrarExito, setMostrarExito] = useState(
     cancelarEliminar,
     handleFincaChange,
     handleEstanqueChange,
-mostrarExito,
-  mensajeExito: message,
+    mostrarExito,
+    mensajeExito: message,
   };
 }
 

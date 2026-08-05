@@ -18,7 +18,7 @@ import Icon from "../../../shared/components/Icons";
 import Title from "../../../shared/components/Title";
 import Text from "../../../shared/components/Text";
 import Badge from "../../../shared/components/Badge";
-import Input from "../../../shared/components/Input";
+import DateInput from "../../../shared/components/DateInput";
 import FilterChip from "../../../shared/components/FilterChip";
 import { useFilterButton } from "../hooks/useFilterButton";
 
@@ -152,11 +152,10 @@ export default function FilterButton({
           )}
 
           <FilterSection label="Fecha del movimiento">
-            <Input
+            <DateInput
               value={pendingFecha}
               onChangeText={setPendingFecha}
               placeholder="dd/mm/aaaa"
-              keyboardType="numbers-and-punctuation"
               containerStyle={styles.dateInput}
             />
           </FilterSection>

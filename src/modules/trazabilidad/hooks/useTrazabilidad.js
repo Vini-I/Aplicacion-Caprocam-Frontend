@@ -23,7 +23,7 @@ import {
   obtenerSiembraActivaPorEstanque,
 } from "../services/TrazabilidadServices";
 import { crearRegistroTrazabilidad } from "../services/AgregarTrazabilidadService";
-import { esFechaFutura, esFechaValida } from "../../../shared/utils/dateUtils";
+import { esFechaFutura, esFechaValida, getCurrentDate } from "../../../shared/utils/dateUtils";
 
 export function useTrazabilidad() {
   const router = useRouter();
@@ -31,6 +31,7 @@ export function useTrazabilidad() {
 
   const [formData, setFormData] = useState(() => ({
     ...initialForm,
+    fecha: initialForm.fecha || getCurrentDate(),
     colaboradorId: colaboradorSesion.colaboradorId ?? null,
   }));
   const [mensajeError, setMensajeError] = useState("");

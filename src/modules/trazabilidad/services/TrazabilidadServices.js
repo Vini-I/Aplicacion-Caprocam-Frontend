@@ -14,6 +14,7 @@
 import api from "../../../api/api";
 import { fincaService } from "../../finca/services/finca.service";
 import { colaboradorService } from "../../colaboradores/services/colaborador.service";
+import { isSameDate, toMysqlDate } from "../../../shared/utils/dateUtils";
 
 function decodificarJwtPayload(token) {
   if (!token) return null;
@@ -160,12 +161,28 @@ export function esEstanqueEngorde(estanque) {
   return estado.includes("engorde");
 }
 
+function obtenerMensajeErrorBackend(error, mensajeGenerico) {
+  const backendMsg =
+    error?.response?.data?.message ||
+    (Array.isArray(error?.response?.data?.error)
+      ? error?.response?.data?.error.join(" ")
+      : error?.response?.data?.error);
+
+  if (backendMsg && typeof backendMsg === "string" && backendMsg.trim() !== "") {
+    return backendMsg;
+  }
+
+  return mensajeGenerico;
+}
+
 export async function getRegistros() {
   try {
     const response = await api.get("/registrosTrazabilidad");
     return response.data.data;
   } catch (error) {
-    throw error;
+    throw new Error(
+      obtenerMensajeErrorBackend(error, "No se pudo obtener el listado de trazabilidad.")
+    );
   }
 }
 
@@ -185,7 +202,9 @@ export async function getRegistroPorId(id) {
 
     return enriquecerRegistro(registro, construirMapas({ fincas, colaboradores, estanques }));
   } catch (error) {
-    throw error;
+    throw new Error(
+      obtenerMensajeErrorBackend(error, "No se pudo obtener el detalle del registro de trazabilidad.")
+    );
   }
 }
 
@@ -215,7 +234,11 @@ export function filtrarRegistrosTrazabilidad(registros, texto, filtros) {
         filtros.colaboradores.includes(keyResponsable) ||
         filtros.colaboradores.includes(registro.colaboradorId) ||
         filtros.colaboradores.includes(registro.colaboradorNombre)) &&
-      (filtros.fecha === "" || registro.fecha === filtros.fecha);
+      (filtros.fecha === "" ||
+        registro.fecha === filtros.fecha ||
+        isSameDate(registro.fecha, filtros.fecha) ||
+        (toMysqlDate(registro.fecha) !== "" &&
+          toMysqlDate(registro.fecha) === toMysqlDate(filtros.fecha)));
 
     return coincideBusqueda && coincideFiltros;
   });
@@ -226,7 +249,9 @@ export async function crearRegistro(datos) {
     const response = await api.post("/registrosTrazabilidad", datos);
     return response.data.data;
   } catch (error) {
-    throw error;
+    throw new Error(
+      obtenerMensajeErrorBackend(error, "No se pudo crear el registro de trazabilidad.")
+    );
   }
 }
 
@@ -235,13 +260,21 @@ export async function toggleActivoRegistro(id) {
     const response = await api.put(`/registrosTrazabilidad/${id}/activo`);
     return response.data.data;
   } catch (error) {
-    throw error;
+    throw new Error(
+      obtenerMensajeErrorBackend(error, "No se pudo actualizar el estado del registro.")
+    );
   }
 }
 
 export async function obtenerFincas() {
-  const fincas = await fincaService.getFincas();
-  return fincas.map((finca) => ({ label: finca.nombreFinca, value: finca.id }));
+  try {
+    const fincas = await fincaService.getFincas();
+    return fincas.map((finca) => ({ label: finca.nombreFinca, value: finca.id }));
+  } catch (error) {
+    throw new Error(
+      obtenerMensajeErrorBackend(error, "No se pudieron obtener las fincas.")
+    );
+  }
 }
 
 export async function obtenerEstanquesPorFinca(fincaId) {
@@ -329,11 +362,17 @@ export async function obtenerSiembraActivaPorEstanque(estanqueId) {
 }
 
 export async function obtenerColaboradores() {
-  const colaboradores = await colaboradorService.getColaboradores();
-  return colaboradores.map((colaborador) => ({
-    label: [colaborador.nombre, colaborador.apellidos].filter(Boolean).join(" "),
-    value: colaborador.id,
-  }));
+  try {
+    const colaboradores = await colaboradorService.getColaboradores();
+    return colaboradores.map((colaborador) => ({
+      label: [colaborador.nombre, colaborador.apellidos].filter(Boolean).join(" "),
+      value: colaborador.id,
+    }));
+  } catch (error) {
+    throw new Error(
+      obtenerMensajeErrorBackend(error, "No se pudieron obtener los colaboradores.")
+    );
+  }
 }
 
 export function obtenerSesionFormulario() {
