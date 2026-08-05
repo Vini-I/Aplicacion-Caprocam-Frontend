@@ -48,6 +48,7 @@ import ProductosSeleccionadosList from "../components/ProductosSeleccionadosList
 
 import { useAgregarMantenimiento } from "../hooks/useAgregarMantenimiento.js";
 import { getFieldErrorStyle } from "../styles/mantEquipoStyles.js";
+import SectionTitle from "../components/SectionTitle.jsx";
 export default function AgregarMantenimientoScreen({ onNavigateToMain = () => { } }) {
   const usuarioSesion = useUsuarioSesion();
 
@@ -65,6 +66,7 @@ export default function AgregarMantenimientoScreen({ onNavigateToMain = () => { 
     productosList,
     productosSeleccionados,
     alertaStock, setAlertaStock,
+    alertaServidor,
     costoTotal,
     errores, setErrores,
     submitted,
@@ -75,13 +77,6 @@ export default function AgregarMantenimientoScreen({ onNavigateToMain = () => { 
     cambiarCantidadProducto,
     handleCrear,
   } = useAgregarMantenimiento({ onNavigateToMain });
-
-  const SectionTitle = ({ icon, title }) => (
-    <View style={styles.sectionTitleRow}>
-      <Icon icon={icon} size={18} color={COLORS.primary} style={styles.sectionTitleIcon} />
-      <CustomText style={styles.sectionTitleText}>{title}</CustomText>
-    </View>
-  );
 
   return (
     <ScrollView style={STYLE.container} keyboardShouldPersistTaps="handled"
@@ -99,6 +94,7 @@ export default function AgregarMantenimientoScreen({ onNavigateToMain = () => { 
                 label={TEXTOS_MODAL_AGREGAR.labelFechaHora}
                 value={fecha}
                 onChangeText={setFecha}
+                disabled
                 containerStyle={styles.noMarginBottom}
                 inputStyle={styles.comboInput}
                 labelStyle={styles.comboLabel}
@@ -207,7 +203,7 @@ export default function AgregarMantenimientoScreen({ onNavigateToMain = () => { 
 
           {/* Tipo de Personal */}
           <SelectorPills
-            label="Tipo de Personal *"
+            label={TEXTOS_MODAL_AGREGAR.labelTipoPersonal}
             value={tipoPersonal}
             onChange={(v) => {
               setTipoPersonal(v);
@@ -241,7 +237,7 @@ export default function AgregarMantenimientoScreen({ onNavigateToMain = () => { 
                 setCostoManoObra(soloNumeros);
                 if (errores.costoManoObra) setErrores((prev) => { const s = { ...prev }; delete s.costoManoObra; return s; });
               }}
-              placeholder="Ej: 15000"
+              placeholder="Ej: 4000"
               keyboardType="numeric"
               containerStyle={styles.noMarginBottom}
               style={[styles.comboInput, getFieldErrorStyle(submitted && errores.costoManoObra)]}
@@ -263,15 +259,29 @@ export default function AgregarMantenimientoScreen({ onNavigateToMain = () => { 
           />
         </Card>
 
-        {/* Alerta de Error de Validación */}
-        {submitted && Object.keys(errores).length > 0 && (
+        {/* Alerta de Error de Validación — un solo mensaje a la vez, en
+            orden de prioridad: campos vacíos primero, luego la regla
+            específica que falle según el orden del formulario. */}
+        {submitted && errores.mensaje && Object.keys(errores).some((k) => k !== 'mensaje' && errores[k]) && (
           <Alert
             variant="danger"
-            message={errores.tareasPendientes ? TEXTOS_MODAL_AGREGAR.errorTareasPendientes : TEXTOS_MODAL_AGREGAR.errorValidacion}
+            message={errores.mensaje}
             containerStyle={styles.alertValidacion}
             textStyle={styles.alertValidacionTexto}
           />
         )}
+
+        {/* Alerta de error de servidor/conexión al intentar crear el ticket.
+            Solo aparece cuando la validación de campos ya pasó y el fallo
+            ocurrió al hablar con el backend (ej. servidor caído). */}
+        {alertaServidor ? (
+          <Alert
+            variant="danger"
+            message={alertaServidor}
+            containerStyle={styles.alertServidor}
+            textStyle={styles.alertServidorTexto}
+          />
+        ) : null}
 
         {/* Botones de acción del Formulario */}
         <View style={styles.formFooter}>
@@ -282,7 +292,7 @@ export default function AgregarMantenimientoScreen({ onNavigateToMain = () => { 
           >
             <Icon icon={ICONS.add} size={15} color={COLORS.primary} />
             <CustomText style={styles.btnTextPrimary}>
-              {TEXTOS_MODAL_AGREGAR.btnAceptar}
+              {TEXTOS_MODAL_AGREGAR.btnCrear}
             </CustomText>
           </Button>
         </View>

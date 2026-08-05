@@ -84,14 +84,54 @@ export function obtenerFechaHoraActual() {
 }
 
 /**
- * Valida que el costo de mano de obra sea un número >= 0.
- * @param {string} valor — valor del campo como string
+ * Longitudes mínimas y máximas de título/descripción del ticket.
+ * El máximo corresponde exactamente al VARCHAR de la base de datos
+ * (titulo_ticket VARCHAR(100), descripcion_ticket VARCHAR(400)) para
+ * que nunca se pueda escribir más de lo que el backend acepta.
+ */
+export const LIMITE_TITULO = { min: 10, max: 100 };
+export const LIMITE_DESCRIPCION = { min: 20, max: 400 };
+
+/**
+ * Valida que el título tenga más de 10 caracteres (sin contar espacios
+ * al inicio/final) y no exceda el máximo de la base de datos.
+ * @param {string} valor
+ * @returns {boolean} true si es válido
+ */
+export function validarTitulo(valor) {
+  const limpio = String(valor || '').trim();
+  return limpio.length > LIMITE_TITULO.min && limpio.length <= LIMITE_TITULO.max;
+}
+
+/**
+ * Valida que la descripción tenga más de 20 caracteres (sin contar
+ * espacios al inicio/final) y no exceda el máximo de la base de datos.
+ * @param {string} valor
+ * @returns {boolean} true si es válido
+ */
+export function validarDescripcion(valor) {
+  const limpio = String(valor || '').trim();
+  return limpio.length > LIMITE_DESCRIPCION.min && limpio.length <= LIMITE_DESCRIPCION.max;
+}
+
+/**
+ * Monto mínimo aceptado para el costo de mano de obra cuando es mayor a 0
+ * (equivale a 4 dígitos, ej: 1000, 4000, 15000...).
+ */
+export const COSTO_MANO_OBRA_MINIMO = 1000;
+
+/**
+ * Valida que el costo de mano de obra sea 0 (no aplica) o un número >= 1000 (al menos 4 dígitos).
+ * @param {string|number} valor — valor del campo
  * @returns {boolean} true si es válido
  */
 export function validarCostoManoObra(valor) {
-  if (!valor || !String(valor).trim()) return false;
-  const num = parseFloat(valor);
-  return !isNaN(num) && num >= 0;
+  if (valor === null || valor === undefined) return false;
+  const limpio = String(valor).trim();
+  if (limpio === '') return false;
+  const num = parseFloat(limpio);
+  if (isNaN(num) || num < 0) return false;
+  return num === 0 || num >= COSTO_MANO_OBRA_MINIMO;
 }
 
 /**
