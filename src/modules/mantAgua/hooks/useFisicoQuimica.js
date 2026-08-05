@@ -314,7 +314,7 @@ export default function useFisicoQuimica() {
         oxigenoDisuelto: mapearLecturas(lecturasOx, false),
       });
     } catch (error) {
-      const msg = error?.response?.data?.message || 'No se pudo guardar la lectura. Intenta de nuevo.';
+      const msg = error?.message || error?.response?.data?.message || 'No se pudo guardar la lectura. Intenta de nuevo.';
       setErrorMessage(msg);
       return;
     }
@@ -335,7 +335,7 @@ export default function useFisicoQuimica() {
       try {
         await eliminarLectura(lecturaIdActual);
       } catch (error) {
-        const msg = error?.response?.data?.message || 'No se pudo eliminar la lectura del estanque. Intenta de nuevo.';
+        const msg = error?.message || error?.response?.data?.message || 'No se pudo eliminar la lectura del estanque. Intenta de nuevo.';
         setErrorMessage(msg);
         return;
       }
@@ -363,7 +363,7 @@ export default function useFisicoQuimica() {
         oxigenoDisuelto: mapearLecturas(lecturasOx, false),
       });
     } catch (error) {
-      const msg = error?.response?.data?.message || 'No se pudo actualizar la lectura. Intenta de nuevo.';
+      const msg = error?.message || error?.response?.data?.message || 'No se pudo actualizar la lectura. Intenta de nuevo.';
       setErrorMessage(msg);
       return;
     }

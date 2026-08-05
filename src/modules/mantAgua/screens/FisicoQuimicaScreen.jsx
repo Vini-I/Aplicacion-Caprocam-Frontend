@@ -210,7 +210,7 @@ export default function FisicoQuimicaScreen({ onBack }) {
               <Button variant="outline" onPress={handleGuardarClick} style={styles.fullButton}>
                 <View style={styles.btnContent}>
                   <Icon icon={ICONS.save} size={20} color={COLORS.primary} />
-                  <Text style={styles.btnText}>Guardar mediciones</Text>
+                  <Text style={styles.btnText}>Registrar mediciones</Text>
                 </View>
               </Button>
             )}
