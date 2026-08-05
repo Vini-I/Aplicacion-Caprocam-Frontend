@@ -147,7 +147,7 @@ const [fincas, setFincas] = useState([]);
       onGuardado?.();
     } catch (e) {
       // Error fuera del formulario → ModalError (ErrorContext)
-      mostrarError(e);
+      setErrorMessage(error.message)
     } finally {
       setIsSaving(false);
     }
