@@ -189,7 +189,7 @@ export default function EditarCompradorScreen() {
             <View style={styles.buttonContent}>
               <Icon icon={ICONS.add} size={ICON_STYLES.save.size} color={COLORS.primary} />
               <Text style={styles.saveButtonText}>
-                {guardando ? "Guardando..." : "Guardar comprador"}
+                {guardando ? "Guardando..." : "Editar Comprador"}
               </Text>
             </View>
           </Button>

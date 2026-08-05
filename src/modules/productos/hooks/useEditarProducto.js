@@ -102,12 +102,13 @@ export function useEditarProducto() {
       })),
     ];
     setOpcionesProveedores(lista);
+    if (cargandoProveedores) return;
 
     // Si el proveedor seleccionado ya no pertenece a la lista, lo limpia
     if (form.proveedor && !lista.find((p) => p.value === form.proveedor)) {
       setForm((prev) => ({ ...prev, proveedor: "" }));
     }
-  }, [form.categoria, proveedoresTodos]);
+  }, [form.categoria, proveedoresTodos, cargandoProveedores]);
 
   // ── Carga los datos del producto a editar ──
   useEffect(() => {

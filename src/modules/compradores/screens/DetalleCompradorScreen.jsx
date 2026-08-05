@@ -126,17 +126,15 @@ export default function DetalleCompradorScreen() {
             </View>
           </View>
 
-          {/* Sección de notas, solo se muestra si el comprador tiene notas */}
-          {!!comprador.notas && (
-            <View style={styles.seccionNotas}>
-              <Text style={styles.seccionTitulo}>
-                Notas adicionales
-              </Text>
-              <Text style={styles.notasValor}>
-                {comprador.notas}
-              </Text>
-            </View>
-          )}
+          {/* Sección de notas: se muestra siempre, tenga o no contenido */}
+          <View style={styles.seccionNotas}>
+            <Text style={styles.seccionTitulo}>
+              Notas adicionales
+            </Text>
+            <Text style={styles.notasValor}>
+              {comprador.notas || "Sin notas"}
+            </Text>
+          </View>
         </Card>
 
         {/* Botones de acción: editar y eliminar */}
