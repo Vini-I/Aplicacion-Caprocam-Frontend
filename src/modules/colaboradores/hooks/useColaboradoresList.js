@@ -17,12 +17,14 @@
 
 import { useState, useRef } from "react";
 import { useColaboradores } from "./useColaboradores";
+import { useError } from "../../../shared/context/ErrorContext";
 
 export function useColaboradoresList() {
   // Estados de búsqueda y eliminación
   const [searchText, setSearchText] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const { mostrarError } = useError();
 
   // Alerta flotante
   const [alert, setAlert] = useState(null);
@@ -55,7 +57,7 @@ export function useColaboradoresList() {
       setDeleteTarget(null);
       fetchColaboradores();
     } catch (error) {
-      // El error se mostrará en el contexto global; no es necesario un alert adicional
+      // El error se muestra en el modal global; solo ocultamos el modal de confirmación
       setShowConfirmModal(false);
       setDeleteTarget(null);
     }

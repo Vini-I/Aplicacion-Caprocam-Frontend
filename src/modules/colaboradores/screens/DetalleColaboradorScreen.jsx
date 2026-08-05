@@ -37,6 +37,7 @@ import { COLORS } from '../../../theme/colors';
 import { ICONS } from '../../../theme/icons';
 import { STYLE } from '../../../theme/style';
 import { styles } from '../styles/DetalleColaboradorStyles';
+import { useError } from '../../../shared/context/ErrorContext';
 
 // ─── Constantes de etiquetas y variantes para roles ────────────
 const ROL_LABELS = {
@@ -80,6 +81,7 @@ function FilaDetalleIcono({ icon, label, value, onPress }) {
 export default function DetalleColaboradorScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
+  const { mostrarError } = useError();
 
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [alert, setAlert] = useState(null);
@@ -121,7 +123,8 @@ export default function DetalleColaboradorScreen() {
         }
       });
     } catch (err) {
-      setAlert({ type: 'danger', message: err.message || 'No se pudo eliminar el colaborador.' });
+      // Error de eliminación: se muestra en el modal global.
+      mostrarError(err);
       setShowConfirmModal(false);
     } finally {
       setEliminando(false);
@@ -148,10 +151,11 @@ export default function DetalleColaboradorScreen() {
     );
   }
 
-  if (error || !colaborador) {
+  // Si hay error (por ejemplo, no se encontró el colaborador), mostramos un mensaje,
+  // pero el modal ya se habrá mostrado para errores de red.
+  if (!colaborador) {
     return (
       <>
-        <NavbarRegistro Titulo="Detalle de Colaborador" Subtitulo="Error" Icono="user" />
         <View style={[STYLE.container, { justifyContent: 'center', alignItems: 'center' }]}>
           <CustomText style={{ color: COLORS.error }}>
             {error || 'Colaborador no encontrado'}
@@ -246,13 +250,6 @@ export default function DetalleColaboradorScreen() {
               <CustomText style={styles.emptyText}>No hay trabajadores registrados.</CustomText>
             )}
           </Card>
-        )}
-
-        {/* Alertas de error (ej. al fallar la eliminación) */}
-        {alert && (
-          <View style={{ marginBottom: 12 }}>
-            <Alert variant={alert.type} message={alert.message} />
-          </View>
         )}
 
         {/* Botones de acción */}

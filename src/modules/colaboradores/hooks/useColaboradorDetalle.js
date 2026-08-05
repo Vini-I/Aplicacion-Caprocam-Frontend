@@ -17,6 +17,7 @@
 import { useState, useEffect } from "react";
 import { colaboradoresService } from "../services/colaboradoresService";
 import { getFincas } from "../services/fincaService";
+import { useError } from "../../../shared/context/ErrorContext";
 
 export function useColaboradorDetalle(colaboradorId) {
   const [colaborador, setColaborador] = useState(null);
@@ -28,6 +29,7 @@ export function useColaboradorDetalle(colaboradorId) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchText, setSearchText] = useState("");
+  const { mostrarError } = useError();
 
   useEffect(() => {
     const loadData = async () => {
@@ -63,6 +65,7 @@ export function useColaboradorDetalle(colaboradorId) {
         }
       } catch (err) {
         setError(err.message);
+        mostrarError(err);
       } finally {
         setLoading(false);
       }
@@ -70,7 +73,7 @@ export function useColaboradorDetalle(colaboradorId) {
     if (colaboradorId) {
       loadData();
     }
-  }, [colaboradorId]);
+  }, [colaboradorId, mostrarError]);
 
   // Filtrar trabajadores por búsqueda
   useEffect(() => {

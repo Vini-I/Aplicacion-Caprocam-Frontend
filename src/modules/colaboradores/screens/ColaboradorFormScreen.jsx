@@ -32,11 +32,13 @@ import { COLORS } from "../../../theme/colors";
 import { colaboradoresService } from "../services/colaboradoresService";
 import { getRolesOptions } from "../services/rolesService";
 import { getFincasOptions } from "../services/fincaService";
+import { useError } from "../../../shared/context/ErrorContext";
 
 export default function ColaboradorFormScreen() {
   const router = useRouter();
   const { id, userRole = "camprocam_admin", fincaId } = useLocalSearchParams();
   const isEditing = !!id;
+  const { mostrarError } = useError();
 
   // ─── Estados del formulario y carga ──────────────────────────
   const [colaborador, setColaborador] = useState(null);
@@ -83,13 +85,14 @@ export default function ColaboradorFormScreen() {
           setColaborador(data);
         } catch (err) {
           setError(err.message || "Error al cargar el colaborador");
+          mostrarError(err);
         } finally {
           setLoading(false);
         }
       };
       loadColaborador();
     }
-  }, [id]);
+  }, [id, isEditing, mostrarError]);
 
   // ─── Limpieza automática de mensajes de error ──────────────
   useEffect(() => {
@@ -124,7 +127,15 @@ export default function ColaboradorFormScreen() {
         });
       }
     } catch (err) {
-      setErrorMessage(err.message || "No se pudo guardar el colaborador.");
+      // Si es un error de validación (400/422), se muestra en el alert local.
+      // Otros errores (red, 500) se muestran en el modal.
+      const status = err.response?.status;
+      if (status === 400 || status === 422) {
+        setErrorMessage(err.message || "No se pudo guardar el colaborador.");
+      } else {
+        // No se muestra en el alert local, solo en el modal.
+        mostrarError(err);
+      }
     }
   };
 
@@ -146,7 +157,8 @@ export default function ColaboradorFormScreen() {
         },
       });
     } catch (err) {
-      setErrorMessage(err.message || "No se pudo restablecer el PIN.");
+      // Para errores de red o del servidor, mostramos solo el modal.
+      mostrarError(err);
     } finally {
       setResetLoading(false);
     }
@@ -161,14 +173,21 @@ export default function ColaboradorFormScreen() {
     );
   }
 
-  if (error) {
+  // Si hay error de carga, no mostramos el mensaje en la UI (el modal ya lo hizo).
+  // Podemos mostrar un estado vacío, pero como es un formulario, mejor mostrar el formulario vacío.
+  // Pero si no se pudo cargar el colaborador en edición, redirigimos o mostramos un mensaje.
+  if (error && isEditing) {
+    // Si es edición y no se pudo cargar, mostramos un mensaje pero el modal ya está.
+    // Podemos mostrar un texto simple.
     return (
-      <>
-        <NavbarRegistro Titulo="Error" Subtitulo="Cargando colaborador" Icono="user" />
-        <View style={[STYLE.container, { justifyContent: "center", alignItems: "center" }]}>
-          <CustomText style={{ color: COLORS.error }}>{error}</CustomText>
-        </View>
-      </>
+      <View style={[STYLE.container, { justifyContent: "center", alignItems: "center" }]}>
+        <CustomText style={{ color: COLORS.error }}>
+          No se pudo cargar el colaborador. Intente de nuevo.
+        </CustomText>
+        <Button variant="outline" onPress={handleCancel} style={{ marginTop: 16 }}>
+          Volver
+        </Button>
+      </View>
     );
   }
 
