@@ -6,6 +6,8 @@ import parasitologiaService from "../services/ParasitologiaService.js";
 import { fincaService } from "../../finca/services/finca.service.js";
 import { estanqueService } from "../../estanques/services/estanque.service.js";
 
+import { COLORS } from "../../../theme/colors.js";
+
 function convertirFechaParaBackend(fecha) {
   if (!fecha) return "";
   if (fecha.includes("-") && !fecha.includes("/")) return fecha.slice(0, 10);
@@ -87,10 +89,33 @@ export default function useEditarParasitologia(registroId, onGuardado) {
 
   const muestreadosN = Number(camaronesMuestreados) || 0;
   const infectadosN = Number(camaronesInfectados) || 0;
-  const gradoCalculado = muestreadosN > 0
+
+  const porcentajeCalculado = muestreadosN > 0
     ? ((infectadosN / muestreadosN) * 100).toFixed(1)
     : "0.0";
-  const colorGrado = Number(gradoCalculado) >= 50 ? "error" : Number(gradoCalculado) >= 20 ? "warning" : "success";
+
+  const porcentajeNum = Number(porcentajeCalculado)
+
+  const nombreGrado =
+    porcentajeNum >= 50 ? "Alto" :
+      porcentajeNum >= 20 ? "Medio" :
+        "Bajo";
+
+  const descripcionGrado =
+    porcentajeNum >= 50 ? "El nivel de infeccion requiere atencion inmediata." :
+      porcentajeNum >= 20 ? "El nivel de infeccion requiere monitoreo cercano." :
+        "El nivel de infeccion esta dentro de un rango aceptable.";
+
+  const colorGrado =
+    porcentajeNum >= 50 ? COLORS.error :
+      porcentajeNum >= 20 ? COLORS.warning :
+        COLORS.success;
+
+  const gradoCalculado = {
+    porcentaje: porcentajeCalculado,
+    nombre: nombreGrado,
+    descripcion: descripcionGrado,
+  };
 
   const opcionesFincas = useMemo(
     () => fincas.map((f) => ({ label: f.nombreFinca, value: String(f.id) })),
