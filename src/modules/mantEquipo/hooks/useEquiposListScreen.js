@@ -286,5 +286,6 @@ export function useEquiposListScreen() {
     handleToggle,
     openDetail,
     navigateToMantEquipo,
+    showAlert,
   };
 }

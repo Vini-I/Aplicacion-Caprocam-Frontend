@@ -129,10 +129,17 @@ export const styles = StyleSheet.create({
   alertText: {
     textAlign: 'center',
   },
+  alertSection: {
+    marginTop: 16,
+  },
   botonesContainer: {
     flexDirection: 'row',
     gap: 12,
     marginTop: 16,
+  },
+  botonLabelPrimary: {
+    color: COLORS.primary,
+    fontWeight: '600',
   },
   btnCancelar: {
     flex: 1,
@@ -168,5 +175,10 @@ export const styles = StyleSheet.create({
     borderRadius: 8,
     borderColor: COLORS.secondary,
     backgroundColor: COLORS.white,
+  },
+  sectionTitle:{
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 10,
   },
 });

@@ -9,10 +9,9 @@
 
 // src/modules/mantEquipo/hooks/useTareaForm.js
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import * as tareasService from "../services/tareasService";
-import { getProductosInventario } from "../../inventarios/services/InventarioService";
 
 export function useTareaForm() {
   const router = useRouter();
@@ -23,55 +22,26 @@ export function useTareaForm() {
   const [descripcion, setDescripcion] = useState("");
   const [categoria, setCategoria] = useState("");
   const [duracion, setDuracion] = useState("");
-  const [estado, setEstado] = useState("no_iniciada");
-  const [productos, setProductos] = useState([]);
-  const [busquedaProducto, setBusquedaProducto] = useState("");
-  const [productoSeleccionado, setProductoSeleccionado] = useState(null);
-  const [cantidadProducto, setCantidadProducto] = useState("");
   const [errores, setErrores] = useState({});
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [cargandoDatos, setCargandoDatos] = useState(isEditing);
-  const [productosDisponibles, setProductosDisponibles] = useState([]);
 
-  // Estados para mensajes de feedback
-  const [successMessage, setSuccessMessage] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
-
-  // ─── Limpiar mensajes automáticamente ──────────────────────────
+  // Alert local para la pantalla (hook-local)
+  const [alert, setAlert] = useState(null);
+  const alertTimeoutRef = { current: null };
   useEffect(() => {
-    if (successMessage) {
-      const timer = setTimeout(() => setSuccessMessage(""), 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [successMessage]);
-
-  useEffect(() => {
-    if (errorMessage) {
-      const timer = setTimeout(() => setErrorMessage(""), 6000);
-      return () => clearTimeout(timer);
-    }
-  }, [errorMessage]);
-
-  // ─── Cargar productos del inventario ──────────────────────────
-  useEffect(() => {
-    let isMounted = true;
-    getProductosInventario()
-      .then((data) => {
-        if (isMounted) {
-          setProductosDisponibles(Array.isArray(data) ? data : []);
-        }
-      })
-      .catch((error) => {
-        console.error("Error al cargar productos de inventario:", error);
-        if (isMounted) {
-          setProductosDisponibles([]);
-        }
-      });
-    return () => { isMounted = false; };
+    return () => {
+      if (alertTimeoutRef.current) clearTimeout(alertTimeoutRef.current);
+    };
   }, []);
+  const showAlert = (type, message, ms = 4000) => {
+    if (alertTimeoutRef.current) clearTimeout(alertTimeoutRef.current);
+    setAlert({ type, message });
+    alertTimeoutRef.current = setTimeout(() => setAlert(null), ms);
+  };
 
-  // ─── Cargar datos si es edición ──────────────────────────────
+  // Cargar datos si es edición
   useEffect(() => {
     if (isEditing) {
       const cargarTarea = async () => {
@@ -81,10 +51,10 @@ export function useTareaForm() {
           setDescripcion(tarea.descripcion || "");
           setCategoria(tarea.categoria || "");
           setDuracion(String(tarea.duracionEstimada || ""));
-          setEstado(tarea.estado || "no_iniciada");
-          setProductos(tarea.productos || []);
         } catch (error) {
-          console.error("Error al cargar tarea:", error);
+          // Mostrar el mensaje tal como viene desde el servicio cuando sea posible
+          const msg = error?.response?.data?.message || error?.message || String(error);
+          showAlert('danger', msg);
         } finally {
           setCargandoDatos(false);
         }
@@ -92,27 +62,7 @@ export function useTareaForm() {
       cargarTarea();
     }
   }, [isEditing, id]);
-
-  // ─── FILTRADO DE PRODUCTOS ────────────────────────────────────
-  const productosFiltrados = useMemo(() => {
-    const disponibles = Array.isArray(productosDisponibles) ? productosDisponibles : [];
-    const busqueda = busquedaProducto.trim().toLowerCase();
-    if (!busqueda) return disponibles;
-    return disponibles.filter((p) =>
-      p.nombre.toLowerCase().includes(busqueda)
-    );
-  }, [productosDisponibles, busquedaProducto]);
-
-  const opcionesProductos = useMemo(() => {
-    const filtrados = Array.isArray(productosFiltrados) ? productosFiltrados : [];
-    return filtrados.map((p) => ({
-      label: `${p.nombre} (${p.unidad}) - Stock: ${p.cantidad}`,
-      value: p.id,
-    }));
-  }, [productosFiltrados]);
-
-  const hayResultados = opcionesProductos.length > 0;
-
+  
   // ─── HANDLERS ──────────────────────────────────────────────────
   const handleChange = (campo, valor) => {
     switch (campo) {
@@ -128,9 +78,6 @@ export function useTareaForm() {
       case "duracion":
         setDuracion(valor);
         break;
-      case "estado":
-        setEstado(valor);
-        break;
       default:
         break;
     }
@@ -139,42 +86,6 @@ export function useTareaForm() {
     }
   };
 
-  const handleBusquedaProducto = (text) => setBusquedaProducto(text);
-
-  const seleccionarProducto = (producto) => {
-    setProductoSeleccionado(producto);
-    if (producto) setCantidadProducto("1");
-  };
-
-  const handleCantidadProducto = (text) => setCantidadProducto(text);
-
-  const agregarProducto = () => {
-    if (!productoSeleccionado) return;
-    const cantidadNum = Number(cantidadProducto);
-    if (!cantidadProducto || isNaN(cantidadNum) || cantidadNum <= 0) return;
-
-    setProductos((prev) => {
-      const existe = prev.some((p) => p.productoId === productoSeleccionado.id);
-      if (existe) {
-        return prev.map((p) =>
-          p.productoId === productoSeleccionado.id
-            ? { ...p, cantidad: p.cantidad + cantidadNum }
-            : p
-        );
-      }
-      return [...prev, { productoId: productoSeleccionado.id, cantidad: cantidadNum }];
-    });
-
-    setProductoSeleccionado(null);
-    setCantidadProducto("");
-    setBusquedaProducto("");
-  };
-
-  const eliminarProducto = (productoId) => {
-    setProductos((prev) => prev.filter((p) => p.productoId !== productoId));
-  };
-
-  // ─── VALIDACIÓN ─────────────────────────────────────────────────
   const validar = () => {
     const e = {};
     if (!nombre.trim()) e.nombre = "El nombre es requerido";
@@ -188,95 +99,76 @@ export function useTareaForm() {
     return Object.keys(e).length === 0;
   };
 
-  // ─── RESET FORMULARIO ──────────────────────────────────────────
   const resetFormulario = () => {
     setNombre("");
     setDescripcion("");
     setCategoria("");
     setDuracion("");
-    setEstado("no_iniciada");
-    setProductos([]);
-    setBusquedaProducto("");
-    setProductoSeleccionado(null);
-    setCantidadProducto("");
     setErrores({});
     setSubmitted(false);
-    setSuccessMessage("");
-    setErrorMessage("");
+    setLoading(false);
   };
 
-  // ─── GUARDAR ────────────────────────────────────────────────────
   const guardar = async () => {
     setSubmitted(true);
     if (!validar()) {
-      setErrorMessage("Revisa los campos obligatorios marcados con *");
+      showAlert('danger', 'Revisa los campos obligatorios marcados con *');
       return;
     }
 
     setLoading(true);
-    setSuccessMessage("");
-    setErrorMessage("");
-
     try {
       const datos = {
         nombre: nombre.trim(),
         descripcion: descripcion.trim(),
         categoria,
         duracionEstimada: Number(duracion),
-        estado,
-        productos,
       };
 
       if (isEditing) {
         await tareasService.actualizarTarea(id, datos);
-        setSuccessMessage("Tarea actualizada correctamente.");
+        showAlert('success', 'Tarea editada correctamente');
+        // Después de editar, navegar al detalle y pasar mensaje para que se muestre allí
+        router.replace(
+          `/mantenimientoEquipo/tareas/detalleTarea?id=${id}&alertType=success&alertMessage=${encodeURIComponent(
+            'Tarea editada correctamente'
+          )}`
+        );
       } else {
         await tareasService.crearTarea(datos);
-        setSuccessMessage("Tarea guardada correctamente.");
-        // Limpiar formulario solo en creación
-        resetFormulario();
-        setSubmitted(false);
+        showAlert('success', 'Tarea registrada correctamente');
+        // Después de crear, ir a la lista de tareas y pasar mensaje para que se muestre allí
+        router.replace(
+          `/mantenimientoEquipo/tareas?alertType=success&alertMessage=${encodeURIComponent(
+            'Tarea registrada correctamente'
+          )}`
+        );
       }
     } catch (error) {
-      setErrorMessage(error.message || "Ocurrió un error al guardar la tarea.");
+      const msg = error?.response?.data?.message || error?.message || String(error);
+      showAlert('danger', msg);
     } finally {
       setLoading(false);
     }
   };
 
-  // ─── CANCELAR ──────────────────────────────────────────────────
   const cancelar = () => {
     router.back();
   };
 
-  // ─── RETORNO ──────────────────────────────────────────────────
   return {
     nombre,
     descripcion,
     categoria,
     duracion,
-    estado,
-    productos,
-    busquedaProducto,
-    productoSeleccionado,
-    cantidadProducto,
     errores,
     submitted,
     loading,
     cargandoDatos,
     isEditing,
-    productosFiltrados,
-    opcionesProductos,
-    hayResultados,
-    successMessage,
-    errorMessage,
-    resetFormulario,
+    alert,
+    showAlert,
     handleChange,
-    handleBusquedaProducto,
-    seleccionarProducto,
-    handleCantidadProducto,
-    agregarProducto,
-    eliminarProducto,
     guardar,
     cancelar,
   };
