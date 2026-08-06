@@ -18,19 +18,15 @@
 import Text from "../../../shared/components/Text.jsx";
 import Icon from "../../../shared/components/Icons.jsx";
 import { useCallback, useMemo, useState } from "react";
-import { Dimensions, View } from "react-native";
+import { View } from "react-native";
 import { ubicaciones } from "../screens/FincaNuevaData.js";
 import { styles } from "../styles/StylesFincaNueva.js";
 import { STYLE } from "../../../theme/style.js";
 import { COLORS } from "../../../theme/colors.js";
 import { useFinca } from "../context/FincaContext";
-import { fincaDTO } from "../dtos/finca.dto.js";
-
-const { width } = Dimensions.get("window");
-const isLargeScreen = width > 700;
 
 export function useFincaNueva({ onFinca }) {
-  const { crearFinca } = useFinca();
+  const { crearFinca, ERROR } = useFinca();
 
   const [formulario, setFormulario] = useState({
     codigoCBO: "",
@@ -76,7 +72,7 @@ export function useFincaNueva({ onFinca }) {
       [campo]: nuevoValor,
     }));
     if (errores[campo]) {
-      setErrores((actual) => ({ ...actual, [campo]: false }));
+      setErrores((actual) => ({ ...actual, [campo]: null }));
     }
   };
 
@@ -88,7 +84,7 @@ export function useFincaNueva({ onFinca }) {
     if (errores[`telefono${index}`]) {
       setErrores((actual) => ({
         ...actual,
-        [`telefono${index}`]: false,
+        [`telefono${index}`]: null,
       }));
     }
   };
@@ -115,30 +111,24 @@ export function useFincaNueva({ onFinca }) {
     const nuevosErrores = {};
     const telefonosLimpios = telefonos.map((tel) => String(tel ?? "").trim()).filter((tel) => tel !== "");
 
-    if (!formulario.codigoCBO.trim()) nuevosErrores.codigoCBO = true;
-    if (!formulario.nombre.trim()) nuevosErrores.nombre = true;
-    if (!formulario.provincia) nuevosErrores.provincia = true;
-    if (!formulario.canton) nuevosErrores.canton = true;
-    if (!formulario.distrito) nuevosErrores.distrito = true;
-    if (!formulario.responsable.trim()) nuevosErrores.responsable = true;
-    if (!formulario.otrasSenas.trim()) nuevosErrores.otrasSenas = true;
+    if (!formulario.codigoCBO.trim()) nuevosErrores.codigoCBO = "Código CVO obligatorio";
+    if (!formulario.nombre.trim()) nuevosErrores.nombre = "Nombre de la finca obligatorio";
+    if (!formulario.provincia) nuevosErrores.provincia = "Provincia obligatoria";
+    if (!formulario.canton) nuevosErrores.canton = "Cantón obligatorio";
+    if (!formulario.distrito) nuevosErrores.distrito = "Distrito obligatorio";
+    if (!formulario.responsable.trim()) nuevosErrores.responsable = "Propietario/Responsable obligatorio";
+    if (!formulario.otrasSenas.trim()) nuevosErrores.otrasSenas = "Otras señas obligatorio";
 
     if (formulario.otrasSenas.trim().length < 10) {
-      nuevosErrores.otrasSenas = true;
+      nuevosErrores.otrasSenas = "Otras señas debe tener al menos 10 caracteres";
     }
 
-    if (
-      !String(formulario.areaTotal).trim() ||
-      !isNumber(formulario.areaTotal)
-    ) {
-      nuevosErrores.areaTotal = true;
+    if (!String(formulario.areaTotal).trim() || !isNumber(formulario.areaTotal)) {
+      nuevosErrores.areaTotal = "Área total debe ser un número válido";
     }
 
-    if (
-      !String(formulario.espejoAgua).trim() ||
-      !isNumber(formulario.espejoAgua)
-    ) {
-      nuevosErrores.espejoAgua = true;
+    if (!String(formulario.espejoAgua).trim() || !isNumber(formulario.espejoAgua)) {
+      nuevosErrores.espejoAgua = "Espejo de agua debe ser un número válido";
     }
 
     for (let i = 0; i < telefonos.length; i++) {
@@ -146,8 +136,7 @@ export function useFincaNueva({ onFinca }) {
       if (tel === "") continue;
 
       if (!isTelefonoValido(tel)) {
-        nuevosErrores[`telefono${i}`] = true;
-        break;
+        nuevosErrores[`telefono${i}`] = `Teléfono ${i + 1} inválido. Debe tener 8 dígitos. Ej: 1234 5678`;
       }
     }
 
@@ -156,7 +145,7 @@ export function useFincaNueva({ onFinca }) {
       return;
     }
 
-    const nuevaFincaDTO = new fincaDTO({
+    const nuevaFincaDTO = {
       codigoCBO: formulario.codigoCBO,
       nombreFinca: formulario.nombre,
       provincia: formulario.provincia,
@@ -167,15 +156,14 @@ export function useFincaNueva({ onFinca }) {
       telefono: telefonosLimpios,
       areaTotal: Number(formulario.areaTotal),
       espejosAgua: Number(formulario.espejoAgua),
-    });
+    };
 
     try {
       await crearFinca(nuevaFincaDTO);
+      onFinca();
     } catch (error) {
-      console.log(error);
+      return;
     }
-
-    onFinca();
   });
 
   const cantones =
@@ -213,6 +201,8 @@ export function useFincaNueva({ onFinca }) {
       );
     }
 
+  const displayErrorMessage = Object.values(errores || {}).filter(Boolean)[0] || ERROR || null;
+
   return {
     SectionTitle,
     ContentWrapper,
@@ -234,6 +224,6 @@ export function useFincaNueva({ onFinca }) {
     opcionesCantones,
     opcionesDistritos,
 
-    isLargeScreen,
+    displayErrorMessage,
   };
 }

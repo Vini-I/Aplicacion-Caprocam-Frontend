@@ -23,6 +23,9 @@ import { StyleSheet } from "react-native";
 import { COLORS } from "../../../theme/colors"
 
 export const styles = StyleSheet.create({
+  content:{
+    paddingBottom: 55,
+  },
 
   filaDetalle: {
     flexDirection: "row",
@@ -71,12 +74,23 @@ export const styles = StyleSheet.create({
     marginVertical: 20,
   },
 
+  addButtonContainer: {
+    position: "absolute",
+    bottom: 0,
+    left: 16,
+    right: 16,
+    backgroundColor: "transparent",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
   addButtonText: {
     color: COLORS.primary,
     fontWeight: "600",
   },
 
   titleText: {
+    alignSelf: "center",
     marginBottom: 8,
     color: COLORS.textTertiary,
   },
@@ -152,8 +166,7 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 6,
     marginHorizontal: 2,
-    paddingHorizontal: 6,
-    paddingVertical: 4,
+    height: "70%",
   },
 
   Editar: {
@@ -166,8 +179,7 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 6,
     marginHorizontal: 2,
-    paddingHorizontal: 12,
-    paddingVertical: 4,
+    height: "70%",
   },
 
   alertCorrect: {

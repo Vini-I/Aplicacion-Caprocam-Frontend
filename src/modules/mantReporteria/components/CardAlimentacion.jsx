@@ -47,11 +47,14 @@ export default function CardAlimentacion({ fincaId, estanqueId, onEditar, onAler
             </View>
         );
     }
-    
+
     return (
         <>
             {alimentaciones.map((registro) => (
-                <Card key={registro.id} style={styles.cardRegistro}>
+                <Card
+                    key={registro.id}
+                    style={[styles.cardRegistro, { borderLeftColor: COLORS.Alimentacion }]}
+                >
                     <View style={styles.infoGrid}>
                         <View style={styles.infoItem}>
                             <Text style={styles.label}>Finca</Text>
@@ -64,8 +67,13 @@ export default function CardAlimentacion({ fincaId, estanqueId, onEditar, onAler
                         </View>
 
                         <View style={styles.infoItem}>
+                            <Text style={styles.label}>Colaborador</Text>
+                            <Text style={styles.value}>{registro.nombreCreadoPor}</Text>
+                        </View>
+
+                        <View style={styles.infoItem}>
                             <Text style={styles.label}>Producto</Text>
-                            <Text style={styles.value}>{registro.idProducto}</Text>
+                            <Text style={styles.value}>{registro.nombreProducto}</Text>
                         </View>
 
                         <View style={styles.infoItem}>
@@ -124,7 +132,7 @@ export default function CardAlimentacion({ fincaId, estanqueId, onEditar, onAler
 
                         <Button
                             style={styles.Editar}
-                            onPress={() => onEditar?.(registro.id)}
+                            onPress={() => {onEditar(registro.id)}}
                         >
                             <Icon icon={ICONS.edit} color={COLORS.primary} size={20} />
                             <Text size={12} color={COLORS.primary}>

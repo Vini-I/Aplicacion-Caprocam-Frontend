@@ -9,11 +9,10 @@
  * venta nueva.
  *
  * NOTA: los nombres de campo de lectura (peso_promedio,
- * tamano_promedio, colaborador_id, comprador_id) se infieren a
- * partir de los ya confirmados en useDetalleVenta.js (finca_id,
- * estanque_id, fecha, total, cantidad_vendida, precio_kilo).
- * Verifica contra la respuesta real de GET /ventas/:id y ajusta
- * si difiere.
+ * tamano_promedio, comprador_id) se infieren a partir de los
+ * ya confirmados en useDetalleVenta.js (finca_id, estanque_id,
+ * fecha, total, cantidad_vendida, precio_kilo). Verifica contra
+ * la respuesta real de GET /ventas/:id y ajusta si difiere.
  */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -22,7 +21,6 @@ import { useWindowDimensions } from "react-native";
 import { getVentaById, updateVenta } from "../services/mantVentas.service.js";
 import { MantVentaDTO } from "../dtos/mantVenta.dto.js";
 
-import { colaboradorService } from "../../colaboradores/services/colaborador.service.js";
 import { fincaService } from "../../finca/services/finca.service.js";
 import { estanqueService } from "../../estanques/services/estanque.service.js";
 import { compradorService } from "../../compradores/services/comprador.service.js";
@@ -41,6 +39,21 @@ function formatearFechaDesdeBackend(fechaBackend) {
   return formatearFechaParaInput(soloFecha);
 }
 
+function mensajeDeError(error) {
+  if (typeof error === "string") return error;
+
+  const detalles = error?.response?.data?.error;
+  if (Array.isArray(detalles) && detalles.length > 0) {
+    return detalles.join(" ");
+  }
+
+  return (
+    error?.response?.data?.message ||
+    error?.message ||
+    "Ocurrió un error inesperado."
+  );
+}
+
 export function useVentaEditar({ id, onGuardado } = {}) {
   const { width } = useWindowDimensions();
   const isWide = width >= 700;
@@ -52,7 +65,6 @@ export function useVentaEditar({ id, onGuardado } = {}) {
 
   const [fincas, setFincas] = useState([]);
   const [estanques, setEstanques] = useState([]);
-  const [colaboradores, setColaboradores] = useState([]);
   const [compradoresData, setCompradoresData] = useState([]);
 
   const [fincaSeleccionada, setFincaSeleccionadaState] = useState("");
@@ -62,28 +74,24 @@ export function useVentaEditar({ id, onGuardado } = {}) {
   const [kilosVendidos, setKilosVendidos] = useState("0");
   const [precioKilo, setPrecioKilo] = useState("0");
   const [fechaVenta, setFechaVenta] = useState("");
-  const [colaboradorSeleccionado, setColaboradorSeleccionado] = useState("");
   const [compradorSeleccionado, setCompradorSeleccionado] = useState("");
   const [mensaje, setMensaje] = useState("");
   const [tipoMensaje, setTipoMensaje] = useState("");
   const [errores, setErrores] = useState({});
   const [guardando, setGuardando] = useState(false);
 
-  // Catálogos: finca, estanque, colaborador, comprador
   useEffect(() => {
     let activo = true;
 
     async function cargarCatalogos() {
-      const [dataColaboradores, dataFincas, dataEstanques, dataCompradores] =
+      const [dataFincas, dataEstanques, dataCompradores] =
         await Promise.all([
-          colaboradorService.getColaboradores({ activo: true }),
           fincaService.getFincas(),
           estanqueService.getEstanques(),
           compradorService.getCompradores(),
         ]);
 
       if (activo) {
-        setColaboradores(dataColaboradores);
         setFincas(dataFincas);
         setEstanques(dataEstanques);
         setCompradoresData(dataCompradores);
@@ -97,7 +105,6 @@ export function useVentaEditar({ id, onGuardado } = {}) {
     };
   }, []);
 
-  // Venta a editar: precarga el formulario
   useEffect(() => {
     let activo = true;
 
@@ -113,17 +120,17 @@ export function useVentaEditar({ id, onGuardado } = {}) {
         if (!activo) return;
 
         setVentaOriginal(venta);
-        setFincaSeleccionadaState(venta?.finca_id ?? "");
-        setEstanqueSeleccionado(venta?.estanque_id ?? "");
-        setPesoPromedio(String(venta?.peso_promedio ?? "0.1"));
-        setTamanoPromedio(String(venta?.tamano_promedio ?? "0.1"));
-        setKilosVendidos(String(venta?.cantidad_vendida ?? "0"));
-        setPrecioKilo(String(venta?.precio_kilo ?? "0"));
+        setFincaSeleccionadaState(venta?.finca ?? "");
+        setEstanqueSeleccionado(venta?.estanque ?? "");
+        setPesoPromedio(String(venta?.pesoPromedio ?? "0.1"));
+        setTamanoPromedio(String(venta?.tamanoPromedio ?? "0.1"));
+        setKilosVendidos(String(venta?.cantVendida ?? "0"));
+        setPrecioKilo(String(venta?.precioKilo ?? "0"));
         setFechaVenta(formatearFechaDesdeBackend(venta?.fecha));
-        setColaboradorSeleccionado(venta?.colaborador_id ?? "");
-        setCompradorSeleccionado(venta?.comprador_id ?? CLIENTE_GENERICO);
+        setCompradorSeleccionado(venta?.comprador ?? CLIENTE_GENERICO);
       } catch (error) {
-        console.error("No se pudo cargar la venta a editar:", error);
+        setTipoMensaje("error");
+        setMensaje(mensajeDeError(error));
       } finally {
         if (activo) setCargandoVenta(false);
       }
@@ -156,14 +163,6 @@ export function useVentaEditar({ id, onGuardado } = {}) {
       }));
   }, [fincaSeleccionada, estanques]);
 
-  const opcionesColaboradores = useMemo(
-    () =>
-      colaboradores.map((colaborador) => ({
-        label: colaborador.nombre,
-        value: colaborador.id,
-      })),
-    [colaboradores],
-  );
 
   const opcionesCompradores = useMemo(
     () => [
@@ -227,14 +226,6 @@ export function useVentaEditar({ id, onGuardado } = {}) {
     [limpiarError],
   );
 
-  const handleColaboradorChange = useCallback(
-    (value) => {
-      setColaboradorSeleccionado(value);
-      limpiarError("colaborador");
-    },
-    [limpiarError],
-  );
-
   const handleCompradorChange = useCallback(
     (value) => {
       setCompradorSeleccionado(value);
@@ -251,7 +242,6 @@ export function useVentaEditar({ id, onGuardado } = {}) {
       tamanoPromedio,
       kilosVendidos,
       precioKiloNumero,
-      colaboradorSeleccionado,
       compradorSeleccionado,
     });
 
@@ -274,7 +264,6 @@ export function useVentaEditar({ id, onGuardado } = {}) {
     const ventaDTO = new MantVentaDTO({
       finca: Number(fincaSeleccionada),
       estanque: Number(estanqueSeleccionado),
-      colaborador: Number(colaboradorSeleccionado),
       comprador:
         compradorSeleccionado === CLIENTE_GENERICO
           ? null
@@ -291,13 +280,12 @@ export function useVentaEditar({ id, onGuardado } = {}) {
       setTipoMensaje("success");
       setMensaje("Venta actualizada correctamente.");
       onGuardado?.({
-    success: true,
-    message: "Venta actualizada correctamente.",
-    });
+        success: true,
+        message: "Venta actualizada correctamente.",
+      });
     } catch (error) {
-      console.error("No se pudo actualizar la venta:", error);
       setTipoMensaje("error");
-      setMensaje("No fue posible guardar los cambios.");
+      setMensaje(mensajeDeError(error));
     } finally {
       setGuardando(false);
     }
@@ -308,7 +296,6 @@ export function useVentaEditar({ id, onGuardado } = {}) {
     tamanoPromedio,
     kilosVendidos,
     precioKiloNumero,
-    colaboradorSeleccionado,
     compradorSeleccionado,
     fechaVenta,
     ventaId,
@@ -325,7 +312,6 @@ export function useVentaEditar({ id, onGuardado } = {}) {
     kilosVendidos,
     precioKilo,
     fechaVenta,
-    colaboradorSeleccionado,
     compradorSeleccionado,
     mensaje,
     tipoMensaje,
@@ -334,7 +320,6 @@ export function useVentaEditar({ id, onGuardado } = {}) {
     isWide,
     opcionesFincas,
     estanquesFiltrados,
-    opcionesColaboradores,
     opcionesCompradores,
     totalVenta,
     setEstanqueSeleccionado,
@@ -344,7 +329,6 @@ export function useVentaEditar({ id, onGuardado } = {}) {
     handleKilosVendidosChange,
     handlePrecioChange,
     handleCompradorChange,
-    handleColaboradorChange,
     limpiarError,
     guardarCambios,
   };
