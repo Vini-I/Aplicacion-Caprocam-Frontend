@@ -37,7 +37,6 @@ import EquipoDetail from "../components/EquipoDetailTicket.jsx";
 import { formatDate } from "../../../shared/utils/dateUtils.js";
 
 import { useDetalleMantenimiento } from "../hooks/useDetalleMantenimiento.js";
-import { getTareaBadgeStyle, getTareaBadgeTextStyle } from "../styles/mantEquipoStyles.js";
 import { TEXTOS_MODAL_AGREGAR, TEXTOS_DETALLE, MENSAJES_ERROR_CARGA } from "../constants/mantEquipoMensajes.js";
 import SectionTitle from "../components/SectionTitle.jsx";
 
@@ -60,6 +59,7 @@ export default function DetalleMantenimientoScreen({
     productosSeleccionados,
     abrirModalEliminar,
     cerrarModalEliminar,
+    cambiarEstadoTarea,
     confirmDelete,
   } = useDetalleMantenimiento({ id, alertaTipo, alertaMensaje, onNavigateToMain });
 
@@ -74,6 +74,35 @@ export default function DetalleMantenimientoScreen({
   if (!ticket) {
     return <View style={STYLE.container} />;
   }
+
+  const renderTareaItem = (t, idx) => {
+    const realizadaColor = t.realizada ? COLORS.success : COLORS.textTertiary;
+    return (
+      <View key={String(t.id || t.tareaId || idx)} style={styles.tareaItemContainer}>
+        <View style={styles.tareaItemHeader}>
+          <View style={styles.tareaItemLeft}>
+            <Icon icon={t.realizada ? ICONS.check : ICONS.clock} size={14} color={realizadaColor} />
+            <View style={{ flex: 1 }}>
+              <CustomText style={styles.tareaItemNombre}>Título: {t.nombre || t.label}</CustomText>
+            </View>
+          </View>
+          <Button variant="outline" onPress={() => cambiarEstadoTarea(t)} style={[styles.tareaAccionButton, t.realizada ? styles.tareaAccionRealizada : styles.tareaAccionPendiente]}>
+            <Icon icon={t.realizada ? ICONS.check : ICONS.clock} size={12} color={t.realizada ? COLORS.success : COLORS.textTertiary} />
+            <CustomText style={[styles.tareaAccionTextBase, t.realizada ? styles.tareaAccionTextRealizada : styles.tareaAccionTextPendiente]}>{t.realizada ? TEXTOS_DETALLE.badgeRealizada : TEXTOS_DETALLE.badgePendiente}</CustomText>
+          </Button>
+        </View>
+        {t.categoria ? (
+          <CustomText style={styles.tareaItemMeta}>{TEXTOS_DETALLE.labelCategoriaPrefix}{t.categoria === "preventivo" || t.categoria === "Preventivo" ? TEXTOS_DETALLE.catPreventivo : TEXTOS_DETALLE.catCorrectivo}</CustomText>
+        ) : null}
+        {t.duracionEstimada !== undefined && t.duracionEstimada > 0 ? (
+          <CustomText style={styles.tareaItemMetaMin}>{TEXTOS_DETALLE.labelDuracionEstimada(t.duracionEstimada)}</CustomText>
+        ) : null}
+        {t.descripcion ? (
+          <CustomText style={styles.tareaItemMetaTop}>Descripción: {t.descripcion}</CustomText>
+        ) : null}
+      </View>
+    );
+  };
 
   return (
     <ScrollView style={STYLE.container} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
@@ -119,7 +148,7 @@ export default function DetalleMantenimientoScreen({
           {/* Descripción */}
           <View style={styles.infoBlockSmall}>
             <CustomText style={styles.infoLabel}>{TEXTOS_MODAL_AGREGAR.labelDescripcion.replace(' *', '').replace('*', '')}</CustomText>
-            <CustomText style={styles.infoValueDesc}>
+            <CustomText style={styles.infoValue}>
               {ticket.descripcion}
             </CustomText>
           </View>
@@ -134,47 +163,7 @@ export default function DetalleMantenimientoScreen({
         {/* Sección: TAREAS ASIGNADAS */}
         <Card style={[styles.card, styles.cardSection]}>
           <SectionTitle icon={ICONS.clipboard} title={TEXTOS_DETALLE.tituloTareas} />
-          <View style={styles.tareaGapList}>
-        {ticket.tareas && ticket.tareas.length > 0 ? (
-              ticket.tareas.map((t, idx) => {
-                const realizadaColor = t.realizada ? COLORS.success : COLORS.textTertiary;
-                return (
-                  <View key={idx} style={styles.tareaItemContainer}>
-                    <View style={styles.tareaItemHeader}>
-                      <View style={styles.tareaItemLeft}>
-                        <Icon icon={t.realizada ? ICONS.check : ICONS.clock} size={14} color={realizadaColor} />
-                        <CustomText style={styles.tareaItemNombre}>
-                          {t.nombre || t.label}
-                        </CustomText>
-                      </View>
-                      <View style={[styles.tareaBadgeBase, getTareaBadgeStyle(t.realizada)]}>
-                        <CustomText style={[styles.tareaBadgeTextBase, getTareaBadgeTextStyle(t.realizada)]}>
-                          {t.realizada ? TEXTOS_DETALLE.badgeRealizada : TEXTOS_DETALLE.badgePendiente}
-                        </CustomText>
-                      </View>
-                    </View>
-                    {t.categoria && (
-                      <CustomText style={styles.tareaItemMeta}>
-                        {TEXTOS_DETALLE.labelCategoriaPrefix}{t.categoria === "preventivo" || t.categoria === "Preventivo" ? TEXTOS_DETALLE.catPreventivo : TEXTOS_DETALLE.catCorrectivo}
-                      </CustomText>
-                    )}
-                    {t.duracionEstimada !== undefined && t.duracionEstimada > 0 && (
-                      <CustomText style={styles.tareaItemMetaMin}>
-                        {TEXTOS_DETALLE.labelDuracionEstimada(t.duracionEstimada)}
-                      </CustomText>
-                    )}
-                    {t.descripcion && (
-                      <CustomText style={styles.tareaItemMetaTop}>
-                        {t.descripcion}
-                      </CustomText>
-                    )}
-                  </View>
-                );
-              })
-            ) : (
-              <CustomText style={styles.tareaEmptyText}>{TEXTOS_DETALLE.sinTareas}</CustomText>
-            )}
-          </View>
+          <View style={styles.tareaGapList}>{ticket.tareas && ticket.tareas.length > 0 ? ticket.tareas.map((t, idx) => renderTareaItem(t, idx)) : <CustomText style={styles.tareaEmptyText}>{TEXTOS_DETALLE.sinTareas}</CustomText>}</View>
         </Card>
 
         {/* Sección: COSTOS DEL TICKET */}

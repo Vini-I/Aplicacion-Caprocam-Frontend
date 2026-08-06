@@ -291,10 +291,6 @@ export default function EquiposListScreen() {
     router.push(`/equipos/detalleEquipo?id=${equipoId}`);
   };
 
-  const navigateToMantEquipo = () => {
-    router.push("/equipos/mantEquipo");
-  };
-
   // --------------------------------------------------------
   // RENDERIZADO CONDICIONAL
   // --------------------------------------------------------
@@ -305,8 +301,16 @@ export default function EquiposListScreen() {
   // RENDER PRINCIPAL
   // --------------------------------------------------------
   return (
-    <View style={styles.container}>
-      <View style={styles.mainFlex}>
+    <View style={STYLE.container}>
+      <View style={[STYLE.contentWrapper, styles.mainFlex]}>
+        
+        {/* Alerta flotante (éxito/validación) */}
+        {alert && (
+          <View style={[STYLE.contentWrapper]}>
+            <Alert variant={alert.type} message={alert.message} />
+          </View>
+        )}
+
         <View style={styles.searchRow}>
           <SearchBar
             value={searchText}
@@ -331,22 +335,7 @@ export default function EquiposListScreen() {
             showExpiryDate={false}
             buttonStyle={styles.filterButtonStyle}
           />
-          <Button
-            variant="outline"
-            onPress={navigateToMantEquipo}
-            style={styles.btnAction}
-          >
-            <Icon icon={ICONS.clipboard} size={16} color={COLORS.primary} />
-            <CustomText style={styles.btnActionText}>Ver Mantenimiento</CustomText>
-          </Button>
         </View>
-
-        {/* Alerta flotante (éxito/validación) */}
-        {alert && (
-          <View style={[STYLE.contentWrapper, { marginTop: 6, marginBottom: 6 }]}>
-            <Alert variant={alert.type} message={alert.message} />
-          </View>
-        )}
 
         {/* Lista o EmptyState */}
         {equiposFinales.length === 0 ? (

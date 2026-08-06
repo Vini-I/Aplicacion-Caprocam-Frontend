@@ -116,20 +116,52 @@ export function useDetalleMantenimiento({ id, alertaTipo, alertaMensaje, onNavig
   useEffect(() => {
     if (!alertaTipo || !alertaMensaje) return;
     setAlerta({ tipo: alertaTipo, mensaje: alertaMensaje });
+  }, [alertaTipo, alertaMensaje]);
+
+  useEffect(() => {
+    if (!alerta) return;
     const timer = setTimeout(() => setAlerta(null), 4000);
     return () => clearTimeout(timer);
-  }, [alertaTipo, alertaMensaje]);
+  }, [alerta]);
 
   // ── Eliminación ──────────────────────────────────────────────
   const abrirModalEliminar  = () => setShowConfirmModal(true);
   const cerrarModalEliminar = () => setShowConfirmModal(false);
+
+  const cambiarEstadoTarea = async (tarea) => {
+    if (!tarea?.id) return;
+
+    const nuevoEstado = tarea.realizada ? 'Pendiente' : 'Realizado';
+
+    try {
+      await MantService.actualizarEstadoTareaEnTicket(tarea.id, nuevoEstado);
+      setTicket(prev => prev ? {
+        ...prev,
+        tareas: (prev.tareas || []).map(item => item.id === tarea.id
+          ? { ...item, estado: nuevoEstado, realizada: nuevoEstado === 'Realizado' }
+          : item),
+      } : prev);
+      setAlerta({
+        tipo: 'success',
+        mensaje: nuevoEstado === 'Realizado'
+          ? 'Tarea finalizada correctamente.'
+          : 'Tarea marcada como pendiente.',
+      });
+    } catch (err) {
+      console.error('useDetalleMantenimiento.cambiarEstadoTarea:', err?.message || err);
+      setAlerta({
+        tipo: 'danger',
+        mensaje: 'No se pudo actualizar el estado de la tarea.',
+      });
+    }
+  };
 
   const confirmDelete = async () => {
     setShowConfirmModal(false);
     try {
       await MantService.eliminarTicket(id);
       onNavigateToMain({
-        alertaTipo:    'danger',
+        alertaTipo:    'success',
         alertaMensaje: ALERTAS_NOTIFICACIONES.exitoEliminarTicket(id),
       });
     } catch (err) {
@@ -152,6 +184,7 @@ export function useDetalleMantenimiento({ id, alertaTipo, alertaMensaje, onNavig
     productosSeleccionados,
     abrirModalEliminar,
     cerrarModalEliminar,
+    cambiarEstadoTarea,
     confirmDelete,
   };
 }

@@ -216,6 +216,7 @@ export default function EditarMantenimientoScreen({ id, onNavigateToDetail = () 
           <TareasSeleccionadasList
             tareasSeleccionadas={tareasSeleccionadas}
             setTareasSeleccionadas={setTareasSeleccionadas}
+            mostrarToggleEstado={false}
           />
         </Card>
 
