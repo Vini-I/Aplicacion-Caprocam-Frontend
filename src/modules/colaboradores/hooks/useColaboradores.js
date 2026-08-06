@@ -28,6 +28,7 @@
 // ============================================================
 import { useState, useEffect, useCallback } from "react";
 import { colaboradoresService } from "../services/colaboradoresService";
+import { useError } from "../../../shared/context/ErrorContext";
 
 // ============================================================
 // HOOK
@@ -40,6 +41,7 @@ export function useColaboradores(initialFilters = {}) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [filters, setFilters] = useState(initialFilters);
+  const { mostrarError } = useError();
 
   // --------------------------------------------------------
   // FUNCIÓN PRINCIPAL PARA OBTENER DATOS
@@ -52,10 +54,11 @@ export function useColaboradores(initialFilters = {}) {
       setColaboradores(data);
     } catch (err) {
       setError(err.message);
+      mostrarError(err);
     } finally {
       setLoading(false);
     }
-  }, [filters]);
+  }, [filters, mostrarError]);
 
   // Ejecuta la carga cada vez que cambian los filtros
   useEffect(() => {
@@ -73,6 +76,7 @@ export function useColaboradores(initialFilters = {}) {
       return nuevo;
     } catch (err) {
       setError(err.message);
+      mostrarError(err);
       throw err;
     } finally {
       setLoading(false);
@@ -89,6 +93,7 @@ export function useColaboradores(initialFilters = {}) {
       return actualizado;
     } catch (err) {
       setError(err.message);
+      mostrarError(err);
       throw err;
     } finally {
       setLoading(false);
@@ -103,6 +108,7 @@ export function useColaboradores(initialFilters = {}) {
       return true;
     } catch (err) {
       setError(err.message);
+      mostrarError(err);
       throw err;
     } finally {
       setLoading(false);

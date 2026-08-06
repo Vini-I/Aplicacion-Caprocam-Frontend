@@ -15,10 +15,10 @@
  *    proveedor, cantidad, stock mínimo, precio) solo después de
  *    presionar Guardar (intentoGuardar), mostrando un mensaje
  *    general y marcando cada campo inválido por separado.
- * 4. Al guardar con éxito, YA NO navega al listado: muestra el
- *    alert de "guardado" por 3 segundos y luego limpia todo el
- *    formulario (campos y errores) para poder cargar otro producto
- *    sin salir de la pantalla.
+ * 4. Al guardar con éxito, navega al módulo de Inventario (no es
+ *    nuestro) pasando el param alertaProducto="guardado", para que
+ *    ellos muestren su propio alert de "producto guardado" por 3
+ *    segundos.
  *
  * IMPORTANTE:
  * - El botón de guardar NO se bloquea de entrada: el usuario puede
@@ -48,7 +48,6 @@ export function useAgregarProducto() {
   const [opcionesProveedores, setOpcionesProveedores] = useState([]);
   const [cargandoProveedores, setCargandoProveedores] = useState(true);
   const [errorProveedores, setErrorProveedores] = useState("");
-  const [guardadoExitoso, setGuardadoExitoso] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [errorGuardado, setErrorGuardado] = useState("");
   const [mostrarAlertaValidacion, setMostrarAlertaValidacion] = useState(false);
@@ -200,14 +199,14 @@ export function useAgregarProducto() {
     }
     setGuardando(false);
 
- 
-    setGuardadoExitoso(true);
-
-    setTimeout(() => {
-      setGuardadoExitoso(false);
-      setForm(initialForm);
-      setIntentoGuardar(false);
-    }, 3000);
+    // Ya no nos quedamos en esta pantalla: el módulo de Inventario
+    // es quien ahora muestra el alert de "producto
+    // guardado" por 3 segundos. Le avisamos con un param en la
+    // navegación 
+    router.replace({
+      pathname: "/(drawer)/inventarios",
+      params: { alertaProducto: "guardado" }, // Avisamos al módulo Inventarios que el producto fue guardado
+    });
   }
 
   function handleBack() {
@@ -232,7 +231,6 @@ export function useAgregarProducto() {
     errorCantidad,
     errorStockMinimo,
     errorPrecio,
-    guardadoExitoso,
     guardando,
     errorGuardado,
     handleField,

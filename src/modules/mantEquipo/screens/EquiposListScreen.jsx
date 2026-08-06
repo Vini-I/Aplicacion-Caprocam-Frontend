@@ -61,11 +61,13 @@ import { ICONS } from "../../../theme/icons";
 import { COLORS } from "../../../theme/colors";
 import { styles } from "../styles/equiposListStyles";
 import { equiposService } from "../services/equiposService";
+import { useError } from "../../../shared/context/ErrorContext";
 
 export default function EquiposListScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const formRef = useRef();
+  const { mostrarError } = useError();
 
   // --------------------------------------------------------
   // ESTADOS
@@ -103,7 +105,7 @@ export default function EquiposListScreen() {
     expiryDate: "",
   });
 
-  // Estado para alertas globales
+  // Estado para alertas (éxito/validaciones)
   const [alert, setAlert] = useState(null);
   const alertTimeoutRef = useRef(null);
 
@@ -253,6 +255,7 @@ export default function EquiposListScreen() {
       setCodigoError("");
       fetchEquipos();
     } catch (error) {
+      // El error ya se muestra en el modal global, solo mostramos mensaje local si es de validación
       setCodigoError("No se pudo eliminar el equipo");
     }
   };
@@ -270,6 +273,7 @@ export default function EquiposListScreen() {
       setEditingEquipo(null);
       fetchEquipos();
     } catch (error) {
+      // El error ya se muestra en el modal global, solo mostramos validación local
       showAlert("danger", error.message || "Ocurrió un error al guardar el equipo");
     }
   };
@@ -279,7 +283,7 @@ export default function EquiposListScreen() {
       await toggleEquipo(id);
       fetchEquipos();
     } catch (error) {
-      showAlert("danger", "No se pudo cambiar el estado del equipo");
+      mostrarError(error);
     }
   };
 
@@ -337,7 +341,7 @@ export default function EquiposListScreen() {
           </Button>
         </View>
 
-        {/* Alerta flotante (éxito/error) */}
+        {/* Alerta flotante (éxito/validación) */}
         {alert && (
           <View style={[STYLE.contentWrapper, { marginTop: 6, marginBottom: 6 }]}>
             <Alert variant={alert.type} message={alert.message} />
@@ -355,7 +359,11 @@ export default function EquiposListScreen() {
             }
           />
         ) : (
-          <ScrollView style={styles.scrollView} contentContainerStyle={styles.list}>
+          <ScrollView
+            style={styles.scrollView}
+            contentContainerStyle={styles.list}
+            showsVerticalScrollIndicator={false}
+          >
             {equiposFinales.map((equipo) => (
               <EquipoCard
                 key={equipo.id}
@@ -392,6 +400,7 @@ export default function EquiposListScreen() {
             <ScrollView
               style={styles.modalScrollForm}
               contentContainerStyle={styles.modalScrollFormContent}
+              showsVerticalScrollIndicator={false}
             >
               <EquipoForm
                 ref={formRef}

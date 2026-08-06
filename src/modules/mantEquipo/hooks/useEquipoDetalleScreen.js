@@ -21,6 +21,7 @@
 import { useState, useEffect } from 'react';
 import { equiposService } from '../services/equiposService';
 import { ICONS } from '../../../theme/icons';
+import { useError } from '../../../shared/context/ErrorContext';
 
 const TIPOS_LABELS = {
   aireacion: 'Aireación',
@@ -53,6 +54,7 @@ const ESTADO_VARIANTS = {
 };
 
 export function useEquipoDetalleScreen({ equipoId, onToggle }) {
+  const { mostrarError } = useError();
   const [equipo, setEquipo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -76,6 +78,7 @@ export function useEquipoDetalleScreen({ equipoId, onToggle }) {
         }
       } catch (err) {
         setError(err.message);
+        mostrarError(err);
       } finally {
         setLoading(false);
       }
@@ -83,7 +86,7 @@ export function useEquipoDetalleScreen({ equipoId, onToggle }) {
     if (equipoId) {
       loadData();
     }
-  }, [equipoId]);
+  }, [equipoId, mostrarError]);
 
   const handleTogglePress = () => {
     if (onToggle && equipo) {

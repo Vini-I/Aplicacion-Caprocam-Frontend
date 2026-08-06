@@ -54,7 +54,6 @@ export default function AgregarProducto() {
     opcionesProveedores,
     cargandoProveedores,
     errorProveedores,
-    guardadoExitoso,
     guardando,
     errorGuardado,
     validationMessage,
@@ -214,14 +213,6 @@ export default function AgregarProducto() {
               />
             )}
 
-            {guardadoExitoso && (
-              <Alert
-                variant="success"
-                message="Producto guardado correctamente."
-                style={styles.alertBox}
-              />
-            )}
-
             {validationMessage !== "" && (
               <Alert
                 variant="danger"
@@ -234,7 +225,7 @@ export default function AgregarProducto() {
             <Button
               variant="outline"
               onPress={handleSubmit}
-              disabled={guardadoExitoso || guardando}
+              disabled={guardando}
               style={styles.saveButton}
             >
               <Icon icon={ICONS.add} size={20} color={COLORS.primary} />

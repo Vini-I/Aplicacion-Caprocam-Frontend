@@ -93,9 +93,8 @@ export function useTareaForm() {
     }
   }, [isEditing, id]);
 
-  // ─── FILTRADO DE PRODUCTOS (con fallback por si productosDisponibles no es array) ──
+  // ─── FILTRADO DE PRODUCTOS ────────────────────────────────────
   const productosFiltrados = useMemo(() => {
-    // Asegurar que productosDisponibles sea siempre un array
     const disponibles = Array.isArray(productosDisponibles) ? productosDisponibles : [];
     const busqueda = busquedaProducto.trim().toLowerCase();
     if (!busqueda) return disponibles;
@@ -104,9 +103,7 @@ export function useTareaForm() {
     );
   }, [productosDisponibles, busquedaProducto]);
 
-  // ─── OPCIONES PARA EL SELECT (con fallback adicional) ────────
   const opcionesProductos = useMemo(() => {
-    // Asegurar que productosFiltrados sea siempre un array
     const filtrados = Array.isArray(productosFiltrados) ? productosFiltrados : [];
     return filtrados.map((p) => ({
       label: `${p.nombre} (${p.unidad}) - Stock: ${p.cantidad}`,

@@ -3,7 +3,8 @@
  * Gestiona el estado, validación por intento de guardado y armado del payload para crear o editar equipos.
  *
  * @dependencies - registrarEquipoService.js (services/registrarEquipoService.js)
- * @validations  - Valida campos obligatorios y formato de fecha (dd/mm/aaaa) al intentar guardar.
+ * @validations  - Valida campos obligatorios y formato de fecha (dd/mm/aaaa) al intentar guardar,
+ *                 informando un campo a la vez de forma secuencial (Estándar 3).
  * @navigation   - Ninguna
  */
 
@@ -47,6 +48,19 @@ const MENSAJES_REQUERIDOS = {
   funcionEquipo: 'La función del equipo es obligatoria.',
   estadoOperativo: 'Debe seleccionar el estado operativo del equipo.',
 };
+
+// Orden de los campos tal como aparecen en el formulario. Se usa para
+// mostrar los errores de validación de forma secuencial (uno a la vez),
+// en vez de un mensaje genérico con todos los campos a la vez.
+const ORDEN_CAMPOS_VALIDACION = [
+  'codigoInterno',
+  'nombre',
+  'descripcion',
+  'tipo',
+  'fechaInstalacion',
+  'funcionEquipo',
+  'estadoOperativo',
+];
 
 function esFechaValidaDDMMAAAA(valor) {
   const partes = valor.split('/');
@@ -179,12 +193,13 @@ export function useRegistrarEquipo(initialData = null) {
     setSubmitted(true);
 
     const nuevosErrores = validarFormulario(formulario);
-    const mensajes = Object.values(nuevosErrores).filter((msg) => msg !== '');
+    setErrores(nuevosErrores);
 
-    if (mensajes.length > 0) {
-      setErrores(nuevosErrores);
-      // Mensaje genérico sin lista de errores específicos
-      throw new Error('Revisa los campos obligatorios marcados con *');
+    // Se informa un solo campo a la vez, en el orden del formulario,
+    // con el mensaje específico de ese campo (Estándar 3)
+    const campoPendiente = ORDEN_CAMPOS_VALIDACION.find((campo) => nuevosErrores[campo]);
+    if (campoPendiente) {
+      throw new Error(nuevosErrores[campoPendiente]);
     }
 
     setGuardando(true);

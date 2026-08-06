@@ -56,6 +56,7 @@ const EquipoForm = forwardRef(function EquipoForm(
     <ScrollView
       style={{ flex: 1, paddingHorizontal: 16, paddingBottom: 16 }}
       contentContainerStyle={{ paddingBottom: 16 }}
+      showsVerticalScrollIndicator={false}
     >
       {/* Nombre */}
       <Input

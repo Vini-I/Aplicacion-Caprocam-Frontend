@@ -17,14 +17,14 @@
 
 import { useState, useRef } from "react";
 import { useColaboradores } from "./useColaboradores";
+import { useError } from "../../../shared/context/ErrorContext";
 
 export function useColaboradoresList() {
   // Estados de búsqueda y eliminación
   const [searchText, setSearchText] = useState("");
-  const [cedulaConfirmacion, setCedulaConfirmacion] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [cedulaError, setCedulaError] = useState("");
+  const { mostrarError } = useError();
 
   // Alerta flotante
   const [alert, setAlert] = useState(null);
@@ -45,24 +45,9 @@ export function useColaboradoresList() {
     fetchColaboradores,
   } = useColaboradores({ activo: true });
 
-  // Handlers de eliminación
-  const handleDeletePress = (id) => {
-    const colaborador = todos.find((c) => c.id === id);
-    if (colaborador) {
-      setDeleteTarget(colaborador);
-      setCedulaConfirmacion("");
-      setCedulaError("");
-      setShowConfirmModal(true);
-    }
-  };
-
+  // Confirmar eliminación
   const confirmDelete = async () => {
     if (!deleteTarget) {
-      setCedulaError("No se encontró el colaborador a eliminar.");
-      return;
-    }
-    if (cedulaConfirmacion !== deleteTarget.cedula) {
-      setCedulaError("La cédula ingresada no coincide con la del colaborador.");
       return;
     }
     try {
@@ -70,11 +55,11 @@ export function useColaboradoresList() {
       showAlert("success", `El colaborador ${deleteTarget.nombre} ha sido eliminado correctamente.`);
       setShowConfirmModal(false);
       setDeleteTarget(null);
-      setCedulaConfirmacion("");
-      setCedulaError("");
       fetchColaboradores();
     } catch (error) {
-      setCedulaError("No se pudo eliminar el colaborador. Intente nuevamente.");
+      // El error se muestra en el modal global; solo ocultamos el modal de confirmación
+      setShowConfirmModal(false);
+      setDeleteTarget(null);
     }
   };
 
@@ -84,17 +69,12 @@ export function useColaboradoresList() {
     error,
     searchText,
     setSearchText,
-    cedulaConfirmacion,
-    setCedulaConfirmacion,
     deleteTarget,
     setDeleteTarget,
     showConfirmModal,
     setShowConfirmModal,
-    cedulaError,
-    setCedulaError,
     alert,
-    showAlert, // <--- exportado para usar desde la screen
-    handleDeletePress,
+    showAlert,
     confirmDelete,
     fetchColaboradores,
   };

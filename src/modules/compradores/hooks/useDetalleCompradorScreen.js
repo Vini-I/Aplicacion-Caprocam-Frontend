@@ -7,17 +7,15 @@
  * Maneja la lógica de la pantalla de detalle de un comprador.
  *
  * FUNCIONALIDAD:
- * 1. Busca el comprador en compradoresMock según el id recibido
- *    por parámetro de ruta.
- * 2. getTipoProductoSelect: traduce el value del tipo de producto
- *    a su etiqueta legible para mostrarla en pantalla.
- * 3. Controla la visibilidad del modal de confirmación de eliminar.
- * 4. Expone la navegación hacia Editar y de vuelta a la lista.
+ * 1. Busca el comprador por id recibido por parámetro de ruta.
+ * 2. Controla la visibilidad del modal de confirmación de eliminar.
+ * 3. Expone la navegación hacia Editar y de vuelta a la lista.
  *
  * IMPORTANTE:
- * - irAtras() se usa tanto para el botón de volver como para
- *   confirmar la eliminación en el modal; no borra el comprador
- *   del mock, solo navega de regreso a la lista.
+ * - irAtras() confirma la eliminación: al tener éxito, navega de
+ *   inmediato a la lista de compradores con el parámetro
+ *   "eliminado", para que el alert de éxito se muestre allá (no en
+ *   esta pantalla, que ya se está abandonando).
  * ============================================================
  */
 
@@ -39,8 +37,6 @@ export function useDetalleCompradorScreen() {
 
   // Controla la visibilidad del modal de confirmación de eliminación
   const [modalVisible, setModalVisible] = useState(false);
-  // Controla si ya se confirmó la eliminación, para mostrar el alert de éxito
-  const [eliminado, setEliminado] = useState(false);
   const [eliminando, setEliminando] = useState(false);
 
   // Busca el comprador activo en la API por su id
@@ -71,10 +67,10 @@ export function useDetalleCompradorScreen() {
     try {
       await compradorService.desactivarComprador(comprador.id);
       setModalVisible(false);
-      setEliminado(true);
-      setTimeout(() => {
-        router.replace("/(drawer)/compradores/compradorScreen");
-      }, 900);
+      router.replace({
+        pathname: "/(drawer)/compradores/compradorScreen",
+        params: { eliminado: "1" },
+      });
     } catch (err) {
       setModalVisible(false);
       setError("No se pudo eliminar el comprador. Intenta de nuevo.");
@@ -97,7 +93,6 @@ export function useDetalleCompradorScreen() {
     error,
     modalVisible,
     setModalVisible,
-    eliminado,
     eliminando,
     irAtras,
     irAEditar,
