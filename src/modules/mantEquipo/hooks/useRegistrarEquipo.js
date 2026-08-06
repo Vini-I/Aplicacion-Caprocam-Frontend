@@ -1,34 +1,11 @@
 /**
- * ============================================================
  * HOOK: useRegistrarEquipo
- * ============================================================
- * Módulo: Mantenimiento de Equipos
+ * Gestiona el estado, validación por intento de guardado y armado del payload para crear o editar equipos.
  *
- * Encapsula el estado del formulario de registro/edición de equipo,
- * la validación por intento de guardado y el armado del payload.
- *
- * Funcionalidad:
- * - Mantiene el estado del formulario y los errores.
- * - Valida campos obligatorios al intentar guardar.
- * - Soporta edición: recibe initialData y isEditing.
- * - Si es edición, actualiza el equipo; si no, lo crea.
- *
- * Datos:
- * - formulario: objeto con todos los campos del equipo.
- * - errores: objeto con mensajes de error por campo.
- * - submitted: booleano que indica si ya se intentó guardar.
- * - guardando: booleano de estado de carga.
- * - isEditing: booleano.
- *
- * Validaciones:
- * - Todos los campos excepto estanqueId y horasMantenimiento son
- *   obligatorios.
- * - La fecha debe tener formato dd/mm/aaaa válido.
- *
- * Dependencias:
- * - registrarEquipoService (crearEquipoPayload, agregarEquipo, actualizarEquipo)
- * - TIPOS_EQUIPO, ESTADOS_OPERATIVOS_EQUIPO desde el servicio
- * ============================================================
+ * @dependencies - registrarEquipoService.js (services/registrarEquipoService.js)
+ * @validations  - Valida campos obligatorios y formato de fecha (dd/mm/aaaa) al intentar guardar,
+ *                 informando un campo a la vez de forma secuencial (Estándar 3).
+ * @navigation   - Ninguna
  */
 
 import { useState, useEffect } from 'react';
@@ -71,6 +48,19 @@ const MENSAJES_REQUERIDOS = {
   funcionEquipo: 'La función del equipo es obligatoria.',
   estadoOperativo: 'Debe seleccionar el estado operativo del equipo.',
 };
+
+// Orden de los campos tal como aparecen en el formulario. Se usa para
+// mostrar los errores de validación de forma secuencial (uno a la vez),
+// en vez de un mensaje genérico con todos los campos a la vez.
+const ORDEN_CAMPOS_VALIDACION = [
+  'codigoInterno',
+  'nombre',
+  'descripcion',
+  'tipo',
+  'fechaInstalacion',
+  'funcionEquipo',
+  'estadoOperativo',
+];
 
 function esFechaValidaDDMMAAAA(valor) {
   const partes = valor.split('/');
@@ -128,6 +118,11 @@ function validarFormulario(formulario) {
   return nuevosErrores;
 }
 
+function capitalizarPrimeraLetra(str) {
+  if (!str) return '';
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 export function useRegistrarEquipo(initialData = null) {
   const isEditing = !!initialData;
 
@@ -138,12 +133,12 @@ export function useRegistrarEquipo(initialData = null) {
         codigoInterno: initialData.serie || initialData.codigoInterno || '',
         nombre: initialData.nombre || '',
         descripcion: initialData.descripcion || '',
-        tipo: initialData.tipo || '',
+        tipo: capitalizarPrimeraLetra(initialData.tipo) || '',
         fechaInstalacion: initialData.fechaInstalacion || obtenerFechaActual(),
         funcionEquipo: initialData.funcionEquipo || '',
         estanqueId: initialData.estanqueId || '',
         horasMantenimiento: String(initialData.horasMantenimiento || '500'),
-        estadoOperativo: initialData.estadoOperativo || '',
+        estadoOperativo: capitalizarPrimeraLetra(initialData.estado) || '',
       };
     }
     return { ...formularioInicial };
@@ -156,12 +151,12 @@ export function useRegistrarEquipo(initialData = null) {
         codigoInterno: initialData.serie || initialData.codigoInterno || '',
         nombre: initialData.nombre || '',
         descripcion: initialData.descripcion || '',
-        tipo: initialData.tipo || '',
+        tipo: capitalizarPrimeraLetra(initialData.tipo) || '',
         fechaInstalacion: initialData.fechaInstalacion || obtenerFechaActual(),
         funcionEquipo: initialData.funcionEquipo || '',
         estanqueId: initialData.estanqueId || '',
         horasMantenimiento: String(initialData.horasMantenimiento || '500'),
-        estadoOperativo: initialData.estadoOperativo || '',
+        estadoOperativo: capitalizarPrimeraLetra(initialData.estado) || '',
       });
     } else {
       setFormulario({ ...formularioInicial });
@@ -198,12 +193,13 @@ export function useRegistrarEquipo(initialData = null) {
     setSubmitted(true);
 
     const nuevosErrores = validarFormulario(formulario);
-    const mensajes = Object.values(nuevosErrores).filter((msg) => msg !== '');
+    setErrores(nuevosErrores);
 
-    if (mensajes.length > 0) {
-      setErrores(nuevosErrores);
-      // Mensaje genérico sin lista de errores específicos
-      throw new Error('Revisa los campos obligatorios marcados con *');
+    // Se informa un solo campo a la vez, en el orden del formulario,
+    // con el mensaje específico de ese campo (Estándar 3)
+    const campoPendiente = ORDEN_CAMPOS_VALIDACION.find((campo) => nuevosErrores[campo]);
+    if (campoPendiente) {
+      throw new Error(nuevosErrores[campoPendiente]);
     }
 
     setGuardando(true);
@@ -211,8 +207,8 @@ export function useRegistrarEquipo(initialData = null) {
     try {
       const payload = crearEquipoPayload(formulario, {
         isEditing,
-        estadoActual: initialData?.estado,
-        horasActualesActual: initialData?.horasActuales,
+        estadoActual: initialData?.encendido ? 'Encendido' : 'Apagado',
+        horasActualesActual: initialData?.horasUso,
       });
 
       if (isEditing) {
@@ -221,7 +217,10 @@ export function useRegistrarEquipo(initialData = null) {
         await agregarEquipo(payload);
       }
 
-      resetFormulario();
+      // Solo limpiar si es creación, no en edición
+      if (!isEditing) {
+        resetFormulario();
+      }
     } catch (error) {
       throw new Error(error.message || 'No se pudo guardar el equipo. Intente nuevamente.');
     } finally {

@@ -1,12 +1,10 @@
 /**
- * ============================================================
- * ESTILOS: RegistrarEquipo
- * ============================================================
- * Módulo: Mantenimiento de Equipos
+ * ESTILOS: RegistrarEquipoStyles
+ * Estilos visuales y maquetación del formulario de registro y edición de equipos.
  *
- * Contiene la maquetación y la jerarquía visual del formulario
- * de registro de equipos.
- * ============================================================
+ * @dependencies - colors.js (theme/colors.js), typography.js (theme/typography.js)
+ * @validations  - Estructuración de contenedores, tarjetas y campos del formulario.
+ * @navigation   - Ninguna
  */
 
 import { StyleSheet } from "react-native";
@@ -31,6 +29,19 @@ export const styles = StyleSheet.create({
   card: {
     marginBottom: 14,
     overflow: "visible",
+  },
+
+  // Header del card: ícono + título (Estándar 9)
+  cardHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 16,
+  },
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: COLORS.textSecondary,
   },
   sectionTitle: {
     fontWeight: "700",
@@ -81,21 +92,9 @@ export const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "600",
   },
-  invalidField: {
-    borderColor: COLORS.error,
-  },
-  errorBox: {
-    borderWidth: 1,
-    borderColor: COLORS.error,
-    backgroundColor: COLORS.errorLight,
-    borderRadius: 10,
-    padding: 12,
-    marginBottom: 12,
-  },
-  errorText: {
-    color: COLORS.error,
-    fontWeight: "600",
-  },
+  // Nota: invalidField, errorBox y errorText eliminados.
+  // La validación visual (borde rojo) la manejan los componentes
+  // Input, Select y DateInput via las props `required` + `submitted`.
 
   // Pantalla de carga
   loadingContainer: {

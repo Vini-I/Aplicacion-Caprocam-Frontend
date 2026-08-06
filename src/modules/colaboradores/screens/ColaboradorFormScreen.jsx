@@ -5,49 +5,80 @@
  * Módulo: Colaboradores
  *
  * Responsabilidad:
- * Pantalla para crear o editar un colaborador. Reutiliza el formulario
- * ColaboradorForm y maneja la navegación y el estado de carga.
+ * Pantalla para crear o editar un colaborador. Reutiliza el
+ * formulario ColaboradorForm y maneja la carga de datos,
+ * validaciones y la navegación.
  *
- * Datos:
- * - Recibe parámetros: id (opcional), userRole, fincaId.
- * - Carga los datos del colaborador si existe id.
- *
- * Validaciones:
- * - Todas las validaciones se manejan en useColaboradorForm.
- * - Muestra alertas de éxito/error al guardar.
- *
- * Navegación:
- * - Botón "Volver" (NavbarRegistro) regresa a la lista.
- * - Botón "Guardar" dispara el envío y vuelve a la lista.
+ * @dependencies - ColaboradorForm, servicios de roles/fincas.
+ * @validations  - Las validaciones se delegan en useColaboradorForm.
+ * @navigation   - Al guardar exitosamente redirige a la lista de
+ *                 colaboradores con un mensaje de éxito en los
+ *                 parámetros de la ruta.
  * ============================================================
  */
 
-import React, { useState, useEffect } from 'react';
-import { View, ScrollView } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useState, useEffect, useRef } from "react";
+import { View, ScrollView } from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
-import NavbarRegistro from '../../../shared/components/NavbarRegistro';
-import ColaboradorForm from '../components/ColaboradorForm';
-import Spinner from '../../../shared/components/Spinner';
-import CustomText from '../../../shared/components/Text';
-import Alert from '../../../shared/components/Alert';
+import NavbarRegistro from "../../../shared/components/NavbarRegistro";
+import ColaboradorForm from "../components/ColaboradorForm";
+import Spinner from "../../../shared/components/Spinner";
+import CustomText from "../../../shared/components/Text";
+import Button from "../../../shared/components/Button";
 
-import { STYLE } from '../../../theme/style';
-import { COLORS } from '../../../theme/colors';
+import { STYLE } from "../../../theme/style";
+import { COLORS } from "../../../theme/colors";
 
-import { colaboradoresService } from '../services/colaboradoresService';
+import { colaboradoresService } from "../services/colaboradoresService";
+import { getRolesOptions } from "../services/rolesService";
+import { getFincasOptions } from "../services/fincaService";
+import { useError } from "../../../shared/context/ErrorContext";
+import { styles } from "../styles/colaboradorFormStyles";
 
 export default function ColaboradorFormScreen() {
   const router = useRouter();
-  const { id, userRole = 'camprocam_admin', fincaId } = useLocalSearchParams();
+  const { id, userRole = "camprocam_admin", fincaId } = useLocalSearchParams();
   const isEditing = !!id;
+  const { mostrarError } = useError();
 
+  // ─── Estados del formulario y carga ──────────────────────────
   const [colaborador, setColaborador] = useState(null);
   const [loading, setLoading] = useState(isEditing);
   const [error, setError] = useState(null);
-  const [alert, setAlert] = useState(null);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [resetLoading, setResetLoading] = useState(false);
+  const [roleOptions, setRoleOptions] = useState([]);
+  const [fincasOptions, setFincasOptions] = useState([]);
 
-  // Cargar datos si es edición
+  const formRef = useRef();
+
+  // ─── Carga de opciones (roles y fincas) ──────────────────────
+  useEffect(() => {
+    const loadRoles = async () => {
+      try {
+        const options = await getRolesOptions();
+        setRoleOptions(options);
+      } catch {
+        setRoleOptions([]);
+      }
+    };
+    loadRoles();
+  }, []);
+
+  useEffect(() => {
+    const loadFincas = async () => {
+      try {
+        const options = await getFincasOptions();
+        setFincasOptions(options);
+      } catch {
+        setFincasOptions([]);
+      }
+    };
+    loadFincas();
+  }, []);
+
+  // ─── Carga de datos del colaborador (si es edición) ──────────
   useEffect(() => {
     if (isEditing) {
       const loadColaborador = async () => {
@@ -55,32 +86,55 @@ export default function ColaboradorFormScreen() {
           const data = await colaboradoresService.getColaboradorById(id);
           setColaborador(data);
         } catch (err) {
-          setError(err.message || 'Error al cargar el colaborador');
+          setError(err.message || "Error al cargar el colaborador");
+          mostrarError(err);
         } finally {
           setLoading(false);
         }
       };
       loadColaborador();
     }
-  }, [id]);
+  }, [id, isEditing, mostrarError]);
 
-  // Manejador de envío del formulario
+  // ─── Limpieza automática de mensajes de error ──────────────
+  useEffect(() => {
+    if (errorMessage) {
+      const timer = setTimeout(() => setErrorMessage(""), 6000);
+      return () => clearTimeout(timer);
+    }
+  }, [errorMessage]);
+
+  // ─── Manejadores ───────────────────────────────────────────────
+
   const handleSubmit = async (formData) => {
-    // Limpiar alert anterior
-    setAlert(null);
+    setErrorMessage("");
     try {
-      let result;
       if (isEditing) {
-        result = await colaboradoresService.updateColaborador(id, formData);
-        setAlert({ type: 'success', message: 'Colaborador actualizado correctamente.' });
-        setTimeout(() => router.replace('/(drawer)/colaboradores'), 1500);
+        await colaboradoresService.updateColaborador(id, formData);
+        router.replace({
+          pathname: "/(drawer)/colaboradores",
+          params: {
+            alertType: "success",
+            alertMessage: "Colaborador actualizado correctamente.",
+          },
+        });
       } else {
-        result = await colaboradoresService.createColaborador(formData);
-        setAlert({ type: 'success', message: 'Colaborador creado correctamente.' });
-        setTimeout(() => router.replace('/(drawer)/colaboradores'), 1500);
+        await colaboradoresService.createColaborador(formData);
+        router.replace({
+          pathname: "/(drawer)/colaboradores",
+          params: {
+            alertType: "success",
+            alertMessage: "Colaborador creado correctamente.",
+          },
+        });
       }
     } catch (err) {
-      setAlert({ type: 'danger', message: err.message || 'No se pudo guardar el colaborador.' });
+      const status = err.response?.status;
+      if (status === 400 || status === 422) {
+        setErrorMessage(err.message || "No se pudo guardar el colaborador.");
+      } else {
+        mostrarError(err);
+      }
     }
   };
 
@@ -88,25 +142,41 @@ export default function ColaboradorFormScreen() {
     router.back();
   };
 
-  // Extraer mensaje de error del servidor desde alert (si es de tipo danger)
-  const serverError = alert && alert.type === 'danger' ? alert.message : '';
+  const handleResetPin = async () => {
+    setResetLoading(true);
+    setErrorMessage("");
+    try {
+      await colaboradoresService.resetPin(id);
+      router.replace({
+        pathname: "/(drawer)/colaboradores",
+        params: {
+          alertType: "success",
+          alertMessage: "PIN restablecido correctamente.",
+        },
+      });
+    } catch (err) {
+      mostrarError(err);
+    } finally {
+      setResetLoading(false);
+    }
+  };
 
+  // ─── Render ────────────────────────────────────────────────────
   if (loading) {
     return (
-      <View style={[STYLE.container, { justifyContent: 'center', alignItems: 'center' }]}>
+      <View style={[STYLE.container, styles.centeredContainer]}>
         <Spinner />
       </View>
     );
   }
 
-  if (error) {
+  if (error && isEditing) {
     return (
-      <>
-        <NavbarRegistro Titulo="Error" Subtitulo="Cargando colaborador" Icono="user" />
-        <View style={[STYLE.container, { justifyContent: 'center', alignItems: 'center' }]}>
-          <CustomText style={{ color: COLORS.error }}>{error}</CustomText>
-        </View>
-      </>
+      <View style={[STYLE.container, styles.centeredContainer]}>
+        <CustomText style={{ color: COLORS.error }}>
+          No se pudo cargar el colaborador. Intente de nuevo.
+        </CustomText>
+      </View>
     );
   }
 
@@ -115,20 +185,19 @@ export default function ColaboradorFormScreen() {
   return (
     <>
       <ScrollView style={STYLE.container} contentContainerStyle={STYLE.contentWrapper}>
-        {/* Solo mostrar alerta de éxito (los errores se manejan dentro del formulario) */}
-        {alert && alert.type === 'success' && (
-          <View style={{ marginBottom: 12 }}>
-            <Alert variant="success" message={alert.message} />
-          </View>
-        )}
         <ColaboradorForm
+          ref={formRef}
           initialData={initialData}
           isEditing={isEditing}
           userRole={userRole}
           fincaId={fincaId}
           onSubmit={handleSubmit}
           onCancel={handleCancel}
-          serverError={serverError}
+          serverError={errorMessage}
+          roleOptions={roleOptions}
+          fincasOptions={fincasOptions}
+          onResetPin={handleResetPin}
+          resetLoading={resetLoading}
         />
       </ScrollView>
     </>

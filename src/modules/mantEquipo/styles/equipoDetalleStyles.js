@@ -1,15 +1,10 @@
 /**
- * ============================================================
  * ESTILOS: equipoDetalleStyles
- * ============================================================
- * Módulo: Mantenimiento de Equipos
+ * Estilos visuales para la pantalla de detalle de equipo (EquipoDetalleScreen).
  *
- * Estilos para la pantalla EquipoDetalleScreen.
- * Utiliza la paleta de COLORS del tema central.
- *
- * Dependencias:
- * - COLORS desde theme/colors
- * ============================================================
+ * @dependencies - colors.js (theme/colors.js), typography.js (theme/typography.js)
+ * @validations  - Maquetación de tarjetas de información, cabeceras y métricas.
+ * @navigation   - Ninguna
  */
 
 import { StyleSheet } from "react-native";

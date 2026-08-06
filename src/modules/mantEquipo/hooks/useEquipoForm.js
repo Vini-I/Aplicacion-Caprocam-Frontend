@@ -1,30 +1,16 @@
 /**
  * ============================================================
- * HOOK PERSONALIZADO: useEquipoForm
+ * HOOK: useEquipoForm
  * ============================================================
+ *
  * Módulo: Mantenimiento de Equipos
  *
- * Hook que encapsula la lógica del formulario de equipos.
- * Refleja el modelo real del backend: ya no incluye
- * marca, modelo, serie ni subcategoría.
+ * RESPONSABILIDAD:
+ * - Encapsular el estado, validación y envío del formulario de creación/edición de equipos.
  *
- * Parámetros:
- * - initialData: datos iniciales para edición
- * - onSubmit: función a ejecutar al enviar el formulario
- * - isEditing: booleano que indica si es edición
- * - onValidationError: callback para notificar errores de validación
- *
- * Retorna:
- * - form: objeto con los datos del formulario
- * - errors: objeto con mensajes de error por campo
- * - loading: booleano de carga
- * - handleChange: función para actualizar un campo
- * - handleSubmit: función para validar y enviar el formulario
- * - resetForm: función para reiniciar el formulario
- * - isFormValid: booleano que indica si el formulario es válido
- * - getValidationMessage: función que devuelve mensaje detallado de errores
- * - submitted: booleano que indica si ya se intentó guardar
- * ============================================================
+ * @dependencies - React (useState, useEffect, useCallback)
+ * @validations  - Valida campos obligatorios (código, tipo, función, horas uso) y acumula errores por campo.
+ * @navigation   - Ninguna
  */
 
 import { useState, useEffect, useCallback } from "react";

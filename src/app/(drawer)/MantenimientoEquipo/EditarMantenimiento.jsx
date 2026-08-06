@@ -20,13 +20,13 @@ export default function EditarMantenimientoRoute() {
 
   const handleNavigateToDetail = (ticketId, params = {}) => {
     router.replace({
-      pathname: "/equipos/DetalleMantenimiento",
+      pathname: "/mantenimientoEquipo/DetalleMantenimiento",
       params: { id: ticketId, ...params }
     });
   };
 
   const handleNavigateToMain = () => {
-    router.replace("/equipos/mantEquipo");
+    router.replace("/mantenimientoEquipo");
   };
 
   return (

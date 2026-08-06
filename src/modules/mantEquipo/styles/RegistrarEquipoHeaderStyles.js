@@ -1,10 +1,10 @@
 /**
- * ============================================================
- * ESTILOS: RegistrarEquipoHeader
- * ============================================================
+ * ESTILOS: RegistrarEquipoHeaderStyles
+ * Estilos para el encabezado compacto del formulario de registro de equipos.
  *
- * Estilos del encabezado compacto de RegistrarEquipo.
- * Ruta: src/modules/mantEquipo/styles/RegistrarEquipoHeaderStyles.js
+ * @dependencies - colors.js (theme/colors.js)
+ * @validations  - Configura la distribución del icono, tarjeta y textos del encabezado.
+ * @navigation   - Ninguna
  */
 
 import { StyleSheet } from "react-native";

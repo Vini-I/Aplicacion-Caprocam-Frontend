@@ -1,10 +1,10 @@
 /**
- * ============================================================
- * WORKER SERVICE
- * ============================================================
+ * SERVICIO: workerService
+ * Consulta y transforma la lista de colaboradores/trabajadores desde la API REST backend.
  *
- * Obtiene datos de trabajadores/colaboradores desde la API real.
- * ============================================================
+ * @dependencies - api (api/api.js)
+ * @validations  - Transforma los campos del colaborador (id, iniciales, nombre, rol).
+ * @navigation   - N/A
  */
 
 import api from "../../../api/api";
@@ -34,9 +34,6 @@ export const getWorkers = async () => {
 /**
  * getWorkerById(id)
  * Obtiene un trabajador específico por su ID.
- *
- * NOTA: si tu backend tiene GET /colaboradores/:id, reemplaza esto por
- * una llamada directa (más eficiente). Por ahora reutiliza getWorkers().
  */
 export const getWorkerById = async (id) => {
     const workers = await getWorkers();

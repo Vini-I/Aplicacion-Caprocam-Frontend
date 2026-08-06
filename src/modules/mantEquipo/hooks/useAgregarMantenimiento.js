@@ -3,53 +3,84 @@
  * HOOK: useAgregarMantenimiento
  * ============================================================
  *
- * Módulo: Mantenimiento de Equipos
- *
- * Responsabilidad:
  * Encapsula toda la lógica de estado, validación y submit del
- * formulario de creación de un ticket de mantenimiento.
- * Sigue el patrón del módulo finca (useFincaEditar).
+ * formulario de creación de un ticket de mantenimiento. Sigue
+ * el patrón del módulo finca (useFincaEditar).
+ *
+ * @dependencies - MantService (mantEquipoService) para crear y actualizar tickets
+ *               - getProductosInventario (InventarioService)
+ *               - mantEquipoUtils, dateUtils (shared)
+ * @validations  - Campos obligatorios: titulo, equipoId, descripcion, tareas.
+ *               - No existe límite de tickets por equipo; esa validación
+ *                 fue descartada y no debe reintroducirse.
+ * @navigation   - onNavigateToMain → pantalla principal de mantenimiento.
  */
 
 import { useState, useEffect } from 'react';
 import { getProductosInventario } from '../../inventarios/services/InventarioService.js';
 import * as MantService from '../services/mantEquipoService.js';
-import { generarNuevoId, obtenerFechaHoraActual, validarCostoManoObra, formatearNombreHerramienta } from '../utils/mantEquipoUtils.js';
+import { obtenerFechaHoraActual, validarCostoManoObra, LIMITE_TITULO, LIMITE_DESCRIPCION, formatearNombreHerramienta } from '../utils/mantEquipoUtils.js';
+import { TEXTOS_MODAL_AGREGAR, ALERTAS_NOTIFICACIONES } from '../constants/mantEquipoMensajes.js';
 import { parseDate } from '../../../shared/utils/dateUtils.js';
-import { USUARIO_SESION } from '../constants/mantEquipoMensajes.js';
+
 
 export function useAgregarMantenimiento({ onNavigateToMain }) {
 
   // ── Campos del formulario ─────────────────────────────────────
-  const [titulo, setTitulo]                               = useState('');
-  const [descripcion, setDescripcion]                     = useState('');
-  const [equipoId, setEquipoId]                           = useState('');
-  const [estadoEquipo, setEstadoEquipo]                   = useState('');
-  const [equipoSeleccionado, setEquipoSeleccionado]       = useState(null);
-  const [tareasSeleccionadas, setTareasSeleccionadas]     = useState([]);
-  const [fecha, setFecha]                                 = useState(obtenerFechaHoraActual());
+  const [titulo, setTitulo] = useState('');
+  const [descripcion, setDescripcion] = useState('');
+  const [equipoId, setEquipoId] = useState('');
+  const [estadoEquipo, setEstadoEquipo] = useState('');
+  const [equipoSeleccionado, setEquipoSeleccionado] = useState(null);
+  const [tareasSeleccionadas, setTareasSeleccionadas] = useState([]);
+  const [fecha, setFecha] = useState(obtenerFechaHoraActual());
 
-  const [tipoPersonal, setTipoPersonal]                   = useState('interno');
-  const [costoManoObra, setCostoManoObra]                 = useState('0');
-  const [estadoTicket, setEstadoTicket]                   = useState('en_espera');
+  const [tipoPersonal, setTipoPersonal] = useState('interno');
+  const [costoManoObra, setCostoManoObra] = useState('');
+  const [estadoTicket, setEstadoTicket] = useState('en_espera');
 
   // ── Productos / insumos ──────────────────────────────────────
   const [productosSeleccionados, setProductosSeleccionados] = useState([]);
-  const [productosList, setProductosList]                   = useState([]);
+  const [productosList, setProductosList] = useState([]);
+  const [alertaStock, setAlertaStock] = useState('');
+  const [alertaServidor, setAlertaServidor] = useState('');
 
   // ── Validación ───────────────────────────────────────────────
-  const [errores, setErrores]     = useState({});
+  const [errores, setErrores] = useState({});
   const [submitted, setSubmitted] = useState(false);
 
   // ── Carga inicial de productos ────────────────────────────────
   useEffect(() => {
-    setProductosList(getProductosInventario() || []);
+    async function cargarProductos() {
+      try {
+        const data = await MantService.getProductosCatalogo();
+        const raw = Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : []);
+        const list = raw.map(p => {
+          const prodId = String(p.id || p.producto_id || p.productoId || '');
+          const price = Number(p.precioUnidad || p.precio_unidad || p.precio) || 0;
+          return {
+            ...p,
+            id: prodId,
+            productoId: prodId,
+            nombre: p.nombre || p.nombreProducto || p.producto?.nombre || `Producto ${prodId}`,
+            precioUnidad: price,
+            costoUnitario: price,
+            stockMaximo: p.cantidad !== undefined ? Number(p.cantidad) : (p.stock !== undefined ? Number(p.stock) : 999),
+          };
+        });
+        setProductosList(list);
+      } catch (err) {
+        console.error('Error al cargar productos del catálogo:', err);
+        setProductosList([]);
+      }
+    }
+    cargarProductos();
   }, []);
 
   // ── Cálculo reactivo del costo total ─────────────────────────
   const numManoObra   = parseFloat(costoManoObra) || 0;
   const precioInsumos = productosSeleccionados.reduce(
-    (sum, p) => sum + (parseFloat(p.precioUnidad) || 0), 0
+    (sum, p) => sum + ((parseInt(p.cantidad || 1, 10)) * (parseFloat(p.precioUnidad || p.costoUnitario || p.precio) || 0)), 0
   );
   const costoTotal = numManoObra + precioInsumos;
 
@@ -70,63 +101,143 @@ export function useAgregarMantenimiento({ onNavigateToMain }) {
   };
 
   // ── Handlers de productos ─────────────────────────────────────
-  const seleccionarProducto = (prodId) => {
-    if (!prodId) return;
-    const prod = productosList.find(p => String(p.id) === String(prodId));
-    if (prod && !productosSeleccionados.some(x => x.id === prod.id)) {
-      setProductosSeleccionados(prev => [...prev, prod]);
+  const agregarProducto = (prodConCantidad) => {
+    if (!prodConCantidad) return;
+    setAlertaStock('');
+    const targetId = String(prodConCantidad.productoId || prodConCantidad.id);
+    setProductosSeleccionados(prev => {
+      const existe = prev.some(x => String(x.productoId || x.id) === targetId);
+      if (existe) {
+        return prev.map(x => String(x.productoId || x.id) === targetId
+          ? { ...x, cantidad: (Number(x.cantidad) || 1) + (Number(prodConCantidad.cantidad) || 1) }
+          : x
+        );
+      }
+      return [...prev, { ...prodConCantidad, id: targetId, productoId: targetId }];
+    });
+  };
+
+  const cambiarCantidadProducto = (prodId, nuevaCantidad) => {
+    setAlertaStock('');
+    const targetId = String(prodId);
+    const prod = productosSeleccionados.find(x => String(x.productoId || x.id) === targetId);
+    const stockMax = prod?.stockMaximo !== undefined ? prod.stockMaximo : 999;
+
+    const val = String(nuevaCantidad).replace(/[^0-9]/g, '');
+    let qty = val === '' ? 1 : parseInt(val, 10) || 1;
+
+    if (qty > stockMax) {
+      qty = stockMax;
+      setAlertaStock(ALERTAS_NOTIFICACIONES.alertaStockInsumo(prod?.nombre, stockMax));
     }
+
+    qty = Math.max(1, qty);
+
+    setProductosSeleccionados(prev =>
+      prev.map(p => (String(p.productoId || p.id) === targetId ? { ...p, cantidad: qty } : p))
+    );
   };
 
   const quitarProducto = (prodId) => {
-    setProductosSeleccionados(prev => prev.filter(p => p.id !== prodId));
+    setAlertaStock('');
+    const targetId = String(prodId);
+    setProductosSeleccionados(prev => prev.filter(p => String(p.productoId || p.id) !== targetId));
   };
 
   // ── Validación ────────────────────────────────────────────────
   const validar = () => {
     const err = {};
-    if (!titulo.trim())      err.titulo      = true;
-    if (!equipoId)           err.equipoId    = true;
-    if (!descripcion.trim()) err.descripcion = true;
-    if (tareasSeleccionadas.length === 0) err.tareas = true;
-    if (!validarCostoManoObra(costoManoObra)) {
-      err.costoManoObra = true;
+
+    const tituloVacio = !titulo.trim();
+    const descripcionVacia = !descripcion.trim();
+    const equipoVacio = !equipoId;
+    const tareasVacias = tareasSeleccionadas.length === 0;
+    const costoVacio = !String(costoManoObra).trim();
+
+    if (tituloVacio) err.titulo = true;
+    if (descripcionVacia) err.descripcion = true;
+    if (equipoVacio) err.equipoId = true;
+    if (tareasVacias) err.tareas = true;
+    if (costoVacio) err.costoManoObra = true;
+
+    let mensaje = null;
+
+    if (tituloVacio || descripcionVacia || equipoVacio || tareasVacias || costoVacio) {
+      // Prioridad 1: todavía faltan campos por llenar.
+      mensaje = TEXTOS_MODAL_AGREGAR.errorValidacion;
+    } else {
+      // Prioridad 2: todos los campos tienen contenido. Reglas específicas,
+      // en orden del formulario, una a la vez.
+      const tituloLimpio = titulo.trim();
+      const descripcionLimpia = descripcion.trim();
+
+      if (tituloLimpio.length <= LIMITE_TITULO.min) {
+        err.titulo = true;
+        mensaje = TEXTOS_MODAL_AGREGAR.errorTituloCorto;
+      } else if (tituloLimpio.length > LIMITE_TITULO.max) {
+        err.titulo = true;
+        mensaje = TEXTOS_MODAL_AGREGAR.errorTituloMax;
+      } else if (descripcionLimpia.length <= LIMITE_DESCRIPCION.min) {
+        err.descripcion = true;
+        mensaje = TEXTOS_MODAL_AGREGAR.errorDescripcionCorta;
+      } else if (descripcionLimpia.length > LIMITE_DESCRIPCION.max) {
+        err.descripcion = true;
+        mensaje = TEXTOS_MODAL_AGREGAR.errorDescripcionMax;
+      } else if (!validarCostoManoObra(costoManoObra)) {
+        err.costoManoObra = true;
+        mensaje = TEXTOS_MODAL_AGREGAR.hintCostoManoObra;
+      } else if (estadoTicket === 'Terminado' && tareasSeleccionadas.some(t => !t.realizada)) {
+        err.tareasPendientes = true;
+        mensaje = TEXTOS_MODAL_AGREGAR.errorTareasPendientes;
+      }
     }
-    if (estadoTicket === 'Terminado' && tareasSeleccionadas.some(t => !t.realizada)) {
-      err.tareasPendientes = true;
-    }
-    setErrores(err);
+
+    setErrores({ ...err, mensaje });
     return Object.keys(err).length === 0;
   };
 
   // ── Submit ────────────────────────────────────────────────────
-  const handleCrear = () => {
+  const handleCrear = async () => {
     setSubmitted(true);
+    setAlertaServidor('');
     if (!validar()) return;
 
-    const nuevo = {
-      id:              generarNuevoId(MantService.TICKETS_MOCK),
+    const payload = {
       equipoId,
-      herramienta:     formatearNombreHerramienta(equipoSeleccionado),
-      titulo:          titulo.trim(),
-      descripcion:     descripcion.trim(),
-      tareas:          tareasSeleccionadas,
-      estado:          estadoTicket,
-      creadoPor:       USUARIO_SESION,
-      fechaCreacion:   parseDate(fecha) || new Date(),
-      horasUsoIngreso: equipoSeleccionado ? equipoSeleccionado.horasUso : 0,
+      titulo: titulo.trim(),
+      descripcion: descripcion.trim(),
+      tareas: tareasSeleccionadas,
+      productos: productosSeleccionados,
+      estado: estadoTicket,
+      estadoEquipo,
+      fechaCreacion: parseDate(fecha) || new Date(),
       tipoPersonal,
-      costoMiscelaneo: 0,
-      costoManoObra:   parseFloat(costoManoObra) || 0,
+      costoManoObra: parseFloat(costoManoObra) || 0,
       costoTotal,
-      productos:       productosSeleccionados.map(p => ({ id: p.id, precio: p.precioUnidad })),
+      costoProductos: productosSeleccionados.reduce((s, p) => {
+        const cant = parseInt(p.cantidad || 1, 10);
+        const pu = parseFloat(p.precioUnidad || p.precio || 0);
+        return s + cant * pu;
+      }, 0),
     };
 
-    MantService.agregarTicket(nuevo);
-    if (estadoEquipo) MantService.actualizarEstadoEquipo(equipoId, estadoEquipo);
-    if (estadoTicket === 'Terminado') MantService.reiniciarHorasEquipo(equipoId);
+    try {
+      const creado = await MantService.agregarTicket(payload);
 
-    onNavigateToMain({ alertaTipo: 'success', alertaMensaje: `Ticket ${nuevo.id} creado con éxito.` });
+      if (estadoEquipo) {
+        await MantService.actualizarEstadoEquipo(equipoId, estadoEquipo);
+      }
+      if (estadoTicket === 'Terminado') {
+        await MantService.reiniciarHorasEquipo(equipoId);
+      }
+
+      const idFinal = creado?.id || '';
+      onNavigateToMain({ alertaTipo: 'success', alertaMensaje: ALERTAS_NOTIFICACIONES.exitoCrearTicket(idFinal) });
+    } catch (e) {
+      console.error("Error al crear ticket de mantenimiento:", e?.response?.data || e?.message || e);
+      const mensajeError = e?.response?.data?.error || e?.response?.data?.message || e?.message || TEXTOS_MODAL_AGREGAR.errorCrearTicket;
+      setAlertaServidor(mensajeError);
+    }
   };
 
   return {
@@ -142,13 +253,16 @@ export function useAgregarMantenimiento({ onNavigateToMain }) {
     estadoTicket, setEstadoTicket,
     productosList,
     productosSeleccionados,
+    alertaStock, setAlertaStock,
+    alertaServidor,
     costoTotal,
     errores, setErrores,
     submitted,
     seleccionarEquipoById,
     quitarEquipo,
-    seleccionarProducto,
+    agregarProducto,
     quitarProducto,
+    cambiarCantidadProducto,
     handleCrear,
   };
 }

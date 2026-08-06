@@ -12,9 +12,9 @@ import { ICONS } from "../../../theme/icons";
 
 export default function ColaboradorCard({ colaborador, onPress, onEdit, onDelete }) {
   const rolLabels = {
-    camprocam_worker: "Trabajador Camprocam",
-    external_owner: "Dueño Externo",
-    external_worker: "Trabajador Externo",
+    camprocam_worker: "Colaborador Camprocam",
+    external_owner: "Propietario Externo",
+    external_worker: "Colaborador Externo",
   };
 
   const rolVariant = {
@@ -34,11 +34,11 @@ export default function ColaboradorCard({ colaborador, onPress, onEdit, onDelete
       </View>
       <View style={styles.details}>
         <View style={styles.detailRow}>
-          <Icon icon={ICONS.phone} size={14} color={COLORS.textTertiary} style={{ marginRight: 6 }} />
+          <Icon icon={ICONS.phone} size={14} color={COLORS.textTertiary} style={styles.iconSpacing} />
           <CustomText style={styles.detailText}>{colaborador.telefono}</CustomText>
         </View>
         <View style={styles.detailRow}>
-          <Icon icon={ICONS.user} size={14} color={COLORS.textTertiary} style={{ marginRight: 6 }} />
+          <Icon icon={ICONS.user} size={14} color={COLORS.textTertiary} style={styles.iconSpacing} />
           <CustomText style={styles.detailText}>{colaborador.email}</CustomText>
         </View>
       </View>
