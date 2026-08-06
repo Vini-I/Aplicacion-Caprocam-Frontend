@@ -15,7 +15,8 @@
  * - Expone "mensaje"/"mensajeVariant" para el Alert global del estándar
  *   (ya no se usa un Modal): la screen lo muestra centrado y arriba del
  *   botón de guardar. Usa "danger" (no "error") como variant porque es
- *   el nombre que reconoce shared/components/Alert.jsx.
+ *   el nombre que reconoce shared/components/Alert.jsx. El helper
+ *   mostrarMensaje() se encarga de la duración (3s éxito / 6s error).
  * - Maneja el flujo "Siembra a partir de Pre-Cría": si el usuario NO
  *   llegó automáticamente desde "Finalizar Pre-Cría", puede elegir
  *   manualmente el origen (Directa / A partir de Pre-Cría) y, en ese
@@ -31,7 +32,7 @@
  * la interfaz y ejecutar acciones.
  */
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useRouter, useLocalSearchParams } from "expo-router";
 
 import {
@@ -41,19 +42,22 @@ import {
 import { obtenerCamposObligatorios as obtenerCamposObligatoriosPorTipo } from "./siembraValidationRules";
 import { calcularCantidadSembrada } from "./siembraCalculos";
 import { obtenerFechaHoy, formatearFechaDesdeISO } from "./dateUtils";
-import {
-  obtenerEstanquePorCodigo,
-  obtenerEstanquesPorFinca,
-  obtenerFincas,
-} from "./fincaEstanqueLocal";
+
+import { fincaService } from "../../finca/services/finca.service";
+import { estanqueService } from "../../estanques/services/estanque.service";
+
+import { useError } from "../../../shared/context/ErrorContext";
 
 import {
   getPrecrias,
   getPrecriaById,
-  createPrecria,
+  createPrecriaConLote,
 } from "../services/precria.service";
-import { createSiembra } from "../services/siembra.service";
-import { getLoteById, createLote } from "../services/lote.service";
+import {
+  createSiembra,
+  createSiembraConLote,
+} from "../services/siembra.service";
+import { getLoteById } from "../services/lote.service";
 import {
   getProveedoresLarva,
   createProveedorLarva,
@@ -72,7 +76,11 @@ import {
   updateProcedencia,
   eliminarProcedencia,
 } from "../services/procedencia.service";
-import { LoteLarvaDTO, PrecriaDTO, SiembraDTO } from "../dtos/siembra.dto";
+import {
+  SiembraDTO,
+  SiembraConLoteDTO,
+  PrecriaConLoteDTO,
+} from "../dtos/siembra.dto";
 
 // El backend devuelve {id, nombre}; los Select del proyecto esperan
 // {label, value} - este mapeo se repite igual en useDetalleSiembra.
@@ -95,7 +103,7 @@ const initialFormData = {
   densidadPoblacional: "8",
   cantidadSembrada: "",
   plSiembra: "",
-  diasMaduracion: "90",
+  duracionCiclo: "90",
   areaHectareas: "",
 
   fechaInicio: "",
@@ -123,6 +131,29 @@ export default function useNuevaSiembra() {
   const [mensajeVariant, setMensajeVariant] = useState("info");
   const [guardando, setGuardando] = useState(false);
 
+  const { mostrarError } = useError();
+
+  const mensajeTimeoutRef = useRef(null);
+
+  function mostrarMensaje(texto, variant) {
+    if (mensajeTimeoutRef.current) {
+      clearTimeout(mensajeTimeoutRef.current);
+    }
+    setMensaje(texto);
+    setMensajeVariant(variant);
+
+    const duracion = variant === "success" ? 3000 : 6000;
+    mensajeTimeoutRef.current = setTimeout(() => {
+      setMensaje("");
+    }, duracion);
+  }
+
+  useEffect(() => {
+    return () => {
+      if (mensajeTimeoutRef.current) clearTimeout(mensajeTimeoutRef.current);
+    };
+  }, []);
+
   const [formData, setFormData] = useState(initialFormData);
   const params = useLocalSearchParams();
 
@@ -145,8 +176,39 @@ export default function useNuevaSiembra() {
     }));
   }, []);
 
-  const estanques = obtenerEstanquesPorFinca(formData.finca);
-  const fincas = useMemo(() => obtenerFincas(), []);
+  const [fincas, setFincas] = useState([]);
+  const [estanques, setEstanques] = useState([]);
+
+  useEffect(() => {
+    fincaService
+      .getFincas()
+      .then((data) =>
+        setFincas(data.map((f) => ({ label: f.nombreFinca, value: f.id }))),
+      )
+      .catch(() => setFincas([]));
+  }, []);
+
+  useEffect(() => {
+    if (!formData.finca) {
+      setEstanques([]);
+      return;
+    }
+    estanqueService
+      .getEstanques()
+      .then((todos) => {
+        const filtrados = todos.filter(
+          (estanque) => String(estanque.idFinca) === String(formData.finca),
+        );
+        const mapeados = filtrados.map((estanque) => ({
+          label: estanque.codigo,
+          value: estanque.id,
+          areaHectareas: (estanque.largo * estanque.ancho) / 10000,
+        }));
+        setEstanques(mapeados);
+      })
+      .catch(() => setEstanques([]));
+  }, [formData.finca]);
+
   const tecnicasCultivo = useMemo(
     () => [
       { label: "Extensiva", value: "extensiva" },
@@ -184,8 +246,7 @@ export default function useNuevaSiembra() {
         setLaboratoriosLarva(mapCatalogo(laboratorios));
         setProcedenciasLarva(mapCatalogo(procedencias));
       } catch (err) {
-        setMensaje("No fue posible cargar los catálogos de larva.");
-        setMensajeVariant("danger");
+        mostrarError(err);
       } finally {
         setCargandoCatalogos(false);
       }
@@ -249,7 +310,7 @@ export default function useNuevaSiembra() {
   }
 
   function handleChangeEstanque(value) {
-    const estanque = obtenerEstanquePorCodigo(formData.finca, value);
+    const estanque = estanques.find((e) => e.value === value);
     const area = estanque?.areaHectareas ?? "";
 
     setFormData((previousData) => {
@@ -297,21 +358,28 @@ export default function useNuevaSiembra() {
         ? await getLoteById(precria.lote_larva_id)
         : null;
 
+      const todosLosEstanques = await estanqueService.getEstanques();
+      const estanqueDePrecria = todosLosEstanques.find(
+        (e) => e.id === precria.estanque_id,
+      );
+      const area = estanqueDePrecria
+        ? (estanqueDePrecria.largo * estanqueDePrecria.ancho) / 10000
+        : "";
+
       setFormData((previo) => {
         const densidad = previo.densidadPoblacional || "8";
-        const area = previo.areaHectareas || "";
         const actualizado = {
           ...previo,
           finca: precria.finca_id || previo.finca,
           estanque: precria.estanque_id || previo.estanque,
           cantidadSobrevivientePrecria: precria.cantidad_final || "",
+          cantidadSembrada: String(precria.cantidad_final || ""),
           duracionPrecria: precria.duracion_dias || "",
           fechaSalidaPrecria: formatearFechaDesdeISO(precria.fecha_fin),
           pasoPorPrecria: "si",
           precriaId: String(precriaId),
           densidadPoblacional: densidad,
           areaHectareas: area,
-          cantidadSembrada: calcularCantidadSembrada(area, densidad),
           loteId: precria.lote_larva_id,
           codigoLoteLarva: lote?.codigo_lote || "",
           proveedorLarva: lote?.proveedor_larva_id || "",
@@ -323,8 +391,10 @@ export default function useNuevaSiembra() {
         return actualizado;
       });
     } catch (err) {
-      setMensaje("No fue posible cargar la Pre-Cría seleccionada.");
-      setMensajeVariant("danger");
+      mostrarMensaje(
+        "No fue posible cargar la Pre-Cría seleccionada.",
+        "danger",
+      );
     }
   }
 
@@ -455,40 +525,56 @@ export default function useNuevaSiembra() {
 
     if (Object.keys(nuevosErrores).length > 0) {
       const tipo = formData.tipoRegistro === "precria" ? "Pre-Cría" : "Siembra";
-      setMensaje(
+      mostrarMensaje(
         `Debe completar todos los campos obligatorios para registrar esta ${tipo}.`,
+        "danger",
       );
-      setMensajeVariant("danger");
       return;
     }
-
+    if (
+      formData.tipoRegistro === "siembra" &&
+      formData.pasoPorPrecria === "si" &&
+      Number(formData.cantidadSembrada) >
+        Number(formData.cantidadSobrevivientePrecria)
+    ) {
+      mostrarMensaje(
+        "La cantidad sembrada no puede ser mayor a la cantidad de sobrevivientes de la Pre-Cría.",
+        "danger",
+      );
+      return;
+    }
     setGuardando(true);
     try {
-      let loteId;
-      if (formData.pasoPorPrecria === "si" && formData.loteId) {
-        loteId = formData.loteId;
+      const vieneDePrecria =
+        formData.pasoPorPrecria === "si" && formData.loteId;
+
+      if (vieneDePrecria) {
+        // Lote ya existe (viene de una Pre-Cría finalizada): sigue el flujo normal.
+        await createSiembra(new SiembraDTO(formData, formData.loteId));
+      } else if (formData.tipoRegistro === "precria") {
+        // Lote nuevo + Pre-Cría en una sola petición atómica.
+        await createPrecriaConLote(new PrecriaConLoteDTO(formData));
       } else {
-        const lote = await createLote(new LoteLarvaDTO(formData));
-        loteId = lote.id;
+        // Lote nuevo + Siembra en una sola petición atómica.
+        await createSiembraConLote(new SiembraConLoteDTO(formData));
       }
 
-      if (formData.tipoRegistro === "precria") {
-        await createPrecria(new PrecriaDTO(formData, loteId));
-      } else {
-        await createSiembra(new SiembraDTO(formData, loteId));
-      }
-
-      setMensaje(
-        formData.tipoRegistro === "precria"
-          ? "Pre-Cría registrada correctamente."
-          : "Siembra registrada correctamente.",
-      );
-      setMensajeVariant("success");
       setSubmitted(false);
+      router.push({
+        pathname: "/siembra",
+        params: {
+          mensajeExito:
+            formData.tipoRegistro === "precria"
+              ? "Pre-Cría registrada correctamente."
+              : "Siembra registrada correctamente.",
+        },
+      });
     } catch (err) {
       const mensajeBackend = err.response?.data?.message;
-      setMensaje(mensajeBackend || "No fue posible registrar el ciclo.");
-      setMensajeVariant("danger");
+      mostrarMensaje(
+        mensajeBackend || "No fue posible registrar el ciclo.",
+        "danger",
+      );
     } finally {
       setGuardando(false);
     }

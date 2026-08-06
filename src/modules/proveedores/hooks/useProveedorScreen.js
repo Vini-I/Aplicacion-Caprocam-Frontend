@@ -1,57 +1,29 @@
 /**
- * ============================================================
- * HOOK LISTADO DE PROVEEDORES
- * ============================================================
- *
- * Logica de la pantalla de listado de proveedores.
+ * useProveedorScreen.js
+ * Hook para la lógica de la pantalla de listado de proveedores.
  *
  * FUNCIONALIDAD:
- * 1. Carga los proveedores desde el backend (getProveedores) y los
- *    refresca cada vez que la pantalla recibe foco.
- * 
- * 2. Filtra el listado por texto de búsqueda (nombre, tipo, teléfono,
- *    correo) y por tipo(s) de producto seleccionados.
- * 
- * 3. Expone TIPOS (todas las categorías del catálogo tiposProducto,
- *    no solo las que ya tienen un proveedor cargado) para el
- *    FilterButton, así el filtro siempre muestra todas las
- *    clasificaciones disponibles aunque aún no haya proveedores de ese
- *    tipo.
+ * - Carga todos los proveedores desde el contexto global.
+ * - Aplica los filtros de búsqueda y de tipo de producto en memoria.
  *
- * 4. Expone cargando (loading del fetch) y error (mensaje si la
- *    petición falla) para que la screen pueda mostrar el estado
- *    correspondiente.
+ * REGLAS IMPORTANTES:
+ * - Refresca los datos cada vez que la pantalla recibe el foco.
  *
- * IMPORTANTE:
- * - No aplica validaciones, no hay formulario ni guardado.
- * - No navega; expone datos para que la screen decida.
+ * @dependencies - React, expo-router, proveedor.service, ProveedorContext
+ * @validations - N/A
+ * @navigation - N/A
  */
 import { useState, useEffect, useCallback } from "react";
 import { useNavigation } from "expo-router";
-import { getProveedores, tiposProducto } from "../services/proveedor.service";
+import { tiposProducto } from "../services/proveedor.service";
+import { useProveedor } from "../context/ProveedorContext";
 
 export function useProveedorScreen() {
   const navigation = useNavigation();
-  const [proveedores, setProveedores] = useState([]);
+  const { proveedores, loading: cargando, alert, cargarProveedores } = useProveedor();
   const [busqueda, setBusqueda] = useState("");
   const [filtros, setFiltros] = useState({ tipos: [] });
-  const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
-
-  const cargarProveedores = useCallback(async () => {
-    try {
-      setCargando(true);
-      setError("");
-
-      const data = await getProveedores();
-
-      setProveedores(data);
-    } catch (err) {
-      setError("No fue posible cargar los proveedores.");
-    } finally {
-      setCargando(false);
-    }
-  }, []);
 
   useEffect(() => {
     cargarProveedores();
@@ -60,7 +32,7 @@ export function useProveedorScreen() {
       cargarProveedores();
     });
     return unsubscribe;
-  }, [navigation, cargarProveedores]);
+  }, [navigation]);
 
   const TIPOS = tiposProducto.map((t) => t.value);
 
@@ -89,6 +61,7 @@ export function useProveedorScreen() {
     handleAplicarFiltros,
     cargando,
     error,
+    alert,
     recargar: cargarProveedores,
   };
 }
