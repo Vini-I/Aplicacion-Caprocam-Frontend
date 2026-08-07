@@ -252,12 +252,22 @@ export function useTrazabilidad() {
         mostrarErrorCarga("", error);
         return;
       }
-      const mensajeApi = error?.response?.data?.message;
-      setMensajeError(
-        error?.response?.status === 400 && mensajeApi
+      const mensajeApi =
+        error?.message ||
+        error?.response?.data?.message ||
+        error?.response?.data?.error;
+
+      const mensajeAMostrar =
+        mensajeApi && typeof mensajeApi === "string" && mensajeApi.trim() !== ""
           ? mensajeApi
-          : "No se pudo guardar el registro. Intenta de nuevo."
-      );
+          : "No se pudo guardar el registro. Intenta de nuevo.";
+
+      setMensajeError(mensajeAMostrar);
+      if (timerErrorRef.current) clearTimeout(timerErrorRef.current);
+      timerErrorRef.current = setTimeout(() => {
+        setMensajeError("");
+        timerErrorRef.current = null;
+      }, 6000);
       return;
     }
     setMensajeError("");

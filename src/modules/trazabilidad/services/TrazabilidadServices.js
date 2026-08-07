@@ -180,9 +180,11 @@ export async function getRegistros() {
     const response = await api.get("/registrosTrazabilidad");
     return response.data.data;
   } catch (error) {
-    throw new Error(
+    const err = new Error(
       obtenerMensajeErrorBackend(error, "No se pudo obtener el listado de trazabilidad.")
     );
+    err.response = error.response;
+    throw err;
   }
 }
 
@@ -202,9 +204,11 @@ export async function getRegistroPorId(id) {
 
     return enriquecerRegistro(registro, construirMapas({ fincas, colaboradores, estanques }));
   } catch (error) {
-    throw new Error(
+    const err = new Error(
       obtenerMensajeErrorBackend(error, "No se pudo obtener el detalle del registro de trazabilidad.")
     );
+    err.response = error.response;
+    throw err;
   }
 }
 
@@ -249,9 +253,11 @@ export async function crearRegistro(datos) {
     const response = await api.post("/registrosTrazabilidad", datos);
     return response.data.data;
   } catch (error) {
-    throw new Error(
+    const err = new Error(
       obtenerMensajeErrorBackend(error, "No se pudo crear el registro de trazabilidad.")
     );
+    err.response = error.response;
+    throw err;
   }
 }
 
@@ -260,9 +266,11 @@ export async function toggleActivoRegistro(id) {
     const response = await api.put(`/registrosTrazabilidad/${id}/activo`);
     return response.data.data;
   } catch (error) {
-    throw new Error(
+    const err = new Error(
       obtenerMensajeErrorBackend(error, "No se pudo actualizar el estado del registro.")
     );
+    err.response = error.response;
+    throw err;
   }
 }
 
