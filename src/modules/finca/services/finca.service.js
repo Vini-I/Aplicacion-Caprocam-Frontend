@@ -23,11 +23,7 @@ export const fincaService = {
         telefonoParse: parseTelefonos(finca.telefono),
       }));
     } catch (error) {
-      if (error.response?.status === 404 || error.response?.status === 500) {
-        throw error;
-      }
-
-      throw new Error("No se pudieron obtener las fincas");
+      throw construirErrorHttp(error, "No se pudieron obtener las fincas");
     }
   },
 
@@ -40,10 +36,7 @@ export const fincaService = {
         telefonoParse: parseTelefonos(response.data.data.telefono),
       };
     } catch (error) {
-      if (error.response?.status === 404 || error.response?.status === 500) {
-        throw error;
-      }
-      throw new Error("No se pudo obtener la información de la finca.");
+      throw construirErrorHttp(error, "No se pudo obtener la información de la finca.");
     }
   },
 
@@ -53,10 +46,7 @@ export const fincaService = {
 
       return response.data;
     } catch (error) {
-      if (error.response?.status === 404 || error.response?.status === 500 || error.response?.status === 409 || error.response?.status === 400) {
-        throw construirErrorHttp(error, "No se pudo registrar la finca.");
-      }
-      throw new Error("No se pudo registrar la finca.");
+      throw construirErrorHttp(error, "No se pudo registrar la finca.");
     }
   },
 
@@ -66,10 +56,7 @@ export const fincaService = {
 
       return response.data;
     } catch (error) {
-      if (error.response?.status === 404 || error.response?.status === 500 || error.response?.status === 409 || error.response?.status === 400) {
-        throw construirErrorHttp(error, "No se pudieron guardar los cambios de la finca.");
-      }
-      throw new Error("No se pudieron guardar los cambios de la finca.");
+      throw construirErrorHttp(error, "No se pudieron guardar los cambios de la finca.");
     }
   },
 
@@ -79,10 +66,7 @@ export const fincaService = {
 
       return response.data;
     } catch (error) {
-      if (error.response?.status === 404 || error.response?.status === 500 || error.response?.status === 400) {
-        throw error;
-      }
-      throw new Error("No se pudo eliminar la finca.");
+      throw construirErrorHttp(error, "No se pudo eliminar la finca.");
     }
   },
 };

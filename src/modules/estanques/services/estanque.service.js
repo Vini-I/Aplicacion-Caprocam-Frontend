@@ -1,5 +1,18 @@
 import api from "../../../api/api";
 
+function construirErrorHttp(error, mensajeGenerico) {
+  const status = error?.response?.status;
+  const mensaje = error?.response?.data?.message || error?.response?.data?.error || error?.message;
+
+  if (status) {
+    const err = new Error(mensaje || mensajeGenerico);
+    err.status = status;
+    return err;
+  }
+
+  return new Error(mensajeGenerico);
+}
+
 export const estanqueService = {
   /*
     OBTENER TODOS LAS ESTANQUES
@@ -12,11 +25,7 @@ export const estanqueService = {
       return response.data.data;
 
     } catch (error) {
-      if (error.response?.status === 404 || error.response?.status === 500 || error.response?.status === 422 || error.response?.status === 400) {
-        throw error;
-      }
-
-      throw new Error("No se pudieron obtener los estanques");
+      throw construirErrorHttp(error, "No se pudieron obtener los estanques");
     }
   },
 
@@ -30,11 +39,7 @@ export const estanqueService = {
 
       return response.data.data;
     } catch (error) {
-      if (error.response?.status === 404 || error.response?.status === 500 || error.response?.status === 422 || error.response?.status === 400) {
-        throw error;
-      }
-
-      throw new Error("No se pudo obtener la información del estanque.");
+      throw construirErrorHttp(error, "No se pudo obtener la información del estanque.");
     }
   },
 
@@ -48,17 +53,7 @@ export const estanqueService = {
 
       return response.data;
     } catch (error) {
-      if (
-        error.response?.status === 404 ||
-        error.response?.status === 500 ||
-        error.response?.status === 422 ||
-        error.response?.status === 400 ||
-        error.response?.status === 409
-      ) {
-        throw error;
-      }
-
-      throw new Error("No se pudo registrar el estanque.");
+      throw construirErrorHttp(error, "No se pudo registrar el estanque.");
     }
   },
 
@@ -72,12 +67,7 @@ export const estanqueService = {
 
       return response.data;
     } catch (error) {
-
-      if (error.response?.status === 404 || error.response?.status === 500 || error.response?.status === 422 || error.response?.status === 400 || error.response?.status === 409) {
-        throw error;
-      }
-
-      throw new Error("No se pudieron guardar los cambios del estanque.");
+      throw construirErrorHttp(error, "No se pudieron guardar los cambios del estanque.");
     }
   },
 
@@ -91,16 +81,7 @@ export const estanqueService = {
 
       return response.data;
     } catch (error) {
-      if (
-        error.response?.status === 404 ||
-        error.response?.status === 500 ||
-        error.response?.status === 422 ||
-        error.response?.status === 400 ||
-        error.response?.status === 409
-      ) {
-        throw error;
-      }
-      throw new Error("No se pudo eliminar el estanque.");
+      throw construirErrorHttp(error, "No se pudo eliminar el estanque.");
     }
   },
 };

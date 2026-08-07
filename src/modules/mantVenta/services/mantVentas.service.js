@@ -1,5 +1,18 @@
 import api from "../../../api/api";
 
+function construirErrorHttp(error, mensajeGenerico) {
+  const status = error?.response?.status;
+  const mensaje = error?.response?.data?.message || error?.response?.data?.error || error?.message;
+
+  if (status) {
+    const err = new Error(mensaje || mensajeGenerico);
+    err.status = status;
+    return err;
+  }
+
+  return new Error(mensajeGenerico);
+}
+
 /*
 OBTENER TODAS LAS VENTAS
 */
@@ -12,13 +25,7 @@ export const getVentas = async () => {
         return response.data.data;
 
     } catch (error) {
-
-        if (error.response?.status === 404 || error.response?.status === 500) {
-            throw error;
-        }
-
-        throw new Error("No se pudieron obtener las ventas");
-
+        throw construirErrorHttp(error, "No se pudieron obtener las ventas");
     }
 };
 
@@ -34,13 +41,7 @@ export const createVenta = async (ventaDTO) => {
         return response.data;
 
     } catch (error) {
-
-        if (error.response?.status === 404 || error.response?.status === 500) {
-            throw error;
-        }
-
-        throw new Error("No se pudo registrar la venta");
-
+        throw construirErrorHttp(error, "No se pudo registrar la venta");
     }
 }
 
@@ -57,13 +58,7 @@ export const getVentaById = async (id) => {
         return response.data.data;
 
     } catch (error) {
-
-        if (error.response?.status === 404 || error.response?.status === 500) {
-            throw error;
-        }
-
-        throw new Error("No se pudo obtener la información de la venta");
-
+        throw construirErrorHttp(error, "No se pudo obtener la información de la venta");
     }
 };
 
@@ -80,13 +75,7 @@ export const updateVenta = async (id, ventaDTO) => {
         return response.data;
 
     } catch (error) {
-
-        if (error.response?.status === 404 || error.response?.status === 500) {
-            throw error;
-        }
-
-        throw new Error("No se pudieron guardar los cambios de la venta");
-
+        throw construirErrorHttp(error, "No se pudieron guardar los cambios de la venta");
     }
 };
 
@@ -103,12 +92,6 @@ export const deleteVenta = async (id) => {
         return response.data;
 
     } catch (error) {
-
-        if (error.response?.status === 404 || error.response?.status === 500) {
-            throw error;
-        }
-
-        throw new Error("No se pudo eliminar la venta");
-
+        throw construirErrorHttp(error, "No se pudo eliminar la venta");
     }
 };

@@ -243,24 +243,28 @@ export default function AlertasScreen() {
       try {
         ids = await obtenerAlertasDescartadas();
       } catch (error) {
+        throw error;
         ids = [];
       }
 
       try {
         productos = await getProductosInventario();
       } catch (error) {
+        throw error;
         productos = [];
       }
 
       try {
         enfermedades = await enfermedadesService.getAll();
       } catch (error) {
+        throw error;
         enfermedades = [];
       }
 
       try {
         parasitos = await parasitologiaService.getAll();
       } catch (error) {
+        throw error;
         parasitos = [];
       }
 
