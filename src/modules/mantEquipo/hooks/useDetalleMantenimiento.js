@@ -103,7 +103,6 @@ export function useDetalleMantenimiento({ id, alertaTipo, alertaMensaje, onNavig
           setProductosSeleccionados([]);
         }
       } catch (err) {
-        console.error('useDetalleMantenimiento.cargar:', err?.message || err);
         setErrorCarga(MENSAJES_ERROR_CARGA.errorCargarTicket);
       } finally {
         setCargando(false);
@@ -148,7 +147,6 @@ export function useDetalleMantenimiento({ id, alertaTipo, alertaMensaje, onNavig
           : 'Tarea marcada como pendiente.',
       });
     } catch (err) {
-      console.error('useDetalleMantenimiento.cambiarEstadoTarea:', err?.message || err);
       setAlerta({
         tipo: 'danger',
         mensaje: 'No se pudo actualizar el estado de la tarea.',
@@ -165,7 +163,6 @@ export function useDetalleMantenimiento({ id, alertaTipo, alertaMensaje, onNavig
         alertaMensaje: ALERTAS_NOTIFICACIONES.exitoEliminarTicket(id),
       });
     } catch (err) {
-      console.error('useDetalleMantenimiento.confirmDelete:', err?.message || err);
       setAlerta({
         tipo:    'danger',
         mensaje: MENSAJES_ERROR_CARGA.errorEliminarTicket,

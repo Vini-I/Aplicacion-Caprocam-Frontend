@@ -16,7 +16,7 @@
  * ============================================================
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, ScrollView, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
@@ -75,12 +75,14 @@ function FilaDetalleIcono({ icon, label, value, onPress }) {
   return content;
 }
 
+
+
 // ─── Componente principal ──────────────────────────────────────
 
 export default function DetalleColaboradorScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
-  const { mostrarError } = useError();
+  const [errorMessage, setErrorMessage] = useState(null);
 
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [eliminando, setEliminando] = useState(false);
@@ -97,6 +99,33 @@ export default function DetalleColaboradorScreen() {
 
   // ─── Manejadores ───────────────────────────────────────────────
 
+  const [alert, setAlert] = useState(null);
+
+  const alertTimeout = { current: null };
+  useEffect(() => () => { if (alertTimeout.current) clearTimeout(alertTimeout.current); }, []);
+  const showAlert = (type, message, ms = 3000) => {
+    if (alertTimeout.current) clearTimeout(alertTimeout.current);
+    setAlert({ type, message });
+    alertTimeout.current = setTimeout(() => setAlert(null), ms);
+  };
+
+  // Leer alert desde params (por ejemplo, después de editar)
+  const params = useLocalSearchParams();
+  useEffect(() => {
+    if (params?.alertMessage) {
+      const type = params.alertType || 'success';
+      let message = params.alertMessage;
+      try {
+        message = decodeURIComponent(params.alertMessage);
+      } catch (e) {
+        // No hubo necesidad de decodificar
+      }
+      showAlert(type, message);
+      // limpiar params de la URL para no volver a mostrar
+      router.setParams({ alertType: undefined, alertMessage: undefined });
+    }
+  }, [params?.alertMessage, params?.alertType, router]);
+
   const handleEditar = () => {
     router.push({
       pathname: '/(drawer)/colaboradores',
@@ -105,6 +134,7 @@ export default function DetalleColaboradorScreen() {
   };
 
   const handleEliminarPress = () => {
+    setErrorMessage("");
     setShowConfirmModal(true);
   };
 
@@ -121,8 +151,14 @@ export default function DetalleColaboradorScreen() {
         }
       });
     } catch (err) {
-      mostrarError(err);
-      setShowConfirmModal(false);
+      const status = err.response?.status;
+      if (status === 400 || status === 422) {
+        setShowConfirmModal(false);
+        showAlert('danger', err?.message || 'No se pudo eliminar el colaborador');
+      } else {
+        setShowConfirmModal(false);
+        showAlert('danger', err?.message || 'No se pudo eliminar el colaborador');
+      }
     } finally {
       setEliminando(false);
     }

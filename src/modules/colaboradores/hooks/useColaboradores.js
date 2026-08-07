@@ -42,6 +42,7 @@ export function useColaboradores(initialFilters = {}) {
   const [error, setError] = useState(null);
   const [filters, setFilters] = useState(initialFilters);
   const { mostrarError } = useError();
+   
 
   // --------------------------------------------------------
   // FUNCIÓN PRINCIPAL PARA OBTENER DATOS
@@ -53,7 +54,6 @@ export function useColaboradores(initialFilters = {}) {
       const data = await colaboradoresService.getColaboradores(filters);
       setColaboradores(data);
     } catch (err) {
-      setError(err.message);
       mostrarError(err);
     } finally {
       setLoading(false);
@@ -76,7 +76,6 @@ export function useColaboradores(initialFilters = {}) {
       return nuevo;
     } catch (err) {
       setError(err.message);
-      mostrarError(err);
       throw err;
     } finally {
       setLoading(false);
@@ -93,7 +92,6 @@ export function useColaboradores(initialFilters = {}) {
       return actualizado;
     } catch (err) {
       setError(err.message);
-      mostrarError(err);
       throw err;
     } finally {
       setLoading(false);
@@ -107,8 +105,7 @@ export function useColaboradores(initialFilters = {}) {
       setColaboradores((prev) => prev.filter((c) => c.id !== id));
       return true;
     } catch (err) {
-      setError(err.message);
-      mostrarError(err);
+      showAlert('danger', err?.message || 'No se pudo eliminar el colaborador');
       throw err;
     } finally {
       setLoading(false);

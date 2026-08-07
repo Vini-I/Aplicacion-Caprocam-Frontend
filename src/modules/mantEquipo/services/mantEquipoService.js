@@ -100,11 +100,26 @@ export async function getProductosCatalogo() {
 
     return Array.from(mapaProds.values());
   } catch (err) {
-    console.warn("getProductosCatalogo error:", err?.message || err);
+    throw construirErrorHttp(err, "No se pudieron obtener el catálogo de productos");
     return [];
   }
 }
 
+
+function construirErrorHttp(error, mensajeGenerico) {
+  const status = error?.response?.status;
+  const mensaje = error?.response?.data?.message || error?.response?.data?.error || error?.message;
+  if (status === 500) {
+    return new Error(mensajeGenerico);
+  }
+  if (status) {
+    const err = new Error(mensaje || mensajeGenerico);
+    err.status = status;
+    return err;
+  }
+
+  return new Error(mensajeGenerico);
+}
 
 
 // ─── Adaptador: respuesta backend → objeto frontend ───────────────────────────
@@ -201,7 +216,7 @@ export async function obtenerTickets() {
     }));
   } catch (err) {
     console.warn('obtenerTickets error:', err?.response?.data || err?.message || err);
-    throw err;
+    throw construirErrorHttp(err, 'No se pudieron obtener los tickets de mantenimiento');
   }
 }
 
@@ -300,7 +315,7 @@ export async function obtenerTicketPorId(id) {
       t => t.id === id || String(t.dbId) === numericId
     );
     if (!encontrado) {
-      throw new Error(MENSAJES_SERVICIOS.ticketNoEncontradoId(id));
+      throw construirErrorHttp(errorDirecto, `No se pudo obtener el ticket con ID ${id}`);
     }
     return encontrado;
   }
@@ -316,7 +331,7 @@ export async function actualizarEstadoEquipo(equipoId, nuevoEstado) {
     // updateEquipo mapea data.estado → estadoOperativo en el backend
     await equiposService.updateEquipo(equipoId, { ...equipo, estado: nuevoEstado });
   } catch (err) {
-    console.warn('actualizarEstadoEquipo:', err?.message || err);
+    throw construirErrorHttp(err, `No se pudo actualizar el estado operativo del equipo`);
   }
 }
 
@@ -421,7 +436,7 @@ async function descontarStockMantenimiento(productos) {
       }
     }
   } catch (err) {
-    console.warn('descontarStockMantenimiento warning:', err?.message || err);
+    throw construirErrorHttp(err, 'No se pudo descontar el stock de inventario tras finalizar el ticket');
   }
 }
 
@@ -430,6 +445,7 @@ export async function agregarTicket(ticket) {
   try {
     const payload = buildPayload(ticket);
     const res = await api.post('/mantenimientos', payload);
+    
     const backendData = res.data?.data || res.data;
     const nuevoTicket = adaptBackendTicket(backendData);
 
@@ -447,7 +463,7 @@ export async function agregarTicket(ticket) {
     return nuevoTicket;
   } catch (err) {
     console.warn('agregarTicket error:', err?.response?.data || err?.message || err);
-    throw err;
+    throw construirErrorHttp(err, 'No se pudo agregar el ticket');
   }
 }
 
@@ -491,7 +507,7 @@ async function sincronizarTareas(mantenimientoEquipoId, tareasNuevas) {
       }
     }
   } catch (e) {
-    console.warn('sincronizarTareas falló:', e?.message || e);
+    throw construirErrorHttp(e, 'No se pudo sincronizar las tareas del ticket');
   }
 }
 
@@ -544,7 +560,7 @@ async function sincronizarProductos(mantenimientoEquipoId, productosNuevos) {
       }
     }
   } catch (e) {
-    console.warn('sincronizarProductos falló:', e?.message || e);
+    throw construirErrorHttp(e, 'No se pudo sincronizar los productos del ticket');
   }
 }
 
@@ -581,7 +597,7 @@ export async function actualizarTicket(ticket) {
     return ticketActualizado;
   } catch (err) {
     console.warn(`actualizarTicket(${targetId}):`, err?.response?.data || err?.message || err);
-    throw err;
+    throw construirErrorHttp(err, `No se pudo actualizar el ticket`);
   }
 }
 
@@ -593,7 +609,7 @@ export async function eliminarTicket(id) {
     await api.delete(`/mantenimientos/${targetId}`);
   } catch (err) {
     console.warn(`eliminarTicket(${targetId}):`, err?.response?.data || err?.message || err);
-    throw err;
+    throw construirErrorHttp(err, `No se pudo eliminar el ticket`);
   }
 }
 
@@ -605,7 +621,7 @@ export async function actualizarEstadoTareaEnTicket(vinculoId, estadoTarea) {
     return res.data?.data || res.data;
   } catch (err) {
     console.warn(`actualizarEstadoTareaEnTicket(${vinculoId}):`, err?.response?.data || err?.message || err);
-    throw err;
+    throw construirErrorHttp(err, 'No se pudo actualizar la tarea del ticket');
   }
 }
 
@@ -615,7 +631,7 @@ export async function eliminarTareaDelTicket(vinculoId) {
     await api.delete(`/mantenimientos/tareas/${vinculoId}`);
   } catch (err) {
     console.warn(`eliminarTareaDelTicket(${vinculoId}):`, err?.response?.data || err?.message || err);
-    throw err;
+    throw construirErrorHttp(err, 'No se pudo eliminar la tarea del ticket');
   }
 }
 
@@ -625,6 +641,6 @@ export async function eliminarProductoDelTicket(vinculoId) {
     await api.delete(`/mantenimientos/productos/${vinculoId}`);
   } catch (err) {
     console.warn(`eliminarProductoDelTicket(${vinculoId}):`, err?.response?.data || err?.message || err);
-    throw err;
+    throw construirErrorHttp(err, 'No se pudo eliminar el producto del ticket');
   }
 }
