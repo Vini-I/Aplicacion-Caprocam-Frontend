@@ -23,19 +23,34 @@ const rolMapToId = {
   external_worker: 3,
 };
 
-// Este mapeo aún se usa para determinar tipoColaborador a partir del rolId numérico.
-// Pero prepareForBackend lo determinará automáticamente.
-
 // ─── MAPEO BACKEND → FRONTEND ──────────────────────────────────────
 function mapBackendToFrontend(data) {
+  // IMPORTANTE: el backend no es 100% consistente con el formato de sus
+  // llaves: algunos endpoints devuelven snake_case (finca_id, rol_id,
+  // nombre_usuario) y otros camelCase (fincaId, rolId, nombreUsuario;
+  // ver fincaService.js, que documenta que /fincas devuelve "nombreFinca").
+  // Para no perder datos silenciosamente (como pasaba con la finca del
+  // colaborador, que se guardaba bien en la BD pero nunca se leía aquí),
+  // se soportan ambos formatos.
+
+  const rolIdRaw = data.rol_id ?? data.rolId;
+  const rolId = rolIdRaw !== undefined && rolIdRaw !== null && rolIdRaw !== ""
+    ? Number(rolIdRaw)
+    : null;
+
   // Determinar el rol a partir del rol_id (numérico)
   let rol = "camprocam_worker";
-  if (data.rol_id === 2) rol = "external_owner";
-  else if (data.rol_id === 3) rol = "external_worker";
+  if (rolId === 2) rol = "external_owner";
+  else if (rolId === 3) rol = "external_worker";
 
   // Si el backend no guardó la cédula en la columna 'cedula',
   // se toma de 'nombre_usuario' (donde sí está)
-  const cedula = data.cedula || data.nombre_usuario || "";
+  const cedula = data.cedula || data.nombre_usuario || data.nombreUsuario || "";
+
+  const fincaIdRaw = data.finca_id ?? data.fincaId;
+  const fincaId = fincaIdRaw !== undefined && fincaIdRaw !== null && fincaIdRaw !== ""
+    ? Number(fincaIdRaw)
+    : null;
 
   return {
     id: data.id,
@@ -44,7 +59,8 @@ function mapBackendToFrontend(data) {
     telefono: data.telefono,
     email: data.email,
     rol: rol,
-    fincaId: data.finca_id,
+    rolId: rolId,
+    fincaId: fincaId,
     activo: Boolean(data.activo),
   };
 }
@@ -113,7 +129,9 @@ async function getColaboradores(filtros = {}) {
     let data = response.data.data || [];
 
     if (filtros.fincaId) {
-      data = data.filter((c) => c.finca_id === Number(filtros.fincaId));
+      data = data.filter(
+        (c) => Number(c.finca_id ?? c.fincaId) === Number(filtros.fincaId)
+      );
     }
     if (filtros.rol) {
       data = data.filter((c) => {
@@ -127,6 +145,10 @@ async function getColaboradores(filtros = {}) {
 
     return data.map(mapBackendToFrontend);
   } catch (error) {
+    // Si es un error de red (sin respuesta del servidor), mostrar mensaje en español
+    if (!error.response) {
+      throw new Error("No se pudieron obtener los colaboradores.");
+    }
     const message =
       error.response?.data?.message ||
       error.message ||
@@ -145,6 +167,9 @@ async function getColaboradorById(id) {
     if (!data) throw new Error("Colaborador no encontrado");
     return mapBackendToFrontend(data);
   } catch (error) {
+    if (!error.response) {
+      throw new Error("No se pudo cargar el colaborador.");
+    }
     const message =
       error.response?.data?.message ||
       error.message ||
@@ -162,6 +187,9 @@ async function createColaborador(data) {
   try {
     const pin = String(Math.floor(1000 + Math.random() * 9000));
     const payload = prepareForBackend(data, pin);
+    if (!payload) {
+      throw new Error("No se pudo preparar los datos del colaborador.");
+    }
     const response = await api.post("/colaboradores", payload);
     const created = response.data.data;
     return {
@@ -169,6 +197,9 @@ async function createColaborador(data) {
       pin,
     };
   } catch (error) {
+    if (!error.response) {
+      throw new Error("No se pudo crear el colaborador.");
+    }
     const errorData = error.response?.data;
     const errorMessage = errorData?.message || error.message || "Error al crear colaborador";
     const errorDetail = errorData?.error || errorData?.errors;
@@ -187,10 +218,16 @@ async function createColaborador(data) {
 async function updateColaborador(id, data, newPin = null) {
   try {
     const payload = prepareForBackend(data, newPin);
+    if (!payload) {
+      throw new Error("No se pudo preparar los datos del colaborador.");
+    }
     if (!newPin) delete payload.pinHash;
     const response = await api.put(`/colaboradores/${id}`, payload);
     return mapBackendToFrontend(response.data.data);
   } catch (error) {
+    if (!error.response) {
+      throw new Error("No se pudo actualizar el colaborador.");
+    }
     const message =
       error.response?.data?.message ||
       error.message ||
@@ -207,10 +244,38 @@ async function deleteColaborador(id) {
     const response = await api.delete(`/colaboradores/${id}`);
     return response.data.data ? true : false;
   } catch (error) {
+    if (!error.response) {
+      throw new Error("No se pudo eliminar el colaborador.");
+    }
     const message =
       error.response?.data?.message ||
       error.message ||
       "Error al eliminar colaborador";
+    throw new Error(message);
+  }
+}
+
+/**
+ * Restablece el PIN de un colaborador.
+ * @param {string|number} id - ID del colaborador.
+ * @returns {Promise<{message: string}>}
+ */
+async function resetPin(id) {
+  try {
+    // Simulación: esperar 1 segundo y devolver éxito
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    return { message: "PIN restablecido correctamente" };
+    // Cuando el backend esté listo, descomentar:
+    // const response = await api.post(`/colaboradores/${id}/reset-pin`);
+    // return response.data;
+  } catch (error) {
+    if (!error.response) {
+      throw new Error("No se pudo restablecer el PIN.");
+    }
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "Error al restablecer el PIN";
     throw new Error(message);
   }
 }
@@ -221,19 +286,27 @@ async function deleteColaborador(id) {
  * Obtiene estadísticas de un colaborador (mock).
  */
 async function getEstadisticasColaborador(colaboradorId) {
-  return {
-    alimentaciones: 0,
-    estanquesCreados: 0,
-    siembrasRegistradas: 0,
-    ultimaActividad: null,
-  };
+  try {
+    return {
+      alimentaciones: 0,
+      estanquesCreados: 0,
+      siembrasRegistradas: 0,
+      ultimaActividad: null,
+    };
+  } catch (error) {
+    throw new Error("Error al obtener estadísticas del colaborador");
+  }
 }
 
 /**
  * Obtiene trabajadores externos asociados a un dueño (mock).
  */
 async function getTrabajadoresByOwner(ownerId) {
-  return [];
+  try {
+    return [];
+  } catch (error) {
+    throw new Error("Error al obtener trabajadores del dueño");
+  }
 }
 
 // ─── EXPORTACIÓN ────────────────────────────────────────────────────
@@ -244,6 +317,7 @@ export const colaboradoresService = {
   createColaborador,
   updateColaborador,
   deleteColaborador,
+  resetPin,
   getEstadisticasColaborador,
   getTrabajadoresByOwner,
 };

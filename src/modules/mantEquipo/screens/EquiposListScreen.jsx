@@ -61,11 +61,13 @@ import { ICONS } from "../../../theme/icons";
 import { COLORS } from "../../../theme/colors";
 import { styles } from "../styles/equiposListStyles";
 import { equiposService } from "../services/equiposService";
+import { useError } from "../../../shared/context/ErrorContext";
 
 export default function EquiposListScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const formRef = useRef();
+  const { mostrarError } = useError();
 
   // --------------------------------------------------------
   // ESTADOS
@@ -103,7 +105,7 @@ export default function EquiposListScreen() {
     expiryDate: "",
   });
 
-  // Estado para alertas globales
+  // Estado para alertas (éxito/validaciones)
   const [alert, setAlert] = useState(null);
   const alertTimeoutRef = useRef(null);
 
@@ -253,6 +255,7 @@ export default function EquiposListScreen() {
       setCodigoError("");
       fetchEquipos();
     } catch (error) {
+      // El error ya se muestra en el modal global, solo mostramos mensaje local si es de validación
       setCodigoError("No se pudo eliminar el equipo");
     }
   };
@@ -270,6 +273,7 @@ export default function EquiposListScreen() {
       setEditingEquipo(null);
       fetchEquipos();
     } catch (error) {
+      // El error ya se muestra en el modal global, solo mostramos validación local
       showAlert("danger", error.message || "Ocurrió un error al guardar el equipo");
     }
   };
@@ -279,16 +283,12 @@ export default function EquiposListScreen() {
       await toggleEquipo(id);
       fetchEquipos();
     } catch (error) {
-      showAlert("danger", "No se pudo cambiar el estado del equipo");
+      mostrarError(error);
     }
   };
 
   const openDetail = (equipoId) => {
     router.push(`/equipos/detalleEquipo?id=${equipoId}`);
-  };
-
-  const navigateToMantEquipo = () => {
-    router.push("/equipos/mantEquipo");
   };
 
   // --------------------------------------------------------
@@ -301,8 +301,16 @@ export default function EquiposListScreen() {
   // RENDER PRINCIPAL
   // --------------------------------------------------------
   return (
-    <View style={styles.container}>
-      <View style={styles.mainFlex}>
+    <View style={STYLE.container}>
+      <View style={[STYLE.contentWrapper, styles.mainFlex]}>
+        
+        {/* Alerta flotante (éxito/validación) */}
+        {alert && (
+          <View style={[STYLE.contentWrapper]}>
+            <Alert variant={alert.type} message={alert.message} />
+          </View>
+        )}
+
         <View style={styles.searchRow}>
           <SearchBar
             value={searchText}
@@ -327,22 +335,7 @@ export default function EquiposListScreen() {
             showExpiryDate={false}
             buttonStyle={styles.filterButtonStyle}
           />
-          <Button
-            variant="outline"
-            onPress={navigateToMantEquipo}
-            style={styles.btnAction}
-          >
-            <Icon icon={ICONS.clipboard} size={16} color={COLORS.primary} />
-            <CustomText style={styles.btnActionText}>Ver Mantenimiento</CustomText>
-          </Button>
         </View>
-
-        {/* Alerta flotante (éxito/error) */}
-        {alert && (
-          <View style={[STYLE.contentWrapper, { marginTop: 6, marginBottom: 6 }]}>
-            <Alert variant={alert.type} message={alert.message} />
-          </View>
-        )}
 
         {/* Lista o EmptyState */}
         {equiposFinales.length === 0 ? (
@@ -355,7 +348,11 @@ export default function EquiposListScreen() {
             }
           />
         ) : (
-          <ScrollView style={styles.scrollView} contentContainerStyle={styles.list}>
+          <ScrollView
+            style={styles.scrollView}
+            contentContainerStyle={styles.list}
+            showsVerticalScrollIndicator={false}
+          >
             {equiposFinales.map((equipo) => (
               <EquipoCard
                 key={equipo.id}
@@ -392,6 +389,7 @@ export default function EquiposListScreen() {
             <ScrollView
               style={styles.modalScrollForm}
               contentContainerStyle={styles.modalScrollFormContent}
+              showsVerticalScrollIndicator={false}
             >
               <EquipoForm
                 ref={formRef}

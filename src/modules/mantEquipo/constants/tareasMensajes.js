@@ -29,7 +29,6 @@ export const HEADERS_TABLA = [
   "Descripción",
   "Categoría",
   "Duración estimada (hrs)",
-  "Estado",        // <-- añadido
   "Acciones",
 ];
 
@@ -37,7 +36,7 @@ export const OPCIONES_CATEGORIA = [
   { label: "Preventivo", value: "preventivo" },
   { label: "Correctivo", value: "correctivo" },
   { label: "Predictivo", value: "predictivo" },
-  { label: "Emergencia", value: "emergencia" },
+  // Emergencia removida por decisión de producto
 ];
 
 export const TEXTOS_MODAL_TAREA = {
@@ -61,21 +60,3 @@ export const ERRORES_FORM = {
   duracion: "Debe ingresar una duración válida (mayor a 0)",
 };
 
-export const OPCIONES_ESTADO = [
-  { label: "No iniciada", value: "no_iniciada" },
-  { label: "En ejecución", value: "en_ejecucion" },
-  { label: "Finalizada", value: "finalizada" },
-];
-
-export const TEXTOS_MODAL_PRODUCTO = {
-  titulo: "Agregar producto",
-  labelProducto: "Producto *",
-  placeholderProducto: "Seleccione un producto",
-  labelCantidad: "Cantidad *",
-  placeholderCantidad: "Ej: 2",
-  btnAgregar: "Agregar",
-  btnCancelar: "Cancelar",
-  sinProductos: "No hay productos agregados.",
-  errorCantidad: "La cantidad debe ser mayor a 0",
-  errorProducto: "Debe seleccionar un producto",
-};

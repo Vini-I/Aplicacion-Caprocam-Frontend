@@ -61,7 +61,7 @@ export default function EquipoDetalleScreen({
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={true}
+        showsVerticalScrollIndicator={false}
       >
         <Card style={styles.card}>
           {/* Cabecera */}

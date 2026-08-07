@@ -23,11 +23,6 @@ export const TEXTOS_PANTALLA = {
   btnAgregarTarea: "Ver Tareas",
 };
 
-// ─── Cabeceras de tabla ────────────────────────────────────────────────────────
-export const HEADERS_TABLA = [
-  "Ticket ID", "Fecha creación", "Estado", "Título", "Descripción", "Creado por",
-];
-
 // ─── Textos del formulario Agregar / Editar ────────────────────────────────────
 export const TEXTOS_MODAL_AGREGAR = {
   titulo:              "Agregar Mantenimiento",

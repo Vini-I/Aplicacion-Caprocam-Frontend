@@ -17,9 +17,10 @@
  * - fincaId: ID de finca (se asigna automáticamente para external_owner)
  * - onCancel: función para cerrar el modal sin guardar
  * - serverError: mensaje de error del servidor (opcional)
- * - successMessage: mensaje de éxito (opcional)
  * - roleOptions: array de { label, value } para el select de roles (opcional)
  * - fincasOptions: array de { label, value } para el select de fincas (opcional)
+ * - onResetPin: función para restablecer el PIN (solo en edición)
+ * - resetLoading: booleano para mostrar estado de carga en el botón de reset
  */
 
 import React, { forwardRef, useImperativeHandle, useEffect, useState } from "react";
@@ -45,9 +46,10 @@ const ColaboradorForm = forwardRef(function ColaboradorForm(
     fincaId,
     onCancel,
     serverError = "",
-    successMessage = "",
     roleOptions,
     fincasOptions = [],
+    onResetPin,
+    resetLoading = false,
   },
   ref
 ) {
@@ -75,31 +77,24 @@ const ColaboradorForm = forwardRef(function ColaboradorForm(
     fincasOptions,
   });
 
-  // Exponer resetForm al padre
   useImperativeHandle(ref, () => ({
     resetForm,
   }));
 
   const opcionesFincas = hookFincasOptions || fincasOptions || [];
 
-  // Roles que requieren una finca asociada (IDs)
-  const ROLES_CON_FINCA = [3, 5]; // Gerente de Finca, Operario de Campo
+  const ROLES_CON_FINCA = [3, 5];
   const rolId = Number(form.rol);
   const mostrarSelectFinca = form.rol !== "" && ROLES_CON_FINCA.includes(rolId);
 
-  // Estado local para controlar la visibilidad del alert (reaparece en cada submit)
   const [localErrorVisible, setLocalErrorVisible] = useState(false);
   const [localMessage, setLocalMessage] = useState("");
 
-  // Cuando cambia validationMessage, actualizamos la visibilidad y el mensaje
   useEffect(() => {
     if (validationMessage) {
       setLocalMessage(validationMessage);
       setLocalErrorVisible(true);
-      // Programar ocultación después de 6 segundos
-      const timer = setTimeout(() => {
-        setLocalErrorVisible(false);
-      }, 6000);
+      const timer = setTimeout(() => setLocalErrorVisible(false), 6000);
       return () => clearTimeout(timer);
     } else {
       setLocalErrorVisible(false);
@@ -107,25 +102,20 @@ const ColaboradorForm = forwardRef(function ColaboradorForm(
     }
   }, [validationMessage]);
 
-  // También manejar serverError (errores del backend)
   useEffect(() => {
     if (serverError) {
       setLocalMessage(serverError);
       setLocalErrorVisible(true);
-      const timer = setTimeout(() => {
-        setLocalErrorVisible(false);
-      }, 6000);
+      const timer = setTimeout(() => setLocalErrorVisible(false), 6000);
       return () => clearTimeout(timer);
     }
   }, [serverError]);
 
-  // Si hay mensaje de éxito, se muestra sin temporizador (se maneja en el padre)
   const mensajeError = localErrorVisible ? localMessage : "";
   const mostrarError = localErrorVisible && mensajeError !== "";
 
   return (
     <View style={styles.container}>
-      {/* ─── Card con el formulario ─── */}
       <Card style={styles.cardContainer}>
         <View style={styles.cardHeader}>
           <Icon icon={ICONS.user} size={20} color={COLORS.primary} />
@@ -180,11 +170,12 @@ const ColaboradorForm = forwardRef(function ColaboradorForm(
         />
 
         <Select
-          label="Rol"
+          label="Rol *"
           options={rolesDisponibles}
           value={form.rol}
           onChange={(v) => handleChange("rol", v)}
           placeholder="Seleccione una opción"
+          selectStyle={submitted && errors.rol ? styles.inputError : null}
         />
 
         {mostrarSelectFinca && (
@@ -199,39 +190,41 @@ const ColaboradorForm = forwardRef(function ColaboradorForm(
         )}
       </Card>
 
-{/* ─── Alert de error (fuera del Card, encima del botón) ─── */}
-{mostrarError && (
-  <View style={styles.alertContainer}>
-    <Alert
-      variant="danger"
-      message={mensajeError}
-      textStyle={styles.alertText}
-    />
-  </View>
-)}
+      {mostrarError && (
+        <View style={styles.alertContainer}>
+          <Alert variant="danger" message={mensajeError} textStyle={styles.alertText} />
+        </View>
+      )}
 
-{/* ─── Alert de éxito (fuera del Card, encima del botón) ─── */}
-{successMessage !== "" && !mostrarError && (
-  <View style={styles.alertContainer}>
-    <Alert
-      variant="success"
-      message={successMessage}
-      textStyle={styles.alertText}
-    />
-  </View>
-)}
-
-      {/* ─── Botón de acción fuera del Card ─── */}
       <View style={styles.buttonContainer}>
         <Button variant="outline" onPress={handleSubmit} style={styles.submitButton}>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+          <View style={styles.buttonContent}>
             <Icon icon={ICONS.save} size={18} color={COLORS.primary} />
-            <Text style={{ color: COLORS.primary, fontWeight: "600" }}>
+            <Text style={styles.buttonText}>
               {isEditing ? "Editar Colaborador" : "Registrar Colaborador"}
             </Text>
           </View>
         </Button>
       </View>
+
+      {/* Botón de restablecer PIN (solo en edición) */}
+      {isEditing && (
+        <View style={styles.resetButtonContainer}>
+          <Button
+            variant="outline"
+            onPress={onResetPin}
+            disabled={resetLoading}
+            style={styles.resetButton}
+          >
+            <View style={styles.buttonContent}>
+              <Icon icon={ICONS.update} size={18} color={COLORS.primary} />
+              <Text style={styles.buttonText}>
+                {resetLoading ? "Restableciendo..." : "Restablecer PIN"}
+              </Text>
+            </View>
+          </Button>
+        </View>
+      )}
     </View>
   );
 });
