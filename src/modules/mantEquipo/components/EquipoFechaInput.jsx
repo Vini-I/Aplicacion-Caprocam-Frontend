@@ -2,20 +2,16 @@
  * ============================================================
  * COMPONENTE: EquipoFechaInput
  * ============================================================
+ *
  * Módulo: Mantenimiento de Equipos
  *
- * Descripción:
- * Adaptador local para la fecha de instalación del equipo.
- * Delega completamente al componente compartido DateInput, que
- * ya maneja web (input type="date") y móvil (DateTimePicker)
- * de forma interna, sin necesidad de bifurcación por Platform.
+ * RESPONSABILIDAD:
+ * - Componente personalizado que reutiliza elementos de shared/components.
+ * - Adaptador local para la selección de fecha de instalación del equipo.
  *
- * @dependencies - DateInput (shared/components/DateInput)
- * @validations  - Ninguna propia; el componente DateInput
- *                 gestiona el estado de error vía props `error`,
- *                 `required` y `submitted`.
- * @navigation   - No navega a ninguna pantalla.
- * ============================================================
+ * @dependencies - DateInput.jsx (shared/components)
+ * @validations  - Delega la gestión de estado de error vía props error, required y submitted a DateInput.
+ * @navigation   - Ninguna
  */
 
 import React from 'react';

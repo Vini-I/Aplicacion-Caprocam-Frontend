@@ -48,12 +48,14 @@ import ProductosSeleccionadosList from "../components/ProductosSeleccionadosList
 
 import { useEditarMantenimiento } from "../hooks/useEditarMantenimiento.js";
 import { getFieldErrorStyle } from "../styles/mantEquipoStyles.js";
+import SectionTitle from "../components/SectionTitle.jsx";
 export default function EditarMantenimientoScreen({ id, onNavigateToDetail = () => { }, onNavigateToMain = () => { } }) {
   const usuarioSesion = useUsuarioSesion();
 
   const {
     ticketOriginal,
     cargando,
+    errorCarga,
     titulo, setTitulo,
     descripcion, setDescripcion,
     equipoId,
@@ -67,6 +69,7 @@ export default function EditarMantenimientoScreen({ id, onNavigateToDetail = () 
     productosList,
     productosSeleccionados,
     alertaStock, setAlertaStock,
+    alertaServidor,
     costoTotal,
     errores, setErrores,
     submitted,
@@ -87,22 +90,8 @@ export default function EditarMantenimientoScreen({ id, onNavigateToDetail = () 
   }
 
   if (!ticketOriginal) {
-    return (
-      <View style={[STYLE.container, styles.spinnerContainer]}>
-        <CustomText style={styles.errorText}>Ticket no encontrado.</CustomText>
-        <Button variant="outline" onPress={onNavigateToMain} style={styles.btnMarginTop}>
-          Regresar a lista
-        </Button>
-      </View>
-    );
+    return <View style={STYLE.container} />;
   }
-
-  const SectionTitle = ({ icon, title }) => (
-    <View style={styles.sectionTitleRow}>
-      <Icon icon={icon} size={18} color={COLORS.primary} style={styles.sectionTitleIcon} />
-      <CustomText style={styles.sectionTitleText}>{title}</CustomText>
-    </View>
-  );
 
   return (
     <ScrollView style={STYLE.container} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
@@ -137,6 +126,7 @@ export default function EditarMantenimientoScreen({ id, onNavigateToDetail = () 
             label={TEXTOS_MODAL_AGREGAR.labelFechaHora}
             value={fecha}
             onChangeText={setFecha}
+            disabled
             containerStyle={styles.marginBottom12}
             inputStyle={styles.comboInput}
             labelStyle={styles.comboLabel}
@@ -226,6 +216,7 @@ export default function EditarMantenimientoScreen({ id, onNavigateToDetail = () 
           <TareasSeleccionadasList
             tareasSeleccionadas={tareasSeleccionadas}
             setTareasSeleccionadas={setTareasSeleccionadas}
+            mostrarToggleEstado={false}
           />
         </Card>
 
@@ -235,7 +226,7 @@ export default function EditarMantenimientoScreen({ id, onNavigateToDetail = () 
 
           {/* Tipo de Personal */}
           <SelectorPills
-            label="Tipo de Personal *"
+            label={TEXTOS_MODAL_AGREGAR.labelTipoPersonal}
             value={tipoPersonal}
             onChange={(v) => {
               setTipoPersonal(v);
@@ -269,7 +260,7 @@ export default function EditarMantenimientoScreen({ id, onNavigateToDetail = () 
                 setCostoManoObra(soloNumeros);
                 if (errores.costoManoObra) setErrores((prev) => { const s = { ...prev }; delete s.costoManoObra; return s; });
               }}
-              placeholder="Ej: 15000"
+              placeholder="Ej: 4000"
               keyboardType="numeric"
               containerStyle={styles.noMarginBottom}
               style={[styles.comboInput, getFieldErrorStyle(submitted && errores.costoManoObra)]}
@@ -291,25 +282,29 @@ export default function EditarMantenimientoScreen({ id, onNavigateToDetail = () 
           />
         </Card>
 
-        {/* Alerta: campos obligatorios sin llenar */}
-        {submitted && (errores.titulo || errores.equipoId || errores.descripcion || errores.tareas || errores.costoManoObra) && (
+        {/* Alerta de Error de Validación — un solo mensaje a la vez, en
+            orden de prioridad: campos vacíos primero, luego la regla
+            específica que falle según el orden del formulario. */}
+        {submitted && errores.mensaje && Object.keys(errores).some((k) => k !== 'mensaje' && errores[k]) && (
           <Alert
             variant="danger"
-            message={TEXTOS_MODAL_AGREGAR.errorValidacion}
+            message={errores.mensaje}
             containerStyle={styles.alertTopMargin}
             textStyle={styles.alertValidacionTexto}
           />
         )}
 
-        {/* Alerta: tareas pendientes al querer terminar el ticket */}
-        {submitted && errores.tareasPendientes && (
+        {/* Alerta de error de servidor/conexión al intentar guardar los cambios.
+            Solo aparece cuando la validación de campos ya pasó y el fallo
+            ocurrió al hablar con el backend (ej. servidor caído). */}
+        {alertaServidor ? (
           <Alert
             variant="danger"
-            message={TEXTOS_MODAL_AGREGAR.errorTareasPendientes}
-            containerStyle={styles.alertSecondMargin}
-            textStyle={styles.alertValidacionTexto}
+            message={alertaServidor}
+            containerStyle={styles.alertServidor}
+            textStyle={styles.alertServidorTexto}
           />
-        )}
+        ) : null}
 
         {/* Botones del Formulario */}
         <View style={styles.formFooter}>

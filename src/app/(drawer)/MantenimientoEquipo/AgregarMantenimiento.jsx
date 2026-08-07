@@ -19,7 +19,7 @@ export default function AgregarMantenimientoRoute() {
   
   const handleNavigateToMain = (params = {}) => {
     router.replace({
-      pathname: "/equipos/mantEquipo",
+      pathname: "/mantenimientoEquipo",
       params
     });
   };

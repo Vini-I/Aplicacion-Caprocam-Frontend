@@ -20,7 +20,6 @@ export const getLaboratorios = async () => {
     const response = await api.get("/laboratorios");
     return response.data.data;
   } catch (error) {
-    console.error("Error al obtener laboratorios:", error);
     throw error;
   }
 };
@@ -33,7 +32,6 @@ export const createLaboratorio = async (nombre) => {
     const response = await api.post("/laboratorios", { nombre });
     return response.data.data;
   } catch (error) {
-    console.error("Error al crear laboratorio:", error.response?.data || error.message);
     throw error;
   }
 };
@@ -46,7 +44,6 @@ export const updateLaboratorio = async (id, nombre) => {
     const response = await api.put(`/laboratorios/${id}`, { nombre });
     return response.data.data;
   } catch (error) {
-    console.error("Error al actualizar laboratorio:", error.response?.data || error.message);
     throw error;
   }
 };
@@ -59,7 +56,6 @@ export const eliminarLaboratorio = async (id) => {
     const response = await api.delete(`/laboratorios/${id}`);
     return response.data.data;
   } catch (error) {
-    console.error("Error al eliminar laboratorio:", error.response?.data || error.message);
     throw error;
   }
 };

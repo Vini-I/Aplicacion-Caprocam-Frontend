@@ -21,14 +21,14 @@ export default function DetalleMantenimientoRoute() {
 
   const handleNavigateToEdit = (ticketId) => {
     router.replace({
-      pathname: "/equipos/EditarMantenimiento",
+      pathname: "/mantenimientoEquipo/EditarMantenimiento",
       params: { id: ticketId }
     });
   };
 
   const handleNavigateToMain = (routeParams = {}) => {
     router.replace({
-      pathname: "/equipos/mantEquipo",
+      pathname: "/mantenimientoEquipo",
       params: routeParams
     });
   };

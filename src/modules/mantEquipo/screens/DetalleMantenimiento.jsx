@@ -37,8 +37,8 @@ import EquipoDetail from "../components/EquipoDetailTicket.jsx";
 import { formatDate } from "../../../shared/utils/dateUtils.js";
 
 import { useDetalleMantenimiento } from "../hooks/useDetalleMantenimiento.js";
-import { getTareaBadgeStyle, getTareaBadgeTextStyle } from "../styles/mantEquipoStyles.js";
-import { TEXTOS_MODAL_AGREGAR } from "../constants/mantEquipoMensajes.js";
+import { TEXTOS_MODAL_AGREGAR, TEXTOS_DETALLE, MENSAJES_ERROR_CARGA } from "../constants/mantEquipoMensajes.js";
+import SectionTitle from "../components/SectionTitle.jsx";
 
 export default function DetalleMantenimientoScreen({
   id,
@@ -53,11 +53,13 @@ export default function DetalleMantenimientoScreen({
     equipo,
     alerta,
     cargando,
+    errorCarga,
     showConfirmModal,
     tareasCatalog,
     productosSeleccionados,
     abrirModalEliminar,
     cerrarModalEliminar,
+    cambiarEstadoTarea,
     confirmDelete,
   } = useDetalleMantenimiento({ id, alertaTipo, alertaMensaje, onNavigateToMain });
 
@@ -70,22 +72,37 @@ export default function DetalleMantenimientoScreen({
   }
 
   if (!ticket) {
-    return (
-      <View style={[STYLE.container, styles.spinnerContainer]}>
-        <CustomText style={styles.errorText}>Ticket no encontrado.</CustomText>
-        <Button variant="outline" onPress={() => onNavigateToMain({})} style={styles.btnMarginTop}>
-          Regresar a lista
-        </Button>
-      </View>
-    );
+    return <View style={STYLE.container} />;
   }
 
-  const SectionTitle = ({ icon, title }) => (
-    <View style={styles.sectionTitleRow}>
-      <Icon icon={icon} size={18} color={COLORS.primary} style={styles.sectionTitleIcon} />
-      <CustomText style={styles.sectionTitleText}>{title}</CustomText>
-    </View>
-  );
+  const renderTareaItem = (t, idx) => {
+    const realizadaColor = t.realizada ? COLORS.success : COLORS.textTertiary;
+    return (
+      <View key={String(t.id || t.tareaId || idx)} style={styles.tareaItemContainer}>
+        <View style={styles.tareaItemHeader}>
+          <View style={styles.tareaItemLeft}>
+            <Icon icon={t.realizada ? ICONS.check : ICONS.clock} size={14} color={realizadaColor} />
+            <View style={{ flex: 1 }}>
+              <CustomText style={styles.tareaItemNombre}>Título: {t.nombre || t.label}</CustomText>
+            </View>
+          </View>
+          <Button variant="outline" onPress={() => cambiarEstadoTarea(t)} style={[styles.tareaAccionButton, t.realizada ? styles.tareaAccionRealizada : styles.tareaAccionPendiente]}>
+            <Icon icon={t.realizada ? ICONS.check : ICONS.clock} size={12} color={t.realizada ? COLORS.success : COLORS.textTertiary} />
+            <CustomText style={[styles.tareaAccionTextBase, t.realizada ? styles.tareaAccionTextRealizada : styles.tareaAccionTextPendiente]}>{t.realizada ? TEXTOS_DETALLE.badgeRealizada : TEXTOS_DETALLE.badgePendiente}</CustomText>
+          </Button>
+        </View>
+        {t.categoria ? (
+          <CustomText style={styles.tareaItemMeta}>{TEXTOS_DETALLE.labelCategoriaPrefix}{t.categoria === "preventivo" || t.categoria === "Preventivo" ? TEXTOS_DETALLE.catPreventivo : TEXTOS_DETALLE.catCorrectivo}</CustomText>
+        ) : null}
+        {t.duracionEstimada !== undefined && t.duracionEstimada > 0 ? (
+          <CustomText style={styles.tareaItemMetaMin}>{TEXTOS_DETALLE.labelDuracionEstimada(t.duracionEstimada)}</CustomText>
+        ) : null}
+        {t.descripcion ? (
+          <CustomText style={styles.tareaItemMetaTop}>Descripción: {t.descripcion}</CustomText>
+        ) : null}
+      </View>
+    );
+  };
 
   return (
     <ScrollView style={STYLE.container} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
@@ -98,23 +115,23 @@ export default function DetalleMantenimientoScreen({
         {/* Sección: IDENTIFICACIÓN Y GENERAL */}
         <Card style={[styles.card, styles.cardSection]}>
           <View style={styles.ticketHeaderRow}>
-            <SectionTitle icon={ICONS.document} title={`TICKET #${ticket.id}`} />
+            <SectionTitle icon={ICONS.document} title={TEXTOS_DETALLE.labelTicketHeader(ticket.id)} />
             <BadgeEstado estado={ticket.estado} />
           </View>
 
           {/* Información Básica */}
           <View style={styles.infoBlock}>
-            <CustomText style={styles.infoLabel}>Título</CustomText>
+            <CustomText style={styles.infoLabel}>{TEXTOS_MODAL_AGREGAR.labelTitulo.replace(' *', '').replace('*', '')}</CustomText>
             <CustomText style={styles.infoValueLg}>{ticket.titulo}</CustomText>
           </View>
 
           <View style={styles.infoRow}>
             <View style={styles.infoRowItem}>
-              <CustomText style={styles.infoLabel}>Creado Por</CustomText>
+              <CustomText style={styles.infoLabel}>{TEXTOS_MODAL_AGREGAR.labelCreadoPor}</CustomText>
               <CustomText style={styles.infoValue}>{ticket.creadoPor}</CustomText>
             </View>
             <View style={styles.infoRowItem}>
-              <CustomText style={styles.infoLabel}>Fecha Creación</CustomText>
+              <CustomText style={styles.infoLabel}>{TEXTOS_MODAL_AGREGAR.labelFechaHora}</CustomText>
               <CustomText style={styles.infoValue}>
                 {formatDate(new Date(ticket.fechaCreacion))}
               </CustomText>
@@ -122,16 +139,16 @@ export default function DetalleMantenimientoScreen({
           </View>
 
           <View style={styles.infoBlock}>
-            <CustomText style={styles.infoLabel}>Tipo de Personal Asignado</CustomText>
+            <CustomText style={styles.infoLabel}>{TEXTOS_DETALLE.labelTipoPersonal}</CustomText>
             <CustomText style={styles.infoValue}>
-              {ticket.tipoPersonal === "externo" ? "Trabajador Externo" : "Trabajador Interno"}
+              {ticket.tipoPersonal === "externo" ? TEXTOS_DETALLE.labelTrabajadorExterno : TEXTOS_DETALLE.labelTrabajadorInterno}
             </CustomText>
           </View>
 
           {/* Descripción */}
           <View style={styles.infoBlockSmall}>
-            <CustomText style={styles.infoLabel}>Descripción</CustomText>
-            <CustomText style={styles.infoValueDesc}>
+            <CustomText style={styles.infoLabel}>{TEXTOS_MODAL_AGREGAR.labelDescripcion.replace(' *', '').replace('*', '')}</CustomText>
+            <CustomText style={styles.infoValue}>
               {ticket.descripcion}
             </CustomText>
           </View>
@@ -139,59 +156,19 @@ export default function DetalleMantenimientoScreen({
 
         {/* Sección: DETALLES DEL EQUIPO */}
         <Card style={[styles.card, styles.cardSection]}>
-          <SectionTitle icon={ICONS.tools} title="DETALLES DEL EQUIPO" />
+          <SectionTitle icon={ICONS.tools} title={TEXTOS_DETALLE.tituloEquipo} />
           <EquipoDetail equipo={equipo} horasUsoIngreso={ticket.horasUsoIngreso} />
         </Card>
 
         {/* Sección: TAREAS ASIGNADAS */}
         <Card style={[styles.card, styles.cardSection]}>
-          <SectionTitle icon={ICONS.clipboard} title="TAREAS ASIGNADAS" />
-          <View style={styles.tareaGapList}>
-        {ticket.tareas && ticket.tareas.length > 0 ? (
-              ticket.tareas.map((t, idx) => {
-                const realizadaColor = t.realizada ? COLORS.success : COLORS.textTertiary;
-                return (
-                  <View key={idx} style={styles.tareaItemContainer}>
-                    <View style={styles.tareaItemHeader}>
-                      <View style={styles.tareaItemLeft}>
-                        <Icon icon={t.realizada ? ICONS.check : ICONS.clock} size={14} color={realizadaColor} />
-                        <CustomText style={styles.tareaItemNombre}>
-                          {t.nombre || t.label}
-                        </CustomText>
-                      </View>
-                      <View style={[styles.tareaBadgeBase, getTareaBadgeStyle(t.realizada)]}>
-                        <CustomText style={[styles.tareaBadgeTextBase, getTareaBadgeTextStyle(t.realizada)]}>
-                          {t.realizada ? "Realizada" : "Pendiente"}
-                        </CustomText>
-                      </View>
-                    </View>
-                    {t.categoria && (
-                      <CustomText style={styles.tareaItemMeta}>
-                        Categoría: {t.categoria === "preventivo" || t.categoria === "Preventivo" ? "Preventivo" : "Correctivo"}
-                      </CustomText>
-                    )}
-                    {t.duracionEstimada !== undefined && t.duracionEstimada > 0 && (
-                      <CustomText style={styles.tareaItemMetaMin}>
-                        Duración estimada: {t.duracionEstimada} hrs
-                      </CustomText>
-                    )}
-                    {t.descripcion && (
-                      <CustomText style={styles.tareaItemMetaTop}>
-                        {t.descripcion}
-                      </CustomText>
-                    )}
-                  </View>
-                );
-              })
-            ) : (
-              <CustomText style={styles.tareaEmptyText}>Ninguna tarea asignada.</CustomText>
-            )}
-          </View>
+          <SectionTitle icon={ICONS.clipboard} title={TEXTOS_DETALLE.tituloTareas} />
+          <View style={styles.tareaGapList}>{ticket.tareas && ticket.tareas.length > 0 ? ticket.tareas.map((t, idx) => renderTareaItem(t, idx)) : <CustomText style={styles.tareaEmptyText}>{TEXTOS_DETALLE.sinTareas}</CustomText>}</View>
         </Card>
 
         {/* Sección: COSTOS DEL TICKET */}
         <Card style={[styles.card, styles.cardSection]}>
-          <SectionTitle icon={ICONS.money} title="COSTOS DEL TICKET" />
+          <SectionTitle icon={ICONS.money} title={TEXTOS_DETALLE.tituloCostos} />
 
           {(() => {
             const costoManoObraVal = parseFloat(ticket.costoManoObra) || 0;
@@ -211,7 +188,7 @@ export default function DetalleMantenimientoScreen({
               <View style={styles.costoBox}>
                 {/* Subtítulo de productos en negrita al estilo 'Detalles de la máquina' */}
                 <View style={styles.equipoDetailHeader}>
-                  <CustomText style={styles.equipoDetailTitle}>Productos utilizados</CustomText>
+                  <CustomText style={styles.equipoDetailTitle}>{TEXTOS_DETALLE.subtituloProductos}</CustomText>
                 </View>
 
                 {productosSeleccionados.length > 0 ? (
@@ -228,17 +205,17 @@ export default function DetalleMantenimientoScreen({
                   })
                 ) : (
                   <View style={[styles.equipoDetailRow, styles.costoProductoRow]}>
-                    <CustomText style={[styles.equipoDetailVal, styles.costoItalic]}>Ninguno</CustomText>
+                    <CustomText style={[styles.equipoDetailVal, styles.costoItalic]}>{TEXTOS_DETALLE.sinProductos}</CustomText>
                   </View>
                 )}
 
                 <View style={[styles.equipoDetailRow, styles.equipoDetailRowTop]}>
-                  <CustomText style={styles.equipoDetailLabel}>Costo de Mano de Obra:</CustomText>
+                  <CustomText style={styles.equipoDetailLabel}>{TEXTOS_DETALLE.labelManoObra}</CustomText>
                   <CustomText style={styles.equipoDetailVal}>₡{costoManoObraVal.toLocaleString("es-CR")}</CustomText>
                 </View>
 
                 <View style={[styles.equipoDetailRow, styles.costoTotalRow]}>
-                  <CustomText style={[styles.equipoDetailLabel, styles.costoTotalRowLabel]}>Costo Total:</CustomText>
+                  <CustomText style={[styles.equipoDetailLabel, styles.costoTotalRowLabel]}>{TEXTOS_DETALLE.labelCostoTotal}</CustomText>
                   <CustomText style={[styles.equipoDetailVal, styles.costoTotalRowValor]}>₡{costoTotalFinal.toLocaleString("es-CR")}</CustomText>
                 </View>
               </View>
@@ -270,10 +247,10 @@ export default function DetalleMantenimientoScreen({
       {/* Modal de confirmación de eliminación */}
       <ModalEliminar
         visible={showConfirmModal}
-        title="ticket de mantenimiento"
+        title={TEXTOS_DETALLE.modalEliminarTitulo}
         message={ticket ? ticket.id : ""}
-        confirmText="Sí, eliminar"
-        cancelText="Cancelar"
+        confirmText={TEXTOS_DETALLE.modalEliminarConfirm}
+        cancelText={TEXTOS_DETALLE.modalEliminarCancel}
         onConfirm={confirmDelete}
         onCancel={cerrarModalEliminar}
       />

@@ -1,18 +1,10 @@
 /**
- * ============================================================
  * ESTILOS: tareasStyles
- * ============================================================
- * Módulo: Mantenimiento de Equipos
+ * Estilos globales para las pantallas y componentes del catálogo de tareas (TareasScreen, DetalleTareaScreen).
  *
- * Estilos para la pantalla TareasScreen y sus componentes.
- * También incluye estilos compartidos para DetalleEquipoScreen
- * y DetalleTareaScreen.
- *
- * Utiliza la paleta de COLORS del tema central.
- *
- * Dependencias:
- * - COLORS desde theme/colors
- * ============================================================
+ * @dependencies - colors.js (theme/colors.js), style.js (theme/style.js)
+ * @validations  - Define estilos de tabla, modales, listas y tarjetas de tareas.
+ * @navigation   - Ninguna
  */
 
 import { StyleSheet } from 'react-native';
@@ -21,24 +13,15 @@ import { STYLE } from '../../../theme/style';
 
 export const styles = StyleSheet.create({
   // Contenedor principal de la pantalla
-  container: {
-    flex: 1,
-    paddingHorizontal: 0,
-    paddingBottom: 80,
-  },
+  // Ajuste del scroll principal para que deje espacio al footer flotante
+  screenScrollContent: { flexGrow: 1, paddingBottom: 110 },
 
   // Barra de herramientas (búsqueda + filtros)
 toolbar: {
     flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 0,
     paddingVertical: 12,
     backgroundColor: COLORS.white,
-    marginTop: 8,
     gap: 8,
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
 },
 
   searchBarContainer: {
@@ -55,67 +38,9 @@ toolbar: {
   // Alerta global
   alertWrapper: {
     marginBottom: 12,
-    paddingHorizontal: 16,
     width: '100%',
     maxWidth: 900,
     alignSelf: 'center',
-  },
-
-  // Tabla
-tableWrapper: {
-  flex: 1,
-  width: '100%',
-  maxWidth: 900,          // ← Agregar para que calce con la barra de búsqueda
-  alignSelf: 'center',    // ← Centrar horizontalmente
-  borderWidth: 1,
-  borderColor: COLORS.secondary,
-  borderRadius: 10,
-  overflow: 'hidden',
-  backgroundColor: COLORS.white,
-},
-
-  rowInner: {
-    maxWidth: 900,
-    alignSelf: 'center',
-    width: '100%',
-  },
-
-tableHeader: {
-  flexDirection: 'row',
-  backgroundColor: COLORS.secondary,
-  paddingVertical: 10,
-  paddingHorizontal: 12,
-  gap: 12,
-},
-
-  headerCell: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: COLORS.textSecondary,
-  },
-
-  // Columnas
-  colId: { width: 60 },
-  colNombre: { flex: 1.5, minWidth: 100 },
-  colDesc: { flex: 2, minWidth: 140 },
-  colCategoria: { flex: 1, minWidth: 90 },
-  colDuracion: { width: 90 },
-  colEstado: { width: 110, minWidth: 90 },
-
-  // Fila
-row: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  paddingVertical: 12,
-  paddingHorizontal: 12,
-  gap: 12,
-  borderTopWidth: 1,
-  borderTopColor: COLORS.secondary,
-},
-
-  cellText: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
   },
 
   // Botones de acción en fila
@@ -176,6 +101,46 @@ flatListContent: {
     fontSize: 14,
   },
 
+
+  taskCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  taskCardState: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: COLORS.textSecondary,
+  },
+  taskCardTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: COLORS.textSecondary,
+    marginBottom: 8,
+  },
+  taskCardDescription: {
+    fontSize: 13,
+    color: COLORS.textTertiary,
+    marginBottom: 12,
+  },
+  taskCardFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 12,
+    flexWrap: 'wrap',
+  },
+  taskCardMeta: {
+    fontWeight: "600",
+    fontSize: 12,
+    color: COLORS.black,
+  },
+  taskTitle: {
+    fontSize: 20, 
+    fontWeight: "700", 
+    color: COLORS.primary 
+  },
+
   // Botón flotante "Agregar tarea"
   floatingButtonContainer: {
     position: 'absolute',
@@ -183,7 +148,6 @@ flatListContent: {
     left: 0,
     right: 0,
     alignItems: 'center',
-    paddingHorizontal: 16,
   },
 
   floatingButton: {
@@ -193,13 +157,11 @@ flatListContent: {
     backgroundColor: 'transparent',
     borderColor: COLORS.primary,
     borderWidth: 1,
-    paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 8,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 6,
   },
 
   floatingButtonText: {

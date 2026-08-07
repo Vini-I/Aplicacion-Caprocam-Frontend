@@ -23,10 +23,12 @@ import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { useRouter, useFocusEffect } from "expo-router";
 import { useEquipos } from "./useEquipos";
 import { equiposService } from "../services/equiposService";
+import { useError } from "../../../shared/context/ErrorContext";
 
 export function useEquiposListScreen() {
   const router = useRouter();
   const formRef = useRef();
+  const { mostrarError } = useError();
 
   // --------------------------------------------------------
   // ESTADOS DE MODALES Y EDICIÓN
@@ -61,7 +63,7 @@ export function useEquiposListScreen() {
     expiryDate: "",
   });
 
-  // Alertas globales
+  // Alertas globales (solo para éxito/validaciones, errores de red van al modal)
   const [alert, setAlert] = useState(null);
   const alertTimeoutRef = useRef(null);
 
@@ -203,6 +205,7 @@ export function useEquiposListScreen() {
       setCodigoError("");
       fetchEquipos();
     } catch (error) {
+      // El error ya se muestra en el modal global, pero mostramos un mensaje local si es de validación (ej. 404)
       setCodigoError("No se pudo eliminar el equipo");
     }
   };
@@ -220,6 +223,7 @@ export function useEquiposListScreen() {
       setEditingEquipo(null);
       fetchEquipos();
     } catch (error) {
+      // El error ya se muestra en el modal global, solo mostramos validación local
       showAlert("danger", error.message || "Ocurrió un error al guardar el equipo");
     }
   };
@@ -229,7 +233,7 @@ export function useEquiposListScreen() {
       await toggleEquipo(id);
       fetchEquipos();
     } catch (error) {
-      showAlert("danger", "No se pudo cambiar el estado del equipo");
+      mostrarError(error);
     }
   };
 
@@ -282,5 +286,6 @@ export function useEquiposListScreen() {
     handleToggle,
     openDetail,
     navigateToMantEquipo,
+    showAlert,
   };
 }

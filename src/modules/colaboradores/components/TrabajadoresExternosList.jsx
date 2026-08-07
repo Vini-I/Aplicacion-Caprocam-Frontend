@@ -49,15 +49,15 @@ export default function TrabajadoresExternosList({ trabajadores, onSelectTrabaja
         <TouchableOpacity key={item.id} onPress={() => onSelectTrabajador?.(item.id)}>
           <View style={styles.item}>
             <CustomText style={styles.itemName}>{item.nombre}</CustomText>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
-              <Icon icon={ICONS.phone} size={13} color={COLORS.textTertiary} style={{ marginRight: 6 }} />
-              <CustomText style={styles.itemDetail}>{item.telefono}</CustomText>
+            <View style={styles.itemRow}>
+              <Icon icon={ICONS.phone} size={13} color={COLORS.textTertiary} style={styles.iconSpacing} />
+              <CustomText style={styles.itemDetailText}>{item.telefono}</CustomText>
             </View>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
-              <Icon icon={ICONS.user} size={13} color={COLORS.textTertiary} style={{ marginRight: 6 }} />
-              <CustomText style={styles.itemDetail}>{item.email}</CustomText>
+            <View style={styles.itemRow}>
+              <Icon icon={ICONS.user} size={13} color={COLORS.textTertiary} style={styles.iconSpacing} />
+              <CustomText style={styles.itemDetailText}>{item.email}</CustomText>
             </View>
-            <CustomText style={styles.itemDetail}>Cédula: {item.cedula}</CustomText>
+            <CustomText style={styles.itemDetailText}>Cédula: {item.cedula}</CustomText>
           </View>
         </TouchableOpacity>
       ))}

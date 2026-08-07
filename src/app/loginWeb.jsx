@@ -7,7 +7,7 @@ export default function LoginWeb() {
     const router = useRouter();
 
     const handleLogin = () => {
-        router.push("/login");
+        router.push("/inicio");
     };
 
         const handleRegister = () => {

@@ -4,7 +4,9 @@
  * tareas, productos y lógica de eliminación para DetalleMantenimiento.
  *
  * @dependencies - InventarioService, mantEquipoService, tareasService, equiposService
- * @validations  - Expone errorCarga y errorEliminar para notificación en UI.
+ * @validations  - Expone errorCarga (fallo al cargar el ticket) y alerta
+ *                 (éxito de edición previa o fallo al eliminar) para
+ *                 notificación en UI.
  * @navigation   - Callback onNavigateToMain tras eliminación exitosa.
  */
 
@@ -13,6 +15,7 @@ import { getProductoById, getProductosInventario } from '../../inventarios/servi
 import * as MantService from '../services/mantEquipoService.js';
 import { obtenerTareas } from '../services/tareasService.js';
 import { equiposService } from '../services/equiposService.js';
+import { ALERTAS_NOTIFICACIONES, MENSAJES_ERROR_CARGA, TEXTOS_DETALLE } from '../constants/mantEquipoMensajes.js';
 
 export function useDetalleMantenimiento({ id, alertaTipo, alertaMensaje, onNavigateToMain }) {
 
@@ -60,7 +63,7 @@ export function useDetalleMantenimiento({ id, alertaTipo, alertaMensaje, onNavig
           list = raw.map(p => ({
             ...p,
             id: p.id || p.producto_id || p.productoId,
-            nombre: p.nombre || p.nombreProducto || p.producto?.nombre || `Producto ${p.id}`,
+            nombre: p.nombre || p.nombreProducto || p.producto?.nombre || TEXTOS_DETALLE.labelProductoFallback(p.id),
             precioUnidad: p.precioUnidad || p.precio_unidad || p.precio || 0,
           }));
         } catch (errProd) {
@@ -79,7 +82,7 @@ export function useDetalleMantenimiento({ id, alertaTipo, alertaMensaje, onNavig
                 ...(enInventario || {}),
                 id:            tp.id || prodId,
                 productoId:    prodId,
-                nombre:        tp.nombre || enInventario?.nombre || `Producto ${prodId}`,
+                nombre:        tp.nombre || enInventario?.nombre || TEXTOS_DETALLE.labelProductoFallback(prodId),
                 precioUnidad:  Number(tp.costoUnitario || tp.costo_unitario || enInventario?.precioUnidad) || 0,
                 costoUnitario: Number(tp.costoUnitario || tp.costo_unitario || enInventario?.precioUnidad) || 0,
                 cantidad:      Number(tp.cantidad) || 1,
@@ -101,7 +104,7 @@ export function useDetalleMantenimiento({ id, alertaTipo, alertaMensaje, onNavig
         }
       } catch (err) {
         console.error('useDetalleMantenimiento.cargar:', err?.message || err);
-        setErrorCarga('No se pudo cargar el ticket. Verifica la conexión e intenta de nuevo.');
+        setErrorCarga(MENSAJES_ERROR_CARGA.errorCargarTicket);
       } finally {
         setCargando(false);
       }
@@ -113,27 +116,59 @@ export function useDetalleMantenimiento({ id, alertaTipo, alertaMensaje, onNavig
   useEffect(() => {
     if (!alertaTipo || !alertaMensaje) return;
     setAlerta({ tipo: alertaTipo, mensaje: alertaMensaje });
+  }, [alertaTipo, alertaMensaje]);
+
+  useEffect(() => {
+    if (!alerta) return;
     const timer = setTimeout(() => setAlerta(null), 4000);
     return () => clearTimeout(timer);
-  }, [alertaTipo, alertaMensaje]);
+  }, [alerta]);
 
   // ── Eliminación ──────────────────────────────────────────────
   const abrirModalEliminar  = () => setShowConfirmModal(true);
   const cerrarModalEliminar = () => setShowConfirmModal(false);
+
+  const cambiarEstadoTarea = async (tarea) => {
+    if (!tarea?.id) return;
+
+    const nuevoEstado = tarea.realizada ? 'Pendiente' : 'Realizado';
+
+    try {
+      await MantService.actualizarEstadoTareaEnTicket(tarea.id, nuevoEstado);
+      setTicket(prev => prev ? {
+        ...prev,
+        tareas: (prev.tareas || []).map(item => item.id === tarea.id
+          ? { ...item, estado: nuevoEstado, realizada: nuevoEstado === 'Realizado' }
+          : item),
+      } : prev);
+      setAlerta({
+        tipo: 'success',
+        mensaje: nuevoEstado === 'Realizado'
+          ? 'Tarea finalizada correctamente.'
+          : 'Tarea marcada como pendiente.',
+      });
+    } catch (err) {
+      console.error('useDetalleMantenimiento.cambiarEstadoTarea:', err?.message || err);
+      setAlerta({
+        tipo: 'danger',
+        mensaje: 'No se pudo actualizar el estado de la tarea.',
+      });
+    }
+  };
 
   const confirmDelete = async () => {
     setShowConfirmModal(false);
     try {
       await MantService.eliminarTicket(id);
       onNavigateToMain({
-        alertaTipo:    'danger',
-        alertaMensaje: `El ticket ${id} ha sido eliminado correctamente del sistema.`,
+        alertaTipo:    'success',
+        alertaMensaje: ALERTAS_NOTIFICACIONES.exitoEliminarTicket(id),
       });
     } catch (err) {
       console.error('useDetalleMantenimiento.confirmDelete:', err?.message || err);
       setAlerta({
         tipo:    'danger',
-        mensaje: 'No se pudo eliminar el ticket. Verifica la conexión e intenta de nuevo.',
+        mensaje: MENSAJES_ERROR_CARGA.errorEliminarTicket,
       });
     }
   };
@@ -149,6 +184,7 @@ export function useDetalleMantenimiento({ id, alertaTipo, alertaMensaje, onNavig
     productosSeleccionados,
     abrirModalEliminar,
     cerrarModalEliminar,
+    cambiarEstadoTarea,
     confirmDelete,
   };
 }

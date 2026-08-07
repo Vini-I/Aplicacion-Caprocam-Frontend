@@ -1,11 +1,10 @@
 /**
- * ============================================================
- * UTILIDAD: Almacenamiento del Token JWT
- * ============================================================
+ * UTILIDAD: tokenStorage
+ * Gestiona el almacenamiento, lectura y eliminación del token JWT y objeto de usuario en localStorage.
  *
- * Maneja el guardado, lectura y eliminación del JSON Web Token
- * en el navegador (localStorage).
- *
+ * @dependencies - localStorage (Browser API)
+ * @validations  - Manejo seguro de excepciones try/catch para lectura y escritura.
+ * @navigation   - Ninguna
  */
 
 // Clave utilizada para guardar el token en localStorage

@@ -15,25 +15,10 @@ import { COLORS } from "../../../theme/colors.js";
 export const styles = StyleSheet.create({
   // ── Toolbar ────────────────────────────────────────────────
   toolbar: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 14, flexWrap: "wrap", zIndex: 100, overflow: "visible" },
-  btnAddTask: { flexDirection: "row", alignItems: "center", borderRadius: 8, paddingHorizontal: 12, height: 42, borderWidth: 1, borderColor: COLORS.warning, backgroundColor: COLORS.white, gap: 6, marginTop: 0 },
-  btnAddMaint: { flexDirection: "row", alignItems: "center", borderRadius: 8, paddingHorizontal: 12, height: 42, borderWidth: 1, borderColor: COLORS.primary, backgroundColor: COLORS.white, gap: 6, marginTop: 0 },
+  btnAddTask: { flexDirection: "row", alignItems: "center", justifyContent: "center", width: "100%", paddingVertical: 10, paddingHorizontal: 12, borderWidth: 1, borderColor: COLORS.warning, backgroundColor: COLORS.white, gap: 8, marginTop: 0 },
+  btnAddMaint: { flexDirection: "row", alignItems: "center", justifyContent: "center", width: "100%", paddingVertical: 10, paddingHorizontal: 12, borderWidth: 1, borderColor: COLORS.primary, backgroundColor: COLORS.white, gap: 8, marginTop: 0 },
   btnLabel: { fontWeight: "700", fontSize: 13 },
 
-  // ── Tabla Estandarizada Responsiva ──────────────────────────
-  tableWrapper: { width: "100%", borderWidth: 1, borderColor: COLORS.secondary, borderRadius: 10, overflow: "hidden", backgroundColor: COLORS.white },
-  tableContentInner: { width: "100%", minWidth: "100%" },
-  tableHeader: { flexDirection: "row", alignItems: "center", backgroundColor: COLORS.secondary, paddingVertical: 12, paddingHorizontal: 16, width: "100%" },
-  colTicket: { flex: 1, minWidth: 70, overflow: "hidden", paddingRight: 8 },
-  colDue: { flex: 1, minWidth: 95, overflow: "hidden", paddingRight: 8 },
-  colStatus: { flex: 1, minWidth: 135, alignItems: "flex-start", overflow: "hidden", paddingRight: 8 },
-  colTitle: { flex: 1, minWidth: 100, overflow: "hidden", paddingRight: 8 },
-  colDesc: { flex: 1, minWidth: 110, overflow: "hidden", paddingRight: 8 },
-  colBy: { flex: 1, minWidth: 100, overflow: "hidden", paddingRight: 8 },
-  colActions: { width: 110, alignItems: "center", justifyContent: "center" },
-  colTitleMobile: { width: 130, overflow: "hidden", paddingRight: 8 },
-  colDescMobile: { width: 175, overflow: "hidden", paddingRight: 12 },
-  headerCell: { fontSize: 11, fontWeight: "700", color: COLORS.textSecondary },
-  row: { flexDirection: "row", alignItems: "center", paddingVertical: 12, paddingHorizontal: 16, borderTopWidth: 1, borderTopColor: COLORS.secondary, width: "100%" },
   // ── CardPress-based row (reemplaza TouchableOpacity en TablaTicket) ──
   rowCard: { borderRadius: 0, borderWidth: 0, borderTopWidth: 1, borderTopColor: COLORS.secondary, marginBottom: 0, paddingVertical: 0, paddingHorizontal: 0, shadowOpacity: 0, elevation: 0 },
   rowInner: { flexDirection: "row", alignItems: "center", paddingVertical: 12, paddingHorizontal: 16, width: "100%" },
@@ -132,6 +117,15 @@ export const styles = StyleSheet.create({
   screenFormContent: { paddingBottom: 40, gap: 16 },
   cardSection: { padding: 16 },
 
+  // ── Lista de tickets como tarjetas ───────────────────────────
+  ticketCardRow: { gap: 10 },
+  ticketCardHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center"},
+  ticketCardId: { fontSize: 20, fontWeight: "700", color: COLORS.primary },
+  ticketCardTitle: { fontSize: 15, fontWeight: "700", color: COLORS.textSecondary},
+  ticketCardDescription: { fontSize: 13, color: COLORS.textTertiary},
+  ticketCardMetaRow: { flexDirection: "row", justifyContent: "space-between", gap: 12, flexWrap: "wrap" },
+  ticketCardMeta: { fontSize: 12, color: COLORS.textTertiary },
+
   // ── Campo solo lectura (Creado por) ─────────────────────────
   readOnlyField: { backgroundColor: COLORS.surface },
   readOnlyText: { fontSize: 14, color: COLORS.textSecondary },
@@ -153,15 +147,27 @@ export const styles = StyleSheet.create({
   alertTopMargin: { marginTop: 12, alignItems: "center", justifyContent: "center", width: "100%" },
   alertSecondMargin: { marginTop: 8, alignItems: "center", justifyContent: "center", width: "100%" },
 
+  // ── Alerta de error de servidor/conexión (crear/editar ticket) ──
+  alertServidor: { marginVertical: 12, alignItems: "center", justifyContent: "center", width: "100%" },
+  alertServidorTexto: { color: COLORS.black, fontWeight: "600", fontSize: 13, textAlign: "center", width: "100%" },
+
   // ── Pantalla Principal (ManteniminetoPrincipal) ──────────────
-  screenRoot: { flex: 1, backgroundColor: COLORS.white },
-  screenScrollContent: { flexGrow: 1, paddingBottom: 24 },
+  screenScrollContent: { flexGrow: 1, paddingBottom: 110 },
   toolbarWithZIndex: { zIndex: 10, marginTop: 12 },
   alertBottom: { marginBottom: 14 },
   emptyState: { padding: 24, alignItems: "center" },
   emptyStateText: { color: COLORS.textTertiary, fontSize: 14 },
-  bottomButtonsRow: { flexDirection: "row", width: "100%", gap: 12, marginTop: 16 },
-  floatingFooter: { paddingHorizontal: 16, paddingBottom: 28, paddingTop: 8 },
+  bottomButtonsRow: { flexDirection: "column", width: "100%", gap: 10 },
+  floatingFooter: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingHorizontal: 16,
+    paddingTop: 10,
+    paddingBottom: 16,
+    backgroundColor: "transparent",
+  },
   btnFooterFlex: { flex: 1 },
   btnLabel: { marginLeft: 6, fontSize: 14, fontWeight: "600" },
   btnLabelPrimary: { color: COLORS.primary },
@@ -193,7 +199,6 @@ export const styles = StyleSheet.create({
   infoLabel: { fontSize: 12, color: COLORS.textTertiary, marginBottom: 2 },
   infoValue: { fontSize: 14, fontWeight: "600", color: COLORS.textSecondary },
   infoValueLg: { fontSize: 15, fontWeight: "600", color: COLORS.textSecondary },
-  infoValueDesc: { fontSize: 13, color: COLORS.textSecondary, lineHeight: 18 },
   infoRow: { flexDirection: "row", marginBottom: 16, gap: 16 },
   infoRowItem: { flex: 1 },
 
@@ -246,15 +251,86 @@ export const styles = StyleSheet.create({
     backgroundColor: COLORS.primaryLight,
   },
 
-  // ── MantenimientoProductoSelect ──────────────────────────────
-  // Wrapper del componente (reemplaza style={{ marginBottom: 12 }} inline)
-  productoSelectWrapper: { marginBottom: 12 },
-  // Wrapper con alerta de stock (reemplaza containerStyle condicional inline)
-  productoSelectContainerWithAlert: { marginBottom: 4 },
+  productoComboWrapper: { position: "relative", marginBottom: 4 },
+  productoComboInput: {
+    minHeight: 45,
+    borderWidth: 1,
+    borderColor: COLORS.secondary,
+    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    paddingRight: 30,
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    backgroundColor: COLORS.white,
+  },
+  productoComboArrow: {
+    position: "absolute",
+    right: 12,
+    top: 13,
+    fontSize: 16,
+    color: COLORS.textTertiary,
+  },
+  productoDropdown: {
+    marginTop: 4,
+    borderWidth: 1,
+    borderColor: COLORS.secondary,
+    borderRadius: 8,
+    backgroundColor: COLORS.white,
+    overflow: "hidden",
+  },
+  // 6 opciones visibles (44px de alto cada una); a partir de la 7ma se activa el scroll.
+  productoDropdownScroll: { maxHeight: 264 },
+  productoDropdownOption: {
+    minHeight: 44,
+    justifyContent: "center",
+    alignItems: "flex-start",
+    marginTop: 0,
+    paddingVertical: 11,
+    paddingHorizontal: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border || COLORS.secondary,
+  },
+  productoDropdownOptionText: { fontSize: 14, color: COLORS.textSecondary },
+  productoDropdownEmpty: {
+    minHeight: 44,
+    justifyContent: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+  },
+  productoDropdownEmptyText: { fontSize: 13, color: COLORS.textTertiary },
 
   // ── DetalleMantenimiento: Badge de tarea realizada/pendiente ──────
   // Base del badge (layout estático); borderColor, backgroundColor y color
   // se aplican dinámicamente vía array de estilos.
+  tareaAccionButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 6,
+    borderWidth: 1,
+    marginTop: 0,
+  },
+  tareaAccionRealizada: {
+    borderColor: COLORS.success,
+    backgroundColor: COLORS.successLight,
+  },
+  tareaAccionPendiente: {
+    borderColor: COLORS.textTertiary,
+    backgroundColor: COLORS.surface,
+  },
+  tareaAccionTextBase: {
+    fontSize: 11,
+    fontWeight: "600",
+    marginLeft: 6,
+  },
+  tareaAccionTextRealizada: {
+    color: COLORS.success,
+  },
+  tareaAccionTextPendiente: {
+    color: COLORS.textTertiary,
+  },
   tareaBadgeBase: {
     borderWidth: 1,
     borderRadius: 4,

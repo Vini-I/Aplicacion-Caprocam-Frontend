@@ -2,19 +2,15 @@
  * ============================================================
  * CONSTANTES: mantEquipoMensajes
  * ============================================================
- * 
- * Responsabilidad: Centraliza los textos estáticos, etiquetas de campos,
- * cabeceras de tabla, opciones para selectores y los mapeos de estados
- * del módulo de Mantenimiento de Equipos.
- * 
- * Incluye:
- * - Textos UI (labels, placeholders, mensajes de validación)
- * - Listas de opciones para SelectorPills y comboboxes
- * - Mapeos frontend ↔ backend para estado del ticket y tipo de personal
- * - Constantes de estado del ticket
- * 
- * Dependencias:
- * - tokenStorage (solo para obtener el usuario de sesión)
+ *
+ * Módulo: Mantenimiento de Equipos
+ *
+ * RESPONSABILIDAD:
+ * - Centralizar los textos estáticos, etiquetas, opciones de selectores y mapeos de enum frontend ↔ backend.
+ *
+ * @dependencies - tokenStorage.js (login/utils/tokenStorage.js)
+ * @validations  - Mapeo bidireccional estricto de estados de ticket y tipo de personal para la API.
+ * @navigation   - Ninguna
  */
 
 
@@ -26,11 +22,6 @@ export const TEXTOS_PANTALLA = {
   btnAgregarMant: "Registrar Ticket",
   btnAgregarTarea: "Ver Tareas",
 };
-
-// ─── Cabeceras de tabla ────────────────────────────────────────────────────────
-export const HEADERS_TABLA = [
-  "Ticket ID", "Fecha creación", "Estado", "Título", "Descripción", "Creado por",
-];
 
 // ─── Textos del formulario Agregar / Editar ────────────────────────────────────
 export const TEXTOS_MODAL_AGREGAR = {
@@ -47,11 +38,22 @@ export const TEXTOS_MODAL_AGREGAR = {
   labelDescripcion:    "Descripción *",
   placeholderDesc:     "Ej: Cambio de aceite y revisión de frenos",
   labelEstado:         "Estado del ticket",
+  labelTipoPersonal:   "Tipo de Personal",
   btnAceptar:          "Registrar Ticket",
+  btnCrear:            "Crear Ticket",
   btnActualizar:       "Actualizar Ticket",
   btnEliminar:         "Eliminar Ticket",
   tituloEdicion:       "Modificar Mantenimiento",
   errorValidacion:     "Revisa los campos obligatorios marcados con * antes de guardar.",
+  errorTareasPendientes: "No se puede terminar el ticket si existen tareas pendientes.",
+  errorTituloCorto:    "El título debe tener más de 10 caracteres.",
+  errorTituloMax:      "El título alcanzó el máximo de 100 caracteres.",
+  errorDescripcionCorta: "La descripción debe tener más de 20 caracteres.",
+  errorDescripcionMax: "La descripción alcanzó el máximo de 400 caracteres.",
+  hintCostoManoObra:   "Ingresa 0 si no aplica, o un monto de al menos ₡1000.",
+  errorCrearTicket:    "No se pudo crear el ticket. Verifica la conexión e intenta de nuevo.",
+  errorEditarTicket:   (id) => `No se pudo editar el ticket #${id}. Verifica la conexión e intenta de nuevo.`,
+  errorEliminarTicket: (id) => `No se pudo eliminar el ticket #${id}. Verifica la conexión e intenta de nuevo.`,
   
 };
 
@@ -117,4 +119,59 @@ export const TIPO_PERSONAL_A_BACKEND = {
 export const TIPO_PERSONAL_A_FRONTEND = {
   'TrabajadorInterno': 'interno',
   'TrabajadorExterno': 'externo',
+};
+
+// ─── Alertas y notificaciones dinámicas ────────────────────────────────────────
+export const ALERTAS_NOTIFICACIONES = {
+  exitoCrearTicket:    (id) => `Ticket ${id} creado con éxito.`,
+  exitoEditarTicket:   (id) => `Ticket ${id} modificado correctamente.`,
+  exitoEliminarTicket: (id) => `El ticket ${id} ha sido eliminado correctamente del sistema.`,
+  alertaStockInsumo:   (nombre, stockMax) => `No hay más stock disponible para "${nombre}". (Stock máximo en inventario: ${stockMax})`,
+};
+
+// ─── Mensajes de error de carga y conexión ─────────────────────────────────────
+export const MENSAJES_ERROR_CARGA = {
+  errorCargarTicket:   "No se pudo cargar el ticket. Verifica la conexión e intenta de nuevo.",
+  errorEliminarTicket: "No se pudo eliminar el ticket. Verifica la conexión e intenta de nuevo.",
+  ticketNoEncontrado:  "Ticket no encontrado.",
+};
+
+// ─── Textos de la pantalla de Detalle ─────────────────────────────────────────
+export const TEXTOS_DETALLE = {
+  tituloGeneral:        "IDENTIFICACIÓN Y GENERAL",
+  tituloEquipo:         "DETALLES DEL EQUIPO",
+  tituloTareas:         "TAREAS ASIGNADAS",
+  tituloCostos:         "COSTOS DEL TICKET",
+  subtituloProductos:   "Productos utilizados",
+  sinProductos:         "Ninguno",
+  sinTareas:            "Ninguna tarea asignada.",
+  labelManoObra:        "Costo de Mano de Obra:",
+  labelCostoTotal:      "Costo Total:",
+  labelTipoPersonal:    "Tipo de Personal Asignado",
+  modalEliminarTitulo:  "ticket de mantenimiento",
+  modalEliminarConfirm: "Sí, eliminar",
+  modalEliminarCancel:  "Cancelar",
+  btnRegresarLista:     "Regresar a lista",
+  badgeRealizada:       "Realizada",
+  badgePendiente:       "Pendiente",
+  catPreventivo:        "Preventivo",
+  catCorrectivo:        "Correctivo",
+  labelTrabajadorExterno: "Trabajador Externo",
+  labelTrabajadorInterno: "Trabajador Interno",
+  labelCategoriaPrefix:   "Categoría: ",
+  labelDuracionEstimada:  (hrs) => `Duración estimada: ${hrs} hrs`,
+  labelProductoFallback:  (id) => `Producto ${id}`,
+  labelTicketHeader:      (id) => `TICKET #${id}`,
+};
+
+// ─── Mensajes internos de la capa de servicio ────────────────────────────────
+export const MENSAJES_SERVICIOS = {
+  itemInvalido:          "adaptBackendTicket: item inválido",
+  respuestaNoArreglo:    "obtenerTickets: la respuesta del servidor no es un arreglo",
+  idInvalido:            (id) => `obtenerTicketPorId: ID inválido recibido: "${id}"`,
+  ticketNoEncontradoId:  (id) => `obtenerTicketPorId: ticket con ID "${id}" no encontrado`,
+  equipoObligatorio:     "buildPayload: equipoId es obligatorio",
+  tituloObligatorio:     "buildPayload: titulo es obligatorio",
+  sinIdActualizar:       "actualizarTicket: no se puede determinar el ID del ticket",
+  idInvalidoEliminar:    "eliminarTicket: ID inválido",
 };

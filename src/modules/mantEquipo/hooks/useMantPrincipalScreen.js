@@ -19,6 +19,9 @@
  * @dependencies - useMantEquipo (tickets, busqueda, cargando, setBusqueda)
  *               - obtenerTareas de tareasService
  *               - equiposService.getEquipos
+ *               - useError (shared/context/ErrorContext) para mostrar el
+ *                 ModalError si falla la carga de equipos (usada para el
+ *                 filtro cruzado por estado de equipo).
  * @validations  - Filtrado en memoria insensible a mayúsculas/minúsculas
  * @navigation   - Ninguna (los callbacks de navegación son props del screen)
  */
@@ -27,6 +30,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useMantEquipo } from './useMantEquipo';
 import { obtenerTareas } from '../services/tareasService';
 import { equiposService } from '../services/equiposService';
+import { useError } from '../../../shared/context/ErrorContext.js';
 
 export function useMantPrincipalScreen({ alertaTipo, alertaMensaje, refreshTimestamp }) {
   const {
@@ -36,10 +40,12 @@ export function useMantPrincipalScreen({ alertaTipo, alertaMensaje, refreshTimes
     setBusqueda,
   } = useMantEquipo();
 
+  const { mostrarError } = useError();
+
   // ── Filtros de estado ────────────────────────────────────────
   const [filtros, setFiltros] = useState({
     estadosEquipo: [],
-    estadosTicket: [],
+    estadosTicket: ["en_espera", "en_mantenimiento"],
     fecha: "",
   });
 
@@ -52,8 +58,14 @@ export function useMantPrincipalScreen({ alertaTipo, alertaMensaje, refreshTimes
 
   useEffect(() => {
     obtenerTareas().then(data => setTareasCatalog(data || [])).catch(() => {});
-    equiposService.getEquipos().then(data => setEquiposList(data || [])).catch(() => {});
-  }, []);
+    equiposService.getEquipos()
+      .then(data => setEquiposList(data || []))
+      .catch((err) => {
+        mostrarError(err);
+        mostrarError('No se pudo cargar la lista de equipos. Verifica la conexión con el servidor.');
+        setEquiposList([]);
+      });
+  }, [mostrarError]);
 
   // ── Alerta por props ────────────────────────────────────────
   useEffect(() => {
@@ -69,15 +81,31 @@ export function useMantPrincipalScreen({ alertaTipo, alertaMensaje, refreshTimes
     }
   }, [alertaTipo, alertaMensaje, refreshTimestamp]);
 
+  const activeFiltersForButton = useMemo(() => ({
+    categories: filtros.estadosTicket || [],
+    suppliers: filtros.estadosEquipo || [],
+    units: [],
+    lowStock: false,
+    expiryDate: "",
+  }), [filtros]);
+
+  const handleApplyFilter = (pending) => {
+    setFiltros({
+      estadosTicket: pending.categories || [],
+      estadosEquipo: pending.suppliers || [],
+      fecha: "",
+    });
+  };
+
   // ── Filtrado combinado ──────────────────────────────────────
   const ticketsFiltrados = useMemo(() => {
     let result = tickets;
 
-    // 1. Filtrar por búsqueda de texto
+    // 1. Filtrar por búsqueda de texto (sin 'creadoPor')
     if (busqueda.trim()) {
       const q = busqueda.toLowerCase().trim();
       result = result.filter((t) => {
-        const coincideCampos = ["id", "descripcion", "titulo", "creadoPor", "estado"].some(
+        const coincideCampos = ["id", "descripcion", "titulo", "estado"].some(
           (k) => String(t[k] ?? "").toLowerCase().includes(q)
         );
         const coincideTareas = Array.isArray(t.tareas) && t.tareas.some((tar) => {
@@ -98,10 +126,11 @@ export function useMantPrincipalScreen({ alertaTipo, alertaMensaje, refreshTimes
       });
     }
 
-    // 3. Filtrar por estado de ticket seleccionado
-    if (filtros.estadosTicket.length > 0) {
-      result = result.filter((t) => filtros.estadosTicket.includes(t.estado));
-    }
+    // 3. Filtrar por estado de ticket seleccionado (por defecto oculta 'Terminado')
+    const estadosActivos = Array.isArray(filtros.estadosTicket) && filtros.estadosTicket.length > 0
+      ? filtros.estadosTicket
+      : ["en_espera", "en_mantenimiento"];
+    result = result.filter((t) => estadosActivos.includes(t.estado));
 
     return result;
   }, [tickets, busqueda, filtros, tareasCatalog, equiposList]);
@@ -115,5 +144,7 @@ export function useMantPrincipalScreen({ alertaTipo, alertaMensaje, refreshTimes
     filtros,
     setFiltros,
     alerta,
+    activeFiltersForButton,
+    handleApplyFilter,
   };
 }

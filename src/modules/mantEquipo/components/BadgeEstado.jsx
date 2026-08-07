@@ -2,21 +2,16 @@
  * ============================================================
  * COMPONENTE: BadgeEstado
  * ============================================================
- * 
+ *
  * Módulo: Mantenimiento de Equipos
- * 
+ *
  * RESPONSABILIDAD:
- * - Renderiza la etiqueta de estado de un ticket consumiendo el componente
- *   reutilizable Badge de shared/components/Badge.jsx.
- * - Aplica variantes y clases de estilo definidas centralizadamente en mantEquipoStyles.js.
- * 
- * DATOS / PROPS:
- * - estado: string ("en_espera", "en_mantenimiento", "Terminado")
- * 
- * DEPENDENCIAS:
- * - Badge de shared
- * - styles de mantEquipoStyles
- * ============================================================
+ * - Componente personalizado que reutiliza elementos de shared/components.
+ * - Renderizar la etiqueta de estado de un ticket consumiendo el componente Badge.
+ *
+ * @dependencies - Badge.jsx (shared/components), mantEquipoStyles.js (styles)
+ * @validations  - Mapea variante y estilos según estado ("en_espera", "en_mantenimiento", "Terminado").
+ * @navigation   - Ninguna
  */
 
 import React from "react";

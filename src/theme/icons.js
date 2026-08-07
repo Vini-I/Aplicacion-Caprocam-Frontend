@@ -205,6 +205,10 @@ export const ICONS = {
     provider: "Feather",
     name: "trending-up",
   },
+  fertilizer: {
+    provider: "MaterialCommunityIcons",
+    name: "sprout",
+  },
   shrimp: {
     provider: "FontAwesome6",
     name: "shrimp",
@@ -244,6 +248,10 @@ export const ICONS = {
   shieldAlert: {
     provider: "MaterialCommunityIcons",
     name: "shield-alert-outline",
+  },
+  treatment: {
+    provider: "MaterialCommunityIcons",
+    name: "medical-bag",
   },
   mortality: {
     provider: "MaterialCommunityIcons",

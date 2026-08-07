@@ -12,10 +12,12 @@
  * - Traduce los campos crudos del backend (snake_case: finca_id,
  *   fecha_siembra, pl_siembra, etc.) al formato que espera
  *   SiembraCard (camelCase, PL como "PL8", fechas en dd/mm/aaaa)
- * - Enriquece cada registro con el nombre real de finca y estanque
- *   (fincaLabel/estanqueLabel) usando el catálogo de
- *   fincaEstanqueLocal, ya que el backend solo devuelve los ids.
- * - Administra el texto de búsqueda y los filtros aplicados.
+ * - Enriquece cada registro con el nombre real de finca, estanque,
+ *   lote y proveedor de larva (fincaLabel/estanqueLabel/loteLabel/
+ *   proveedorLabel), consultando los services reales del backend,
+ *   ya que el backend solo devuelve los ids.
+ * - Administra el texto de búsqueda (por finca, estanque, lote y
+ *   proveedor de larva) y los filtros aplicados.
  * - Calcula el listado final a mostrar (siembrasFiltradas).
  * - Oculta del listado principal las siembras y pre-crías que ya
  *   completaron su ciclo, para que no se acumulen tarjetas de
@@ -30,18 +32,25 @@
  * solo conserva la navegación (useRouter).
  */
 
-import { useState, useEffect, useCallback, useMemo } from "react";
-import { useNavigation, useRouter } from "expo-router";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useNavigation, useRouter, useLocalSearchParams } from "expo-router";
 import { calcularProgresoCiclo } from "./siembraCalculos";
 import { getSiembras } from "../services/siembra.service";
 import { getPrecrias } from "../services/precria.service";
-import { obtenerFincas, obtenerEstanquesPorFinca } from "./fincaEstanqueLocal";
+import { fincaService } from "../../finca/services/finca.service";
+import { estanqueService } from "../../estanques/services/estanque.service";
+import { useError } from "../../../shared/context/ErrorContext";
+import { getLotes } from "../services/lote.service";
 import { formatearFechaDesdeISO } from "./dateUtils";
 
 function haFinalizado(registro) {
-  if (registro.tipoRegistro === "precria")
+  if (registro.tipoRegistro === "precria") {
     return registro.estado === "Finalizada";
-  return calcularProgresoCiclo(registro).progreso >= 100;
+  }
+  return (
+    registro.estado === "Finalizada" ||
+    calcularProgresoCiclo(registro).progreso >= 100
+  );
 }
 
 export default function useSiembraList() {
@@ -52,27 +61,83 @@ export default function useSiembraList() {
   const [busqueda, setBusqueda] = useState("");
   const [filtros, setFiltros] = useState({ categories: [] });
   const [cargando, setCargando] = useState(true);
-  const [error, setError] = useState("");
+  const { mostrarError } = useError();
+  const { mensajeExito } = useLocalSearchParams();
+  const [mensaje, setMensaje] = useState("");
+  const [mensajeVariant, setMensajeVariant] = useState("info");
+  const mensajeTimeoutRef = useRef(null);
 
+  function mostrarMensaje(texto, variant) {
+    if (mensajeTimeoutRef.current) {
+      clearTimeout(mensajeTimeoutRef.current);
+    }
+    setMensaje(texto);
+    setMensajeVariant(variant);
+
+    const duracion = variant === "success" ? 3000 : 6000;
+    mensajeTimeoutRef.current = setTimeout(() => {
+      setMensaje("");
+    }, duracion);
+  }
+
+  useEffect(() => {
+    return () => {
+      if (mensajeTimeoutRef.current) clearTimeout(mensajeTimeoutRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (mensajeExito) {
+      mostrarMensaje(mensajeExito, "success");
+    }
+  }, [mensajeExito]);
   const tiposRegistro = [
     { label: "Siembra", value: "siembra" },
     { label: "Pre-Cría", value: "precria" },
   ];
 
-  const fincas = useMemo(() => obtenerFincas(), []);
+  const [fincas, setFincas] = useState([]);
+  const [estanques, setEstanques] = useState([]);
 
+  useEffect(() => {
+    fincaService
+      .getFincas()
+      .then((data) =>
+        setFincas(data.map((f) => ({ label: f.nombreFinca, value: f.id }))),
+      )
+      .catch(() => setFincas([]));
+  }, []);
+
+  useEffect(() => {
+    estanqueService
+      .getEstanques()
+      .then((todos) => {
+        const mapeados = todos.map((estanque) => ({
+          label: estanque.codigo,
+          value: estanque.id,
+        }));
+        setEstanques(mapeados);
+      })
+      .catch(() => setEstanques([]));
+  }, []);
   function obtenerNombresFincaEstanque(registro) {
     const finca = fincas.find((f) => f.value === registro.finca_id);
-    // Los estanques están indexados por finca en el mock - buscamos
-    // dentro de los del finca_id correspondiente.
-    const estanque = obtenerEstanquesPorFinca(registro.finca_id).find(
-      (e) => e.value === registro.estanque_id,
-    );
+    const estanque = estanques.find((e) => e.value === registro.estanque_id);
+    const lote = lotes.find((l) => l.id === registro.lote_larva_id);
     return {
       fincaLabel: finca?.label || "Sin finca",
       estanqueLabel: estanque?.label || "Sin estanque",
+      loteLabel: lote?.codigo_lote || "",
+      proveedorLabel: lote?.nombre_proveedor || "",
+      codigoLoteLarva: lote?.codigo_lote || "",
     };
   }
+  const [lotes, setLotes] = useState([]);
+  useEffect(() => {
+    getLotes()
+      .then(setLotes)
+      .catch(() => setLotes([]));
+  }, []);
 
   function mapSiembraParaCard(s) {
     const base = {
@@ -83,7 +148,7 @@ export default function useSiembraList() {
       fechaSiembra: formatearFechaDesdeISO(s.fecha_siembra),
       cantidadSembrada: s.cantidad_sembrada,
       plSiembra: s.pl_siembra != null ? `PL${s.pl_siembra}` : "",
-      diasMaduracion: s.duracion_dias ?? 90, // no hay columna real en "siembras"; se usa el default del formulario
+      duracionCiclo: s.duracion_ciclo ?? 90, // columna real en "siembras" una vez que el backend la agregue
     };
     const { diaActual, totalDias } = calcularProgresoCiclo(base);
     return { ...base, diasCultivo: diaActual, duracionDias: totalDias };
@@ -109,7 +174,6 @@ export default function useSiembraList() {
   const cargar = useCallback(async () => {
     try {
       setCargando(true);
-      setError("");
       const [siembras, precrias] = await Promise.all([
         getSiembras(),
         getPrecrias(),
@@ -119,7 +183,7 @@ export default function useSiembraList() {
         ...precrias.map(mapPrecriaParaCard),
       ]);
     } catch (err) {
-      setError("No fue posible cargar las siembras.");
+      mostrarError(err);
     } finally {
       setCargando(false);
     }
@@ -136,11 +200,13 @@ export default function useSiembraList() {
       .filter((r) => !haFinalizado(r))
       .map((r) => ({ ...r, ...obtenerNombresFincaEstanque(r) }))
       .filter((r) => {
-        const texto = busqueda.toLowerCase();
+        const texto = busqueda.trim().toLowerCase();
         const coincideTexto =
           !texto ||
           r.estanqueLabel.toLowerCase().includes(texto) ||
-          r.fincaLabel.toLowerCase().includes(texto);
+          r.fincaLabel.toLowerCase().includes(texto) ||
+          r.loteLabel.toLowerCase().includes(texto) ||
+          r.proveedorLabel.toLowerCase().includes(texto);
 
         const registroTipo = r.tipoRegistro || "siembra";
         const coincideTipo =
@@ -149,7 +215,7 @@ export default function useSiembraList() {
 
         return coincideTexto && coincideTipo;
       });
-  }, [busqueda, filtros, registros, fincas]);
+  }, [busqueda, filtros, registros, fincas, estanques, lotes]);
 
   const handleNuevaSiembra = useCallback(
     () => router.push("/siembra/nueva"),
@@ -172,7 +238,8 @@ export default function useSiembraList() {
     setFiltros,
     tiposRegistro,
     cargando,
-    error,
+    mensaje,
+    mensajeVariant,
     handleNuevaSiembra,
     handleDetalleSiembra,
     recargar: cargar,

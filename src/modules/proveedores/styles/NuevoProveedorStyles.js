@@ -1,26 +1,21 @@
 /**
- * ============================================================
- * ESTILOS NUEVO PROVEEDOR
- * ============================================================
- *
- * Estilos de la pantalla NuevoProveedorScreen.
+ * NuevoProveedorStyles.js
+ * Estilos para la pantalla de creación de proveedores.
  *
  * FUNCIONALIDAD:
- * 1. Colores y tipografia salen de theme/colors y theme/typography, sin
- *    valores hardcodeados.
- * 
- * 2. El card no define ancho ni centrado propio: eso lo resuelve
- *    STYLE.contentWrapper (theme/style) en la screen. El padding raíz
- *    y el fondo blanco tampoco se definen aquí: la screen aplica
- *    STYLE.container (theme/style) directamente como View raíz.
- * 
- * 3. inputError (borde rojo) es el único estilo de estado de campo y
- *    solo debe aplicarse tras un intento de guardado fallido, nunca
- *    mientras el usuario escribe. No se pinta mensaje ni icono
- *    individual debajo del campo.
- * 
- * 4. alertBox vive arriba del boton "Guardar proveedor".
+ * - Define toda la estructura visual del formulario de creación.
+ * - Incluye los estilos para el Select, Inputs y Alertas.
+ * - Gestiona el espaciado vertical entre campos (gap/marginBottom).
+ * - Aplica sombras suaves y bordes redondeados al contenedor (Card).
  *
+ * REGLAS IMPORTANTES:
+ * - Totalmente sincronizado con EditarProveedorStyles en medidas.
+ * - Los errores visuales (inputError) son bordes rojos únicamente.
+ * - Las fuentes se obtienen exclusivamente de TYPOGRAPHY.
+ *
+ * @dependencies - StyleSheet, COLORS, TYPOGRAPHY, theme/style
+ * @validations - N/A
+ * @navigation - N/A
  */
 import { StyleSheet } from "react-native";
 import { COLORS } from "../../../theme/colors";

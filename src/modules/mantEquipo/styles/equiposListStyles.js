@@ -19,10 +19,6 @@ import { StyleSheet } from "react-native";
 import { COLORS } from "../../../theme/colors";
 
 export const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.white,
-  },
 
   mainFlex: {
     flex: 1,
@@ -31,40 +27,15 @@ export const styles = StyleSheet.create({
   searchRow: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 0,
     paddingVertical: 12,
     backgroundColor: COLORS.white,
     marginTop: 8,
     gap: 8,
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
   },
 
   searchInput: {
     flex: 1,
     marginBottom: 0,
-  },
-
-  btnAction: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 6,
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: 8,
-    borderWidth: 1,
-    backgroundColor: "transparent",
-    height: 42,
-    marginTop: 0,
-    borderColor: COLORS.primary,
-  },
-
-  btnActionText: {
-    color: COLORS.primary,
-    fontWeight: "600",
-    fontSize: 13,
   },
 
   filterButtonStyle: {
@@ -93,12 +64,7 @@ export const styles = StyleSheet.create({
     marginBottom: 8,
   },
 
-  scrollView: {
-    flex: 1,
-  },
-
   list: {
-    padding: 16,
     paddingBottom: 110,
     left: 0,
   },
@@ -115,20 +81,18 @@ export const styles = StyleSheet.create({
     left: 0,
     right: 0,
     alignItems: "center",
-    paddingHorizontal: 16,
     paddingVertical: 15,
-    backgroundColor: COLORS.white,
+    backgroundColor: "transparent",
   },
 
   floatingButton: {
     width: "100%",
     maxWidth: 900,
     alignSelf: "center",
-    backgroundColor: "transparent",
+    backgroundColor: COLORS.white,
     borderColor: COLORS.primary,
     borderWidth: 1,
     paddingVertical: 12,
-    paddingHorizontal: 20,
     borderRadius: 8,
     flexDirection: "row",
     justifyContent: "center",

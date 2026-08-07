@@ -2,23 +2,16 @@
  * ============================================================
  * COMPONENTE: EquipoCard
  * ============================================================
+ *
  * Módulo: Mantenimiento de Equipos
  *
- * Tarjeta que muestra información resumida de un equipo.
- * Permite navegar al detalle (onPress) y encender/apagar (onToggle).
+ * RESPONSABILIDAD:
+ * - Componente personalizado que reutiliza elementos de shared/components.
+ * - Renderizar la tarjeta interactiva con la información resumida de un equipo y sus acciones.
  *
- * Props:
- * - equipo: objeto con los datos del equipo
- * - onPress: función que recibe el id al hacer clic en la tarjeta
- * - onToggle: función que recibe el id al presionar encender/apagar
- *
- * Ejemplo:
- * <EquipoCard
- *   equipo={equipo}
- *   onPress={(id) => verDetalle(id)}
- *   onToggle={(id) => toggleEquipo(id)}
- * />
- * ============================================================
+ * @dependencies - CardPress.jsx, Badge.jsx, Button.jsx, Icon.jsx, Text.jsx (shared/components), equiposListStyles.js (styles)
+ * @validations  - Muestra badges según estado operativo y habilita/deshabilita el botón según el estado del equipo.
+ * @navigation   - Recibe callback onPress para navegar al detalle del equipo.
  */
 
 import React from "react";
