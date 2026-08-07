@@ -170,7 +170,7 @@ export async function obtenerEstanquesPorFinca(fincaId) {
   try {
     const response = await api.get('/estanques');
     return (response.data.data ?? [])
-      .filter((estanque) => estanque.idFinca === fincaId)
+      .filter((estanque) => String(estanque.idFinca) === String(fincaId))
       .map((estanque) => ({
         label: `${estanque.codigo} (${estanque.tipoEstanque})`,
         value: estanque.id,
