@@ -16,6 +16,7 @@ import Spinner from "../../../shared/components/Spinner";
 import Button from "../../../shared/components/Button";
 import Icon from "../../../shared/components/Icons";
 import CustomText from "../../../shared/components/Text";
+import { useError } from "../../../shared/context/ErrorContext";
 import Alert from "../../../shared/components/Alert";
 import SearchBar from "../../../shared/components/SearchBar";
 import FilterButton from "../../../shared/components/FilterButton";
@@ -43,6 +44,7 @@ export default function TareasScreen() {
     opcionesCategoria,
   } = useTareas();
 
+  
   const params = useLocalSearchParams();
   const handleAgregar = () => router.push("/mantenimientoEquipo/tareas/tareaForm");
   const abrirDetalle = (tarea) =>
@@ -65,11 +67,7 @@ export default function TareasScreen() {
   }
 
   if (error) {
-    return (
-      <View style={[STYLE.container, styles.centerContainer]}>
-        <CustomText style={styles.errorTextLine}>Error: {error}</CustomText>
-      </View>
-    );
+    return mostrarError(error);
   }
 
   return (

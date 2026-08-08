@@ -24,7 +24,7 @@
  * <AlimentacionFormInfoGeneral form={form} updateField={updateField} submitted={submitted} errores={errores} />
  */
  
-import React from "react";
+import React, { useEffect } from "react";
 import { View, Pressable, StyleSheet } from "react-native";
 import Card from "../../../shared/components/Card";
 import Select from "../../../shared/components/Select";
@@ -45,13 +45,18 @@ export default function AlimentacionFormInfoGeneral({
   updateField = () => {},
   submitted = false,
   errores = {},
+  onCatalogoErrorChange = () => {},
 }) {
   const invalidoFinca = submitted && !!errores.finca;
   const invalidoEstanque = submitted && !!errores.estanque;
   const invalidoFecha = submitted && !!errores.fecha;
   const invalidoHora = submitted && !!errores.hora;
 
-  const { fincasOptions, estanquesOptions } = useFincaEstanqueAlimentacion(form.finca);
+  const { fincasOptions, estanquesOptions, errorCatalogos } = useFincaEstanqueAlimentacion(form.finca);
+
+  useEffect(() => {
+    onCatalogoErrorChange("infoGeneral", errorCatalogos);
+  }, [errorCatalogos, onCatalogoErrorChange]);
 
   const handleFincaChange = (idFinca) => {
     updateField("finca", idFinca);

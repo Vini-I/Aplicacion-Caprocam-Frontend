@@ -44,7 +44,7 @@ export default function useEditarDensidad(registroId, onGuardado) {
   const [areaEstanque, setAreaEstanque] = useState("");
   const [notasConteo, setNotasConteo] = useState("");
 
-  const { fincasOptions, estanquesOptions } = useFincaEstanqueDensidad(finca);
+  const { fincasOptions, estanquesOptions, errorCatalogos } = useFincaEstanqueDensidad(finca);
   const fincas = fincasOptions;
   const estanques = estanquesOptions;
 
@@ -110,7 +110,7 @@ export default function useEditarDensidad(registroId, onGuardado) {
       setAlerta({
         visible: true,
         variant: "danger",
-        mensaje: e.response?.data?.message || "No se pudo actualizar el registro.",
+        mensaje: e.response?.data?.message,
       });
     }
   }, [finca, estanque, fecha, numeroCamarones, tirosAtarraya, areaAtarraya, promedioPorTiro, supervivencia, siembraPorM2, areaEstanque, notasConteo, registroId, onGuardado]);
@@ -127,6 +127,7 @@ export default function useEditarDensidad(registroId, onGuardado) {
     submitted,
     errores,
     alerta,
+    errorCatalogos,
     handleGuardar,
     cargando,
     numeroCamarones,

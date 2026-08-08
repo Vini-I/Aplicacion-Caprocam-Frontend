@@ -52,6 +52,21 @@ export const ESTADOS_OPERATIVOS_EQUIPO = [
  *   al crear, y se reenvía el valor actual al editar para no
  *   resetear las horas acumuladas del equipo.
  */
+function construirErrorHttp(error, mensajeGenerico) {
+  const status = error?.response?.status;
+  const mensaje = error?.response?.data?.message || error?.response?.data?.error || error?.message;
+  if (status === 500) {
+    return new Error(mensajeGenerico);
+  }
+  if (status) {
+    const err = new Error(mensaje || mensajeGenerico);
+    err.status = status;
+    return err;
+  }
+
+  return new Error(mensajeGenerico);
+}
+
 export function crearEquipoPayload(formulario, { isEditing, estadoActual, horasActualesActual } = {}) {
   return {
     identificador: formulario.codigoInterno.trim(),
@@ -81,8 +96,7 @@ export async function agregarEquipo(payload) {
     const response = await api.post('/equipos', payload);
     return response.data.data;
   } catch (error) {
-    // Propaga el mensaje real del backend (ej. "Ya existe un equipo con ese identificador.")
-    throw new Error(error.response?.data?.message || 'No se pudo guardar el equipo. Intente nuevamente.');
+    throw construirErrorHttp(error, 'No se pudo guardar el equipo');
   }
 }
 
@@ -91,6 +105,6 @@ export async function actualizarEquipo(id, payload) {
     const response = await api.put(`/equipos/${id}`, payload);
     return response.data.data;
   } catch (error) {
-    throw new Error(error.response?.data?.message || 'No se pudo actualizar el equipo. Intente nuevamente.');
+    throw construirErrorHttp(error, 'No se pudo actualizar el equipo');
   }
 }

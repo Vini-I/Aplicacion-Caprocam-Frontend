@@ -216,8 +216,8 @@ export default function NuevoEstanqueScreen({ codigoCBO }) {
           
           {displayErrorMessage && (
             <Alert
-              variant={displayErrorVariant}
-              message={displayErrorMessage}
+              variant={tipoMensaje}
+              message={mensaje}
               style={styles.alert}
               textStyle={styles.alertText}
             />

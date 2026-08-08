@@ -87,7 +87,6 @@ export default function ColaboradorFormScreen() {
           setColaborador(data);
         } catch (err) {
           setError(err.message || "Error al cargar el colaborador");
-          mostrarError(err);
         } finally {
           setLoading(false);
         }
@@ -131,10 +130,10 @@ export default function ColaboradorFormScreen() {
     } catch (err) {
       const status = err.response?.status;
       if (status === 400 || status === 422) {
-        setErrorMessage(err.message || "No se pudo guardar el colaborador.");
+        setErrorMessage(err.message);
       } else {
-        mostrarError(err);
-      }
+        setErrorMessage(err.message);
+      }  
     }
   };
 
@@ -155,7 +154,7 @@ export default function ColaboradorFormScreen() {
         },
       });
     } catch (err) {
-      mostrarError(err);
+      setErrorMessage(err.message);
     } finally {
       setResetLoading(false);
     }

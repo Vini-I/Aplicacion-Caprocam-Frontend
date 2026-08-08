@@ -580,7 +580,7 @@ export async function obtenerAlertasDescartadas() {
     const lista = JSON.parse(datos);
     return normalizarLista(lista);
   } catch (error) {
-    console.error("Error leyendo alertas descartadas:", error);
+    throw error;
     return [];
   }
 }

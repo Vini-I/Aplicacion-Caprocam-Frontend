@@ -10,7 +10,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useWindowDimensions } from "react-native";
 
-import { useError } from "../../../shared/context/ErrorContext";
 import { fincaService } from "../../finca/services/finca.service";
 import { estanqueService } from "../../estanques/services/estanque.service";
 
@@ -100,7 +99,7 @@ function normalizarCatalogo(catalogo) {
 
 export default function useEnfermedadesScreen() {
   const { width } = useWindowDimensions();
-  const { mostrarError } = useError();
+
 
   const {
     catalogoEnfermedades,
@@ -126,6 +125,22 @@ export default function useEnfermedadesScreen() {
   const [tipoMensaje, setTipoMensaje] = useState("info");
 
   useEffect(function () {
+    if (!mensaje) {
+      return undefined;
+    }
+
+    const duracion = tipoMensaje === "success" ? 3000 : 6000;
+    const timer = setTimeout(function () {
+      setMensaje("");
+      setTipoMensaje("info");
+    }, duracion);
+
+    return function () {
+      clearTimeout(timer);
+    };
+  }, [mensaje, tipoMensaje]);
+
+  useEffect(function () {
     async function cargarOpciones() {
       try {
         setCargandoOpciones(true);
@@ -138,8 +153,8 @@ export default function useEnfermedadesScreen() {
         setFincas(Array.isArray(fincasData) ? fincasData : []);
         setEstanques(Array.isArray(estanquesData) ? estanquesData : []);
       } catch (error) {
-        console.error("Error al cargar fincas y estanques", error);
-        mostrarError(error);
+        setTipoMensaje("danger");
+        setMensaje(error.message);
       } finally {
         setCargandoOpciones(false);
       }
@@ -325,31 +340,31 @@ export default function useEnfermedadesScreen() {
       return;
     }
 
-    const enfermedadDTO = {
-      fincaId: Number(finca),
-      estanqueId: Number(estanque),
-      fechaReporte: convertirFechaParaBackend(fechaReporte),
-      enfermedad,
-      severidad,
-      mortalidadRegistrada: Number(mortalidad),
-      reporte: reporte.trim(),
-    };
+    try {
+      const enfermedadDTO = {
+        fincaId: Number(finca),
+        estanqueId: Number(estanque),
+        fechaReporte: convertirFechaParaBackend(fechaReporte),
+        enfermedad,
+        severidad,
+        mortalidadRegistrada: Number(mortalidad),
+        reporte: reporte.trim(),
+      };
+      const nuevaEnfermedad = await guardarEnfermedadBackend(enfermedadDTO);
 
-    const nuevaEnfermedad =
-      await guardarEnfermedadBackend(enfermedadDTO);
-
-    if (!nuevaEnfermedad) return;
-
-    setTipoMensaje("success");
-    setMensaje("Enfermedad registrada correctamente.");
-    limpiarFormulario();
+      setTipoMensaje("success");
+      setMensaje("Enfermedad registrada correctamente.");
+      limpiarFormulario();
+    } catch (error) {
+      setTipoMensaje("danger");
+      setMensaje(error.message);
+    }
   }
 
   return {
     finca,
     estanque,
     fechaReporte,
-    responsable: "",
     enfermedad,
     severidad,
     mortalidad,
