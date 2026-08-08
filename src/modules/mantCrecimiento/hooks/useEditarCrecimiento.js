@@ -55,7 +55,7 @@ const [fincas, setFincas] = useState([]);
         setFincas(fincasData || []);
         setEstanques(estanquesData || []);
       } catch (e) {
-        console.error(e);
+        mostrarError(e);
       }
     })();
     return () => { activo = false; };

@@ -7,10 +7,12 @@ import { TIPOS_AUTOGESTIONADOS } from "../constants/tipoReporte.js";
 import { fincaService } from "../../finca/services/finca.service.js";
 import { estanqueService } from "../../estanques/services/estanque.service.js";
 import { colaboradorService } from "../../colaboradores/services/colaborador.service.js";
+import { useError } from "../../../shared/context/ErrorContext.js"
 
 export function useDetalleReporte() {
   const router = useRouter();                    
   const { alert: alertParam } = useLocalSearchParams();
+  const { mostrarError } = useError();
 
   const [registroTipo, setRegistroTipo] = useState(null);
 
@@ -76,11 +78,7 @@ export function useDetalleReporte() {
         }
 
       } catch (error) {
-
-        console.error(
-          "Error cargando registros:",
-          error
-        )
+        mostrarError(error);
       }
     }
    
@@ -162,7 +160,7 @@ export function useDetalleReporte() {
           setRegistros(registrosConNombres);
         }
       } catch (error) {
-        console.error("Error cargando registros:", error);
+        mostrarError(error);
 
         if (activo) {
           setRegistros([]);

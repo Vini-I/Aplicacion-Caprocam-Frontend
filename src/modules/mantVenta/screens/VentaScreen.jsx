@@ -163,13 +163,6 @@ export default function VentaScreen({ onDetalleVentas }) {
           />
         </View>
 
-        <View style={styles.summaryBox}>
-          <Text style={styles.summaryLabel}>Total estimado</Text>
-          <Text style={styles.summaryValue}>
-            {formatearMontoColones(totalVenta)}
-          </Text>
-        </View>
-
         <SectionTitle icon={ICONS.user} title="Comprador" />
 
         <View style={gridStyle}>
@@ -183,6 +176,13 @@ export default function VentaScreen({ onDetalleVentas }) {
               selectStyle={errores.comprador ? errorInputStyle : null}
             />
           </View>
+        </View>
+
+        <View style={styles.summaryBox}>
+          <Text style={styles.summaryLabel}>Total estimado</Text>
+          <Text style={styles.summaryValue}>
+            {formatearMontoColones(totalVenta)}
+          </Text>
         </View>
 
         {submitted && errorMessage ? (

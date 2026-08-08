@@ -28,7 +28,6 @@ export default function useEditarParasitologia(registroId, onGuardado) {
   const [finca, setFinca] = useState("");
   const [estanque, setEstanque] = useState("");
   const [fechaReporte, setFechaReporte] = useState("");
-  const [responsable, setResponsable] = useState("");
   const [parasito, setParasito] = useState("");
   const [camaronesMuestreados, setCamaronesMuestreados] = useState("");
   const [camaronesInfectados, setCamaronesInfectados] = useState("");
@@ -42,6 +41,22 @@ export default function useEditarParasitologia(registroId, onGuardado) {
   const [loading, setLoading] = useState(false);
   const [cargandoRegistro, setCargandoRegistro] = useState(true);
   const [cargandoOpciones, setCargandoOpciones] = useState(true);
+
+  useEffect(function () {
+    if (!mensaje) {
+      return undefined;
+    }
+
+    const duracion = tipoMensaje === "success" ? 3000 : 6000;
+    const timer = setTimeout(function () {
+      setMensaje("");
+      setTipoMensaje("info");
+    }, duracion);
+
+    return function () {
+      clearTimeout(timer);
+    };
+  }, [mensaje, tipoMensaje]);
 
   useEffect(() => {
     let activo = true;
@@ -58,7 +73,8 @@ export default function useEditarParasitologia(registroId, onGuardado) {
         setEstanques(Array.isArray(e) ? e : []);
         setCatalogo(Array.isArray(c) ? c : []);
       } catch (err) {
-        console.error(err);
+        setTipoMensaje("danger");
+        setMensaje(err.message);
       } finally {
         if (activo) setCargandoOpciones(false);
       }
@@ -76,7 +92,6 @@ export default function useEditarParasitologia(registroId, onGuardado) {
         setFinca(String(r.fincaId ?? r.finca_id ?? ""));
         setEstanque(String(r.estanqueId ?? r.estanque_id ?? ""));
         setFechaReporte(formatearFechaUI(r.fechaReporte ?? r.fecha));
-        setResponsable(r.responsable ?? "");
         setParasito(r.parasito ?? "");
         setCamaronesMuestreados(String(r.camaronesMuestreados ?? ""));
         setCamaronesInfectados(String(r.camaronesInfectados ?? ""));
@@ -169,14 +184,14 @@ export default function useEditarParasitologia(registroId, onGuardado) {
       onGuardado?.();
     } catch (e) {
       setTipoMensaje("danger");
-      setMensaje(e.response?.data?.message || "No se pudo actualizar.");
+      setMensaje(e.message);
     } finally {
       setLoading(false);
     }
   };
 
   return {
-    finca, estanque, fechaReporte, responsable, parasito,
+    finca, estanque, fechaReporte, parasito,
     camaronesMuestreados, camaronesInfectados, observaciones,
     opcionesFincas, opcionesEstanques, opcionesParasitos,
     placeholderFinca: "Seleccione una finca",

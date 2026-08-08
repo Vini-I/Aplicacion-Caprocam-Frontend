@@ -210,13 +210,13 @@ export function useDetalleVenta({ onEdit, success, message } = {}) {
               style={styles.delete}
               onPress={() => abrirModalEliminar(venta)}
             >
-              <Icon icon={ICONS.delete} style={[styles.deleteIcon]} size={15} />
+              <Icon icon={ICONS.delete} style={[styles.deleteIcon]} size={19} />
               <Text size={15} style={{ color: COLORS.error }}>
                 Eliminar
               </Text>
             </Button>
             <Button style={styles.edit} onPress={() => onEdit?.(venta.id)}>
-              <Icon icon={ICONS.edit} style={styles.editIcon} size={16} />
+              <Icon icon={ICONS.edit} style={styles.editIcon} size={21} />
               <Text size={15} style={{ color: COLORS.primary }}>
                 Editar
               </Text>

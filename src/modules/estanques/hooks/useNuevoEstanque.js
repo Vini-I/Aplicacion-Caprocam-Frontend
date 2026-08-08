@@ -57,11 +57,7 @@ export default function useNuevoEstanque({ navigation, codigoCBO }) {
       const data = await buscarFinca(codigoCBO);
       setFinca(data);
     } catch (error) {
-      mostrarError(
-        error.response?.data?.message ||
-          error.message ||
-          "No se pudo cargar la finca.",
-      );
+      mostrarError(error.message);
     }
   }
 
@@ -122,9 +118,7 @@ export default function useNuevoEstanque({ navigation, codigoCBO }) {
       });
     } catch (error) {
       setTipoMensaje("danger");
-      setMensaje(
-        error.response?.data?.message || "Error al guardar los cambios.",
-      );
+      setMensaje(error.message);
     }
   }
 

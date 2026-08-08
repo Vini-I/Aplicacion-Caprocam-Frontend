@@ -27,6 +27,26 @@ const RUTAS = {
   fisicoQuimicos: "/lecturasFisicoQuimicas",
 };
 
+function construirErrorHttp(error, mensajeGenerico) {
+  const status = error?.response?.status;
+  const mensaje =
+    error?.response?.data?.message ||
+    error?.response?.data?.error ||
+    error?.message;
+
+  if (status === 500) {
+    return new Error(mensajeGenerico);
+  }
+
+  if (status) {
+    const err = new Error(mensaje || mensajeGenerico);
+    err.status = status;
+    return err;
+  }
+
+  return new Error(mensajeGenerico);
+}
+
 function obtenerContenido(response) {
   return response?.data?.data !== undefined ? response.data.data : response?.data ?? null;
 }
@@ -41,58 +61,106 @@ function obtenerObjeto(response) {
   return contenido && typeof contenido === "object" && !Array.isArray(contenido) ? contenido : {};
 }
 
-async function consultarLista(ruta) {
-  const response = await api.get(ruta);
-  return obtenerLista(response);
-}
-
-async function consultarObjeto(ruta) {
-  const response = await api.get(ruta);
-  return obtenerObjeto(response);
-}
-
 async function getFincas() {
-  return consultarLista(RUTAS.fincas);
+  try {
+    const response = await api.get(RUTAS.fincas);
+    return obtenerLista(response);
+  } catch (error) {
+    throw construirErrorHttp(error, "Error al obtener fincas");
+  }
 }
 
 async function getEstanques() {
-  return consultarLista(RUTAS.estanques);
+  try {
+    const response = await api.get(RUTAS.estanques);
+    return obtenerLista(response);
+  } catch (error) {
+    throw construirErrorHttp(error, "Error al obtener estanques");
+  }
 }
 
 async function getAlimentaciones() {
-  return consultarLista(RUTAS.alimentaciones);
+  try {
+    const response = await api.get(RUTAS.alimentaciones);
+    return obtenerLista(response);
+  } catch (error) {
+    throw construirErrorHttp(error, "Error al obtener alimentaciones");
+  }
 }
 
 async function getSiembras() {
-  return consultarLista(RUTAS.siembras);
+  try {
+    const response = await api.get(RUTAS.siembras);
+    return obtenerLista(response);
+  } catch (error) {
+    throw construirErrorHttp(error, "Error al obtener siembras");
+  }
 }
 
 async function getInventario() {
-  return consultarLista(RUTAS.inventario);
+  try {
+    const response = await api.get(RUTAS.inventario);
+    return obtenerLista(response);
+  } catch (error) {
+    throw construirErrorHttp(error, "Error al obtener inventario");
+  }
 }
 
 async function getEquipos() {
-  return consultarLista(RUTAS.equipos);
+  try {
+    const response = await api.get(RUTAS.equipos);
+    return obtenerLista(response);
+  } catch (error) {
+    throw construirErrorHttp(error, "Error al obtener equipos");
+  }
 }
 
 async function getEnfermedades() {
-  return consultarLista(RUTAS.enfermedades);
+  try {
+    const response = await api.get(RUTAS.enfermedades);
+    return obtenerLista(response);
+  } catch (error) {
+    throw construirErrorHttp(error, "Error al obtener enfermedades");
+  }
 }
 
 async function getResumenEnfermedades() {
-  return consultarObjeto(RUTAS.resumenEnfermedades);
+  try {
+    const response = await api.get(RUTAS.resumenEnfermedades);
+    return obtenerObjeto(response);
+  } catch (error) {
+    throw construirErrorHttp(error, "Error al obtener el resumen de enfermedades");
+  }
 }
 
 async function getParasitologias() {
-  return consultarLista(RUTAS.parasitologias);
+  try {
+    const response = await api.get(RUTAS.parasitologias);
+    return obtenerLista(response);
+  } catch (error) {
+    throw construirErrorHttp(error, "Error al obtener parasitologías");
+  }
 }
 
 async function getResumenParasitologias() {
-  return consultarObjeto(RUTAS.resumenParasitologias);
+  try {
+    const response = await api.get(RUTAS.resumenParasitologias);
+    return obtenerObjeto(response);
+  } catch (error) {
+    throw construirErrorHttp(error, "Error al obtener el resumen de parasitologías");
+  }
 }
 
 async function getFisicoQuimicos() {
-  return consultarLista(RUTAS.fisicoQuimicos);
+  try {
+    const response = await api.get(RUTAS.fisicoQuimicos);
+    return obtenerLista(response);
+  } catch (error) {
+    throw construirErrorHttp(
+      error,
+      "Error al obtener lecturas físico-químicas"
+    );
+  }
 }
 
 export default {

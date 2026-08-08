@@ -129,7 +129,7 @@ export default function useDensidadPoblacional() {
 
   const datosConteo = useDatosConteo();
 
-  const { fincasOptions, estanquesOptions } = useFincaEstanqueDensidad(finca);
+  const { fincasOptions, estanquesOptions, errorCatalogos } = useFincaEstanqueDensidad(finca);
   const fincas = fincasOptions;
   const estanques = estanquesOptions;
 
@@ -227,6 +227,7 @@ export default function useDensidadPoblacional() {
     submitted,
     errores,
     alerta,
+    errorCatalogos,
     handleGuardar,
     ...datosConteo,
   };
