@@ -6,9 +6,12 @@
  * Renderiza la información del cálculo poblacional de una siembra.
  *
  * FUNCIONALIDAD:
- * - Muestra el área del estanque.
- * - Permite modificar la densidad poblacional.
- * - Muestra la cantidad sembrada calculada.
+ * - Área del estanque, densidad poblacional y cantidad sembrada
+ *   siempre se muestran como texto dentro de una caja (nunca
+ *   como input editable), incluso en modo edición - solo la
+ *   densidad cambia entre texto fijo (view) o campo numérico
+ *   editable (edit); área y cantidad son siempre solo lectura,
+ *   ya que se calculan a partir de otros campos.
  *
  * DATOS:
  * - Recibe formData y onChange desde la screen/hook padre.
@@ -19,7 +22,7 @@
  *
  * DEPENDENCIAS:
  * - Card, NumberInput (shared/components).
- * - SectionTitle.
+ * - SectionTitle, CampoLectura.
  *
  * El cálculo matemático pertenece a las utilidades del módulo
  * (siembraCalculos.js).
@@ -68,17 +71,23 @@ export default function CalculoPoblacionSection({
         <Text style={styles.calculationValue}>{areaMostrada}</Text>
       </View>
 
-      <NumberInput
-        label={requiredLabel(`Densidad poblacional (${densidadMostrada})`)}
-        value={formData.densidadPoblacional}
-        onChangeText={(value) => onChange("densidadPoblacional", value)}
-        min={1}
-        max={30}
-        step={1}
-        labelStyle={styles.requiredLabel}
-        style={hasError("densidadPoblacional") ? styles.inputError : null}
-        editable={!isViewMode}
-      />
+      {isViewMode ? (
+        <View style={styles.calculationBox}>
+          <Text style={styles.calculationLabel}>Densidad poblacional</Text>
+          <Text style={styles.calculationValue}>{densidadMostrada}</Text>
+        </View>
+      ) : (
+        <NumberInput
+          label={requiredLabel(`Densidad poblacional (${densidadMostrada})`)}
+          value={formData.densidadPoblacional}
+          onChangeText={(value) => onChange("densidadPoblacional", value)}
+          min={1}
+          max={30}
+          step={1}
+          labelStyle={styles.requiredLabel}
+          style={hasError("densidadPoblacional") ? styles.inputError : null}
+        />
+      )}
 
       <View
         style={[

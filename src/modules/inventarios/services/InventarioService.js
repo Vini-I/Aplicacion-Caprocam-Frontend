@@ -1,33 +1,27 @@
-// modules/inventarios/services/inventarioService.js
-
 /**
- * ============================================================
- * SERVICE: InventarioService
- * ============================================================
+ * InventarioService.js
+ * Capa de servicios HTTP para el módulo de inventarios.
  *
- * Responsabilidad:
- * Capa de servicios y comunicación HTTP para el módulo de inventarios.
- * Se conecta de forma asíncrona con la API para gestionar las operaciones
- * CRUD (leer, agregar, actualizar y eliminar) de los productos del inventario.
+ * FUNCIONALIDAD:
+ * - Se conecta de forma asíncrona con la API (axios).
+ * - Trae el listado de inventario (solo lectura).
  *
- * Datos:
- * Cada producto: { id, codigo, nombre, categoria, cantidad, unidad,
- * stockMinimo, proveedor, precioUnidad, fechaCaducidad }.
- * fechaCaducidad ya existe como dato real del producto (se define y
- * se guarda desde el módulo de Productos); aquí solo se refleja para
- * que el filtro de "Fecha de caducidad" de FilterButton.jsx pueda
- * usarlo. Formato dd/mm/aaaa, igual al que entrega el DateInput
- * compartido.
+ * REGLAS IMPORTANTES:
+ * - Este módulo es SOLO LECTURA. El alta, edición y baja de productos
+ *   (incluyendo cantidad y stock_minimo) se hace desde el módulo
+ *   Productos, vía POST/PUT/DELETE /productos, que crea y sincroniza
+ *   el registro de inventario por su cuenta. Por eso aquí NO existen
+ *   addProducto/updateProducto/deleteProducto/getProductoById: nadie
+ *   los necesita y mantenerlos como código muerto solo genera
+ *   confusión sobre a qué módulo le corresponde cada operación.
+ * - Si en el futuro Inventario necesita escribir datos propios (por
+ *   ejemplo, ajustar stock_minimo sin pasar por Productos), ese
+ *   endpoint ya existe en el backend (POST/PUT/DELETE /inventario) y
+ *   se puede reintroducir aquí en ese momento.
  *
- * Validaciones:
- * No aplica validación de campos aquí (se realiza en el formulario que
- * consume este servicio). El id se autogenera de forma incremental.
- *
- * Navegación:
- * No aplica, es una capa de datos sin UI.
- *
- * Dependencias:
- * Es consumido por hooks/useInventario.js.
+ * @dependencies - axios api instance
+ * @validations - N/A
+ * @navigation - N/A
  */
 import api from "../../../api/api";
 
@@ -37,75 +31,9 @@ export async function getProductosInventario() {
 
     return response.data.data;
   } catch (error) {
-    console.error("Error al obtener productos de inventario:", error);
-
-    throw error;
-  }
-}
-
-export async function getProductoById(id) {
-  try {
-    const response = await api.get(`/inventario/${id}`);
-
-    return response.data.data;
-  } catch (error) {
-    console.error(
-      "Error al obtener producto:",
-      error.response?.data || error.message,
-    );
-
-    throw error;
-  }
-}
-
-export async function addProducto({ producto_id,proveedor_id, stock_minimo }) {
-  try {
-    const response = await api.post("/inventario", {
-      producto_id,
-      proveedor_id,
-      stock_minimo,
-    });
-
-    return response.data;
-  } catch (error) {
-    console.error(
-      "Error al crear producto:",
-      error.response?.data || error.message,
-    );
-    
-    throw error;
-  }
-}
-
-export async function updateProducto(id, { proveedor_id, stock_minimo }) {
-  try {
-    const response = await api.put(`/inventario/${id}`,{
-      proveedor_id,
-      stock_minimo,
-    });
-
-    return response.data;
-  } catch (error) {
-    console.error(
-      "Error al actualizar producto:",
-      error.response?.data || error.message,
-    );
-
-    throw error;
-  }
-}
-
-export async function deleteProducto(id) {
-  try {
-    const response = await api.delete(`/inventario/${id}`);
-
-    return response.data;
-  } catch (error) {
-    console.error(
-      "Error al eliminar producto:",
-      error.response?.data || error.message,
-    );
-
-    throw error;
+    if (error.response) {
+      throw error;
+    }
+    throw new Error("No se pudieron obtener los productos del inventario");
   }
 }

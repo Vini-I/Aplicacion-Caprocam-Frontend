@@ -52,7 +52,7 @@ export function useDetalleTarea() {
   }, [id]);
 
   const editar = (t) => {
-    router.push(`/mantenimientoEquipo/tareas/tareaForm?id=${t.id}`);
+    router.replace(`/mantenimientoEquipo/tareas/tareaForm?id=${t.id}`);
   };
 
   const eliminar = async (t) => {

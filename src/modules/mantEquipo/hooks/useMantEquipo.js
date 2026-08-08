@@ -5,24 +5,26 @@
  *
  * @dependencies - mantEquipoService.js
  *               - useNavigation de expo-router
- * @validations  - Expone errores de red mediante el estado errorRed.
+ * @validations  - Expone errores de red mediante el estado error.
  * @navigation   - N/A (hook de estado).
  */
 
 import { useState, useEffect, useCallback } from "react";
 import { useNavigation } from "expo-router";
 import * as MantService from "../services/mantEquipoService.js";
+import { useError } from "../../../shared/context/ErrorContext";
 
 export function useMantEquipo() {
   const [tickets, setTickets] = useState([]);
   const [busqueda, setBusqueda] = useState("");
   const [cargando, setCargando] = useState(true);
-  const [errorRed, setErrorRed] = useState(null);
+  const [error, setError] = useState(null);
   const navigation = useNavigation();
+  const { mostrarError } = useError();
 
   const cargarTickets = useCallback(() => {
     setCargando(true);
-    setErrorRed(null);
+    setError(null);
     MantService.obtenerTickets()
       .then((data) => {
         const lista = Array.isArray(data) ? data : [];
@@ -31,8 +33,7 @@ export function useMantEquipo() {
         setTickets(lista);
       })
       .catch((err) => {
-        console.error('useMantEquipo.cargarTickets:', err?.message || err);
-        setErrorRed('No se pudo cargar la lista de tickets. Verifica la conexión.');
+        mostrarError(err);
         setTickets([]);
       })
       .finally(() => setCargando(false));
@@ -75,7 +76,7 @@ export function useMantEquipo() {
     tickets,
     busqueda, setBusqueda,
     cargando,
-    errorRed,
+    error,
     cargarTickets,
     agregarTicket, eliminarTicket, actualizarTicket, actualizarEstadoEquipo,
   };

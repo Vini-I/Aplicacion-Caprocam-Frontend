@@ -6,12 +6,16 @@
  * Muestra un modal cuando el token JWT ya expiró,
  * con el mismo estilo y márgenes que el modal de éxito del registro.
  * El usuario debe volver a iniciar sesión en /loginWeb.
+ *
+ * IMPORTANTE: Este componente solo debe activarse en rutas protegidas.
+ * En rutas públicas (landing, login, registro) no debe mostrar el modal
+ * aunque exista un token expirado en localStorage.
  * ============================================================
  */
 
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, usePathname } from 'expo-router';
 import Modal from './Modal';
 import Button from './Button';
 import CustomText from './Text';
@@ -21,6 +25,9 @@ import { getTokenExpiration } from '../utils/jwtUtils';
 import { COLORS } from '../../theme/colors';
 import { ICONS } from '../../theme/icons';
 import { STYLE } from '../../theme/style';
+
+// Rutas que no requieren autenticación
+const RUTAS_PUBLICAS = ['/landing', '/loginWeb', '/registerWeb', '/login'];
 
 const clearSession = () => {
   try {
@@ -34,9 +41,16 @@ const clearSession = () => {
 
 export default function SessionMonitor({ children }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [showModal, setShowModal] = useState(false);
 
+  // Determina si la ruta actual es pública
+  const esRutaPublica = RUTAS_PUBLICAS.some((ruta) => pathname?.startsWith(ruta));
+
   useEffect(() => {
+    // Si estamos en una ruta pública, no activamos el monitor
+    if (esRutaPublica) return;
+
     let interval;
 
     const checkToken = () => {
@@ -47,26 +61,29 @@ export default function SessionMonitor({ children }) {
       if (!exp) return;
 
       const now = Date.now();
-      const diff = exp - now;
-
-      if (diff <= 0) {
-        if (!showModal) {
+      if (exp <= now) {
+        if (!esRutaPublica) {
           setShowModal(true);
-        }
-        if (interval) {
-          clearInterval(interval);
-          interval = null;
+          if (interval) {
+            clearInterval(interval);
+            interval = null;
+          }
         }
       }
     };
 
-    interval = setInterval(checkToken, 5000);
     checkToken();
+    interval = setInterval(checkToken, 5000);
 
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [showModal]);
+  }, [esRutaPublica]);
+
+  // Si es ruta pública, no renderizamos el modal
+  if (esRutaPublica) {
+    return <>{children}</>;
+  }
 
   const handleLogin = () => {
     clearSession();

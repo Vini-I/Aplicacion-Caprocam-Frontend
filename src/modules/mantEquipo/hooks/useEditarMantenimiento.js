@@ -149,7 +149,6 @@ export function useEditarMantenimiento({ id, onNavigateToDetail, onNavigateToMai
         }
 
       } catch (err) {
-        console.error('useEditarMantenimiento.cargar:', err?.message || err);
         if (activo) setErrorCarga(MENSAJES_ERROR_CARGA.errorCargarTicket);
       } finally {
         if (activo) setCargando(false);
@@ -319,7 +318,6 @@ export function useEditarMantenimiento({ id, onNavigateToDetail, onNavigateToMai
         alertaMensaje: ALERTAS_NOTIFICACIONES.exitoEditarTicket(ticketOriginal?.id),
       });
     } catch (e) {
-      console.error('Error al actualizar ticket:', e?.response?.data || e?.message || e);
       const mensajeError = e?.response?.data?.error || e?.response?.data?.message || e?.message || TEXTOS_MODAL_AGREGAR.errorEditarTicket(ticketOriginal?.id);
       setAlertaServidor(mensajeError);
     }

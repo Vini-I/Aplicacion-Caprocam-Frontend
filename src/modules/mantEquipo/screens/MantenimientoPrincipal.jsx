@@ -8,18 +8,16 @@
  * con búsqueda, filtrado y accesos rápidos al toolbar.
  *
  * @dependencies - Spinner, SearchBar, Icon, Button, Alert, FilterButton, ModalError (shared)
- *               - ErrorProvider/useError (shared/context/ErrorContext) para el modal
- *                 de error al fallar la carga de equipos o mantenimientos
- *                 (ej. backend/docker apagado).
+ *               - useError (shared/context/ErrorContext) para disparar el
+ *                 ModalError global cuando falla la carga de equipos o
+ *                 mantenimientos (ej. backend/docker apagado).
  *               - useMantPrincipalScreen, FilaTicket, COLORS, STYLE, mantEquipoStyles
  * @validations  - Filtrado en memoria; búsqueda insensible a mayúsculas.
  *               - tableContent se construye una sola vez y se reutiliza en móvil
  *                 y PC para que ambas versiones no se desincronicen.
  *               - Sin estilos inline; todo vive en mantEquipoStyles.js.
  *               - Errores de carga (equipos/mantenimientos) se muestran con
- *                 ModalError en lugar de un texto rojo en pantalla. El
- *                 ErrorProvider se declara local a esta pantalla porque es
- *                 la única en la que se pidió aplicar el modal.
+ *                 ModalError global en lugar de un texto rojo en pantalla.
  * @navigation   - Tocar un card → /equipos/DetalleMantenimiento?id={id}.
  *               - "Registrar Ticket" → /equipos/AgregarMantenimiento.
  *               - "Ver Tareas" → /equipos/tareas.
@@ -36,7 +34,7 @@ import FilterButton from "../../../shared/components/FilterButton.jsx";
 import Icon from "../../../shared/components/Icons.jsx";
 import Alert from "../../../shared/components/Alert.jsx";
 import CardPress from "../../../shared/components/CardPress.jsx";
-import { ErrorProvider } from "../../../shared/context/ErrorContext.js";
+import { useError } from "../../../shared/context/ErrorContext.js";
 
 import { ICONS } from "../../../theme/icons.js";
 import { COLORS } from "../../../theme/colors.js";
@@ -52,15 +50,8 @@ import {
   LISTA_ESTADOS_EQUIPO,
 } from "../constants/mantEquipoMensajes.js";
 
-// El ErrorProvider se declara aquí, local a la pantalla principal, para que
-// el ModalError esté disponible únicamente en este flujo (carga de equipos
-// y mantenimientos) sin afectar el resto de la app.
 export default function ManteniminetoPrincipalScreen(props) {
-  return (
-    <ErrorProvider>
-      <ManteniminetoPrincipal {...props} />
-    </ErrorProvider>
-  );
+  return <ManteniminetoPrincipal {...props} />;
 }
 
 function ManteniminetoPrincipal({
@@ -77,10 +68,17 @@ function ManteniminetoPrincipal({
     busqueda,
     setBusqueda,
     cargando,
+    error,
     alerta,
     activeFiltersForButton,
     handleApplyFilter,
   } = useMantPrincipalScreen({ alertaTipo, alertaMensaje, refreshTimestamp });
+
+  const { mostrarError } = useError();
+
+  if (error) {
+    return mostrarError(error);
+  }
 
   // Muestra spinner centrado mientras se cargan los tickets iniciales.
   if (cargando) {

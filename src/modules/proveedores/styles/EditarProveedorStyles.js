@@ -1,31 +1,21 @@
 /**
- * ============================================================
- * ESTILOS EDITAR PROVEEDOR
- * ============================================================
- *
- * Estilos de la pantalla EditarProveedorScreen.
+ * EditarProveedorStyles.js
+ * Estilos para la pantalla de edición de proveedores.
  *
  * FUNCIONALIDAD:
- * 1. Colores y tipografia salen de theme/colors y theme/typography.
- * 
- * 2. El card no define ancho/centrado propio, eso lo resuelve
- *    STYLE.contentWrapper (theme/style) desde la screen. El padding
- *    raíz tampoco se define aquí: la screen aplica STYLE.container
- *    (theme/style) como View raíz, igual que en NuevoProveedorScreen,
- *    para que ambas pantallas se centren con exactamente las mismas
- *    medidas. 
- * 
- * 3. input/select/saveButton se mantienen alineados con
- *    NuevoProveedorStyles (borde redondeado, mismo radio) para que
- *    Nuevo/Editar proveedor se vean como el mismo formulario.
- * 
- * 4. inputError (borde rojo) es el único estilo de estado de campo y
- *    solo debe aplicarse tras un intento de guardado fallido, nunca
- *    mientras el usuario escribe. No se pinta mensaje ni icono
- *    individual debajo del campo.
- * 
- * 5. alertContaine` vive arriba del boton "Guardar proveedor".
+ * - Proporciona el sistema visual para el formulario de edición.
+ * - Define el inputError (borde rojo) que se activa tras un error.
+ * - Estiliza el campo deshabilitado (nombre) con un fondo gris tenue.
+ * - Mantiene el botón de guardado consistente con el diseño general.
  *
+ * REGLAS IMPORTANTES:
+ * - Los estilos de alerta (success/danger) se manejan por variantes.
+ * - Los campos comparten borderRadius y alturas idénticas al diseño.
+ * - El color de inputError solo es visible cuando existe un error.
+ *
+ * @dependencies - StyleSheet, COLORS, TYPOGRAPHY, theme/style
+ * @validations - N/A
+ * @navigation - N/A
  */
 import { StyleSheet } from "react-native";
 import { COLORS } from "../../../theme/colors";

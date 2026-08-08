@@ -1,51 +1,31 @@
 /**
- * ============================================================
- * SCREEN: InventarioScreen
- * ============================================================
+ * InventarioScreen.jsx
+ * Pantalla principal del módulo de Inventarios.
  *
- * Responsabilidad:
- * Pantalla principal del módulo de Inventarios. Muestra el listado de
- * productos con búsqueda, filtros y alerta de stock bajo, y permite
- * navegar al detalle de un producto o a la creación de uno nuevo.
+ * FUNCIONALIDAD:
+ * - Muestra el listado de productos del inventario.
+ * - Integra búsqueda por texto y panel de filtros avanzados.
+ * - Resalta tarjetas de productos que tengan stock bajo.
+ * - Muestra en la parte superior el alert de éxito (verde) cuando
+ *   Productos navega de vuelta a esta pantalla con el parámetro
+ *   alertaProducto ("guardado" o "eliminado").
  *
- * Datos:
- * Consume useInventario(), que a su vez lee del InventarioService.
- * Cada producto muestra: nombre, código, categoría, cantidad, unidad,
- * stock mínimo, proveedor, precio por unidad y fecha de caducidad
- * (dd/mm/aaaa, dato real que llega por la llave foránea con
- * Productos).
+ * REGLAS IMPORTANTES:
+ * - Utiliza los componentes compartidos SearchBar y FilterButton.
+ * - Botón outline inferior para agregar un nuevo producto.
+ * - Sin estilos inline.
+ * - El feedback (feedback) se arma en useInventario.js leyendo el
+ *   parámetro de navegación alertaProducto enviado por Productos; no
+ *   depende del estado interno de sus hooks.
  *
- * Validaciones:
- * No aplica formularios en esta pantalla. El único estado visual
- * condicional es el resaltado de stock bajo (cantidad < stockMinimo).
- *
- * Navegación:
- * onDetail(id): navega al detalle de un producto.
- * onNew(): navega a la creación de un nuevo producto (el producto
- * creado se antepone al listado, ver InventarioService.addProducto).
- * onBack: se recibe como prop por consistencia con la navegación del
- * módulo; el botón de regreso lo resuelve el header global, no esta
- * pantalla.
- *
- * Dependencias:
- * shared/components (Card, Badge, Button, Text, Title, EmptyState,
- * Icons), components/SearchBar.jsx, components/FilterButton.jsx,
- * hooks/useInventario.js, theme (colors, icons, style).
- *
- * Notas de diseño:
- * La tarjeta de producto conserva el ícono de caja junto al nombre y
- * el ícono de gráfico en "Ver detalle"; el resto de la tarjeta
- * (badges, filas de detalle) es solo texto, sin íconos.
- * El badge de "Stock bajo" no lleva ícono, solo texto.
- * Los íconos de la pantalla (caja, gráfico, notificación de stock
- * bajo y "Agregar producto") usan el tamaño por defecto del
- * componente Icon, sin overrides de size.
- *
+ * @dependencies - React, SearchBar, FilterButton, Alert, useInventario
+ * @validations - N/A
+ * @navigation - onDetail, onNew
  */
 
 import { View, FlatList } from "react-native";
 
-import Card from "../../../shared/components/Card";
+import CardPress from "../../../shared/components/CardPress";
 import Badge from "../../../shared/components/Badge";
 import Button from "../../../shared/components/Button";
 import CustomText from "../../../shared/components/Text";
@@ -54,6 +34,7 @@ import EmptyState from "../../../shared/components/EmptyState";
 import Icon from "../../../shared/components/Icons";
 import SearchBar from "../../../shared/components/SearchBar";
 import FilterButton from "../../../shared/components/FilterButton";
+import Alert from "../../../shared/components/Alert";
 
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
@@ -65,7 +46,11 @@ import { useInventario } from "../hooks/useInventario";
 function FilaDetalle({ etiqueta, valor, resaltado = false }) {
   return (
     <View style={styles.filaDetalle}>
-      <CustomText size={12} color={COLORS.textTertiary} style={styles.etiquetaDetalle}>
+      <CustomText
+        size={12}
+        color={COLORS.textTertiary}
+        style={styles.etiquetaDetalle}
+      >
         {etiqueta}
       </CustomText>
       <CustomText
@@ -80,14 +65,78 @@ function FilaDetalle({ etiqueta, valor, resaltado = false }) {
   );
 }
 
+const iconoPorCategoria = [
+  { match: ["alimentación", "alimentacion"], icon: ICONS.food },
+  { match: ["tratamiento"], icon: ICONS.treatment },
+  { match: ["químico", "quimico"], icon: ICONS.chemicalContainer },
+  { match: ["fertilizante"], icon: ICONS.fertilizer },
+  { match: ["antibiótico", "antibiotico"], icon: ICONS.microscope },
+  { match: ["probiótico", "probiotico"], icon: ICONS.microscope },
+  { match: ["mantenimiento"], icon: ICONS.tools },
+];
+
+function getIconForCategory(categoria) {
+  const cat = (categoria || "").toLowerCase();
+  const encontrado = iconoPorCategoria.find(({ match }) =>
+    match.some((palabra) => cat.includes(palabra)),
+  );
+  return encontrado ? encontrado.icon : ICONS.box;
+}
+
+const unidadesInvariables = ["kg", "g", "mg", "ml", "l", "cc"];
+
+const vocales = "aeiouáéíóú";
+const acentos = { á: "a", é: "e", í: "i", ó: "o", ú: "u" };
+
+function pluralizarPalabra(palabra) {
+  if (!palabra || palabra.toLowerCase().endsWith("s")) return palabra;
+
+  const ultima = palabra.charAt(palabra.length - 1).toLowerCase();
+  if (vocales.includes(ultima)) {
+    return `${palabra}s`;
+  }
+
+  const penultima = palabra.charAt(palabra.length - 2).toLowerCase();
+  if (acentos[penultima]) {
+    return `${palabra.slice(0, -2)}${acentos[penultima]}${ultima}es`;
+  }
+  return `${palabra}es`;
+}
+
+function getPluralizedUnit(cantidad, unidad) {
+  if (Number(cantidad) <= 1 || !unidad) return unidad;
+
+  const [primeraPalabra, ...resto] = unidad.trim().split(" ");
+
+  if (unidadesInvariables.includes(primeraPalabra.toLowerCase())) {
+    return unidad;
+  }
+
+  const palabraPlural = pluralizarPalabra(primeraPalabra);
+  return resto.length ? `${palabraPlural} ${resto.join(" ")}` : palabraPlural;
+}
+
 function TarjetaProducto({ producto, onVerDetalle }) {
   const tieneStockBajo = producto.cantidad < producto.stockMinimo;
-  const precioFormateado = `₡${producto.precioUnidad.toLocaleString("es-CR")}`;
+  const precioFormateado =
+    producto.precioUnidad != null && producto.precioUnidad !== ""
+      ? `₡${Number(producto.precioUnidad).toLocaleString("es-CR")}`
+      : "₡0";
+
+  const fechaCaducidadFormateada =
+    producto.fechaCaducidad != null && 
+    producto.fechaCaducidad.toString().trim() !== "" && 
+    producto.fechaCaducidad !== "-"
+      ? producto.fechaCaducidad
+      : "Sin Fecha de Caducidad";
 
   return (
-    <Card style={[styles.tarjeta, tieneStockBajo && styles.tarjetaStockBajo]}>
+    <CardPress
+      onPress={onVerDetalle}
+      style={[styles.tarjeta, tieneStockBajo && styles.tarjetaStockBajo]}
+    >
       <View style={styles.filaTituloIcono}>
-        <Icon icon={ICONS.box} color={COLORS.primary} />
+        <Icon icon={getIconForCategory(producto.categoria)} color={COLORS.primary}/>
         <Title level={5} style={styles.nombreProducto}>
           {producto.nombre}
         </Title>
@@ -95,45 +144,45 @@ function TarjetaProducto({ producto, onVerDetalle }) {
 
       {tieneStockBajo && (
         <View style={styles.badgeStockBajo}>
-          <CustomText size={12} weight="600" color={COLORS.error} style={styles.badgeStockBajoTexto}>
+          <CustomText
+            size={12}
+            weight="600"
+            color={COLORS.error}
+            style={styles.badgeStockBajoTexto}
+          >
             Stock bajo
           </CustomText>
         </View>
       )}
 
-      <View style={styles.filaCategoriaBoton}>
         <Badge
           label={producto.categoria}
           style={styles.badgeCategoria}
           textStyle={styles.badgeTexto}
         />
-        <Button variant="outline" onPress={onVerDetalle} style={styles.botonDetalle}>
-          <Icon icon={ICONS.chart} color={COLORS.primary} />
-          <CustomText size={13} weight="600" color={COLORS.primary}>
-            Ver detalle
-          </CustomText>
-        </Button>
-      </View>
-
+  
       <View style={styles.filasDetalle}>
-        <FilaDetalle etiqueta="Código" valor={producto.codigo || "—"} />
+        <FilaDetalle etiqueta="Código" valor={producto.codigo || "No registrado"} />
         <FilaDetalle
           etiqueta="Cantidad"
-          valor={`${producto.cantidad} ${producto.unidad}`}
+          valor={`${producto.cantidad} ${getPluralizedUnit(producto.cantidad, producto.unidad)}`}
           resaltado={tieneStockBajo}
         />
         <FilaDetalle
           etiqueta="Stock mínimo"
-          valor={`${producto.stockMinimo} ${producto.unidad}`}
+          valor={`${producto.stockMinimo} ${getPluralizedUnit(producto.stockMinimo, producto.unidad)}`}
         />
-        <FilaDetalle 
-          etiqueta="Proveedor" 
-          valor={producto.proveedor || producto.proveedorId || "—"} 
+        <FilaDetalle
+          etiqueta="Proveedor"
+          valor={producto.nombreProveedor || "No registrado"}
         />
         <FilaDetalle etiqueta="Precio/unidad" valor={precioFormateado} />
-        <FilaDetalle etiqueta="Fecha de caducidad" valor={producto.fechaCaducidad || "—"} />
+        <FilaDetalle
+          etiqueta="Fecha de caducidad"
+          valor={fechaCaducidadFormateada}
+        />
       </View>
-    </Card>
+    </CardPress>
   );
 }
 
@@ -149,12 +198,20 @@ export default function InventarioScreen({ onDetail, onNew, onBack }) {
     unidades,
     productosFiltrados,
     cantidadStockBajo,
+    feedback,
   } = useInventario();
 
   return (
     <View style={STYLE.container}>
-      {/* Zona de filtros y búsqueda fija arriba (fuera de la FlatList para que no pierda el foco) */}
       <View style={[STYLE.contentWrapper, styles.zonaFiltros]}>
+        {feedback && (
+          <Alert
+            variant={feedback.variant}
+            message={feedback.message}
+            style={styles.alertFeedback}
+          />
+        )}
+
         <View style={styles.barraBusqueda}>
           <SearchBar
             value={busqueda}
@@ -177,25 +234,29 @@ export default function InventarioScreen({ onDetail, onNew, onBack }) {
         {cantidadStockBajo > 0 && (
           <View style={styles.alertaBanner}>
             <Icon icon={ICONS.notification} color={COLORS.error} />
-            <CustomText size={13} weight="600" color={COLORS.error} style={styles.alertaTexto}>
+            <CustomText
+              size={13}
+              weight="600"
+              color={COLORS.error}
+              style={styles.alertaTexto}
+            >
               {cantidadStockBajo}{" "}
-              {cantidadStockBajo === 1 ? "producto" : "productos"} con stock bajo
+              {cantidadStockBajo === 1 ? "producto" : "productos"} con stock
+              bajo
             </CustomText>
           </View>
         )}
 
-        <View style={styles.filaContadorBoton}>
-          <CustomText size={13} color={COLORS.textTertiary} style={styles.contadorResultados}>
-            {productosFiltrados.length}{" "}
-            {productosFiltrados.length === 1 ? "producto encontrado" : "productos encontrados"}
-          </CustomText>
-          <Button variant="outline" onPress={onNew} style={styles.botonAgregar}>
-            <Icon icon={ICONS.add} color={COLORS.primary} />
-            <CustomText size={13} weight="600" color={COLORS.primary}>
-              Agregar producto
-            </CustomText>
-          </Button>
-        </View>
+        <CustomText 
+          size={13} 
+          color={COLORS.textTertiary} 
+          style={styles.contadorResultados}
+        >
+          {productosFiltrados.length}{" "}
+          {productosFiltrados.length === 1 
+            ? "producto encontrado" 
+            : "productos encontrados"}
+        </CustomText>
       </View>
 
       <FlatList
@@ -206,7 +267,7 @@ export default function InventarioScreen({ onDetail, onNew, onBack }) {
         renderItem={({ item }) => (
           <TarjetaProducto
             producto={item}
-            onVerDetalle={() => onDetail(item.id)}
+            onVerDetalle={() => onDetail(item.productoId)}
           />
         )}
         ListEmptyComponent={
@@ -217,6 +278,17 @@ export default function InventarioScreen({ onDetail, onNew, onBack }) {
         }
         contentContainerStyle={styles.lista}
       />
-    </View>
+
+      <View style={styles.floatingButtonWrapper} pointerEvents="box-none">
+        <View style={STYLE.contentWrapper}>
+          <Button variant="outline" onPress={onNew} style={styles.botonAgregar}>
+            <Icon icon={ICONS.add} color={COLORS.primary} />
+            <CustomText size={14} weight="600" color={COLORS.primary}>
+              Añadir Producto
+            </CustomText>
+          </Button>
+        </View>
+      </View>
+    </View>  
   );
 }

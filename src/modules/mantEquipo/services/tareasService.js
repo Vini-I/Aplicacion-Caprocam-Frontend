@@ -16,6 +16,20 @@
 import api from "../../../api/api";
 
 // ─── MAPEO DE DATOS ─────────────────────────────────────────────
+function construirErrorHttp(error, mensajeGenerico) {
+  const status = error?.response?.status;
+  const mensaje = error?.response?.data?.message || error?.response?.data?.error || error?.message;
+  if (status === 500) {
+    return new Error(mensajeGenerico);
+  }
+  if (status) {
+    const err = new Error(mensaje || mensajeGenerico);
+    err.status = status;
+    return err;
+  }
+
+  return new Error(mensajeGenerico);
+}
 
 function mapBackendToFrontend(data) {
   if (!data) return {};
@@ -95,11 +109,7 @@ async function getTareas(filtros = {}) {
     if (error.response && error.response.status === 404) {
       return [];
     }
-    const message =
-      error.response?.data?.message ||
-      error.message ||
-      "Error al obtener tareas";
-    throw new Error(message);
+    throw construirErrorHttp(error, "No se pudieron obtener las tareas");
   }
 }
 
@@ -114,11 +124,7 @@ async function getTareaById(id) {
     if (!data) throw new Error("Tarea no encontrada");
     return mapBackendToFrontend(data);
   } catch (error) {
-    const message =
-      error.response?.data?.message ||
-      error.message ||
-      "Error al obtener tarea";
-    throw new Error(message);
+    throw construirErrorHttp(error, "No se pudo obtener la tarea");
   }
 }
 
@@ -132,11 +138,7 @@ async function createTarea(data) {
     const response = await api.post("/tareas", payload);
     return mapBackendToFrontend(response.data.data);
   } catch (error) {
-    const message =
-      error.response?.data?.message ||
-      error.message ||
-      "Error al crear tarea";
-    throw new Error(message);
+    throw construirErrorHttp(error, "No se pudo crear la tarea");
   }
 }
 
@@ -150,11 +152,7 @@ async function updateTarea(id, data) {
     const response = await api.put(`/tareas/${id}`, payload);
     return mapBackendToFrontend(response.data.data);
   } catch (error) {
-    const message =
-      error.response?.data?.message ||
-      error.message ||
-      "Error al actualizar tarea";
-    throw new Error(message);
+    throw construirErrorHttp(error, "No se pudo actualizar la tarea");
   }
 }
 
@@ -167,11 +165,7 @@ async function deleteTarea(id) {
     const response = await api.delete(`/tareas/${id}`);
     return response.data.data ? true : false;
   } catch (error) {
-    const message =
-      error.response?.data?.message ||
-      error.message ||
-      "Error al eliminar tarea";
-    throw new Error(message);
+    throw construirErrorHttp(error, "No se pudo eliminar la tarea");
   }
 }
 
@@ -193,7 +187,7 @@ async function getCatalogoTareas() {
     if (error.response && error.response.status === 404) {
       return [];
     }
-    throw error;
+    throw construirErrorHttp(error, "No se pudo obtener el catálogo de tareas");
   }
 }
 
