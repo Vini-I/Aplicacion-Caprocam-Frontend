@@ -9,6 +9,7 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useFocusEffect } from "expo-router";
+import { useError } from "../../../shared/context/ErrorContext";
 import * as tareasService from "../services/tareasService";
 import { OPCIONES_CATEGORIA } from "../constants/tareasMensajes";
 
@@ -32,6 +33,8 @@ export const useTareas = () => {
     []
   );
 
+  const { mostrarError } = useError();
+
   // ─── CARGA DE DATOS ────────────────────────────────────────────
   const cargarTareas = useCallback(async (force = false) => {
     if (!force && tareas.length > 0 && initialLoadDone.current) {
@@ -43,9 +46,8 @@ export const useTareas = () => {
     try {
       const datos = await tareasService.obtenerTareas();
       setTareas(datos);
-      initialLoadDone.current = true;
     } catch (err) {
-      setError(err.message || "Error al cargar las tareas");
+      mostrarError(err);
     } finally {
       setLoading(false);
     }

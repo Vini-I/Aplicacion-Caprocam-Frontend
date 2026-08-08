@@ -9,11 +9,11 @@
  * antiguas del módulo.
  *
  * Funcionalidad:
- * - Todos los colores usados vienen de COLORS (COLORS.surface,
+ * - Todos los colores usados vienen de COLORS (COLORS.white,
  *   COLORS.primary), sin valores hardcodeados.
  * - container/content siguen el mismo patrón consistente que ya
  *   usan Raleo y Densidad Poblacional: container es el fondo de
- *   pantalla (flex:1 + COLORS.surface) y content es el wrapper
+ *   pantalla (flex:1 + COLORS.white) y content es el wrapper
  *   centrado (...STYLE.contentWrapper de theme/style.js), en vez
  *   de anidar 2 wrappers distintos (contenido + alimentacionContent)
  *   como se hacía antes.
@@ -30,15 +30,6 @@ import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
 
 export const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: COLORS.surface,
-  },
-
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.surface,
-  },
 
   secLabel: {
     textTransform: "uppercase",

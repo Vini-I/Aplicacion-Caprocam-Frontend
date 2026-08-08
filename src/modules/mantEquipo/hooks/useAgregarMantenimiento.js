@@ -70,7 +70,6 @@ export function useAgregarMantenimiento({ onNavigateToMain }) {
         });
         setProductosList(list);
       } catch (err) {
-        console.error('Error al cargar productos del catálogo:', err);
         setProductosList([]);
       }
     }
@@ -234,7 +233,6 @@ export function useAgregarMantenimiento({ onNavigateToMain }) {
       const idFinal = creado?.id || '';
       onNavigateToMain({ alertaTipo: 'success', alertaMensaje: ALERTAS_NOTIFICACIONES.exitoCrearTicket(idFinal) });
     } catch (e) {
-      console.error("Error al crear ticket de mantenimiento:", e?.response?.data || e?.message || e);
       const mensajeError = e?.response?.data?.error || e?.response?.data?.message || e?.message || TEXTOS_MODAL_AGREGAR.errorCrearTicket;
       setAlertaServidor(mensajeError);
     }

@@ -30,16 +30,29 @@
 
 import api from "../../../api/api.js";
 
+function construirErrorHttp(error, mensajeGenerico) {
+  const status = error?.response?.status;
+  const mensaje = error?.response?.data?.message || error?.response?.data?.error || error?.message;
+
+  if (status === 500) {
+    return new Error(mensajeGenerico);
+  }
+  
+  if (status) {
+    const err = new Error(mensaje || mensajeGenerico);
+    err.status = status;
+    return err;
+  }
+
+  return new Error(mensajeGenerico);
+}
+
 async function getAll() {
   try {
     const response = await api.get("/raleo");
     return response.data.data;
   } catch (error) {
-    console.error(
-      "Error al obtener los raleos",
-      error.response?.data || error.message
-    );
-    throw error;
+    throw construirErrorHttp(error, "Error al obtener los raleos");
   }
 }
 
@@ -48,11 +61,7 @@ async function getById(id) {
     const response = await api.get(`/raleo/${id}`);
     return response.data.data;
   } catch (error) {
-    console.error(
-      "Error al obtener el raleo",
-      error.response?.data || error.message
-    );
-    throw error;
+    throw construirErrorHttp(error, "Error al obtener el raleo");
   }
 }
 
@@ -61,11 +70,7 @@ async function create(raleoDTO) {
     const response = await api.post("/raleo", raleoDTO);
     return response.data.data;
   } catch (error) {
-    console.error(
-      "Error al crear el raleo",
-      error.response?.data || error.message
-    );
-    throw error;
+    throw construirErrorHttp(error, "Error al crear el raleo");
   }
 }
 
@@ -74,11 +79,7 @@ async function update(id, raleoDTO) {
     const response = await api.put(`/raleo/${id}`, raleoDTO);
     return response.data.data;
   } catch (error) {
-    console.error(
-      "Error al actualizar el raleo",
-      error.response?.data || error.message
-    );
-    throw error;
+    throw construirErrorHttp(error, "Error al actualizar el raleo");
   }
 }
 
@@ -87,11 +88,7 @@ async function deleteById(id) {
     const response = await api.delete(`/raleo/${id}`);
     return response.data.data;
   } catch (error) {
-    console.error(
-      "Error al eliminar el raleo",
-      error.response?.data || error.message
-    );
-    throw error;
+    throw construirErrorHttp(error, "Error al eliminar el raleo");
   }
 }
 

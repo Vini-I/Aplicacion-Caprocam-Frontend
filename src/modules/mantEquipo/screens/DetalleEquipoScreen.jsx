@@ -94,7 +94,6 @@ export default function DetalleEquipoScreen() {
     estanque,
     loading,
     error,
-    alert,
     showConfirmModal,
     deleteTarget,
     handleEditar,

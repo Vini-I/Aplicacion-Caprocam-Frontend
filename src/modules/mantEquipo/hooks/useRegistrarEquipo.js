@@ -203,8 +203,7 @@ export function useRegistrarEquipo(initialData = null) {
     }
 
     setGuardando(true);
-
-    try {
+    
       const payload = crearEquipoPayload(formulario, {
         isEditing,
         estadoActual: initialData?.encendido ? 'Encendido' : 'Apagado',
@@ -221,11 +220,7 @@ export function useRegistrarEquipo(initialData = null) {
       if (!isEditing) {
         resetFormulario();
       }
-    } catch (error) {
-      throw new Error(error.message || 'No se pudo guardar el equipo. Intente nuevamente.');
-    } finally {
-      setGuardando(false);
-    }
+  
   }
 
   return {

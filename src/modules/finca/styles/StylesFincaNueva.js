@@ -108,6 +108,7 @@ export const styles = StyleSheet.create({
     flex: 1,
   },
   removePhoneButton: {
+    borderColor: COLORS.surface,
     backgroundColor: COLORS.surface,
     width: 40,
     height: 40,

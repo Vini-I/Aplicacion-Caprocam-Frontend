@@ -46,6 +46,22 @@ export default function useEditarEnfermedad(registroId, onGuardado) {
   const [cargandoRegistro, setCargandoRegistro] = useState(true);
   const [cargandoOpciones, setCargandoOpciones] = useState(true);
 
+  useEffect(function () {
+    if (!mensaje) {
+      return undefined;
+    }
+
+    const duracion = tipoMensaje === "success" ? 3000 : 6000;
+    const timer = setTimeout(function () {
+      setMensaje("");
+      setTipoMensaje("info");
+    }, duracion);
+
+    return function () {
+      clearTimeout(timer);
+    };
+  }, [mensaje, tipoMensaje]);
+
   useEffect(() => {
     let activo = true;
     (async () => {
@@ -63,7 +79,8 @@ export default function useEditarEnfermedad(registroId, onGuardado) {
         setCatalogoEnf(Array.isArray(ce) ? ce : []);
         setCatalogoSev(Array.isArray(cs) ? cs : []);
       } catch (err) {
-        console.error(err);
+        setTipoMensaje("danger");
+        setMensaje(err.message);
       } finally {
         if (activo) setCargandoOpciones(false);
       }
@@ -156,14 +173,14 @@ export default function useEditarEnfermedad(registroId, onGuardado) {
       onGuardado?.();
     } catch (e) {
       setTipoMensaje("danger");
-      setMensaje(e.response?.data?.message || "No se pudo actualizar.");
+      setMensaje(e.message);
     } finally {
       setLoading(false);
     }
   };
 
   return {
-    finca, estanque, fechaReporte, responsable: "", enfermedad, severidad, mortalidad, reporte,
+    finca, estanque, fechaReporte, enfermedad, severidad, mortalidad, reporte,
     opcionesFincas, opcionesEstanques, opcionesEnfermedades, opcionesSeveridades,
     placeholderFinca: "Seleccione una finca",
     placeholderEstanque: "Seleccione un estanque",
