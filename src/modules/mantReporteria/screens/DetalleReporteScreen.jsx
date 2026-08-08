@@ -80,7 +80,7 @@ export default function DetalleReporteScreen({ onEditar }) {
         Subtitulo="Historico Registros"
         Icono="document"
       />
-      <ScrollView>
+      <ScrollView showsVerticalScrollIndicator={false}>
         <View style={STYLE.container}>
           <View style={STYLE.contentWrapper}>
             {alert === "deleted" && (

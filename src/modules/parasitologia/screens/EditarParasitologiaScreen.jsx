@@ -7,7 +7,7 @@
  * Toda la logica se encuentra en useParasitologiaScreen.
  */
 
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { ScrollView, View } from "react-native";
 
 import Alert from "../../../shared/components/Alert";
@@ -36,6 +36,14 @@ export default function EditarParasitologiaScreen({ registroId }) {
   const pantalla = useEditarParasitologia(registroId, () => {
     router.replace({ pathname: "/registros/Reporteria", params: { alert: "edited" } });
   });
+  const scrollRef = useRef(null);
+
+  //Hook aquí para que haga el scrollToEnd en caso de que haya algún error de cargar
+  useEffect(() => {
+    if (pantalla.mensaje && pantalla.tipoMensaje === "danger") {
+      scrollRef.current?.scrollToEnd({ animated: true });
+    }
+  }, [pantalla.mensaje, pantalla.tipoMensaje]);
 
   if (!registroId) {
     return (
@@ -64,7 +72,11 @@ export default function EditarParasitologiaScreen({ registroId }) {
         Icono="parasite"
       />
 
-      <ScrollView style={STYLE.container} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        ref={scrollRef}
+        style={STYLE.container}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={[STYLE.contentWrapper, styles.content]}>
           {pantalla.loading && (
             <Alert
@@ -91,9 +103,7 @@ export default function EditarParasitologiaScreen({ registroId }) {
                   placeholder={pantalla.placeholderFinca}
                   disabled={pantalla.loading}
                   labelStyle={styles.label}
-                  selectStyle={
-                    pantalla.errorFinca && styles.campoConError
-                  }
+                  selectStyle={pantalla.errorFinca && styles.campoConError}
                 />
               </View>
 
@@ -106,9 +116,7 @@ export default function EditarParasitologiaScreen({ registroId }) {
                   placeholder={pantalla.placeholderEstanque}
                   disabled={pantalla.loading || pantalla.finca === ""}
                   labelStyle={styles.label}
-                  selectStyle={
-                    pantalla.errorEstanque && styles.campoConError
-                  }
+                  selectStyle={pantalla.errorEstanque && styles.campoConError}
                 />
               </View>
 
@@ -125,16 +133,6 @@ export default function EditarParasitologiaScreen({ registroId }) {
                 />
               </View>
 
-              <View style={pantalla.itemStyle} pointerEvents="none">
-                <Input
-                  label="Responsable"
-                  value={pantalla.responsable}
-                  editable={false}
-                  readOnly={true}
-                  selectTextOnFocus={false}
-                  labelStyle={styles.label}
-                />
-              </View>
             </View>
           </Card>
 
@@ -154,9 +152,7 @@ export default function EditarParasitologiaScreen({ registroId }) {
                   placeholder={pantalla.placeholderParasito}
                   disabled={pantalla.loading}
                   labelStyle={styles.label}
-                  selectStyle={
-                    pantalla.errorParasito && styles.campoConError
-                  }
+                  selectStyle={pantalla.errorParasito && styles.campoConError}
                 />
               </View>
 
@@ -170,9 +166,7 @@ export default function EditarParasitologiaScreen({ registroId }) {
                   step={1}
                   editable={!pantalla.loading}
                   labelStyle={styles.label}
-                  style={
-                    pantalla.errorMuestreados && styles.campoConError
-                  }
+                  style={pantalla.errorMuestreados && styles.campoConError}
                 />
               </View>
 
@@ -186,16 +180,18 @@ export default function EditarParasitologiaScreen({ registroId }) {
                   step={1}
                   editable={!pantalla.loading}
                   labelStyle={styles.label}
-                  style={
-                    pantalla.errorInfectados && styles.campoConError
-                  }
+                  style={pantalla.errorInfectados && styles.campoConError}
                 />
               </View>
 
               <View style={pantalla.itemFullStyle}>
                 <View style={styles.previewCard}>
                   <View style={styles.previewHeader}>
-                    <Icon icon={ICONS.report} size={20} color={COLORS.primary} />
+                    <Icon
+                      icon={ICONS.report}
+                      size={20}
+                      color={COLORS.primary}
+                    />
 
                     <CustomText
                       size={15}
@@ -328,7 +324,7 @@ export default function EditarParasitologiaScreen({ registroId }) {
                 color={COLORS.primary}
                 style={styles.saveText}
               >
-                Guardar
+                Actualizar Registro Parasitología
               </CustomText>
             </View>
           </Button>

@@ -4,6 +4,10 @@ function construirErrorHttp(error, mensajeGenerico) {
   const status = error?.response?.status;
   const mensaje = error?.response?.data?.message || error?.response?.data?.error || error?.message;
 
+  if (status === 500) {
+    return new Error(mensajeGenerico);
+  }
+  
   if (status) {
     const err = new Error(mensaje || mensajeGenerico);
     err.status = status;

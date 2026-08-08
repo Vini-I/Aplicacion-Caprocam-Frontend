@@ -69,7 +69,7 @@ export default function useEditarEstanque(codigoCBO, id) {
 
       } catch (error) {
         setTipoMensaje("danger");
-        setMensaje("No se pudo cargar el estanque");
+        setMensaje(error.message);
      } finally {
         setLoading(false);
       }
@@ -131,7 +131,11 @@ export default function useEditarEstanque(codigoCBO, id) {
       return;
     }
 
-    const estanque = await buscarEstanque(id);
+    if (!estanqueOriginal) {
+      setTipoMensaje("danger");
+      setMensaje("No se pudo cargar la información del estanque.");
+      return;
+    }
 
     const EstanqueEditadoDTO = {
       idFinca: estanqueOriginal.idFinca,
@@ -157,9 +161,7 @@ export default function useEditarEstanque(codigoCBO, id) {
       });
     } catch (error) {
       setTipoMensaje("danger");
-      setMensaje(
-        error.response?.data?.message || "Error al guardar los cambios",
-      );
+      setMensaje(error.message);
     }
   }
 
