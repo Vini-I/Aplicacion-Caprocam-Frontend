@@ -73,6 +73,7 @@ export default function EditarCrecimientoScreen({ registroId, onGuardado }) {
     );
   }
 
+
   return (
     <View style={styles.screenContainer}>
       <NavbarRegistro
@@ -86,16 +87,20 @@ export default function EditarCrecimientoScreen({ registroId, onGuardado }) {
       >
         <Card style={STYLE.contentWrapper}>
           <Select
-            label="Seleccione la finca *"
+            label="Seleccione la finca"
+            required={true}
+            submitted={submitted}
             placeholder="Seleccione una finca"
             options={opcionesFincas}
             value={fincaSeleccionada}
             onChange={handleFincaChange}
-            selectStyle={mostrarErrorFinca ? styles.inputError : null}
+            error={errors?.finca || ""}
           />
 
           <Select
-            label="Seleccione el estanque *"
+            label="Seleccione el estanque"
+            required={true}
+            submitted={submitted}
             placeholder="Seleccione un estanque"
             options={estanquesFiltrados}
             value={estanqueSeleccionado}
@@ -103,7 +108,7 @@ export default function EditarCrecimientoScreen({ registroId, onGuardado }) {
             disabled={
               estanqueSeleccionado !== "" && estanquesFiltrados.length === 0
             }
-            selectStyle={mostrarErrorEstanque ? styles.inputError : null}
+            error={errors?.estanque || ""}
           />
 
           <View style={styles.badgeRow}>
@@ -116,10 +121,12 @@ export default function EditarCrecimientoScreen({ registroId, onGuardado }) {
 
           <View style={styles.inputColumn}>
             <Calendario
-              label="Fecha de registro *"
+              label="Fecha de registro"
+              required={true}
+              submitted={submitted}
               value={fechaRegistro}
               onChangeText={setFechaRegistro}
-              inputStyle={mostrarErrorFecha ? styles.inputError : null}
+              error={errors?.fecha || ""}
             />
           </View>
 
@@ -188,24 +195,28 @@ export default function EditarCrecimientoScreen({ registroId, onGuardado }) {
               <View style={styles.formCalculoCampos}>
                 <View style={styles.formCalculoCampo}>
                   <NumberInput
-                    label="Cantidad de individuos *"
+                    label="Cantidad de individuos"
+                    required={true}
+                    submitted={submitted}
                     value={cantidadIndividuos}
                     onChangeText={handleCantidadChange}
                     step={1}
                     min={0}
                     max={10000}
-                    style={mostrarErrorCantidad ? styles.inputError : null}
+                    error={errors?.cantidad || ""}
                   />
                 </View>
                 <View style={styles.formCalculoCampo}>
                   <NumberInput
-                    label="Peso total (g) *"
+                    label="Peso total (g)"
+                    required={true}
+                    submitted={submitted}
                     value={pesoTotal}
                     onChangeText={handlePesoTotalChange}
                     step={0.5}
                     min={0}
                     max={100000}
-                    style={mostrarErrorPesoTotal ? styles.inputError : null}
+                    error={errors?.pesoTotal || ""}
                   />
                 </View>
                 <View style={styles.formCalculoCampo}>

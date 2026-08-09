@@ -364,6 +364,8 @@ export default function useEditarCrecimiento(registroId, onGuardado) {
     if (!fechaRegistro) next.fecha = "Seleccione una fecha de registro.";
     if (!calculos.length) {
       next.calculos = "Agregue al menos un cálculo de muestreo.";
+      next.cantidad = "Ingrese una cantidad mayor que cero.";
+      next.pesoTotal = "Ingrese un peso total mayor que cero.";
     } else {
       const invalidos = calculos.some(
         (c) => !c.cantidad || Number(c.cantidad) <= 0 || !c.pesoTotal || Number(c.pesoTotal) <= 0,

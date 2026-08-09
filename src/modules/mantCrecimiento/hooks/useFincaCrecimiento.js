@@ -2,11 +2,6 @@
  * ============================================================
  * HOOK DE FINCA DE CRECIMIENTO
  * ============================================================
- *
- * Registro de peso por muestreo:
- * - Varios cálculos (cantidad de individuos + peso total).
- * - Total (g/Cant) y peso promedio se calculan en front.
- * - Al guardar se envía pesoActual = promedio de los cálculos.
  */
 
 import { useLocalSearchParams } from "expo-router";
@@ -71,9 +66,7 @@ export function useFincaCrecimiento() {
   const [estanqueSeleccionado, setEstanqueSeleccionado] = useState("");
   const [fechaRegistro, setFechaRegistro] = useState(getFechaHoy());
 
-  // Cálculos ya agregados (lista)
   const [calculos, setCalculos] = useState([]);
-  // Formulario del cálculo actual
   const [cantidadIndividuos, setCantidadIndividuos] = useState("0");
   const [pesoTotal, setPesoTotal] = useState("");
   const [editandoId, setEditandoId] = useState(null);
@@ -155,13 +148,11 @@ export function useFincaCrecimiento() {
       }));
   }, [fincaSeleccionada, estanques]);
 
-  // Total (g/Cant) del formulario actual
   const totalActual = useMemo(
     () => calcularPromedio(cantidadIndividuos, pesoTotal),
     [cantidadIndividuos, pesoTotal],
   );
 
-  // Peso promedio = media de los totales de cada cálculo guardado
   const pesoPromedioCalculado = useMemo(() => {
     if (!calculos.length) return null;
     const suma = calculos.reduce((acc, c) => acc + Number(c.promedio), 0);
@@ -236,26 +227,30 @@ export function useFincaCrecimiento() {
     setCantidadIndividuos(value);
     setSuccessMessage("");
     setErrorMessage("");
+    setErrors((prev) => ({ ...prev, cantidad: undefined }));
   }, []);
 
   const handlePesoTotalChange = useCallback((value) => {
     setPesoTotal(value);
     setSuccessMessage("");
     setErrorMessage("");
+    setErrors((prev) => ({ ...prev, pesoTotal: undefined }));
   }, []);
 
-  /** Agrega o actualiza el cálculo actual en la lista */
   const agregarCalculo = useCallback(() => {
     const cant = Number(cantidadIndividuos);
     const peso = Number(pesoTotal);
-    if (
-      cantidadIndividuos === "" ||
-      pesoTotal === "" ||
-      Number.isNaN(cant) ||
-      Number.isNaN(peso) ||
-      cant <= 0 ||
-      peso <= 0
-    ) {
+    const nextErrors = {};
+
+    if (cantidadIndividuos === "" || Number.isNaN(cant) || cant <= 0) {
+      nextErrors.cantidad = "Ingrese una cantidad mayor que cero.";
+    }
+    if (pesoTotal === "" || Number.isNaN(peso) || peso <= 0) {
+      nextErrors.pesoTotal = "Ingrese un peso total mayor que cero.";
+    }
+
+    if (Object.keys(nextErrors).length > 0) {
+      setErrors((prev) => ({ ...prev, ...nextErrors }));
       setErrorMessage("Cantidad y peso total deben ser mayores que cero.");
       setSubmitted(true);
       return;
@@ -263,6 +258,11 @@ export function useFincaCrecimiento() {
 
     const promedio = calcularPromedio(cantidadIndividuos, pesoTotal);
     if (promedio === null || promedio <= 0) {
+      setErrors((prev) => ({
+        ...prev,
+        cantidad: "Ingrese una cantidad válida.",
+        pesoTotal: "Ingrese un peso total válido.",
+      }));
       setErrorMessage("Ingrese cantidad y peso total válidos.");
       setSubmitted(true);
       return;
@@ -284,7 +284,12 @@ export function useFincaCrecimiento() {
 
     limpiarFormCalculo();
     setErrorMessage("");
-    setErrors((prev) => ({ ...prev, calculos: undefined }));
+    setErrors((prev) => ({
+      ...prev,
+      calculos: undefined,
+      cantidad: undefined,
+      pesoTotal: undefined,
+    }));
   }, [cantidadIndividuos, pesoTotal, editandoId, limpiarFormCalculo]);
 
   const editarCalculo = useCallback((calculo) => {
@@ -303,10 +308,6 @@ export function useFincaCrecimiento() {
     [editandoId, limpiarFormCalculo],
   );
 
-  const quitarCalculoActual = useCallback(() => {
-    limpiarFormCalculo();
-  }, [limpiarFormCalculo]);
-
   const validarCampos = useCallback(() => {
     const nextErrors = {};
 
@@ -315,17 +316,37 @@ export function useFincaCrecimiento() {
     if (!fechaRegistro) nextErrors.fecha = "Seleccione una fecha de registro.";
     if (!calculos.length) {
       nextErrors.calculos = "Agregue al menos un cálculo de muestreo.";
+      nextErrors.cantidad = "Ingrese una cantidad mayor que cero.";
+      nextErrors.pesoTotal = "Ingrese un peso total mayor que cero.";
     } else {
       const invalidos = calculos.some(
-        (c) => !c.cantidad || Number(c.cantidad) <= 0 || !c.pesoTotal || Number(c.pesoTotal) <= 0,
+        (c) =>
+          !c.cantidad ||
+          Number(c.cantidad) <= 0 ||
+          !c.pesoTotal ||
+          Number(c.pesoTotal) <= 0,
       );
       if (invalidos) {
-        nextErrors.calculos = "Todos los cálculos deben tener cantidad y peso mayores que cero.";
+        nextErrors.calculos =
+          "Todos los cálculos deben tener cantidad y peso mayores que cero.";
       }
     }
 
     setErrors(nextErrors);
-    return Object.keys(nextErrors).length === 0;
+
+    const keys = Object.keys(nextErrors);
+    if (keys.length === 0) {
+      return { ok: true, mensaje: "" };
+    }
+
+    const mensaje =
+      nextErrors.calculos ||
+      nextErrors.finca ||
+      nextErrors.estanque ||
+      nextErrors.fecha ||
+      "Rellenar campos obligatorios.";
+
+    return { ok: false, mensaje };
   }, [fincaSeleccionada, estanqueSeleccionado, fechaRegistro, calculos]);
 
   const guardarDatos = useCallback(async () => {
@@ -333,8 +354,9 @@ export function useFincaCrecimiento() {
     setSuccessMessage("");
     setErrorMessage("");
 
-    if (!validarCampos()) {
-      setErrorMessage("Rellenar campos obligatorios.");
+    const validacion = validarCampos();
+    if (!validacion.ok) {
+      setErrorMessage(validacion.mensaje);
       return;
     }
 
@@ -367,7 +389,7 @@ export function useFincaCrecimiento() {
         const actualizados = await crecimientoService.getAll();
         setCrecimientos(Array.isArray(actualizados) ? actualizados : []);
       } catch {
-        /* el promedio ya se guardó; la lista local puede refrescarse después */
+        /* ok */
       }
 
       setFincaSeleccionada("");
@@ -398,6 +420,8 @@ export function useFincaCrecimiento() {
   const mostrarErrorEstanque = submitted && Boolean(errors.estanque);
   const mostrarErrorFecha = submitted && Boolean(errors.fecha);
   const mostrarErrorCalculos = submitted && Boolean(errors.calculos);
+  const mostrarErrorCantidad = submitted && Boolean(errors.cantidad);
+  const mostrarErrorPesoTotal = submitted && Boolean(errors.pesoTotal);
 
   return {
     fincaSeleccionada,
@@ -410,7 +434,7 @@ export function useFincaCrecimiento() {
     setEstanqueSeleccionado: handleEstanqueChange,
     setFechaRegistro: handleFechaRegistroChange,
     handleFincaChange,
-    
+
     calculos,
     cantidadIndividuos,
     pesoTotal,
@@ -422,7 +446,6 @@ export function useFincaCrecimiento() {
     agregarCalculo,
     editarCalculo,
     eliminarCalculo,
-    quitarCalculoActual,
     formatearPeso,
 
     guardarDatos,
@@ -436,5 +459,7 @@ export function useFincaCrecimiento() {
     mostrarErrorEstanque,
     mostrarErrorFecha,
     mostrarErrorCalculos,
+    mostrarErrorCantidad,
+    mostrarErrorPesoTotal,
   };
 }
