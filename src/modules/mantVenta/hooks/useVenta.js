@@ -11,7 +11,7 @@
  * - Carga colaboradores activos para asociarlos a la venta.
  * - Obtiene opciones de fincas, estanques y compradores disponibles.
  * - Filtra estanques según la finca seleccionada.
- * - Normaliza y valida campos numéricos como peso, tamaño, kilos y precio.
+ * - Normaliza y valida campos numéricos como peso, kilos y precio.
  * - Calcula el total estimado de la venta según kilos vendidos y precio.
  * - Permite registrar ventas con compradores existentes o cliente genérico.
  * - Genera nombres consecutivos para clientes genéricos, como Cliente 001.
@@ -89,7 +89,6 @@ export function validarVentaFormulario({
   fincaSeleccionada,
   estanqueSeleccionado,
   pesoPromedio,
-  tamanoPromedio,
   kilosVendidos,
   precioKiloNumero,
   colaboradorSeleccionado,
@@ -100,7 +99,6 @@ export function validarVentaFormulario({
   if (!fincaSeleccionada) errores.finca = true;
   if (!estanqueSeleccionado) errores.estanque = true;
   if (Number(pesoPromedio) <= 0) errores.pesoPromedio = true;
-  if (Number(tamanoPromedio) <= 0) errores.tamanoPromedio = true;
   if (Number(kilosVendidos) <= 0) errores.kilosVendidos = true;
   if (precioKiloNumero <= 0) errores.precioKilo = true;
   if (!compradorSeleccionado) errores.comprador = true;
@@ -115,7 +113,6 @@ export function useVenta() {
   const [fincaSeleccionada, setFincaSeleccionada] = useState("");
   const [estanqueSeleccionado, setEstanqueSeleccionado] = useState("");
   const [pesoPromedio, setPesoPromedio] = useState("0.0");
-  const [tamanoPromedio, setTamanoPromedio] = useState("0.0");
   const [kilosVendidos, setKilosVendidos] = useState("0");
   const [precioKilo, setPrecioKilo] = useState("0");
   const [fechaVenta, setFechaVenta] = useState(obtenerFechaActual());
@@ -260,16 +257,6 @@ export function useVenta() {
     [limpiarError],
   );
 
-  const handleTamanoPromedioChange = useCallback(
-    (value) => {
-      setTamanoPromedio(normalizarDecimal(value));
-      limpiarError("tamanoPromedio");
-      setSuccessMessage("");
-      setErrorMessage("");
-    },
-    [limpiarError],
-  );
-
   const handleKilosVendidosChange = useCallback(
     (value) => {
       setKilosVendidos(normalizarDecimal(value));
@@ -339,7 +326,6 @@ export function useVenta() {
     setFincaSeleccionada("");
     setEstanqueSeleccionado("");
     setPesoPromedio("0.1");
-    setTamanoPromedio("0.1");
     setKilosVendidos("0");
     setPrecioKilo("0");
     setFechaVenta(obtenerFechaActual());
@@ -358,7 +344,6 @@ export function useVenta() {
       fincaSeleccionada,
       estanqueSeleccionado,
       pesoPromedio,
-      tamanoPromedio,
       kilosVendidos,
       precioKiloNumero,
       colaboradorSeleccionado,
@@ -380,7 +365,6 @@ export function useVenta() {
       colaborador: colaboradorSeleccionado ? Number(colaboradorSeleccionado) : null,
       comprador: Number(compradorSeleccionado),
       pesoPromedio: Number(pesoPromedio),
-      tamanoPromedio: Number(tamanoPromedio),
       cantVendida: Number(kilosVendidos),
       precioKilo: precioKiloNumero,
       fecha: convertirFechaParaBackend(fechaVenta),
@@ -410,7 +394,6 @@ export function useVenta() {
     fincaSeleccionada,
     estanqueSeleccionado,
     pesoPromedio,
-    tamanoPromedio,
     kilosVendidos,
     precioKiloNumero,
     colaboradorSeleccionado,
@@ -438,7 +421,6 @@ export function useVenta() {
     fincaSeleccionada,
     estanqueSeleccionado,
     pesoPromedio,
-    tamanoPromedio,
     kilosVendidos,
     precioKilo,
     fechaVenta,
@@ -465,7 +447,6 @@ export function useVenta() {
     setEstanqueSeleccionado,
     handleFincaChange,
     handlePesoPromedioChange,
-    handleTamanoPromedioChange,
     handleKilosVendidosChange,
     handlePrecioChange,
     handleCompradorChange,

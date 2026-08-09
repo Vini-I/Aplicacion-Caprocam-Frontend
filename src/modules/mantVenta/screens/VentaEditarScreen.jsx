@@ -33,7 +33,6 @@ export default function VentaEditarScreen({ id, onVenta }) {
     fincaSeleccionada,
     estanqueSeleccionado,
     pesoPromedio,
-    tamanoPromedio,
     kilosVendidos,
     precioKilo,
     fechaVenta,
@@ -50,7 +49,6 @@ export default function VentaEditarScreen({ id, onVenta }) {
     setEstanqueSeleccionado,
     handleFincaChange,
     handlePesoPromedioChange,
-    handleTamanoPromedioChange,
     handleKilosVendidosChange,
     handlePrecioChange,
     handleCompradorChange,
@@ -140,18 +138,6 @@ export default function VentaEditarScreen({ id, onVenta }) {
                 min={0.1}
                 max={15}
                 style={errores.pesoPromedio ? errorInputStyle : null}
-              />
-            </View>
-
-            <View style={styles.inputItem}>
-              <NumberInput
-                label="Tamaño promedio (cm) *"
-                value={tamanoPromedio}
-                onChangeText={handleTamanoPromedioChange}
-                step={0.1}
-                min={0.1}
-                max={20}
-                style={errores.tamanoPromedio ? errorInputStyle : null}
               />
             </View>
           </View>

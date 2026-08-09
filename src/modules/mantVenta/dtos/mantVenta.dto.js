@@ -7,7 +7,7 @@ export class MantVentaDTO {
         colaborador = null,
         comprador,
         pesoPromedio,
-        tamanoPromedio,
+        tamanoPromedio = null,
         cantVendida,
         precioKilo,
         fecha
@@ -19,7 +19,7 @@ export class MantVentaDTO {
         this.comprador = comprador;
 
         this.pesoPromedio = pesoPromedio;
-        this.tamanoPromedio = tamanoPromedio;
+        this.tamanoPromedio = null
 
         this.cantVendida = cantVendida;
         this.precioKilo = precioKilo;
