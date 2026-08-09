@@ -124,6 +124,7 @@ export const styles = StyleSheet.create({
     color: COLORS.primary,
     borderColor: COLORS.primary,
     backgroundColor: COLORS.white,
+    gap: 8,
     borderRadius: 12,
     flexDirection: "row",
     marginBottom: "auto",

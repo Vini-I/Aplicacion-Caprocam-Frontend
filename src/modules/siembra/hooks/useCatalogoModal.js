@@ -19,7 +19,8 @@
  * antes la lista deja campoActivo en null y guardarFormulario
  * falla silenciosamente.
  */
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useError } from "../../../shared/context/ErrorContext";
 
 export function useCatalogoModal({
   proveedoresLarva,
@@ -46,6 +47,34 @@ export function useCatalogoModal({
   const [guardando, setGuardando] = useState(false);
 
   const [itemAEliminar, setItemAEliminar] = useState(null);
+
+  const { mostrarError } = useError();
+
+  const mensajeTimeoutRef = useRef(null);
+
+  function mostrarMensaje(texto, variant) {
+    if (mensajeTimeoutRef.current) {
+      clearTimeout(mensajeTimeoutRef.current);
+    }
+    setMensaje(texto);
+    setMensajeVariant(variant);
+
+    const duracion = variant === "success" ? 3000 : 6000;
+    mensajeTimeoutRef.current = setTimeout(() => {
+      setMensaje("");
+    }, duracion);
+  }
+
+  function limpiarMensaje() {
+    if (mensajeTimeoutRef.current) clearTimeout(mensajeTimeoutRef.current);
+    setMensaje("");
+  }
+
+  useEffect(() => {
+    return () => {
+      if (mensajeTimeoutRef.current) clearTimeout(mensajeTimeoutRef.current);
+    };
+  }, []);
 
   const opcionesPorCampo = {
     proveedorLarva: proveedoresLarva,
@@ -77,7 +106,7 @@ export function useCatalogoModal({
     setItemEnEdicionValue(null);
     setNombreForm("");
     setNombreConError(false);
-    setMensaje("");
+    limpiarMensaje();
     setItemAEliminar(null);
   }
 
@@ -86,7 +115,7 @@ export function useCatalogoModal({
     setItemEnEdicionValue(null);
     setNombreForm("");
     setNombreConError(false);
-    setMensaje("");
+    limpiarMensaje();
     setVistaModal("formulario");
   }
 
@@ -99,7 +128,7 @@ export function useCatalogoModal({
     setItemEnEdicionValue(item.value);
     setNombreForm(item.label);
     setNombreConError(false);
-    setMensaje("");
+    limpiarMensaje();
     setVistaModal("formulario");
   }
 
@@ -107,7 +136,7 @@ export function useCatalogoModal({
     setItemEnEdicionValue(null);
     setNombreForm("");
     setNombreConError(false);
-    setMensaje("");
+    limpiarMensaje();
     setItemAEliminar(null);
     setVistaModal("lista");
   }
@@ -115,8 +144,7 @@ export function useCatalogoModal({
   async function guardarFormulario() {
     if (!nombreForm.trim()) {
       setNombreConError(true);
-      setMensaje("Debes completar los campos obligatorios.");
-      setMensajeVariant("danger");
+      mostrarMensaje("Debes completar los campos obligatorios.", "danger");
       return;
     }
 
@@ -128,8 +156,7 @@ export function useCatalogoModal({
       );
 
       if (itemOriginal && itemOriginal.label === nombreForm.trim()) {
-        setMensaje("No hay cambios para guardar.");
-        setMensajeVariant("danger");
+        mostrarMensaje("No hay cambios para guardar.", "danger");
         return;
       }
     }
@@ -144,15 +171,21 @@ export function useCatalogoModal({
         if (handler) await handler(nombreForm);
       }
 
+      const fueEdicion = Boolean(itemEnEdicionValue);
+
       setItemEnEdicionValue(null);
       setNombreForm("");
       setVistaModal("lista");
-      setMensaje("Registrado correctamente.");
-      setMensajeVariant("success");
+      mostrarMensaje(
+        fueEdicion ? "Actualizado correctamente." : "Registrado correctamente.",
+        "success",
+      );
     } catch (err) {
       const mensajeBackend = err.response?.data?.message;
-      setMensaje(mensajeBackend || "No fue posible guardar el registro.");
-      setMensajeVariant("danger");
+      mostrarMensaje(
+        mensajeBackend || "No fue posible guardar el registro.",
+        "danger",
+      );
     } finally {
       setGuardando(false);
     }
@@ -173,12 +206,13 @@ export function useCatalogoModal({
     setGuardando(true);
     try {
       await handler(itemAEliminar.value);
-      volverALista();
-    } catch (err) {
-      const mensajeBackend = err.response?.data?.message;
-      setMensaje(mensajeBackend || "No fue posible eliminar el registro.");
-      setMensajeVariant("danger");
+      setItemEnEdicionValue(null);
+      setItemAEliminar(null);
       setVistaModal("lista");
+      mostrarMensaje("Eliminado correctamente.", "success");
+    } catch (err) {
+      cerrarTodo(); 
+      mostrarError(err);
     } finally {
       setGuardando(false);
     }

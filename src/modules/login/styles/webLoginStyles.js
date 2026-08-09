@@ -1,17 +1,10 @@
 /**
- * ============================================================
  * ESTILOS: webLoginStyles
- * ============================================================
- * 
- * Responsabilidad: Definición de estilos para la pantalla de inicio
- * de sesión Web (WebLoginScreen) en el módulo de Login.
- * 
- * FUNCIONALIDAD:
- * - Define el fondo de la pantalla y la alineación central del formulario.
- * - Estructura el espaciado del formulario y el contenedor de alertas.
- * 
- * DEPENDENCIAS:
- * - COLORS de theme/colors.js.
+ * Estilos para la pantalla de inicio de sesión Web (WebLoginScreen).
+ *
+ * @dependencies - COLORS y STYLE de theme/
+ * @validations  - Define el fondo de la pantalla y la alineación central del formulario.
+ * @navigation   - N/A (archivo de estilos).
  */
 import { StyleSheet } from 'react-native';
 import { COLORS } from '../../../theme/colors';
@@ -22,12 +15,21 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
   },
 
+  scrollContent: {
+    flexGrow: 1,
+    backgroundColor: COLORS.white,
+  },
+
   errorField: {
     borderColor: COLORS.error,
   },
 
   alertSpacing: {
     marginBottom: 12,
+  },
+
+  serverAlertSpacing: {
+    marginBottom: 16,
   },
 });
 

@@ -1,42 +1,30 @@
-// src/modules/mantEquipo/hooks/useTareas.js
-
 /**
- * ============================================================
  * HOOK: useTareas
- * ============================================================
+ * Gestiona el estado, recarga asíncrona, filtrado por texto/categoría/estado y operaciones CRUD de tareas.
  *
- * Hook personalizado para gestionar las tareas de mantenimiento.
- * Proporciona estado, carga, filtrado y operaciones CRUD.
- * También maneja los filtros de categoría y estado, y las opciones
- * para los selects del FilterButton.
- *
- * Retorna:
- * - tareas, tareasFiltradas, busqueda, setBusqueda, loading, error
- * - cargarTareas, crearTarea, actualizarTarea, eliminarTarea
- * - filtros, setFiltros, opcionesCategoria, opcionesEstado
- * - tareasFinales (ya filtradas por categoría y estado)
- * ============================================================
+ * @dependencies - tareasService.js (services/tareasService.js), tareasMensajes.js (constants/tareasMensajes.js)
+ * @validations  - Filtra tareas por coincidencia de texto, categoría y estado operativo.
+ * @navigation   - Ninguna
  */
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useFocusEffect } from "expo-router";
+import { useError } from "../../../shared/context/ErrorContext";
 import * as tareasService from "../services/tareasService";
-import { OPCIONES_CATEGORIA, OPCIONES_ESTADO } from "../constants/tareasMensajes";
+import { OPCIONES_CATEGORIA } from "../constants/tareasMensajes";
 
 export const useTareas = () => {
   const [tareas, setTareas] = useState([]);
   const [busqueda, setBusqueda] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [alert, setAlert] = useState(null);
   const initialLoadDone = useRef(false);
+  const alertTimeoutRef = useRef(null);
 
   // ─── FILTROS ADICIONALES ──────────────────────────────────────
   const [filtros, setFiltros] = useState({
     categories: [],
-    suppliers: [],
-    units: [],
-    lowStock: false,
-    expiryDate: "",
   });
 
   // ─── OPCIONES PARA FILTERBUTTON ──────────────────────────────
@@ -44,10 +32,8 @@ export const useTareas = () => {
     () => OPCIONES_CATEGORIA.map((c) => ({ label: c.label, value: c.value })),
     []
   );
-  const opcionesEstado = useMemo(
-    () => OPCIONES_ESTADO.map((e) => ({ label: e.label, value: e.value })),
-    []
-  );
+
+  const { mostrarError } = useError();
 
   // ─── CARGA DE DATOS ────────────────────────────────────────────
   const cargarTareas = useCallback(async (force = false) => {
@@ -60,9 +46,8 @@ export const useTareas = () => {
     try {
       const datos = await tareasService.obtenerTareas();
       setTareas(datos);
-      initialLoadDone.current = true;
     } catch (err) {
-      setError(err.message || "Error al cargar las tareas");
+      mostrarError(err);
     } finally {
       setLoading(false);
     }
@@ -82,6 +67,41 @@ export const useTareas = () => {
     }, [cargarTareas])
   );
 
+  useEffect(() => {
+    return () => {
+      if (alertTimeoutRef.current) {
+        clearTimeout(alertTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const showAlert = (type, message) => {
+    if (alertTimeoutRef.current) {
+      clearTimeout(alertTimeoutRef.current);
+    }
+    setAlert({ type, message });
+    alertTimeoutRef.current = setTimeout(() => {
+      setAlert(null);
+    }, 4000);
+  };
+
+  const activeFiltersForButton = useMemo(
+    () => ({
+      categories: filtros.categories || [],
+      suppliers: [],
+      units: [],
+      lowStock: false,
+      expiryDate: "",
+    }),
+    [filtros]
+  );
+
+  const handleApplyFilter = (pending) => {
+    setFiltros({
+      categories: pending.categories || [],
+    });
+  };
+
   // ─── FILTRADO LOCAL ────────────────────────────────────────────
   // Filtro por búsqueda de texto
   const tareasFiltradas = useMemo(() => {
@@ -100,8 +120,6 @@ export const useTareas = () => {
   const tareasFinales = useMemo(() => {
     return tareasFiltradas.filter((t) => {
       if (filtros.categories.length > 0 && !filtros.categories.includes(t.categoria))
-        return false;
-      if (filtros.suppliers.length > 0 && !filtros.suppliers.includes(t.estado))
         return false;
       return true;
     });
@@ -159,6 +177,10 @@ export const useTareas = () => {
     setBusqueda,
     loading,
     error,
+    alert,
+    showAlert,
+    activeFiltersForButton,
+    handleApplyFilter,
     cargarTareas,
     crearTarea,
     actualizarTarea,
@@ -166,6 +188,5 @@ export const useTareas = () => {
     filtros,
     setFiltros,
     opcionesCategoria,
-    opcionesEstado,
   };
 };

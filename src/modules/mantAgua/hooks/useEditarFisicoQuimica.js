@@ -334,6 +334,7 @@ export default function useEditarFisicoQuimica(registroId, onGuardado) {
       }, 1500);
     } catch (err) {
       const msg =
+        err?.message ||
         err?.response?.data?.message ||
         "No se pudo actualizar la lectura. Intenta de nuevo.";
       setErrorMessage(msg);

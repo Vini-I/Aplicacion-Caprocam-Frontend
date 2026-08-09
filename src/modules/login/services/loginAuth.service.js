@@ -1,9 +1,10 @@
 /**
- * ============================================================
- * SERVICIO: loginAuth
- * ============================================================
+ * SERVICIO: loginAuth.service
+ * Servicio para verificar y validar las credenciales del PIN de operario contra la API REST backend.
  *
- * Valida el PIN del operario contra el backend real.
+ * @dependencies - api (api/api.js)
+ * @validations  - Requiere operarioId válido y un PIN numérico de 4 dígitos.
+ * @navigation   - N/A
  */
 
 import api from "../../../api/api";

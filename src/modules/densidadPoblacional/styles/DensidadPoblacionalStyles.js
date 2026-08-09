@@ -8,7 +8,7 @@
  * seccion, etiquetas de campo y el boton de guardar.
  *
  * Funcionalidad:
- * - container usa COLORS.surface (antes COLORS.white) para ser
+ * - container usa COLORS.white para ser
  *   visualmente consistente con Alimentacion y Raleo.
  * - content y addButton reutilizan STYLE.contentWrapper de
  *   theme/style.js en vez de redefinir manualmente
@@ -28,10 +28,6 @@ import { COLORS } from "../../../theme/colors";
 import { STYLE } from "../../../theme/style";
 
 export const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.surface,
-  },
 
   content: {
     ...STYLE.contentWrapper,

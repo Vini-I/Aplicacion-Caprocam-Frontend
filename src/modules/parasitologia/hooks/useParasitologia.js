@@ -9,7 +9,6 @@
 
 import { useEffect, useState } from "react";
 
-import { useError } from "../../../shared/context/ErrorContext";
 import parasitologiaService from "../services/ParasitologiaService";
 
 const RESUMEN_INICIAL = {
@@ -26,7 +25,8 @@ const RESUMEN_INICIAL = {
 };
 
 export default function useParasitologia() {
-  const { mostrarError } = useError();
+  const [mensaje, setMensaje] = useState("");
+  const [tipoMensaje, setTipoMensaje] = useState("info");
 
   const [registrosParasitologia, setRegistrosParasitologia] = useState([]);
   const [resumen, setResumen] = useState(RESUMEN_INICIAL);
@@ -47,8 +47,9 @@ export default function useParasitologia() {
       setResumen(resumenBackend && typeof resumenBackend === "object" ? resumenBackend : RESUMEN_INICIAL);
       setCatalogoParasitos(Array.isArray(catalogo) ? catalogo : []);
     } catch (error) {
-      console.error("Error al cargar parasitologias", error);
-      mostrarError(error);
+      setMensaje(error.message);
+      setTipoMensaje("danger");
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -59,9 +60,9 @@ export default function useParasitologia() {
       setLoading(true);
       return await parasitologiaService.getById(id);
     } catch (error) {
-      console.error("Error al buscar parasitologia", error);
-      mostrarError(error);
-      return null;
+      setMensaje(error.message);
+      setTipoMensaje("danger");
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -76,9 +77,9 @@ export default function useParasitologia() {
 
       return nuevoRegistro;
     } catch (error) {
-      console.error("Error al guardar parasitologia", error);
-      mostrarError(error);
-      return null;
+      setMensaje(error.message);
+      setTipoMensaje("danger");
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -93,9 +94,9 @@ export default function useParasitologia() {
 
       return registroActualizado;
     } catch (error) {
-      console.error("Error al actualizar parasitologia", error);
-      mostrarError(error);
-      return null;
+      setMensaje(error.message);
+      setTipoMensaje("danger");
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -110,9 +111,9 @@ export default function useParasitologia() {
 
       return registroEliminado;
     } catch (error) {
-      console.error("Error al eliminar parasitologia", error);
-      mostrarError(error);
-      return null;
+      setMensaje(error.message);
+      setTipoMensaje("danger");
+      throw error;
     } finally {
       setLoading(false);
     }

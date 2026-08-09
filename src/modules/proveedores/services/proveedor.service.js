@@ -1,43 +1,37 @@
 import api from "../../../api/api";
 
 /**
- * ============================================================
- * SERVICIO DE PROVEEDORES
- * ============================================================
- *
- * Conecta el módulo de Proveedores con el backend real
- * (routes/proveedor.route.js).
+ * proveedor.service.js
+ * Conecta el módulo de Proveedores con el backend real.
  *
  * FUNCIONALIDAD:
- * 1. CRUD contra /proveedores (listar, obtener, crear, actualizar,
- *    eliminar).
- * 2. mapProveedor() adapta la respuesta del backend (camelCase:
- *    nombreEmpresa, correoElectronico) a la forma que usan las
- *    screens (nombre, correo, iniciales).
- * 3. tiposProducto es el catálogo único del módulo; el value debe
- *    ser igual al ENUM tipoProductos del backend.
+ * - Operaciones CRUD contra la API de proveedores.
+ * - Mapea datos (camelCase del backend) al formato frontend.
  *
- * IMPORTANTE:
- * El backend responde siempre como { success, message, data }.
+ * REGLAS IMPORTANTES:
+ * - Única fuente del catálogo de tiposProducto.
+ * - Manejo genérico de excepciones (throw new Error).
+ *
+ * @dependencies - api
+ * @validations - N/A
+ * @navigation - N/A
  */
 
-// Catálogo único de tipos de producto (value = ENUM tipoProductos del backend).
+
 export const tiposProducto = [
   { label: "Alimento", value: "Alimento" },
   { label: "Antibiótico", value: "Antibiotico" },
   { label: "Fertilizante", value: "Fertilizante" },
   { label: "Probióticos", value: "Probioticos" },
   { label: "Equipos", value: "Equipos" },
-  { label: "Otros", value: "Otros" },
+  { label: "Otro", value: "Otro" },
 ];
 
-// Label legible a partir del value del backend.
 export function getTipoProductoLabel(value) {
   const tipo = tiposProducto.find((t) => t.value === value);
   return tipo ? tipo.label : value;
 }
 
-// Solo los values, derivados de tiposProducto.
 export function getTiposProductoValues() {
   return tiposProducto.map((t) => t.value);
 }
@@ -88,9 +82,9 @@ export const getProveedores = async () => {
 
     return response.data.data.map(mapProveedor);
   } catch (error) {
-    console.error("Error al obtener proveedores:", error); 
-
-    throw error;
+    throw new Error(
+      error.response?.data?.message || "No fue posible cargar los proveedores"
+    );
   }
 };
 
@@ -103,9 +97,9 @@ export const getProveedorById = async (id) => {
 
     return mapProveedor(response.data.data);
   } catch (error) {
-    console.error("Error al obtener proveedor:", error); 
-
-    throw error;
+    throw new Error(
+      error.response?.data?.message || "No fue posible cargar el proveedor"
+    );
   }
 };
 
@@ -118,9 +112,7 @@ export const createProveedor = async (proveedorDTO) => {
 
     return mapProveedor(response.data.data);
   } catch (error) {
-    console.error("Error al crear proveedor:", error.response?.data || error.message); 
-
-    throw error;
+    throw new Error(error.response?.data?.message || "No fue posible crear el proveedor");
   }
 };
 
@@ -133,9 +125,9 @@ export const updateProveedor = async (id, proveedorDTO) => {
 
     return mapProveedor(response.data.data);
   } catch (error) {
-    console.error("Error al actualizar proveedor:", error.response?.data || error.message); 
-
-    throw error;
+    throw new Error(
+      error.response?.data?.message || "No fue posible actualizar el proveedor"
+    );
   }
 };
 
@@ -148,8 +140,8 @@ export const eliminarProveedor = async (id) => {
 
     return mapProveedor(response.data.data);
   } catch (error) {
-    console.error("Error al eliminar proveedor:", error.response?.data || error.message); 
-
-    throw error;
+    throw new Error(
+      error.response?.data?.message || "No fue posible eliminar el proveedor"
+    );
   }
 };

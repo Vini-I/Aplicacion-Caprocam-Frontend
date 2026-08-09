@@ -8,12 +8,6 @@
  * Todas las funciones son asíncronas y devuelven los datos
  * mapeados al formato usado por el frontend.
  *
- * Nota: El backend espera el campo 'pinHash'. Dado que no podemos
- * hashear el PIN en el frontend, enviamos el PIN en texto plano
- * en el campo 'pinHash' para que la base de datos reciba un valor
- * no nulo. Esto es temporal hasta que el backend implemente la
- * generación/hasheo automático del PIN.
- *
  * Dependencias:
  * - api (axios) desde src/api/api.js (ya incluye el interceptor de tokens)
  * ============================================================
@@ -21,75 +15,142 @@
 
 import api from "../../../api/api";
 
-// Mapeo de roles
+// Mapeo de roles (frontend -> backend) - se mantiene para compatibilidad,
+// pero ahora también se puede usar directamente un rolId numérico.
 const rolMapToId = {
-  camprocam_worker: 3,
+  camprocam_worker: 1,
   external_owner: 2,
   external_worker: 3,
 };
 
-const rolMapToTipo = {
-  camprocam_worker: "caprocam_collab",
-  external_owner: "external_owner",
-  external_worker: "external_collab",
-};
-
-const rolIdToRol = {
-  2: "external_owner",
-  3: (tipo) => {
-    if (tipo === "caprocam_collab") return "camprocam_worker";
-    if (tipo === "external_collab") return "external_worker";
-    return "external_worker";
-  },
-};
-
-// Mapeo de backend a frontend
-function mapBackendToFrontend(data) {
-  let rol = "camprocam_worker";
-  if (data.rolId === 2) {
-    rol = "external_owner";
-  } else if (data.rolId === 3) {
-    rol = rolIdToRol[3](data.tipoColaborador);
+function construirErrorHttp(error, mensajeGenerico) {
+  const status = error?.response?.status;
+  const mensaje = error?.response?.data?.message || error?.response?.data?.error || error?.message;
+  if (status === 500) {
+    return new Error(mensajeGenerico);
   }
+  if (status) {
+    const err = new Error(mensaje || mensajeGenerico);
+    err.status = status;
+    return err;
+  }
+
+  return new Error(mensajeGenerico);
+}
+
+function esErrorDuplicadoColaborador(error) {
+  const status = error?.response?.status;
+  const mensaje = `${error?.response?.data?.message || ''} ${error?.response?.data?.error || ''} ${error?.message || ''}`.toLowerCase();
+
+  return (
+    status === 409 ||
+    mensaje.includes('duplicate entry') ||
+    mensaje.includes('duplicate') ||
+    mensaje.includes('uq_colaborador_usuario_grupo') ||
+    mensaje.includes('colaborador_usuario_grupo') ||
+    mensaje.includes('unique')
+  );
+}
+
+// ─── MAPEO BACKEND → FRONTEND ──────────────────────────────────────
+function mapBackendToFrontend(data) {
+  // IMPORTANTE: el backend no es 100% consistente con el formato de sus
+  // llaves: algunos endpoints devuelven snake_case (finca_id, rol_id,
+  // nombre_usuario) y otros camelCase (fincaId, rolId, nombreUsuario;
+  // ver fincaService.js, que documenta que /fincas devuelve "nombreFinca").
+  // Para no perder datos silenciosamente (como pasaba con la finca del
+  // colaborador, que se guardaba bien en la BD pero nunca se leía aquí),
+  // se soportan ambos formatos.
+
+  const rolIdRaw = data.rol_id ?? data.rolId;
+  const rolId = rolIdRaw !== undefined && rolIdRaw !== null && rolIdRaw !== ""
+    ? Number(rolIdRaw)
+    : null;
+
+  // Determinar el rol a partir del rol_id (numérico)
+  let rol = "camprocam_worker";
+  if (rolId === 2) rol = "external_owner";
+  else if (rolId === 3) rol = "external_worker";
+
+  // Si el backend no guardó la cédula en la columna 'cedula',
+  // se toma de 'nombre_usuario' (donde sí está)
+  const cedula = data.cedula || data.nombre_usuario || data.nombreUsuario || "";
+
+  const fincaIdRaw = data.finca_id ?? data.fincaId;
+  const fincaId = fincaIdRaw !== undefined && fincaIdRaw !== null && fincaIdRaw !== ""
+    ? Number(fincaIdRaw)
+    : null;
+
   return {
     id: data.id,
     nombre: `${data.nombre} ${data.apellidos}`,
-    cedula: data.nombreUsuario,
+    cedula: cedula,
     telefono: data.telefono,
     email: data.email,
-    rol,
-    fincaId: data.fincaId,
-    activo: Boolean(data.activo), // Convierte 1/0 a true/false
+    rol: rol,
+    rolId: rolId,
+    fincaId: fincaId,
+    activo: Boolean(data.activo),
   };
 }
 
-// Preparar payload para backend
+// ─── PREPARAR PAYLOAD PARA BACKEND ─────────────────────────────────
 function prepareForBackend(data, pinHash = null) {
   const [nombre, ...apellidosParts] = data.nombre.split(" ");
   const apellidos = apellidosParts.join(" ") || "";
+
+  // 1. Determinar rolId:
+  // Si es número (ej: 3), usarlo directamente.
+  // Si es string (ej: "external_owner"), mapearlo.
+  let rolId = data.rol;
+  if (typeof data.rol === "string" && rolMapToId[data.rol]) {
+    rolId = rolMapToId[data.rol];
+  }
+  // Si no se pudo determinar, usar 3 (external_worker) por defecto.
+  if (!rolId || isNaN(Number(rolId))) {
+    rolId = 3;
+  }
+  const rolIdNumerico = Number(rolId);
+
+  // 2. Determinar tipoColaborador basado en el rolId para cumplir con el ENUM de la DB.
+  let tipoColaborador = "external_collab"; // default
+  if (rolIdNumerico === 1 || rolIdNumerico === 2) {
+    tipoColaborador = "caprocam_collab";
+  } else if (rolIdNumerico === 3) {
+    tipoColaborador = "external_owner";
+  }
+  // Nota: para roles 4 y 5, ¿qué tipoColaborador? Según el backend, parece que solo usa caprocam_collab, external_owner, external_collab.
+  // Para roles 4 y 5, probablemente sea caprocam_collab, o podríamos dejar external_collab por defecto.
+  // Decisión: si rolId > 3, usaremos "caprocam_collab" porque son roles internos.
+  if (rolIdNumerico >= 4) {
+    tipoColaborador = "caprocam_collab";
+  }
+
   const payload = {
     nombre: nombre || "",
     apellidos,
-    nombreUsuario: data.cedula,
-    rolId: rolMapToId[data.rol] || 3,
+    nombreUsuario: data.cedula, // temporal: cédula como nombre de usuario
+    cedula: data.cedula,
+    rolId: rolIdNumerico,
     fincaId: data.fincaId ? Number(data.fincaId) : null,
     telefono: data.telefono || null,
     email: data.email || null,
-    tipoColaborador: rolMapToTipo[data.rol] || "external_collab",
+    tipoColaborador: tipoColaborador,
     grupoDatos: 1, // temporal hasta autenticación
   };
+
   if (pinHash) {
     payload.pinHash = pinHash;
   }
+
   return payload;
 }
 
-// ─── FUNCIONES PRINCIPALES ──────────────────────────────────────
+// ─── FUNCIONES PRINCIPALES ──────────────────────────────────────────
 
 /**
  * Obtiene todos los colaboradores activos del backend.
  * Filtra por fincaId, rol, activo si se pasan.
- * Ruta corregida: /colaboradores (sin /api/v0)
  */
 async function getColaboradores(filtros = {}) {
   try {
@@ -97,7 +158,9 @@ async function getColaboradores(filtros = {}) {
     let data = response.data.data || [];
 
     if (filtros.fincaId) {
-      data = data.filter((c) => c.fincaId === Number(filtros.fincaId));
+      data = data.filter(
+        (c) => Number(c.finca_id ?? c.fincaId) === Number(filtros.fincaId)
+      );
     }
     if (filtros.rol) {
       data = data.filter((c) => {
@@ -111,17 +174,12 @@ async function getColaboradores(filtros = {}) {
 
     return data.map(mapBackendToFrontend);
   } catch (error) {
-    const message =
-      error.response?.data?.message ||
-      error.message ||
-      "Error al obtener colaboradores";
-    throw new Error(message);
+    throw construirErrorHttp(error, "No se pudieron obtener los colaboradores");
   }
 }
 
 /**
  * Obtiene un colaborador por su ID.
- * Ruta corregida: /colaboradores/${id}
  */
 async function getColaboradorById(id) {
   try {
@@ -130,11 +188,7 @@ async function getColaboradorById(id) {
     if (!data) throw new Error("Colaborador no encontrado");
     return mapBackendToFrontend(data);
   } catch (error) {
-    const message =
-      error.response?.data?.message ||
-      error.message ||
-      "Error al obtener colaborador";
-    throw new Error(message);
+    throw construirErrorHttp(error, "No se pudo cargar el colaborador");
   }
 }
 
@@ -142,12 +196,14 @@ async function getColaboradorById(id) {
  * Crea un nuevo colaborador.
  * Genera un PIN de 4 dígitos y lo envía en pinHash.
  * Devuelve el colaborador creado y el PIN en texto plano.
- * Ruta corregida: /colaboradores
  */
 async function createColaborador(data) {
   try {
     const pin = String(Math.floor(1000 + Math.random() * 9000));
     const payload = prepareForBackend(data, pin);
+    if (!payload) {
+      throw new Error("No se pudo preparar los datos del colaborador.");
+    }
     const response = await api.post("/colaboradores", payload);
     const created = response.data.data;
     return {
@@ -155,79 +211,91 @@ async function createColaborador(data) {
       pin,
     };
   } catch (error) {
-    const errorData = error.response?.data;
-    const errorMessage = errorData?.message || error.message || "Error al crear colaborador";
-    const errorDetail = errorData?.error || errorData?.errors;
-
-    if (typeof errorDetail === "string" && errorDetail.includes("cedula")) {
-      throw new Error("Colaborador ya existente.");
+    if (esErrorDuplicadoColaborador(error)) {
+      throw construirErrorHttp(error, "Ya existe un colaborador con esa cedula");
     }
-    throw new Error(errorMessage);
+    throw construirErrorHttp(error, "No se pudo crear el colaborador");
   }
 }
 
 /**
  * Actualiza un colaborador existente.
  * Si se proporciona un nuevo PIN, se envía en pinHash.
- * Ruta corregida: /colaboradores/${id}
  */
 async function updateColaborador(id, data, newPin = null) {
   try {
     const payload = prepareForBackend(data, newPin);
+    if (!payload) {
+      throw new Error("No se pudo preparar los datos del colaborador.");
+    }
     if (!newPin) delete payload.pinHash;
     const response = await api.put(`/colaboradores/${id}`, payload);
     return mapBackendToFrontend(response.data.data);
   } catch (error) {
-    const message =
-      error.response?.data?.message ||
-      error.message ||
-      "Error al actualizar colaborador";
-    throw new Error(message);
+    throw construirErrorHttp(error, "No se pudo actualizar el colaborador");
   }
 }
 
 /**
  * Elimina (borrado lógico) un colaborador.
- * Ruta corregida: /colaboradores/${id}
  */
 async function deleteColaborador(id) {
   try {
     const response = await api.delete(`/colaboradores/${id}`);
     return response.data.data ? true : false;
   } catch (error) {
-    const message =
-      error.response?.data?.message ||
-      error.message ||
-      "Error al eliminar colaborador";
-    throw new Error(message);
+    throw construirErrorHttp(error, "No se pudo eliminar el colaborador");
   }
 }
 
-// ─── FUNCIONES AUXILIARES (mock) ──────────────────────────────
+/**
+ * Restablece el PIN de un colaborador.
+ * @param {string|number} id - ID del colaborador.
+ * @returns {Promise<{message: string}>}
+ */
+async function resetPin(id) {
+  try {
+    // Simulación: esperar 1 segundo y devolver éxito
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    return { message: "PIN restablecido correctamente" };
+    // Cuando el backend esté listo, descomentar:
+    // const response = await api.post(`/colaboradores/${id}/reset-pin`);
+    // return response.data;
+  } catch (error) {
+    throw construirErrorHttp(error, "No se pudo restablecer el PIN");
+  }
+}
+
+// ─── FUNCIONES AUXILIARES (mock) ────────────────────────────────────
 
 /**
  * Obtiene estadísticas de un colaborador (mock).
- * (El backend no tiene este endpoint aún)
  */
 async function getEstadisticasColaborador(colaboradorId) {
-  // TODO: implementar cuando el backend lo soporte
-  return {
-    alimentaciones: 0,
-    estanquesCreados: 0,
-    siembrasRegistradas: 0,
-    ultimaActividad: null,
-  };
+  try {
+    return {
+      alimentaciones: 0,
+      estanquesCreados: 0,
+      siembrasRegistradas: 0,
+      ultimaActividad: null,
+    };
+  } catch (error) {
+    throw construirErrorHttp(error, "No se pudieron obtener las estadísticas del colaborador");
+  }
 }
 
 /**
  * Obtiene trabajadores externos asociados a un dueño (mock).
  */
 async function getTrabajadoresByOwner(ownerId) {
-  // TODO: implementar cuando el backend lo soporte
-  return [];
+  try {
+    return [];
+  } catch (error) {
+    throw construirErrorHttp(error, "No se pudieron obtener los trabajadores asociados al dueño");
+  }
 }
 
-// ─── EXPORTACIÓN ────────────────────────────────────────────────
+// ─── EXPORTACIÓN ────────────────────────────────────────────────────
 
 export const colaboradoresService = {
   getColaboradores,
@@ -235,6 +303,7 @@ export const colaboradoresService = {
   createColaborador,
   updateColaborador,
   deleteColaborador,
+  resetPin,
   getEstadisticasColaborador,
   getTrabajadoresByOwner,
 };

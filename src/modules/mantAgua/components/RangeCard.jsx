@@ -5,11 +5,12 @@
  *
  * Descripción:
  * Tarjeta para registrar mediciones numéricas (pH, temperatura,
- * oxígeno, salinidad) utilizando barras de rango dinámicas y botones
- * de paso (- / +) con soporte de avance continuo (hold) e incremento de 0.1 por defecto.
+ * oxígeno, salinidad) utilizando barras de rango dinámicas, botones
+ * de paso (- / +) con soporte de avance continuo (hold), diseño en 2 filas
+ * responsivo para móviles y opción de eliminación en todas las lecturas.
  *
  * @dependencies RangeTrack, StepHoldButton, useRangeCard, RangeCardStyles
- * @validations Evaluación contra rangos ideales (óptimo, alerta, peligro) y clamping min/max.
+ * @validations Evaluación contra rangos ideales (óptimo, alerta, peligro), clamping min/max y eliminación de lecturas.
  * @navigation N/A
  *
  * La lógica de estado vive en el hook useRangeCard(); este
@@ -291,70 +292,72 @@ export default function RangeCard({
         const { handleArrastre, decrementar, incrementar } = obtenerManejadores(r);
         const esUltima = idx === lecturas.length - 1;
         const puedeMostrarAgregar = esUltima && lecturas.length > 0 && lecturas.length < effectiveMax;
+        const lbl = ETIQUETAS[idx] ?? { type: 'text', value: `${idx + 1}` };
 
         return (
-          <View key={r.id} style={inner.readingRow}>
-            <View style={inner.labelWrap}>
-              {(() => {
-                const lbl = ETIQUETAS[idx] ?? { type: 'text', value: `${idx + 1}` };
-                return (
-                  <>
-                    <View style={inner.labelCircle}>
-                      {lbl.type === 'icon' ? (
-                        <Icon icon={lbl.icon} size={15} color={COLORS.primary} />
-                      ) : (
-                        <Text size={13} color={COLORS.primary}>{lbl.value}</Text>
-                      )}
-                    </View>
-                    {lbl.texto && (
-                      <Text size={10} color={COLORS.textTertiary} style={inner.labelText}>{lbl.texto}</Text>
-                    )}
-                  </>
-                );
-              })()}
+          <View key={r.id} style={inner.readingItem}>
+            {/* Fila Superior: Identificador (Día/Noche/Número) + Valor Badge + Botones de Acción */}
+            <View style={inner.readingTopRow}>
+              <View style={inner.labelWrap}>
+                <View style={inner.labelCircle}>
+                  {lbl.type === 'icon' ? (
+                    <Icon icon={lbl.icon} size={15} color={COLORS.primary} />
+                  ) : (
+                    <Text size={13} color={COLORS.primary} weight="700">{lbl.value}</Text>
+                  )}
+                </View>
+                {lbl.texto && (
+                  <Text size={12} color={COLORS.textPrimary} weight="600" style={inner.labelText}>{lbl.texto}</Text>
+                )}
+              </View>
+
+              <View style={inner.readingTopRight}>
+                <View style={[inner.valueBadge, { borderColor: colorValor }]}>
+                  <Text size={14} color={colorValor} weight="700">
+                    {r.value.toFixed(decimals)} {unit}
+                  </Text>
+                </View>
+
+                {puedeMostrarAgregar && (
+                  <Button onPress={intentarAgregar} style={[inner.stepBtn, inner.stepBtnIdle]}>
+                    <Icon icon={ICONS.add} size={16} color={COLORS.white} />
+                  </Button>
+                )}
+
+                <Button variant='ghost' onPress={() => eliminarLectura(r.id)} style={inner.iconBtn}>
+                  <Icon icon={ICONS.delete} size={18} color={COLORS.error} />
+                </Button>
+              </View>
             </View>
 
-            <StepHoldButton
-              icon={ICONS.minus}
-              onPress={decrementar}
-              disabled={r.value <= sliderMin}
-              style={inner.stepHoldBtn}
-            />
+            {/* Fila Inferior del Slider: Botón (-) --- Barra de Rango de Ancho Completo --- Botón (+) */}
+            <View style={inner.sliderRow}>
+              <StepHoldButton
+                icon={ICONS.minus}
+                onPress={decrementar}
+                disabled={r.value <= sliderMin}
+                style={inner.stepHoldBtn}
+              />
 
-            <RangeTrack
-              value={r.value}
-              min={sliderMin}
-              max={sliderMax}
-              decimals={decimals}
-              zones={zonasInfo.zones}
-              ticks={zonasInfo.ticks}
-              badgeColor={colorValor}
-              badgeText={r.value.toFixed(decimals)}
-              onChange={handleArrastre}
-            />
+              <RangeTrack
+                value={r.value}
+                min={sliderMin}
+                max={sliderMax}
+                decimals={decimals}
+                zones={zonasInfo.zones}
+                ticks={zonasInfo.ticks}
+                badgeColor={colorValor}
+                badgeText={r.value.toFixed(decimals)}
+                onChange={handleArrastre}
+              />
 
-            <StepHoldButton
-              icon={ICONS.add}
-              onPress={incrementar}
-              disabled={r.value >= sliderMax}
-              style={inner.stepHoldBtn}
-            />
-
-            <View style={inner.rightValueWrap}>
-              <Text size={14} color={colorValor} style={inner.rightValue}>
-                {r.value.toFixed(decimals)} {unit}
-              </Text>
+              <StepHoldButton
+                icon={ICONS.add}
+                onPress={incrementar}
+                disabled={r.value >= sliderMax}
+                style={inner.stepHoldBtn}
+              />
             </View>
-
-            {puedeMostrarAgregar && (
-              <Button onPress={intentarAgregar} style={[inner.stepBtn, inner.stepBtnIdle]}>
-                <Icon icon={ICONS.add} size={16} color={COLORS.white} />
-              </Button>
-            )}
-
-            <Button variant='ghost' onPress={() => eliminarLectura(r.id)} style={inner.iconBtn}>
-              <Icon icon={ICONS.delete} size={20} color={COLORS.error} />
-            </Button>
           </View>
         );
       })}

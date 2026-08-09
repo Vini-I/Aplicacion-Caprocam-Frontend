@@ -44,6 +44,9 @@ export function ErrorProvider({ children }) {
   const [error, setError] = useState(null);
 
   function mostrarError(err) {
+    if (err?.response?.status === 403 || err?.status === 403) {
+      return;
+    }
     setError(extraerMensaje(err));
   }
 

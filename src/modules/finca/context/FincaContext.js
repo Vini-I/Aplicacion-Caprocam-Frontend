@@ -81,10 +81,10 @@ export function FincaProvider({ children }) {
     try {
       await fincaService.deleteFincas(codigoCBO);
       await cargarFincas();
+      setAlert("deleted");
     } catch (error) {
       mostrarError(error);
     }
-    setAlert("deleted");
   }
 
   function limpiarAlert() {
