@@ -4,13 +4,14 @@
  * ============================================================
  *
  * Descripción:
- * Consulta, filtrado y registro de movimientos de trazabilidad con la API.
+ * Consulta, filtrado y registro de movimientos de trazabilidad con la API (compatible con Web y Móvil mediante AsyncStorage y consulta unificada de siembras/pre-crías).
  *
- * @dependencies api, fincaService, colaboradorService
- * @validations Normalización de estanques, cruce de nombres y sesión de usuario/colaborador.
+ * @dependencies AsyncStorage, api, fincaService, colaboradorService
+ * @validations Normalización de estanques, cruce de nombres, sesión JWT con AsyncStorage y autocompletado de PL/días.
  * @navigation N/A
  */
 
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import api from "../../../api/api";
 import { fincaService } from "../../finca/services/finca.service";
 import { colaboradorService } from "../../colaboradores/services/colaborador.service";
@@ -32,21 +33,9 @@ function decodificarJwtPayload(token) {
   }
 }
 
-function obtenerSesionDesdeTokenLocal() {
-  let token = null;
-  let usuarioGuardado = null;
-  try {
-    if (typeof localStorage !== "undefined") {
-      token = localStorage.getItem("caprocam_auth_token");
-      const raw = localStorage.getItem("caprocam_usuario");
-      if (raw) usuarioGuardado = JSON.parse(raw);
-    }
-  } catch (e) {
-    // Ignorar
-  }
+let cachedSesion = null;
 
-  const payload = decodificarJwtPayload(token);
-
+function procesarSesionDesdePayloadYUsuario(payload, usuarioGuardado) {
   if (!payload && !usuarioGuardado) {
     return {
       esColaborador: false,
@@ -80,6 +69,50 @@ function obtenerSesionDesdeTokenLocal() {
     nombre,
     colaboradorId: null,
   };
+}
+
+export async function obtenerSesionDesdeTokenLocal() {
+  let token = null;
+  let usuarioGuardado = null;
+  try {
+    if (typeof AsyncStorage !== "undefined" && AsyncStorage.getItem) {
+      token = await AsyncStorage.getItem("caprocam_auth_token");
+      const raw = await AsyncStorage.getItem("caprocam_usuario");
+      if (raw) usuarioGuardado = JSON.parse(raw);
+    }
+  } catch (e) {
+    // Ignorar
+  }
+
+  if (!token && typeof localStorage !== "undefined") {
+    try {
+      token = localStorage.getItem("caprocam_auth_token");
+      const raw = localStorage.getItem("caprocam_usuario");
+      if (!usuarioGuardado && raw) usuarioGuardado = JSON.parse(raw);
+    } catch (e) {
+      // Ignorar
+    }
+  }
+
+  const payload = decodificarJwtPayload(token);
+  const sesion = procesarSesionDesdePayloadYUsuario(payload, usuarioGuardado);
+  cachedSesion = sesion;
+  return sesion;
+}
+
+export function obtenerSesionDesdeTokenLocalSync() {
+  if (cachedSesion) return cachedSesion;
+  let token = null;
+  let usuarioGuardado = null;
+  if (typeof localStorage !== "undefined") {
+    try {
+      token = localStorage.getItem("caprocam_auth_token");
+      const raw = localStorage.getItem("caprocam_usuario");
+      if (raw) usuarioGuardado = JSON.parse(raw);
+    } catch (e) { }
+  }
+  const payload = decodificarJwtPayload(token);
+  return procesarSesionDesdePayloadYUsuario(payload, usuarioGuardado);
 }
 
 function obtenerValor(estanque, campos) {
@@ -348,25 +381,74 @@ export async function obtenerTodosLosEstanques() {
   }
 }
 
-// Trae la siembra activa del estanque de origen para precargar PL y
-// días de cultivo en el formulario de Trazabilidad. Usa el endpoint
-// real de Siembra (GET /siembras/activa?estanqueId=), NO el mock de
-// SiembraService.js -- ese mock sigue vivo solo para el módulo de
-// Siembra, que aún no se conecta a la API (fuera de alcance aquí, no
-// se toca ese módulo).
-// Devuelve null si el estanque no tiene siembra activa (404 esperado,
-// no es un error real) o si no se pudo consultar.
+// Trae la siembra o pre-cría activa del estanque de origen para precargar PL y
+// días de cultivo en el formulario de Trazabilidad (compatible para Web y Móvil).
 export async function obtenerSiembraActivaPorEstanque(estanqueId) {
   if (!estanqueId) return null;
+
+  // 1. Intentar endpoint directo de siembra activa
   try {
     const response = await api.get("/siembras/activa", {
       params: { estanqueId },
     });
-    return response.data.data ?? null;
+    if (response.data?.data) {
+      return response.data.data;
+    }
   } catch (error) {
-    if (error?.response?.status === 404) return null;
-    return null;
+    // Continuar a fallbacks si no hay respuesta directa
   }
+
+  // 2. Intentar buscar en el listado general de siembras
+  try {
+    const responseSiembras = await api.get("/siembras");
+    const siembrasList = Array.isArray(responseSiembras.data?.data) ? responseSiembras.data.data : [];
+    const siembraCoincidente = siembrasList.find(
+      (s) => String(s.estanqueId ?? s.estanque_id) === String(estanqueId)
+    );
+
+    if (siembraCoincidente) {
+      const hoy = new Date();
+      const rawFecha = siembraCoincidente.fechaSiembra ?? siembraCoincidente.fecha_siembra;
+      const fechaSiembra = rawFecha ? new Date(rawFecha) : null;
+      const diasCalculados = (fechaSiembra && !isNaN(fechaSiembra.getTime()))
+        ? Math.max(0, Math.floor((hoy - fechaSiembra) / (1000 * 60 * 60 * 24)))
+        : (siembraCoincidente.dias ?? siembraCoincidente.duracionCiclo ?? siembraCoincidente.duracion_ciclo ?? "");
+
+      const plCalculado = siembraCoincidente.plSiembra ?? siembraCoincidente.pl_siembra ?? siembraCoincidente.cantidadSembrada ?? siembraCoincidente.cantidad_sembrada ?? "";
+
+      return {
+        pl_siembra: plCalculado,
+        dias: diasCalculados,
+      };
+    }
+  } catch (err) { }
+
+  // 3. Intentar buscar en el listado de pre-crías (ej. estanques tipo precria como EST-02)
+  try {
+    const responsePrecria = await api.get("/precrias");
+    const precriasList = Array.isArray(responsePrecria.data?.data) ? responsePrecria.data.data : [];
+    const precriaCoincidente = precriasList.find(
+      (p) => String(p.estanqueId ?? p.estanque_id) === String(estanqueId)
+    );
+
+    if (precriaCoincidente) {
+      const hoy = new Date();
+      const rawFecha = precriaCoincidente.fechaInicio ?? precriaCoincidente.fecha_inicio;
+      const fechaInicio = rawFecha ? new Date(rawFecha) : null;
+      const diasCalculados = (fechaInicio && !isNaN(fechaInicio.getTime()))
+        ? Math.max(0, Math.floor((hoy - fechaInicio) / (1000 * 60 * 60 * 24)))
+        : (precriaCoincidente.duracionDias ?? precriaCoincidente.duracion_dias ?? "");
+
+      const plCalculado = precriaCoincidente.plFinal ?? precriaCoincidente.pl_final ?? precriaCoincidente.plInicial ?? precriaCoincidente.pl_inicial ?? "";
+
+      return {
+        pl_siembra: plCalculado,
+        dias: diasCalculados,
+      };
+    }
+  } catch (err) { }
+
+  return null;
 }
 
 export async function obtenerColaboradores() {
@@ -383,8 +465,8 @@ export async function obtenerColaboradores() {
   }
 }
 
-export function obtenerSesionFormulario() {
-  const sesion = obtenerSesionDesdeTokenLocal();
+export async function obtenerSesionFormulario() {
+  const sesion = await obtenerSesionDesdeTokenLocal();
   const esUsuario = sesion.tipo === "usuario";
 
   return {
@@ -398,12 +480,21 @@ export function obtenerSesionFormulario() {
 }
 
 export function obtenerColaboradorSesion(esAsync = false) {
-  const sesion = obtenerSesionFormulario();
   if (!esAsync) {
-    return sesion;
+    const sesionSync = obtenerSesionDesdeTokenLocalSync();
+    const esUsuario = sesionSync.tipo === "usuario";
+    return {
+      tipo: sesionSync.tipo,
+      labelCampo: esUsuario ? "Usuario responsable" : "Colaborador responsable",
+      nombre: sesionSync.nombre,
+      label: esUsuario ? `Usuario: ${sesionSync.nombre}` : `Colaborador: ${sesionSync.nombre}`,
+      colaboradorId: sesionSync.colaboradorId,
+      usuarioId: esUsuario ? sesionSync.id : null,
+    };
   }
 
   return (async () => {
+    const sesion = await obtenerSesionFormulario();
     if (sesion.tipo === "usuario" || !sesion.colaboradorId) {
       return sesion;
     }
@@ -447,12 +538,12 @@ export function construirMapas({ fincas = [], colaboradores = [], estanques = []
   };
 }
 
-export function enriquecerRegistro(registro = {}, mapas = {}) {
+export function enriquecerRegistro(registro = {}, mapas = {}, sesionOpt = null) {
   const { fincasMap = new Map(), colaboradoresMap = new Map(), estanquesMap = new Map() } = mapas;
 
   let responsableNombre = "";
   let tipoResponsable = "Colaborador";
-  const sesionActual = obtenerSesionDesdeTokenLocal();
+  const sesionActual = sesionOpt || obtenerSesionDesdeTokenLocalSync();
 
   if (registro.colaboradorId && colaboradoresMap.has(registro.colaboradorId)) {
     responsableNombre = colaboradoresMap.get(registro.colaboradorId);

@@ -150,7 +150,7 @@ export function useTrazabilidad() {
 
         setFormData((previousData) => ({
           ...previousData,
-          pl: siembra ? String(siembra.pl_siembra ?? "") : "",
+          pl: siembra ? String(siembra.pl_siembra ?? siembra.plSiembra ?? siembra.pl ?? siembra.cantidad_sembrada ?? siembra.cantidadSembrada ?? "") : "",
           dias: siembra ? String(siembra.dias ?? "") : "",
         }));
         setPlAutocompletado(Boolean(siembra));
