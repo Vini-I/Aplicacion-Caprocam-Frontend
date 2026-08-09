@@ -23,10 +23,6 @@ import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
 
 export const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.surface,
-  },
 
   navbar: {
     backgroundColor: COLORS.primary,
@@ -219,6 +215,10 @@ export const styles = StyleSheet.create({
     color: COLORS.white,
     fontFamily: TYPOGRAPHY.fontFamily.bold,
     fontWeight: undefined,
+  },
+
+  loadingContainer: {
+    justifyContent: "center",
   },
 });
 

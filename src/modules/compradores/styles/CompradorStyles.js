@@ -113,6 +113,11 @@ export const styles = StyleSheet.create({
     gap: 8,
   },
 
+  alertExito: {
+    marginTop: 12,
+    marginBottom: 8,
+  },
+
   btnVerDetalle: {
     paddingVertical: 6,
     paddingHorizontal: 12,
@@ -176,6 +181,10 @@ export const styles = StyleSheet.create({
     color: COLORS.primary,
     fontSize: 14,
     fontFamily: TYPOGRAPHY.fontFamily.bold,
+  },
+
+  loadingIndicator: {
+    marginTop: 32,
   },
 });
 

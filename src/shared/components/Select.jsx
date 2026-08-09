@@ -96,16 +96,13 @@ export default function Select({
   const finalOptions = getSafeOptions(options);
 
   let showError = false;
-  let finalHelperText = helperText;
 
   if (error !== "") {
     showError = true;
-    finalHelperText = error;
   }
 
   if (submitted === true && required === true && valueIsEmpty(value) === true) {
     showError = true;
-    finalHelperText = "Este campo es obligatorio.";
   }
 
   function openOptions() {
@@ -190,14 +187,6 @@ export default function Select({
 
         <Text style={styles.arrow}>▾</Text>
       </Pressable>
-
-      {finalHelperText !== "" && (
-        <Text
-          style={[styles.helperText, showError === true && styles.errorText]}
-        >
-          {finalHelperText}
-        </Text>
-      )}
 
       <Modal
         transparent={true}
@@ -321,17 +310,6 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     fontSize: 18,
     color: COLORS.textTertiary,
-  },
-
-  helperText: {
-    marginTop: 5,
-    fontSize: 12,
-    color: COLORS.textTertiary,
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
-  },
-
-  errorText: {
-    color: COLORS.error,
   },
 
   modalRoot: {

@@ -16,20 +16,6 @@ import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
 
 export const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.surface,
-  },
-
-  content: {
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 32,
-  },
-
   alert: {
     marginBottom: 16,
   },
@@ -169,10 +155,11 @@ export const styles = StyleSheet.create({
 
   infoLabel: {
     fontFamily: TYPOGRAPHY.fontFamily.medium,
+    marginTop: 4,
   },
 
   infoValue: {
-    marginTop: 2,
+    marginTop: 6,
     fontFamily: TYPOGRAPHY.fontFamily.regular,
   },
 

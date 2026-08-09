@@ -4,11 +4,12 @@ CABEZA DE ARCHIVO
 //////////////////////////////////////////////////////////
 Archivo: DashboardEstanquesPanel.jsx
 Autor: Gerald Andres Alfaro Solorzano
-Fecha: 30/07/2026
+Fecha: 01/08/2026
 Modulo: Dashboard
 Descripcion:
 Renderiza el resumen de estanques, la grafica de estados,
 la alimentacion semanal y el detalle de cada estanque.
+Los dias de cultivo provienen del modulo de siembra.
 //////////////////////////////////////////////////////////
 */
 
@@ -68,7 +69,7 @@ function GraficaPastelEstanques({ activos, cosechados }) {
               color: COLORS.textSecondary,
               fontSize: 26,
               fontWeight: 900,
-              fontFamily: TYPOGRAPHY.fontFamily.bold,
+              fontFamily: TYPOGRAPHY.fontFamily.regular,
               lineHeight: "28px",
             }}
           >
@@ -97,7 +98,7 @@ function GraficaPastelEstanques({ activos, cosechados }) {
         <View style={[styles.donutHarvestSegment, { width: `${100 - porcentajeActivos}%` }]} />
 
         <View style={styles.donutInner}>
-          <CustomText size={26} weight="900" color={COLORS.textSecondary}>
+          <CustomText size={26} weight="900" color={COLORS.textSecondary} style={styles.donutTotalNumber}>
             {total}
           </CustomText>
 
@@ -212,7 +213,7 @@ export default function DashboardEstanquesPanel({ estanques, alimentacionSemanal
           const finca = obtenerTextoSeguro(estanque.fincaNombre, obtenerTextoSeguro(estanque.finca, "Sin finca"));
           const estado = obtenerTextoSeguro(estanque.estado, "Sin estado");
           const area = Number(estanque.area) > 0 ? `${estanque.area} ha` : "Area no registrada";
-          const diasCultivo = Number(estanque.diasCultivo) > 0 ? `${estanque.diasCultivo}d` : "0d";
+          const diasCultivo = estanque.tieneSiembra ? `${Number(estanque.diasCultivo) || 0}d` : "Sin siembra";
           const estadoNormalizado = estado.toLowerCase();
           const colorEstado = estadoNormalizado === "activo"
             ? COLORS.primary

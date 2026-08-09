@@ -19,8 +19,6 @@ import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
 import { STYLE } from "../../../theme/style";
 
-import { fincas as fincasModulo } from "../../finca/screens/FincaData";
-import { estanques as estanquesModulo } from "../../mantCrecimiento/services/EstanqueData";
 import { obtenerSiembras } from "../../siembra/services/SiembraService";
 import useAlimentacion from "../../alimentacion/hooks/useAlimentacion";
 import { getProductosInventario } from "../../inventarios/services/InventarioService";
@@ -102,7 +100,7 @@ function DropdownAlertas({ tipo, alertas, abierto, onToggle, onDismiss }) {
     <Card style={styles.dropdownCard}>
       <Pressable style={styles.dropdownHeader} onPress={onToggle}>
         <View
-          style={[styles.dropdownIconBox, { backgroundColor: COLORS.surface }]}
+          style={styles.dropdownIconBox}
         >
           <Icon icon={obtenerIconoTipo(tipo)} size={20} color={color} />
         </View>
@@ -227,6 +225,7 @@ export default function AlertasScreen() {
 
   const [abiertos, setAbiertos] = useState(obtenerEstadoInicialDropdowns());
   const [descartadas, setDescartadas] = useState([]);
+  const [productosInventario, setProductosInventario] = useState([]);
   const [registrosEnfermedades, setRegistrosEnfermedades] = useState([]);
   const [registrosParasitologia, setRegistrosParasitologia] = useState([]);
 
@@ -234,14 +233,46 @@ export default function AlertasScreen() {
     let activo = true;
 
     async function cargarDatos() {
-      const ids = await obtenerAlertasDescartadas();
-      const enfermedades = await enfermedadesService.getAll();
-      const parasitos = await parasitologiaService.getAll();
+      let ids = [];
+      let productos = [];
+      let enfermedades = [];
+      let parasitos = [];
+
+      try {
+        ids = await obtenerAlertasDescartadas();
+      } catch (error) {
+        throw error;
+        ids = [];
+      }
+
+      try {
+        productos = await getProductosInventario();
+      } catch (error) {
+        throw error;
+        productos = [];
+      }
+
+      try {
+        enfermedades = await enfermedadesService.getAll();
+      } catch (error) {
+        throw error;
+        enfermedades = [];
+      }
+
+      try {
+        parasitos = await parasitologiaService.getAll();
+      } catch (error) {
+        throw error;
+        parasitos = [];
+      }
 
       if (activo === true) {
-        setDescartadas(ids);
-        setRegistrosEnfermedades(enfermedades);
-        setRegistrosParasitologia(parasitos);
+        setDescartadas(Array.isArray(ids) ? ids : []);
+        setProductosInventario(Array.isArray(productos) ? productos : []);
+        setRegistrosEnfermedades(
+          Array.isArray(enfermedades) ? enfermedades : [],
+        );
+        setRegistrosParasitologia(Array.isArray(parasitos) ? parasitos : []);
       }
     }
 
@@ -254,11 +285,9 @@ export default function AlertasScreen() {
   }, []);
 
   const alertasBase = construirAlertasOperativas({
-    fincas: fincasModulo,
-    productosInventario: getProductosInventario(),
+    productosInventario: productosInventario,
     siembras: obtenerSiembras(),
     alimentaciones: alimentaciones,
-    estanques: estanquesModulo,
     equipos: EQUIPOS_MOCK,
     registrosEnfermedades: registrosEnfermedades,
     registrosParasitologia: registrosParasitologia,
@@ -278,7 +307,7 @@ export default function AlertasScreen() {
 
   async function descartar(id) {
     const ids = await descartarAlerta(id);
-    setDescartadas(ids);
+    setDescartadas(Array.isArray(ids) ? ids : []);
   }
 
   return (

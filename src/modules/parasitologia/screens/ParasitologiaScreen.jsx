@@ -7,30 +7,37 @@
  * Toda la logica se encuentra en useParasitologiaScreen.
  */
 
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { ScrollView, View } from "react-native";
 
-import Alert from "../../../shared/components/Alert";
-import Button from "../../../shared/components/Button";
-import Card from "../../../shared/components/Card";
-import DateInput from "../../../shared/components/DateInput";
-import Icon from "../../../shared/components/Icons";
-import Input from "../../../shared/components/Input";
-import NavbarRegistro from "../../../shared/components/NavbarRegistro";
-import NumberInput from "../../../shared/components/NumberInput";
-import Select from "../../../shared/components/Select";
-import CustomText from "../../../shared/components/Text";
+import Alert from "../../../shared/components/Alert.jsx";
+import Button from "../../../shared/components/Button.jsx";
+import Card from "../../../shared/components/Card.jsx";
+import DateInput from "../../../shared/components/DateInput.jsx";
+import Icon from "../../../shared/components/Icons.jsx";
+import Input from "../../../shared/components/Input.jsx";
+import NavbarRegistro from "../../../shared/components/NavbarRegistro.jsx";
+import Select from "../../../shared/components/Select.jsx";
+import CustomText from "../../../shared/components/Text.jsx";
 
-import ParasitologiaSectionTitle from "../components/ParasitologiaSectionTitle";
-import useParasitologiaScreen from "../hooks/useParasitologiaScreen";
+import ParasitologiaSectionTitle from "../components/ParasitologiaSectionTitle.jsx";
+import useParasitologiaScreen from "../hooks/useParasitologiaScreen.js";
 
-import { styles } from "../styles/ParasitologiaStyle";
-import { COLORS } from "../../../theme/colors";
-import { ICONS } from "../../../theme/icons";
-import { STYLE } from "../../../theme/style";
+import { styles } from "../styles/ParasitologiaStyle.js";
+import { COLORS } from "../../../theme/colors.js";
+import { ICONS } from "../../../theme/icons.js";
+import { STYLE } from "../../../theme/style.js";
 
 export default function ParasitologiaScreen() {
   const pantalla = useParasitologiaScreen();
+  const scrollRef = useRef(null);
+
+  //Hook aquí para que haga el scrollToEnd en caso de que haya algún error de cargar
+  useEffect(() => {
+    if (pantalla.mensaje && pantalla.tipoMensaje === "danger") {
+      scrollRef.current?.scrollToEnd({ animated: true });
+    }
+  }, [pantalla.mensaje, pantalla.tipoMensaje]);
 
   return (
     <>
@@ -40,7 +47,11 @@ export default function ParasitologiaScreen() {
         Icono="parasite"
       />
 
-      <ScrollView style={STYLE.container} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        ref={scrollRef}
+        style={STYLE.container}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={[STYLE.contentWrapper, styles.content]}>
           {pantalla.loading && (
             <Alert
@@ -67,9 +78,7 @@ export default function ParasitologiaScreen() {
                   placeholder={pantalla.placeholderFinca}
                   disabled={pantalla.loading}
                   labelStyle={styles.label}
-                  selectStyle={
-                    pantalla.errorFinca && styles.campoConError
-                  }
+                  selectStyle={pantalla.errorFinca && styles.campoConError}
                 />
               </View>
 
@@ -82,9 +91,7 @@ export default function ParasitologiaScreen() {
                   placeholder={pantalla.placeholderEstanque}
                   disabled={pantalla.loading || pantalla.finca === ""}
                   labelStyle={styles.label}
-                  selectStyle={
-                    pantalla.errorEstanque && styles.campoConError
-                  }
+                  selectStyle={pantalla.errorEstanque && styles.campoConError}
                 />
               </View>
 
@@ -95,19 +102,15 @@ export default function ParasitologiaScreen() {
                   onChangeText={pantalla.setFechaReporte}
                   disabled={pantalla.loading}
                   labelStyle={styles.label}
-                  inputStyle={
-                    pantalla.errorFechaReporte && styles.campoConError
-                  }
+                  inputStyle={pantalla.errorFechaReporte && styles.campoConError}
                 />
               </View>
 
-              <View style={pantalla.itemStyle} pointerEvents="none">
+              <View style={pantalla.itemStyle}>
                 <Input
                   label="Responsable"
                   value={pantalla.responsable}
                   editable={false}
-                  readOnly={true}
-                  selectTextOnFocus={false}
                   labelStyle={styles.label}
                 />
               </View>
@@ -116,7 +119,7 @@ export default function ParasitologiaScreen() {
 
           <Card>
             <ParasitologiaSectionTitle
-              title="Conteo parasitologico"
+              title="Registro parasitologico"
               icon={ICONS.microscope}
             />
 
@@ -130,140 +133,21 @@ export default function ParasitologiaScreen() {
                   placeholder={pantalla.placeholderParasito}
                   disabled={pantalla.loading}
                   labelStyle={styles.label}
-                  selectStyle={
-                    pantalla.errorParasito && styles.campoConError
-                  }
+                  selectStyle={pantalla.errorParasito && styles.campoConError}
                 />
               </View>
 
               <View style={pantalla.itemStyle}>
-                <NumberInput
-                  label="Camarones muestreados *"
-                  value={pantalla.camaronesMuestreados}
-                  onChangeText={pantalla.setCamaronesMuestreados}
-                  min={0}
-                  max={999999}
-                  step={1}
-                  editable={!pantalla.loading}
+                <Select
+                  label="Grado de infeccion *"
+                  options={pantalla.opcionesGrados}
+                  value={pantalla.gradoInfeccion}
+                  onChange={pantalla.setGradoInfeccion}
+                  placeholder={pantalla.placeholderGrado}
+                  disabled={pantalla.loading}
                   labelStyle={styles.label}
-                  style={
-                    pantalla.errorMuestreados && styles.campoConError
-                  }
+                  selectStyle={pantalla.errorGrado && styles.campoConError}
                 />
-              </View>
-
-              <View style={pantalla.itemStyle}>
-                <NumberInput
-                  label="Camarones infectados *"
-                  value={pantalla.camaronesInfectados}
-                  onChangeText={pantalla.setCamaronesInfectados}
-                  min={0}
-                  max={999999}
-                  step={1}
-                  editable={!pantalla.loading}
-                  labelStyle={styles.label}
-                  style={
-                    pantalla.errorInfectados && styles.campoConError
-                  }
-                />
-              </View>
-
-              <View style={pantalla.itemFullStyle}>
-                <View style={styles.previewCard}>
-                  <View style={styles.previewHeader}>
-                    <Icon icon={ICONS.report} size={20} color={COLORS.primary} />
-
-                    <CustomText
-                      size={15}
-                      color={COLORS.textPrimary}
-                      style={styles.previewTitle}
-                    >
-                      Resultado calculado
-                    </CustomText>
-                  </View>
-
-                  <View style={styles.previewGrid}>
-                    <View style={styles.previewBox}>
-                      <CustomText
-                        size={12}
-                        color={COLORS.textTertiary}
-                        style={styles.previewLabel}
-                      >
-                        Muestreados
-                      </CustomText>
-
-                      <CustomText
-                        size={20}
-                        color={COLORS.textSecondary}
-                        style={styles.previewValue}
-                      >
-                        {pantalla.camaronesMuestreados || 0}
-                      </CustomText>
-                    </View>
-
-                    <View style={styles.previewBox}>
-                      <CustomText
-                        size={12}
-                        color={COLORS.textTertiary}
-                        style={styles.previewLabel}
-                      >
-                        Infectados
-                      </CustomText>
-
-                      <CustomText
-                        size={20}
-                        color={COLORS.textSecondary}
-                        style={styles.previewValue}
-                      >
-                        {pantalla.camaronesInfectados || 0}
-                      </CustomText>
-                    </View>
-
-                    <View style={styles.previewBox}>
-                      <CustomText
-                        size={12}
-                        color={COLORS.textTertiary}
-                        style={styles.previewLabel}
-                      >
-                        Porcentaje
-                      </CustomText>
-
-                      <CustomText
-                        size={20}
-                        color={COLORS.textSecondary}
-                        style={styles.previewValue}
-                      >
-                        {pantalla.gradoCalculado.porcentaje}%
-                      </CustomText>
-                    </View>
-                  </View>
-
-                  <View style={styles.gradeBox}>
-                    <View style={styles.gradeHeader}>
-                      <CustomText size={14} color={COLORS.textSecondary}>
-                        Grado de infeccion
-                      </CustomText>
-
-                      <View style={styles.gradeBadge}>
-                        <CustomText
-                          size={13}
-                          color={pantalla.colorGrado}
-                          weight="800"
-                        >
-                          {pantalla.gradoCalculado.nombre}
-                        </CustomText>
-                      </View>
-                    </View>
-
-                    <CustomText
-                      size={13}
-                      color={COLORS.textTertiary}
-                      style={styles.gradeDescription}
-                    >
-                      {pantalla.gradoCalculado.descripcion}
-                    </CustomText>
-                  </View>
-                </View>
               </View>
 
               <View style={pantalla.itemFullStyle}>
@@ -304,7 +188,7 @@ export default function ParasitologiaScreen() {
                 color={COLORS.primary}
                 style={styles.saveText}
               >
-                Guardar
+                Registrar Parasitologia
               </CustomText>
             </View>
           </Button>

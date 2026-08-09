@@ -19,18 +19,14 @@
 import Text from "../../../shared/components/Text.jsx";
 import Icon from "../../../shared/components/Icons.jsx";
 import { useState, useEffect, useMemo } from "react";
-import { Dimensions, View } from "react-native";
+import { View } from "react-native";
 import { styles } from "../styles/StylesFincaNueva.js";
 import { STYLE } from "../../../theme/style.js";
 import { COLORS } from "../../../theme/colors.js";
 import { useFinca } from "../context/FincaContext";
-import { fincaDTO } from "../dtos/finca.dto.js";
-
-const { width } = Dimensions.get("window");
-const isLargeScreen = width > 700;
 
 export function useFincaEditar({ onFinca, id }) {
-  const { fincas, editarFinca } = useFinca();
+  const { fincas, editarFinca, ERROR } = useFinca();
 
   const [formulario, setFormulario] = useState({
     nombre: "",
@@ -41,6 +37,7 @@ export function useFincaEditar({ onFinca, id }) {
 
   const [telefonos, setTelefonos] = useState([""]);
   const [errores, setErrores] = useState({});
+
   const finca = fincas.find((f) => f.id === Number(id));
 
   const actualizarCampo = (campo, valor) => {
@@ -53,7 +50,7 @@ export function useFincaEditar({ onFinca, id }) {
       [campo]: nuevoValor,
     }));
     if (errores[campo]) {
-      setErrores((actual) => ({ ...actual, [campo]: false }));
+      setErrores((actual) => ({ ...actual, [campo]: null }));
     }
   };
 
@@ -69,7 +66,7 @@ export function useFincaEditar({ onFinca, id }) {
     if (errores[`telefono${index}`]) {
       setErrores((actual) => ({
         ...actual,
-        [`telefono${index}`]: false,
+        [`telefono${index}`]: null,
       }));
     }
   };
@@ -121,27 +118,21 @@ export function useFincaEditar({ onFinca, id }) {
     }
   }, [finca]);
 
-  const registrarFinca = () => {
+  const registrarFinca = async () => {
     const nuevosErrores = {};
     const telefonosLimpios = telefonos
       .map((tel) => String(tel ?? "").trim())
       .filter((tel) => tel !== "");
 
-    if (!formulario.nombre.trim()) nuevosErrores.nombre = true;
-    if (!formulario.responsable.trim()) nuevosErrores.responsable = true;
+    if (!formulario.nombre.trim()) nuevosErrores.nombre = "Nombre de la finca obligatorio";
+    if (!formulario.responsable.trim()) nuevosErrores.responsable = "Propietario/Responsable obligatorio";
 
-    if (
-      !String(formulario.areaTotal).trim() ||
-      !isNumber(formulario.areaTotal)
-    ) {
-      nuevosErrores.areaTotal = true;
+    if (!String(formulario.areaTotal).trim() || !isNumber(formulario.areaTotal)) {
+      nuevosErrores.areaTotal = "Área total debe ser un número válido";
     }
 
-    if (
-      !String(formulario.espejoAgua).trim() ||
-      !isNumber(formulario.espejoAgua)
-    ) {
-      nuevosErrores.espejoAgua = true;
+    if (!String(formulario.espejoAgua).trim() || !isNumber(formulario.espejoAgua)) {
+      nuevosErrores.espejoAgua = "Espejo de agua debe ser un número válido";
     }
 
     for (let i = 0; i < telefonos.length; i++) {
@@ -149,8 +140,7 @@ export function useFincaEditar({ onFinca, id }) {
       if (tel === "") continue;
 
       if (!isTelefonoValido(tel)) {
-        nuevosErrores[`telefono${i}`] = true;
-        break;
+        nuevosErrores[`telefono${i}`] = `Teléfono ${i + 1} inválido. Debe tener 8 dígitos. Ej: 1234 5678`;
       }
     }
 
@@ -159,7 +149,7 @@ export function useFincaEditar({ onFinca, id }) {
       return;
     }
 
-    const EditarFincaDTO = new fincaDTO({
+    const EditarFincaDTO = {
       codigoCBO: finca.codigoCBO,
       nombreFinca: formulario.nombre,
       provincia: finca.provincia,
@@ -170,10 +160,14 @@ export function useFincaEditar({ onFinca, id }) {
       telefono: telefonosLimpios,
       areaTotal: Number(formulario.areaTotal),
       espejosAgua: Number(formulario.espejoAgua),
-    });
+    };
 
-    editarFinca(finca.codigoCBO, EditarFincaDTO);
-    onFinca();
+    try {
+      await editarFinca(finca.codigoCBO, EditarFincaDTO);
+      onFinca();
+    } catch (err) {
+      return;
+    }
   };
 
   const ContentWrapper = useMemo(() => {
@@ -210,13 +204,14 @@ export function useFincaEditar({ onFinca, id }) {
     telefonos,
     errores,
     finca,
+    
+    
 
     actualizarCampo,
     actualizarTelefono,
     agregarTelefono,
     eliminarTelefono,
     registrarFinca,
-
-    isLargeScreen,
+    displayErrorMessage: Object.values(errores || {}).filter(Boolean)[0] || ERROR || null,
   };
 }

@@ -60,16 +60,21 @@ export const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     borderColor: COLORS.secondary,
   },
+  cardHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginBottom: 16,
+  },
   cardTitle: {
     fontSize: 19,
-    fontWeight: undefined,   // ← anula cualquier peso interno del Card
+    fontWeight: undefined,   
     color: COLORS.textSecondary,
-    marginBottom: 16,
   },
   field: { marginBottom: 14 },
   label: {
     fontSize: 14,
-    fontWeight: undefined,   // ← agrega esto para anular el fontWeight interno
+    fontWeight: undefined,   
     color: COLORS.black,
     marginBottom: 6,
   },
@@ -79,7 +84,7 @@ export const styles = StyleSheet.create({
     borderColor: COLORS.secondary,
     backgroundColor: COLORS.white,
     paddingHorizontal: 14,
-    fontSize: 15
+    fontSize: 15,
   },
   numberInput: {
     borderRadius: 12,
@@ -95,12 +100,16 @@ export const styles = StyleSheet.create({
   },
 
   inputError: {
-   borderColor: COLORS.error,
+    borderColor: COLORS.error,
   },
   saveButton: {
-    marginTop: 10,
-    borderRadius: 14,
-    paddingVertical: 14,
+  marginTop: 10,
+  borderRadius: 14,
+  paddingVertical: 14,
+  flexDirection: "row",
+  justifyContent: "center",
+  alignItems: "center",
+  gap: 8,
   },
   saveButtonDisabled: {
     opacity: 0.5,

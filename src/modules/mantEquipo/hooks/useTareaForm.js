@@ -1,45 +1,17 @@
-// src/modules/mantEquipo/hooks/useTareaForm.js
-
 /**
- * ============================================================
  * HOOK: useTareaForm
- * ============================================================
+ * Maneja el estado, precarga, validaciones y envío del formulario de creación y edición de tareas.
  *
- * Responsabilidad:
- * Manejar el estado, validaciones y envío del formulario de tareas.
- *
- * Funcionalidad:
- * - Recibe un id de tarea para edición (desde parámetros de ruta).
- * - Carga los datos de la tarea si es edición.
- * - Mantiene estado de los campos, productos seleccionados, errores y submitted.
- * - Permite agregar/eliminar productos de la lista.
- * - Valida campos obligatorios (nombre, descripción, categoría, duración).
- * - Guarda la tarea (crear o actualizar) y navega de vuelta a la lista.
- * - Prepara opciones para el Select de productos (con búsqueda).
- *
- * Datos:
- * - id: string | undefined (id de la tarea a editar, opcional)
- *
- * Validaciones:
- * - Nombre: obligatorio, mínimo 3 caracteres.
- * - Descripción: obligatoria, mínimo 5 caracteres.
- * - Categoría: obligatoria.
- * - Duración: obligatoria, mayor a 0.
- *
- * Navegación:
- * - Al guardar exitosamente, navega a la lista de tareas ('/equipos/tareas').
- * - Al cancelar, navega a la lista de tareas.
- *
- * Dependencias:
- * - tareasService (obtenerTareaPorId, crearTarea, actualizarTarea)
- * - useRouter, useLocalSearchParams de expo-router
- * - getProductosInventario de InventarioService
+ * @dependencies - tareasService.js (services/tareasService.js), expo-router (useRouter, useLocalSearchParams)
+ * @validations  - Valida que nombre, descripción, categoría y duración estimada sean obligatorios.
+ * @navigation   - Navega a la lista de tareas ('/equipos/tareas') al guardar o cancelar.
  */
 
-import { useState, useEffect, useMemo } from "react";
+// src/modules/mantEquipo/hooks/useTareaForm.js
+
+import { useState, useEffect } from "react";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import * as tareasService from "../services/tareasService";
-import { getProductosInventario } from "../../inventarios/services/InventarioService";
 
 export function useTareaForm() {
   const router = useRouter();
@@ -50,17 +22,24 @@ export function useTareaForm() {
   const [descripcion, setDescripcion] = useState("");
   const [categoria, setCategoria] = useState("");
   const [duracion, setDuracion] = useState("");
-  const [estado, setEstado] = useState("no_iniciada");
-  const [productos, setProductos] = useState([]);
-  const [busquedaProducto, setBusquedaProducto] = useState("");
-  const [productoSeleccionado, setProductoSeleccionado] = useState(null);
-  const [cantidadProducto, setCantidadProducto] = useState("");
   const [errores, setErrores] = useState({});
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [cargandoDatos, setCargandoDatos] = useState(isEditing);
 
-  const productosDisponibles = getProductosInventario();
+  // Alert local para la pantalla (hook-local)
+  const [alert, setAlert] = useState(null);
+  const alertTimeoutRef = { current: null };
+  useEffect(() => {
+    return () => {
+      if (alertTimeoutRef.current) clearTimeout(alertTimeoutRef.current);
+    };
+  }, []);
+  const showAlert = (type, message, ms = 4000) => {
+    if (alertTimeoutRef.current) clearTimeout(alertTimeoutRef.current);
+    setAlert({ type, message });
+    alertTimeoutRef.current = setTimeout(() => setAlert(null), ms);
+  };
 
   // Cargar datos si es edición
   useEffect(() => {
@@ -72,10 +51,10 @@ export function useTareaForm() {
           setDescripcion(tarea.descripcion || "");
           setCategoria(tarea.categoria || "");
           setDuracion(String(tarea.duracionEstimada || ""));
-          setEstado(tarea.estado || "no_iniciada");
-          setProductos(tarea.productos || []);
         } catch (error) {
-          console.error("Error al cargar tarea:", error);
+          // Mostrar el mensaje tal como viene desde el servicio cuando sea posible
+          const msg = error?.response?.data?.message || error?.message || String(error);
+          showAlert('danger', msg);
         } finally {
           setCargandoDatos(false);
         }
@@ -83,26 +62,7 @@ export function useTareaForm() {
       cargarTarea();
     }
   }, [isEditing, id]);
-
-  // ─── FILTRADO DE PRODUCTOS ────────────────────────────────────
-  const productosFiltrados = useMemo(() => {
-    const busqueda = busquedaProducto.trim().toLowerCase();
-    if (!busqueda) return productosDisponibles;
-    return productosDisponibles.filter((p) =>
-      p.nombre.toLowerCase().includes(busqueda)
-    );
-  }, [productosDisponibles, busquedaProducto]);
-
-  // ─── OPCIONES PARA EL SELECT ──────────────────────────────────
-  const opcionesProductos = useMemo(() => {
-    return productosFiltrados.map((p) => ({
-      label: `${p.nombre} (${p.unidad}) - Stock: ${p.cantidad}`,
-      value: p.id,
-    }));
-  }, [productosFiltrados]);
-
-  const hayResultados = opcionesProductos.length > 0;
-
+  
   // ─── HANDLERS ──────────────────────────────────────────────────
   const handleChange = (campo, valor) => {
     switch (campo) {
@@ -118,9 +78,6 @@ export function useTareaForm() {
       case "duracion":
         setDuracion(valor);
         break;
-      case "estado":
-        setEstado(valor);
-        break;
       default:
         break;
     }
@@ -129,42 +86,6 @@ export function useTareaForm() {
     }
   };
 
-  const handleBusquedaProducto = (text) => setBusquedaProducto(text);
-
-  const seleccionarProducto = (producto) => {
-    setProductoSeleccionado(producto);
-    if (producto) setCantidadProducto("1");
-  };
-
-  const handleCantidadProducto = (text) => setCantidadProducto(text);
-
-  const agregarProducto = () => {
-    if (!productoSeleccionado) return;
-    const cantidadNum = Number(cantidadProducto);
-    if (!cantidadProducto || isNaN(cantidadNum) || cantidadNum <= 0) return;
-
-    setProductos((prev) => {
-      const existe = prev.some((p) => p.productoId === productoSeleccionado.id);
-      if (existe) {
-        return prev.map((p) =>
-          p.productoId === productoSeleccionado.id
-            ? { ...p, cantidad: p.cantidad + cantidadNum }
-            : p
-        );
-      }
-      return [...prev, { productoId: productoSeleccionado.id, cantidad: cantidadNum }];
-    });
-
-    setProductoSeleccionado(null);
-    setCantidadProducto("");
-    setBusquedaProducto("");
-  };
-
-  const eliminarProducto = (productoId) => {
-    setProductos((prev) => prev.filter((p) => p.productoId !== productoId));
-  };
-
-  // ─── VALIDACIÓN ─────────────────────────────────────────────────
   const validar = () => {
     const e = {};
     if (!nombre.trim()) e.nombre = "El nombre es requerido";
@@ -178,10 +99,22 @@ export function useTareaForm() {
     return Object.keys(e).length === 0;
   };
 
-  // ─── GUARDAR ────────────────────────────────────────────────────
+  const resetFormulario = () => {
+    setNombre("");
+    setDescripcion("");
+    setCategoria("");
+    setDuracion("");
+    setErrores({});
+    setSubmitted(false);
+    setLoading(false);
+  };
+
   const guardar = async () => {
     setSubmitted(true);
-    if (!validar()) return;
+    if (!validar()) {
+      showAlert('danger', 'Revisa los campos obligatorios marcados con *');
+      return;
+    }
 
     setLoading(true);
     try {
@@ -190,19 +123,30 @@ export function useTareaForm() {
         descripcion: descripcion.trim(),
         categoria,
         duracionEstimada: Number(duracion),
-        estado,
-        productos,
       };
 
       if (isEditing) {
         await tareasService.actualizarTarea(id, datos);
+        showAlert('success', 'Tarea editada correctamente');
+        // Después de editar, navegar al detalle y pasar mensaje para que se muestre allí
+        router.replace(
+          `/mantenimientoEquipo/tareas/detalleTarea?id=${id}&alertType=success&alertMessage=${encodeURIComponent(
+            'Tarea editada correctamente'
+          )}`
+        );
       } else {
         await tareasService.crearTarea(datos);
+        showAlert('success', 'Tarea registrada correctamente');
+        // Después de crear, ir a la lista de tareas y pasar mensaje para que se muestre allí
+        router.replace(
+          `/mantenimientoEquipo/tareas?alertType=success&alertMessage=${encodeURIComponent(
+            'Tarea registrada correctamente'
+          )}`
+        );
       }
-
-      router.back();
     } catch (error) {
-      setErrores({ general: error.message || "Ocurrió un error al guardar la tarea." });
+      const msg = error?.response?.data?.message || error?.message || String(error);
+      showAlert('danger', msg);
     } finally {
       setLoading(false);
     }
@@ -217,25 +161,14 @@ export function useTareaForm() {
     descripcion,
     categoria,
     duracion,
-    estado,
-    productos,
-    busquedaProducto,
-    productoSeleccionado,
-    cantidadProducto,
     errores,
     submitted,
     loading,
     cargandoDatos,
     isEditing,
-    productosFiltrados,
-    opcionesProductos,
-    hayResultados,
+    alert,
+    showAlert,
     handleChange,
-    handleBusquedaProducto,
-    seleccionarProducto,
-    handleCantidadProducto,
-    agregarProducto,
-    eliminarProducto,
     guardar,
     cancelar,
   };

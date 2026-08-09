@@ -1,11 +1,11 @@
 /**
- * ============================================================
- * ESTILOS: EquipoSelect
- * ============================================================
+ * ESTILOS: EquipoSelectStyles
+ * Estilos locales del selector desplegable usado en RegistrarEquipo
+ * para evitar que el dropdown empuje otros campos.
  *
- * Estilos locales del selector desplegable usado en
- * RegistrarEquipo para evitar que el dropdown empuje otros campos.
- * Ruta: src/modules/mantEquipo/styles/EquipoSelectStyles.js
+ * @dependencies - COLORS de theme/colors.js
+ * @validations  - zIndex y posición relativa para superposición sin alterar layout.
+ * @navigation   - N/A (archivo de estilos).
  */
 
 import { StyleSheet } from "react-native";
@@ -42,6 +42,7 @@ export const styles = StyleSheet.create({
   },
   dropdownShell: {
     width: "100%",
+    height: 180,
     marginTop: 4,
     position: "relative",
   },

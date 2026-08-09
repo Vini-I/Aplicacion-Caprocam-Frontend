@@ -24,10 +24,7 @@ import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
 
 export const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.surface,
-  },
+
 
   navbar: {
     backgroundColor: COLORS.primary,
@@ -63,12 +60,18 @@ export const styles = StyleSheet.create({
     borderColor: COLORS.secondary,
   },
 
+  cardHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginBottom: 16,
+  },
+
   cardTitle: {
     fontSize: 19,
     fontFamily: TYPOGRAPHY.fontFamily.bold,
     fontWeight: undefined,
     color: COLORS.textSecondary,
-    marginBottom: 16,
   },
 
   field: {
@@ -151,6 +154,10 @@ export const styles = StyleSheet.create({
   },
   alertWarningComoErrorTexto: {
     color: COLORS.error,
+  },
+
+  loadingContainer: {
+    justifyContent: "center",
   },
 });
 

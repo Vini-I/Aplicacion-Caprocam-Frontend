@@ -63,6 +63,7 @@ const PETICIONES_DASHBOARD = [
     clave: "inventario",
     cargar: DashboardService.getInventario,
     respaldo: [],
+    mostrarError: false,
   },
   {
     clave: "equipos",
@@ -119,7 +120,13 @@ export default function useDashboard() {
         const resultado = resultados[index];
 
         datosBackend[peticion.clave] = resultado.status === "fulfilled" ? resultado.value : peticion.respaldo;
-        primerError = primerError === null && resultado.status === "rejected" ? resultado.reason : primerError;
+        if (
+          primerError === null &&
+          resultado.status === "rejected" &&
+          peticion.mostrarError !== false
+        ) {
+          primerError = resultado.reason;
+        }
       });
 
       setDatos(adaptarDatosDashboard(datosBackend));

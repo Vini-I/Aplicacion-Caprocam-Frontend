@@ -1,56 +1,40 @@
 /**
- * ============================================================
- * HOOK DETALLE PROVEEDOR
- * ============================================================
- *
- * Logica de la pantalla de detalle de un proveedor.
+ * useDetalleProveedorScreen.js
+ * Hook para manejar la lógica de la pantalla de detalle de un proveedor.
  *
  * FUNCIONALIDAD:
- * 1. Busca el proveedor por id (parámetro de ruta) en el backend
- *    (getProveedorById).
- * 
- * 2. Expone proveedor (undefined si no existe o aún no cargó) para
- *    que la screen decida si mostrar el EmptyState o el detalle,
- *    incluyendo si muestra o no la sección de notas.
- * 
- * 3. Controla la visibilidad del modal de confirmación de eliminar
- *    (modalVisible, abrirModal, cerrarModal) y expone confirmarEliminar,
- *    que elimina realmente el proveedor contra el backend
- *    (eliminarProveedor).
- * 
- * 4. getTipoLabel traduce el value de tipoProducto a su label legible.
+ * - Carga y expone los datos del proveedor seleccionado.
+ * - Maneja el estado del modal de confirmación para eliminar.
  *
- * 5. Expone cargando y error para que la screen pueda mostrar el
- *    estado de la petición.
+ * REGLAS IMPORTANTES:
+ * - Se comunica con ProveedorContext para eliminar o buscar.
  *
- * IMPORTANTE:
- * - No aplica validaciones.
- * - No navega directamente; expone datos y handlers para que la screen
- *   decida la navegación real.
+ * @dependencies - React, expo-router, ProveedorContext, proveedor.service
+ * @validations - N/A
+ * @navigation - N/A
  */
-import { useState, useEffect, useCallback } from "react";
-import { useLocalSearchParams, useNavigation } from "expo-router";
-import {
-  getProveedorById,
-  eliminarProveedor,
-  getTipoProductoLabel,
-} from "../services/proveedor.service";
+import { useState, useCallback, useRef } from "react";
+import { useFocusEffect } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
+import { useProveedor } from "../context/ProveedorContext";
+import { getTipoProductoLabel } from "../services/proveedor.service";
 
 export function useDetalleProveedorScreen() {
   const { id } = useLocalSearchParams();
-  const navigation = useNavigation();
-  const [modalVisible, setModalVisible] = useState(false);
+  const { buscarProveedor, eliminarProveedor } = useProveedor();
+  
   const [proveedor, setProveedor] = useState(undefined);
+  const [modalVisible, setModalVisible] = useState(false);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
+  const eliminando = useRef(false);
 
   const cargarProveedor = useCallback(async () => {
+    if (!id || eliminando.current) return;
     try {
       setCargando(true);
       setError("");
-
-      const data = await getProveedorById(id);
-
+      const data = await buscarProveedor(id);
       setProveedor(data);
     } catch (err) {
       setProveedor(undefined);
@@ -58,16 +42,13 @@ export function useDetalleProveedorScreen() {
     } finally {
       setCargando(false);
     }
-  }, [id]);
+  }, [id, buscarProveedor]);
 
-  useEffect(() => {
-    cargarProveedor();
-
-    const unsubscribe = navigation.addListener("focus", () => {
+  useFocusEffect(
+    useCallback(() => {
       cargarProveedor();
-    });
-    return unsubscribe;
-  }, [navigation, cargarProveedor]);
+    }, [cargarProveedor])
+  );
 
   function abrirModal() {
     setModalVisible(true);
@@ -79,9 +60,11 @@ export function useDetalleProveedorScreen() {
 
   async function confirmarEliminar() {
     try {
+      eliminando.current = true;
       await eliminarProveedor(id);
       setModalVisible(false);
     } catch (err) {
+      eliminando.current = false;
       setModalVisible(false);
       setError("No fue posible eliminar el proveedor.");
     }

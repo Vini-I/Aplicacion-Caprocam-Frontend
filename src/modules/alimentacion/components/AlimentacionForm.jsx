@@ -22,7 +22,7 @@
  *   errores={errores}
  * />
  */
-
+ 
 import React from "react";
 import { View } from "react-native";
 import AlimentacionFormInfoGeneral from "./AlimentacionFormInfoGeneral";
@@ -35,8 +35,9 @@ export default function AlimentacionForm({
   updateField = () => {},
   submitted = false,
   errores = {},
+  onCatalogoErrorChange = () => {},
 }) {
-  const props = { form, updateField, submitted, errores };
+  const props = { form, updateField, submitted, errores, onCatalogoErrorChange };
 
   return (
     <View>

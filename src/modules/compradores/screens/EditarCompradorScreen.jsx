@@ -11,13 +11,14 @@
  *    correo, dirección y notas sí se pueden modificar.
  * 2. Teléfono y correo son obligatorios y se validan con formato,
  *    solo al presionar "Guardar comprador" (useEditarCompradorScreen).
- * 3. Muestra una única alerta general arriba del formulario:
- *    error, advertencia o éxito según corresponda.
+ * 3. Muestra una única alerta general debajo del formulario, arriba
+ *    del botón de guardar: error, advertencia o éxito según
+ *    corresponda.
  *
  * IMPORTANTE:
  * - El borde rojo de Teléfono/Correo se activa por campo, pero el
- *   texto de error es un solo mensaje general (la alerta de
- *   arriba), no uno por campo, según el estándar 1.5.
+ *   texto de error es un solo mensaje general (la alerta de abajo),
+ *   no uno por campo, según el estándar 1.5.
  * - guardar() no navega a otra pantalla: solo muestra la alerta de
  *   resultado en el mismo formulario.
  * - El campo "Tipo de producto" se eliminó del formulario: las
@@ -27,7 +28,7 @@
  */
 
 import React from "react";
-import { View, ScrollView } from "react-native";
+import { View, ScrollView, ActivityIndicator } from "react-native";
 
 import Card from "../../../shared/components/Card";
 import Input from "../../../shared/components/Input";
@@ -45,6 +46,9 @@ import { useEditarCompradorScreen, TELEFONO_MAX_LENGTH } from "../hooks/useEdita
 
 export default function EditarCompradorScreen() {
   const {
+    cargando,
+    errorCarga,
+    guardando,
     nombre,
     cedula,
     telefono,
@@ -62,6 +66,14 @@ export default function EditarCompradorScreen() {
     guardar,
   } = useEditarCompradorScreen();
 
+  if (cargando) {
+    return (
+      <View style={[styles.container, styles.loadingContainer]}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
 
@@ -72,21 +84,18 @@ export default function EditarCompradorScreen() {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        <Card
-          title="Información del comprador"
-          style={styles.card}
-          titleStyle={styles.cardTitle}
-        >
-          {/* Alerta general: error, advertencia o confirmación de guardado */}
-          {alerta && (
+        <Card style={styles.card}>
+         <View style={styles.cardHeader}>
+           <Icon icon={ICONS.edit} color={COLORS.primary} size={22} />
+           <Text style={styles.cardTitle}>Información del comprador</Text>
+         </View>
+
+          {/* Alerta si no se pudo cargar el comprador desde el back */}
+          {!!errorCarga && (
             <Alert
-              variant={alerta.variant}
-              message={alerta.message}
-              style={[
-                styles.alertContainer,
-                alerta.variant === "warning" && styles.alertWarningComoError,
-              ]}
-              textStyle={alerta.variant === "warning" && styles.alertWarningComoErrorTexto}
+              variant="danger"
+              message={errorCarga}
+              style={styles.alertContainer}
             />
           )}
 
@@ -115,16 +124,13 @@ export default function EditarCompradorScreen() {
             label="Teléfono *"
             value={telefono}
             onChangeText={handleTelefonoChange}
-            placeholder="+506 2222-3344"
+            placeholder="88881234"
             keyboardType="phone-pad"
             maxLength={TELEFONO_MAX_LENGTH}
             containerStyle={styles.field}
             style={[styles.input, errorTelefono !== "" && styles.inputError]}
             labelStyle={styles.label}
           />
-          {errorTelefono !== "" && (
-            <Text style={styles.errorText}>{errorTelefono}</Text>
-          )}
 
           <Input
             label="Correo electrónico"
@@ -136,9 +142,6 @@ export default function EditarCompradorScreen() {
             style={[styles.input, errorCorreo !== "" && styles.inputError]}
             labelStyle={styles.label}
           />
-          {errorCorreo !== "" && (
-            <Text style={styles.errorText}>{errorCorreo}</Text>
-          )}
 
           <Input
             label="Dirección"
@@ -161,11 +164,33 @@ export default function EditarCompradorScreen() {
             labelStyle={styles.label}
           />
 
+          {/* Alerta general: error, advertencia o confirmación de guardado.
+              Va debajo del formulario y arriba del botón de guardar. */}
+          {alerta && (
+            <Alert
+              variant={alerta.variant}
+              message={alerta.message}
+              style={[
+                styles.alertContainer,
+                alerta.variant === "warning" && styles.alertWarningComoError,
+              ]}
+              textStyle={alerta.variant === "warning" && styles.alertWarningComoErrorTexto}
+            />
+          )}
+
           {/* Botón para guardar, dispara la validación completa */}
-          <Button variant="outline" onPress={guardar} style={styles.saveButton} textStyle={styles.saveButtonText}>
+          <Button
+            variant="outline"
+            onPress={guardar}
+            disabled={guardando}
+            style={styles.saveButton}
+            textStyle={styles.saveButtonText}
+          >
             <View style={styles.buttonContent}>
-              <Icon icon={ICONS.save} size={ICON_STYLES.save.size} color={COLORS.primary} />
-              <Text style={styles.saveButtonText}>Guardar comprador</Text>
+              <Icon icon={ICONS.add} size={ICON_STYLES.save.size} color={COLORS.primary} />
+              <Text style={styles.saveButtonText}>
+                {guardando ? "Guardando..." : "Editar Comprador"}
+              </Text>
             </View>
           </Button>
         </Card>

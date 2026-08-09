@@ -1,28 +1,10 @@
 /**
- * ============================================================
- * HOOK PERSONALIZADO: useEquipos
- * ============================================================
+ * HOOK: useEquipos
+ * Encapsula la obtención, filtrado y manipulación CRUD de la lista de equipos conectados al backend.
  *
- * Hook que encapsula la lógica de obtención y manipulación
- * de equipos. Utiliza el servicio equiposService (ya conectado
- * al backend real) y mantiene estado local (lista, loading, error).
- *
- * Parámetros:
- * - initialFilters: objeto con filtros iniciales
- *
- * Retorna:
- * - equipos: array de equipos
- * - loading: boolean
- * - error: string | null
- * - filters: objeto con filtros actuales
- * - setFilters: función para actualizar filtros
- * - fetchEquipos: función para recargar datos
- * - crearEquipo, actualizarEquipo, eliminarEquipo, toggleEquipo: funciones asíncronas
- * - equiposProximosMantenimiento: array de equipos que necesitan mantenimiento
- * - estadisticas: objeto con estadísticas generales
- *
- * Ejemplo:
- * const { equipos, loading, crearEquipo } = useEquipos({ tipo: 'aireacion' });
+ * @dependencies - equiposService.js (services/equiposService.js)
+ * @validations  - Mantiene estado local de carga, errores de red y filtros de búsqueda.
+ * @navigation   - Ninguna
  */
 
 // ============================================================
@@ -30,6 +12,7 @@
 // ============================================================
 import { useState, useEffect, useCallback } from "react";
 import { equiposService } from "../services/equiposService";
+import { useError } from "../../../shared/context/ErrorContext";
 
 // ============================================================
 // HOOK
@@ -50,6 +33,7 @@ export function useEquipos(initialFilters = {}) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [filters, setFilters] = useState(initialFilters);
+  const { mostrarError } = useError();
 
   // --------------------------------------------------------
   // FUNCIONES PARA OBTENER DATOS
@@ -61,11 +45,11 @@ export function useEquipos(initialFilters = {}) {
       const data = await equiposService.getEquipos(filters);
       setEquipos(data);
     } catch (err) {
-      setError(err.message);
+      mostrarError(err);
     } finally {
       setLoading(false);
     }
-  }, [filters]);
+  }, [filters, mostrarError]);
 
   const fetchProximosMantenimiento = useCallback(async () => {
     try {
@@ -106,6 +90,7 @@ export function useEquipos(initialFilters = {}) {
       return nuevo;
     } catch (err) {
       setError(err.message);
+      mostrarError(err);
       throw err;
     } finally {
       setLoading(false);
@@ -122,6 +107,7 @@ export function useEquipos(initialFilters = {}) {
       return actualizado;
     } catch (err) {
       setError(err.message);
+      mostrarError(err);
       throw err;
     } finally {
       setLoading(false);
@@ -147,8 +133,6 @@ export function useEquipos(initialFilters = {}) {
   const toggleEquipo = async (id) => {
     setLoading(true);
     try {
-      // El backend exige el body completo en el PUT, así que
-      // se envía el equipo actual junto con el nuevo estado.
       const equipoActual = equipos.find(e => e.id === id);
       if (!equipoActual) {
         throw new Error("Equipo no encontrado");
@@ -161,6 +145,7 @@ export function useEquipos(initialFilters = {}) {
       return actualizado;
     } catch (err) {
       setError(err.message);
+      mostrarError(err);
       throw err;
     } finally {
       setLoading(false);

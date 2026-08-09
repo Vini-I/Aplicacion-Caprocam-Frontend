@@ -13,7 +13,7 @@ import { COLORS } from '../../../theme/colors';
 export const styles = StyleSheet.create({
   contenedor: {
     flex: 1,
-    backgroundColor: COLORS.surface,
+    backgroundColor: COLORS.white,
   },
 
   scroll: {

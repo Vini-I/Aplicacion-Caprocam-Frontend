@@ -1,105 +1,91 @@
 import api from "../../../api/api";
 
-export const estanqueService  = {
+function construirErrorHttp(error, mensajeGenerico) {
+  const status = error?.response?.status;
+  const mensaje = error?.response?.data?.message || error?.response?.data?.error || error?.message;
 
-    /*
+  if (status === 500) {
+    return new Error(mensajeGenerico);
+  }
+  
+  if (status) {
+    const err = new Error(mensaje || mensajeGenerico);
+    err.status = status;
+    return err;
+  }
+
+  return new Error(mensajeGenerico);
+}
+
+export const estanqueService = {
+  /*
     OBTENER TODOS LAS ESTANQUES
     */
 
-    getEstanques: async () => {
-        try {
+  getEstanques: async () => {
+    try {
+      const response = await api.get("/estanques");
 
-            const response = await api.get("/estanques")
+      return response.data.data;
 
-            return response.data.data;
+    } catch (error) {
+      throw construirErrorHttp(error, "No se pudieron obtener los estanques");
+    }
+  },
 
-        } catch (error) {
-
-            console.error("Error al obtener estanque:", error.response?.data || error.message);
-
-            throw error;
-
-        }
-
-    },
-
-    /*
+  /*
     OBTENER LOS ESTANQUES POR ID
     */
 
-    getEstanqueById: async (id) => {
-        try {
-            
-            const response = await api.get(`/estanques/${id}`);
-            
-            return response.data.data;
+  getEstanqueById: async (id) => {
+    try {
+      const response = await api.get(`/estanques/${id}`);
 
-        } catch (error) {
+      return response.data.data;
+    } catch (error) {
+      throw construirErrorHttp(error, "No se pudo obtener la información del estanque.");
+    }
+  },
 
-            console.error("Error al obtener estanque:", error.response?.data || error.message);
-
-            throw error;
-
-        }
-    },
-
-    /*
+  /*
     CREAR UN ESTANQUE
     */
 
-    createEstanque: async (estanqueDTO) => {
-        try {
-            
-            const response = await api.post("/estanques", estanqueDTO);
+  createEstanque: async (estanqueDTO) => {
+    try {
+      const response = await api.post("/estanques", estanqueDTO);
 
-            return response.data;
+      return response.data;
+    } catch (error) {
+      throw construirErrorHttp(error, "No se pudo registrar el estanque.");
+    }
+  },
 
-        } catch (error) {
-
-            console.error("Error al crear estanque", error); 
-
-            throw error;
-
-        }
-    },
-
-    /*
+  /*
     ACTUALIZAR UN ESTANQUE
     */
 
-    actualizarEstanque: async (id, estanqueDTO) => {
-        try {
+  actualizarEstanque: async (id, estanqueDTO) => {
+    try {
+      const response = await api.put(`/estanques/${id}`, estanqueDTO);
 
-            const response = await api.put(`/estanques/${id}`, estanqueDTO);
-            
-            return response.data;
+      return response.data;
+    } catch (error) {
+      throw construirErrorHttp(error, "No se pudieron guardar los cambios del estanque.");
+    }
+  },
 
-        } catch (error) {
-
-            console.error("Error al actualizar un estanque", error)
-
-            throw error;
-
-        }
-    },
-
-    /*
+  /*
     ELIMINAR UN ESTANQUE
     */
 
-    eliminarEstanque: async (id) => {
-        try {   
+  eliminarEstanque: async (id) => {
+    try {
+      const response = await api.delete(`/estanques/${id}`);
 
-            const response = await api.delete(`/estanques/${id}`);
-
-            return response.data;
-
-        } catch (error) {
-
-            console.error("Error al eliminar Estanque", error);
-
-            throw error;
-
-        }
+      return response.data;
+    } catch (error) {
+      throw construirErrorHttp(error, "No se pudo eliminar el estanque.");
     }
-}
+  },
+};

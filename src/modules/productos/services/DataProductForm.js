@@ -4,7 +4,8 @@
  * ============================================================
  * Módulo: Productos
  *
- * Datos estáticos que usa el formulario de producto (ProductForm.jsx).
+ * Datos estáticos que usan los formularios de producto
+ * (AgregarProducto.jsx y EditarProducto.jsx).
  *
  * FUNCIONALIDAD:
  * 1. CATEGORIAS: opciones para el Select de categoría del producto.
@@ -15,7 +16,7 @@
  *
  * IMPORTANTE:
  * - Las categorías "Alimentación" y "Tratamiento" son las que habilitan
- *   el campo "Fecha de caducidad" en useProductForm.js.
+ *   el campo "Fecha de caducidad" en useAgregarProducto.js / useEditarProducto.js.
  * - unidad arranca en "kg" por defecto en initialForm.
  * ============================================================
 */
@@ -28,9 +29,6 @@ export const CATEGORIAS = [
   { label: "Alimentación", value: "Alimentación" },
   { label: "Tratamiento", value: "Tratamiento" },
   { label: "Químico", value: "Químico" },
-  { label: "Fertilizante", value: "Fertilizante" },
-  { label: "Antibiótico", value: "Antibiótico" },
-  { label: "Probiótico", value: "Probiótico" },
 ];
 
 export const UNIDADES = [
@@ -45,6 +43,7 @@ export const UNIDADES = [
 // Estado inicial limpio
 // ─────────────────────────────────────────────
 export const initialForm = {
+  codigo: "",   
   nombre: "",
   categoria: "",
   proveedor: "",

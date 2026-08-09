@@ -32,9 +32,6 @@ export const colorCategoria = {
     Alimentación: { fondo: COLORS.warningLight, texto: COLORS.warning },
     Tratamiento: { fondo: COLORS.secondary, texto: COLORS.primary },
     Químico: { fondo: COLORS.secondary, texto: COLORS.primary },
-    Fertilizante: { fondo: COLORS.secondary, texto: COLORS.primary },
-    Antibiótico: { fondo: COLORS.secondary, texto: COLORS.primary },
-    Probiótico: { fondo: COLORS.successLight, texto: COLORS.success },
 };
 
 export const colorCategoriaDefault = {
@@ -115,4 +112,7 @@ export const styles = StyleSheet.create({
         maxWidth: 900,
         alignSelf: "center",
     },
+    loadingContainer: {
+        justifyContent: "center",
+    }
 });

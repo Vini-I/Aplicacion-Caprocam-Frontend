@@ -8,13 +8,16 @@
  * (lista, búsqueda y filtros).
  *
  * FUNCIONALIDAD:
- * 1. Carga la lista mock de compradores (compradoresMock).
+ * 1. Carga la lista de compradores desde la API.
  * 2. Calcula los tipos de producto únicos para usarlos como
  *    opciones de filtro.
  * 3. Filtra la lista según el texto de búsqueda (nombre, cédula,
  *    tipo, teléfono o correo) y los tipos seleccionados en el
  *    filtro.
  * 4. Expone la navegación a Detalle, a Nuevo comprador y a Inicio.
+ * 5. Si se llega desde "guardar comprador" (parámetro "guardado") o
+ *    desde "eliminar comprador" (parámetro "eliminado"), muestra
+ *    aquí el alert de éxito correspondiente por 3 segundos.
  *
  * IMPORTANTE:
  * - La búsqueda no distingue mayúsculas/minúsculas.
@@ -23,32 +26,78 @@
  */
 
 
-import { useState } from "react";
-import { useRouter } from "expo-router";
-import { compradoresMock } from "../services/CompradorData";
+import { useState, useCallback, useEffect } from "react";
+import { useRouter, useFocusEffect, useLocalSearchParams } from "expo-router";
+import { compradorService, mapComprador } from "../services/comprador.service";
+import { useError } from "../../../shared/context/ErrorContext";
 
 export function useCompradorScreen() {
   const router = useRouter();
+  const { mostrarError } = useError();
+  const { eliminado, guardado } = useLocalSearchParams();
 
-  const [compradores] = useState(compradoresMock);
+  const [compradores, setCompradores] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState(null);
   const [busqueda, setBusqueda] = useState("");
   const [filtros, setFiltros] = useState({ tipos: [] });
 
-  // Extrae los tipos únicos de producto para mostrarlos como opciones de filtro
-  const TIPOS = [...new Set(compradores.map((c) => c.tipoProducto))];
+  // Si se llega desde "eliminar comprador", muestra aquí el alert
+  // de éxito por 3 segundos.
+  const [eliminadoExitoso, setEliminadoExitoso] = useState(!!eliminado);
 
-  // Filtra los compradores según el texto ingresado y los tipos seleccionados
+  useEffect(() => {
+    if (eliminadoExitoso) {
+      const t = setTimeout(() => setEliminadoExitoso(false), 3000);
+      return () => clearTimeout(t);
+    }
+  }, [eliminadoExitoso]);
+
+  // Si se llega desde "guardar comprador" (nuevo), muestra aquí el
+  // alert de éxito por 3 segundos.
+  const [guardadoExitoso, setGuardadoExitoso] = useState(!!guardado);
+
+  useEffect(() => {
+    if (guardadoExitoso) {
+      const t = setTimeout(() => setGuardadoExitoso(false), 3000);
+      return () => clearTimeout(t);
+    }
+  }, [guardadoExitoso]);
+
+  // Carga los compradores activos desde la API
+  const cargarCompradores = useCallback(async () => {
+    setCargando(true);
+    setError(null);
+    try {
+      const data = await compradorService.getCompradores();
+      setCompradores((data || []).map(mapComprador));
+    } catch (err) {
+      setError("No se pudieron cargar los compradores. Intenta de nuevo.");
+      mostrarError(err);
+    } finally {
+      setCargando(false);
+    }
+  }, [mostrarError]);
+
+  
+  useFocusEffect(
+    useCallback(() => {
+      cargarCompradores();
+    }, [cargarCompradores])
+  );
+
+  
+  const TIPOS = [];
+
+  // Filtra los compradores según el texto ingresado
   const compradoresFiltrados = compradores.filter((c) => {
     const texto = busqueda.toLowerCase();
     const coincideTexto =
-      c.nombre.toLowerCase().includes(texto) ||
-      c.cedula.toLowerCase().includes(texto) ||
-      c.tipoProducto.toLowerCase().includes(texto) ||
-      c.telefono.toLowerCase().includes(texto) ||
-      c.correo.toLowerCase().includes(texto);
-    const coincideTipo =
-      filtros.tipos.length === 0 || filtros.tipos.includes(c.tipoProducto);
-    return coincideTexto && coincideTipo;
+      (c.nombre || "").toLowerCase().includes(texto) ||
+      (c.cedula || "").toLowerCase().includes(texto) ||
+      (c.telefono || "").toLowerCase().includes(texto) ||
+      (c.correo || "").toLowerCase().includes(texto);
+    return coincideTexto;
   });
 
   // Navega a la pantalla de detalle pasando el id del comprador como parámetro
@@ -69,11 +118,16 @@ export function useCompradorScreen() {
 
   return {
     compradoresFiltrados,
+    cargando,
+    error,
+    recargar: cargarCompradores,
     busqueda,
     setBusqueda,
     filtros,
     setFiltros,
     TIPOS,
+    eliminadoExitoso,
+    guardadoExitoso,
     handleVerDetalle,
     handleAgregar,
     handleHome,
