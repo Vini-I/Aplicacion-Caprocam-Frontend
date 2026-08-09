@@ -96,9 +96,7 @@ export const styles = StyleSheet.create({
     marginTop: 6,
     fontSize: 12,
   },
-  inputError: {
-    borderColor: COLORS.error,
-  },
+
   iconContainer: {
     width: 45,
     height: 45,
@@ -159,9 +157,8 @@ export const styles = StyleSheet.create({
   buttonText: {
     color: COLORS.primary
   },
-  inputError: {
-    borderColor: COLORS.error,
-  },
+
+
   seccionCalculos: {
     marginTop: 16,
     marginBottom: 8,
@@ -336,5 +333,10 @@ export const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: "700",
     color: COLORS.primary,
+  },
+
+  inputError: {
+    borderColor: COLORS.error,
+    borderWidth: 1,
   },
 });
