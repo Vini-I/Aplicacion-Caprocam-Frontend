@@ -2,14 +2,6 @@
  * ============================================================
  * PANTALLA DE CRECIMIENTO POR FINCA
  * ============================================================
- * Gestiona el registro del peso actual del estanque y muestra
- * información contextual como días de cultivo y peso anterior.
- *
- * Funcionalidad:
- * - Permite seleccionar finca y estanque.
- * - Muestra información relevante del estanque.
- * - Valida campos obligatorios antes de guardar.
- * - Usa componentes compartidos para mantener el estilo del módulo.
  */
 
 import { ScrollView, View } from "react-native";
@@ -60,6 +52,8 @@ export default function FincaCrecimientoScreen() {
     mostrarErrorEstanque,
     mostrarErrorFecha,
     mostrarErrorCalculos,
+    mostrarErrorCantidad,
+    mostrarErrorPesoTotal,
     errors,
   } = useFincaCrecimiento();
 
@@ -76,16 +70,20 @@ export default function FincaCrecimientoScreen() {
       >
         <Card style={STYLE.contentWrapper}>
           <Select
-            label="Seleccione la finca *"
+            label="Seleccione la finca"
+            required={true}
+            submitted={submitted}
             placeholder="Seleccione una finca"
             options={opcionesFincas}
             value={fincaSeleccionada}
             onChange={handleFincaChange}
-            selectStyle={mostrarErrorFinca ? styles.inputError : null}
+            error={errors?.finca || ""}
           />
 
           <Select
-            label="Seleccione el estanque *"
+            label="Seleccione el estanque"
+            required={true}
+            submitted={submitted}
             placeholder="Seleccione un estanque"
             options={estanquesFiltrados}
             value={estanqueSeleccionado}
@@ -93,7 +91,7 @@ export default function FincaCrecimientoScreen() {
             disabled={
               estanqueSeleccionado !== "" && estanquesFiltrados.length === 0
             }
-            selectStyle={mostrarErrorEstanque ? styles.inputError : null}
+            error={errors?.estanque || ""}
           />
 
           <View style={styles.badgeRow}>
@@ -106,10 +104,12 @@ export default function FincaCrecimientoScreen() {
 
           <View style={styles.inputColumn}>
             <Calendario
-              label="Fecha de registro *"
+              label="Fecha de registro"
+              required={true}
+              submitted={submitted}
               value={fechaRegistro}
               onChangeText={setFechaRegistro}
-              inputStyle={mostrarErrorFecha ? styles.inputError : null}
+              error={errors?.fecha || ""}
             />
           </View>
 
@@ -178,22 +178,28 @@ export default function FincaCrecimientoScreen() {
               <View style={styles.formCalculoCampos}>
                 <View style={styles.formCalculoCampo}>
                   <NumberInput
-                    label="Cantidad de individuos *"
+                    label="Cantidad de individuos"
+                    required={true}
+                    submitted={submitted}
                     value={cantidadIndividuos}
                     onChangeText={handleCantidadChange}
                     step={1}
                     min={0}
                     max={10000}
+                    error={errors?.cantidad || ""}
                   />
                 </View>
                 <View style={styles.formCalculoCampo}>
                   <NumberInput
-                    label="Peso total (g) *"
+                    label="Peso total (g)"
+                    required={true}
+                    submitted={submitted}
                     value={pesoTotal}
                     onChangeText={handlePesoTotalChange}
                     step={0.5}
                     min={0}
                     max={100000}
+                    error={errors?.pesoTotal || ""}
                   />
                 </View>
                 <View style={styles.formCalculoCampo}>
@@ -224,9 +230,6 @@ export default function FincaCrecimientoScreen() {
           ) : null}
           {submitted && successMessage ? (
             <Alert variant="success" message={successMessage} />
-          ) : null}
-          {mostrarErrorCalculos ? (
-            <Alert variant="danger" message={errors.calculos} />
           ) : null}
 
           <Button
