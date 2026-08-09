@@ -38,11 +38,11 @@ export const styles = StyleSheet.create({
     flex: 1,
   },
   newButtonContent: {
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: 8,
-},
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+  },
   newButtonText: {
     color: COLORS.primary,
     fontSize: 14,
@@ -61,10 +61,10 @@ export const styles = StyleSheet.create({
     marginBottom: 12,
   },
   filterButton: {
-  alignSelf: "center",
-  marginTop: 0,
-  height: 43,
-},
+    alignSelf: "center",
+    marginTop: 0,
+    height: 43,
+  },
   buttonWrapper: {
     position: "absolute",
     bottom: 16,
@@ -159,5 +159,14 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: TYPOGRAPHY.fontFamily.bold,
     textAlign: "right",
+  },
+  toggleContainer: {
+    flexDirection: "row",
+    gap: 8,
+    marginBottom: 12,
+  },
+  toggleButton: {
+    flex: 1,
+    marginTop: 0,
   },
 });

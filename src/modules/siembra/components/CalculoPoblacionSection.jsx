@@ -53,10 +53,6 @@ export default function CalculoPoblacionSection({
     ? `${formData.densidadPoblacional} PL/m²`
     : "0 PL/m²";
 
-  const cantidadMostrada = formData.cantidadSembrada
-    ? Number(formData.cantidadSembrada).toLocaleString()
-    : "0";
-
   return (
     <Card>
       <SectionTitle icon={ICONS.weight} title="Cálculo de población" />
@@ -72,35 +68,44 @@ export default function CalculoPoblacionSection({
       </View>
 
       {isViewMode ? (
-        <View style={styles.calculationBox}>
-          <Text style={styles.calculationLabel}>Densidad poblacional</Text>
-          <Text style={styles.calculationValue}>{densidadMostrada}</Text>
+        <View
+          style={[
+            styles.calculationBox,
+            hasError("cantidadSembrada") && styles.calculationBoxError,
+          ]}
+        >
+          <Text style={styles.calculationLabel}>
+            Cantidad de larvas compradas
+          </Text>
+          <Text style={styles.calculationValue}>
+            {formData.cantidadSembrada
+              ? `${Number(formData.cantidadSembrada).toLocaleString()} camarones`
+              : "0 camarones"}
+          </Text>
         </View>
       ) : (
         <NumberInput
-          label={requiredLabel(`Densidad poblacional (${densidadMostrada})`)}
-          value={formData.densidadPoblacional}
-          onChangeText={(value) => onChange("densidadPoblacional", value)}
+          label={requiredLabel("Cantidad de larvas compradas")}
+          value={formData.cantidadSembrada}
+          onChangeText={(value) => onChange("cantidadSembrada", value)}
           min={1}
-          max={30}
-          step={1}
+          max={10000000}
+          step={1000}
           labelStyle={styles.requiredLabel}
-          style={hasError("densidadPoblacional") ? styles.inputError : null}
+          style={hasError("cantidadSembrada") ? styles.inputError : null}
         />
       )}
 
       <View
         style={[
           styles.calculationBox,
-          hasError("cantidadSembrada") && styles.calculationBoxError,
+          hasError("densidadPoblacional") && styles.calculationBoxError,
         ]}
       >
         <Text style={styles.calculationLabel}>
-          Cantidad sembrada calculada *
+          Densidad poblacional calculada *
         </Text>
-        <Text style={styles.calculationValue}>
-          {cantidadMostrada} camarones
-        </Text>
+        <Text style={styles.calculationValue}>{densidadMostrada}</Text>
       </View>
     </Card>
   );

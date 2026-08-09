@@ -100,6 +100,14 @@ export function useCatalogoModal({
     procedenciaLarva: onEliminarProcedencia,
   };
 
+  const nombresPorCampo = {
+    proveedorLarva: "Proveedor",
+    laboratorioLarva: "Laboratorio",
+    procedenciaLarva: "Procedencia",
+  };
+
+  const nombreCampo = nombresPorCampo[campoActivo] || "Registro";
+
   function cerrarTodo() {
     setCampoActivo(null);
     setVistaModal(null);
@@ -177,7 +185,9 @@ export function useCatalogoModal({
       setNombreForm("");
       setVistaModal("lista");
       mostrarMensaje(
-        fueEdicion ? "Actualizado correctamente." : "Registrado correctamente.",
+        fueEdicion
+          ? `${nombreCampo} actualizado correctamente.`
+          : `${nombreCampo} registrado correctamente.`,
         "success",
       );
     } catch (err) {
@@ -209,9 +219,9 @@ export function useCatalogoModal({
       setItemEnEdicionValue(null);
       setItemAEliminar(null);
       setVistaModal("lista");
-      mostrarMensaje("Eliminado correctamente.", "success");
+      mostrarMensaje(`${nombreCampo} eliminado correctamente.`, "success");
     } catch (err) {
-      cerrarTodo(); 
+      cerrarTodo();
       mostrarError(err);
     } finally {
       setGuardando(false);

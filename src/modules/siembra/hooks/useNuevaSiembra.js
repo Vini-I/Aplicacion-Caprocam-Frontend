@@ -40,7 +40,7 @@ import {
   validarCamposObligatorios,
 } from "./useFieldValidation";
 import { obtenerCamposObligatorios as obtenerCamposObligatoriosPorTipo } from "./siembraValidationRules";
-import { calcularCantidadSembrada } from "./siembraCalculos";
+import { calcularDensidadDesdeCantidad } from "./siembraCalculos";
 import { obtenerFechaHoy, formatearFechaDesdeISO } from "./dateUtils";
 
 import { fincaService } from "../../finca/services/finca.service";
@@ -100,7 +100,7 @@ const initialFormData = {
 
   fechaSiembra: "",
   tecnicaCultivo: "",
-  densidadPoblacional: "8",
+  densidadPoblacional: "",
   cantidadSembrada: "",
   plSiembra: "",
   duracionCiclo: "90",
@@ -288,11 +288,11 @@ export default function useNuevaSiembra() {
       const updatedData = { ...previousData, [field]: value };
       if (
         updatedData.tipoRegistro === "siembra" &&
-        (field === "areaHectareas" || field === "densidadPoblacional")
+        (field === "areaHectareas" || field === "cantidadSembrada")
       ) {
-        updatedData.cantidadSembrada = calcularCantidadSembrada(
+        updatedData.densidadPoblacional = calcularDensidadDesdeCantidad(
           updatedData.areaHectareas,
-          updatedData.densidadPoblacional,
+          updatedData.cantidadSembrada,
         );
       }
       return updatedData;
@@ -317,9 +317,9 @@ export default function useNuevaSiembra() {
       const updatedData = { ...previousData, estanque: value };
       if (previousData.tipoRegistro === "siembra") {
         updatedData.areaHectareas = area;
-        updatedData.cantidadSembrada = calcularCantidadSembrada(
+        updatedData.densidadPoblacional = calcularDensidadDesdeCantidad(
           area,
-          previousData.densidadPoblacional,
+          previousData.cantidadSembrada,
         );
       }
       return updatedData;
