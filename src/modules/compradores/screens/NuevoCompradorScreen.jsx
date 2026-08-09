@@ -99,7 +99,7 @@ export default function NuevoCompradorScreen() {
           />
 
            <Input
-            label="Cédula *"
+            label="Cédula / Cédula Jurídica / Extranjera *"
             value={cedula}
             onChangeText={handleCedulaChange}
             placeholder="Ej. 102340567"
