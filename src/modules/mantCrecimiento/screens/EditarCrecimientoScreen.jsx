@@ -5,6 +5,7 @@
  */
 
 import { ScrollView, View } from "react-native";
+import { useRouter } from "expo-router";
 import { styles } from "../../../modules/mantCrecimiento/styles/CrecimientoStyle.js";
 import { STYLE } from "../../../theme/style.js";
 import Alert from "../../../shared/components/Alert.jsx";
@@ -21,7 +22,8 @@ import { COLORS } from "../../../theme/colors.js";
 import { ICONS } from "../../../theme/icons.js";
 import useEditarCrecimiento from "../hooks/useEditarCrecimiento.js";
 
-export default function EditarCrecimientoScreen({ registroId, onGuardado }) {
+export default function EditarCrecimientoScreen({ registroId }) {
+  const router = useRouter();
   const {
     fincaSeleccionada,
     estanqueSeleccionado,
@@ -56,7 +58,12 @@ export default function EditarCrecimientoScreen({ registroId, onGuardado }) {
     mostrarErrorPesoTotal,
     errors,
     cargando,
-  } = useEditarCrecimiento(registroId, onGuardado);
+  } = useEditarCrecimiento(registroId, () => {
+    router.replace({
+      pathname: "/registros/Reporteria",
+      params: { alert: "edited" },
+    });
+  });
 
   if (cargando) {
     return (
@@ -244,9 +251,6 @@ export default function EditarCrecimientoScreen({ registroId, onGuardado }) {
 
           {errorMessage ? (
             <Alert variant="danger" message={errorMessage} />
-          ) : null}
-          {successMessage ? (
-            <Alert variant="success" message={successMessage} />
           ) : null}
 
           <Button

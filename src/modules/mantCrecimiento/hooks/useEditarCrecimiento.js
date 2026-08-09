@@ -97,7 +97,7 @@ export default function useEditarCrecimiento(registroId, onGuardado) {
 
   const [calculos, setCalculos] = useState([]);
   const [cantidadIndividuos, setCantidadIndividuos] = useState("0");
-  const [pesoTotal, setPesoTotal] = useState("");
+  const [pesoTotal, setPesoTotal] = useState("0");
   const [editandoId, setEditandoId] = useState(null);
 
   const [submitted, setSubmitted] = useState(false);
@@ -148,7 +148,7 @@ export default function useEditarCrecimiento(registroId, onGuardado) {
         );
         setCalculos(mapearMuestreosDesdeApi(r));
         setCantidadIndividuos("0");
-        setPesoTotal("");
+        setPesoTotal("0");
         setEditandoId(null);
       })
       .catch((e) => {
@@ -237,7 +237,7 @@ export default function useEditarCrecimiento(registroId, onGuardado) {
 
   const limpiarFormCalculo = useCallback(() => {
     setCantidadIndividuos("0");
-    setPesoTotal("");
+    setPesoTotal("0");
     setEditandoId(null);
   }, []);
 

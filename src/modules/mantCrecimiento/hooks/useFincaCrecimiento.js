@@ -68,7 +68,7 @@ export function useFincaCrecimiento() {
 
   const [calculos, setCalculos] = useState([]);
   const [cantidadIndividuos, setCantidadIndividuos] = useState("0");
-  const [pesoTotal, setPesoTotal] = useState("");
+  const [pesoTotal, setPesoTotal] = useState("0");
   const [editandoId, setEditandoId] = useState(null);
 
   const [submitted, setSubmitted] = useState(false);
@@ -187,7 +187,7 @@ export function useFincaCrecimiento() {
 
   const limpiarFormCalculo = useCallback(() => {
     setCantidadIndividuos("0");
-    setPesoTotal("");
+    setPesoTotal("0");
     setEditandoId(null);
   }, []);
 
