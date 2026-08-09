@@ -3,10 +3,15 @@
  * COMPONENTE: RegistrarEquipoHeader
  * ============================================================
  *
- * Encabezado compacto para la pantalla de registro de equipos.
- * Replica el patrón visual del dashboard: icono a la izquierda,
- * textos a la derecha y bloque celeste con el color principal.
- * Ruta: src/modules/mantEquipo/components/RegistrarEquipoHeader.jsx
+ * Módulo: Mantenimiento de Equipos
+ *
+ * RESPONSABILIDAD:
+ * - Componente personalizado que reutiliza elementos de shared/components.
+ * - Renderizar el encabezado compacto con título e ícono para formularios del módulo de equipos.
+ *
+ * @dependencies - Card.jsx, Icons.jsx, Text.jsx, Title.jsx (shared/components), RegistrarEquipoHeaderStyles.js (styles)
+ * @validations  - Muestra dinámicamente título y subtítulo recibidos por props.
+ * @navigation   - Ninguna
  */
 
 import React from "react";

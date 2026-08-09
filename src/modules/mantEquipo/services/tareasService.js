@@ -18,83 +18,80 @@ import api from "../../../api/api";
 // ─── MAPEO DE DATOS ─────────────────────────────────────────────
 
 function mapBackendToFrontend(data) {
-  // Mapeo inverso de estados (backend → frontend)
-  const estadoMapInverso = {
-    'Pendiente': 'no_iniciada',
-    'En proceso': 'en_ejecucion',
-    'Finalizada': 'finalizada',
-    'Cancelada': 'cancelada',
-  };
+  if (!data) return {};
 
-  const estadoFrontend = estadoMapInverso[data.estado] || data.estado || 'no_iniciada';
+  const idVal = data.id ?? data.tarea_id ?? data.tareaId ?? data.codigo_tarea ?? data.codigoTarea;
+  const nombreVal = data.nombre ?? data.nombre_tarea ?? data.nombreTarea ?? data.label ?? (idVal ? `Tarea ${idVal}` : 'Tarea');
 
   return {
-    id: data.id,
-    nombre: data.nombre,
-    descripcion: data.descripcion,
-    categoria: data.categoria,
-    duracionEstimada: Number(data.horas) || 0,
-    estado: estadoFrontend,
-    colaboradorId: data.colaborador_id,
-    equipoId: data.equipo_id,
-    productos: data.productos || [],
-    createdAt: data.fecha_creacion,
-    updatedAt: data.fecha_actualizacion,
+    id: idVal,
+    nombre: nombreVal,
+    descripcion: data.descripcion || '',
+    categoria: (data.categoria || '').toLowerCase(),
+    duracionEstimada: Number(data.horas) || 0,  // ← backend devuelve "horas"
+    colaboradorId: data.colaborador_id || data.colaboradorId,
+    equipoId: data.equipo_id || data.equipoId,
+    createdAt: data.fecha_creacion || data.createdAt,
+    updatedAt: data.fecha_actualizacion || data.updatedAt,
   };
 }
 
 function prepareForBackend(data) {
-  // Mapeo de estados del frontend al backend
-  const estadoMap = {
-    'no_iniciada': 'Pendiente',
-    'pendiente': 'Pendiente',
-    'en_ejecucion': 'En proceso',
-    'en_proceso': 'En proceso',
-    'finalizada': 'Finalizada',
-    'cancelada': 'Cancelada',
+  // Mapeo de categorías: backend requiere capitalizada
+  const categoriaMap = {
+    'preventivo':  'Preventivo',
+    'correctivo':  'Correctivo',
+    'predictivo':  'Predictivo',
+    'emergencia':  'Emergencia',
   };
 
-  // Generar código único para la tarea (ej: TAR-001)
-  const codigoTarea = data.codigo || `TAR-${String(Date.now()).slice(-6)}`;
+  const codigoTarea = data.codigo || data.codigoTarea || `TAR-${String(Date.now()).slice(-6)}`;
   
-  const estadoFrontend = data.estado || 'no_iniciada';
-  const estadoBackend = estadoMap[estadoFrontend.toLowerCase()] || 'Pendiente';
+  const categoriaBack  = categoriaMap[data.categoria] || data.categoria || 'Preventivo';
   
-  return {
-    grupo_datos: data.grupoDatos || 1,
-    colaborador_id: data.colaboradorId || null,
-    equipo_id: data.equipoId || null,
-    nombre: data.nombre?.trim() || "",
-    descripcion: data.descripcion?.trim() || "",
-    categoria: data.categoria || "",
-    horas: Number(data.horas) || Number(data.duracionEstimada) || 0,
-    estado: estadoBackend,
-    codigo_tarea: codigoTarea,
+  // Payload que espera el backend: codigoTarea, nombre, descripcion, categoria, horas
+  const payload = {
+    codigoTarea: codigoTarea,
+    nombre:       data.nombre?.trim() || "",
+    descripcion:  data.descripcion?.trim() || "",
+    categoria:    categoriaBack,
+    horas:        Number(data.duracionEstimada) || Number(data.horas) || 0,  // ← campo "horas"
   };
+
+  // NOTA: el backend NO acepta "productos" ni el campo de estado en este endpoint.
+  // Si se necesita asociar productos, debe hacerse mediante otro endpoint
+  // (ej. /mantenimientos/:id/productos). Por eso no se incluyen aquí.
+
+  return payload;
 }
+
 
 // ─── FUNCIONES PRINCIPALES ──────────────────────────────────────
 
 /**
  * Obtiene todas las tareas activas del backend.
  * Permite filtrar por categoría y estado.
- * Ruta corregida: /tareas (sin /api/v0)
  */
 async function getTareas(filtros = {}) {
   try {
     const response = await api.get("/tareas");
-    let data = response.data.data || [];
-    
-    if (filtros.categoria) {
-      data = data.filter((t) => t.categoria === filtros.categoria);
+    const raw = response.data;
+    let data = [];
+    if (Array.isArray(raw)) {
+      data = raw;
+    } else if (Array.isArray(raw?.data)) {
+      data = raw.data;
+    } else if (Array.isArray(raw?.datos)) {
+      data = raw.datos;
     }
-    if (filtros.estado) {
-      data = data.filter((t) => t.estado === filtros.estado);
+    
+    if (filtros && filtros.categoria) {
+      const filtro = String(filtros.categoria || '').toLowerCase();
+      data = data.filter((t) => String(t.categoria || '').toLowerCase() === filtro);
     }
     
     return data.map(mapBackendToFrontend);
   } catch (error) {
-    // Si el endpoint no existe (404), devolvemos array vacío
     if (error.response && error.response.status === 404) {
       return [];
     }

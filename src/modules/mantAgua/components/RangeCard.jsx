@@ -150,69 +150,67 @@ const ETIQUETAS_NUMERICAS = [
 ];
 
 // Calcula, a partir del rango ideal, las zonas de color de la barra
-// (rojo / amarillo / verde / amarillo / gris) y los ticks a mostrar
-// debajo. Es solo cálculo de presentación; no altera idealMin/idealMax
-// ni el valor de las lecturas.
+// representando un termómetro (Azul al mínimo, Verde en lo ideal, Rojo al máximo)
+// y los ticks a mostrar debajo. Es solo cálculo de presentación.
 function calcularZonas({ idealMin, idealMax, sliderMin, sliderMax, tieneMaxIdeal }) {
   const totalRango = sliderMax - sliderMin || 1;
-  const toPct = (v) => (v - sliderMin) / totalRango;
+  const toPct = (v) => Math.min(Math.max((v - sliderMin) / totalRango, 0), 1);
+  const colorMin = COLORS.primary;
+  const colorIdeal = COLORS.success;
+  const colorMax = COLORS.error;
 
   if (!tieneMaxIdeal) {
-    const buffer = (idealMin - sliderMin) * 0.35;
-    const warnLow = Math.min(Math.max(idealMin - buffer, sliderMin), idealMin);
-
+    const leftWidth = toPct(idealMin);
     return {
-      warnLow,
+      warnLow: idealMin,
       warnHigh: null,
       zones: [
-        { left: 0, width: toPct(warnLow), color: COLORS.error },
-        { left: toPct(warnLow), width: toPct(idealMin) - toPct(warnLow), color: COLORS.warning },
-        { left: toPct(idealMin), width: 1 - toPct(idealMin), color: COLORS.success },
+        { left: 0, width: leftWidth, color: colorMin },
+        { left: leftWidth, width: 1 - leftWidth, color: colorIdeal },
       ],
       ticks: [
         { pct: 0, label: sliderMin },
-        { pct: toPct(warnLow), label: Number(warnLow.toFixed(1)) },
-        { pct: toPct(idealMin), label: idealMin },
+        { pct: leftWidth, label: idealMin },
         { pct: 1, label: sliderMax },
       ],
     };
   }
 
-  const bufferBase = Math.max((idealMax - idealMin) * 0.35, totalRango * 0.05);
-  const warnLow = Math.max(idealMin - bufferBase, sliderMin);
-  const warnHigh = Math.min(idealMax + bufferBase, sliderMax);
+  const leftWidth = toPct(idealMin);
+  const idealWidth = Math.max(toPct(idealMax) - leftWidth, 0);
+  const rightWidth = Math.max(1 - toPct(idealMax), 0);
 
   return {
-    warnLow,
-    warnHigh,
+    warnLow: idealMin,
+    warnHigh: idealMax,
     zones: [
-      { left: 0, width: toPct(warnLow), color: COLORS.error },
-      { left: toPct(warnLow), width: toPct(idealMin) - toPct(warnLow), color: COLORS.warning },
-      { left: toPct(idealMin), width: toPct(idealMax) - toPct(idealMin), color: COLORS.success },
-      { left: toPct(idealMax), width: toPct(warnHigh) - toPct(idealMax), color: COLORS.warning },
-      { left: toPct(warnHigh), width: 1 - toPct(warnHigh), color: COLORS.textQuaternary },
+      { left: 0, width: leftWidth, color: colorMin },
+      { left: leftWidth, width: idealWidth, color: colorIdeal },
+      { left: toPct(idealMax), width: rightWidth, color: colorMax },
     ],
     ticks: [
       { pct: 0, label: sliderMin },
-      { pct: toPct(warnLow), label: Number(warnLow.toFixed(1)) },
-      { pct: toPct(idealMin), label: idealMin },
+      { pct: leftWidth, label: idealMin },
       { pct: toPct(idealMax), label: idealMax },
-      { pct: toPct(warnHigh), label: Number(warnHigh.toFixed(1)) },
       { pct: 1, label: sliderMax },
     ],
   };
 }
 
-// Determina el color (rojo/amarillo/verde/gris) que le corresponde a
-// un valor puntual según las zonas calculadas arriba.
-function colorPorValor(value, { idealMin, idealMax, warnLow, warnHigh, tieneMaxIdeal }) {
+// Determina el color (Azul / Verde / Rojo) estilo termómetro
+// que le corresponde a un valor puntual.
+function colorPorValor(value, { idealMin, idealMax, tieneMaxIdeal }) {
+  const colorMin = COLORS.primary;
+  const colorIdeal = COLORS.success;
+  const colorMax = COLORS.error;
+
   if (tieneMaxIdeal) {
-    if (value >= idealMin && value <= idealMax) return COLORS.success;
-    if (value > idealMax) return value <= warnHigh ? COLORS.warning : COLORS.textQuaternary;
-    return value >= warnLow ? COLORS.warning : COLORS.error;
+    if (value >= idealMin && value <= idealMax) return colorIdeal;
+    if (value > idealMax) return colorMax;
+    return colorMin;
   }
-  if (value >= idealMin) return COLORS.success;
-  return value >= warnLow ? COLORS.warning : COLORS.error;
+  if (value >= idealMin) return colorIdeal;
+  return colorMin;
 }
 
 export default function RangeCard({
@@ -363,7 +361,7 @@ export default function RangeCard({
 
       {lecturas.length === 0 && (
         <Button variant="outline" onPress={intentarAgregar}>
-          + Agregar medición
+          + Agregar Medición
         </Button>
       )}
     </View>

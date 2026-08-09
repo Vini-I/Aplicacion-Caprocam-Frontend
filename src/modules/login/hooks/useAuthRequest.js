@@ -1,20 +1,11 @@
 /**
- * ============================================================
  * HOOK: useAuthRequest
- * ============================================================
- * 
- * Responsabilidad: Encapsular el flujo común para peticiones de autenticación
- * (login y registro): loading, errores del servidor y tokenStorage.
- * 
- * FUNCIONALIDAD:
- * - Provee un método submit para ejecutar llamadas asíncronas y guardar el JWT token.
- * 
- * DATOS:
- * - loading: Estado de carga de la petición.
- * - serverError: Mensaje de error retornado por la consulta.
- * 
- * DEPENDENCIAS:
- * - tokenStorage.js
+ * Encapsula la ejecución de peticiones asíncronas de autenticación (login y registro web),
+ * gestionando estados de carga, errores del servidor y guardado de token de sesión.
+ *
+ * @dependencies - saveToken, saveUsuario (utils/tokenStorage.js)
+ * @validations  - Ejecuta la petición solo si el formulario es válido (isFormValid).
+ * @navigation   - N/A (ejecuta el callback onSuccess al autenticar).
  */
 
 import { useState } from 'react';
@@ -25,7 +16,7 @@ import { saveToken, saveUsuario } from '../utils/tokenStorage';
  *
  * @param {Object} params
  * @param {Function} params.onSuccess - se ejecuta tras guardar el token
- * @returns {Object} { loading, serverError, submit }
+ * @returns {Object} { loading, serverError, setServerError, submit }
  */
 export const useAuthRequest = ({ onSuccess = () => { } } = {}) => {
   const [loading, setLoading] = useState(false);

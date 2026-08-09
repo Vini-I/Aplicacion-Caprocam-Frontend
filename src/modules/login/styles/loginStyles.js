@@ -1,9 +1,10 @@
 /**
- * ============================================================
- * ESTILOS: LoginScreen
- * ============================================================
- *
+ * ESTILOS: loginStyles
  * Centraliza el layout y la apariencia de la pantalla de login.
+ *
+ * @dependencies - COLORS de theme/colors, TYPOGRAPHY de theme/typography
+ * @validations  - Reglas de flexbox y alineaciones del formulario y tarjeta hero.
+ * @navigation   - N/A (archivo de estilos).
  */
 
 import { StyleSheet } from 'react-native';
@@ -45,6 +46,9 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   searchContainer: {
+    width: "100%",
+    maxWidth: 450,
+    alignSelf: "center",
     marginBottom: 12,
   },
   searchInputContainer: {
@@ -156,6 +160,29 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginBottom: 12,
   },
+  errorText: {
+    color: COLORS.textPrimary,
+  },
+  centerContent: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  buttonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  buttonText: {
+    marginLeft: 6,
+    color: COLORS.primary,
+    fontFamily: TYPOGRAPHY.fontFamily.medium,
+    fontSize: 16,
+  },
+  
+  alertTextDark: {
+    color: COLORS.textPrimary,
+  },
+  
+
 });
 
 export default styles;
