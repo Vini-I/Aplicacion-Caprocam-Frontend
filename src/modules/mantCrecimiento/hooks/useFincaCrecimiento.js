@@ -398,7 +398,7 @@ export function useFincaCrecimiento() {
       setCalculos([]);
       limpiarFormCalculo();
       setErrors({});
-
+      setSubmitted(false);
       setSuccessMessage("Guardado exitosamente");
     } catch (error) {
       mostrarError(error);

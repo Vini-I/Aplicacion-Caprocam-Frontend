@@ -242,10 +242,10 @@ export default function EditarCrecimientoScreen({ registroId, onGuardado }) {
             </View>
           </View>
 
-          {submitted && errorMessage ? (
+          {errorMessage ? (
             <Alert variant="danger" message={errorMessage} />
           ) : null}
-          {submitted && successMessage ? (
+          {successMessage ? (
             <Alert variant="success" message={successMessage} />
           ) : null}
 

@@ -429,6 +429,8 @@ export default function useEditarCrecimiento(registroId, onGuardado) {
 
       await crecimientoService.update(registroId, crecimientoDTO);
 
+      setErrors({});
+      setSubmitted(false);
       setSuccessMessage("Guardado exitosamente");
       onGuardado?.();
     } catch (e) {
