@@ -363,9 +363,28 @@ export default function useEditarCrecimiento(registroId, onGuardado) {
     if (!estanqueSeleccionado) next.estanque = "Seleccione un estanque.";
     if (!fechaRegistro) next.fecha = "Seleccione una fecha de registro.";
     if (!calculos.length) {
-      next.calculos = "Agregue al menos un cálculo de muestreo.";
-      next.cantidad = "Ingrese una cantidad mayor que cero.";
-      next.pesoTotal = "Ingrese un peso total mayor que cero.";
+      const cant = Number(cantidadIndividuos);
+      const peso = Number(pesoTotal);
+      const formLleno =
+        cantidadIndividuos !== "" &&
+        pesoTotal !== "" &&
+        !Number.isNaN(cant) &&
+        !Number.isNaN(peso) &&
+        cant > 0 &&
+        peso > 0;
+
+      if (formLleno) {
+        next.calculos =
+          "Debe agregar el cálculo  para poder guardarlo.";
+      } else {
+        next.calculos = "Agregue al menos un cálculo de muestreo.";
+        if (cantidadIndividuos === "" || Number.isNaN(cant) || cant <= 0) {
+          next.cantidad = "Ingrese una cantidad mayor que cero.";
+        }
+        if (pesoTotal === "" || Number.isNaN(peso) || peso <= 0) {
+          next.pesoTotal = "Ingrese un peso total mayor que cero.";
+        }
+      }
     } else {
       const invalidos = calculos.some(
         (c) => !c.cantidad || Number(c.cantidad) <= 0 || !c.pesoTotal || Number(c.pesoTotal) <= 0,
@@ -386,7 +405,7 @@ export default function useEditarCrecimiento(registroId, onGuardado) {
       next.fecha ||
       "Rellenar campos obligatorios.";
     return { ok: false, mensaje };
-  }, [fincaSeleccionada, estanqueSeleccionado, fechaRegistro, calculos]);
+  }, [fincaSeleccionada, estanqueSeleccionado, fechaRegistro, calculos, cantidadIndividuos, pesoTotal]);
 
   const guardarDatos = useCallback(async () => {
     setSubmitted(true);
@@ -429,6 +448,8 @@ export default function useEditarCrecimiento(registroId, onGuardado) {
 
       await crecimientoService.update(registroId, crecimientoDTO);
 
+      setErrors({});
+      setSubmitted(false);
       setSuccessMessage("Guardado exitosamente");
       onGuardado?.();
     } catch (e) {
