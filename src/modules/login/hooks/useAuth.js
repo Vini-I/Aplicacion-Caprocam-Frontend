@@ -2,31 +2,17 @@
  * ============================================================
  * HOOK: useAuth
  * ============================================================
- * 
- * Responsabilidad: Gestionar el estado, las validaciones y el proceso
- * de envío para el formulario de inicio de sesión Web.
- * 
- * FUNCIONALIDAD:
- * - Controla los estados de los inputs de usuario y contraseña.
- * - Calcula las validaciones en tiempo real pero solo expone errores
- *   tras el envío del formulario.
- * - Ejecuta la consulta de inicio de sesión contra el servicio de autenticación.
- * 
- * DATOS:
- * - username: Estado del nombre de usuario.
- * - password: Estado de la contraseña.
- * - submitted: Booleano que indica si el formulario fue enviado.
- * 
- * VALIDACIONES:
- * - Valida campos vacíos mediante authValidator.js.
- * 
- * NAVEGACIÓN:
- * - Llama a onLoginSuccess si la autenticación es exitosa.
- * 
- * DEPENDENCIAS:
- * - authService.js
- * - useAuthRequest.js
- * - authValidator.js
+ *
+ * Gestiona el estado, las validaciones y el proceso de envío
+ * del formulario de inicio de sesión web. Expone setters que
+ * limpian el serverError en cada cambio de campo.
+ *
+ * @dependencies - authService (login)
+ *               - useAuthRequest (manejo de loading/error de red)
+ *               - authValidator (validateAuthForm, isAuthFormValid)
+ * @validations  - Campos username y password obligatorios.
+ *               - Errores visibles solo después del primer submit (submitted = true).
+ * @navigation   - onLoginSuccess → callback inyectado por la pantalla que lo consume.
  */
 
 import { useState } from "react";
@@ -71,7 +57,6 @@ export const useAuth = ({ onLoginSuccess = () => {} } = {}) => {
     setPassword: handlePasswordChange,
     errors,
     isFormValid,
-    buttonVariant: "primary",
     loading,
     serverError,
     setServerError,

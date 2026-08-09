@@ -35,13 +35,29 @@
 
 import api from "../../../api/api";
 
+function construirErrorHttp(error, mensajeGenerico) {
+  const status = error?.response?.status;
+  const mensaje = error?.response?.data?.message || error?.response?.data?.error || error?.message;
+
+  if (status === 500) {
+    return new Error(mensajeGenerico);
+  }
+  
+  if (status) {
+    const err = new Error(mensaje || mensajeGenerico);
+    err.status = status;
+    return err;
+  }
+
+  return new Error(mensajeGenerico);
+}
+
 async function getAll() {
   try {
     const response = await api.get("/alimentaciones");
     return response.data.data;
   } catch (error) {
-    console.error("Error al obtener alimentaciones", error.response?.data || error.message);
-    throw error;
+    throw construirErrorHttp(error, "Error al obtener alimentaciones");
   }
 }
 
@@ -50,8 +66,7 @@ async function getById(id) {
     const response = await api.get(`/alimentaciones/${id}`);
     return response.data.data;
   } catch (error) {
-    console.error("Error al obtener la alimentación", error.response?.data || error.message);
-    throw error;
+    throw construirErrorHttp(error, "Error al obtener la alimentación");
   }
 }
 
@@ -60,8 +75,7 @@ async function create(alimentacionDTO) {
     const response = await api.post("/alimentaciones", alimentacionDTO);
     return response.data.data;
   } catch (error) {
-    console.error("Error al crear la alimentación", error.response?.data || error.message);
-    throw error;
+    throw construirErrorHttp(error, "Error al crear la alimentación");
   }
 }
 
@@ -70,8 +84,7 @@ async function update(id, alimentacionDTO) {
     const response = await api.put(`/alimentaciones/${id}`, alimentacionDTO);
     return response.data.data;
   } catch (error) {
-    console.error("Error al actualizar la alimentación", error.response?.data || error.message);
-    throw error;
+    throw construirErrorHttp(error, "Error al actualizar la alimentación");
   }
 }
 
@@ -80,8 +93,7 @@ async function deleteById(id) {
     const response = await api.delete(`/alimentaciones/${id}`);
     return response.data.data;
   } catch (error) {
-    console.error("Error al eliminar la alimentación", error.response?.data || error.message);
-    throw error;
+    throw construirErrorHttp(error, "Error al eliminar la alimentación");
   }
 }
 

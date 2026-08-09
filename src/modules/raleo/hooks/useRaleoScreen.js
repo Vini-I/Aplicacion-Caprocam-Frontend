@@ -76,7 +76,7 @@ export default function useRaleoScreen() {
     return () => clearTimeout(timer);
   }, [alerta.visible, alerta.variant]);
 
-  const handleGuardar = async (onError) => {
+  const handleGuardar = async () => {
     setSubmitted(true);
     const { valido, errores: erroresValidacion } = validarForm();
     setErrores(erroresValidacion);
@@ -103,7 +103,7 @@ export default function useRaleoScreen() {
       await raleoService.create(registro);
       setAlerta({ visible: true, variant: "success", mensaje: "Raleo registrado correctamente" });
     } catch (error) {
-      onError?.(error);
+      setAlerta({ visible: true, variant: "danger", mensaje: error.message });
     }
   };
 

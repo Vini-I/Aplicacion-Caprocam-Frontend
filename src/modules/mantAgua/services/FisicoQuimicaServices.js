@@ -15,12 +15,28 @@
 import api from '../../../api/api';
 import { fincaService } from '../../finca/services/finca.service';
 
+function obtenerMensajeErrorBackend(error, mensajeGenerico) {
+  const backendMsg =
+    error?.response?.data?.message ||
+    (Array.isArray(error?.response?.data?.error)
+      ? error?.response?.data?.error.join(" ")
+      : error?.response?.data?.error);
+
+  if (backendMsg && typeof backendMsg === "string" && backendMsg.trim() !== "") {
+    return backendMsg;
+  }
+
+  return mensajeGenerico;
+}
+
 export async function getLecturas() {
   try {
     const response = await api.get('/lecturasFisicoQuimicas');
     return response.data.data;
   } catch (error) {
-    throw error;
+    throw new Error(
+      obtenerMensajeErrorBackend(error, 'No se pudieron obtener las lecturas físico-químicas.')
+    );
   }
 }
 
@@ -29,7 +45,9 @@ export async function getLecturaPorId(id) {
     const response = await api.get(`/lecturasFisicoQuimicas/${id}`);
     return response.data.data;
   } catch (error) {
-    throw error;
+    throw new Error(
+      obtenerMensajeErrorBackend(error, 'No se pudo obtener el detalle de la lectura.')
+    );
   }
 }
 
@@ -38,7 +56,9 @@ export async function crearLectura(datos) {
     const response = await api.post('/lecturasFisicoQuimicas', datos);
     return response.data.data;
   } catch (error) {
-    throw error;
+    throw new Error(
+      obtenerMensajeErrorBackend(error, 'No se pudo guardar la lectura físico-química.')
+    );
   }
 }
 
@@ -47,7 +67,9 @@ export async function actualizarLectura(id, datos) {
     const response = await api.put(`/lecturasFisicoQuimicas/${id}`, datos);
     return response.data.data;
   } catch (error) {
-    throw error;
+    throw new Error(
+      obtenerMensajeErrorBackend(error, 'No se pudo actualizar la lectura físico-química.')
+    );
   }
 }
 
@@ -56,7 +78,9 @@ export async function eliminarLectura(id) {
     const response = await api.delete(`/lecturasFisicoQuimicas/${id}`);
     return response.data.data;
   } catch (error) {
-    throw error;
+    throw new Error(
+      obtenerMensajeErrorBackend(error, 'No se pudo eliminar la lectura del estanque.')
+    );
   }
 }
 
@@ -71,7 +95,9 @@ export async function getLecturaPorEstanqueYFecha(estanqueId, fecha) {
     });
     return response.data.data;
   } catch (error) {
-    throw error;
+    throw new Error(
+      obtenerMensajeErrorBackend(error, 'No se pudo obtener la lectura del estanque.')
+    );
   }
 }
 
@@ -130,15 +156,21 @@ export async function obtenerLecturasPorEstanque(estanqueId, fecha = null) {
 }
 
 export async function obtenerOpcionesFincas() {
-  const fincas = await fincaService.getFincas();
-  return fincas.map((finca) => ({ label: finca.nombreFinca, value: finca.id }));
+  try {
+    const fincas = await fincaService.getFincas();
+    return fincas.map((finca) => ({ label: finca.nombreFinca, value: finca.id }));
+  } catch (error) {
+    throw new Error(
+      obtenerMensajeErrorBackend(error, 'No se pudieron obtener las fincas.')
+    );
+  }
 }
 export async function obtenerEstanquesPorFinca(fincaId) {
   if (!fincaId) return [];
   try {
     const response = await api.get('/estanques');
     return (response.data.data ?? [])
-      .filter((estanque) => estanque.idFinca === fincaId)
+      .filter((estanque) => String(estanque.idFinca) === String(fincaId))
       .map((estanque) => ({
         label: `${estanque.codigo} (${estanque.tipoEstanque})`,
         value: estanque.id,

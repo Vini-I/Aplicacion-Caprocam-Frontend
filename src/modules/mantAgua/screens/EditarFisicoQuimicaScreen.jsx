@@ -170,8 +170,8 @@ export default function EditarFisicoQuimicaScreen({ registroId }) {
               }
               idealMin={7.5}
               idealMax={8.5}
-              sliderMin={4}
-              sliderMax={10}
+              sliderMin={0}
+              sliderMax={14}
               step={0.1}
               decimals={1}
               maxLecturas={2}
@@ -193,8 +193,8 @@ export default function EditarFisicoQuimicaScreen({ registroId }) {
                   size={18}
                 />
               }
-              idealMin={15}
-              idealMax={35}
+              idealMin={10}
+              idealMax={25}
               sliderMin={0}
               sliderMax={50}
               step={0.1}
@@ -219,9 +219,9 @@ export default function EditarFisicoQuimicaScreen({ registroId }) {
                 />
               }
               idealMin={28}
-              idealMax={30}
-              sliderMin={15}
-              sliderMax={45}
+              idealMax={32}
+              sliderMin={0}
+              sliderMax={50}
               step={0.5}
               decimals={1}
               maxLecturas={2}
@@ -240,7 +240,7 @@ export default function EditarFisicoQuimicaScreen({ registroId }) {
                 <Icon icon={ICONS.water} color={COLORS.primary} size={18} />
               }
               idealMin={5}
-              idealMax={7}
+              idealMax={9}
               sliderMin={0}
               sliderMax={20}
               step={0.1}

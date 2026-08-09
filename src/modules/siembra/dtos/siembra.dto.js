@@ -42,12 +42,13 @@ export class LoteLarvaDTO {
   constructor(formData) {
     this.codigo_lote = String(formData.codigoLoteLarva || "").trim();
     this.proveedor_id = formData.proveedorLarva ? Number(formData.proveedorLarva) : null;
-    this.laboratorio = formData.laboratorioLarva ? String(formData.laboratorioLarva).trim() : null;
-    this.procedencia = formData.procedenciaLarva ? String(formData.procedenciaLarva).trim() : null;
+    this.laboratorio_id = formData.laboratorioLarva ? Number(formData.laboratorioLarva) : null;
+    this.procedencia_id = formData.procedenciaLarva ? Number(formData.procedenciaLarva) : null;
     this.certificado_larva = String(formData.certificadoLarva || "").trim();
-    this.pl_inicial = Number(formData.plInicial || formData.plSiembra || 0);
+    this.pl_inicial = numeroDesdePL(formData.plInicial || formData.plSiembra || 0);
     this.cantidad_inicial = Number(formData.cantidadInicial || formData.cantidadSembrada || 0);
     this.fecha_ingreso = aFechaISO(formData.fechaInicio || formData.fechaSiembra || "");
+    this.estado_lote = formData.estadoLote || undefined;
   }
 }
 
@@ -87,6 +88,61 @@ export class SiembraDTO {
     this.densidad_poblacional = formData.densidadPoblacional ? Number(formData.densidadPoblacional) : null;
     this.cantidad_sembrada = Number(formData.cantidadSembrada || 0);
     this.pl_siembra = numeroDesdePL(formData.plSiembra);
-    this.estado = formData.estado === "Finalizada" ? "FINALIZADA" : "ACTIVA";
+    this.duracion_ciclo = formData.duracionCiclo ? Number(formData.duracionCiclo) : null;
+  }
+}
+
+/**
+ * ============================================================
+ * DTOs COMBINADOS PARA /con-lote
+ * ============================================================
+ * El backend crea el lote NUEVO y el registro (siembra o pre-cría)
+ * en una sola petición/transacción. Por eso van sin lote_larva_id
+ * (el lote todavía no existe) y, en el caso de siembra, sin
+ * precria_id (este endpoint es solo para lote nuevo; si viene de
+ * una pre-cría, seguí usando SiembraDTO + createSiembra normal).
+ */
+
+export class SiembraConLoteDTO {
+  constructor(formData) {
+    // Campos del lote
+    this.codigo_lote = String(formData.codigoLoteLarva || "").trim();
+    this.proveedor_id = formData.proveedorLarva ? Number(formData.proveedorLarva) : null;
+    this.laboratorio_id = formData.laboratorioLarva ? Number(formData.laboratorioLarva) : null;
+    this.procedencia_id = formData.procedenciaLarva ? Number(formData.procedenciaLarva) : null;
+    this.certificado_larva = String(formData.certificadoLarva || "").trim();
+    this.pl_inicial = numeroDesdePL(formData.plInicial || formData.plSiembra || 0);
+    this.cantidad_inicial = Number(formData.cantidadInicial || formData.cantidadSembrada || 0);
+    this.fecha_ingreso = aFechaISO(formData.fechaInicio || formData.fechaSiembra || "");
+
+    // Campos de la siembra
+    this.finca_id = Number(formData.fincaId || formData.finca || 0);
+    this.estanque_id = Number(formData.estanque || 0);
+    this.fecha_siembra = aFechaISO(formData.fechaSiembra || "");
+    this.tecnica_cultivo = formData.tecnicaCultivo || null;
+    this.densidad_poblacional = formData.densidadPoblacional ? Number(formData.densidadPoblacional) : null;
+    this.cantidad_sembrada = Number(formData.cantidadSembrada || 0);
+    this.pl_siembra = numeroDesdePL(formData.plSiembra);
+    this.duracion_ciclo = formData.duracionCiclo ? Number(formData.duracionCiclo) : null;
+  }
+}
+
+export class PrecriaConLoteDTO {
+  constructor(formData) {
+    // Campos del lote
+    this.codigo_lote = String(formData.codigoLoteLarva || "").trim();
+    this.proveedor_id = formData.proveedorLarva ? Number(formData.proveedorLarva) : null;
+    this.laboratorio_id = formData.laboratorioLarva ? Number(formData.laboratorioLarva) : null;
+    this.procedencia_id = formData.procedenciaLarva ? Number(formData.procedenciaLarva) : null;
+    this.certificado_larva = String(formData.certificadoLarva || "").trim();
+    this.pl_inicial = numeroDesdePL(formData.plInicial) ?? Number(formData.plInicial || 0);
+    this.fecha_ingreso = aFechaISO(formData.fechaInicio || "");
+
+    // Campos de la pre-cría (cantidad_inicial es una sola: la del lote/pre-cría)
+    this.finca_id = Number(formData.fincaId || formData.finca || 0);
+    this.estanque_id = Number(formData.estanque || 0);
+    this.fecha_inicio = aFechaISO(formData.fechaInicio || "");
+    this.cantidad_inicial = Number(formData.cantidadInicial || 0);
+    this.duracion_dias = Number(formData.duracionDias || 0);
   }
 }

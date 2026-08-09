@@ -4,7 +4,7 @@ export class MantVentaDTO {
     
         finca,
         estanque,
-        colaborador,
+        colaborador = null,
         comprador,
         pesoPromedio,
         tamanoPromedio,
@@ -15,7 +15,7 @@ export class MantVentaDTO {
     }) {
         this.finca = finca;
         this.estanque = estanque;
-        this.colaborador = colaborador;
+        this.colaborador = null;
         this.comprador = comprador;
 
         this.pesoPromedio = pesoPromedio;

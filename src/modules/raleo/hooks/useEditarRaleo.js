@@ -79,7 +79,7 @@ export default function useEditarRaleo(registroId, onGuardado) {
     return (b * (1 - p / 100)).toFixed(2);
   }, [form.biomasaActual, form.porcentajeRaleo]);
 
-  const handleGuardar = useCallback(async (onError) => {
+  const handleGuardar = useCallback(async () => {
     setSubmitted(true);
     const { valido, errores: err } = validarForm();
     setErrores(err);
@@ -92,11 +92,10 @@ export default function useEditarRaleo(registroId, onGuardado) {
       setAlerta({ visible: true, variant: "success", mensaje: "Raleo actualizado correctamente" });
       onGuardado?.();
     } catch (error) {
-      onError?.(error);
       setAlerta({
         visible: true,
         variant: "danger",
-        mensaje: error.response?.data?.message || "No se pudo actualizar el registro.",
+        mensaje: error.message,
       });
     }
   }, [form, registroId, onGuardado, validarForm]);

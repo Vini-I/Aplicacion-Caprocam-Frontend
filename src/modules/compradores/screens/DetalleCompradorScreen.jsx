@@ -11,8 +11,9 @@
  * 2. Muestra nombre, cédula, tipo de producto, teléfono, correo,
  *    dirección y notas.
  * 3. Botón "Editar" navega al formulario de edición.
- * 4. Botón "Eliminar" abre un modal de confirmación antes de
- *    volver a la lista.
+ * 4. Botón "Eliminar" abre un modal de confirmación; al confirmar,
+ *    navega de inmediato a la lista de compradores, donde se
+ *    muestra el alert de éxito.
  *
  * IMPORTANTE:
  * - Botones Editar/Eliminar usan Button variant="outline"; el de
@@ -53,7 +54,6 @@ export default function DetalleCompradorScreen() {
     error,
     modalVisible,
     setModalVisible,
-    eliminado,
     eliminando,
     irAtras,
     irAEditar,
@@ -126,17 +126,15 @@ export default function DetalleCompradorScreen() {
             </View>
           </View>
 
-          {/* Sección de notas, solo se muestra si el comprador tiene notas */}
-          {!!comprador.notas && (
-            <View style={styles.seccionNotas}>
-              <Text style={styles.seccionTitulo}>
-                Notas adicionales
-              </Text>
-              <Text style={styles.notasValor}>
-                {comprador.notas}
-              </Text>
-            </View>
-          )}
+          {/* Sección de notas: se muestra siempre, tenga o no contenido */}
+          <View style={styles.seccionNotas}>
+            <Text style={styles.seccionTitulo}>
+              Notas adicionales
+            </Text>
+            <Text style={styles.notasValor}>
+              {comprador.notas || "Sin notas"}
+            </Text>
+          </View>
         </Card>
 
         {/* Botones de acción: editar y eliminar */}
@@ -152,21 +150,12 @@ export default function DetalleCompradorScreen() {
         </Button>
         </View>
 
-          {/* Alert de éxito al pie de la pantalla, igual que al guardar un producto */}
-      {eliminado && (
-        <Alert
-          variant="success"
-          message="Comprador eliminado correctamente."
-          style={styles.alertEliminado}
-        />
-      )}
-
-      {/* Si falla la desactivación en el back, se muestra el error aquí */}
-      {!!error && !eliminado && (
+          {/* Si falla la desactivación en el back, se muestra el error aquí */}
+      {!!error && (
         <Alert
           variant="danger"
           message={error}
-          style={styles.alertEliminado}
+          style={styles.alertMensaje}
         />
       )}
 

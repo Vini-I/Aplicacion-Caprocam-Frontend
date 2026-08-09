@@ -9,7 +9,6 @@
 
 import { useEffect, useState } from "react";
 
-import { useError } from "../../../shared/context/ErrorContext";
 import enfermedadesService from "../services/EnfermedadesService";
 
 const RESUMEN_INICIAL = {
@@ -20,7 +19,8 @@ const RESUMEN_INICIAL = {
 };
 
 export default function useEnfermedades() {
-  const { mostrarError } = useError();
+  const [mensaje, setMensaje] = useState("");
+  const [tipoMensaje, setTipoMensaje] = useState("info");
 
   const [enfermedades, setEnfermedades] = useState([]);
   const [resumen, setResumen] = useState(RESUMEN_INICIAL);
@@ -44,8 +44,9 @@ export default function useEnfermedades() {
       setCatalogoEnfermedades(Array.isArray(enfermedadesCatalogo) ? enfermedadesCatalogo : []);
       setCatalogoSeveridades(Array.isArray(severidadesCatalogo) ? severidadesCatalogo : []);
     } catch (error) {
-      console.error("Error al cargar enfermedades", error);
-      mostrarError(error);
+      setMensaje(error.message);
+      setTipoMensaje("danger");
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -56,9 +57,9 @@ export default function useEnfermedades() {
       setLoading(true);
       return await enfermedadesService.getById(id);
     } catch (error) {
-      console.error("Error al buscar la enfermedad", error);
-      mostrarError(error);
-      return null;
+      setMensaje(error.message);
+      setTipoMensaje("danger");
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -73,9 +74,9 @@ export default function useEnfermedades() {
 
       return nuevaEnfermedad;
     } catch (error) {
-      console.error("Error al guardar la enfermedad", error);
-      mostrarError(error);
-      return null;
+      setMensaje(error.message);
+      setTipoMensaje("danger");
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -90,9 +91,9 @@ export default function useEnfermedades() {
 
       return enfermedadActualizada;
     } catch (error) {
-      console.error("Error al actualizar la enfermedad", error);
-      mostrarError(error);
-      return null;
+      setMensaje(error.message);
+      setTipoMensaje("danger");
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -107,9 +108,9 @@ export default function useEnfermedades() {
 
       return enfermedadEliminada;
     } catch (error) {
-      console.error("Error al eliminar la enfermedad", error);
-      mostrarError(error);
-      return null;
+      setMensaje(error.message);
+      setTipoMensaje("danger");
+      throw error;
     } finally {
       setLoading(false);
     }

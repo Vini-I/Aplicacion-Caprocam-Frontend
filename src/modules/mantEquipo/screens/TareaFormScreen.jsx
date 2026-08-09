@@ -1,4 +1,11 @@
-// src/modules/mantEquipo/screens/TareaFormScreen.jsx
+/**
+ * PANTALLA: TareaFormScreen
+ * Formulario para crear una nueva tarea de mantenimiento o modificar una existente.
+ *
+ * @dependencies - NavbarRegistro.jsx, Card.jsx, Input.jsx, Select.jsx, Button.jsx, NumberInput.jsx (shared/components), useTareaForm.js (hooks)
+ * @validations  - Valida que los campos requeridos (nombre, descripción, categoría, duración) estén completos.
+ * @navigation   - Redirige a la lista de tareas ('/equipos/tareas') al guardar o cancelar.
+ */
 
 import React from "react";
 import { View, ScrollView } from "react-native";
@@ -6,6 +13,7 @@ import { STYLE } from "../../../theme/style";
 import { styles } from "../styles/TareaFormStyles";
 
 import NavbarRegistro from "../../../shared/components/NavbarRegistro";
+import Title from "../../../shared/components/Title";
 import Card from "../../../shared/components/Card";
 import Input from "../../../shared/components/Input";
 import Select from "../../../shared/components/Select";
@@ -16,7 +24,7 @@ import CustomText from "../../../shared/components/Text";
 import NumberInput from "../../../shared/components/NumberInput";
 
 import { useTareaForm } from "../hooks/useTareaForm";
-import { OPCIONES_CATEGORIA, OPCIONES_ESTADO } from "../constants/tareasMensajes";
+import { OPCIONES_CATEGORIA } from "../constants/tareasMensajes";
 import { ICONS } from "../../../theme/icons";
 import { COLORS } from "../../../theme/colors";
 
@@ -26,24 +34,13 @@ export default function TareaFormScreen() {
     descripcion,
     categoria,
     duracion,
-    estado,
-    productos,
-    busquedaProducto,
-    productoSeleccionado,
-    cantidadProducto,
     errores,
     submitted,
     loading,
     cargandoDatos,
     isEditing,
-    opcionesProductos,
-    hayResultados,
+    alert,
     handleChange,
-    handleBusquedaProducto,
-    seleccionarProducto,
-    handleCantidadProducto,
-    agregarProducto,
-    eliminarProducto,
     guardar,
     cancelar,
   } = useTareaForm();
@@ -65,6 +62,10 @@ export default function TareaFormScreen() {
         <View style={STYLE.contentWrapper}>
           {/* Formulario dentro del Card */}
           <Card style={styles.card}>
+            <View style={styles.sectionTitle}>
+            <Icon icon={ICONS.save} size={20} color={COLORS.primary} />
+            <Title level={3}>{isEditing ? ' Editar Tarea' : ' Nueva Tarea'}</Title>
+            </View>
             {/* Nombre */}
             <Input
               label="Nombre de la tarea *"
@@ -109,126 +110,22 @@ export default function TareaFormScreen() {
               labelStyle={styles.label}
             />
 
-            {/* Estado */}
-            <Select
-              label="Estado"
-              options={OPCIONES_ESTADO}
-              value={estado}
-              onChange={(v) => handleChange("estado", v)}
-              placeholder="Seleccionar estado"
-              labelStyle={styles.label}
-            />
-
-            {/* Productos utilizados */}
-            <View style={styles.productosSection}>
-              <CustomText size={14} weight="600" color={COLORS.textSecondary} style={styles.sectionLabel}>
-                Productos utilizados (opcional)
-              </CustomText>
-
-              <Input
-                label="Buscar producto"
-                placeholder="Escribe para buscar un producto..."
-                value={busquedaProducto}
-                onChangeText={handleBusquedaProducto}
-                containerStyle={styles.searchInputContainer}
-                style={styles.searchInput}
-              />
-
-              <Select
-                label="Seleccionar producto"
-                placeholder={hayResultados ? "Selecciona un producto" : "No hay productos que coincidan"}
-                options={opcionesProductos}
-                value={productoSeleccionado?.id || ""}
-                onChange={(value) => {
-                  const producto = opcionesProductos.find(p => p.value === value);
-                  if (producto) {
-                    const prodCompleto = { id: producto.value, nombre: producto.label.split(" (")[0] };
-                    seleccionarProducto(prodCompleto);
-                  }
-                }}
-                containerStyle={styles.selectProductoContainer}
-                selectStyle={styles.selectProducto}
-                labelStyle={styles.label}
-                disabled={!hayResultados}
-              />
-
-              {productoSeleccionado && (
-                <View style={styles.productoSeleccionadoContainer}>
-                  <CustomText size={13} weight="600" color={COLORS.textSecondary}>
-                    Agregar {productoSeleccionado.nombre}
-                  </CustomText>
-                  <NumberInput
-                    label="Cantidad"
-                    value={cantidadProducto}
-                    onChangeText={handleCantidadProducto}
-                    min={1}
-                    max={999}
-                    step={1}
-                    containerStyle={styles.cantidadInput}
-                  />
-                  <View style={styles.botonesProducto}>
-                    <Button
-                      variant="outline"
-                      onPress={() => {
-                        seleccionarProducto(null);
-                        handleCantidadProducto("");
-                      }}
-                      style={styles.btnCancelarProducto}
-                    >
-                      Cancelar
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onPress={agregarProducto}
-                      style={styles.btnAgregarProducto}
-                      textStyle={{ color: COLORS.primary }}
-                    >
-                      <View style={styles.contenidoBotonProducto}>
-                        <Icon icon={ICONS.add} size={16} color={COLORS.primary} />
-                        <CustomText style={{ color: COLORS.primary, fontWeight: "600" }}>Agregar</CustomText>
-                      </View>
-                    </Button>
-                  </View>
-                </View>
-              )}
-
-              <View style={styles.listaProductosSeleccionados}>
-                {productos.length === 0 ? (
-                  <CustomText size={13} color={COLORS.textTertiary}>
-                    No hay productos agregados.
-                  </CustomText>
-                ) : (
-                  productos.map((p) => {
-                    const producto = productosDisponibles.find(prod => prod.id === p.productoId) || { nombre: `ID: ${p.productoId}`, unidad: "u" };
-                    return (
-                      <View key={p.productoId} style={styles.itemProductoSeleccionado}>
-                        <CustomText style={styles.itemProductoSeleccionadoText}>
-                          {producto.nombre} - {p.cantidad} {producto.unidad}
-                        </CustomText>
-                        <Button
-                          variant="outline"
-                          onPress={() => eliminarProducto(p.productoId)}
-                          style={styles.btnEliminarProducto}
-                        >
-                          <Icon icon={ICONS.delete} size={14} color={COLORS.error} />
-                        </Button>
-                      </View>
-                    );
-                  })
-                )}
-              </View>
-            </View>
           </Card>
 
           {/* ─── MENSAJES DE ERROR Y BOTÓN FUERA DEL CARD ─── */}
-          <View style={{ marginTop: 16 }}>
-            {mensajeError !== "" && (
-              <Alert
-                variant="danger"
-                message={mensajeError}
-                style={styles.alert}
-                textStyle={styles.alertText}
-              />
+          <View style={styles.alertSection}>
+            {/* Mostrar una sola alerta: prioridad a la del hook (server/client). */}
+            {alert ? (
+              <Alert variant={alert.type} message={alert.message} style={styles.alert} textStyle={styles.alertText} />
+            ) : (
+              mensajeError !== "" && (
+                <Alert
+                  variant="danger"
+                  message={mensajeError}
+                  style={styles.alert}
+                  textStyle={styles.alertText}
+                />
+              )
             )}
 
             <View style={styles.botonesContainer}>
@@ -240,8 +137,8 @@ export default function TareaFormScreen() {
               >
                 <View style={styles.contenidoBoton}>
                   <Icon icon={ICONS.save} size={18} color={COLORS.primary} />
-                  <CustomText style={{ color: COLORS.primary, fontWeight: "600" }}>
-                    {loading ? "Guardando..." : "Guardar Tarea"}
+                  <CustomText style={styles.botonLabelPrimary}>
+                    {loading ? (isEditing ? "Editando..." : "Registrando...") : (isEditing ? "Editar Tarea" : "Registrar Tarea")}
                   </CustomText>
                 </View>
               </Button>

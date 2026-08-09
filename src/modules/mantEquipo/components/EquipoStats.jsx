@@ -3,19 +3,15 @@
  * COMPONENTE: EquipoStats
  * ============================================================
  *
- * Muestra estadísticas de actividad de un equipo
- * (horas de uso, mantenimiento, estado operativo y encendido).
+ * Módulo: Mantenimiento de Equipos
  *
- * Nota: el backend no registra un historial de encendidos
- * (no existe "registrosEncendido"), por lo que este componente
- * ya no cuenta eventos individuales, solo el estado actual.
+ * RESPONSABILIDAD:
+ * - Componente personalizado que reutiliza elementos de shared/components.
+ * - Mostrar el resumen de estadísticas y estado operativo actual de un equipo.
  *
- * Props:
- * - equipo: objeto con los datos del equipo
- * - estadisticas: objeto con campos adicionales de estadísticas
- *
- * Ejemplo:
- * <EquipoStats equipo={equipo} />
+ * @dependencies - Card.jsx, Text.jsx (shared/components), equiposListStyles.js (styles)
+ * @validations  - Mapea etiquetas legibles para el estado operativo (activo, inactivo, mantenimiento).
+ * @navigation   - Ninguna
  */
 
 // ============================================================

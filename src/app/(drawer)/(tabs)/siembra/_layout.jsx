@@ -6,6 +6,7 @@ export default function SiembraStackLayout() {
       <Stack.Screen name="index" />
       <Stack.Screen name="nueva" />
       <Stack.Screen name="detalle" />
+      <Stack.Screen name="editar" />
     </Stack>
   );
 }
