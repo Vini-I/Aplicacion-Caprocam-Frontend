@@ -1,7 +1,7 @@
 /**
- * ============================================================
+ * =============================================================
  * HOOK DE PANTALLA DE ENFERMEDADES
- * ============================================================
+ * =============================================================
  *
  * Centraliza la logica del formulario, carga de opciones,
  * validaciones y registro de enfermedades.
@@ -10,57 +10,90 @@
 import { useEffect, useMemo, useState } from "react";
 import { useWindowDimensions } from "react-native";
 
-import { fincaService } from "../../finca/services/finca.service";
-import { estanqueService } from "../../estanques/services/estanque.service";
+import { fincaService } from "../../finca/services/finca.service.js";
+import { estanqueService } from "../../estanques/services/estanque.service.js";
+import { getUsuario } from "../../login/utils/tokenStorage.js";
 
-import useEnfermedades from "./useEnfermedades";
+import useEnfermedades from "./useEnfermedades.js";
 
 function obtenerFechaActual() {
   const fecha = new Date();
   const dia = String(fecha.getDate()).padStart(2, "0");
   const mes = String(fecha.getMonth() + 1).padStart(2, "0");
-
   return `${dia}/${mes}/${fecha.getFullYear()}`;
 }
 
 function convertirFechaParaBackend(fecha) {
   if (!fecha || fecha.includes("-")) return fecha || "";
-
   const [dia, mes, anio] = fecha.split("/");
   return dia && mes && anio ? `${anio}-${mes}-${dia}` : fecha;
 }
 
+function obtenerFechaValida(fecha) {
+  const texto = String(fecha ?? "").trim();
+  let dia, mes, anio;
+
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(texto)) {
+    [dia, mes, anio] = texto.split("/").map(Number);
+  } else if (/^\d{4}-\d{2}-\d{2}/.test(texto)) {
+    [anio, mes, dia] = texto.slice(0, 10).split("-").map(Number);
+  } else {
+    return null;
+  }
+
+  const fechaValidada = new Date(anio, mes - 1, dia);
+  fechaValidada.setHours(0, 0, 0, 0);
+
+  if (
+    fechaValidada.getFullYear() !== anio ||
+    fechaValidada.getMonth() !== mes - 1 ||
+    fechaValidada.getDate() !== dia
+  ) return null;
+
+  return fechaValidada;
+}
+
+function validarFechaReporte(fecha) {
+  if (!String(fecha ?? "").trim()) return "Seleccione la fecha del reporte.";
+
+  const fechaValidada = obtenerFechaValida(fecha);
+  if (!fechaValidada) return "La fecha del reporte no es valida.";
+
+  const hoy = new Date();
+  hoy.setHours(0, 0, 0, 0);
+
+  if (fechaValidada > hoy) return "La fecha del reporte no puede ser futura.";
+
+  return "";
+}
+
+function obtenerResponsable(usuario) {
+  if (!usuario) return "No disponible";
+
+  const nombreCompleto = usuario.nombreCompleto ?? usuario.nombre_completo;
+  if (nombreCompleto) return String(nombreCompleto).trim();
+
+  const nombre = usuario.nombre ?? "";
+  const apellidos = usuario.apellidos ?? usuario.apellido ?? "";
+  const responsable = `${nombre} ${apellidos}`.trim();
+
+  return responsable || usuario.usuario || usuario.username || "No disponible";
+}
+
 function primeraMayuscula(texto) {
-  return texto
-    ? texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase()
-    : "";
+  return texto ? texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase() : "";
 }
 
 function obtenerIdFinca(finca) {
-  return Number(
-    finca.id ??
-    finca.fincaId ??
-    finca.idFinca ??
-    finca.finca_id
-  );
+  return Number(finca.id ?? finca.fincaId ?? finca.idFinca ?? finca.finca_id);
 }
 
 function obtenerIdEstanque(estanque) {
-  return Number(
-    estanque.id ??
-    estanque.estanqueId ??
-    estanque.idEstanque ??
-    estanque.estanque_id
-  );
+  return Number(estanque.id ?? estanque.estanqueId ?? estanque.idEstanque ?? estanque.estanque_id);
 }
 
 function obtenerFincaIdEstanque(estanque) {
-  return Number(
-    estanque.idFinca ??
-    estanque.fincaId ??
-    estanque.finca_id ??
-    estanque.finca?.id
-  );
+  return Number(estanque.idFinca);
 }
 
 function normalizarCatalogo(catalogo) {
@@ -68,29 +101,12 @@ function normalizarCatalogo(catalogo) {
 
   return catalogo
     .map(function (item) {
-      if (typeof item === "string") {
-        return {
-          label: primeraMayuscula(item),
-          value: item,
-        };
-      }
+      if (typeof item === "string") return { label: primeraMayuscula(item), value: item };
 
-      const value =
-        item.value ??
-        item.valor ??
-        item.codigo ??
-        item.nombre ??
-        "";
+      const value = item.value ?? item.valor ?? item.codigo ?? item.nombre ?? "";
+      const label = item.label ?? item.nombre ?? primeraMayuscula(String(value));
 
-      const label =
-        item.label ??
-        item.nombre ??
-        primeraMayuscula(String(value));
-
-      return {
-        label: String(label),
-        value: String(value),
-      };
+      return { label: String(label), value: String(value) };
     })
     .filter(function (item) {
       return item.value !== "";
@@ -100,13 +116,14 @@ function normalizarCatalogo(catalogo) {
 export default function useEnfermedadesScreen() {
   const { width } = useWindowDimensions();
 
-
   const {
     catalogoEnfermedades,
     catalogoSeveridades,
     loading: loadingEnfermedades,
     guardarEnfermedad: guardarEnfermedadBackend,
   } = useEnfermedades();
+
+  const responsable = useMemo(() => obtenerResponsable(getUsuario()), []);
 
   const [fincas, setFincas] = useState([]);
   const [estanques, setEstanques] = useState([]);
@@ -116,7 +133,6 @@ export default function useEnfermedadesScreen() {
   const [fechaReporte, setFechaReporte] = useState(obtenerFechaActual());
   const [enfermedad, setEnfermedad] = useState("");
   const [severidad, setSeveridad] = useState("");
-  const [mortalidad, setMortalidad] = useState("");
   const [reporte, setReporte] = useState("");
 
   const [cargandoOpciones, setCargandoOpciones] = useState(false);
@@ -125,9 +141,7 @@ export default function useEnfermedadesScreen() {
   const [tipoMensaje, setTipoMensaje] = useState("info");
 
   useEffect(function () {
-    if (!mensaje) {
-      return undefined;
-    }
+    if (!mensaje) return undefined;
 
     const duracion = tipoMensaje === "success" ? 3000 : 6000;
     const timer = setTimeout(function () {
@@ -167,17 +181,8 @@ export default function useEnfermedadesScreen() {
     return fincas
       .map(function (item) {
         const id = obtenerIdFinca(item);
-        const label =
-          item.nombreFinca ??
-          item.nombre_finca ??
-          item.nombre ??
-          item.codigoCBO ??
-          `Finca ${id}`;
-
-        return {
-          label,
-          value: String(id),
-        };
+        const label = item.nombreFinca ?? item.nombre_finca ?? item.nombre ?? item.codigoCBO ?? `Finca ${id}`;
+        return { label, value: String(id) };
       })
       .filter(function (item) {
         return Number(item.value) > 0;
@@ -194,11 +199,7 @@ export default function useEnfermedadesScreen() {
       .map(function (item) {
         const id = obtenerIdEstanque(item);
         const label = item.codigo ?? item.nombre ?? `Estanque ${id}`;
-
-        return {
-          label,
-          value: String(id),
-        };
+        return { label, value: String(id) };
       })
       .filter(function (item) {
         return Number(item.value) > 0;
@@ -225,15 +226,11 @@ export default function useEnfermedadesScreen() {
   }, [esTablet]);
 
   const itemStyle = useMemo(function () {
-    return {
-      width: esTablet ? "48.5%" : "100%",
-    };
+    return { width: esTablet ? "48.5%" : "100%" };
   }, [esTablet]);
 
   const itemFullStyle = useMemo(function () {
-    return {
-      width: "100%",
-    };
+    return { width: "100%" };
   }, []);
 
   const placeholderFinca = cargandoOpciones
@@ -258,10 +255,9 @@ export default function useEnfermedadesScreen() {
 
   const errorFinca = submitted && finca === "";
   const errorEstanque = submitted && estanque === "";
-  const errorFechaReporte = submitted && fechaReporte.trim() === "";
+  const errorFechaReporte = submitted && validarFechaReporte(fechaReporte) !== "";
   const errorEnfermedad = submitted && enfermedad === "";
   const errorSeveridad = submitted && severidad === "";
-  const errorReporte = submitted && reporte.trim() === "";
 
   function limpiarMensaje() {
     setMensaje("");
@@ -294,29 +290,22 @@ export default function useEnfermedadesScreen() {
     limpiarMensaje();
   }
 
-  function cambiarMortalidad(value) {
-    setMortalidad(String(value));
-    limpiarMensaje();
-  }
-
   function cambiarReporte(value) {
     setReporte(value);
     limpiarMensaje();
   }
 
   function validarFormulario() {
-    const mortalidadNumero = Number(mortalidad);
+    if (!finca) return "Seleccione una finca.";
+    if (!estanque) return "Seleccione un estanque.";
 
-    return Boolean(
-      finca &&
-      estanque &&
-      fechaReporte &&
-      enfermedad &&
-      severidad &&
-      reporte.trim() &&
-      !Number.isNaN(mortalidadNumero) &&
-      mortalidadNumero >= 0
-    );
+    const errorFecha = validarFechaReporte(fechaReporte);
+    if (errorFecha) return errorFecha;
+
+    if (!enfermedad) return "Seleccione una enfermedad.";
+    if (!severidad) return "Seleccione la severidad.";
+
+    return "";
   }
 
   function limpiarFormulario() {
@@ -325,7 +314,6 @@ export default function useEnfermedadesScreen() {
     setFechaReporte(obtenerFechaActual());
     setEnfermedad("");
     setSeveridad("");
-    setMortalidad("");
     setReporte("");
     setSubmitted(false);
   }
@@ -334,9 +322,11 @@ export default function useEnfermedadesScreen() {
     setSubmitted(true);
     setMensaje("");
 
-    if (!validarFormulario()) {
+    const errorValidacion = validarFormulario();
+
+    if (errorValidacion) {
       setTipoMensaje("danger");
-      setMensaje("Rellene los datos requeridos correctamente.");
+      setMensaje(errorValidacion);
       return;
     }
 
@@ -347,10 +337,10 @@ export default function useEnfermedadesScreen() {
         fechaReporte: convertirFechaParaBackend(fechaReporte),
         enfermedad,
         severidad,
-        mortalidadRegistrada: Number(mortalidad),
-        reporte: reporte.trim(),
+        reporte: reporte.trim() || null,
       };
-      const nuevaEnfermedad = await guardarEnfermedadBackend(enfermedadDTO);
+
+      await guardarEnfermedadBackend(enfermedadDTO);
 
       setTipoMensaje("success");
       setMensaje("Enfermedad registrada correctamente.");
@@ -362,46 +352,14 @@ export default function useEnfermedadesScreen() {
   }
 
   return {
-    finca,
-    estanque,
-    fechaReporte,
-    enfermedad,
-    severidad,
-    mortalidad,
-    reporte,
-
-    opcionesFincas,
-    opcionesEstanques,
-    opcionesEnfermedades,
-    opcionesSeveridades,
-
-    placeholderFinca,
-    placeholderEstanque,
-    placeholderEnfermedad,
-    placeholderSeveridad,
-
-    gridStyle,
-    itemStyle,
-    itemFullStyle,
-
-    errorFinca,
-    errorEstanque,
-    errorFechaReporte,
-    errorEnfermedad,
-    errorSeveridad,
-    errorReporte,
-
-    mensaje,
-    tipoMensaje,
+    finca, estanque, fechaReporte, enfermedad, severidad, reporte, responsable,
+    opcionesFincas, opcionesEstanques, opcionesEnfermedades, opcionesSeveridades,
+    placeholderFinca, placeholderEstanque, placeholderEnfermedad, placeholderSeveridad,
+    gridStyle, itemStyle, itemFullStyle,
+    errorFinca, errorEstanque, errorFechaReporte, errorEnfermedad, errorSeveridad,
+    mensaje, tipoMensaje,
     loading: loadingEnfermedades || cargandoOpciones,
-
-    cambiarFinca,
-    cambiarEstanque,
-    cambiarFechaReporte,
-    cambiarEnfermedad,
-    cambiarSeveridad,
-    cambiarMortalidad,
-    cambiarReporte,
-    guardarEnfermedad,
+    cambiarFinca, cambiarEstanque, cambiarFechaReporte, cambiarEnfermedad,
+    cambiarSeveridad, cambiarReporte, guardarEnfermedad,
   };
 }
