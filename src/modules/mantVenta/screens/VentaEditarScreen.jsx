@@ -5,6 +5,7 @@ import Button from "../../../shared/components/Button.jsx";
 import Card from "../../../shared/components/Card.jsx";
 import Icon from "../../../shared/components/Icons.jsx";
 import Input from "../../../shared/components/Input.jsx";
+import DateInput from "../../../shared/components/DateInput.jsx";
 import NumberInput from "../../../shared/components/NumberInput.jsx";
 import Select from "../../../shared/components/Select.jsx";
 import Text from "../../../shared/components/Text.jsx";
@@ -52,6 +53,7 @@ export default function VentaEditarScreen({ id, onVenta }) {
     handleKilosVendidosChange,
     handlePrecioChange,
     handleCompradorChange,
+    handleFechaChange,
     limpiarError,
     guardarCambios,
   } = useVentaEditar({ id, onGuardado: onVenta });
@@ -168,7 +170,12 @@ export default function VentaEditarScreen({ id, onVenta }) {
             </View>
           </View>
 
-          <Input label="Fecha *" value={fechaVenta} editable={false} />
+          <DateInput
+            label="Fecha *"
+            value={fechaVenta}
+            onChangeText={handleFechaChange}
+            allowFutureDates={true}
+          />
 
           <SectionTitle icon={ICONS.user} title="Comprador" />
 
