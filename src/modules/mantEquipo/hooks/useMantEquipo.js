@@ -1,71 +1,73 @@
 /**
- * ============================================================
  * HOOK: useMantEquipo
- * ============================================================
- * 
- * Responsabilidad: Maneja el estado global de la lista de tickets,
- * obtención inicial, filtrado general y operaciones de CRUD
- * en memoria (demo).
- * 
- * Datos:
- * - tickets: Lista completa de tickets.
- * 
- * Validaciones:
- * - Filtra tickets en base al criterio seleccionado de forma segura.
- * 
- * Navegación:
- * - Ninguna.
- * 
- * Dependencias:
- * - mantEquipoService.js
- * - mantEquipoUtils.js
+ * Maneja el estado global de la lista de tickets, obtención inicial
+ * desde el backend y operaciones CRUD conectadas a la API REST.
+ *
+ * @dependencies - mantEquipoService.js
+ *               - useNavigation de expo-router
+ * @validations  - Expone errores de red mediante el estado error.
+ * @navigation   - N/A (hook de estado).
  */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigation } from "expo-router";
 import * as MantService from "../services/mantEquipoService.js";
+import { useError } from "../../../shared/context/ErrorContext";
 
 export function useMantEquipo() {
-  const [tickets,  setTickets]  = useState([]);
+  const [tickets, setTickets] = useState([]);
   const [busqueda, setBusqueda] = useState("");
   const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState(null);
   const navigation = useNavigation();
+  const { mostrarError } = useError();
 
-  const cargarTickets = () => {
+  const cargarTickets = useCallback(() => {
     setCargando(true);
+    setError(null);
     MantService.obtenerTickets()
-      .then((data) => setTickets(Array.isArray(data) ? data : []))
-      .catch(() => setTickets([]))
+      .then((data) => {
+        const lista = Array.isArray(data) ? data : [];
+        // Ordenar de mayor a menor (más reciente arriba) por ID numérico
+        lista.sort((a, b) => Number(b.id) - Number(a.id));
+        setTickets(lista);
+      })
+      .catch((err) => {
+        mostrarError(err);
+        setTickets([]);
+      })
       .finally(() => setCargando(false));
-  };
+  }, []);
 
   useEffect(() => {
     cargarTickets();
-
-    const unsubscribe = navigation.addListener("focus", () => {
-      // Sincronizar instantáneamente con la base mutable en memoria
-      setTickets([...MantService.TICKETS_MOCK]);
-    });
-
+    const unsubscribe = navigation.addListener("focus", cargarTickets);
     return unsubscribe;
-  }, [navigation]);
+  }, [navigation, cargarTickets]);
 
-  function agregarTicket(t) {
-    MantService.agregarTicket(t);
-    setTickets([...MantService.TICKETS_MOCK]);
+  async function agregarTicket(t) {
+    const creado = await MantService.agregarTicket(t);
+    if (creado) {
+      setTickets(prev => [creado, ...prev]);
+    } else {
+      cargarTickets();
+    }
+    return creado;
   }
 
-  function eliminarTicket(id) {
-    MantService.eliminarTicket(id);
-    setTickets([...MantService.TICKETS_MOCK]);
+  async function eliminarTicket(id) {
+    setTickets(prev => prev.filter(t => t.id !== id));
+    await MantService.eliminarTicket(id);
   }
 
-  function actualizarTicket(upd) {
-    MantService.actualizarTicket(upd);
-    setTickets([...MantService.TICKETS_MOCK]);
+  async function actualizarTicket(upd) {
+    const actualizado = await MantService.actualizarTicket(upd);
+    if (actualizado) {
+      setTickets(prev => prev.map(t => t.id === upd.id ? actualizado : t));
+    }
+    return actualizado;
   }
 
-  // Cambia el estadoEquipo en el mock de equipos (demo sin backend)
   function actualizarEstadoEquipo(equipoId, nuevoEstado) {
     MantService.actualizarEstadoEquipo(equipoId, nuevoEstado);
   }
@@ -74,6 +76,8 @@ export function useMantEquipo() {
     tickets,
     busqueda, setBusqueda,
     cargando,
+    error,
+    cargarTickets,
     agregarTicket, eliminarTicket, actualizarTicket, actualizarEstadoEquipo,
   };
 }

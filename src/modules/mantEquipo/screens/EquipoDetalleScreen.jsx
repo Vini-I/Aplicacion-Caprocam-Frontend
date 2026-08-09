@@ -2,32 +2,21 @@
  * ============================================================
  * COMPONENTE: EquipoDetalleScreen
  * ============================================================
- * Módulo: Mantenimiento de Equipos
  *
- * Pantalla que muestra el detalle completo de un equipo,
- * incluyendo su información, horas de uso y estado actual.
+ * Muestra el detalle completo de un equipo: información, horas
+ * de uso, estado actual y acciones de editar/eliminar/encender.
+ * Se monta como modal o componente hijo de EquiposListScreen.
  *
- * Props:
- * - equipoId: string - ID del equipo a mostrar
- * - onClose: función - se ejecuta al cerrar la pantalla
- * - onEdit: función - se ejecuta al presionar editar
- * - onDelete: función - se ejecuta al presionar eliminar
- * - onToggle: función - se ejecuta al presionar encender/apagar
- *
- * Ejemplo:
- * <EquipoDetalleScreen
- *   equipoId="12"
- *   onClose={() => setModalVisible(false)}
- *   onEdit={(equipo) => abrirFormulario(equipo)}
- *   onDelete={(id) => confirmarEliminacion(id)}
- *   onToggle={(id) => toggleEquipo(id)}
- * />
- * ============================================================
+ * @dependencies - useEquipoDetalleScreen (hooks)
+ *               - Spinner, Button, Icon, CustomText, Badge (shared)
+ *               - equiposListStyles
+ * @validations  - equipoId requerido; sin él no se carga nada.
+ *               - onClose/onEdit/onDelete/onToggle son callbacks externos obligatorios.
+ * @navigation   - Ninguna interna. Toda navegación se delega a los callbacks de props.
  */
 
-import React, { useState, useEffect } from "react";
-import { View, ScrollView, TouchableOpacity } from "react-native";
-import { equiposService } from "../services/equiposService";
+import React from "react";
+import { View, ScrollView } from "react-native";
 import Spinner from "../../../shared/components/Spinner";
 import Card from "../../../shared/components/Card";
 import Badge from "../../../shared/components/Badge";
@@ -38,36 +27,7 @@ import Title from "../../../shared/components/Title";
 import { styles, ICON_SIZE } from "../styles/equipoDetalleStyles";
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
-
-const TIPOS_LABELS = {
-  aireacion: "Aireación",
-  bombeo: "Bombeo",
-  alimentacion: "Alimentación",
-  monitoreo: "Monitoreo",
-  mantenimiento: "Mantenimiento",
-  otro: "Otro",
-};
-
-const TIPOS_ICONS = {
-  aireacion: ICONS.wind,
-  bombeo: ICONS.waterFlow,
-  alimentacion: ICONS.food,
-  monitoreo: ICONS.chemicalContainer,
-  mantenimiento: ICONS.tools,
-  otro: ICONS.gear,
-};
-
-const ESTADO_LABELS = {
-  activo: "Activo",
-  inactivo: "Inactivo",
-  mantenimiento: "Mantenimiento",
-};
-
-const ESTADO_VARIANTS = {
-  activo: "success",
-  inactivo: "danger",
-  mantenimiento: "warning",
-};
+import { useEquipoDetalleScreen } from "../hooks/useEquipoDetalleScreen";
 
 export default function EquipoDetalleScreen({
   equipoId,
@@ -76,65 +36,32 @@ export default function EquipoDetalleScreen({
   onDelete,
   onToggle,
 }) {
-  const [equipo, setEquipo] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [estanque, setEstanque] = useState(null);
-
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        setLoading(true);
-        const data = await equiposService.getEquipoById(equipoId);
-        setEquipo(data);
-
-        if (data.estanqueId) {
-          // Los estanques vienen del backend real; se busca el que
-          // coincide con el estanqueId del equipo.
-          const estanques = await equiposService.getEstanquesDisponibles();
-          const est = estanques.find((e) => e.value === String(data.estanqueId));
-          setEstanque(est || null);
-        } else {
-          setEstanque(null);
-        }
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-    if (equipoId) {
-      loadData();
-    }
-  }, [equipoId]);
-
-  const handleTogglePress = () => {
-    if (onToggle && equipo) {
-      onToggle(equipo.id);
-    }
-  };
+  const {
+    equipo,
+    estanque,
+    loading,
+    error,
+    tipoLabel,
+    tipoIcon,
+    estadoLabel,
+    estadoVariant,
+    horasRestantes,
+    necesitaMant,
+    horasUsoFormateado,
+    handleTogglePress,
+  } = useEquipoDetalleScreen({ equipoId, onToggle });
 
   if (loading) return <Spinner text="Cargando detalle..." />;
   if (error) return <CustomText style={styles.error}>Error: {error}</CustomText>;
   if (!equipo) return null;
 
-  const tipoLabel = TIPOS_LABELS[equipo.tipo] || equipo.tipo;
-  const tipoIcon = TIPOS_ICONS[equipo.tipo] || ICONS.gear;
-  const estadoLabel = ESTADO_LABELS[equipo.estado] || equipo.estado;
-  const estadoVariant = ESTADO_VARIANTS[equipo.estado] || "info";
-  const horasRestantes = Math.max(0, (equipo.horasMantenimiento || 0) - (equipo.horasUso || 0));
-  const necesitaMant = equipo.horasMantenimiento ? horasRestantes === 0 : false;
-  const horasUsoFormateado =
-    equipo.horasUso < 1
-      ? `${Math.round(equipo.horasUso * 60)} min`
-      : `${Math.round(equipo.horasUso)} h`;
 
   return (
     <View style={styles.container}>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={true}
+        showsVerticalScrollIndicator={false}
       >
         <Card style={styles.card}>
           {/* Cabecera */}

@@ -30,7 +30,6 @@ export default function VentaScreen({ onDetalleVentas }) {
     fincaSeleccionada,
     estanqueSeleccionado,
     pesoPromedio,
-    tamanoPromedio,
     kilosVendidos,
     precioKilo,
     fechaVenta,
@@ -52,7 +51,6 @@ export default function VentaScreen({ onDetalleVentas }) {
     setEstanqueSeleccionado,
     handleFincaChange,
     handlePesoPromedioChange,
-    handleTamanoPromedioChange,
     handleKilosVendidosChange,
     handlePrecioChange,
     handleCompradorChange,
@@ -114,18 +112,6 @@ export default function VentaScreen({ onDetalleVentas }) {
               style={errores.pesoPromedio ? errorInputStyle : null}
             />
           </View>
-
-          <View style={styles.inputItem}>
-            <NumberInput
-              label="Tamaño promedio (cm) *"
-              value={tamanoPromedio}
-              onChangeText={handleTamanoPromedioChange}
-              step={0.1}
-              min={0.0}
-              max={20}
-              style={errores.tamanoPromedio ? errorInputStyle : null}
-            />
-          </View>
         </View>
 
         <View style={gridStyle}>
@@ -163,13 +149,6 @@ export default function VentaScreen({ onDetalleVentas }) {
           />
         </View>
 
-        <View style={styles.summaryBox}>
-          <Text style={styles.summaryLabel}>Total estimado</Text>
-          <Text style={styles.summaryValue}>
-            {formatearMontoColones(totalVenta)}
-          </Text>
-        </View>
-
         <SectionTitle icon={ICONS.user} title="Comprador" />
 
         <View style={gridStyle}>
@@ -183,6 +162,13 @@ export default function VentaScreen({ onDetalleVentas }) {
               selectStyle={errores.comprador ? errorInputStyle : null}
             />
           </View>
+        </View>
+
+        <View style={styles.summaryBox}>
+          <Text style={styles.summaryLabel}>Total estimado</Text>
+          <Text style={styles.summaryValue}>
+            {formatearMontoColones(totalVenta)}
+          </Text>
         </View>
 
         {submitted && errorMessage ? (

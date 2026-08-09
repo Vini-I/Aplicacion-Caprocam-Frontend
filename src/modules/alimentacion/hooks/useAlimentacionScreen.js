@@ -214,11 +214,6 @@ export default function useAlimentacionScreen(navigation) {
           "Alimentación registrada correctamente.",
       });
     } catch (error) {
-      console.error(
-        "Error registrando alimentación:",
-        error?.response?.data || error
-      );
-
       setAlerta({
         visible: true,
         variant: "danger",

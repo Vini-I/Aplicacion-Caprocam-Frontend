@@ -59,6 +59,8 @@ export default function CompradorScreen() {
     filtros,
     setFiltros,
     TIPOS,
+    eliminadoExitoso,
+    guardadoExitoso,
     handleVerDetalle,
     handleAgregar,
   } = useCompradorScreen();
@@ -111,6 +113,28 @@ export default function CompradorScreen() {
 
   return (
     <View style={styles.container}>
+      {/* Alerta de éxito al llegar desde "guardar comprador" */}
+      {guardadoExitoso && (
+        <View style={STYLE.contentWrapper}>
+          <Alert
+            variant="success"
+            message="Comprador guardado correctamente."
+            style={styles.alertExito}
+          />
+        </View>
+      )}
+
+      {/* Alerta de éxito al llegar desde "eliminar comprador" */}
+      {eliminadoExitoso && (
+        <View style={STYLE.contentWrapper}>
+          <Alert
+            variant="success"
+            message="Comprador eliminado correctamente."
+            style={styles.alertExito}
+          />
+        </View>
+      )}
+
       {/* Barra de búsqueda por texto y filtro por tipo de producto */}
       <View style={[styles.barraBusqueda, STYLE.contentWrapper]}>
         <SearchBar
@@ -119,21 +143,30 @@ export default function CompradorScreen() {
           placeholder="Buscar comprador, tipo, correo..."
           containerStyle={styles.searchBarContainer}
         />
-        <FilterButton
-          categories={TIPOS}
-          activeFilters={{
-            categories: filtros.tipos,
-            suppliers: [],
-            units: [],
-            lowStock: false,
-            expiryDate: "",
-          }}
-          onApply={(f) => setFiltros({ tipos: f.categories })}
-          showLowStock={false}
-          showExpiryDate={false}
-          buttonStyle={styles.filterButton}
-        />
+       
       </View>
+
+      {/* Alerta de éxito al llegar desde "guardar comprador" */}
+      {guardadoExitoso && (
+        <View style={STYLE.contentWrapper}>
+          <Alert
+            variant="success"
+            message="Comprador guardado correctamente."
+            style={styles.alertExito}
+          />
+        </View>
+      )}
+
+      {/* Alerta de éxito al llegar desde "eliminar comprador" */}
+      {eliminadoExitoso && (
+        <View style={STYLE.contentWrapper}>
+          <Alert
+            variant="success"
+            message="Comprador eliminado correctamente."
+            style={styles.alertExito}
+          />
+        </View>
+      )}
 
       {/* Alerta de error al cargar, con botón para reintentar */}
       {!!error && (

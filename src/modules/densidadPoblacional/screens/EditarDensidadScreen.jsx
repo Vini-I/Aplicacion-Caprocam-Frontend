@@ -65,12 +65,10 @@ import { COLORS } from "../../../theme/colors";
 
 import useEditarDensidad from "../hooks/useEditarDensidad";
 
-
 export default function EditarDensidadScreen({ registroId }) {
   const router = useRouter();
 
   const scrollRef = useRef(null);
-
 
   const {
     finca,
@@ -89,6 +87,7 @@ export default function EditarDensidadScreen({ registroId }) {
     errores,
 
     alerta,
+    errorCatalogos,
     handleGuardar,
     cargando,
 
@@ -115,40 +114,36 @@ export default function EditarDensidadScreen({ registroId }) {
 
     areaEstanque,
     setAreaEstanque,
-
   } = useEditarDensidad(registroId, () => {
-    router.replace({ pathname: "/registros/Reporteria", params: { alert: "edited" } });
+    router.replace({
+      pathname: "/registros/Reporteria",
+      params: { alert: "edited" },
+    });
   });
 
-  // Muestra la alerta (éxito, error o validación) en línea, dentro
-  // de la card, junto al resto del formulario: mismo lugar sin
-  // importar la variante (antes el éxito se separaba en un Alert
-  // fijo arriba de toda la pantalla).
-  const mostrarAlertaLocal = alerta.visible;
+  const mostrarAlertaLocal = alerta.visible || !!errorCatalogos;
+  const mensajeAlerta = alerta.visible ? alerta.mensaje : errorCatalogos || "";
+  const varianteAlerta = alerta.visible ? alerta.variant : "danger";
 
-
-
-  // Cuando aparece una alerta (éxito o error),
-  // desplaza automáticamente el scroll hacia abajo
-  // para mostrar el mensaje al usuario.
   useEffect(() => {
-
     if (mostrarAlertaLocal) {
-
       scrollRef.current?.scrollToEnd({
         animated: true,
       });
-
     }
-
   }, [mostrarAlertaLocal]);
-
 
   if (!registroId) {
     return (
       <>
-        <NavbarRegistro Titulo="Densidad Poblacional" Subtitulo="Editar registro" Icono="chart" />
-        <Text style={{ textAlign: "center", marginTop: 24 }}>No se encontró el registro a editar.</Text>
+        <NavbarRegistro
+          Titulo="Densidad Poblacional"
+          Subtitulo="Editar registro"
+          Icono="chart"
+        />
+        <Text style={{ textAlign: "center", marginTop: 24 }}>
+          No se encontró el registro a editar.
+        </Text>
       </>
     );
   }
@@ -156,137 +151,80 @@ export default function EditarDensidadScreen({ registroId }) {
   if (cargando) {
     return (
       <>
-        <NavbarRegistro Titulo="Densidad Poblacional" Subtitulo="Editar registro" Icono="chart" />
-        <Text style={{ textAlign: "center", marginTop: 24 }}>Cargando registro...</Text>
+        <NavbarRegistro
+          Titulo="Densidad Poblacional"
+          Subtitulo="Editar registro"
+          Icono="chart"
+        />
+        <Text style={{ textAlign: "center", marginTop: 24 }}>
+          Cargando registro...
+        </Text>
       </>
     );
   }
 
   return (
     <>
-
       <NavbarRegistro
         Titulo="Densidad Poblacional"
         Subtitulo="Registro de conteo"
         Icono="chart"
       />
 
-
-
-      <View style={[STYLE.container, styles.container]}>
-
-
+      <View style={STYLE.container}>
         <ScrollView
-
           ref={scrollRef}
-
-          contentContainerStyle={[
-            STYLE.contentWrapper,
-            styles.scrollContent,
-          ]}
-
+          contentContainerStyle={[STYLE.contentWrapper, styles.scrollContent]}
           showsVerticalScrollIndicator={false}
-
         >
-
-
           <View style={styles.content}>
-
-
             <InformacionEstanque
-
               finca={finca}
-
               estanque={estanque}
-
               setFinca={setFinca}
-
               setEstanque={setEstanque}
-
               fincas={fincas}
-
               estanques={estanques}
-
               siembraPorM2={siembraPorM2}
-
               setSiembraPorM2={setSiembraPorM2}
-
               areaEstanque={areaEstanque}
-
               setAreaEstanque={setAreaEstanque}
-
               submitted={submitted}
-
               errores={errores}
-
             />
-
-
 
             <RegistroConteo
-
               fecha={fecha}
-
               cambiarFecha={setFecha}
-
               submitted={submitted}
-
               errores={errores}
-
             />
-
-
 
             <DatosConteo
-
               numeroCamarones={numeroCamarones}
-
               setNumeroCamarones={setNumeroCamarones}
-
               tirosAtarraya={tirosAtarraya}
-
               setTirosAtarraya={setTirosAtarraya}
-
               areaAtarraya={areaAtarraya}
-
               setAreaAtarraya={setAreaAtarraya}
-
               promedioPorTiro={promedioPorTiro}
-
               setPromedioPorTiro={setPromedioPorTiro}
-
               supervivencia={supervivencia}
-
               setSupervivencia={setSupervivencia}
-
               notasConteo={notasConteo}
-
               setNotasConteo={setNotasConteo}
-
               submitted={submitted}
-
               errores={errores}
-
             />
-
-
 
             {/* Alerta en línea: éxito, error o validación, mismo lugar */}
             {mostrarAlertaLocal && (
-
               <Alert
-
-                variant={alerta.variant}
-
-                message={alerta.mensaje}
-
+                variant={varianteAlerta}
+                message={mensajeAlerta}
                 style={styles.alert}
-
               />
-
             )}
-
-
 
             {/* 
               Botón Guardar con la misma estructura visual
@@ -295,47 +233,19 @@ export default function EditarDensidadScreen({ registroId }) {
             */}
 
             <Button
-
               variant="outline"
-
               onPress={handleGuardar}
-
               style={styles.submitButton}
-
             >
-
               <View style={styles.buttonContent}>
-
-
-                <Icon
-
-                  icon={ICONS.save}
-
-                  size={24}
-
-                  color={COLORS.primary}
-
-                />
-
+                <Icon icon={ICONS.save} size={24} color={COLORS.primary} />
 
                 <Text style={styles.buttonText}>Guardar cambios</Text>
-
-
               </View>
-
-
             </Button>
-
-
           </View>
-
-
         </ScrollView>
-
-
       </View>
-
-
     </>
   );
 }

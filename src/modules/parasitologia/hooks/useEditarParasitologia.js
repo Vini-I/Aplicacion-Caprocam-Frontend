@@ -6,6 +6,8 @@ import parasitologiaService from "../services/ParasitologiaService.js";
 import { fincaService } from "../../finca/services/finca.service.js";
 import { estanqueService } from "../../estanques/services/estanque.service.js";
 
+import { COLORS } from "../../../theme/colors.js";
+
 function convertirFechaParaBackend(fecha) {
   if (!fecha) return "";
   if (fecha.includes("-") && !fecha.includes("/")) return fecha.slice(0, 10);
@@ -26,7 +28,6 @@ export default function useEditarParasitologia(registroId, onGuardado) {
   const [finca, setFinca] = useState("");
   const [estanque, setEstanque] = useState("");
   const [fechaReporte, setFechaReporte] = useState("");
-  const [responsable, setResponsable] = useState("");
   const [parasito, setParasito] = useState("");
   const [camaronesMuestreados, setCamaronesMuestreados] = useState("");
   const [camaronesInfectados, setCamaronesInfectados] = useState("");
@@ -40,6 +41,22 @@ export default function useEditarParasitologia(registroId, onGuardado) {
   const [loading, setLoading] = useState(false);
   const [cargandoRegistro, setCargandoRegistro] = useState(true);
   const [cargandoOpciones, setCargandoOpciones] = useState(true);
+
+  useEffect(function () {
+    if (!mensaje) {
+      return undefined;
+    }
+
+    const duracion = tipoMensaje === "success" ? 3000 : 6000;
+    const timer = setTimeout(function () {
+      setMensaje("");
+      setTipoMensaje("info");
+    }, duracion);
+
+    return function () {
+      clearTimeout(timer);
+    };
+  }, [mensaje, tipoMensaje]);
 
   useEffect(() => {
     let activo = true;
@@ -56,7 +73,8 @@ export default function useEditarParasitologia(registroId, onGuardado) {
         setEstanques(Array.isArray(e) ? e : []);
         setCatalogo(Array.isArray(c) ? c : []);
       } catch (err) {
-        console.error(err);
+        setTipoMensaje("danger");
+        setMensaje(err.message);
       } finally {
         if (activo) setCargandoOpciones(false);
       }
@@ -74,7 +92,6 @@ export default function useEditarParasitologia(registroId, onGuardado) {
         setFinca(String(r.fincaId ?? r.finca_id ?? ""));
         setEstanque(String(r.estanqueId ?? r.estanque_id ?? ""));
         setFechaReporte(formatearFechaUI(r.fechaReporte ?? r.fecha));
-        setResponsable(r.responsable ?? "");
         setParasito(r.parasito ?? "");
         setCamaronesMuestreados(String(r.camaronesMuestreados ?? ""));
         setCamaronesInfectados(String(r.camaronesInfectados ?? ""));
@@ -87,10 +104,33 @@ export default function useEditarParasitologia(registroId, onGuardado) {
 
   const muestreadosN = Number(camaronesMuestreados) || 0;
   const infectadosN = Number(camaronesInfectados) || 0;
-  const gradoCalculado = muestreadosN > 0
+
+  const porcentajeCalculado = muestreadosN > 0
     ? ((infectadosN / muestreadosN) * 100).toFixed(1)
     : "0.0";
-  const colorGrado = Number(gradoCalculado) >= 50 ? "error" : Number(gradoCalculado) >= 20 ? "warning" : "success";
+
+  const porcentajeNum = Number(porcentajeCalculado)
+
+  const nombreGrado =
+    porcentajeNum >= 50 ? "Alto" :
+      porcentajeNum >= 20 ? "Medio" :
+        "Bajo";
+
+  const descripcionGrado =
+    porcentajeNum >= 50 ? "El nivel de infeccion requiere atencion inmediata." :
+      porcentajeNum >= 20 ? "El nivel de infeccion requiere monitoreo cercano." :
+        "El nivel de infeccion esta dentro de un rango aceptable.";
+
+  const colorGrado =
+    porcentajeNum >= 50 ? COLORS.error :
+      porcentajeNum >= 20 ? COLORS.warning :
+        COLORS.success;
+
+  const gradoCalculado = {
+    porcentaje: porcentajeCalculado,
+    nombre: nombreGrado,
+    descripcion: descripcionGrado,
+  };
 
   const opcionesFincas = useMemo(
     () => fincas.map((f) => ({ label: f.nombreFinca, value: String(f.id) })),
@@ -144,14 +184,14 @@ export default function useEditarParasitologia(registroId, onGuardado) {
       onGuardado?.();
     } catch (e) {
       setTipoMensaje("danger");
-      setMensaje(e.response?.data?.message || "No se pudo actualizar.");
+      setMensaje(e.message);
     } finally {
       setLoading(false);
     }
   };
 
   return {
-    finca, estanque, fechaReporte, responsable, parasito,
+    finca, estanque, fechaReporte, parasito,
     camaronesMuestreados, camaronesInfectados, observaciones,
     opcionesFincas, opcionesEstanques, opcionesParasitos,
     placeholderFinca: "Seleccione una finca",

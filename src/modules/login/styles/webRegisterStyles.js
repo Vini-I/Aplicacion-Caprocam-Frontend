@@ -1,18 +1,10 @@
 /**
- * ============================================================
  * ESTILOS: webRegisterStyles
- * ============================================================
- * 
- * Responsabilidad: Definición de estilos para la pantalla de registro
- * de usuarios Web (WebRegisterScreen) en el módulo de Login.
- * 
- * FUNCIONALIDAD:
- * - Define el fondo de la pantalla y la alineación central del formulario.
- * - Estructura el espaciado para el contenedor de errores del servidor y
- *   los elementos de texto dentro del modal de éxito.
- * 
- * DEPENDENCIAS:
- * - COLORS de theme/colors.js.
+ * Estilos para la pantalla de registro de usuarios Web (WebRegisterScreen).
+ *
+ * @dependencies - COLORS de theme/colors.js
+ * @validations  - Alineación central y maquetación responsiva del formulario.
+ * @navigation   - N/A (archivo de estilos).
  */
 
 import { StyleSheet } from 'react-native';
@@ -24,12 +16,21 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
   },
 
+  scrollContent: {
+    flexGrow: 1,
+    backgroundColor: COLORS.white,
+  },
+
   errorField: {
     borderColor: COLORS.error,
   },
 
   alertSpacing: {
     marginBottom: 12,
+  },
+
+  serverAlertSpacing: {
+    marginBottom: 16,
   },
 
   // Modal de éxito del registro

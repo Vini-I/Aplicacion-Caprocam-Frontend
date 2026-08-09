@@ -33,7 +33,6 @@ export default function VentaEditarScreen({ id, onVenta }) {
     fincaSeleccionada,
     estanqueSeleccionado,
     pesoPromedio,
-    tamanoPromedio,
     kilosVendidos,
     precioKilo,
     fechaVenta,
@@ -50,7 +49,6 @@ export default function VentaEditarScreen({ id, onVenta }) {
     setEstanqueSeleccionado,
     handleFincaChange,
     handlePesoPromedioChange,
-    handleTamanoPromedioChange,
     handleKilosVendidosChange,
     handlePrecioChange,
     handleCompradorChange,
@@ -142,18 +140,6 @@ export default function VentaEditarScreen({ id, onVenta }) {
                 style={errores.pesoPromedio ? errorInputStyle : null}
               />
             </View>
-
-            <View style={styles.inputItem}>
-              <NumberInput
-                label="Tamaño promedio (cm) *"
-                value={tamanoPromedio}
-                onChangeText={handleTamanoPromedioChange}
-                step={0.1}
-                min={0.1}
-                max={20}
-                style={errores.tamanoPromedio ? errorInputStyle : null}
-              />
-            </View>
           </View>
 
           <View style={gridStyle}>
@@ -184,11 +170,6 @@ export default function VentaEditarScreen({ id, onVenta }) {
 
           <Input label="Fecha *" value={fechaVenta} editable={false} />
 
-          <View style={styles.summaryBox}>
-            <Text style={styles.summaryLabel}>Total estimado</Text>
-            <Text style={styles.summaryValue}>{formatearMontoColones(totalVenta)}</Text>
-          </View>
-
           <SectionTitle icon={ICONS.user} title="Comprador" />
 
           <View style={gridStyle}>
@@ -202,6 +183,11 @@ export default function VentaEditarScreen({ id, onVenta }) {
                 selectStyle={errores.comprador ? errorInputStyle : null}
               />
             </View>
+          </View>
+
+          <View style={styles.summaryBox}>
+            <Text style={styles.summaryLabel}>Total estimado</Text>
+            <Text style={styles.summaryValue}>{formatearMontoColones(totalVenta)}</Text>
           </View>
 
           {tipoMensaje === "error" && mensaje !== "" && (

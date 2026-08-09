@@ -56,7 +56,7 @@
  *
  * =========================================================================
  */
-import React from "react";
+import React, { useRef, useEffect } from "react";
 import { View, ScrollView, Text } from "react-native";
 
 import { STYLE } from "../../../theme/style";
@@ -142,6 +142,14 @@ export default function NuevaSiembraScreen() {
     fieldHelpers,
   } = useNuevaSiembra();
 
+  const scrollRef = useRef(null);
+
+  useEffect(() => {
+    if (mensaje !== "" && mensajeVariant === "danger") {
+      scrollRef.current?.scrollToEnd({ animated: true });
+    }
+  }, [mensaje, mensajeVariant]);
+
   return (
     <>
       <NavbarRegistro
@@ -155,6 +163,7 @@ export default function NuevaSiembraScreen() {
       />
 
       <ScrollView
+        ref={scrollRef}
         style={STYLE.container}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
@@ -326,8 +335,8 @@ export default function NuevaSiembraScreen() {
                 {guardando
                   ? "Guardando..."
                   : formData.tipoRegistro === "precria"
-                    ? "Guardar Pre-Cría"
-                    : "Guardar Siembra"}
+                    ? "Registar Pre-Cría"
+                    : "Registrar Siembra"}
               </Text>
             </View>
           </Button>

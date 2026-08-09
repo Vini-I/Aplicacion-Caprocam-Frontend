@@ -10,7 +10,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useWindowDimensions } from "react-native";
 
-import { useError } from "../../../shared/context/ErrorContext";
 import { fincaService } from "../../finca/services/finca.service";
 import { estanqueService } from "../../estanques/services/estanque.service";
 import useParasitologia from "./useParasitologia";
@@ -101,7 +100,6 @@ function normalizarCatalogoParasitos(catalogo) {
 
 export default function useParasitologiaScreen() {
   const { width } = useWindowDimensions();
-  const { mostrarError } = useError();
 
   const {
     catalogoParasitos,
@@ -115,7 +113,6 @@ export default function useParasitologiaScreen() {
   const [finca, setFinca] = useState("");
   const [estanque, setEstanque] = useState("");
   const [fechaReporte, setFechaReporte] = useState(obtenerFechaHoy());
-  const [responsable, setResponsable] = useState("");
   const [parasito, setParasito] = useState("");
   const [camaronesMuestreados, setCamaronesMuestreados] = useState("");
   const [camaronesInfectados, setCamaronesInfectados] = useState("");
@@ -125,6 +122,22 @@ export default function useParasitologiaScreen() {
   const [submitted, setSubmitted] = useState(false);
   const [mensaje, setMensaje] = useState("");
   const [tipoMensaje, setTipoMensaje] = useState("info");
+
+  useEffect(function () {
+    if (!mensaje) {
+      return undefined;
+    }
+
+    const duracion = tipoMensaje === "success" ? 3000 : 6000;
+    const timer = setTimeout(function () {
+      setMensaje("");
+      setTipoMensaje("info");
+    }, duracion);
+
+    return function () {
+      clearTimeout(timer);
+    };
+  }, [mensaje, tipoMensaje]);
 
   useEffect(function () {
     async function cargarOpciones() {
@@ -139,8 +152,8 @@ export default function useParasitologiaScreen() {
         setFincas(Array.isArray(fincasData) ? fincasData : []);
         setEstanques(Array.isArray(estanquesData) ? estanquesData : []);
       } catch (error) {
-        console.error("Error al cargar fincas y estanques", error);
-        mostrarError(error);
+        setTipoMensaje("danger");
+        setMensaje(error.message);
       } finally {
         setCargandoOpciones(false);
       }
@@ -380,7 +393,7 @@ export default function useParasitologiaScreen() {
       ) {
         setTipoMensaje("danger");
         setMensaje(
-          "El numero de infectados no puede ser mayor que el numero de muestreados."
+          "El numero de infectados no puede ser mayor que el numero de muestreados.",
         );
         return;
       }
@@ -393,31 +406,31 @@ export default function useParasitologiaScreen() {
     const muestreados = Number(camaronesMuestreados);
     const infectados = Number(camaronesInfectados);
 
-    const parasitologiaDTO = {
-      fincaId: Number(finca),
-      estanqueId: Number(estanque),
-      fechaReporte: convertirFechaParaBackend(fechaReporte),
-      parasito,
-      camaronesMuestreados: muestreados,
-      camaronesInfectados: infectados,
-      observaciones: observaciones.trim() || null,
-    };
+    try {
+      const parasitologiaDTO = {
+        fincaId: Number(finca),
+        estanqueId: Number(estanque),
+        fechaReporte: convertirFechaParaBackend(fechaReporte),
+        parasito,
+        camaronesMuestreados: muestreados,
+        camaronesInfectados: infectados,
+        observaciones: observaciones.trim() || null,
+      };
+      const nuevoRegistro = await guardarRegistro(parasitologiaDTO);
 
-    const nuevoRegistro = await guardarRegistro(parasitologiaDTO);
-
-    if (!nuevoRegistro) return;
-
-    setResponsable(nuevoRegistro.responsable ?? "");
-    setTipoMensaje("success");
-    setMensaje("Parasitologia registrada correctamente.");
-    limpiarFormulario();
+      setTipoMensaje("success");
+      setMensaje("Parasitologia registrada correctamente.");
+      limpiarFormulario();
+    } catch (error) {
+      setTipoMensaje("danger");
+      setMensaje(error.message);
+    }
   }
 
   return {
     finca,
     estanque,
     fechaReporte,
-    responsable,
     parasito,
     camaronesMuestreados,
     camaronesInfectados,

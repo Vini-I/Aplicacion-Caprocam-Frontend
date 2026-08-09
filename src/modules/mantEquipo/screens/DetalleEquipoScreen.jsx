@@ -20,13 +20,20 @@
  * - Si el equipo no existe, muestra mensaje de error.
  *
  * Navegación:
- * - Botón "Editar" abre el formulario de registro/edición.
- * - Botón "Eliminar" abre ModalEliminar y, al confirmar, elimina y regresa.
+ * - Botón "Editar equipo" abre el formulario de registro/edición.
+ * - Botón "Eliminar equipo" abre ModalEliminar y, al confirmar, elimina y regresa a la lista con alerta verde.
  * - Clic en el estanque asociado navega a detalle del estanque.
+ *
+ * Estándares cumplidos:
+ * - Botones CRUD con texto "Editar equipo" / "Eliminar equipo" (#4)
+ * - Alertas de error en eliminación mostradas en la misma pantalla (#2)
+ * - Navegación por CardPress (desde la lista) (#5)
+ * - Detalle en pantalla separada, edición en otra (#7)
+ * - Manejo de excepciones con modales y alerts (#11)
  *
  * Dependencias:
  * - equiposService
- * - shared/components (NavbarRegistro, Card, Icon, Button, ModalEliminar, Alert, etc.)
+ * - shared/components (NavbarRegistro, Card, Icon, Button, ModalEliminar, etc.)
  * - styles/tareasStyles (reutiliza algunos estilos)
  *
  * NOTA: "marca", "modelo", "serie", "subcategoria", "ultimoMantenimiento"
@@ -36,9 +43,9 @@
  * ============================================================
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React from 'react';
 import { View, ScrollView, TouchableOpacity } from 'react-native';
-import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 
 import NavbarRegistro from '../../../shared/components/NavbarRegistro';
 import Card from '../../../shared/components/Card';
@@ -52,50 +59,8 @@ import Alert from '../../../shared/components/Alert';
 import { COLORS } from '../../../theme/colors';
 import { ICONS } from '../../../theme/icons';
 import { STYLE } from '../../../theme/style';
-import { equiposService } from '../services/equiposService';
 import { styles, detalleStyles, equipoDetalleStyles } from '../styles/tareasStyles';
-
-// Mapeo de tipos a iconos
-const TIPOS_ICONS = {
-  aireacion: ICONS.wind,
-  bombeo: ICONS.waterFlow,
-  alimentacion: ICONS.food,
-  monitoreo: ICONS.chemicalContainer,
-  mantenimiento: ICONS.tools,
-  otro: ICONS.gear,
-};
-
-const TIPOS_LABELS = {
-  aireacion: 'Aireación',
-  bombeo: 'Bombeo',
-  alimentacion: 'Alimentación',
-  monitoreo: 'Monitoreo',
-  mantenimiento: 'Mantenimiento',
-  otro: 'Otro',
-};
-
-const ESTADO_LABELS = {
-  activo: 'Activo',
-  inactivo: 'Inactivo',
-  mantenimiento: 'Mantenimiento',
-};
-
-const ESTADO_VARIANTS = {
-  activo: 'success',
-  inactivo: 'danger',
-  mantenimiento: 'warning',
-};
-
-// Calcula las horas restantes para el próximo mantenimiento.
-// (Antes vivía como export en equiposService.js; se quedó como función
-// interna ahí durante la reconexión, así que se recalcula aquí mismo
-// con los mismos campos que ya trae el equipo mapeado: horasMantenimiento
-// y horasUso.)
-function horasRestantesMantenimiento(equipo) {
-  if (!equipo.horasMantenimiento) return 0;
-  const restantes = equipo.horasMantenimiento - equipo.horasUso;
-  return restantes > 0 ? restantes : 0;
-}
+import { useDetalleEquipoScreen } from '../hooks/useDetalleEquipoScreen';
 
 // Componente para fila con ícono alineado a la izquierda
 function FilaDetalleIcono({ icon, label, value, valueColor, onPress }) {
@@ -124,80 +89,26 @@ export default function DetalleEquipoScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
 
-  const [equipo, setEquipo] = useState(null);
-  const [estanque, setEstanque] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState(null);
-  const [alert, setAlert] = useState(null);
-
-  const cargarDatos = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const data = await equiposService.getEquipoById(id);
-      setEquipo(data);
-
-      if (data.estanqueId) {
-        // El backend no expone GET /estanques/:id, así que se busca
-        // dentro de la lista de estanques disponibles.
-        const estanques = await equiposService.getEstanquesDisponibles();
-        const encontrado = estanques.find((e) => e.value === String(data.estanqueId));
-        setEstanque(encontrado || null);
-      } else {
-        setEstanque(null);
-      }
-    } catch (err) {
-      setError(err.message || 'No se pudo cargar el equipo.');
-    } finally {
-      setLoading(false);
-    }
-  }, [id]);
-
-  useEffect(() => {
-    if (id) cargarDatos();
-    else setError('ID de equipo no proporcionado.');
-  }, [id, cargarDatos]);
-
-  useFocusEffect(
-    useCallback(() => {
-      if (id) cargarDatos();
-    }, [id, cargarDatos])
-  );
-
-  const handleEditar = () => {
-    router.push(`/equipos/registrarEquipo?edit=${equipo.id}`);
-  };
-
-  const handleEliminarPress = () => {
-    setDeleteTarget(equipo);
-    setShowConfirmModal(true);
-  };
-
-  const confirmDelete = async () => {
-    try {
-      await equiposService.deleteEquipo(equipo.id);
-      setAlert({ type: 'danger', message: `Equipo "${equipo.nombre}" eliminado.` });
-      setShowConfirmModal(false);
-      setTimeout(() => router.replace('/equipos/equipos'), 1500);
-    } catch (err) {
-      setAlert({ type: 'danger', message: err.message || 'No se pudo eliminar el equipo.' });
-      setShowConfirmModal(false);
-    }
-  };
-
-  const cancelDelete = () => {
-    setShowConfirmModal(false);
-    setDeleteTarget(null);
-  };
-
-  const handleEstanquePress = () => {
-    if (estanque) {
-      router.push(`/estanques/detalle?id=${estanque.value}`);
-    }
-  };
+  const {
+    equipo,
+    estanque,
+    loading,
+    error,
+    showConfirmModal,
+    deleteTarget,
+    handleEditar,
+    handleEliminarPress,
+    confirmDelete,
+    cancelDelete,
+    handleEstanquePress,
+    tipoIcon,
+    tipoLabel,
+    estadoLabel,
+    estadoVariant,
+    horasRestantes,
+    necesitaMant,
+    horasUsoFormateado,
+  } = useDetalleEquipoScreen({ id, router });
 
   if (loading) {
     return (
@@ -210,7 +121,6 @@ export default function DetalleEquipoScreen() {
   if (error || !equipo) {
     return (
       <>
-        <NavbarRegistro Titulo="Detalle de Equipo" Subtitulo="Error" Icono="tools" />
         <View style={styles.centerContainer}>
           <CustomText style={{ color: COLORS.error }}>
             {error || 'Equipo no encontrado'}
@@ -220,19 +130,15 @@ export default function DetalleEquipoScreen() {
     );
   }
 
-  const tipoIcon = TIPOS_ICONS[equipo.tipo] || ICONS.gear;
-  const tipoLabel = TIPOS_LABELS[equipo.tipo] || equipo.tipo;
-  const estadoLabel = ESTADO_LABELS[equipo.estado] || equipo.estado;
-  const estadoVariant = ESTADO_VARIANTS[equipo.estado] || 'info';
-  const horasRestantes = horasRestantesMantenimiento(equipo);
-  const necesitaMant = horasRestantes === 0;
-  const horasUsoFormateado = equipo.horasUso < 1
-    ? `${Math.round(equipo.horasUso * 60)} min`
-    : `${Math.round(equipo.horasUso)} h`;
+  
 
   return (
     <>
-      <ScrollView style={STYLE.container} contentContainerStyle={STYLE.contentWrapper}>
+      <ScrollView
+        style={STYLE.container}
+        contentContainerStyle={STYLE.contentWrapper}
+        showsVerticalScrollIndicator={false}
+      >
         <Card>
           <View style={equipoDetalleStyles.header}>
             <View style={equipoDetalleStyles.avatar}>
@@ -304,12 +210,6 @@ export default function DetalleEquipoScreen() {
           </Card>
         )}
 
-        {alert && (
-          <View style={equipoDetalleStyles.alertWrapper}>
-            <Alert variant={alert.type} message={alert.message} />
-          </View>
-        )}
-
         <View style={equipoDetalleStyles.botonesContainer}>
           <Button
             variant="outline"
@@ -317,7 +217,7 @@ export default function DetalleEquipoScreen() {
             style={[equipoDetalleStyles.boton, equipoDetalleStyles.botonEditar]}
           >
             <Icon icon={ICONS.edit} size={18} color={COLORS.primary} />
-            <CustomText style={equipoDetalleStyles.botonTexto}>Editar</CustomText>
+            <CustomText style={equipoDetalleStyles.botonTexto}>Editar equipo</CustomText>
           </Button>
           <Button
             variant="outline"
@@ -325,7 +225,7 @@ export default function DetalleEquipoScreen() {
             style={[equipoDetalleStyles.boton, equipoDetalleStyles.botonEliminar]}
           >
             <Icon icon={ICONS.delete} size={18} color={COLORS.error} />
-            <CustomText style={equipoDetalleStyles.botonTextoEliminar}>Eliminar</CustomText>
+            <CustomText style={equipoDetalleStyles.botonTextoEliminar}>Eliminar equipo</CustomText>
           </Button>
         </View>
       </ScrollView>

@@ -1,11 +1,13 @@
 /**
- * ============================================================
- * AUTH SERVICE
- * ============================================================
+ * SERVICIO: authService
  *
- * Autentica y registra usuarios mediante JSON Web Tokens (JWT).
- * Usa httpAuthClient.js para no duplicar el manejo de errores
- * de red/estatus entre login() y register().
+ * Expone las funciones de autenticación (login) y registro (register)
+ * utilizando el cliente HTTP centralizado.
+ *
+ * @dependencies - postAuth de httpAuthClient
+ *               - AUTH_MESSAGES de constants/authMessages
+ * @validations  - Envío y mapeo de datos de usuario y administrador.
+ * @navigation   - N/A (servicio de autenticación).
  */
 
 import { AUTH_MESSAGES } from '../constants/authMessages';
@@ -33,19 +35,12 @@ export const login = (username, password) => {
  * register(username, password, profileData)
  *
  * Registra un nuevo administrador en el sistema.
- *
- * NOTA DE BACKEND PENDIENTE: la pantalla de registro
- * (WebRegisterScreen) captura nombre, apellidos y correo
- * electrónico además de usuario/contraseña. El endpoint
- * POST /api/auth/register hoy solo acepta { username, password }.
- *
- * // TODO: Integrar con backend ampliado — una vez que el
- * // endpoint acepte nombre, apellidos y email, agregarlos
- * // al body de abajo y quitar este comentario.
+ * Envía nombre, apellidos, correo, usuario, contraseña y rolId
+ * al endpoint POST /login/registro.
  *
  * @param {string} username
  * @param {string} password
- * @param {Object} [profileData] 
+ * @param {Object} [profileData]
  * @returns {Promise<Object>}
  * @throws {Error}
  */
