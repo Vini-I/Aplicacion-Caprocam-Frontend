@@ -12,23 +12,19 @@ de cantidad de estanques por finca.
 //////////////////////////////////////////////////////////
 */
 
-import { View } from "react-native";
+import { Pressable, View } from "react-native";
 
-import Card from "../../../shared/components/Card";
-import Icon from "../../../shared/components/Icons";
-import CustomText from "../../../shared/components/Text";
-import Title from "../../../shared/components/Title";
+import Card from "../../../shared/components/Card.jsx";
+import Icon from "../../../shared/components/Icons.jsx";
+import CustomText from "../../../shared/components/Text.jsx";
+import Title from "../../../shared/components/Title.jsx";
 
-import { COLORS } from "../../../theme/colors";
-import { ICONS } from "../../../theme/icons";
-import {
-  obtenerMayorEstanquesFinca,
-  obtenerPorcentaje,
-  obtenerTotalEstanquesFinca,
-} from "../utils/DashboardUtils";
-import { styles } from "../styles/DashboardStyle";
+import { COLORS } from "../../../theme/colors.js";
+import { ICONS } from "../../../theme/icons.js";
+import { obtenerMayorEstanquesFinca, obtenerPorcentaje, obtenerTotalEstanquesFinca } from "../utils/DashboardUtils.js";
+import { styles } from "../styles/DashboardStyle.js";
 
-export default function DashboardFincasPanel({ fincas, estanques }) {
+export default function DashboardFincasPanel({ fincas, estanques, onPressFinca }) {
   const fincasSeguras = Array.isArray(fincas) ? fincas : [];
   const estanquesSeguros = Array.isArray(estanques) ? estanques : [];
   const mayorEstanques = obtenerMayorEstanquesFinca(fincasSeguras, estanquesSeguros);
@@ -36,7 +32,7 @@ export default function DashboardFincasPanel({ fincas, estanques }) {
   return (
     <Card style={styles.detailCard}>
       <View style={styles.sectionHeader}>
-        <Icon icon={ICONS.home} size={18} color={COLORS.primary} />
+        <Icon icon={ICONS.location} size={18} color={COLORS.primary} />
 
         <Title level={6} style={styles.sectionTitle}>
           Fincas registradas
@@ -93,7 +89,11 @@ export default function DashboardFincasPanel({ fincas, estanques }) {
             const area = Number(finca.area) > 0 ? `${finca.area} ha` : "Area no registrada";
 
             return (
-              <View key={finca.id ?? `finca-detalle-${index}`} style={styles.infoRowBlue}>
+              <Pressable
+                key={finca.id ?? `finca-detalle-${index}`}
+                style={styles.infoRowBlue}
+                onPress={() => onPressFinca?.(finca)}
+              >
                 <View style={styles.rowIconBoxBlue}>
                   <Icon icon={ICONS.location} size={20} color={COLORS.primary} />
                 </View>
@@ -122,7 +122,7 @@ export default function DashboardFincasPanel({ fincas, estanques }) {
                     {totalEstanques === 1 ? "estanque" : "estanques"}
                   </CustomText>
                 </View>
-              </View>
+              </Pressable>
             );
           })}
         </>

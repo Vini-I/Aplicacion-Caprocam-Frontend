@@ -11,7 +11,7 @@ Centraliza las peticiones HTTP utilizadas por el Dashboard.
 //////////////////////////////////////////////////////////
 */
 
-import api from "../../../api/api";
+import api from "../../../api/api.js";
 
 const RUTAS = {
   fincas: "/fincas",

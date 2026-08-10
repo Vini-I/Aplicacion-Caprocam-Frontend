@@ -7,31 +7,28 @@ Autor: Gerald Andres Alfaro Solorzano
 Fecha: 31/07/2026
 Modulo: Dashboard
 Descripcion:
-Renderiza el detalle de casos sanitarios y mortalidad
-registrada dentro del Dashboard.
+Renderiza el detalle de casos sanitarios registrados
+de enfermedades y parasitologia dentro del Dashboard.
 //////////////////////////////////////////////////////////
 */
 
-import { View } from "react-native";
+import { Pressable, View } from "react-native";
 
-import Card from "../../../shared/components/Card";
-import Icon from "../../../shared/components/Icons";
-import CustomText from "../../../shared/components/Text";
-import Title from "../../../shared/components/Title";
+import Card from "../../../shared/components/Card.jsx";
+import Icon from "../../../shared/components/Icons.jsx";
+import CustomText from "../../../shared/components/Text.jsx";
+import Title from "../../../shared/components/Title.jsx";
 
-import { COLORS } from "../../../theme/colors";
-import { ICONS } from "../../../theme/icons";
+import { COLORS } from "../../../theme/colors.js";
+import { ICONS } from "../../../theme/icons.js";
 
 import {
   formatearFechaCorta,
-  formatearNumero,
   obtenerCasosSanitarios,
-  obtenerMortalidadTotal,
-  obtenerRegistrosMortalidad,
   obtenerTextoSeguro,
-} from "../utils/DashboardUtils";
+} from "../utils/DashboardUtils.js";
 
-import { styles } from "../styles/DashboardStyle";
+import { styles } from "../styles/DashboardStyle.js";
 
 const VIOLET = COLORS.violet ? COLORS.violet : "#7C3AED";
 
@@ -102,18 +99,15 @@ function obtenerEstiloTipo(tipo) {
 }
 
 function obtenerNombreFrecuente(item, tipo) {
-  const valor =
-    tipo === "enfermedad"
-      ? item.enfermedad ?? item.valor
-      : item.parasito ?? item.valor;
+  const valor = tipo === "enfermedad"
+    ? item.enfermedad ?? item.valor
+    : item.parasito ?? item.valor;
 
   return obtenerTextoSeguro(
     item.nombre,
     obtenerTextoSeguro(
       valor,
-      tipo === "enfermedad"
-        ? "Enfermedad registrada"
-        : "Parasito registrado"
+      tipo === "enfermedad" ? "Enfermedad registrada" : "Parasito registrado"
     )
   );
 }
@@ -123,28 +117,22 @@ function obtenerCantidadFrecuente(item) {
   return Number.isFinite(cantidad) ? cantidad : 0;
 }
 
-function CasosSanitariosPanel({
+export default function DashboardSanidadPanel({
   resumenEnfermedades,
   resumenParasitologia,
   registrosEnfermedades,
   registrosParasitologia,
+  onPressCaso,
 }) {
-  const enfermedadesFrecuentes = Array.isArray(
-    resumenEnfermedades?.enfermedadesFrecuentes
-  )
+  const enfermedadesFrecuentes = Array.isArray(resumenEnfermedades?.enfermedadesFrecuentes)
     ? resumenEnfermedades.enfermedadesFrecuentes
     : [];
 
-  const parasitosFrecuentes = Array.isArray(
-    resumenParasitologia?.parasitosFrecuentes
-  )
+  const parasitosFrecuentes = Array.isArray(resumenParasitologia?.parasitosFrecuentes)
     ? resumenParasitologia.parasitosFrecuentes
     : [];
 
-  const casos = obtenerCasosSanitarios(
-    registrosEnfermedades,
-    registrosParasitologia
-  );
+  const casos = obtenerCasosSanitarios(registrosEnfermedades, registrosParasitologia);
 
   return (
     <Card style={styles.detailCard}>
@@ -164,8 +152,7 @@ function CasosSanitariosPanel({
         CASOS FRECUENTES
       </CustomText>
 
-      {enfermedadesFrecuentes.length === 0 &&
-      parasitosFrecuentes.length === 0 ? (
+      {enfermedadesFrecuentes.length === 0 && parasitosFrecuentes.length === 0 ? (
         <EmptyMessage text="No hay casos sanitarios registrados." />
       ) : (
         <>
@@ -175,38 +162,22 @@ function CasosSanitariosPanel({
 
             return (
               <View
-                key={
-                  item.id ??
-                  `enfermedad-${item.enfermedad ?? item.valor ?? index}`
-                }
+                key={item.id ?? `enfermedad-${item.enfermedad ?? item.valor ?? index}`}
                 style={styles.diseaseRow}
               >
                 <View style={styles.diseaseDotRed} />
 
                 <View style={styles.rowContent}>
-                  <CustomText
-                    size={15}
-                    weight="700"
-                    color={COLORS.textSecondary}
-                    numberOfLines={1}
-                  >
+                  <CustomText size={15} weight="700" color={COLORS.textSecondary} numberOfLines={1}>
                     {nombre}
                   </CustomText>
                 </View>
 
-                <CustomText
-                  size={15}
-                  weight="800"
-                  color={COLORS.textSecondary}
-                >
+                <CustomText size={15} weight="800" color={COLORS.textSecondary}>
                   {cantidad}
                 </CustomText>
 
-                <CustomText
-                  size={12}
-                  color={COLORS.textTertiary}
-                  style={styles.caseText}
-                >
+                <CustomText size={12} color={COLORS.textTertiary} style={styles.caseText}>
                   {cantidad === 1 ? "caso" : "casos"}
                 </CustomText>
               </View>
@@ -219,38 +190,22 @@ function CasosSanitariosPanel({
 
             return (
               <View
-                key={
-                  item.id ??
-                  `parasito-${item.parasito ?? item.valor ?? index}`
-                }
+                key={item.id ?? `parasito-${item.parasito ?? item.valor ?? index}`}
                 style={styles.diseaseRow}
               >
                 <View style={styles.diseaseDotViolet} />
 
                 <View style={styles.rowContent}>
-                  <CustomText
-                    size={15}
-                    weight="700"
-                    color={COLORS.textSecondary}
-                    numberOfLines={1}
-                  >
+                  <CustomText size={15} weight="700" color={COLORS.textSecondary} numberOfLines={1}>
                     {nombre}
                   </CustomText>
                 </View>
 
-                <CustomText
-                  size={15}
-                  weight="800"
-                  color={COLORS.textSecondary}
-                >
+                <CustomText size={15} weight="800" color={COLORS.textSecondary}>
                   {cantidad}
                 </CustomText>
 
-                <CustomText
-                  size={12}
-                  color={COLORS.textTertiary}
-                  style={styles.caseText}
-                >
+                <CustomText size={12} color={COLORS.textTertiary} style={styles.caseText}>
                   {cantidad === 1 ? "caso" : "casos"}
                 </CustomText>
               </View>
@@ -275,16 +230,14 @@ function CasosSanitariosPanel({
           const finca = obtenerTextoSeguro(caso.finca, "Sin finca");
           const estanque = obtenerTextoSeguro(caso.estanque, "Sin estanque");
           const severidad = obtenerTextoSeguro(caso.severidad);
-          const severidadNombre = obtenerTextoSeguro(
-            caso.severidadNombre,
-            severidad
-          );
+          const severidadNombre = obtenerTextoSeguro(caso.severidadNombre, severidad);
           const tipo = obtenerTextoSeguro(caso.tipo, "enfermedad");
 
           return (
-            <View
+            <Pressable
               key={caso.id ?? `caso-sanitario-${index}`}
               style={styles.caseRow}
+              onPress={() => onPressCaso?.(caso)}
             >
               <Icon
                 icon={ICONS.alertTriangle}
@@ -293,12 +246,7 @@ function CasosSanitariosPanel({
               />
 
               <View style={styles.rowContent}>
-                <CustomText
-                  size={15}
-                  weight="700"
-                  color={COLORS.textSecondary}
-                  numberOfLines={1}
-                >
+                <CustomText size={15} weight="700" color={COLORS.textSecondary} numberOfLines={1}>
                   {nombre}
                 </CustomText>
 
@@ -318,147 +266,21 @@ function CasosSanitariosPanel({
 
               <View style={styles.caseBadges}>
                 <View style={obtenerEstiloTipo(tipo)}>
-                  <CustomText
-                    size={12}
-                    weight="700"
-                    color={obtenerColorTipo(tipo)}
-                  >
+                  <CustomText size={12} weight="700" color={obtenerColorTipo(tipo)}>
                     {obtenerNombreTipo(tipo)}
                   </CustomText>
                 </View>
 
                 <View style={obtenerEstiloSeveridad(severidad)}>
-                  <CustomText
-                    size={12}
-                    weight="700"
-                    color={obtenerColorSeveridad(severidad)}
-                  >
+                  <CustomText size={12} weight="700" color={obtenerColorSeveridad(severidad)}>
                     {severidadNombre}
                   </CustomText>
                 </View>
               </View>
-            </View>
+            </Pressable>
           );
         })
       )}
     </Card>
-  );
-}
-
-function MortalidadPanel({ resumenEnfermedades, registrosEnfermedades }) {
-  const registrosMortalidad =
-    obtenerRegistrosMortalidad(registrosEnfermedades);
-
-  const totalMortalidad = obtenerMortalidadTotal(resumenEnfermedades);
-
-  return (
-    <Card style={styles.detailCard}>
-      <SectionHeader
-        icon={ICONS.mortality}
-        title="Mortalidad registrada"
-        color={COLORS.error}
-      />
-
-      <View style={styles.divider} />
-
-      <View style={styles.mortalityTotalBox}>
-        <Icon icon={ICONS.report} size={34} color={COLORS.error} />
-
-        <View style={styles.totalBoxText}>
-          <CustomText size={32} weight="900" color={COLORS.error}>
-            {formatearNumero(totalMortalidad)}
-          </CustomText>
-
-          <CustomText size={13} color={COLORS.error}>
-            individuos totales registrados
-          </CustomText>
-        </View>
-      </View>
-
-      <CustomText
-        size={13}
-        color={COLORS.textTertiary}
-        style={styles.panelSubtitleSecondary}
-      >
-        POR ESTANQUE
-      </CustomText>
-
-      {registrosMortalidad.length === 0 ? (
-        <EmptyMessage text="No hay mortalidad registrada en enfermedades." />
-      ) : (
-        registrosMortalidad.map(function (item, index) {
-          const estanque = obtenerTextoSeguro(
-            item.estanque,
-            "Sin estanque"
-          );
-          const finca = obtenerTextoSeguro(item.finca, "Sin finca");
-          const nombre = obtenerTextoSeguro(
-            item.nombre,
-            "Enfermedad registrada"
-          );
-
-          return (
-            <View
-              key={item.id ?? `mortalidad-${index}`}
-              style={styles.mortalityRow}
-            >
-              <Icon icon={ICONS.shrimp} size={18} color={COLORS.error} />
-
-              <View style={styles.rowContent}>
-                <CustomText
-                  size={15}
-                  weight="700"
-                  color={COLORS.textSecondary}
-                  numberOfLines={1}
-                >
-                  {estanque} · {finca}
-                </CustomText>
-
-                <CustomText
-                  size={12}
-                  color={COLORS.textTertiary}
-                  style={styles.rowDescription}
-                  numberOfLines={1}
-                >
-                  {nombre} · {formatearFechaCorta(item.fecha)}
-                </CustomText>
-              </View>
-
-              <View style={styles.rowRight}>
-                <CustomText size={17} weight="900" color={COLORS.error}>
-                  {formatearNumero(item.mortalidad)}
-                </CustomText>
-
-                <CustomText size={11} color={COLORS.textTertiary}>
-                  ind.
-                </CustomText>
-              </View>
-            </View>
-          );
-        })
-      )}
-    </Card>
-  );
-}
-
-export default function DashboardSanidadPanel({
-  tipo,
-  resumenEnfermedades,
-  resumenParasitologia,
-  registrosEnfermedades,
-  registrosParasitologia,
-}) {
-  return tipo === "mortalidad" ? (
-    <MortalidadPanel
-      resumenEnfermedades={resumenEnfermedades}
-      registrosEnfermedades={registrosEnfermedades}
-    />
-  ) : (
-    <CasosSanitariosPanel
-      resumenEnfermedades={resumenEnfermedades}
-      resumenParasitologia={resumenParasitologia}
-      registrosEnfermedades={registrosEnfermedades}
-      registrosParasitologia={registrosParasitologia}
-    />
   );
 }
