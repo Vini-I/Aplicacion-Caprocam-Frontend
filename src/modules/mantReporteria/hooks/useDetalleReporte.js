@@ -41,7 +41,15 @@ export function useDetalleReporte() {
       setAlert("edited");
       router.setParams({ alert: undefined });
     }
-  }, [alertParam, setAlert, router])
+  }, [alertParam, setAlert, router]);
+
+  useEffect(() => {
+    if (!alert) return;
+    const timer = setTimeout(() => {
+      setAlert(null);
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, [alert]);
 
   useEffect(() => {
     let activo = true;
