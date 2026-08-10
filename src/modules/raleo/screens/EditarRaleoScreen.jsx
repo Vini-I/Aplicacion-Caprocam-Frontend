@@ -58,6 +58,7 @@ export default function EditarRaleoScreen({ registroId }) {
   const {
     form,
     updateField,
+    porcentajeRaleo,
     biomasaRestante,
     submitted,
     errores,
@@ -120,6 +121,7 @@ export default function EditarRaleoScreen({ registroId }) {
           updateField={updateField}
           submitted={submitted}
           errores={errores}
+          porcentajeCalculado={porcentajeRaleo}
           biomasaCalculada={biomasaRestante}
         />
 
@@ -133,7 +135,7 @@ export default function EditarRaleoScreen({ registroId }) {
           />
         )}
       </View>
-      <Button variant="outline" onPress={() => handleGuardar(mostrarError)} style={styles.submitButton}>
+      <Button variant="outline" onPress={() => handleGuardar()} style={styles.submitButton}>
         <View style={styles.buttonContent}>
           <Icon icon={ICONS.save} size={24} color={COLORS.primary}/>
           <Text style={styles.buttonText}>
