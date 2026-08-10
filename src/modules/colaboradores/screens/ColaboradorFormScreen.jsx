@@ -47,7 +47,6 @@ export default function ColaboradorFormScreen() {
   const [loading, setLoading] = useState(isEditing);
   const [error, setError] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
-  const [resetLoading, setResetLoading] = useState(false);
   const [roleOptions, setRoleOptions] = useState([]);
   const [fincasOptions, setFincasOptions] = useState([]);
 
@@ -133,31 +132,12 @@ export default function ColaboradorFormScreen() {
         setErrorMessage(err.message);
       } else {
         setErrorMessage(err.message);
-      }  
+      }
     }
   };
 
   const handleCancel = () => {
     router.back();
-  };
-
-  const handleResetPin = async () => {
-    setResetLoading(true);
-    setErrorMessage("");
-    try {
-      await colaboradoresService.resetPin(id);
-      router.replace({
-        pathname: "/(drawer)/colaboradores",
-        params: {
-          alertType: "success",
-          alertMessage: "PIN restablecido correctamente.",
-        },
-      });
-    } catch (err) {
-      setErrorMessage(err.message);
-    } finally {
-      setResetLoading(false);
-    }
   };
 
   // ─── Render ────────────────────────────────────────────────────
@@ -195,8 +175,6 @@ export default function ColaboradorFormScreen() {
           serverError={errorMessage}
           roleOptions={roleOptions}
           fincasOptions={fincasOptions}
-          onResetPin={handleResetPin}
-          resetLoading={resetLoading}
         />
       </ScrollView>
     </>

@@ -13,12 +13,14 @@
  * - fincaId: ID de finca (para asignación automática)
  * - onSubmit: función que recibe los datos al enviar
  * - availableRoles: opciones de roles para el select (array de {label, value})
+ * - fincasOptions: opciones de fincas para el select (array de {label, value})
  *
  * Retorna:
  * - form, errors, submitted, validationMessage (mensaje específico)
  * - handleChange, handleSubmit
  * - rolesDisponibles
  * - handleCedulaChange, handleTelefonoChange, handleNombreChange, handleApellidosChange
+ * - handlePinChange, handleConfirmPinChange, pin, confirmPin
  * - resetForm: función para limpiar el formulario y estados de validación
  * ============================================================
  */
@@ -37,6 +39,7 @@ const validarTelefono = (telefono) => /^\d{8}$/.test(telefono);
 const validarEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 const validarNombre = (nombre) => nombre.trim().length >= 2;
 const validarApellidos = (apellidos) => apellidos.trim().length >= 2;
+const validarPin = (pin) => /^\d{4}$/.test(pin);
 
 const INITIAL_FORM = {
   cedula: "",
@@ -67,6 +70,9 @@ export function useColaboradorForm({
     fincaId: initialData.fincaId || fincaId || "",
   });
 
+  const [pin, setPin] = useState("");
+  const [confirmPin, setConfirmPin] = useState("");
+
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
   const [validationMessage, setValidationMessage] = useState("");
@@ -95,6 +101,28 @@ export function useColaboradorForm({
   const handleApellidosChange = (value) => {
     const soloLetras = value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, "");
     handleChange("apellidos", soloLetras);
+  };
+
+  const handlePinChange = (value) => {
+    const soloNumeros = value.replace(/\D/g, "").slice(0, 4);
+    setPin(soloNumeros);
+    if (errors.pin) {
+      setErrors((prev) => ({ ...prev, pin: null }));
+    }
+    if (submitted && validationMessage) {
+      setValidationMessage("");
+    }
+  };
+
+  const handleConfirmPinChange = (value) => {
+    const soloNumeros = value.replace(/\D/g, "").slice(0, 4);
+    setConfirmPin(soloNumeros);
+    if (errors.confirmPin) {
+      setErrors((prev) => ({ ...prev, confirmPin: null }));
+    }
+    if (submitted && validationMessage) {
+      setValidationMessage("");
+    }
   };
 
   // ─── FUNCIONES EXISTENTES ──────────────────────────────────
@@ -138,7 +166,7 @@ export function useColaboradorForm({
       hasError = true;
     }
 
-    // Rol obligatorio (sin valor por defecto)
+    // Rol obligatorio
     if (!form.rol) {
       newErrors.rol = "El rol es obligatorio";
       hasError = true;
@@ -158,7 +186,6 @@ export function useColaboradorForm({
 
     // Al menos uno debe estar presente y ser válido
     if (!telefonoValido && !emailValido) {
-      // Ambos vacíos o inválidos
       if (!form.telefono) {
         newErrors.telefono = "Debe proporcionar al menos un medio de contacto (teléfono o correo)";
       } else if (!validarTelefono(form.telefono)) {
@@ -182,14 +209,57 @@ export function useColaboradorForm({
       }
     }
 
+    // ─── VALIDACIÓN DE PIN ──────────────────────────────────────
+    // En creación, el PIN es obligatorio.
+    // En edición, solo se valida si se proporciona.
+    const pinProvided = pin && pin.trim() !== "";
+    const confirmProvided = confirmPin && confirmPin.trim() !== "";
+
+    if (!isEditing) {
+      // Creación: ambos obligatorios
+      if (!pinProvided) {
+        newErrors.pin = "El PIN es obligatorio";
+        hasError = true;
+      } else if (!validarPin(pin)) {
+        newErrors.pin = "El PIN debe tener 4 dígitos numéricos";
+        hasError = true;
+      }
+
+      if (!confirmProvided) {
+        newErrors.confirmPin = "Debe confirmar el PIN";
+        hasError = true;
+      } else if (pin !== confirmPin) {
+        newErrors.confirmPin = "Los PIN no coinciden";
+        hasError = true;
+      }
+    } else {
+      // Edición: solo se valida si se ingresa algo
+      if (pinProvided || confirmProvided) {
+        if (!pinProvided) {
+          newErrors.pin = "Debe ingresar el PIN para actualizarlo";
+          hasError = true;
+        } else if (!validarPin(pin)) {
+          newErrors.pin = "El PIN debe tener 4 dígitos numéricos";
+          hasError = true;
+        }
+
+        if (!confirmProvided) {
+          newErrors.confirmPin = "Debe confirmar el PIN";
+          hasError = true;
+        } else if (pin !== confirmPin) {
+          newErrors.confirmPin = "Los PIN no coinciden";
+          hasError = true;
+        }
+      }
+    }
+
     setErrors(newErrors);
     return { hasError, errors: newErrors };
   };
 
   // ─── CONSTRUCCIÓN DEL MENSAJE: UN SOLO ERROR A LA VEZ ──────
-  // Orden de prioridad: cedula, nombre, apellidos, rol, fincaId, telefono, email
   const buildValidationMessage = (errorsObj) => {
-    const order = ['cedula', 'nombre', 'apellidos', 'rol', 'fincaId', 'telefono', 'email'];
+    const order = ['cedula', 'nombre', 'apellidos', 'rol', 'fincaId', 'telefono', 'email', 'pin', 'confirmPin'];
     for (const field of order) {
       if (errorsObj[field]) {
         return errorsObj[field];
@@ -211,6 +281,12 @@ export function useColaboradorForm({
     const fullName = `${form.nombre} ${form.apellidos}`;
     const submitData = { ...form, nombre: fullName };
     delete submitData.apellidos;
+
+    // Incluir PIN solo si es válido y se ha proporcionado
+    if (pin && pin.trim() !== "" && validarPin(pin)) {
+      submitData.pin = pin;
+    }
+
     onSubmit(submitData);
   };
 
@@ -225,6 +301,8 @@ export function useColaboradorForm({
       rol: "",
       fincaId: fincaId || "",
     });
+    setPin("");
+    setConfirmPin("");
     setErrors({});
     setSubmitted(false);
     setValidationMessage("");
@@ -242,6 +320,10 @@ export function useColaboradorForm({
     handleTelefonoChange,
     handleNombreChange,
     handleApellidosChange,
+    handlePinChange,
+    handleConfirmPinChange,
+    pin,                // ← añadido
+    confirmPin,         // ← añadido
     handleSubmit,
     resetForm,
   };

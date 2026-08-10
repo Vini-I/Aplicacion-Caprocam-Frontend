@@ -19,8 +19,6 @@
  * - serverError: mensaje de error del servidor (opcional)
  * - roleOptions: array de { label, value } para el select de roles (opcional)
  * - fincasOptions: array de { label, value } para el select de fincas (opcional)
- * - onResetPin: función para restablecer el PIN (solo en edición)
- * - resetLoading: booleano para mostrar estado de carga en el botón de reset
  */
 
 import React, { forwardRef, useImperativeHandle, useEffect, useState } from "react";
@@ -48,8 +46,6 @@ const ColaboradorForm = forwardRef(function ColaboradorForm(
     serverError = "",
     roleOptions,
     fincasOptions = [],
-    onResetPin,
-    resetLoading = false,
   },
   ref
 ) {
@@ -65,6 +61,10 @@ const ColaboradorForm = forwardRef(function ColaboradorForm(
     handleTelefonoChange,
     handleNombreChange,
     handleApellidosChange,
+    handlePinChange,
+    handleConfirmPinChange,
+    pin,                // ← extraído del hook
+    confirmPin,         // ← extraído del hook
     handleSubmit,
     resetForm,
   } = useColaboradorForm({
@@ -188,6 +188,30 @@ const ColaboradorForm = forwardRef(function ColaboradorForm(
             selectStyle={submitted && errors.fincaId ? styles.inputError : null}
           />
         )}
+
+        {/* Campos de PIN */}
+        <Input
+          label={isEditing ? "Nuevo PIN (opcional)" : "PIN *"}
+          value={pin}
+          onChangeText={handlePinChange}
+          placeholder="4 dígitos"
+          keyboardType="numeric"
+          maxLength={4}
+          secureTextEntry
+          style={submitted && errors.pin ? styles.inputError : null}
+          helperText={isEditing ? "Deje vacío para mantener el PIN actual" : undefined}
+        />
+
+        <Input
+          label={isEditing ? "Confirmar nuevo PIN (opcional)" : "Confirmar PIN *"}
+          value={confirmPin}
+          onChangeText={handleConfirmPinChange}
+          placeholder="4 dígitos"
+          keyboardType="numeric"
+          maxLength={4}
+          secureTextEntry
+          style={submitted && errors.confirmPin ? styles.inputError : null}
+        />
       </Card>
 
       {mostrarError && (
@@ -206,25 +230,6 @@ const ColaboradorForm = forwardRef(function ColaboradorForm(
           </View>
         </Button>
       </View>
-
-      {/* Botón de restablecer PIN (solo en edición) */}
-      {isEditing && (
-        <View style={styles.resetButtonContainer}>
-          <Button
-            variant="outline"
-            onPress={onResetPin}
-            disabled={resetLoading}
-            style={styles.resetButton}
-          >
-            <View style={styles.buttonContent}>
-              <Icon icon={ICONS.update} size={18} color={COLORS.primary} />
-              <Text style={styles.buttonText}>
-                {resetLoading ? "Restableciendo..." : "Restablecer PIN"}
-              </Text>
-            </View>
-          </Button>
-        </View>
-      )}
     </View>
   );
 });
