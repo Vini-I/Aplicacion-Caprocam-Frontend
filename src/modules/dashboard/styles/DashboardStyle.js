@@ -294,7 +294,7 @@ export const styles = StyleSheet.create({
 
   statsGridTablet: {
     flexDirection: "row",
-    flexWrap: "wrap",
+    flexWrap: "nowrap",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -302,20 +302,22 @@ export const styles = StyleSheet.create({
   statCard: {
     width: "100%",
     alignSelf: "center",
-    minHeight: 118,
+    minHeight: 105,
     borderRadius: 18,
-    padding: 16,
+    padding: 14,
     marginTop: 0,
     borderWidth: 1,
     borderColor: "transparent",
-    alignItems: "flex-start",
+    alignItems: "center",
     justifyContent: "space-between",
     shadowOpacity: 0,
     elevation: 0,
   },
 
   statCardTablet: {
-    width: "48.5%",
+    width: "31.5%",
+    height: 120,
+    maxWidth: 220,
   },
 
   statCardActive: {
@@ -344,6 +346,7 @@ export const styles = StyleSheet.create({
 
   statBottom: {
     width: "100%",
+    alignItems: "center",
   },
 
   statIconBox: {
@@ -372,12 +375,14 @@ export const styles = StyleSheet.create({
     fontFamily: TYPOGRAPHY.fontFamily.bold,
     fontWeight: "900",
     color: COLORS.textSecondary,
-    marginTop: 12,
+    marginTop: 4,
+    textAlign: "center",
   },
 
   statLabel: {
-    marginTop: 4,
+    marginTop: 2,
     fontFamily: TYPOGRAPHY.fontFamily.medium,
+    textAlign: "center",
   },
 
   detailCard: {

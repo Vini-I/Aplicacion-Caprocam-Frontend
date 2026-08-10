@@ -12,8 +12,9 @@ de enfermedades y parasitologia dentro del Dashboard.
 //////////////////////////////////////////////////////////
 */
 
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
 
+import Button from "../../../shared/components/Button.jsx";
 import Card from "../../../shared/components/Card.jsx";
 import Icon from "../../../shared/components/Icons.jsx";
 import CustomText from "../../../shared/components/Text.jsx";
@@ -107,8 +108,10 @@ function obtenerNombreFrecuente(item, tipo) {
     item.nombre,
     obtenerTextoSeguro(
       valor,
-      tipo === "enfermedad" ? "Enfermedad registrada" : "Parasito registrado"
-    )
+      tipo === "enfermedad"
+        ? "Enfermedad registrada"
+        : "Parasito registrado",
+    ),
   );
 }
 
@@ -132,7 +135,10 @@ export default function DashboardSanidadPanel({
     ? resumenParasitologia.parasitosFrecuentes
     : [];
 
-  const casos = obtenerCasosSanitarios(registrosEnfermedades, registrosParasitologia);
+  const casos = obtenerCasosSanitarios(
+    registrosEnfermedades,
+    registrosParasitologia,
+  );
 
   return (
     <Card style={styles.detailCard}>
@@ -234,9 +240,17 @@ export default function DashboardSanidadPanel({
           const tipo = obtenerTextoSeguro(caso.tipo, "enfermedad");
 
           return (
-            <Pressable
+            <Button
               key={caso.id ?? `caso-sanitario-${index}`}
-              style={styles.caseRow}
+              variant="ghost"
+              style={[
+                styles.caseRow,
+                {
+                  marginTop: 0,
+                  borderWidth: 0,
+                  justifyContent: "flex-start",
+                },
+              ]}
               onPress={() => onPressCaso?.(caso)}
             >
               <Icon
@@ -277,7 +291,7 @@ export default function DashboardSanidadPanel({
                   </CustomText>
                 </View>
               </View>
-            </Pressable>
+            </Button>
           );
         })
       )}
