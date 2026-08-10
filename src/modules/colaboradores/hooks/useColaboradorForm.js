@@ -9,16 +9,13 @@
  * Parámetros:
  * - initialData: objeto con datos iniciales (para edición)
  * - isEditing: booleano
- * - userRole: "camprocam_admin" o "external_owner"
  * - fincaId: ID de finca (para asignación automática)
  * - onSubmit: función que recibe los datos al enviar
- * - availableRoles: opciones de roles para el select (array de {label, value})
  * - fincasOptions: opciones de fincas para el select (array de {label, value})
  *
  * Retorna:
  * - form, errors, submitted, validationMessage (mensaje específico)
  * - handleChange, handleSubmit
- * - rolesDisponibles
  * - handleCedulaChange, handleTelefonoChange, handleNombreChange, handleApellidosChange
  * - handlePinChange, handleConfirmPinChange, pin, confirmPin
  * - resetForm: función para limpiar el formulario y estados de validación
@@ -26,13 +23,6 @@
  */
 
 import { useState } from "react";
-
-// Constantes y validadores
-const ROLES_CAMPROCAM = [
-  { label: "Trabajador Camprocam", value: "camprocam_worker" },
-  { label: "Dueño Externo", value: "external_owner" },
-];
-const ROLES_EXTERNO = [{ label: "Trabajador Externo", value: "external_worker" }];
 
 const validarCedula = (cedula) => /^\d{9}$/.test(cedula);
 const validarTelefono = (telefono) => /^\d{8}$/.test(telefono);
@@ -47,17 +37,14 @@ const INITIAL_FORM = {
   apellidos: "",
   telefono: "",
   email: "",
-  rol: "",
   fincaId: "",
 };
 
 export function useColaboradorForm({
   initialData,
   isEditing,
-  userRole,
   fincaId,
   onSubmit,
-  availableRoles,
   fincasOptions = [],
 }) {
   const [form, setForm] = useState({
@@ -66,7 +53,6 @@ export function useColaboradorForm({
     apellidos: initialData.nombre?.split(" ").slice(1).join(" ") || "",
     telefono: initialData.telefono || "",
     email: initialData.email || "",
-    rol: initialData.rolId ?? initialData.rol ?? "",
     fincaId: initialData.fincaId || fincaId || "",
   });
 
@@ -76,10 +62,6 @@ export function useColaboradorForm({
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
   const [validationMessage, setValidationMessage] = useState("");
-
-  const rolesDisponibles =
-    availableRoles ||
-    (userRole === "camprocam_admin" ? ROLES_CAMPROCAM : ROLES_EXTERNO);
 
   // ─── FUNCIONES DE FILTRADO POR CAMPO ──────────────────────
 
@@ -166,25 +148,10 @@ export function useColaboradorForm({
       hasError = true;
     }
 
-    // Rol obligatorio
-    if (!form.rol) {
-      newErrors.rol = "El rol es obligatorio";
-      hasError = true;
-    }
-
-    // Validar fincaId SOLO si el rol requiere finca asociada (IDs 3 y 5)
-    const ROLES_CON_FINCA = [3, 5];
-    const rolId = Number(form.rol);
-    if (ROLES_CON_FINCA.includes(rolId) && !form.fincaId) {
-      newErrors.fincaId = "La finca es obligatoria para este rol";
-      hasError = true;
-    }
-
     // ─── VALIDACIÓN DE MEDIOS DE CONTACTO (teléfono o email) ───
     const telefonoValido = form.telefono && validarTelefono(form.telefono);
     const emailValido = form.email && validarEmail(form.email);
 
-    // Al menos uno debe estar presente y ser válido
     if (!telefonoValido && !emailValido) {
       if (!form.telefono) {
         newErrors.telefono = "Debe proporcionar al menos un medio de contacto (teléfono o correo)";
@@ -198,7 +165,6 @@ export function useColaboradorForm({
       }
       hasError = true;
     } else {
-      // Si al menos uno es válido, validar el otro si está presente
       if (form.telefono && !validarTelefono(form.telefono)) {
         newErrors.telefono = "Teléfono debe tener 8 dígitos";
         hasError = true;
@@ -210,13 +176,10 @@ export function useColaboradorForm({
     }
 
     // ─── VALIDACIÓN DE PIN ──────────────────────────────────────
-    // En creación, el PIN es obligatorio.
-    // En edición, solo se valida si se proporciona.
     const pinProvided = pin && pin.trim() !== "";
     const confirmProvided = confirmPin && confirmPin.trim() !== "";
 
     if (!isEditing) {
-      // Creación: ambos obligatorios
       if (!pinProvided) {
         newErrors.pin = "El PIN es obligatorio";
         hasError = true;
@@ -233,7 +196,6 @@ export function useColaboradorForm({
         hasError = true;
       }
     } else {
-      // Edición: solo se valida si se ingresa algo
       if (pinProvided || confirmProvided) {
         if (!pinProvided) {
           newErrors.pin = "Debe ingresar el PIN para actualizarlo";
@@ -259,7 +221,7 @@ export function useColaboradorForm({
 
   // ─── CONSTRUCCIÓN DEL MENSAJE: UN SOLO ERROR A LA VEZ ──────
   const buildValidationMessage = (errorsObj) => {
-    const order = ['cedula', 'nombre', 'apellidos', 'rol', 'fincaId', 'telefono', 'email', 'pin', 'confirmPin'];
+    const order = ['cedula', 'nombre', 'apellidos', 'telefono', 'email', 'pin', 'confirmPin'];
     for (const field of order) {
       if (errorsObj[field]) {
         return errorsObj[field];
@@ -282,7 +244,6 @@ export function useColaboradorForm({
     const submitData = { ...form, nombre: fullName };
     delete submitData.apellidos;
 
-    // Incluir PIN solo si es válido y se ha proporcionado
     if (pin && pin.trim() !== "" && validarPin(pin)) {
       submitData.pin = pin;
     }
@@ -298,7 +259,6 @@ export function useColaboradorForm({
       apellidos: "",
       telefono: "",
       email: "",
-      rol: "",
       fincaId: fincaId || "",
     });
     setPin("");
@@ -313,8 +273,6 @@ export function useColaboradorForm({
     errors,
     submitted,
     validationMessage,
-    rolesDisponibles,
-    fincasOptions,
     handleChange,
     handleCedulaChange,
     handleTelefonoChange,
@@ -322,8 +280,8 @@ export function useColaboradorForm({
     handleApellidosChange,
     handlePinChange,
     handleConfirmPinChange,
-    pin,                // ← añadido
-    confirmPin,         // ← añadido
+    pin,
+    confirmPin,
     handleSubmit,
     resetForm,
   };

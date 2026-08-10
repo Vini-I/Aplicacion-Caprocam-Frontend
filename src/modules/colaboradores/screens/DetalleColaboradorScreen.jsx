@@ -38,19 +38,6 @@ import { STYLE } from '../../../theme/style';
 import { styles } from '../styles/DetalleColaboradorStyles';
 import { useError } from '../../../shared/context/ErrorContext';
 
-// ─── Constantes de etiquetas y variantes para roles ────────────
-const ROL_LABELS = {
-  camprocam_worker: 'Trabajador Camprocam',
-  external_owner: 'Dueño Externo',
-  external_worker: 'Trabajador Externo',
-};
-
-const ROL_VARIANTS = {
-  camprocam_worker: 'info',
-  external_owner: 'warning',
-  external_worker: 'success',
-};
-
 // ─── Componente interno: fila con icono y valor ──────────────
 function FilaDetalleIcono({ icon, label, value, onPress }) {
   const content = (
@@ -74,8 +61,6 @@ function FilaDetalleIcono({ icon, label, value, onPress }) {
   );
   return content;
 }
-
-
 
 // ─── Componente principal ──────────────────────────────────────
 
@@ -121,7 +106,6 @@ export default function DetalleColaboradorScreen() {
         // No hubo necesidad de decodificar
       }
       showAlert(type, message);
-      // limpiar params de la URL para no volver a mostrar
       router.setParams({ alertType: undefined, alertMessage: undefined });
     }
   }, [params?.alertMessage, params?.alertType, router]);
@@ -196,9 +180,6 @@ export default function DetalleColaboradorScreen() {
     );
   }
 
-  const rolLabel = ROL_LABELS[colaborador.rol] || colaborador.rol;
-  const rolVariant = ROL_VARIANTS[colaborador.rol] || 'info';
-
   // ─── Render ────────────────────────────────────────────────────
   return (
     <>
@@ -218,12 +199,6 @@ export default function DetalleColaboradorScreen() {
             </View>
             <View style={styles.info}>
               <CustomText style={styles.nombre}>{colaborador.nombre}</CustomText>
-              <Badge
-                label={rolLabel}
-                variant={rolVariant}
-                style={styles.badge}
-                textStyle={styles.badgeTexto}
-              />
             </View>
           </View>
 
