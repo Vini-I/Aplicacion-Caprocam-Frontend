@@ -141,7 +141,13 @@ const [fincas, setFincas] = useState([]);
         estanque: Number(estanqueSeleccionado),
         pesoActual: Number(pesoActual),
         fechaRegistro: convertirFechaParaBackend(fechaRegistro),
-        colaborador: null,
+        muestreos: calculos.map((c, index) => ({
+          ...(c.id != null && c.id < 1000 ? { id: c.id } : {}), 
+          cantidad: c.cantidad,
+          pesoTotal: c.pesoTotal,
+          pesoPromedio: Number(Number(c.promedio).toFixed(2)),
+          orden: index + 1,
+        })),
       });
       setSuccessMessage("Actualizado exitosamente");
       onGuardado?.();
