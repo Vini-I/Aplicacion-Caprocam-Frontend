@@ -25,10 +25,10 @@ export async function obtenerDetalleReporte({
 
     case "crecimiento": {
       const registros = await crecimientoService.getAll();
-
+      console.log(JSON.stringify(registros, null, 2));
       return ordenarRecientesPrimero(
-        registros.filter(
-          (r) =>
+        (Array.isArray(registros) ? registros : []). filter(
+          (r) => 
             Number(r.finca ?? r.finca_id ?? r.fincaId) === Number(fincaId) &&
             Number(r.estanque ?? r.estanque_id ?? r.estanqueId) === Number(estanqueId)
         )

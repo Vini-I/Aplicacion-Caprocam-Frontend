@@ -83,10 +83,77 @@ export default function CardCrecimiento({ fincaId, estanqueId, onEditar, onAlert
                         <View style={styles.infoItem}>
                             <Text style={styles.label}>Fecha</Text>
                             <Text style={styles.value}>
-                                
+
                                 {new Date(registro.fechaRegistro || registro.fecha_registro || registro.fecha).toLocaleDateString("es-CR")}
                             </Text>
                         </View>
+                    </View>
+
+                    <View style={styles.muestreosContainer}>
+                        <Text style={styles.muestreosTitle}>
+                            Muestreos
+                        </Text>
+
+                        <View style={styles.muestreoHeader}>
+                            <Text
+                                style={[
+                                    styles.muestreoHeaderText,
+                                    styles.muestreoNumero,
+                                ]}
+                            >
+                                #
+                            </Text>
+
+                            <Text
+                                style={[
+                                    styles.muestreoHeaderText,
+                                    styles.muestreoCantidad,
+                                ]}
+                            >
+                                Cantidad
+                            </Text>
+
+                            <Text
+                                style={[
+                                    styles.muestreoHeaderText,
+                                    styles.muestreoPesoTotal,
+                                ]}
+                            >
+                                Peso total
+                            </Text>
+
+                            <Text
+                                style={[
+                                    styles.muestreoHeaderText,
+                                    styles.muestreoPromedio,
+                                ]}
+                            >
+                                Promedio
+                            </Text>
+                        </View>
+
+                        {registro.muestreos.map((muestreo, index) => (
+                            <View
+                                key={muestreo.id}
+                                style={styles.muestreoRow}
+                            >
+                                <Text style={styles.muestreoNumero}>
+                                    {index + 1}
+                                </Text>
+
+                                <Text style={styles.muestreoCantidad}>
+                                    {muestreo.cantidad}
+                                </Text>
+
+                                <Text style={styles.muestreoPesoTotal}>
+                                    {muestreo.pesoTotal} g
+                                </Text>
+
+                                <Text style={styles.muestreoPromedio}>
+                                    {muestreo.pesoPromedio} g
+                                </Text>
+                            </View>
+                        ))}
                     </View>
 
                     <View style={styles.pesoContainer}>
@@ -109,7 +176,7 @@ export default function CardCrecimiento({ fincaId, estanqueId, onEditar, onAlert
 
                         <Button
                             style={styles.Editar}
-                            onPress={() => {onEditar(registro.id)}}
+                            onPress={() => { onEditar(registro.id) }}
                         >
                             <Icon icon={ICONS.edit} color={COLORS.primary} size={20} />
                             <Text size={12} color={COLORS.primary}>
