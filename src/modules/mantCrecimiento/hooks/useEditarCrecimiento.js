@@ -439,6 +439,7 @@ export default function useEditarCrecimiento(registroId, onGuardado) {
         pesoActual: Number(Number(pesoFinal).toFixed(2)),
         fechaRegistro: convertirFechaParaBackend(fechaRegistro),
         muestreos: calculos.map((c, index) => ({
+          ...(c.id != null && c.id < 1000 ? { id: c.id } : {}), 
           cantidad: c.cantidad,
           pesoTotal: c.pesoTotal,
           pesoPromedio: Number(Number(c.promedio).toFixed(2)),

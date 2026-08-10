@@ -14,16 +14,16 @@ y categoria dentro del Dashboard.
 
 import { View } from "react-native";
 
-import Button from "../../../shared/components/Button";
-import Card from "../../../shared/components/Card";
-import Icon from "../../../shared/components/Icons";
-import CustomText from "../../../shared/components/Text";
-import Title from "../../../shared/components/Title";
+import Button from "../../../shared/components/Button.jsx";
+import Card from "../../../shared/components/Card.jsx";
+import Icon from "../../../shared/components/Icons.jsx";
+import CustomText from "../../../shared/components/Text.jsx";
+import Title from "../../../shared/components/Title.jsx";
 
-import { COLORS } from "../../../theme/colors";
-import { ICONS } from "../../../theme/icons";
-import { obtenerCategoriasAlertas, obtenerResumenAlertas } from "../utils/DashboardUtils";
-import { styles } from "../styles/DashboardStyle";
+import { COLORS } from "../../../theme/colors.js";
+import { ICONS } from "../../../theme/icons.js";
+import { obtenerCategoriasAlertas, obtenerResumenAlertas } from "../utils/DashboardUtils.js";
+import { styles } from "../styles/DashboardStyle.js";
 
 function obtenerColorTipo(tipo) {
   return tipo === "critica" ? COLORS.error : tipo === "advertencia" ? COLORS.warning : COLORS.primary;
@@ -33,7 +33,14 @@ function obtenerIconoTipo(tipo) {
   return tipo === "critica" ? ICONS.shieldAlert : tipo === "advertencia" ? ICONS.alertTriangle : ICONS.info;
 }
 
-export default function DashboardAlertas({ alertas, abiertos, onToggle, onDismiss, onViewAll }) {
+export default function DashboardAlertas({
+  alertas,
+  abiertos,
+  onToggle,
+  onDismiss,
+  onViewAll,
+  onPressAlerta,
+}) {
   const grupos = obtenerResumenAlertas(alertas);
 
   return (
@@ -79,7 +86,11 @@ export default function DashboardAlertas({ alertas, abiertos, onToggle, onDismis
 
         return (
           <View key={grupo.tipo} style={styles.alertDropdownGroup}>
-            <Button variant="outline" style={styles.alertDropdownHeader} onPress={() => onToggle(grupo.tipo)}>
+            <Button
+              variant="outline"
+              style={styles.alertDropdownHeader}
+              onPress={() => onToggle(grupo.tipo)}
+            >
               <View style={styles.alertDropdownLeft}>
                 <Icon icon={icono} size={18} color={color} />
 
@@ -125,32 +136,65 @@ export default function DashboardAlertas({ alertas, abiertos, onToggle, onDismis
                         ];
 
                         return (
-                          <View key={alerta.id ?? `${grupo.tipo}-${categoria}-${index}`} style={alertaStyle}>
-                            <View style={styles.alertIconContainer}>
-                              <Icon icon={alerta.icono} size={18} color={alerta.color} />
-                            </View>
+                          <View
+                            key={alerta.id ?? `${grupo.tipo}-${categoria}-${index}`}
+                            style={alertaStyle}
+                          >
+                            <Button
+                              variant="ghost"
+                              style={{
+                                flex: 1,
+                                flexDirection: "row",
+                                alignItems: "flex-start",
+                                justifyContent: "flex-start",
+                                marginTop: 0,
+                                paddingHorizontal: 0,
+                                paddingVertical: 0,
+                                borderWidth: 0,
+                              }}
+                              onPress={() => onPressAlerta?.(alerta)}
+                            >
+                              <View style={styles.alertIconContainer}>
+                                <Icon icon={alerta.icono} size={18} color={alerta.color} />
+                              </View>
 
-                            <View style={styles.alertContent}>
-                              <View style={styles.alertTitleRow}>
-                                <CustomText size={14} weight="800" color={COLORS.textSecondary} numberOfLines={1}>
+                              <View style={styles.alertContent}>
+                                <CustomText
+                                  size={14}
+                                  weight="800"
+                                  color={COLORS.textSecondary}
+                                  numberOfLines={1}
+                                >
                                   {alerta.titulo}
                                 </CustomText>
 
-                                <Button variant="outline" style={styles.alertDismissButton} onPress={() => onDismiss(alerta.id)}>
-                                  <Icon icon={ICONS.close} size={16} color={COLORS.textTertiary} />
-                                </Button>
-                              </View>
-
-                              <CustomText size={12} color={COLORS.textTertiary} style={styles.alertMessage}>
-                                {alerta.mensaje}
-                              </CustomText>
-
-                              {alerta.detalle !== "" && (
-                                <CustomText size={12} color={COLORS.textSecondary} style={styles.alertDetail}>
-                                  {alerta.detalle}
+                                <CustomText
+                                  size={12}
+                                  color={COLORS.textTertiary}
+                                  style={styles.alertMessage}
+                                >
+                                  {alerta.mensaje}
                                 </CustomText>
-                              )}
-                            </View>
+
+                                {alerta.detalle !== "" && (
+                                  <CustomText
+                                    size={12}
+                                    color={COLORS.textSecondary}
+                                    style={styles.alertDetail}
+                                  >
+                                    {alerta.detalle}
+                                  </CustomText>
+                                )}
+                              </View>
+                            </Button>
+
+                            <Button
+                              variant="outline"
+                              style={styles.alertDismissButton}
+                              onPress={() => onDismiss(alerta.id)}
+                            >
+                              <Icon icon={ICONS.close} size={16} color={COLORS.textTertiary} />
+                            </Button>
                           </View>
                         );
                       })}
@@ -163,7 +207,11 @@ export default function DashboardAlertas({ alertas, abiertos, onToggle, onDismis
         );
       })}
 
-      <Button variant="outline" style={styles.viewAllAlertsButton} onPress={onViewAll}>
+      <Button
+        variant="outline"
+        style={styles.viewAllAlertsButton}
+        onPress={onViewAll}
+      >
         <View style={styles.inlineButtonContentCentered}>
           <Icon icon={ICONS.notification} size={18} color={COLORS.primary} />
 
