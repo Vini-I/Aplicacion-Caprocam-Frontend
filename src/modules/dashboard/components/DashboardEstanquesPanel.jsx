@@ -13,16 +13,16 @@ Los dias de cultivo provienen del modulo de siembra.
 //////////////////////////////////////////////////////////
 */
 
-import { Platform, View } from "react-native";
+import { Platform, Pressable, View } from "react-native";
 
-import Card from "../../../shared/components/Card";
-import Icon from "../../../shared/components/Icons";
-import CustomText from "../../../shared/components/Text";
-import Title from "../../../shared/components/Title";
+import Card from "../../../shared/components/Card.jsx";
+import Icon from "../../../shared/components/Icons.jsx";
+import CustomText from "../../../shared/components/Text.jsx";
+import Title from "../../../shared/components/Title.jsx";
 
-import { COLORS } from "../../../theme/colors";
-import { ICONS } from "../../../theme/icons";
-import { TYPOGRAPHY } from "../../../theme/typography";
+import { COLORS } from "../../../theme/colors.js";
+import { ICONS } from "../../../theme/icons.js";
+import { TYPOGRAPHY } from "../../../theme/typography.js";
 
 import {
   obtenerEstanquesActivos,
@@ -30,9 +30,9 @@ import {
   obtenerMayorKgSemanal,
   obtenerPorcentaje,
   obtenerTextoSeguro,
-} from "../utils/DashboardUtils";
+} from "../utils/DashboardUtils.js";
 
-import { styles } from "../styles/DashboardStyle";
+import { styles } from "../styles/DashboardStyle.js";
 
 function GraficaPastelEstanques({ activos, cosechados }) {
   const total = activos + cosechados;
@@ -92,20 +92,18 @@ function GraficaPastelEstanques({ activos, cosechados }) {
   }
 
   return (
-    <View style={styles.donutWrapper}>
-      <View style={styles.donutChart}>
-        <View style={[styles.donutActiveSegment, { width: `${porcentajeActivos}%` }]} />
-        <View style={[styles.donutHarvestSegment, { width: `${100 - porcentajeActivos}%` }]} />
+    <View style={styles.donutChart}>
+      <View style={[styles.donutActiveSegment, { width: `${porcentajeActivos}%` }]} />
+      <View style={[styles.donutHarvestSegment, { width: `${100 - porcentajeActivos}%` }]} />
 
-        <View style={styles.donutInner}>
-          <CustomText size={26} weight="900" color={COLORS.textSecondary} style={styles.donutTotalNumber}>
-            {total}
-          </CustomText>
+      <View style={styles.donutInner}>
+        <CustomText size={26} weight="900" color={COLORS.textSecondary} style={styles.donutTotalNumber}>
+          {total}
+        </CustomText>
 
-          <CustomText size={11} color={COLORS.textTertiary}>
-            total
-          </CustomText>
-        </View>
+        <CustomText size={11} color={COLORS.textTertiary}>
+          total
+        </CustomText>
       </View>
     </View>
   );
@@ -143,7 +141,7 @@ function GraficaAlimentacionSemanal({ alimentacionSemanal }) {
   );
 }
 
-export default function DashboardEstanquesPanel({ estanques, alimentacionSemanal }) {
+export default function DashboardEstanquesPanel({ estanques, alimentacionSemanal, onPressEstanque }) {
   const estanquesSeguros = Array.isArray(estanques) ? estanques : [];
   const alimentacionSegura = Array.isArray(alimentacionSemanal) ? alimentacionSemanal : [];
   const activos = obtenerEstanquesActivos(estanquesSeguros);
@@ -224,7 +222,11 @@ export default function DashboardEstanquesPanel({ estanques, alimentacionSemanal
                 : COLORS.textSecondary;
 
           return (
-            <View key={estanque.id ?? `estanque-${index}`} style={styles.infoRowIndigo}>
+            <Pressable
+              key={estanque.id ?? `estanque-${index}`}
+              style={styles.infoRowIndigo}
+              onPress={() => onPressEstanque?.(estanque)}
+            >
               <View style={styles.rowIconBoxIndigo}>
                 <Icon icon={ICONS.waterFlow} size={20} color={COLORS.primary} />
               </View>
@@ -250,7 +252,7 @@ export default function DashboardEstanquesPanel({ estanques, alimentacionSemanal
                   {diasCultivo}
                 </CustomText>
               </View>
-            </View>
+            </Pressable>
           );
         })
       )}

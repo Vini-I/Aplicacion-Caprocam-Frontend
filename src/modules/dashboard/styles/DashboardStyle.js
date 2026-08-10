@@ -14,8 +14,8 @@ utilizados por el Dashboard.
 
 import { StyleSheet } from "react-native";
 
-import { COLORS } from "../../../theme/colors";
-import { TYPOGRAPHY } from "../../../theme/typography";
+import { COLORS } from "../../../theme/colors.js";
+import { TYPOGRAPHY } from "../../../theme/typography.js";
 
 const PRIMARY_LIGHT = COLORS.primaryLight ? COLORS.primaryLight : "#ECF8FF";
 const BORDER_COLOR = COLORS.border ? COLORS.border : "#E5E7EB";
@@ -335,10 +335,6 @@ export const styles = StyleSheet.create({
     backgroundColor: COLORS.warningLight,
   },
 
-  cardRed: {
-    backgroundColor: COLORS.errorLight,
-  },
-
   statTopRow: {
     width: "100%",
     flexDirection: "row",
@@ -370,10 +366,6 @@ export const styles = StyleSheet.create({
     backgroundColor: COLORS.warningLight,
   },
 
-  iconRed: {
-    backgroundColor: COLORS.errorLight,
-  },
-
   statValue: {
     fontSize: 28,
     lineHeight: 32,
@@ -381,10 +373,6 @@ export const styles = StyleSheet.create({
     fontWeight: "900",
     color: COLORS.textSecondary,
     marginTop: 12,
-  },
-
-  statValueDanger: {
-    color: COLORS.error,
   },
 
   statLabel: {
@@ -795,32 +783,6 @@ export const styles = StyleSheet.create({
   badgeBaja: {
     backgroundColor: COLORS.successLight,
     borderColor: COLORS.success,
-  },
-
-  mortalityTotalBox: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: COLORS.errorLight,
-    borderRadius: 14,
-    padding: 18,
-    borderWidth: 1,
-    borderColor: COLORS.errorLight,
-  },
-
-  totalBoxText: {
-    marginLeft: 18,
-    flex: 1,
-    minWidth: 0,
-  },
-
-  mortalityRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: COLORS.errorLight,
-    borderRadius: 14,
-    padding: 14,
-    marginBottom: 10,
-    gap: 10,
   },
 
   recordRow: {
