@@ -341,7 +341,6 @@ export function adaptarEnfermedadesDashboard(registros, fincas, estanques) {
     const estanqueCodigo = obtenerCodigoEstanque(estanque);
     const enfermedad = obtenerTexto(registro.enfermedad, "Enfermedad registrada");
     const severidad = obtenerTexto(registro.severidad);
-    const mortalidad = obtenerNumero(obtenerValor(registro, ["mortalidadRegistrada", "mortalidad_registrada", "mortalidad"]));
 
     return {
       ...registro,
@@ -357,8 +356,6 @@ export function adaptarEnfermedadesDashboard(registros, fincas, estanques) {
       enfermedades: [enfermedad],
       severidad,
       severidadNombre: obtenerTexto(registro.severidadNombre, capitalizar(severidad)),
-      mortalidad,
-      mortalidadRegistrada: mortalidad,
       timestamp: obtenerTexto(obtenerValor(registro, ["fechaCreacion", "createdAt", "fechaReporte"]), registro.fechaReporte),
     };
   });
@@ -367,7 +364,6 @@ export function adaptarEnfermedadesDashboard(registros, fincas, estanques) {
 export function adaptarResumenEnfermedadesDashboard(resumen) {
   const datos = resumen && typeof resumen === "object" && !Array.isArray(resumen) ? resumen : {};
   const totalCasos = obtenerNumero(obtenerValor(datos, ["totalCasos", "totalRegistros"]));
-  const totalMortalidad = obtenerNumero(obtenerValor(datos, ["totalMortalidad", "totalMortalidadRegistrada"]));
 
   const enfermedadesFrecuentes = obtenerArreglo(datos.enfermedadesFrecuentes).map(function (item, index) {
     const valor = obtenerTexto(obtenerValor(item, ["valor", "enfermedad"]), "enfermedad-" + index);
@@ -403,8 +399,6 @@ export function adaptarResumenEnfermedadesDashboard(resumen) {
     ...datos,
     totalCasos,
     totalRegistros: totalCasos,
-    totalMortalidad,
-    totalMortalidadRegistrada: totalMortalidad,
     enfermedadesFrecuentes,
     severidadesFrecuentes,
   };
@@ -434,9 +428,6 @@ export function adaptarParasitologiasDashboard(registros, fincas, estanques) {
       estanqueCodigo,
       parasito,
       parasitoNombre: obtenerTexto(registro.parasitoNombre, capitalizar(parasito)),
-      camaronesMuestreados: obtenerNumero(registro.camaronesMuestreados),
-      camaronesInfectados: obtenerNumero(registro.camaronesInfectados),
-      porcentajeInfeccion: obtenerNumero(registro.porcentajeInfeccion),
       gradoInfeccion: grado,
       nombreGrado: obtenerTexto(registro.nombreGrado, capitalizar(grado)),
       timestamp: obtenerTexto(obtenerValor(registro, ["fechaCreacion", "createdAt", "fechaReporte"]), registro.fechaReporte),
@@ -446,19 +437,10 @@ export function adaptarParasitologiasDashboard(registros, fincas, estanques) {
 
 export function adaptarResumenParasitologiasDashboard(resumen) {
   const datos = resumen && typeof resumen === "object" && !Array.isArray(resumen) ? resumen : {};
-  const totalMuestreados = obtenerNumero(obtenerValor(datos, ["totalMuestreados", "totalCamaronesMuestreados"]));
-  const totalInfectados = obtenerNumero(obtenerValor(datos, ["totalInfectados", "totalCamaronesInfectados"]));
-  const promedioInfeccion = obtenerNumero(obtenerValor(datos, ["promedioInfeccion", "porcentajePromedio"]));
 
   return {
     ...datos,
     totalRegistros: obtenerNumero(datos.totalRegistros),
-    totalMuestreados,
-    totalCamaronesMuestreados: totalMuestreados,
-    totalInfectados,
-    totalCamaronesInfectados: totalInfectados,
-    porcentajePromedio: promedioInfeccion,
-    promedioInfeccion,
     parasitosFrecuentes: obtenerArreglo(datos.parasitosFrecuentes),
     gradosFrecuentes: obtenerArreglo(datos.gradosFrecuentes),
   };

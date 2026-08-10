@@ -12,8 +12,8 @@
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import { COLORS } from "../../../theme/colors";
-import { ICONS } from "../../../theme/icons";
+import { COLORS } from "../../../theme/colors.js";
+import { ICONS } from "../../../theme/icons.js";
 
 const CLAVE_ALERTAS_DESCARTADAS = "caprocam_alertas_descartadas_v1";
 const UMBRAL_MANTENIMIENTO_AIREADOR = 80;
@@ -58,7 +58,6 @@ function parsearFecha(valor) {
 
 function formatearFechaCorta(valor) {
   const fecha = parsearFecha(valor);
-
   if (fecha === null) return "Sin fecha";
 
   const dia = String(fecha.getDate()).padStart(2, "0");
@@ -80,6 +79,8 @@ function agregarAlerta(alertas, alerta) {
     icono: alerta.icono,
     color: alerta.color,
     prioridad: alerta.prioridad,
+    modulo: alerta.modulo,
+    registroId: alerta.registroId ?? null,
   });
 }
 
@@ -108,6 +109,8 @@ function obtenerAlertasInventario(productosInventario) {
         icono: ICONS.notification,
         color: COLORS.error,
         prioridad: 3,
+        modulo: "inventario",
+        registroId: producto.id,
       });
     }
 
@@ -121,6 +124,8 @@ function obtenerAlertasInventario(productosInventario) {
         icono: ICONS.notification,
         color: COLORS.warning,
         prioridad: 7,
+        modulo: "inventario",
+        registroId: producto.id,
       });
     }
   });
@@ -150,12 +155,13 @@ function obtenerAlertasCosecha(siembras) {
     const fecha = obtenerTextoSeguro(siembra.fechaSiembra);
     const fechaVisible = formatearFechaCorta(fecha);
     const activa = estado.includes("activa") || estado.includes("activo");
+    const siembraId = siembra.siembraId ?? siembra.id;
 
     if (!activa) return;
 
     if (diasMaduracion > 0 && diasRestantes <= 0) {
       agregarAlerta(alertas, {
-        id: "cosecha-vencida-" + siembra.siembraId,
+        id: "cosecha-vencida-" + siembraId,
         tipo: "critica",
         categoria: "Cosecha",
         titulo: "Cosecha pendiente",
@@ -166,12 +172,14 @@ function obtenerAlertasCosecha(siembras) {
         icono: ICONS.shrimp,
         color: COLORS.error,
         prioridad: 2,
+        modulo: "siembra",
+        registroId: siembraId,
       });
     }
 
     if (diasMaduracion > 0 && diasRestantes > 0 && diasRestantes <= 20) {
       agregarAlerta(alertas, {
-        id: "cosecha-pronta-" + siembra.siembraId,
+        id: "cosecha-pronta-" + siembraId,
         tipo: "advertencia",
         categoria: "Cosecha",
         titulo: "Cosecha proxima",
@@ -182,6 +190,8 @@ function obtenerAlertasCosecha(siembras) {
         icono: ICONS.shrimp,
         color: COLORS.warning,
         prioridad: 3,
+        modulo: "siembra",
+        registroId: siembraId,
       });
     }
   });
@@ -214,6 +224,8 @@ function obtenerAlertasEstanques(estanques) {
         icono: ICONS.waterFlow,
         color: COLORS.warning,
         prioridad: 5,
+        modulo: "estanques",
+        registroId: estanque.id,
       });
     }
 
@@ -227,6 +239,8 @@ function obtenerAlertasEstanques(estanques) {
         icono: ICONS.waterFlow,
         color: COLORS.primary,
         prioridad: 9,
+        modulo: "estanques",
+        registroId: estanque.id,
       });
     }
   });
@@ -242,7 +256,6 @@ ALIMENTACION
 
 function obtenerHoraNumero(horaTexto) {
   const texto = obtenerTextoSeguro(horaTexto).toLowerCase();
-
   if (texto === "") return -1;
 
   const partes = texto.split(":");
@@ -296,6 +309,7 @@ function obtenerAlertasAlimentacion(alimentaciones) {
         icono: ICONS.food,
         color: COLORS.warning,
         prioridad: 8,
+        modulo: "alimentacion",
       });
     }
 
@@ -309,6 +323,7 @@ function obtenerAlertasAlimentacion(alimentaciones) {
         icono: ICONS.clock,
         color: COLORS.primary,
         prioridad: 10,
+        modulo: "alimentacion",
       });
     }
   });
@@ -383,7 +398,6 @@ function obtenerAlertasBombeo(equipos) {
     if (minutosActuales >= inicio && minutosActuales <= fin) horarioActivo = horario;
 
     let diferencia = inicio - minutosActuales;
-
     if (diferencia < 0) diferencia += 1440;
 
     if (diferencia < diferenciaMenor) {
@@ -404,6 +418,7 @@ function obtenerAlertasBombeo(equipos) {
       icono: ICONS.waterFlow,
       color: COLORS.primary,
       prioridad: 9,
+      modulo: "equipos",
     });
   }
 
@@ -417,6 +432,7 @@ function obtenerAlertasBombeo(equipos) {
       icono: ICONS.waterFlow,
       color: COLORS.warning,
       prioridad: 6,
+      modulo: "equipos",
     });
   }
 
@@ -453,6 +469,8 @@ function obtenerAlertasAireadores(equipos) {
         icono: ICONS.wind,
         color: COLORS.error,
         prioridad: 3,
+        modulo: "equipos",
+        registroId: equipo.id,
       });
     }
 
@@ -466,6 +484,8 @@ function obtenerAlertasAireadores(equipos) {
         icono: ICONS.wind,
         color: COLORS.warning,
         prioridad: 6,
+        modulo: "equipos",
+        registroId: equipo.id,
       });
     }
   });
@@ -495,6 +515,8 @@ function obtenerAlertasSanitarias(registrosEnfermedades, registrosParasitologia)
         icono: ICONS.shieldAlert,
         color: COLORS.error,
         prioridad: 1,
+        modulo: "enfermedades",
+        registroId: registro.id,
       });
     }
   });
@@ -512,6 +534,8 @@ function obtenerAlertasSanitarias(registrosEnfermedades, registrosParasitologia)
         icono: ICONS.parasite,
         color: COLORS.warning,
         prioridad: 2,
+        modulo: "parasitologia",
+        registroId: registro.id,
       });
     }
   });
@@ -581,7 +605,6 @@ export async function obtenerAlertasDescartadas() {
     return normalizarLista(lista);
   } catch (error) {
     throw error;
-    return [];
   }
 }
 
