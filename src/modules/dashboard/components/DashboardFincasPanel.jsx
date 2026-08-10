@@ -12,8 +12,8 @@ de cantidad de estanques por finca.
 //////////////////////////////////////////////////////////
 */
 
-import { Pressable, View } from "react-native";
-
+import { View } from "react-native";
+import Button from "../../../shared/components/Button.jsx";
 import Card from "../../../shared/components/Card.jsx";
 import Icon from "../../../shared/components/Icons.jsx";
 import CustomText from "../../../shared/components/Text.jsx";
@@ -89,9 +89,17 @@ export default function DashboardFincasPanel({ fincas, estanques, onPressFinca }
             const area = Number(finca.area) > 0 ? `${finca.area} ha` : "Area no registrada";
 
             return (
-              <Pressable
+              <Button
                 key={finca.id ?? `finca-detalle-${index}`}
-                style={styles.infoRowBlue}
+                variant="ghost"
+                style={[
+                  styles.infoRowBlue,
+                  {
+                    marginTop: 0,
+                    borderWidth: 0,
+                    justifyContent: "flex-start",
+                  },
+                ]}
                 onPress={() => onPressFinca?.(finca)}
               >
                 <View style={styles.rowIconBoxBlue}>
@@ -122,7 +130,7 @@ export default function DashboardFincasPanel({ fincas, estanques, onPressFinca }
                     {totalEstanques === 1 ? "estanque" : "estanques"}
                   </CustomText>
                 </View>
-              </Pressable>
+              </Button>
             );
           })}
         </>

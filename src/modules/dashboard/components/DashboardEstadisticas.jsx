@@ -21,7 +21,18 @@ import { COLORS } from "../../../theme/colors.js";
 import { ICONS } from "../../../theme/icons.js";
 import { styles } from "../styles/DashboardStyle.js";
 
-function StatCard({ id, selectedId, onPress, icon, value, label, cardStyle, iconStyle, iconColor, isTablet }) {
+function StatCard({
+  id,
+  selectedId,
+  onPress,
+  icon,
+  value,
+  label,
+  cardStyle,
+  iconStyle,
+  iconColor,
+  isTablet,
+}) {
   const cardStyles = [
     styles.statCard,
     cardStyle,
@@ -30,9 +41,19 @@ function StatCard({ id, selectedId, onPress, icon, value, label, cardStyle, icon
   ];
 
   return (
-    <Button variant="ghost" style={cardStyles} onPress={() => onPress(id)}>
-      <View style={[styles.statIconBox, iconStyle]}>
-        <Icon icon={icon} size={22} color={iconColor} />
+    <Button
+      variant="ghost"
+      style={cardStyles}
+      onPress={() => onPress(id)}
+    >
+      <View style={styles.statTopRow}>
+        <View style={[styles.statIconBox, iconStyle]}>
+          <Icon
+            icon={icon}
+            size={22}
+            color={iconColor}
+          />
+        </View>
 
         <Icon
           icon={selectedId === id ? ICONS.chevronUp : ICONS.chevronDown}
@@ -46,7 +67,11 @@ function StatCard({ id, selectedId, onPress, icon, value, label, cardStyle, icon
           {value}
         </CustomText>
 
-        <CustomText size={12} color={COLORS.textTertiary} style={styles.statLabel}>
+        <CustomText
+          size={12}
+          color={COLORS.textTertiary}
+          style={styles.statLabel}
+        >
           {label}
         </CustomText>
       </View>
@@ -63,7 +88,12 @@ export default function DashboardEstadisticas({
   onSelect,
 }) {
   return (
-    <View style={[styles.statsGrid, isTablet ? styles.statsGridTablet : null]}>
+    <View
+      style={[
+        styles.statsGrid,
+        isTablet ? styles.statsGridTablet : null,
+      ]}
+    >
       <StatCard
         id="fincas"
         selectedId={selectedCard}

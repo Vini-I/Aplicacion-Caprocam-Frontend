@@ -13,8 +13,9 @@ Los dias de cultivo provienen del modulo de siembra.
 //////////////////////////////////////////////////////////
 */
 
-import { Platform, Pressable, View } from "react-native";
+import { Platform, View } from "react-native";
 
+import Button from "../../../shared/components/Button.jsx";
 import Card from "../../../shared/components/Card.jsx";
 import Icon from "../../../shared/components/Icons.jsx";
 import CustomText from "../../../shared/components/Text.jsx";
@@ -92,18 +93,20 @@ function GraficaPastelEstanques({ activos, cosechados }) {
   }
 
   return (
-    <View style={styles.donutChart}>
-      <View style={[styles.donutActiveSegment, { width: `${porcentajeActivos}%` }]} />
-      <View style={[styles.donutHarvestSegment, { width: `${100 - porcentajeActivos}%` }]} />
+    <View style={styles.donutWrapper}>
+      <View style={styles.donutChart}>
+        <View style={[styles.donutActiveSegment, { width: `${porcentajeActivos}%` }]} />
+        <View style={[styles.donutHarvestSegment, { width: `${100 - porcentajeActivos}%` }]} />
 
-      <View style={styles.donutInner}>
-        <CustomText size={26} weight="900" color={COLORS.textSecondary} style={styles.donutTotalNumber}>
-          {total}
-        </CustomText>
+        <View style={styles.donutInner}>
+          <CustomText size={26} weight="900" color={COLORS.textSecondary} style={styles.donutTotalNumber}>
+            {total}
+          </CustomText>
 
-        <CustomText size={11} color={COLORS.textTertiary}>
-          total
-        </CustomText>
+          <CustomText size={11} color={COLORS.textTertiary}>
+            total
+          </CustomText>
+        </View>
       </View>
     </View>
   );
@@ -115,13 +118,6 @@ function GraficaAlimentacionSemanal({ alimentacionSemanal }) {
 
   return (
     <View style={styles.lineChart}>
-      <View style={styles.chartGridLines}>
-        <View style={styles.gridLine} />
-        <View style={styles.gridLine} />
-        <View style={styles.gridLine} />
-        <View style={styles.gridLine} />
-      </View>
-
       <View style={styles.lineBars}>
         {registros.map(function (item, index) {
           const porcentaje = obtenerPorcentaje(item.kg, mayorKg);
@@ -222,9 +218,17 @@ export default function DashboardEstanquesPanel({ estanques, alimentacionSemanal
                 : COLORS.textSecondary;
 
           return (
-            <Pressable
+            <Button
               key={estanque.id ?? `estanque-${index}`}
-              style={styles.infoRowIndigo}
+              variant="ghost"
+              style={[
+                styles.infoRowIndigo,
+                {
+                  marginTop: 0,
+                  borderWidth: 0,
+                  justifyContent: "flex-start",
+                },
+              ]}
               onPress={() => onPressEstanque?.(estanque)}
             >
               <View style={styles.rowIconBoxIndigo}>
@@ -252,7 +256,7 @@ export default function DashboardEstanquesPanel({ estanques, alimentacionSemanal
                   {diasCultivo}
                 </CustomText>
               </View>
-            </Pressable>
+            </Button>
           );
         })
       )}

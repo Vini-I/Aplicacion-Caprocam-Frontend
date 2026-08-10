@@ -12,7 +12,7 @@ y categoria dentro del Dashboard.
 //////////////////////////////////////////////////////////
 */
 
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
 
 import Button from "../../../shared/components/Button.jsx";
 import Card from "../../../shared/components/Card.jsx";
@@ -33,7 +33,14 @@ function obtenerIconoTipo(tipo) {
   return tipo === "critica" ? ICONS.shieldAlert : tipo === "advertencia" ? ICONS.alertTriangle : ICONS.info;
 }
 
-export default function DashboardAlertas({ alertas, abiertos, onToggle, onDismiss, onViewAll, onPressAlerta }) {
+export default function DashboardAlertas({
+  alertas,
+  abiertos,
+  onToggle,
+  onDismiss,
+  onViewAll,
+  onPressAlerta,
+}) {
   const grupos = obtenerResumenAlertas(alertas);
 
   return (
@@ -79,7 +86,11 @@ export default function DashboardAlertas({ alertas, abiertos, onToggle, onDismis
 
         return (
           <View key={grupo.tipo} style={styles.alertDropdownGroup}>
-            <Button variant="outline" style={styles.alertDropdownHeader} onPress={() => onToggle(grupo.tipo)}>
+            <Button
+              variant="outline"
+              style={styles.alertDropdownHeader}
+              onPress={() => onToggle(grupo.tipo)}
+            >
               <View style={styles.alertDropdownLeft}>
                 <Icon icon={icono} size={18} color={color} />
 
@@ -125,44 +136,66 @@ export default function DashboardAlertas({ alertas, abiertos, onToggle, onDismis
                         ];
 
                         return (
-                          <Pressable
+                          <View
                             key={alerta.id ?? `${grupo.tipo}-${categoria}-${index}`}
                             style={alertaStyle}
-                            onPress={() => onPressAlerta?.(alerta)}
                           >
-                            <View style={styles.alertIconContainer}>
-                              <Icon icon={alerta.icono} size={18} color={alerta.color} />
-                            </View>
+                            <Button
+                              variant="ghost"
+                              style={{
+                                flex: 1,
+                                flexDirection: "row",
+                                alignItems: "flex-start",
+                                justifyContent: "flex-start",
+                                marginTop: 0,
+                                paddingHorizontal: 0,
+                                paddingVertical: 0,
+                                borderWidth: 0,
+                              }}
+                              onPress={() => onPressAlerta?.(alerta)}
+                            >
+                              <View style={styles.alertIconContainer}>
+                                <Icon icon={alerta.icono} size={18} color={alerta.color} />
+                              </View>
 
-                            <View style={styles.alertContent}>
-                              <View style={styles.alertTitleRow}>
-                                <CustomText size={14} weight="800" color={COLORS.textSecondary} numberOfLines={1}>
+                              <View style={styles.alertContent}>
+                                <CustomText
+                                  size={14}
+                                  weight="800"
+                                  color={COLORS.textSecondary}
+                                  numberOfLines={1}
+                                >
                                   {alerta.titulo}
                                 </CustomText>
 
-                                <Button
-                                  variant="outline"
-                                  style={styles.alertDismissButton}
-                                  onPress={(event) => {
-                                    event?.stopPropagation?.();
-                                    onDismiss(alerta.id);
-                                  }}
+                                <CustomText
+                                  size={12}
+                                  color={COLORS.textTertiary}
+                                  style={styles.alertMessage}
                                 >
-                                  <Icon icon={ICONS.close} size={16} color={COLORS.textTertiary} />
-                                </Button>
-                              </View>
-
-                              <CustomText size={12} color={COLORS.textTertiary} style={styles.alertMessage}>
-                                {alerta.mensaje}
-                              </CustomText>
-
-                              {alerta.detalle !== "" && (
-                                <CustomText size={12} color={COLORS.textSecondary} style={styles.alertDetail}>
-                                  {alerta.detalle}
+                                  {alerta.mensaje}
                                 </CustomText>
-                              )}
-                            </View>
-                          </Pressable>
+
+                                {alerta.detalle !== "" && (
+                                  <CustomText
+                                    size={12}
+                                    color={COLORS.textSecondary}
+                                    style={styles.alertDetail}
+                                  >
+                                    {alerta.detalle}
+                                  </CustomText>
+                                )}
+                              </View>
+                            </Button>
+
+                            <Button
+                              variant="outline"
+                              style={styles.alertDismissButton}
+                              onPress={() => onDismiss(alerta.id)}
+                            >
+                              <Icon icon={ICONS.close} size={16} color={COLORS.textTertiary} />
+                            </Button>
+                          </View>
                         );
                       })}
                     </View>
@@ -174,7 +207,11 @@ export default function DashboardAlertas({ alertas, abiertos, onToggle, onDismis
         );
       })}
 
-      <Button variant="outline" style={styles.viewAllAlertsButton} onPress={onViewAll}>
+      <Button
+        variant="outline"
+        style={styles.viewAllAlertsButton}
+        onPress={onViewAll}
+      >
         <View style={styles.inlineButtonContentCentered}>
           <Icon icon={ICONS.notification} size={18} color={COLORS.primary} />
 

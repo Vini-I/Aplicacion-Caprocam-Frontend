@@ -8,9 +8,10 @@
  */
 
 import React, { useEffect, useState } from "react";
-import { Pressable, ScrollView, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { useRouter } from "expo-router";
 
+import Button from "../../../shared/components/Button.jsx";
 import Card from "../../../shared/components/Card.jsx";
 import CustomText from "../../../shared/components/Text.jsx";
 import Icon from "../../../shared/components/Icons.jsx";
@@ -80,7 +81,14 @@ function ResumenItem({ label, value, color }) {
   );
 }
 
-function DropdownAlertas({ tipo, alertas, abierto, onToggle, onDismiss, onPressAlerta }) {
+function DropdownAlertas({
+  tipo,
+  alertas,
+  abierto,
+  onToggle,
+  onDismiss,
+  onPressAlerta,
+}) {
   const color = obtenerColorTipo(tipo);
   const categorias = agruparPorCategoria(alertas);
   const nombresCategorias = Object.keys(categorias);
@@ -88,7 +96,16 @@ function DropdownAlertas({ tipo, alertas, abierto, onToggle, onDismiss, onPressA
 
   return (
     <Card style={styles.dropdownCard}>
-      <Pressable style={styles.dropdownHeader} onPress={onToggle}>
+      <Button
+        variant="ghost"
+        style={[
+          styles.dropdownHeader,
+          {
+            marginTop: 0,
+          },
+        ]}
+        onPress={onToggle}
+      >
         <View style={styles.dropdownIconBox}>
           <Icon icon={obtenerIconoTipo(tipo)} size={20} color={color} />
         </View>
@@ -110,7 +127,7 @@ function DropdownAlertas({ tipo, alertas, abierto, onToggle, onDismiss, onPressA
         </View>
 
         <Icon icon={chevron} size={22} color={COLORS.textTertiary} />
-      </Pressable>
+      </Button>
 
       {abierto === true && (
         <View style={styles.alertList}>
@@ -150,39 +167,57 @@ function DropdownAlertas({ tipo, alertas, abierto, onToggle, onDismiss, onPressA
 
 function AlertaItem({ alerta, onDismiss, onPressAlerta }) {
   return (
-    <Pressable style={obtenerEstiloAlerta(alerta.tipo)} onPress={() => onPressAlerta(alerta)}>
-      <View style={styles.alertIconBox}>
-        <Icon icon={alerta.icono} size={20} color={alerta.color} />
-      </View>
+    <View style={obtenerEstiloAlerta(alerta.tipo)}>
+      <Button
+        variant="ghost"
+        style={{
+          flex: 1,
+          flexDirection: "row",
+          alignItems: "flex-start",
+          justifyContent: "flex-start",
+          marginTop: 0,
+          paddingHorizontal: 0,
+          paddingVertical: 0,
+          borderWidth: 0,
+        }}
+        onPress={() => onPressAlerta(alerta)}
+      >
+        <View style={styles.alertIconBox}>
+          <Icon icon={alerta.icono} size={20} color={alerta.color} />
+        </View>
 
-      <View style={styles.alertContent}>
-        <View style={styles.alertTitleRow}>
+        <View style={styles.alertContent}>
           <CustomText size={14} color={COLORS.textSecondary} style={styles.alertTitle}>
             {alerta.titulo}
           </CustomText>
 
-          <Pressable
-            style={styles.dismissButton}
-            onPress={function (event) {
-              event?.stopPropagation?.();
-              onDismiss(alerta.id);
-            }}
-          >
-            <Icon icon={ICONS.close} size={16} color={COLORS.textTertiary} />
-          </Pressable>
-        </View>
-
-        <CustomText size={12} color={COLORS.textTertiary} style={styles.alertMessage}>
-          {alerta.mensaje}
-        </CustomText>
-
-        {alerta.detalle !== "" && (
-          <CustomText size={12} color={COLORS.textSecondary} style={styles.alertDetail}>
-            {alerta.detalle}
+          <CustomText size={12} color={COLORS.textTertiary} style={styles.alertMessage}>
+            {alerta.mensaje}
           </CustomText>
-        )}
-      </View>
-    </Pressable>
+
+          {alerta.detalle !== "" && (
+            <CustomText size={12} color={COLORS.textSecondary} style={styles.alertDetail}>
+              {alerta.detalle}
+            </CustomText>
+          )}
+        </View>
+      </Button>
+
+      <Button
+        variant="ghost"
+        style={[
+          styles.dismissButton,
+          {
+            marginTop: 0,
+            paddingHorizontal: 0,
+            paddingVertical: 0,
+          },
+        ]}
+        onPress={() => onDismiss(alerta.id)}
+      >
+        <Icon icon={ICONS.close} size={16} color={COLORS.textTertiary} />
+      </Button>
+    </View>
   );
 }
 
@@ -275,23 +310,38 @@ export default function AlertasScreen() {
     if (!alerta?.modulo) return;
 
     if (alerta.modulo === "enfermedades") {
-      router.push(alerta.registroId
-        ? { pathname: "/registros/EditarEnfermedad", params: { id: alerta.registroId } }
-        : "/registros/Enfermedades");
+      router.push(
+        alerta.registroId
+          ? {
+              pathname: "/registros/EditarEnfermedad",
+              params: { id: alerta.registroId },
+            }
+          : "/registros/Enfermedades",
+      );
       return;
     }
 
     if (alerta.modulo === "parasitologia") {
-      router.push(alerta.registroId
-        ? { pathname: "/registros/EditarParasitologia", params: { id: alerta.registroId } }
-        : "/registros/Parasitologia");
+      router.push(
+        alerta.registroId
+          ? {
+              pathname: "/registros/EditarParasitologia",
+              params: { id: alerta.registroId },
+            }
+          : "/registros/Parasitologia",
+      );
       return;
     }
 
     if (alerta.modulo === "estanques") {
-      router.push(alerta.registroId
-        ? { pathname: "/finca/detalleEstanque", params: { id: alerta.registroId } }
-        : "/finca");
+      router.push(
+        alerta.registroId
+          ? {
+              pathname: "/finca/detalleEstanque",
+              params: { id: alerta.registroId },
+            }
+          : "/finca",
+      );
       return;
     }
 
@@ -310,7 +360,9 @@ export default function AlertasScreen() {
       return;
     }
 
-    if (alerta.modulo === "equipos") router.push("/equipos");
+    if (alerta.modulo === "equipos") {
+      router.push("/equipos");
+    }
   }
 
   return (
