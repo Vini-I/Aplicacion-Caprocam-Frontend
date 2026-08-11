@@ -56,6 +56,7 @@ export default function RaleoScreen() {
   const {
     form,
     updateField,
+    porcentajeRaleo,
     biomasaRestante,
     submitted,
     errores,
@@ -92,6 +93,7 @@ export default function RaleoScreen() {
             updateField={updateField}
             submitted={submitted}
             errores={errores}
+            porcentajeCalculado={porcentajeRaleo}
             biomasaCalculada={biomasaRestante}
           />
 
@@ -121,3 +123,4 @@ export default function RaleoScreen() {
     </>
   );
 }
+
