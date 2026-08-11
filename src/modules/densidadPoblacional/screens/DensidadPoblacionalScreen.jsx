@@ -44,7 +44,7 @@
  * <DensidadPoblacionalScreen />
  */
 
-import React, { useEffect, useRef } from "react";
+import React from "react";
 import { ScrollView, View } from "react-native";
 
 import Text from "../../../shared/components/Text.jsx";
@@ -63,10 +63,9 @@ import { ICONS } from "../../../theme/icons";
 import { COLORS } from "../../../theme/colors";
 
 import useDensidadPoblacional from "../hooks/useDensidadPoblacional";
+import useScrollAlAparecerAlerta from "../hooks/useScrollAlAparecerAlerta";
 
 export default function DensidadPoblacionalScreen({ onBack }) {
-  const scrollRef = useRef(null);
-
   const {
     finca,
     setFinca,
@@ -123,13 +122,7 @@ export default function DensidadPoblacionalScreen({ onBack }) {
   const mensajeAlerta = alerta.visible ? alerta.mensaje : errorCatalogos || "";
   const varianteAlerta = alerta.visible ? alerta.variant : "danger";
 
-  useEffect(() => {
-    if (mostrarAlertaLocal) {
-      scrollRef.current?.scrollToEnd({
-        animated: true,
-      });
-    }
-  }, [mostrarAlertaLocal]);
+  const scrollRef = useScrollAlAparecerAlerta(mostrarAlertaLocal);
 
   return (
     <>

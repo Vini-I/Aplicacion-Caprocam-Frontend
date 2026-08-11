@@ -44,7 +44,7 @@
  * <DensidadPoblacionalScreen />
  */
 
-import React, { useEffect, useRef } from "react";
+import React from "react";
 import { useRouter } from "expo-router";
 import { ScrollView, View } from "react-native";
 
@@ -64,11 +64,10 @@ import { ICONS } from "../../../theme/icons";
 import { COLORS } from "../../../theme/colors";
 
 import useEditarDensidad from "../hooks/useEditarDensidad";
+import useScrollAlAparecerAlerta from "../hooks/useScrollAlAparecerAlerta";
 
 export default function EditarDensidadScreen({ registroId }) {
   const router = useRouter();
-
-  const scrollRef = useRef(null);
 
   const {
     finca,
@@ -111,7 +110,6 @@ export default function EditarDensidadScreen({ registroId }) {
     setAreaAtarraya,
 
     supervivencia,
-    setSupervivencia,
 
     notasConteo,
     setNotasConteo,
@@ -132,13 +130,7 @@ export default function EditarDensidadScreen({ registroId }) {
   const mensajeAlerta = alerta.visible ? alerta.mensaje : errorCatalogos || "";
   const varianteAlerta = alerta.visible ? alerta.variant : "danger";
 
-  useEffect(() => {
-    if (mostrarAlertaLocal) {
-      scrollRef.current?.scrollToEnd({
-        animated: true,
-      });
-    }
-  }, [mostrarAlertaLocal]);
+  const scrollRef = useScrollAlAparecerAlerta(mostrarAlertaLocal);
 
   if (!registroId) {
     return (
@@ -223,7 +215,6 @@ export default function EditarDensidadScreen({ registroId }) {
               densidadPorM2Texto={densidadPorM2Texto}
               poblacionTotalTexto={poblacionTotalTexto}
               supervivencia={supervivencia}
-              setSupervivencia={setSupervivencia}
               notasConteo={notasConteo}
               setNotasConteo={setNotasConteo}
               submitted={submitted}
