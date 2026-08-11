@@ -44,7 +44,7 @@
  * <DensidadPoblacionalScreen />
  */
 
-import React, { useEffect, useRef } from "react";
+import React from "react";
 import { useRouter } from "expo-router";
 import { ScrollView, View } from "react-native";
 
@@ -64,11 +64,10 @@ import { ICONS } from "../../../theme/icons";
 import { COLORS } from "../../../theme/colors";
 
 import useEditarDensidad from "../hooks/useEditarDensidad";
+import useScrollAlAparecerAlerta from "../hooks/useScrollAlAparecerAlerta";
 
 export default function EditarDensidadScreen({ registroId }) {
   const router = useRouter();
-
-  const scrollRef = useRef(null);
 
   const {
     finca,
@@ -88,23 +87,29 @@ export default function EditarDensidadScreen({ registroId }) {
 
     alerta,
     errorCatalogos,
+    cargandoDatosBase,
     handleGuardar,
     cargando,
 
-    numeroCamarones,
-    setNumeroCamarones,
+    // Tiros de atarraya: la lista es la fuente de verdad.
+    tiros,
+    setTiro,
+    agregarTiro,
+    eliminarTiro,
+    setCantidadTiros,
+    maxTiros,
 
-    tirosAtarraya,
-    setTirosAtarraya,
+    // Calculados, solo para mostrar
+    numeroCamarones,
+    areaMuestreadaTexto,
+    promedioPorTiroTexto,
+    densidadPorM2Texto,
+    poblacionTotalTexto,
 
     areaAtarraya,
     setAreaAtarraya,
 
-    promedioPorTiro,
-    setPromedioPorTiro,
-
     supervivencia,
-    setSupervivencia,
 
     notasConteo,
     setNotasConteo,
@@ -125,13 +130,7 @@ export default function EditarDensidadScreen({ registroId }) {
   const mensajeAlerta = alerta.visible ? alerta.mensaje : errorCatalogos || "";
   const varianteAlerta = alerta.visible ? alerta.variant : "danger";
 
-  useEffect(() => {
-    if (mostrarAlertaLocal) {
-      scrollRef.current?.scrollToEnd({
-        animated: true,
-      });
-    }
-  }, [mostrarAlertaLocal]);
+  const scrollRef = useScrollAlAparecerAlerta(mostrarAlertaLocal);
 
   if (!registroId) {
     return (
@@ -189,6 +188,7 @@ export default function EditarDensidadScreen({ registroId }) {
               setSiembraPorM2={setSiembraPorM2}
               areaEstanque={areaEstanque}
               setAreaEstanque={setAreaEstanque}
+              cargandoDatosBase={cargandoDatosBase}
               submitted={submitted}
               errores={errores}
             />
@@ -201,16 +201,20 @@ export default function EditarDensidadScreen({ registroId }) {
             />
 
             <DatosConteo
-              numeroCamarones={numeroCamarones}
-              setNumeroCamarones={setNumeroCamarones}
-              tirosAtarraya={tirosAtarraya}
-              setTirosAtarraya={setTirosAtarraya}
+              tiros={tiros}
+              setTiro={setTiro}
+              agregarTiro={agregarTiro}
+              eliminarTiro={eliminarTiro}
+              setCantidadTiros={setCantidadTiros}
+              maxTiros={maxTiros}
               areaAtarraya={areaAtarraya}
               setAreaAtarraya={setAreaAtarraya}
-              promedioPorTiro={promedioPorTiro}
-              setPromedioPorTiro={setPromedioPorTiro}
+              numeroCamarones={numeroCamarones}
+              areaMuestreadaTexto={areaMuestreadaTexto}
+              promedioPorTiroTexto={promedioPorTiroTexto}
+              densidadPorM2Texto={densidadPorM2Texto}
+              poblacionTotalTexto={poblacionTotalTexto}
               supervivencia={supervivencia}
-              setSupervivencia={setSupervivencia}
               notasConteo={notasConteo}
               setNotasConteo={setNotasConteo}
               submitted={submitted}
