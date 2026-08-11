@@ -4,8 +4,8 @@
  * ============================================================
  *
  * Centraliza el estado y la lógica del listado de siembras y
- * pre-crías: carga de datos, búsqueda, filtros y el ocultado
- * automático de registros ya finalizados.
+ * pre-crías: carga de datos, búsqueda, filtros y el toggle entre
+ * registros activos y finalizados.
  *
  * FUNCIONALIDAD:
  * - Se suscribe a los cambios del servicio de siembras.
@@ -18,15 +18,13 @@
  *   ya que el backend solo devuelve los ids.
  * - Administra el texto de búsqueda (por finca, estanque, lote y
  *   proveedor de larva) y los filtros aplicados.
- * - Calcula el listado final a mostrar (siembrasFiltradas).
- * - Oculta del listado principal las siembras y pre-crías que ya
- *   completaron su ciclo, para que no se acumulen tarjetas de
- *   registros finalizados en la pantalla principal:
- *     - Pre-Cría: se oculta cuando fue finalizada explícitamente
- *       (estado === "Finalizada", vía el botón "Finalizar Pre-Cría").
- *     - Siembra: se oculta al alcanzar el 100% del ciclo
- *       (día actual >= duración del ciclo), ya que este módulo no
- *       cuenta con una acción de cierre equivalente a la de Pre-Cría.
+ * - Calcula el listado final a mostrar (siembrasFiltradas), según
+ *   la vista activa:
+ *     - "activas" (default): oculta las siembras/pre-crías ya
+ *       finalizadas, para que no se acumulen en la pantalla
+ *       principal.
+ *     - "finalizadas": muestra únicamente las que ya completaron
+ *       su ciclo.
  *
  * La pantalla utiliza este hook para renderizar el listado y
  * solo conserva la navegación (useRouter).
@@ -60,6 +58,7 @@ export default function useSiembraList() {
   const [registros, setRegistros] = useState([]);
   const [busqueda, setBusqueda] = useState("");
   const [filtros, setFiltros] = useState({ categories: [] });
+  const [vista, setVista] = useState("activas");
   const [cargando, setCargando] = useState(true);
   const { mostrarError } = useError();
   const { mensajeExito } = useLocalSearchParams();
@@ -149,6 +148,7 @@ export default function useSiembraList() {
       cantidadSembrada: s.cantidad_sembrada,
       plSiembra: s.pl_siembra != null ? `PL${s.pl_siembra}` : "",
       duracionCiclo: s.duracion_ciclo ?? 90, // columna real en "siembras" una vez que el backend la agregue
+      produccionKg: Number(s.produccion_kg ?? 0),
     };
     const { diaActual, totalDias } = calcularProgresoCiclo(base);
     return { ...base, diasCultivo: diaActual, duracionDias: totalDias };
@@ -197,7 +197,7 @@ export default function useSiembraList() {
 
   const siembrasFiltradas = useMemo(() => {
     return registros
-      .filter((r) => !haFinalizado(r))
+      .filter((r) => (vista === "activas" ? !haFinalizado(r) : haFinalizado(r)))
       .map((r) => ({ ...r, ...obtenerNombresFincaEstanque(r) }))
       .filter((r) => {
         const texto = busqueda.trim().toLowerCase();
@@ -215,7 +215,7 @@ export default function useSiembraList() {
 
         return coincideTexto && coincideTipo;
       });
-  }, [busqueda, filtros, registros, fincas, estanques, lotes]);
+  }, [busqueda, filtros, registros, fincas, estanques, lotes, vista]);
 
   const handleNuevaSiembra = useCallback(
     () => router.push("/siembra/nueva"),
@@ -236,6 +236,8 @@ export default function useSiembraList() {
     setBusqueda,
     filtros,
     setFiltros,
+    vista,
+    setVista,
     tiposRegistro,
     cargando,
     mensaje,
