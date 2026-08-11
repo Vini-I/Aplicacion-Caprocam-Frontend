@@ -88,20 +88,27 @@ export default function EditarDensidadScreen({ registroId }) {
 
     alerta,
     errorCatalogos,
+    cargandoDatosBase,
     handleGuardar,
     cargando,
 
-    numeroCamarones,
-    setNumeroCamarones,
+    // Tiros de atarraya: la lista es la fuente de verdad.
+    tiros,
+    setTiro,
+    agregarTiro,
+    eliminarTiro,
+    setCantidadTiros,
+    maxTiros,
 
-    tirosAtarraya,
-    setTirosAtarraya,
+    // Calculados, solo para mostrar
+    numeroCamarones,
+    areaMuestreadaTexto,
+    promedioPorTiroTexto,
+    densidadPorM2Texto,
+    poblacionTotalTexto,
 
     areaAtarraya,
     setAreaAtarraya,
-
-    promedioPorTiro,
-    setPromedioPorTiro,
 
     supervivencia,
     setSupervivencia,
@@ -189,6 +196,7 @@ export default function EditarDensidadScreen({ registroId }) {
               setSiembraPorM2={setSiembraPorM2}
               areaEstanque={areaEstanque}
               setAreaEstanque={setAreaEstanque}
+              cargandoDatosBase={cargandoDatosBase}
               submitted={submitted}
               errores={errores}
             />
@@ -201,14 +209,19 @@ export default function EditarDensidadScreen({ registroId }) {
             />
 
             <DatosConteo
-              numeroCamarones={numeroCamarones}
-              setNumeroCamarones={setNumeroCamarones}
-              tirosAtarraya={tirosAtarraya}
-              setTirosAtarraya={setTirosAtarraya}
+              tiros={tiros}
+              setTiro={setTiro}
+              agregarTiro={agregarTiro}
+              eliminarTiro={eliminarTiro}
+              setCantidadTiros={setCantidadTiros}
+              maxTiros={maxTiros}
               areaAtarraya={areaAtarraya}
               setAreaAtarraya={setAreaAtarraya}
-              promedioPorTiro={promedioPorTiro}
-              setPromedioPorTiro={setPromedioPorTiro}
+              numeroCamarones={numeroCamarones}
+              areaMuestreadaTexto={areaMuestreadaTexto}
+              promedioPorTiroTexto={promedioPorTiroTexto}
+              densidadPorM2Texto={densidadPorM2Texto}
+              poblacionTotalTexto={poblacionTotalTexto}
               supervivencia={supervivencia}
               setSupervivencia={setSupervivencia}
               notasConteo={notasConteo}
