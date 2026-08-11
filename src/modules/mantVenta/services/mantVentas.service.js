@@ -1,5 +1,22 @@
 import api from "../../../api/api";
 
+function construirErrorHttp(error, mensajeGenerico) {
+  const status = error?.response?.status;
+  const mensaje = error?.response?.data?.message || error?.response?.data?.error || error?.message;
+
+  if (status === 500) {
+    return new Error(mensajeGenerico);
+  }
+  
+  if (status) {
+    const err = new Error(mensaje || mensajeGenerico);
+    err.status = status;
+    return err;
+  }
+
+  return new Error(mensajeGenerico);
+}
+
 /*
 OBTENER TODAS LAS VENTAS
 */
@@ -12,11 +29,7 @@ export const getVentas = async () => {
         return response.data.data;
 
     } catch (error) {
-
-        console.error("Error al crear venta:", error); //Mientras se prueba todo unicamente
-
-        throw error;
-
+        throw construirErrorHttp(error, "No se pudieron obtener las ventas");
     }
 };
 
@@ -32,11 +45,7 @@ export const createVenta = async (ventaDTO) => {
         return response.data;
 
     } catch (error) {
-
-        console.error("Error al crear venta:", error.response?.data || error.message); //Mientras se prueba todo unicamente
-
-        throw error;
-
+        throw construirErrorHttp(error, "No se pudo registrar la venta");
     }
 }
 
@@ -53,11 +62,7 @@ export const getVentaById = async (id) => {
         return response.data.data;
 
     } catch (error) {
-
-        console.error("Error al obtener venta:", error.response?.data || error.message);
-
-        throw error;
-
+        throw construirErrorHttp(error, "No se pudo obtener la información de la venta");
     }
 };
 
@@ -74,11 +79,7 @@ export const updateVenta = async (id, ventaDTO) => {
         return response.data;
 
     } catch (error) {
-
-        console.error("Error al actualizar venta:", error.response?.data || error.message);
-
-        throw error;
-
+        throw construirErrorHttp(error, "No se pudieron guardar los cambios de la venta");
     }
 };
 
@@ -95,10 +96,6 @@ export const deleteVenta = async (id) => {
         return response.data;
 
     } catch (error) {
-
-        console.error("Error al eliminar venta:", error.response?.data || error.message);
-
-        throw error;
-
+        throw construirErrorHttp(error, "No se pudo eliminar la venta");
     }
 };

@@ -35,8 +35,9 @@ export default function AlimentacionForm({
   updateField = () => {},
   submitted = false,
   errores = {},
+  onCatalogoErrorChange = () => {},
 }) {
-  const props = { form, updateField, submitted, errores };
+  const props = { form, updateField, submitted, errores, onCatalogoErrorChange };
 
   return (
     <View>

@@ -2,48 +2,39 @@
  * ============================================================
  * PANTALLA: WebRegisterScreen
  * ============================================================
- * 
+ *
  * Responsabilidad: Pantalla de registro de usuarios administradores
  * para la plataforma web de Caprocam.
- * 
+ *
  * FUNCIONALIDAD:
  * 1. Formulario de registro con Nombre, Apellidos, Correo, Usuario y Contraseña.
  * 2. Visualización de errores de validación y obligatoriedad.
  * 3. Spinner de carga durante el proceso de registro.
  * 4. Modal de confirmación tras un registro exitoso.
- * 
- * DATOS:
- * - nombre, apellidos, email, username, password: Estados de los campos del formulario.
- * - errors: Objeto con los mensajes de validación por campo.
- * - showSuccessModal: Controla la visibilidad del modal de éxito.
- * 
- * VALIDACIONES:
- * - Todos los campos son obligatorios (*).
- * - El formato del correo electrónico debe ser válido.
- * - La contraseña debe cumplir criterios de robustez (mayúscula, números, longitud).
- * - Los errores visuales (bordes rojos) y mensajes solo aparecen tras intentar enviar el formulario.
- * 
- * NAVEGACIÓN:
- * - Redirige a la pantalla de login tras registrarse y cerrar el modal (onRegisterSuccess).
- * - Permite regresar a la pantalla de login directamente (onBackToLogin).
- * 
- * DEPENDENCIAS:
- * - Card, CustomText, Spinner, Button, Modal, Header, Separator, FormField, Alert.
- * - Hook useRegister para gestionar la lógica de envío y validación de campos.
+ *
+ * @dependencies - Card, CustomText, Spinner, Button, Modal, Header, Separator, FormField, Alert, Icon
+ *               - Hook useRegister para gestión de envio y validación
+ *               - styles/webRegisterStyles, theme/style, theme/colors, theme/icons
+ * @validations  - Todos los campos obligatorios (*)
+ *               - Formato de correo válido
+ *               - Contraseña con criterios de robustez
+ *               - Errores visuales solo tras intento de envío
+ * @navigation   - onRegisterSuccess → pantalla de login
+ *               - onBackToLogin → pantalla de login directamente
  */
 
 import { View, ScrollView } from 'react-native';
 
-import Card     from '../../../shared/components/Card';
+import Card from '../../../shared/components/Card';
 import CustomText from '../../../shared/components/Text';
-import Spinner  from '../../../shared/components/Spinner';
-import Button   from '../../../shared/components/Button';
-import Modal    from '../../../shared/components/Modal';
-import Header   from '../../../shared/components/Header';
+import Spinner from '../../../shared/components/Spinner';
+import Button from '../../../shared/components/Button';
+import Modal from '../../../shared/components/Modal';
+import Header from '../../../shared/components/Header';
 import Separator from '../../../shared/components/Separator';
-import FormField from '../../../shared/components/FormField';
-import Alert     from '../../../shared/components/Alert';
-import Icon      from '../../../shared/components/Icons';
+import Input from '../../../shared/components/Input';
+import Alert from '../../../shared/components/Alert';
+import Icon from '../../../shared/components/Icons';
 
 import { useRegister } from '../hooks/useRegister';
 import { AUTH_MESSAGES as MSG } from '../constants/authMessages';
@@ -53,13 +44,13 @@ import { STYLE } from '../../../theme/style';
 import styles from '../styles/webRegisterStyles';
 
 export default function WebRegisterScreen({
-  onRegisterSuccess = () => {},
-  onBackToLogin     = () => {},
+  onRegisterSuccess = () => { },
+  onBackToLogin = () => { },
 }) {
   const {
     nombre, setNombre, apellidos, setApellidos,
     email, setEmail, username, setUsername, password, setPassword,
-    errors, loading, serverError, setServerError,
+    errors, validationResult, loading, serverError, setServerError,
     handleRegister, showSuccessModal, handleModalClose,
   } = useRegister({ onRegisterSuccess });
 
@@ -69,15 +60,15 @@ export default function WebRegisterScreen({
   };
 
   const fields = [
-    { key: 'nombre',    label: MSG.LABEL_NOMBRE,    value: nombre,    onChangeText: createChangeHandler(setNombre),    placeholder: MSG.PLACEHOLDER_NOMBRE,    error: errors.nombre },
-    { key: 'apellidos', label: MSG.LABEL_APELLIDOS,  value: apellidos, onChangeText: createChangeHandler(setApellidos), placeholder: MSG.PLACEHOLDER_APELLIDOS,  error: errors.apellidos },
-    { key: 'email',     label: MSG.LABEL_EMAIL,      value: email,     onChangeText: createChangeHandler(setEmail),     placeholder: MSG.PLACEHOLDER_EMAIL,     error: errors.email,    autoCapitalize: 'none', autoCorrect: false, keyboardType: 'email-address' },
-    { key: 'username',  label: MSG.LABEL_USERNAME,   value: username,  onChangeText: createChangeHandler(setUsername),  placeholder: MSG.PLACEHOLDER_USERNAME,  error: errors.username, autoCapitalize: 'none', autoCorrect: false },
-    { key: 'password',  label: MSG.LABEL_PASSWORD,   value: password,  onChangeText: createChangeHandler(setPassword),  placeholder: MSG.PLACEHOLDER_PASSWORD,  error: errors.password, secureTextEntry: true },
-  ];
-
+      { key: 'nombre', label: MSG.LABEL_NOMBRE, value: nombre, onChangeText: createChangeHandler(setNombre), placeholder: MSG.PLACEHOLDER_NOMBRE, error: errors.nombre, maxLength: 80 },
+      { key: 'apellidos', label: MSG.LABEL_APELLIDOS, value: apellidos, onChangeText: createChangeHandler(setApellidos), placeholder: MSG.PLACEHOLDER_APELLIDOS, error: errors.apellidos, maxLength: 120 },
+      { key: 'email', label: MSG.LABEL_EMAIL, value: email, onChangeText: createChangeHandler(setEmail), placeholder: MSG.PLACEHOLDER_EMAIL, error: errors.email, autoCapitalize: 'none', autoCorrect: false, keyboardType: 'email-address', maxLength: 120 },
+      { key: 'username', label: MSG.LABEL_USERNAME, value: username, onChangeText: createChangeHandler(setUsername), placeholder: MSG.PLACEHOLDER_USERNAME, error: errors.username, autoCapitalize: 'none', autoCorrect: false, maxLength: 80 },
+      { key: 'password', label: MSG.LABEL_PASSWORD, value: password, onChangeText: createChangeHandler(setPassword), placeholder: MSG.PLACEHOLDER_PASSWORD, error: errors.password, secureTextEntry: true },
+    ];
+    
   return (
-    <ScrollView style={styles.scrollView} contentContainerStyle={{ flexGrow: 1, backgroundColor: COLORS.white }} showsVerticalScrollIndicator={false}>
+    <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
       <Modal
         visible={showSuccessModal}
@@ -116,27 +107,40 @@ export default function WebRegisterScreen({
         <View style={STYLE.contentWrapper}>
           <Card>
 
-            {fields.map(({ key, error, label, ...fieldProps }) => (
-              <FormField
-                key={key}
-                label={`${label} *`}
-                editable={!loading}
-                style={error ? styles.errorField : null}
-                {...fieldProps}
+            {fields.map(({ key, label, error, ...fieldProps }) => {
+              const isHighlighted = validationResult?.fieldsToHighlight?.includes(key);
+              const isServerErrorOnPassword = key === 'password' && serverError && serverError.toLowerCase().includes('contrase');
+              const hasError = Boolean(isHighlighted || isServerErrorOnPassword);
+              return (
+                <Input
+                  key={key}
+                  label={`${label} *`}
+                  editable={!loading}
+                  style={hasError ? styles.errorField : null}
+                  {...fieldProps}
+                />
+              );
+            })}
+
+            {serverError ? (
+              <Alert variant="danger" message={serverError} style={styles.serverAlertSpacing} />
+            ) : null}
+
+            {validationResult?.mode !== 'none' && (
+              <Alert
+                variant="danger"
+                message={validationResult.message}
+                style={styles.alertSpacing}
               />
-            ))}
+            )}
 
-          {serverError ? (
-            <Alert variant="danger" message={serverError} style={{ marginBottom: 16 }} />
-          ) : null}
+            {loading && <Spinner text={MSG.LOADING_REGISTER} />}
 
-          {loading && <Spinner text={MSG.LOADING_REGISTER} />}
+            <Button disabled={loading} onPress={handleRegister}>
+              {MSG.BUTTON_SUBMIT_REGISTER}
+            </Button>
 
-          <Button disabled={loading} onPress={handleRegister}>
-            {MSG.BUTTON_SUBMIT_REGISTER}
-          </Button>
-
-          <Separator text={MSG.SEPARATOR_TEXT_REGISTER} />
+            <Separator text={MSG.SEPARATOR_TEXT_REGISTER} />
 
             <Button variant="outline" disabled={loading} onPress={onBackToLogin}>
               {MSG.BUTTON_BACK_TO_LOGIN}

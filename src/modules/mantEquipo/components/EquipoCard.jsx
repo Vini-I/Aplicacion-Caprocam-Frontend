@@ -2,23 +2,16 @@
  * ============================================================
  * COMPONENTE: EquipoCard
  * ============================================================
+ *
  * Módulo: Mantenimiento de Equipos
  *
- * Tarjeta que muestra información resumida de un equipo.
- * Permite navegar al detalle (onPress) y encender/apagar (onToggle).
+ * RESPONSABILIDAD:
+ * - Componente personalizado que reutiliza elementos de shared/components.
+ * - Renderizar la tarjeta interactiva con la información resumida de un equipo y sus acciones.
  *
- * Props:
- * - equipo: objeto con los datos del equipo
- * - onPress: función que recibe el id al hacer clic en la tarjeta
- * - onToggle: función que recibe el id al presionar encender/apagar
- *
- * Ejemplo:
- * <EquipoCard
- *   equipo={equipo}
- *   onPress={(id) => verDetalle(id)}
- *   onToggle={(id) => toggleEquipo(id)}
- * />
- * ============================================================
+ * @dependencies - CardPress.jsx, Badge.jsx, Button.jsx, Icon.jsx, Text.jsx (shared/components), equiposListStyles.js (styles)
+ * @validations  - Muestra badges según estado operativo y habilita/deshabilita el botón según el estado del equipo.
+ * @navigation   - Recibe callback onPress para navegar al detalle del equipo.
  */
 
 import React from "react";
@@ -150,28 +143,14 @@ export default function EquipoCard({ equipo, onPress, onToggle }) {
             e?.stopPropagation?.();
             onToggle?.(equipo.id);
           }}
-          style={[
-            styles.toggleBtn,
-            {
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 6,
-              borderColor: COLORS.primary,
-              backgroundColor: "transparent",
-              paddingVertical: 10,
-              borderRadius: 8,
-              marginTop: 0,
-              borderWidth: 1,
-            },
-          ]}
+          style={[styles.toggleBtn, styles.toggleBtnOutline]}
         >
           <Icon
             icon={equipo.encendido ? ICONS.check : ICONS.close}
             size={16}
             color={COLORS.primary}
           />
-          <CustomText style={{ color: COLORS.primary, fontWeight: "600", fontSize: 14 }}>
+          <CustomText style={styles.toggleBtnLabel}>
             {equipo.encendido ? "Encendido" : "Apagado"}
           </CustomText>
         </Button>

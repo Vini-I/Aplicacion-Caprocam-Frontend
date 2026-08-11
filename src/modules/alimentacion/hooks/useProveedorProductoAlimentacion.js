@@ -19,10 +19,15 @@
  * por el catálogo real, y agrega el catálogo de productos que
  * antes no existía (producto_id también quedaba en NULL).
  *
- * Filtrado: productosOptions solo incluye los productos cuyo
- * proveedorId coincide con idProveedorSeleccionado (mismo patrón
- * que useFincaEstanqueAlimentacion filtra estanques por finca).
- * Si no hay proveedor elegido, productosOptions retorna [].
+ * Filtrado:
+ * - proveedoresOptions solo incluye proveedores cuyo tipoProducto
+ *   sea "Alimento" (mismo value que el catálogo tiposProducto de
+ *   proveedor.service.js), para que el Select de Proveedor en
+ *   Alimentación solo muestre proveedores de alimento balanceado.
+ * - productosOptions solo incluye los productos cuyo proveedorId
+ *   coincide con idProveedorSeleccionado (mismo patrón que
+ *   useFincaEstanqueAlimentacion filtra estanques por finca).
+ *   Si no hay proveedor elegido, productosOptions retorna [].
  *
  * Parametros:
  * - idProveedorSeleccionado: id del proveedor elegido en el Select.
@@ -44,6 +49,23 @@ import { useEffect, useMemo, useState } from "react";
 import { getProveedores } from "../../proveedores/services/proveedor.service";
 import { productoService } from "../../productos/services/producto.service";
 
+function extraerMensajeError(error) {
+    if (!error) return "Ocurrió un error inesperado.";
+    if (typeof error === "string") return error;
+
+    const data = error?.response?.data;
+    if (Array.isArray(data?.error) && data.error.length > 0) {
+        return data.error.join(" ");
+    }
+    if (Array.isArray(data?.errors) && data.errors.length > 0) {
+        return data.errors.join(" ");
+    }
+    if (Array.isArray(data?.errores) && data.errores.length > 0) {
+        return data.errores.join(" ");
+    }
+    return data?.mensaje || data?.message || error?.message || "No se pudieron cargar proveedores y productos.";
+}
+
 export function useProveedorProductoAlimentacion(idProveedorSeleccionado) {
     const [proveedores, setProveedores] = useState([]);
     const [productos, setProductos] = useState([]);
@@ -58,17 +80,35 @@ export function useProveedorProductoAlimentacion(idProveedorSeleccionado) {
             setErrorCatalogos(null);
 
             try {
-                const [proveedoresData, productosData] = await Promise.all([
+                const [proveedoresResult, productosResult] = await Promise.allSettled([
                     getProveedores(),
                     productoService.getProductos(),
                 ]);
+
                 if (!activo) return;
 
-                setProveedores(proveedoresData || []);
-                setProductos(productosData || []);
+                const mensajesError = [];
+
+                if (proveedoresResult.status === "fulfilled") {
+                    setProveedores(proveedoresResult.value || []);
+                } else {
+                    mensajesError.push(`${extraerMensajeError(proveedoresResult.reason)}`);
+                    setProveedores([]);
+                }
+
+                if (productosResult.status === "fulfilled") {
+                    setProductos(productosResult.value || []);
+                } else {
+                    mensajesError.push(`${extraerMensajeError(productosResult.reason)}`);
+                    setProductos([]);
+                }
+
+                if (mensajesError.length > 0) {
+                    setErrorCatalogos(mensajesError[0]);
+                }
             } catch (error) {
                 if (activo) {
-                    setErrorCatalogos("No se pudieron cargar proveedores y productos.");
+                    setErrorCatalogos(extraerMensajeError(error));
                 }
             } finally {
                 if (activo) {
@@ -84,10 +124,12 @@ export function useProveedorProductoAlimentacion(idProveedorSeleccionado) {
 
     const proveedoresOptions = useMemo(
         () =>
-            proveedores.map((proveedor) => ({
-                label: proveedor.nombre,
-                value: proveedor.id,
-            })),
+            proveedores
+                .filter((proveedor) => proveedor.tipoProducto === "Alimento")
+                .map((proveedor) => ({
+                    label: proveedor.nombre,
+                    value: proveedor.id,
+                })),
         [proveedores]
     );
 

@@ -16,7 +16,7 @@
  * - Modal de detalle de equipo.
  * - Modal de confirmación para eliminar.
  * - Alertas de éxito/error al crear, editar o eliminar.
- * - Botón "Agregar equipo" fijo en la parte inferior de la lista,
+ * - Botón "Añadir equipo" fijo en la parte inferior de la lista,
  *   independiente del scroll (mismo estándar de ancho que en Tareas).
  * - Muestra EmptyState cuando no hay equipos o no hay coincidencias,
  *   con mensaje diferenciado y botón de acción cuando no hay filtros.
@@ -26,12 +26,21 @@
  * - SearchBar y FilterButton compartidos desde inventarios
  * - Layout global STYLE
  * - Componentes compartidos de la aplicación
+ *
+ * Estándares cumplidos:
+ * - Botón flotante "Añadir equipo" (#1)
+ * - Alertas de éxito/error con timeout de 3s (#2)
+ * - Alert de error de validación mostrado sobre los botones del modal (#3)
+ * - Botones CRUD con texto "Registrar equipo" / "Actualizar equipo" (#4)
+ * - Navegación a detalle mediante CardPress (#5)
+ * - Gaps controlados (#6)
+ * - Formulario dentro de modal (separado de detalle) (#7)
  * ============================================================
  */
 
 import React, { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { View, ScrollView } from "react-native";
-import { useRouter, useFocusEffect } from "expo-router";
+import { useRouter, useLocalSearchParams, useFocusEffect } from "expo-router";
 import { useEquipos } from "../hooks/useEquipos";
 import EquipoCard from "../components/EquipoCard";
 import EquipoForm from "../components/EquipoForm";
@@ -52,10 +61,13 @@ import { ICONS } from "../../../theme/icons";
 import { COLORS } from "../../../theme/colors";
 import { styles } from "../styles/equiposListStyles";
 import { equiposService } from "../services/equiposService";
+import { useError } from "../../../shared/context/ErrorContext";
 
 export default function EquiposListScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams();
   const formRef = useRef();
+  const { mostrarError } = useError();
 
   // --------------------------------------------------------
   // ESTADOS
@@ -71,9 +83,6 @@ export default function EquiposListScreen() {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   // Estanques disponibles para asociar en el formulario.
-  // getEstanquesDisponibles() es async (llama al backend), por lo
-  // que se resuelve aquí y se guarda en estado en vez de pasar
-  // la Promise directamente al EquipoForm.
   const [estanquesDisponibles, setEstanquesDisponibles] = useState([]);
 
   useEffect(() => {
@@ -96,7 +105,7 @@ export default function EquiposListScreen() {
     expiryDate: "",
   });
 
-  // Estado para alertas globales
+  // Estado para alertas (éxito/validaciones)
   const [alert, setAlert] = useState(null);
   const alertTimeoutRef = useRef(null);
 
@@ -131,7 +140,7 @@ export default function EquiposListScreen() {
     }, [fetchEquipos])
   );
 
-  // Función para mostrar alerta con auto-cierre
+  // Función para mostrar alerta con auto‑cierre (3 segundos)
   const showAlert = (type, message) => {
     if (alertTimeoutRef.current) {
       clearTimeout(alertTimeoutRef.current);
@@ -139,8 +148,17 @@ export default function EquiposListScreen() {
     setAlert({ type, message });
     alertTimeoutRef.current = setTimeout(() => {
       setAlert(null);
-    }, 4000);
+    }, 3000);
   };
+
+  // Mostrar alerta desde parámetros de ruta (ej. después de eliminar)
+  useEffect(() => {
+    const { alertType, alertMessage } = params;
+    if (alertType && alertMessage) {
+      showAlert(alertType, alertMessage);
+      router.setParams({ alertType: undefined, alertMessage: undefined });
+    }
+  }, [params.alertType, params.alertMessage]);
 
   // --------------------------------------------------------
   // FILTRADO LOCAL
@@ -181,9 +199,6 @@ export default function EquiposListScreen() {
       )
         return false;
 
-      // El filtro de "estado" en FilterButton usa los valores
-      // encendido/apagado, que corresponden al booleano equipo.encendido
-      // (no al estadoOperativo activo/inactivo/mantenimiento).
       if (filtros.suppliers.length > 0) {
         const valorEncendido = equipo.encendido ? "encendido" : "apagado";
         if (!filtros.suppliers.includes(valorEncendido)) return false;
@@ -193,7 +208,6 @@ export default function EquiposListScreen() {
     });
   }, [equiposFiltrados, filtros]);
 
-  // Determinar si hay filtros activos (para mensajes de EmptyState)
   const hayFiltrosActivos =
     searchText.trim() !== "" ||
     filtros.categories.length > 0 ||
@@ -234,13 +248,14 @@ export default function EquiposListScreen() {
 
     try {
       await eliminarEquipo(deleteTarget.id);
-      showAlert("danger", `El equipo "${deleteTarget.nombre}" ha sido eliminado correctamente`);
+      showAlert("success", `El equipo "${deleteTarget.nombre}" ha sido eliminado correctamente`);
       setShowConfirmModal(false);
       setDeleteTarget(null);
       setCodigoConfirmacion("");
       setCodigoError("");
       fetchEquipos();
     } catch (error) {
+      // El error ya se muestra en el modal global, solo mostramos mensaje local si es de validación
       setCodigoError("No se pudo eliminar el equipo");
     }
   };
@@ -258,6 +273,7 @@ export default function EquiposListScreen() {
       setEditingEquipo(null);
       fetchEquipos();
     } catch (error) {
+      // El error ya se muestra en el modal global, solo mostramos validación local
       showAlert("danger", error.message || "Ocurrió un error al guardar el equipo");
     }
   };
@@ -267,16 +283,12 @@ export default function EquiposListScreen() {
       await toggleEquipo(id);
       fetchEquipos();
     } catch (error) {
-      showAlert("danger", "No se pudo cambiar el estado del equipo");
+      mostrarError(error);
     }
   };
 
   const openDetail = (equipoId) => {
     router.push(`/equipos/detalleEquipo?id=${equipoId}`);
-  };
-
-  const navigateToMantEquipo = () => {
-    router.push("/equipos/mantEquipo");
   };
 
   // --------------------------------------------------------
@@ -289,8 +301,16 @@ export default function EquiposListScreen() {
   // RENDER PRINCIPAL
   // --------------------------------------------------------
   return (
-    <View style={styles.container}>
-      <View style={styles.mainFlex}>
+    <View style={STYLE.container}>
+      <View style={[STYLE.contentWrapper, styles.mainFlex]}>
+        
+        {/* Alerta flotante (éxito/validación) */}
+        {alert && (
+          <View style={[STYLE.contentWrapper]}>
+            <Alert variant={alert.type} message={alert.message} />
+          </View>
+        )}
+
         <View style={styles.searchRow}>
           <SearchBar
             value={searchText}
@@ -315,21 +335,7 @@ export default function EquiposListScreen() {
             showExpiryDate={false}
             buttonStyle={styles.filterButtonStyle}
           />
-          <Button
-            variant="outline"
-            onPress={navigateToMantEquipo}
-            style={styles.btnAction}
-          >
-            <Icon icon={ICONS.clipboard} size={16} color={COLORS.primary} />
-            <CustomText style={styles.btnActionText}>Ver Mantenimiento</CustomText>
-          </Button>
         </View>
-
-        {alert && (
-          <View style={styles.alertWrapper}>
-            <Alert variant={alert.type} message={alert.message} />
-          </View>
-        )}
 
         {/* Lista o EmptyState */}
         {equiposFinales.length === 0 ? (
@@ -342,7 +348,11 @@ export default function EquiposListScreen() {
             }
           />
         ) : (
-          <ScrollView style={styles.scrollView} contentContainerStyle={styles.list}>
+          <ScrollView
+            style={styles.scrollView}
+            contentContainerStyle={styles.list}
+            showsVerticalScrollIndicator={false}
+          >
             {equiposFinales.map((equipo) => (
               <EquipoCard
                 key={equipo.id}
@@ -357,7 +367,7 @@ export default function EquiposListScreen() {
         <View style={styles.floatingButtonContainer}>
           <Button variant="outline" onPress={handleAdd} style={styles.floatingButton}>
             <Icon icon={ICONS.add} size={16} color={COLORS.primary} />
-            <CustomText style={styles.floatingButtonText}>Agregar equipo</CustomText>
+            <CustomText style={styles.floatingButtonText}>Añadir equipo</CustomText>
           </Button>
         </View>
 
@@ -379,6 +389,7 @@ export default function EquiposListScreen() {
             <ScrollView
               style={styles.modalScrollForm}
               contentContainerStyle={styles.modalScrollFormContent}
+              showsVerticalScrollIndicator={false}
             >
               <EquipoForm
                 ref={formRef}
@@ -391,6 +402,17 @@ export default function EquiposListScreen() {
                 onValidationError={(msg) => setValidationError(msg)}
               />
             </ScrollView>
+
+            {/* Alert de error de validación (justo encima de los botones) */}
+            {validationError && (
+              <View style={{ paddingHorizontal: 16, paddingBottom: 8 }}>
+                <Alert
+                  variant="danger"
+                  message={validationError}
+                  style={{ marginBottom: 0 }}
+                />
+              </View>
+            )}
 
             <View style={styles.modalFooterButtons}>
               <Button
@@ -409,7 +431,7 @@ export default function EquiposListScreen() {
               >
                 <Icon icon={ICONS.save} size={18} color={COLORS.primary} />
                 <CustomText style={styles.modalFooterButtonText}>
-                  {editingEquipo ? "Actualizar" : "Registrar"}
+                  {editingEquipo ? "Actualizar equipo" : "Registrar equipo"}
                 </CustomText>
               </Button>
             </View>

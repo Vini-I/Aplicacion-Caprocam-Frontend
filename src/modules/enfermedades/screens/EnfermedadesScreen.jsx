@@ -7,7 +7,7 @@
  * Toda la logica se encuentra en useEnfermedadesScreen.
  */
 
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { ScrollView, View } from "react-native";
 
 import Alert from "../../../shared/components/Alert";
@@ -31,6 +31,14 @@ import { STYLE } from "../../../theme/style";
 
 export default function EnfermedadesScreen() {
   const pantalla = useEnfermedadesScreen();
+  const scrollRef = useRef(null);
+
+  //Hook aquí para que haga el scrollToEnd en caso de que haya algún error de cargar
+  useEffect(() => {
+    if (pantalla.mensaje && pantalla.tipoMensaje === "danger") {
+      scrollRef.current?.scrollToEnd({ animated: true });
+    }
+  }, [pantalla.mensaje, pantalla.tipoMensaje]);
 
   return (
     <>
@@ -40,7 +48,11 @@ export default function EnfermedadesScreen() {
         Icono="shieldAlert"
       />
 
-      <ScrollView style={STYLE.container} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        ref={scrollRef}
+        style={STYLE.container}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={[STYLE.contentWrapper, styles.content]}>
           <Card style={styles.card}>
             <EnfermedadesSectionTitle
@@ -58,9 +70,7 @@ export default function EnfermedadesScreen() {
                   placeholder={pantalla.placeholderFinca}
                   disabled={pantalla.loading}
                   labelStyle={styles.label}
-                  selectStyle={
-                    pantalla.errorFinca && styles.campoConError
-                  }
+                  selectStyle={pantalla.errorFinca && styles.campoConError}
                 />
               </View>
 
@@ -73,9 +83,7 @@ export default function EnfermedadesScreen() {
                   placeholder={pantalla.placeholderEstanque}
                   disabled={pantalla.loading || pantalla.finca === ""}
                   labelStyle={styles.label}
-                  selectStyle={
-                    pantalla.errorEstanque && styles.campoConError
-                  }
+                  selectStyle={pantalla.errorEstanque && styles.campoConError}
                 />
               </View>
 
@@ -91,17 +99,6 @@ export default function EnfermedadesScreen() {
                 />
               </View>
 
-              <View style={pantalla.itemStyle} pointerEvents="none">
-                <Input
-                  label="Responsable"
-                  value={pantalla.responsable}
-                  editable={false}
-                  readOnly={true}
-                  selectTextOnFocus={false}
-                  labelStyle={styles.label}
-                  style={styles.disabledInput}
-                />
-              </View>
             </View>
           </Card>
 
@@ -119,9 +116,7 @@ export default function EnfermedadesScreen() {
               placeholder={pantalla.placeholderEnfermedad}
               disabled={pantalla.loading}
               labelStyle={styles.label}
-              selectStyle={
-                pantalla.errorEnfermedad && styles.campoConError
-              }
+              selectStyle={pantalla.errorEnfermedad && styles.campoConError}
             />
           </Card>
 
@@ -141,9 +136,7 @@ export default function EnfermedadesScreen() {
                   placeholder={pantalla.placeholderSeveridad}
                   disabled={pantalla.loading}
                   labelStyle={styles.label}
-                  selectStyle={
-                    pantalla.errorSeveridad && styles.campoConError
-                  }
+                  selectStyle={pantalla.errorSeveridad && styles.campoConError}
                 />
               </View>
 

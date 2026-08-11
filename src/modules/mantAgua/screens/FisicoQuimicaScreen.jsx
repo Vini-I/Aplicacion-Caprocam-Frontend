@@ -116,7 +116,7 @@ export default function FisicoQuimicaScreen({ onBack }) {
               title="pH" unit="pH"
               icon={<Icon icon={ICONS.chemicalContainer} color={COLORS.primary} size={18} />}
               idealMin={7.5} idealMax={8.5}
-              sliderMin={4} sliderMax={10}
+              sliderMin={0} sliderMax={14}
               step={0.1} decimals={1}
               maxLecturas={2} labelStyle="daynight"
               initialValues={medicionesPorEstanque.ph}
@@ -129,7 +129,7 @@ export default function FisicoQuimicaScreen({ onBack }) {
               key={`salinidad-${estanqueSeleccionado}`}
               title="Salinidad" unit="ppt"
               icon={<Icon icon={ICONS.frequency} color={COLORS.primary} size={18} />}
-              idealMin={15} idealMax={35}
+              idealMin={10} idealMax={25}
               sliderMin={0} sliderMax={50}
               step={0.1} decimals={1}
               maxLecturas={2} labelStyle="daynight"
@@ -143,8 +143,8 @@ export default function FisicoQuimicaScreen({ onBack }) {
               key={`temperatura-${estanqueSeleccionado}`}
               title="Temperatura" unit="°C"
               icon={<Icon icon={ICONS.temperature} color={COLORS.primary} size={18} />}
-              idealMin={28} idealMax={30}
-              sliderMin={15} sliderMax={45}
+              idealMin={28} idealMax={32}
+              sliderMin={0} sliderMax={50}
               step={0.5} decimals={1}
               maxLecturas={2} labelStyle="daynight"
               initialValues={medicionesPorEstanque.temperatura}
@@ -157,7 +157,7 @@ export default function FisicoQuimicaScreen({ onBack }) {
               key={`oxigeno-${estanqueSeleccionado}`}
               title="Oxígeno Disuelto" unit="mg/L"
               icon={<Icon icon={ICONS.water} color={COLORS.primary} size={18} />}
-              idealMin={5} idealMax={7}
+              idealMin={5} idealMax={9}
               sliderMin={0} sliderMax={20}
               step={0.1} decimals={1}
               maxLecturas={5} labelStyle="numeric"
@@ -195,14 +195,14 @@ export default function FisicoQuimicaScreen({ onBack }) {
                 <Button variant="outline" onPress={handleGuardarClick} style={styles.fullButton}>
                   <View style={styles.btnContent}>
                     <Icon icon={ICONS.edit} size={20} color={COLORS.primary} />
-                    <Text style={styles.btnText}>Actualizar mediciones</Text>
+                    <Text style={styles.btnText}>Actualizar Mediciones</Text>
                   </View>
                 </Button>
               ) : (
                 <Button variant="outline" onPress={handleGuardarClick} style={styles.fullButton}>
                   <View style={styles.btnContent}>
                     <Icon icon={ICONS.delete} size={20} color={COLORS.error} />
-                    <Text style={[styles.btnText, { color: COLORS.error }]}>Eliminar lectura del estanque</Text>
+                    <Text style={[styles.btnText, { color: COLORS.error }]}>Eliminar Mediciones del Estanque</Text>
                   </View>
                 </Button>
               )
@@ -210,7 +210,7 @@ export default function FisicoQuimicaScreen({ onBack }) {
               <Button variant="outline" onPress={handleGuardarClick} style={styles.fullButton}>
                 <View style={styles.btnContent}>
                   <Icon icon={ICONS.save} size={20} color={COLORS.primary} />
-                  <Text style={styles.btnText}>Guardar mediciones</Text>
+                  <Text style={styles.btnText}>Registrar Mediciones</Text>
                 </View>
               </Button>
             )}

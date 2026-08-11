@@ -7,7 +7,7 @@
  * Toda la logica se encuentra en useParasitologiaScreen.
  */
 
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { ScrollView, View } from "react-native";
 
 import Alert from "../../../shared/components/Alert";
@@ -31,6 +31,14 @@ import { STYLE } from "../../../theme/style";
 
 export default function ParasitologiaScreen() {
   const pantalla = useParasitologiaScreen();
+  const scrollRef = useRef(null);
+
+  //Hook aquí para que haga el scrollToEnd en caso de que haya algún error de cargar
+  useEffect(() => {
+    if (pantalla.mensaje && pantalla.tipoMensaje === "danger") {
+      scrollRef.current?.scrollToEnd({ animated: true });
+    }
+  }, [pantalla.mensaje, pantalla.tipoMensaje]);
 
   return (
     <>
@@ -40,7 +48,11 @@ export default function ParasitologiaScreen() {
         Icono="parasite"
       />
 
-      <ScrollView style={STYLE.container} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        ref={scrollRef}
+        style={STYLE.container}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={[STYLE.contentWrapper, styles.content]}>
           {pantalla.loading && (
             <Alert
@@ -101,16 +113,6 @@ export default function ParasitologiaScreen() {
                 />
               </View>
 
-              <View style={pantalla.itemStyle} pointerEvents="none">
-                <Input
-                  label="Responsable"
-                  value={pantalla.responsable}
-                  editable={false}
-                  readOnly={true}
-                  selectTextOnFocus={false}
-                  labelStyle={styles.label}
-                />
-              </View>
             </View>
           </Card>
 
@@ -304,7 +306,7 @@ export default function ParasitologiaScreen() {
                 color={COLORS.primary}
                 style={styles.saveText}
               >
-                Guardar
+                Registrar Parasitología
               </CustomText>
             </View>
           </Button>

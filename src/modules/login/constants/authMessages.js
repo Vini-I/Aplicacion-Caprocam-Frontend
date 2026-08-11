@@ -1,27 +1,16 @@
 /**
- * ============================================================
  * CONSTANTES: authMessages
- * ============================================================
- * 
- * Responsabilidad: Centralizar los textos estáticos, etiquetas, placeholders
- * y mensajes de error para la autenticación y registro Web.
- * 
- * FUNCIONALIDAD:
- * - Define textos para WebLoginScreen y WebRegisterScreen.
- * 
- * DATOS:
- * - AUTH_MESSAGES: Objeto con los textos estandarizados del flujo.
- * 
- * VALIDACIONES:
- * - Contiene los mensajes de error para campos vacíos, correos inválidos y contraseñas.
- * 
- * DEPENDENCIAS:
- * - Ninguna.
+ * Centraliza los mensajes estáticos, etiquetas de formularios, placeholders
+ * y textos de error para los flujos de autenticación web y móvil (AUTH_MESSAGES, LOGIN_MESSAGES).
+ *
+ * @dependencies - Ninguna
+ * @validations  - Cadenas de texto que coinciden con las reglas de validación.
+ * @navigation   - N/A
  */
 
 export const AUTH_MESSAGES = {
 
-  // SECCIÓN: Compartido entre Login y Registro
+  // SECCIÓN: Compartido entre Login y Registro Web
   LABEL_USERNAME:            'Usuario',
   LABEL_PASSWORD:            'Contraseña',
   PLACEHOLDER_USERNAME:      'Ingresa tu usuario',
@@ -31,8 +20,10 @@ export const AUTH_MESSAGES = {
   ERROR_EMAIL_TAKEN:         'El correo electrónico ya está registrado',
   ERROR_PASSWORD_REQUIRED:   'La contraseña es obligatoria',
   ERROR_PASSWORD_LENGTH:     'Mínimo 8 caracteres',
-  ERROR_PASSWORD_UPPERCASE:  'Debe incluir al menos una mayúscula',
-  ERROR_PASSWORD_NUMERIC:    'Debe incluir al menos 4 números',
+  ERROR_PASSWORD_UPPERCASE:  'Debe incluir al menos una letra mayúscula',
+  ERROR_PASSWORD_LOWERCASE:  'Debe incluir al menos una letra minúscula',
+  ERROR_PASSWORD_DIGIT:      'Debe incluir al menos un número',
+  ERROR_PASSWORD_SYMBOL:     'Debe incluir al menos un símbolo (@$!%*?&._-#)',
   ERROR_SERVER:              'Error del servidor. Intenta de nuevo más tarde',
   ERROR_NETWORK:             'Sin conexión. Verifica tu red e intenta de nuevo',
   ERROR_UNKNOWN:             'Ocurrió un error. Intenta de nuevo',
@@ -64,4 +55,27 @@ export const AUTH_MESSAGES = {
   MODAL_SUCCESS_TITLE:   '¡Cuenta creada con éxito!',
   MODAL_SUCCESS_BODY:    'Recibirás un correo electrónico con la información de acceso a tu cuenta.',
   MODAL_SUCCESS_BUTTON:  'Volver al Login',
+};
+
+export const LOGIN_MESSAGES = {
+  // Sección de Turnos
+  SHIFT_TITLE: 'Selecciona tu turno',
+  SHIFT_SUBTITLE: '¿En qué horario vas a trabajar?',
+
+  // Sección de Trabajadores
+  WORKER_TITLE: 'Selecciona tu nombre',
+  WORKER_SUBTITLE: 'Toca tu nombre para comenzar',
+
+  // Estados de Carga
+  LOADING: 'Cargando colaboradores...',
+  ERROR_PREFIX: 'Error: ',
+  NO_WORKERS_FOUND: 'No se encontraron colaboradores.',
+  SEARCH_PLACEHOLDER: 'Buscar por nombre',
+  SYNC_BUTTON_TEXT: 'Sincronizar Usuarios',
+
+  // Botón
+  BUTTON_TEXT: 'Continuar',
+
+  // Empresa
+  COMPANY_NAME: 'Caprocam',
 };

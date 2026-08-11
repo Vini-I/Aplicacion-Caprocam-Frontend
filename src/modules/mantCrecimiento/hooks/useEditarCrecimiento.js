@@ -55,7 +55,7 @@ const [fincas, setFincas] = useState([]);
         setFincas(fincasData || []);
         setEstanques(estanquesData || []);
       } catch (e) {
-        console.error(e);
+        mostrarError(e);
       }
     })();
     return () => { activo = false; };
@@ -147,7 +147,7 @@ const [fincas, setFincas] = useState([]);
       onGuardado?.();
     } catch (e) {
       // Error fuera del formulario → ModalError (ErrorContext)
-      mostrarError(e);
+      setErrorMessage(error.message)
     } finally {
       setIsSaving(false);
     }

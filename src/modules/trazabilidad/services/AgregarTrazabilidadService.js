@@ -15,14 +15,14 @@ import { crearRegistro } from "./TrazabilidadServices";
 
 export async function crearRegistroTrazabilidad(formData) {
   const body = {
-    fincaId: formData.fincaId,
-    estanqueOrigenId: formData.estanqueOrigenId,
-    estanqueDestinoId: formData.estanqueDestinoId,
+    fincaId: Number(formData.fincaId) || formData.fincaId,
+    estanqueOrigenId: Number(formData.estanqueOrigenId) || formData.estanqueOrigenId,
+    estanqueDestinoId: Number(formData.estanqueDestinoId) || formData.estanqueDestinoId,
     fecha: toMysqlDate(formData.fecha) || formData.fecha,
-    colaboradorId: formData.colaboradorId || null,
-    tamano: formData.tamaño,
-    dias: formData.dias,
-    pl: formData.pl,
+    colaboradorId: formData.colaboradorId ? Number(formData.colaboradorId) : null,
+    tamano: Number(formData.tamaño),
+    dias: Number(formData.dias),
+    pl: Number(formData.pl),
   };
 
   return crearRegistro(body);

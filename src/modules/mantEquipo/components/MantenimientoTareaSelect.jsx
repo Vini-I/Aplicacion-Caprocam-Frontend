@@ -2,62 +2,114 @@
  * ============================================================
  * COMPONENTE: MantenimientoTareaSelect
  * ============================================================
- * 
+ *
  * Módulo: Mantenimiento de Equipos
- * 
+ *
  * RESPONSABILIDAD:
- * - Renderiza el selector de tareas del formulario de tickets utilizando el
- *   componente Select compartido de shared, excluyendo las tareas ya asignadas.
- * 
- * DATOS / PROPS:
- * - tareasSeleccionadas: Array<{value: string, label: string}> (Lista de tareas asociadas actualmente)
- * - onAgregarTarea: function (Callback al seleccionar una tarea, recibe el objeto de la tarea)
- * - error: boolean (Indica si hay un error de validación)
- * 
- * VALIDACIONES / REGLAS:
- * - Filtra las tareas disponibles de TAREAS_DEMO excluyendo las que ya están en tareasSeleccionadas.
- * 
- * NAVEGACIÓN:
- * - Ninguna.
- * 
- * DEPENDENCIAS:
- * - Select de shared
- * - obtenerTareas de tareasService
- * - TEXTOS_MODAL_AGREGAR de mantEquipoMensajes
- * - COLORS de theme, styles de mantEquipoStyles
- * ============================================================
+ * - Componente personalizado que reutiliza elementos de shared/components.
+ * - Cargar el catálogo de tareas desde el backend y renderizar el selector excluyendo las ya asignadas.
+ *
+ * @dependencies - Select, CustomText de shared/components
+ *               - obtenerTareas de tareasService
+ *               - MantenimientoTareaSelectStyles, mantEquipoStyles
+ *               - COLORS de theme/colors
+ * @validations  - Al menos una tarea debe seleccionarse (prop error)
+ * @navigation   - Ninguna
  */
 
 import React, { useState, useEffect } from "react";
+import { View } from "react-native";
+import Spinner from "../../../shared/components/Spinner.jsx";
 import Select from "../../../shared/components/Select.jsx";
-import { obtenerTareas } from "../services/tareasService.js";
+import CustomText from "../../../shared/components/Text.jsx";
+import { obtenerTareas, obtenerCatalogoTareas } from "../services/tareasService.js";
 import { TEXTOS_MODAL_AGREGAR } from "../constants/mantEquipoMensajes.js";
-import { COLORS } from "../../../theme/colors.js";
-import { styles } from "../styles/mantEquipoStyles.js";
+import { styles as sharedStyles } from "../styles/mantEquipoStyles.js";
+import { styles } from "../styles/MantenimientoTareaSelectStyles.js";
 
-export default function MantenimientoTareaSelect({ tareasSeleccionadas, onAgregarTarea, error }) {
+export default function MantenimientoTareaSelect({ tareasSeleccionadas = [], onAgregarTarea, error }) {
   const [tareas, setTareas] = useState([]);
+  const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
-    obtenerTareas().then(data => {
-      setTareas(data || []);
-    });
+    let activo = true;
+    setCargando(true);
+
+    async function cargarTareas() {
+      try {
+        let list = await obtenerTareas();
+        if ((!Array.isArray(list) || list.length === 0) && obtenerCatalogoTareas) {
+          const cat = await obtenerCatalogoTareas();
+          if (Array.isArray(cat) && cat.length > 0) {
+            list = cat;
+          }
+        }
+        if (activo) {
+          setTareas(Array.isArray(list) ? list : []);
+        }
+      } catch (err) {
+        console.warn("MantenimientoTareaSelect: error al cargar tareas:", err?.message || err);
+        if (activo) {
+          setTareas([]);
+        }
+      } finally {
+        if (activo) {
+          setCargando(false);
+        }
+      }
+    }
+
+    cargarTareas();
+
+    return () => {
+      activo = false;
+    };
   }, []);
 
-  // Excluir tareas ya seleccionadas (comparando tanto por value como por id)
+  const safeSeleccionadas = Array.isArray(tareasSeleccionadas) ? tareasSeleccionadas : [];
+
+  const idsSeleccionados = new Set(
+    safeSeleccionadas.map(x =>
+      String(x.tareaId || x.value || x.id || '')
+    ).filter(Boolean)
+  );
+
   const opcionesTareas = tareas
-    .filter(t => !tareasSeleccionadas.some(x => x.value === t.id || x.value === t.value))
+    .map(t => {
+      const idVal = t.id ?? t.value ?? t.tareaId ?? t.codigoTarea;
+      const labelVal = t.nombre ?? t.label ?? t.nombreTarea ?? `Tarea ${idVal}`;
+      return {
+        ...t,
+        id: idVal,
+        nombre: labelVal,
+        label: labelVal,
+        value: String(idVal),
+      };
+    })
+    .filter(t => t.id !== undefined && t.id !== null && !idsSeleccionados.has(String(t.id)))
     .map(t => ({
-      label: t.nombre,
-      value: t.id
+      label: t.label,
+      value: t.value,
     }));
 
   const handleSelect = (val) => {
-    const taskObj = tareas.find(t => t.id === val);
+    if (!val) return;
+    const taskObj = tareas.find(t => String(t.id ?? t.value ?? t.tareaId ?? t.codigoTarea) === String(val));
     if (taskObj && onAgregarTarea) {
       onAgregarTarea(taskObj);
     }
   };
+
+  if (cargando) {
+    return (
+      <View style={styles.loadingRow}>
+        <Spinner size="small" />
+        <CustomText style={styles.loadingText}>
+          Cargando tareas...
+        </CustomText>
+      </View>
+    );
+  }
 
   return (
     <Select
@@ -65,14 +117,22 @@ export default function MantenimientoTareaSelect({ tareasSeleccionadas, onAgrega
       value=""
       options={opcionesTareas}
       onChange={handleSelect}
-      placeholder="Seleccione una tarea..."
-      containerStyle={{ marginBottom: 12 }}
+      placeholder={
+        cargando
+          ? "Cargando tareas..."
+          : (tareas.length === 0
+            ? "No hay tareas en el sistema"
+            : (opcionesTareas.length === 0
+              ? "Todas las tareas han sido agregadas"
+              : "Seleccione una tarea..."))
+      }
+      containerStyle={styles.selectContainer}
       selectStyle={[
-        styles.comboInput,
-        { minHeight: 45 },
-        error && { borderColor: COLORS.error }
+        sharedStyles.comboInput,
+        sharedStyles.selectMinHeight,
+        error && styles.selectError
       ]}
-      labelStyle={styles.comboLabel}
+      labelStyle={sharedStyles.comboLabel}
       showsVerticalScrollIndicator={false}
     />
   );

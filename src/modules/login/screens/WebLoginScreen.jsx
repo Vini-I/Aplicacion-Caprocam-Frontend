@@ -2,55 +2,39 @@
  * ============================================================
  * PANTALLA: WebLoginScreen
  * ============================================================
- * 
- * Responsabilidad: Pantalla de inicio de sesión para la plataforma
- * web de Caprocam. Permite a los usuarios autenticarse ingresando
- * su usuario y contraseña.
- * 
- * FUNCIONALIDAD:
- * 1. Formulario de inicio de sesión con campos de Usuario y Contraseña.
- * 2. Visualización de errores de validación de campos vacíos.
- * 3. Spinner de carga durante el proceso de autenticación.
- * 4. Botón para redirigir a la pantalla de registro de usuarios.
- * 
- * DATOS:
- * - username: Estado del nombre de usuario.
- * - password: Estado de la contraseña de acceso.
- * - errors: Objeto con los errores de validación por campo.
- * - serverError: Mensaje de error retornado por la API de autenticación.
- * 
- * VALIDACIONES:
- * - Los campos de Usuario y Contraseña son obligatorios (*).
- * - Los errores visuales (bordes rojos) y mensajes solo aparecen tras intentar enviar el formulario.
- * 
- * NAVEGACIÓN:
- * - Redirige a la sección principal tras un login exitoso (onLoginSuccess).
- * - Redirige al flujo de registro de administradores (onGoToRegister).
- * 
- * DEPENDENCIAS:
- * - Card, Alert, Spinner, Button, Header, Separator, FormField.
- * - Hook useAuth para la lógica de negocio y validación de campos.
+ *
+ * Pantalla de inicio de sesión para la plataforma web de Caprocam.
+ * Permite a los usuarios autenticarse ingresando usuario y contraseña.
+ * Ambos campos son obligatorios y se marcan con asterisco (*).
+ *
+ * @dependencies - Card, Alert, Spinner, Button, Header, Separator, FormField (shared)
+ *               - useAuth (hooks/useAuth) para lógica de autenticación
+ *               - styles/webLoginStyles, theme/style
+ * @validations  - Usuario y Contraseña obligatorios (*).
+ *               - Errores de validación visibles solo tras primer intento de envío.
+ *               - createChangeHandler limpia serverError en cada cambio de campo.
+ * @navigation   - onLoginSuccess → sección principal de la aplicación.
+ *               - onGoToRegister → flujo de registro de administradores.
  */
 
 import { View, ScrollView } from 'react-native';
 
-import Card      from '../../../shared/components/Card';
-import Spinner   from '../../../shared/components/Spinner';
-import Button    from '../../../shared/components/Button';
-import Header    from '../../../shared/components/Header';
-import Separator  from '../../../shared/components/Separator';
-import FormField  from '../../../shared/components/FormField';
-import Alert      from '../../../shared/components/Alert';
+import Card from '../../../shared/components/Card';
+import Spinner from '../../../shared/components/Spinner';
+import Button from '../../../shared/components/Button';
+import Header from '../../../shared/components/Header';
+import Separator from '../../../shared/components/Separator';
+import Input from '../../../shared/components/Input';
+import Alert from '../../../shared/components/Alert';
 
 import { useAuth } from '../hooks/useAuth';
 import { AUTH_MESSAGES as MSG } from '../constants/authMessages';
 import styles from '../styles/webLoginStyles';
 import { STYLE } from '../../../theme/style';
-import { COLORS } from '../../../theme/colors';
 
 export default function WebLoginScreen({
-  onLoginSuccess = () => {},
-  onGoToRegister = () => {},
+  onLoginSuccess = () => { },
+  onGoToRegister = () => { },
 }) {
   const {
     username, setUsername,
@@ -59,18 +43,13 @@ export default function WebLoginScreen({
     handleLogin,
   } = useAuth({ onLoginSuccess });
 
-  const handleUsernameChange = (val) => {
+  const createChangeHandler = (setter) => (val) => {
     if (serverError && setServerError) setServerError(null);
-    setUsername(val);
-  };
-
-  const handlePasswordChange = (val) => {
-    if (serverError && setServerError) setServerError(null);
-    setPassword(val);
+    setter(val);
   };
 
   return (
-    <ScrollView style={styles.scrollView} contentContainerStyle={{ flexGrow: 1, backgroundColor: COLORS.white }} showsVerticalScrollIndicator={false}>
+    <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
       <Header
         title={MSG.COMPANY_NAME}
@@ -82,30 +61,30 @@ export default function WebLoginScreen({
         <View style={STYLE.contentWrapper}>
           <Card>
 
-          <FormField
-            label={MSG.LABEL_USERNAME}
-            value={username}
-            onChangeText={handleUsernameChange}
-            placeholder={MSG.PLACEHOLDER_USERNAME}
-            editable={!loading}
-            autoCapitalize="none"
-            autoCorrect={false}
-            error={errors.username}
-          />
+            <Input
+              label={`${MSG.LABEL_USERNAME} *`}
+              value={username}
+              onChangeText={createChangeHandler(setUsername)}
+              placeholder={MSG.PLACEHOLDER_USERNAME}
+              editable={!loading}
+              autoCapitalize="none"
+              autoCorrect={false}
+              style={errors.username ? styles.errorField : null}
+            />
 
-          <FormField
-            label={MSG.LABEL_PASSWORD}
-            value={password}
-            onChangeText={handlePasswordChange}
-            placeholder={MSG.PLACEHOLDER_PASSWORD}
-            editable={!loading}
-            secureTextEntry
-            error={errors.password}
-          />
+            <Input
+              label={`${MSG.LABEL_PASSWORD} *`}
+              value={password}
+              onChangeText={createChangeHandler(setPassword)}
+              placeholder={MSG.PLACEHOLDER_PASSWORD}
+              editable={!loading}
+              secureTextEntry
+              style={errors.password ? styles.errorField : null}
+            />
 
-          {serverError ? (
-            <Alert variant="danger" message={serverError} style={{ marginBottom: 16 }} />
-          ) : null}
+            {serverError ? (
+              <Alert variant="danger" message={serverError} style={styles.serverAlertSpacing} />
+            ) : null}
 
             {Object.values(errors).some((e) => e !== "") && (
               <Alert
