@@ -108,15 +108,6 @@ export default function CardEnfermedades({ fincaId, estanqueId, onEditar, onAler
 
                             <View style={styles.infoItem}>
                                 <Text style={styles.label}>
-                                    Mortalidad
-                                </Text>
-                                <Text style={styles.value}>
-                                    {registro.mortalidadRegistrada}
-                                </Text>
-                            </View>
-
-                            <View style={styles.infoItem}>
-                                <Text style={styles.label}>
                                     Reporte
                                 </Text>
                                 <Text style={styles.value}>

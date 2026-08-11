@@ -1,7 +1,8 @@
 /**
  * Calco de useEnfermedadesScreen para edición (misma API `pantalla`).
  */
-import { useCallback, useEffect, useMemo, useState } from "react";
+
+import { useEffect, useMemo, useState } from "react";
 import enfermedadesService from "../services/EnfermedadesService.js";
 import { fincaService } from "../../finca/services/finca.service.js";
 import { estanqueService } from "../../estanques/services/estanque.service.js";
@@ -20,11 +21,51 @@ function convertirFechaParaBackend(fecha) {
 
 function formatearFechaUI(fecha) {
   if (!fecha) return "";
+
   if (typeof fecha === "string" && /^\d{4}-\d{2}-\d{2}/.test(fecha)) {
     const [y, m, d] = fecha.slice(0, 10).split("-");
     return `${d}/${m}/${y}`;
   }
+
   return fecha;
+}
+
+function obtenerFechaValida(fecha) {
+  const texto = String(fecha ?? "").trim();
+  let dia, mes, anio;
+
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(texto)) {
+    [dia, mes, anio] = texto.split("/").map(Number);
+  } else if (/^\d{4}-\d{2}-\d{2}/.test(texto)) {
+    [anio, mes, dia] = texto.slice(0, 10).split("-").map(Number);
+  } else {
+    return null;
+  }
+
+  const fechaValidada = new Date(anio, mes - 1, dia);
+  fechaValidada.setHours(0, 0, 0, 0);
+
+  if (
+    fechaValidada.getFullYear() !== anio ||
+    fechaValidada.getMonth() !== mes - 1 ||
+    fechaValidada.getDate() !== dia
+  ) return null;
+
+  return fechaValidada;
+}
+
+function validarFechaReporte(fecha) {
+  if (!String(fecha ?? "").trim()) return "Seleccione la fecha del reporte.";
+
+  const fechaValidada = obtenerFechaValida(fecha);
+  if (!fechaValidada) return "La fecha del reporte no es valida.";
+
+  const hoy = new Date();
+  hoy.setHours(0, 0, 0, 0);
+
+  if (fechaValidada > hoy) return "La fecha del reporte no puede ser futura.";
+
+  return "";
 }
 
 export default function useEditarEnfermedad(registroId, onGuardado) {
@@ -33,12 +74,14 @@ export default function useEditarEnfermedad(registroId, onGuardado) {
   const [fechaReporte, setFechaReporte] = useState(obtenerFechaActual());
   const [enfermedad, setEnfermedad] = useState("");
   const [severidad, setSeveridad] = useState("");
-  const [mortalidad, setMortalidad] = useState("");
   const [reporte, setReporte] = useState("");
+  const [responsable, setResponsable] = useState("");
+
   const [fincas, setFincas] = useState([]);
   const [estanques, setEstanques] = useState([]);
   const [catalogoEnf, setCatalogoEnf] = useState([]);
   const [catalogoSev, setCatalogoSev] = useState([]);
+
   const [submitted, setSubmitted] = useState(false);
   const [mensaje, setMensaje] = useState("");
   const [tipoMensaje, setTipoMensaje] = useState("info");
@@ -46,65 +89,83 @@ export default function useEditarEnfermedad(registroId, onGuardado) {
   const [cargandoRegistro, setCargandoRegistro] = useState(true);
   const [cargandoOpciones, setCargandoOpciones] = useState(true);
 
-  useEffect(function () {
-    if (!mensaje) {
-      return undefined;
-    }
+  useEffect(() => {
+    if (!mensaje) return undefined;
 
     const duracion = tipoMensaje === "success" ? 3000 : 6000;
-    const timer = setTimeout(function () {
+    const timer = setTimeout(() => {
       setMensaje("");
       setTipoMensaje("info");
     }, duracion);
 
-    return function () {
-      clearTimeout(timer);
-    };
+    return () => clearTimeout(timer);
   }, [mensaje, tipoMensaje]);
 
   useEffect(() => {
     let activo = true;
-    (async () => {
+
+    async function cargarOpciones() {
       try {
         setCargandoOpciones(true);
+
         const [f, e, ce, cs] = await Promise.all([
           fincaService.getFincas(),
           estanqueService.getEstanques(),
-          enfermedadesService.getCatalogo?.() ?? Promise.resolve([]),
-          enfermedadesService.getCatalogoSeveridades?.() ?? Promise.resolve([]),
+          enfermedadesService.getCatalogo(),
+          enfermedadesService.getCatalogoSeveridades(),
         ]);
+
         if (!activo) return;
+
         setFincas(Array.isArray(f) ? f : []);
         setEstanques(Array.isArray(e) ? e : []);
         setCatalogoEnf(Array.isArray(ce) ? ce : []);
         setCatalogoSev(Array.isArray(cs) ? cs : []);
-      } catch (err) {
+      } catch (error) {
+        if (!activo) return;
         setTipoMensaje("danger");
-        setMensaje(err.message);
+        setMensaje(error.message);
       } finally {
         if (activo) setCargandoOpciones(false);
       }
-    })();
+    }
+
+    cargarOpciones();
     return () => { activo = false; };
   }, []);
 
   useEffect(() => {
-    if (!registroId) { setCargandoRegistro(false); return; }
+    if (!registroId) {
+      setCargandoRegistro(false);
+      return undefined;
+    }
+
     let activo = true;
-    setCargandoRegistro(true);
-    enfermedadesService.getById(registroId)
-      .then((r) => {
-        if (!activo || !r) return;
-        setFinca(String(r.fincaId ?? r.finca_id ?? ""));
-        setEstanque(String(r.estanqueId ?? r.estanque_id ?? ""));
-        setFechaReporte(formatearFechaUI(r.fechaReporte ?? r.fecha));
-        setEnfermedad(r.enfermedad ?? "");
-        setSeveridad(r.severidad ?? "");
-        setMortalidad(String(r.mortalidadRegistrada ?? r.mortalidad ?? ""));
-        setReporte(r.reporte ?? "");
-      })
-      .catch(() => setMensaje("No se pudo cargar el registro."))
-      .finally(() => { if (activo) setCargandoRegistro(false); });
+
+    async function cargarRegistro() {
+      try {
+        setCargandoRegistro(true);
+
+        const registro = await enfermedadesService.getById(registroId);
+        if (!activo || !registro) return;
+
+        setFinca(String(registro.fincaId ?? registro.finca_id ?? ""));
+        setEstanque(String(registro.estanqueId ?? registro.estanque_id ?? ""));
+        setFechaReporte(formatearFechaUI(registro.fechaReporte ?? registro.fecha_reporte ?? registro.fecha));
+        setEnfermedad(registro.enfermedad ?? "");
+        setSeveridad(registro.severidad ?? "");
+        setReporte(registro.reporte ?? "");
+        setResponsable(registro.responsable ?? "No disponible");
+      } catch (error) {
+        if (!activo) return;
+        setTipoMensaje("danger");
+        setMensaje(error.message || "No se pudo cargar el registro.");
+      } finally {
+        if (activo) setCargandoRegistro(false);
+      }
+    }
+
+    cargarRegistro();
     return () => { activo = false; };
   }, [registroId]);
 
@@ -112,23 +173,27 @@ export default function useEditarEnfermedad(registroId, onGuardado) {
     () => fincas.map((f) => ({ label: f.nombreFinca, value: String(f.id) })),
     [fincas],
   );
+
   const opcionesEstanques = useMemo(
-    () =>
-      estanques
-        .filter((e) => Number(e.idFinca ?? e.fincaId) === Number(finca))
-        .map((e) => ({ label: e.codigo, value: String(e.id) })),
+    () => estanques
+      .filter((e) => Number(e.idFinca) === Number(finca))
+      .map((e) => ({ label: e.codigo, value: String(e.id) })),
     [estanques, finca],
   );
+
   const opcionesEnfermedades = useMemo(() => {
     if (!Array.isArray(catalogoEnf) || catalogoEnf.length === 0) return [];
+
     return catalogoEnf.map((x) =>
       typeof x === "string"
         ? { label: x, value: x }
         : { label: x.nombre ?? x.label ?? x.value, value: x.value ?? x.codigo ?? x.nombre }
     );
   }, [catalogoEnf]);
+
   const opcionesSeveridades = useMemo(() => {
     if (!Array.isArray(catalogoSev) || catalogoSev.length === 0) return [];
+
     return catalogoSev.map((x) =>
       typeof x === "string"
         ? { label: x, value: x }
@@ -141,23 +206,35 @@ export default function useEditarEnfermedad(registroId, onGuardado) {
   const cambiarFechaReporte = (v) => { setFechaReporte(v); setMensaje(""); };
   const cambiarEnfermedad = (v) => { setEnfermedad(String(v)); setMensaje(""); };
   const cambiarSeveridad = (v) => { setSeveridad(String(v)); setMensaje(""); };
-  const cambiarMortalidad = (v) => { setMortalidad(String(v)); setMensaje(""); };
   const cambiarReporte = (v) => { setReporte(v); setMensaje(""); };
 
-  const validar = () => {
-    const m = Number(mortalidad);
-    return Boolean(finca && estanque && fechaReporte && enfermedad && severidad && reporte.trim() && !Number.isNaN(m) && m >= 0);
-  };
+  function validarFormulario() {
+    if (!finca) return "Seleccione una finca.";
+    if (!estanque) return "Seleccione un estanque.";
 
-  const guardarEnfermedad = async () => {
+    const errorFecha = validarFechaReporte(fechaReporte);
+    if (errorFecha) return errorFecha;
+
+    if (!enfermedad) return "Seleccione una enfermedad.";
+    if (!severidad) return "Seleccione la severidad.";
+
+    return "";
+  }
+
+  async function guardarEnfermedad() {
     setSubmitted(true);
     setMensaje("");
-    if (!validar()) {
+
+    const errorValidacion = validarFormulario();
+
+    if (errorValidacion) {
       setTipoMensaje("danger");
-      setMensaje("Rellene los datos requeridos correctamente.");
+      setMensaje(errorValidacion);
       return;
     }
+
     setLoading(true);
+
     try {
       await enfermedadesService.update(registroId, {
         fincaId: Number(finca),
@@ -165,38 +242,51 @@ export default function useEditarEnfermedad(registroId, onGuardado) {
         fechaReporte: convertirFechaParaBackend(fechaReporte),
         enfermedad,
         severidad,
-        mortalidadRegistrada: Number(mortalidad) || 0,
-        reporte: reporte.trim(),
+        reporte: reporte.trim() || null,
       });
+
       setTipoMensaje("success");
       setMensaje("Enfermedad actualizada correctamente.");
-      onGuardado?.();
-    } catch (e) {
+
+      if (onGuardado) onGuardado();
+    } catch (error) {
       setTipoMensaje("danger");
-      setMensaje(e.message);
+      setMensaje(error.message);
     } finally {
       setLoading(false);
     }
-  };
+  }
 
   return {
-    finca, estanque, fechaReporte, enfermedad, severidad, mortalidad, reporte,
+    finca, estanque, fechaReporte, enfermedad, severidad, reporte, responsable,
     opcionesFincas, opcionesEstanques, opcionesEnfermedades, opcionesSeveridades,
+
     placeholderFinca: "Seleccione una finca",
     placeholderEstanque: "Seleccione un estanque",
     placeholderEnfermedad: "Seleccione enfermedad",
     placeholderSeveridad: "Seleccione severidad",
-    gridStyle: undefined, itemStyle: undefined, itemFullStyle: undefined,
+
+    gridStyle: undefined,
+    itemStyle: undefined,
+    itemFullStyle: undefined,
+
     errorFinca: submitted && !finca,
     errorEstanque: submitted && !estanque,
-    errorFechaReporte: submitted && !fechaReporte,
+    errorFechaReporte: submitted && validarFechaReporte(fechaReporte) !== "",
     errorEnfermedad: submitted && !enfermedad,
     errorSeveridad: submitted && !severidad,
-    errorReporte: submitted && !reporte.trim(),
-    mensaje, tipoMensaje,
+
+    mensaje,
+    tipoMensaje,
     loading: loading || cargandoOpciones,
     cargandoRegistro,
-    cambiarFinca, cambiarEstanque, cambiarFechaReporte, cambiarEnfermedad,
-    cambiarSeveridad, cambiarMortalidad, cambiarReporte, guardarEnfermedad,
+
+    cambiarFinca,
+    cambiarEstanque,
+    cambiarFechaReporte,
+    cambiarEnfermedad,
+    cambiarSeveridad,
+    cambiarReporte,
+    guardarEnfermedad,
   };
 }

@@ -16,37 +16,43 @@ import React from "react";
 import { RefreshControl, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import DashboardAlertas from "../components/DashboardAlertas";
-import DashboardEstadisticas from "../components/DashboardEstadisticas";
-import DashboardEstanquesPanel from "../components/DashboardEstanquesPanel";
-import DashboardFincasPanel from "../components/DashboardFincasPanel";
-import DashboardHeader from "../components/DashboardHeader";
-import DashboardSanidadPanel from "../components/DashboardSanidadPanel";
-import DashboardUltimosRegistros from "../components/DashboardUltimosRegistros";
+import DashboardAlertas from "../components/DashboardAlertas.jsx";
+import DashboardEstadisticas from "../components/DashboardEstadisticas.jsx";
+import DashboardEstanquesPanel from "../components/DashboardEstanquesPanel.jsx";
+import DashboardFincasPanel from "../components/DashboardFincasPanel.jsx";
+import DashboardHeader from "../components/DashboardHeader.jsx";
+import DashboardSanidadPanel from "../components/DashboardSanidadPanel.jsx";
+import DashboardUltimosRegistros from "../components/DashboardUltimosRegistros.jsx";
 
-import useDashboardScreen from "../hooks/useDashboardScreen";
+import useDashboardScreen from "../hooks/useDashboardScreen.js";
 
-import { COLORS } from "../../../theme/colors";
-import { STYLE } from "../../../theme/style";
-import { styles } from "../styles/DashboardStyle";
+import { COLORS } from "../../../theme/colors.js";
+import { STYLE } from "../../../theme/style.js";
+import { styles } from "../styles/DashboardStyle.js";
 
 export default function DashboardScreen() {
   const pantalla = useDashboardScreen();
 
   const panelSeleccionado = pantalla.selectedCard === "fincas" ? (
-    <DashboardFincasPanel fincas={pantalla.fincasDashboard} estanques={pantalla.estanquesData} />
+    <DashboardFincasPanel
+      fincas={pantalla.fincasDashboard}
+      estanques={pantalla.estanquesData}
+      onPressFinca={pantalla.irAFinca}
+    />
   ) : pantalla.selectedCard === "estanques" ? (
-    <DashboardEstanquesPanel estanques={pantalla.estanquesData} alimentacionSemanal={pantalla.alimentacionSemanal} />
+    <DashboardEstanquesPanel
+      estanques={pantalla.estanquesData}
+      alimentacionSemanal={pantalla.alimentacionSemanal}
+      onPressEstanque={pantalla.irAEstanque}
+    />
   ) : pantalla.selectedCard === "casos" ? (
     <DashboardSanidadPanel
-      tipo="casos"
       resumenEnfermedades={pantalla.resumenEnfermedades}
       resumenParasitologia={pantalla.resumenParasitologia}
       registrosEnfermedades={pantalla.registrosEnfermedades}
       registrosParasitologia={pantalla.registrosParasitologia}
+      onPressCaso={pantalla.irACasoSanitario}
     />
-  ) : pantalla.selectedCard === "mortalidad" ? (
-    <DashboardSanidadPanel tipo="mortalidad" resumenEnfermedades={pantalla.resumenEnfermedades} registrosEnfermedades={pantalla.registrosEnfermedades} registrosParasitologia={pantalla.registrosParasitologia} />
   ) : null;
 
   return (
@@ -54,7 +60,14 @@ export default function DashboardScreen() {
       <ScrollView
         contentContainerStyle={[STYLE.contentWrapper, styles.scrollContent]}
         showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={pantalla.cargando} onRefresh={pantalla.recargar} colors={[COLORS.primary]} tintColor={COLORS.primary} />}
+        refreshControl={
+          <RefreshControl
+            refreshing={pantalla.cargando}
+            onRefresh={pantalla.recargar}
+            colors={[COLORS.primary]}
+            tintColor={COLORS.primary}
+          />
+        }
       >
         <DashboardHeader />
 
@@ -64,6 +77,7 @@ export default function DashboardScreen() {
           onToggle={pantalla.alternarAlertas}
           onDismiss={pantalla.descartarAlertaDashboard}
           onViewAll={pantalla.irAAlertas}
+          onPressAlerta={pantalla.irAAlerta}
         />
 
         <DashboardEstadisticas
@@ -72,7 +86,6 @@ export default function DashboardScreen() {
           totalFincas={pantalla.fincasDashboard.length}
           totalEstanques={pantalla.estanquesData.length}
           totalCasosSanitarios={pantalla.totalCasosSanitarios}
-          totalMortalidad={pantalla.totalMortalidad}
           onSelect={pantalla.manejarSeleccionCard}
         />
 

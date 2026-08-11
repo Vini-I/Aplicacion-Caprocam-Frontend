@@ -1,7 +1,7 @@
 /**
- * ============================================================
+ * =============================================================
  * SCREEN: ENFERMEDADES
- * ============================================================
+ * =============================================================
  *
  * Renderiza el formulario para registrar enfermedades.
  * Toda la logica se encuentra en useEnfermedadesScreen.
@@ -10,24 +10,23 @@
 import React, { useEffect, useRef } from "react";
 import { ScrollView, View } from "react-native";
 
-import Alert from "../../../shared/components/Alert";
-import Button from "../../../shared/components/Button";
-import Card from "../../../shared/components/Card";
-import DateInput from "../../../shared/components/DateInput";
-import Icon from "../../../shared/components/Icons";
-import Input from "../../../shared/components/Input";
-import NavbarRegistro from "../../../shared/components/NavbarRegistro";
-import NumberInput from "../../../shared/components/NumberInput";
-import Select from "../../../shared/components/Select";
-import CustomText from "../../../shared/components/Text";
+import Alert from "../../../shared/components/Alert.jsx";
+import Button from "../../../shared/components/Button.jsx";
+import Card from "../../../shared/components/Card.jsx";
+import DateInput from "../../../shared/components/DateInput.jsx";
+import Icon from "../../../shared/components/Icons.jsx";
+import Input from "../../../shared/components/Input.jsx";
+import NavbarRegistro from "../../../shared/components/NavbarRegistro.jsx";
+import Select from "../../../shared/components/Select.jsx";
+import CustomText from "../../../shared/components/Text.jsx";
 
-import EnfermedadesSectionTitle from "../components/EnfermedadesSectionTitle";
-import useEnfermedadesScreen from "../hooks/useEnfermedadesScreen";
+import EnfermedadesSectionTitle from "../components/EnfermedadesSectionTitle.jsx";
+import useEnfermedadesScreen from "../hooks/useEnfermedadesScreen.js";
 
-import { styles } from "../styles/EnfermedadesStyle";
-import { COLORS } from "../../../theme/colors";
-import { ICONS } from "../../../theme/icons";
-import { STYLE } from "../../../theme/style";
+import { styles } from "../styles/EnfermedadesStyle.js";
+import { COLORS } from "../../../theme/colors.js";
+import { ICONS } from "../../../theme/icons.js";
+import { STYLE } from "../../../theme/style.js";
 
 export default function EnfermedadesScreen() {
   const pantalla = useEnfermedadesScreen();
@@ -44,7 +43,7 @@ export default function EnfermedadesScreen() {
     <>
       <NavbarRegistro
         Titulo="Enfermedades"
-        Subtitulo="Registro de casos sanitarios"
+        Subtitulo="Registro de enfermedades"
         Icono="shieldAlert"
       />
 
@@ -93,12 +92,19 @@ export default function EnfermedadesScreen() {
                   value={pantalla.fechaReporte}
                   onChangeText={pantalla.cambiarFechaReporte}
                   labelStyle={styles.label}
-                  inputStyle={
-                    pantalla.errorFechaReporte && styles.campoConError
-                  }
+                  inputStyle={pantalla.errorFechaReporte && styles.campoConError}
                 />
               </View>
 
+              <View style={pantalla.itemStyle}>
+                <Input
+                  label="Responsable"
+                  value={pantalla.responsable}
+                  editable={false}
+                  labelStyle={styles.label}
+                  style={styles.disabledInput}
+                />
+              </View>
             </View>
           </Card>
 
@@ -140,30 +146,15 @@ export default function EnfermedadesScreen() {
                 />
               </View>
 
-              <View style={pantalla.itemStyle}>
-                <NumberInput
-                  label="Mortalidad registrada (U)"
-                  value={pantalla.mortalidad}
-                  onChangeText={pantalla.cambiarMortalidad}
-                  min={0}
-                  max={999999}
-                  step={1}
-                  labelStyle={styles.label}
-                />
-              </View>
-
               <View style={pantalla.itemFullStyle}>
                 <Input
-                  label="Reporte *"
+                  label="Reporte"
                   value={pantalla.reporte}
                   onChangeText={pantalla.cambiarReporte}
                   placeholder="Describa sintomas, observaciones o acciones realizadas"
                   multiline={true}
                   labelStyle={styles.label}
-                  style={[
-                    styles.textArea,
-                    pantalla.errorReporte && styles.campoConError,
-                  ]}
+                  style={styles.textArea}
                 />
               </View>
             </View>
@@ -186,12 +177,7 @@ export default function EnfermedadesScreen() {
           >
             <View style={styles.inlineButtonContentCentered}>
               <Icon icon={ICONS.save} size={18} color={COLORS.primary} />
-
-              <CustomText
-                size={16}
-                color={COLORS.primary}
-                style={styles.saveText}
-              >
+              <CustomText size={16} color={COLORS.primary} style={styles.saveText}>
                 Guardar
               </CustomText>
             </View>
