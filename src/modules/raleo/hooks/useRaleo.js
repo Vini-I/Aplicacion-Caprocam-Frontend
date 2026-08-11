@@ -16,26 +16,28 @@
  * - updateField(campo, valor): actualiza un campo del formulario.
  * - resetForm(): restaura el formulario a sus valores iniciales.
  * - validarForm(): retorna { valido, errores } verificando como
- *   obligatorios finca, estanque, colaborador, fecha,
- *   porcentajeRaleo, pesoPromedio, biomasaActual, objetivo y
- *   metodo. `observaciones` NO se valida aquí (es opcional): si
- *   queda vacío, RaleoScreen.jsx lo completa con un texto por
- *   defecto antes de guardar (mismo patrón que useAlimentacionForm.js
- *   y useDensidadPoblacional.js con sus notas).
+ *   obligatorios finca, estanque, fecha, biomasaAntes y
+ *   kgRetirados. `observaciones` NO se valida aquí (es opcional):
+ *   si queda vacío, useRaleoScreen.js lo completa con un texto por
+ *   defecto antes de guardar (mismo patrón que useAlimentacionForm.js).
  *
- * CORREGIDO: antes `observaciones` SÍ se validaba como
- * obligatorio aquí, contradiciendo tanto el docstring como el
- * fallback de RaleoScreen.jsx: el formulario nunca lograba
- * guardarse si se dejaba en blanco, aunque la UI lo mostraba como
- * campo opcional (sin asterisco).
+ * CAMBIO (documento de requerimientos):
+ * El registro de raleo pasó a capturar los kilogramos realmente
+ * retirados en vez del porcentaje. El porcentaje y la biomasa
+ * restante ya NO se digitan: los calcula el sistema a partir de
+ * `biomasaAntes` y `kgRetirados` (ver useRaleoScreen.js).
  *
- * CORREGIDO: el campo "responsable" (un Input de texto,
- * deshabilitado y sin ninguna forma de llenarse) se reemplazó por
- * "colaborador": un Select real con colaboradores reales del
- * backend (mismo patrón que "Colaborador asignado" en
- * useFincaCrecimiento.js / FincaCrecimientoScreen.jsx). Es
- * obligatorio en la UI (estandarización con Crecimiento), aunque
- * la columna colaborador_id en la base de datos es nullable.
+ * Campos eliminados y por qué:
+ * - `porcentajeRaleo`: el documento lo define como un valor
+ *   generado por fórmula, no ingresado por el usuario.
+ * - `pesoPromedio` (peso promedio estimado en gramos): no aparece
+ *   en los requerimientos; lo que se debe guardar es el peso
+ *   retirado en kilogramos, que ahora es `kgRetirados`.
+ * - `objetivo` y `metodo`: no aparecen en los requerimientos.
+ *
+ * `biomasaActual` se renombró a `biomasaAntes` para que el nombre
+ * diga exactamente qué momento representa (la biomasa previa al
+ * raleo), ya que ahora convive con la biomasa restante calculada.
  *
  * Funcionalidad:
  * - `fecha` inicia en la fecha de hoy (hoy()) y no en "": DateInput
@@ -45,6 +47,9 @@
  *   se veía lleno mientras form.fecha seguía vacío, y la
  *   validación mostraba "La fecha es obligatoria" aunque se viera
  *   una fecha en pantalla.
+ * - `kgRetirados` no puede superar a `biomasaAntes`: sacar más
+ *   biomasa de la que hay produciría un porcentaje mayor a 100 % y
+ *   una biomasa restante negativa.
  *
  * Ejemplo:
  * const { form, updateField, resetForm, validarForm } = useRaleo();
@@ -63,11 +68,8 @@ const FORM_INICIAL = {
   fecha: hoy(),
   finca: "",
   estanque: "",
-  porcentajeRaleo: "",
-  pesoPromedio: "",
-  biomasaActual: "",
-  objetivo: "",
-  metodo: "",
+  biomasaAntes: "",
+  kgRetirados: "",
   observaciones: "",
 };
 
@@ -84,16 +86,32 @@ export default function useRaleo() {
 
   function validarForm() {
     const errores = {};
+
     if (!form.finca) errores.finca = "La finca es obligatoria";
     if (!form.estanque) errores.estanque = "El estanque es obligatorio";
     if (!form.fecha) errores.fecha = "La fecha es obligatoria";
-    if (!form.porcentajeRaleo || Number.isNaN(Number(form.porcentajeRaleo))) {
-      errores.porcentajeRaleo = "El porcentaje de raleo es obligatorio y debe ser numérico";
+
+    const biomasaAntes = Number(form.biomasaAntes);
+    const kgRetirados = Number(form.kgRetirados);
+
+    if (!form.biomasaAntes || Number.isNaN(biomasaAntes)) {
+      errores.biomasaAntes = "La biomasa antes del raleo es obligatoria y debe ser numérica";
+    } else if (biomasaAntes <= 0) {
+      errores.biomasaAntes = "La biomasa antes del raleo debe ser mayor a 0";
     }
-    if (!form.pesoPromedio) errores.pesoPromedio = "El peso promedio estimado es obligatorio";
-    if (!form.biomasaActual) errores.biomasaActual = "La biomasa actual estimada es obligatoria";
-    if (!form.objetivo) errores.objetivo = "El objetivo del raleo es obligatorio";
-    if (!form.metodo) errores.metodo = "El método es obligatorio";
+
+    if (!form.kgRetirados || Number.isNaN(kgRetirados)) {
+      errores.kgRetirados = "La cantidad retirada es obligatoria y debe ser numérica";
+    } else if (kgRetirados <= 0) {
+      errores.kgRetirados = "La cantidad retirada debe ser mayor a 0";
+    } else if (!errores.biomasaAntes && kgRetirados > biomasaAntes) {
+      /*
+      Sin esta validacion el sistema calcularia un porcentaje mayor
+      a 100 % y una biomasa restante negativa.
+      */
+      errores.kgRetirados = "La cantidad retirada no puede ser mayor que la biomasa antes del raleo";
+    }
+
     return { valido: Object.keys(errores).length === 0, errores };
   }
 
