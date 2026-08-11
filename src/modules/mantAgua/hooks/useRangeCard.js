@@ -51,36 +51,68 @@ export default function useRangeCard({
     return [];
   });
 
+  const onChangeRef = useRef(onChange);
   useEffect(() => {
-    const next = initialLecturas.length > 0
-      ? crearLecturasDesdeValores(initialLecturas, idealMin, decimals)
+    onChangeRef.current = onChange;
+  }, [onChange]);
+
+  // Auxiliar para saber si los valores numéricos de initialValues coinciden
+  // exactamente con lo que ya tenemos cargado en lecturas localmente.
+  // Evita el bucle de actualización "Maximum update depth exceeded".
+  const sonValoresIguales = (valoresIniciales, lecturasActuales) => {
+    const arr = Array.isArray(valoresIniciales) ? valoresIniciales : [];
+    if (arr.length !== lecturasActuales.length) return false;
+    for (let i = 0; i < arr.length; i++) {
+      if (Number(arr[i]) !== Number(lecturasActuales[i]?.value)) {
+        return false;
+      }
+    }
+    return true;
+  };
+
+  useEffect(() => {
+    const arr = Array.isArray(initialValues) ? initialValues : [];
+
+    // Si los valores que vienen del padre son idénticos a los que ya tenemos
+    // (por ejemplo porque fuimos nosotros mismos los que notificamos onChange),
+    // NO llamamos a setLecturas para romper el bucle infinito.
+    if (sonValoresIguales(arr, lecturas)) {
+      return;
+    }
+
+    const next = arr.length > 0
+      ? crearLecturasDesdeValores(arr, idealMin, decimals)
       : [];
 
     setLecturas(next);
-  }, [JSON.stringify(initialLecturas), idealMin, decimals]);
+  }, [JSON.stringify(initialValues), idealMin, decimals]);
 
   // Ref para evitar que el montaje inicial emita onChange([]) antes de
   // que los initialValues se apliquen (race condition cuando el key del
   // RangeCard cambia y el componente se remonta con datos vacíos
   // transitorios mientras el fetch de mediciones está en vuelo).
   const mountedRef = useRef(false);
+  const lastEmittedRef = useRef('');
 
   // Única fuente que notifica al padre: se dispara después del render
-  // (nunca dentro de un reducer de setState), así el drag continuo no
-  // intenta actualizar FisicoQuimicaScreen mientras RangeCard se está
-  // renderizando.
   useEffect(() => {
+    const serialized = JSON.stringify(lecturas.map((r) => r.value));
+    if (serialized === lastEmittedRef.current) {
+      return;
+    }
+    lastEmittedRef.current = serialized;
+
     if (!mountedRef.current) {
       mountedRef.current = true;
       // En el primer render, solo emitir si ya hay lecturas reales.
       // Si está vacío, no notificar — evita borrar los datos del padre.
       if (lecturas.length > 0) {
-        onChange?.(lecturas);
+        onChangeRef.current?.(lecturas);
       }
       return;
     }
-    onChange?.(lecturas);
-  }, [lecturas, onChange]);
+    onChangeRef.current?.(lecturas);
+  }, [lecturas]);
 
   const actualizarLectura = useCallback(
     (id, patch) => {

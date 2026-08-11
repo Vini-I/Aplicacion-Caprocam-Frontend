@@ -111,7 +111,7 @@ export default function EditarCompradorScreen() {
 
           {/* Cédula deshabilitada, no se permite editar */}
           <Input
-            label="Cédula *"
+            label="Cédula / Cédula Jurídica / Extranjera *"
             value={cedula}
             editable={false}
             containerStyle={styles.field}
