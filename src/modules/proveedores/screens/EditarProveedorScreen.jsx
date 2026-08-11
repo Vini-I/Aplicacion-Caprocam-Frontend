@@ -14,9 +14,8 @@
  * @validations - Valida campos requeridos y formato numérico en UI
  * @navigation - /(drawer)/proveedores (al guardar)
  */
-import React, { useRef, useEffect } from "react";
+import React from "react";
 import { View, ScrollView, ActivityIndicator } from "react-native";
-import { useRouter } from "expo-router";
 
 import Card from "../../../shared/components/Card";
 import Input from "../../../shared/components/Input";
@@ -35,6 +34,7 @@ import { useEditarProveedorScreen, telefonoMaxLength } from "../hooks/useEditarP
 
 export default function EditarProveedorScreen() {
   const {
+    scrollViewRef,
     nombre,
     tipoProducto,
     setTipoProducto,
@@ -51,21 +51,6 @@ export default function EditarProveedorScreen() {
     guardar,
     guardadoExitoso,
   } = useEditarProveedorScreen();
-
-  const router = useRouter();
-  const scrollViewRef = useRef(null);
-
-  useEffect(() => {
-    if (alerta?.variant === "danger") {
-      scrollViewRef.current?.scrollToEnd({ animated: true });
-    }
-  }, [alerta]);
-
-  useEffect(() => {
-    if (guardadoExitoso) {
-      router.replace("/(drawer)/proveedores");
-    }
-  }, [guardadoExitoso, router]);
 
   return (
     <View style={STYLE.container}>

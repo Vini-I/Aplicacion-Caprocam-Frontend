@@ -32,6 +32,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useFocusEffect, useLocalSearchParams } from "expo-router";
 
 import { getProductosInventario } from "../services/InventarioService.js";
+import { esStockBajo, ordenarPorMasReciente } from "../utils/InventarioCalculos.js";
 import { useError } from "../../../shared/context/ErrorContext.js";
 
 const mensajesAlertaProducto = {
@@ -109,7 +110,7 @@ export function useInventario() {
     : [];
 
   const productosFiltrados = Array.isArray(productos)
-    ? productos.filter((p) => {
+    ? ordenarPorMasReciente(productos).filter((p) => {
         const texto = busqueda.toLowerCase();
         const nombre = (p.nombre || "").toLowerCase();
         const proveedor = (p.nombreProveedor || "").toLowerCase();
@@ -133,8 +134,7 @@ export function useInventario() {
         const coincideUnidad =
           filtros.units.length === 0 || filtros.units.includes(p.unidad);
 
-        const coincideStock =
-          !filtros.lowStock || Number(p.cantidad) < Number(p.stockMinimo);
+        const coincideStock = !filtros.lowStock || esStockBajo(p);
 
         const fechaFiltro = parsearFechaDDMMAAAA(filtros.expiryDate);
         const fechaProducto = parsearFechaDDMMAAAA(p.fechaCaducidad);
@@ -153,7 +153,7 @@ export function useInventario() {
     : [];
 
   const cantidadStockBajo = Array.isArray(productos)
-    ? productos.filter((p) => Number(p.cantidad) < Number(p.stockMinimo)).length
+    ? productos.filter(esStockBajo).length
     : 0;
 
   return {

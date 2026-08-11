@@ -41,7 +41,7 @@ export default function ProveedorScreen() {
     busqueda,
     setBusqueda,
     filtros,
-    TIPOS,
+    tipos,
     handleAplicarFiltros,
     alert,
     recargar,
@@ -83,7 +83,7 @@ export default function ProveedorScreen() {
             containerStyle={styles.searchBarContainer}
           />
           <FilterButton
-            categories={TIPOS}
+            categories={tipos}
             activeFilters={{
               categories: filtros.tipos,
               suppliers: [],

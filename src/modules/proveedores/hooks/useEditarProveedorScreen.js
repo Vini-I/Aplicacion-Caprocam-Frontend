@@ -15,7 +15,7 @@
  * @navigation - N/A
  */
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useProveedor } from "../context/ProveedorContext";
 import { validarTelefono, validarCorreo } from "../utils/contactValidators";
 import { ProveedorDTO } from "../dtos/proveedor.dto";
@@ -34,8 +34,10 @@ function validarTipoProducto(valor) {
 
 export function useEditarProveedorScreen() {
   const { id } = useLocalSearchParams();
+  const router = useRouter();
   const { buscarProveedor, editarProveedor } = useProveedor();
 
+  const scrollViewRef = useRef(null);
   const [base, setBase] = useState(null);
   const [nombre, setNombreState] = useState("");
   const [tipoProducto, setTipoProducto] = useState("");
@@ -79,6 +81,18 @@ export function useEditarProveedorScreen() {
   useEffect(() => {
     cargarProveedor();
   }, [cargarProveedor]);
+
+  useEffect(() => {
+    if (alerta?.variant === "danger") {
+      scrollViewRef.current?.scrollToEnd({ animated: true });
+    }
+  }, [alerta]);
+
+  useEffect(() => {
+    if (guardadoExitoso) {
+      router.replace("/(drawer)/proveedores");
+    }
+  }, [guardadoExitoso, router]);
 
   function handleTelefonoChange(valor) {
     setTelefono(valor.replace(/[^0-9]/g, ""));
@@ -198,6 +212,7 @@ export function useEditarProveedorScreen() {
   }
 
   return {
+    scrollViewRef,
     base,
     nombre,
     tipoProducto,
