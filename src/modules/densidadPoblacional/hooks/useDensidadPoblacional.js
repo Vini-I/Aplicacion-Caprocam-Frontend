@@ -92,14 +92,18 @@ function hoy() {
 function extraerMensaje(error) {
   /*
   Descripcion:
-  Extrae un mensaje legible de un error de axios (o de cualquier
-  error). Se agrego porque handleGuardar ya llamaba a esta funcion
-  en su catch, pero no existia en el archivo: si el backend
-  respondia con error (422/409/500...), la app lanzaba un
-  ReferenceError en vez de mostrar el Alert de error.
+  Extrae un mensaje legible de un error lanzado por
+  DensidadPoblacional.service.js. El service ya resuelve el mensaje
+  mas especifico disponible (incluyendo el arreglo de errores por
+  campo que manda el backend en un 422) dentro de
+  construirErrorHttp() y siempre lanza un Error plano con ese
+  mensaje ya listo en error.message: aqui no hay que volver a
+  buscarlo en error.response, porque ese objeto ya no existe en
+  este punto.
 
   Parametros:
-  - error: Error capturado (tipicamente de una llamada axios).
+  - error: Error capturado (tipicamente de
+    densidadPoblacionalService.create()).
 
   Retorna:
   - String con el mensaje mas especifico disponible.
@@ -108,16 +112,7 @@ function extraerMensaje(error) {
     return error;
   }
 
-  const detalles = error?.response?.data?.error;
-  if (Array.isArray(detalles) && detalles.length > 0) {
-    return detalles.join(" ");
-  }
-
-  return (
-    error?.response?.data?.message ||
-    error?.message ||
-    "Ocurrió un error inesperado."
-  );
+  return error?.message || "Ocurrió un error inesperado.";
 }
 
 export default function useDensidadPoblacional() {

@@ -119,8 +119,14 @@ export default function useEditarDensidad(registroId, onGuardado) {
         datosConteo.setAreaEstanque(String(r.areaEstanque ?? ""));
         datosConteo.setNotasConteo(r.notasConteo ?? "");
       })
-      .catch(() => {
-        if (activo) setAlerta({ visible: true, variant: "danger", mensaje: "No se pudo cargar el registro." });
+      .catch((error) => {
+        if (activo) {
+          setAlerta({
+            visible: true,
+            variant: "danger",
+            mensaje: error?.message || "No se pudo cargar el registro.",
+          });
+        }
       })
       .finally(() => { if (activo) setCargando(false); });
     return () => { activo = false; };
@@ -164,7 +170,7 @@ export default function useEditarDensidad(registroId, onGuardado) {
       setAlerta({
         visible: true,
         variant: "danger",
-        mensaje: e.response?.data?.message || e.message || "No se pudo actualizar el registro.",
+        mensaje: e?.message || "No se pudo actualizar el registro.",
       });
     }
   }, [finca, estanque, fecha, datosConteo, registroId, onGuardado]);
