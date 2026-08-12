@@ -131,31 +131,23 @@ export function useVenta() {
   const [guardando, setGuardando] = useState(false);
   const [ventas, setVentas] = useState([]);
 
-  useEffect(() => {
-    let activo = true;
+  const cargarCatalogos = useCallback(async () => {
+    const [
+      dataColaboradores,
+      dataFincas,
+      dataEstanques,
+      dataCompradores,
+    ] = await Promise.all([
+      colaboradorService.getColaboradores({ activo: true }),
+      fincaService.getFincas(),
+      estanqueService.getEstanques(),
+      compradorService.getCompradores(),
+    ]);
 
-    async function cargarCatalogos() {
-      const [dataColaboradores, dataFincas, dataEstanques, dataCompradores] =
-        await Promise.all([
-          colaboradorService.getColaboradores({ activo: true }),
-          fincaService.getFincas(),
-          estanqueService.getEstanques(),
-          compradorService.getCompradores(),
-        ]);
-
-      if (activo) {
-        setColaboradores(dataColaboradores);
-        setFincas(dataFincas);
-        setEstanques(dataEstanques);
-        setCompradoresData(dataCompradores);
-      }
-    }
-
-    cargarCatalogos();
-
-    return () => {
-      activo = false;
-    };
+    setColaboradores(dataColaboradores);
+    setFincas(dataFincas);
+    setEstanques(dataEstanques);
+    setCompradoresData(dataCompradores);
   }, []);
 
   const opcionesFincas = useMemo(
@@ -240,12 +232,13 @@ export function useVenta() {
 
   useFocusEffect(
     useCallback(() => {
+      cargarCatalogos();
+
       return () => {
         limpiarMensaje();
       };
-    }, [limpiarMensaje]),
+    }, [cargarCatalogos, limpiarMensaje]),
   );
-
 
   const handlePesoPromedioChange = useCallback(
     (value) => {

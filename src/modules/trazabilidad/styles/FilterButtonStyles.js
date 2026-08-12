@@ -4,7 +4,7 @@
  * ============================================================
  *
  * Descripción:
- * Estilos centralizados para el componente de filtrado FilterButton.
+ * Estilos centralizados para el componente de filtrado FilterButton, incluyendo la visibilidad del botón circular de cierre en móvil.
  *
  * @dependencies StyleSheet, COLORS
  * @validations N/A
@@ -36,10 +36,11 @@ export const styles = StyleSheet.create({
   closeBtn: {
     width: 36,
     height: 36,
-    padding: 0,
     borderRadius: 18,
-    borderWidth: 1,
-    borderColor: COLORS.textTertiary,
+    paddingVertical: 0,
+    paddingHorizontal: 0,
+    marginTop: 0,
+    borderColor: COLORS.black,
     alignItems: "center",
     justifyContent: "center",
   },

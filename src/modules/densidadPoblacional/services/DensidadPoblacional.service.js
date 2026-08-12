@@ -37,6 +37,31 @@ async function getById(id) {
   }
 }
 
+async function getDatosBaseEstanque(idEstanque) {
+  /*
+  Descripcion:
+  Trae los datos base del estanque elegido para precargar el
+  formulario: area en hectareas, siembra por m2, cantidad de tiros
+  recomendada y area de atarraya sugerida.
+
+  El area sale de largo x ancho del estanque y la siembra por m2 de
+  la siembra activa de ese estanque; ninguno de los dos se digita.
+
+  Parametros:
+  - idEstanque: Id del estanque seleccionado.
+
+  Retorna:
+  - Objeto con { areaEstanque, cantidadSiembra, origenCantidadSiembra,
+    tirosRecomendados, areaAtarrayaSugerida, ... }.
+  */
+  try {
+    const response = await api.get(`/densidad-poblacional/estanque/${idEstanque}/datos-base`);
+    return response.data.data;
+  } catch (error) {
+    throw construirErrorHttp(error, "Error al obtener los datos del estanque");
+  }
+}
+
 async function create(densidadDTO) {
   try {
     const response = await api.post("/densidad-poblacional", densidadDTO);
@@ -67,6 +92,7 @@ async function deleteById(id) {
 const densidadPoblacionalService = {
   getAll,
   getById,
+  getDatosBaseEstanque,
   create,
   update,
   deleteById,

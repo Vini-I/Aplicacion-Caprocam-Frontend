@@ -14,22 +14,29 @@
  */
 import { diasTranscurridosDesde } from "./dateUtils";
 
-export function calcularCantidadSembrada(
+/**
+ * Inverso de calcularCantidadSembrada: a partir de la cantidad de
+ * larvas que el usuario ingresa directamente (compradas/recibidas)
+ * y el área del estanque, calcula la densidad resultante en PL/m².
+ * Se redondea a 2 decimales - la densidad real casi nunca da un
+ * número entero exacto como sí pasaba cuando era el input.
+ */
+export function calcularDensidadDesdeCantidad(
   areaHectareas,
-  densidadPoblacional,
+  cantidadSembrada,
 ) {
   const area = Number(areaHectareas);
-  const densidad = Number(densidadPoblacional);
+  const cantidad = Number(cantidadSembrada);
 
-  if (Number.isNaN(area) || Number.isNaN(densidad)) {
+  if (Number.isNaN(area) || Number.isNaN(cantidad)) {
     return "";
   }
 
-  if (area <= 0 || densidad <= 0) {
+  if (area <= 0 || cantidad <= 0) {
     return "";
   }
 
-  return String(Math.round(area * 10000 * densidad));
+  return String(Math.round((cantidad / (area * 10000)) * 100) / 100);
 }
 
 /**
