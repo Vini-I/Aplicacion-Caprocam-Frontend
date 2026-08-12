@@ -54,6 +54,7 @@ import {
   createPrecriaConLote,
 } from "../services/precria.service";
 import {
+  getSiembras,
   createSiembra,
   createSiembraConLote,
 } from "../services/siembra.service";
