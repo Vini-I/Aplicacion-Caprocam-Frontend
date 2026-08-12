@@ -23,7 +23,6 @@ import {
   manejarCambioTemperatura,
   obtenerEstanquesPorFinca,
   obtenerOpcionesFincas,
-  sincronizarLecturasLocales,
   validarFormularioFisicoQuimica,
   validarSeleccionAntesDeAgregar,
 } from "../services/FisicoQuimicaServices";
@@ -98,10 +97,6 @@ export default function useEditarFisicoQuimica(registroId, onGuardado) {
   const [lecturasSalinidad, setLecturasSalinidad] = useState([]);
   const [lecturasTemp, setLecturasTemp] = useState([]);
   const [lecturasOx, setLecturasOx] = useState([]);
-  const [lecturasPhLocal, setLecturasPhLocal] = useState([]);
-  const [lecturasSalinidadLocal, setLecturasSalinidadLocal] = useState([]);
-  const [lecturasTempLocal, setLecturasTempLocal] = useState([]);
-  const [lecturasOxLocal, setLecturasOxLocal] = useState([]);
 
   const [medicionesPorEstanque, setMedicionesPorEstanque] = useState({
     ph: [],
@@ -213,18 +208,8 @@ export default function useEditarFisicoQuimica(registroId, onGuardado) {
     };
   }, [registroId]);
 
-  // Sincroniza arrays locales cuando cambian medicionesPorEstanque
+  // Sincroniza lecturas cuando cambian medicionesPorEstanque
   useEffect(() => {
-    sincronizarLecturasLocales({
-      medicionesPorEstanque,
-      setters: {
-        ph: setLecturasPhLocal,
-        salinidad: setLecturasSalinidadLocal,
-        temperatura: setLecturasTempLocal,
-        ox: setLecturasOxLocal,
-      },
-    });
-    // también los que se envían
     setLecturasPh(
       (medicionesPorEstanque.ph ?? []).map((v, i) =>
         typeof v === "object" ? v : { id: `ph-${i}`, value: v }
@@ -295,7 +280,6 @@ export default function useEditarFisicoQuimica(registroId, onGuardado) {
     manejarCambioPh({
       values,
       setters: { ph: setLecturasPh },
-      localSetters: { ph: setLecturasPhLocal },
     });
   }, []);
 
@@ -303,7 +287,6 @@ export default function useEditarFisicoQuimica(registroId, onGuardado) {
     manejarCambioSalinidad({
       values,
       setters: { salinidad: setLecturasSalinidad },
-      localSetters: { salinidad: setLecturasSalinidadLocal },
     });
   }, []);
 
@@ -311,7 +294,6 @@ export default function useEditarFisicoQuimica(registroId, onGuardado) {
     manejarCambioTemperatura({
       values,
       setters: { temperatura: setLecturasTemp },
-      localSetters: { temperatura: setLecturasTempLocal },
     });
   }, []);
 
@@ -319,7 +301,6 @@ export default function useEditarFisicoQuimica(registroId, onGuardado) {
     manejarCambioOxigeno({
       values,
       setters: { ox: setLecturasOx },
-      localSetters: { ox: setLecturasOxLocal },
     });
   }, []);
 
