@@ -18,6 +18,8 @@ import { useNavigation } from "expo-router";
 import { tiposProducto } from "../services/proveedor.service";
 import { useProveedor } from "../context/ProveedorContext";
 
+const tipos = tiposProducto.map((t) => t.value);
+
 export function useProveedorScreen() {
   const navigation = useNavigation();
   const { proveedores, loading: cargando, alert, cargarProveedores } = useProveedor();
@@ -33,8 +35,6 @@ export function useProveedorScreen() {
     });
     return unsubscribe;
   }, [navigation]);
-
-  const TIPOS = tiposProducto.map((t) => t.value);
 
   const proveedoresFiltrados = proveedores.filter((p) => {
     const texto = busqueda.toLowerCase();
@@ -57,7 +57,7 @@ export function useProveedorScreen() {
     busqueda,
     setBusqueda,
     filtros,
-    TIPOS,
+    tipos,
     handleAplicarFiltros,
     cargando,
     error,
