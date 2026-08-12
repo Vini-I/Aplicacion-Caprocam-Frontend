@@ -13,14 +13,10 @@
  * - initialData: objeto con datos iniciales (para edición)
  * - onSubmit: función que recibe los datos del formulario al enviar
  * - isEditing: booleano que indica si es edición (deshabilita cambio de cédula)
- * - userRole: "camprocam_admin" o "external_owner" - define roles disponibles
  * - fincaId: ID de finca (se asigna automáticamente para external_owner)
  * - onCancel: función para cerrar el modal sin guardar
  * - serverError: mensaje de error del servidor (opcional)
- * - roleOptions: array de { label, value } para el select de roles (opcional)
  * - fincasOptions: array de { label, value } para el select de fincas (opcional)
- * - onResetPin: función para restablecer el PIN (solo en edición)
- * - resetLoading: booleano para mostrar estado de carga en el botón de reset
  */
 
 import React, { forwardRef, useImperativeHandle, useEffect, useState } from "react";
@@ -42,14 +38,10 @@ const ColaboradorForm = forwardRef(function ColaboradorForm(
     initialData = {},
     onSubmit,
     isEditing = false,
-    userRole,
     fincaId,
     onCancel,
     serverError = "",
-    roleOptions,
     fincasOptions = [],
-    onResetPin,
-    resetLoading = false,
   },
   ref
 ) {
@@ -58,34 +50,28 @@ const ColaboradorForm = forwardRef(function ColaboradorForm(
     errors,
     submitted,
     validationMessage,
-    rolesDisponibles,
-    fincasOptions: hookFincasOptions,
     handleChange,
     handleCedulaChange,
     handleTelefonoChange,
     handleNombreChange,
     handleApellidosChange,
+    handlePinChange,
+    handleConfirmPinChange,
+    pin,
+    confirmPin,
     handleSubmit,
     resetForm,
   } = useColaboradorForm({
     initialData,
     isEditing,
-    userRole,
     fincaId,
     onSubmit,
-    availableRoles: roleOptions,
     fincasOptions,
   });
 
   useImperativeHandle(ref, () => ({
     resetForm,
   }));
-
-  const opcionesFincas = hookFincasOptions || fincasOptions || [];
-
-  const ROLES_CON_FINCA = [3, 5];
-  const rolId = Number(form.rol);
-  const mostrarSelectFinca = form.rol !== "" && ROLES_CON_FINCA.includes(rolId);
 
   const [localErrorVisible, setLocalErrorVisible] = useState(false);
   const [localMessage, setLocalMessage] = useState("");
@@ -170,24 +156,36 @@ const ColaboradorForm = forwardRef(function ColaboradorForm(
         />
 
         <Select
-          label="Rol *"
-          options={rolesDisponibles}
-          value={form.rol}
-          onChange={(v) => handleChange("rol", v)}
-          placeholder="Seleccione una opción"
-          selectStyle={submitted && errors.rol ? styles.inputError : null}
+          label="Finca asociada"
+          options={fincasOptions}
+          value={form.fincaId}
+          onChange={(v) => handleChange("fincaId", v)}
+          placeholder="Seleccione una finca (opcional)"
+          selectStyle={submitted && errors.fincaId ? styles.inputError : null}
         />
 
-        {mostrarSelectFinca && (
-          <Select
-            label="Finca asociada *"
-            options={opcionesFincas}
-            value={form.fincaId}
-            onChange={(v) => handleChange("fincaId", v)}
-            placeholder="Seleccione una finca"
-            selectStyle={submitted && errors.fincaId ? styles.inputError : null}
-          />
-        )}
+        <Input
+          label={isEditing ? "Nuevo PIN (opcional)" : "PIN *"}
+          value={pin}
+          onChangeText={handlePinChange}
+          placeholder="4 dígitos"
+          keyboardType="numeric"
+          maxLength={4}
+          secureTextEntry
+          style={submitted && errors.pin ? styles.inputError : null}
+          helperText={isEditing ? "Deje vacío para mantener el PIN actual" : undefined}
+        />
+
+        <Input
+          label={isEditing ? "Confirmar nuevo PIN (opcional)" : "Confirmar PIN *"}
+          value={confirmPin}
+          onChangeText={handleConfirmPinChange}
+          placeholder="4 dígitos"
+          keyboardType="numeric"
+          maxLength={4}
+          secureTextEntry
+          style={submitted && errors.confirmPin ? styles.inputError : null}
+        />
       </Card>
 
       {mostrarError && (
@@ -206,25 +204,6 @@ const ColaboradorForm = forwardRef(function ColaboradorForm(
           </View>
         </Button>
       </View>
-
-      {/* Botón de restablecer PIN (solo en edición) */}
-      {isEditing && (
-        <View style={styles.resetButtonContainer}>
-          <Button
-            variant="outline"
-            onPress={onResetPin}
-            disabled={resetLoading}
-            style={styles.resetButton}
-          >
-            <View style={styles.buttonContent}>
-              <Icon icon={ICONS.update} size={18} color={COLORS.primary} />
-              <Text style={styles.buttonText}>
-                {resetLoading ? "Restableciendo..." : "Restablecer PIN"}
-              </Text>
-            </View>
-          </Button>
-        </View>
-      )}
     </View>
   );
 });

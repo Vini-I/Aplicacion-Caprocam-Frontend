@@ -6,8 +6,8 @@
  *
  * Responsabilidad:
  * Muestra la información detallada de un colaborador, incluyendo
- * datos personales, estadísticas de actividad y, si es dueño
- * externo, la lista de trabajadores a su cargo.
+ * datos personales y, si es dueño externo, la lista de trabajadores
+ * a su cargo.
  *
  * @dependencies - useColaboradorDetalle, shared components.
  * @validations  - N/A
@@ -38,14 +38,14 @@ import { STYLE } from '../../../theme/style';
 import { styles } from '../styles/DetalleColaboradorStyles';
 import { useError } from '../../../shared/context/ErrorContext';
 
-// ─── Constantes de etiquetas y variantes para roles ────────────
-const ROL_LABELS = {
-  camprocam_worker: 'Trabajador Camprocam',
-  external_owner: 'Dueño Externo',
-  external_worker: 'Trabajador Externo',
+// ─── Mapeo de roles ─────────────────────────────────────────────
+const rolLabels = {
+  camprocam_worker: 'Colaborador Camprocam',
+  external_owner: 'Propietario Externo',
+  external_worker: 'Colaborador Externo',
 };
 
-const ROL_VARIANTS = {
+const rolVariant = {
   camprocam_worker: 'info',
   external_owner: 'warning',
   external_worker: 'success',
@@ -75,8 +75,6 @@ function FilaDetalleIcono({ icon, label, value, onPress }) {
   return content;
 }
 
-
-
 // ─── Componente principal ──────────────────────────────────────
 
 export default function DetalleColaboradorScreen() {
@@ -91,7 +89,6 @@ export default function DetalleColaboradorScreen() {
   const {
     colaborador,
     trabajadores,
-    estadisticas,
     fincaNombre,
     loading,
     error,
@@ -121,7 +118,6 @@ export default function DetalleColaboradorScreen() {
         // No hubo necesidad de decodificar
       }
       showAlert(type, message);
-      // limpiar params de la URL para no volver a mostrar
       router.setParams({ alertType: undefined, alertMessage: undefined });
     }
   }, [params?.alertMessage, params?.alertType, router]);
@@ -196,9 +192,6 @@ export default function DetalleColaboradorScreen() {
     );
   }
 
-  const rolLabel = ROL_LABELS[colaborador.rol] || colaborador.rol;
-  const rolVariant = ROL_VARIANTS[colaborador.rol] || 'info';
-
   // ─── Render ────────────────────────────────────────────────────
   return (
     <>
@@ -218,45 +211,26 @@ export default function DetalleColaboradorScreen() {
             </View>
             <View style={styles.info}>
               <CustomText style={styles.nombre}>{colaborador.nombre}</CustomText>
-              <Badge
-                label={rolLabel}
-                variant={rolVariant}
-                style={styles.badge}
-                textStyle={styles.badgeTexto}
-              />
             </View>
           </View>
+
+          {/* Badge de rol alineado con el contenido de las filas */}
+          <View style={styles.badgeRow}>
+            <Badge
+              label={rolLabels[colaborador.rol] || colaborador.rol}
+              variant={rolVariant[colaborador.rol] || 'info'}
+              style={styles.badgeRol}
+            />
+          </View>
+
+          <View style={styles.separator} />
+          <CustomText style={styles.sectionTitle}>Información general</CustomText>
 
           <FilaDetalleIcono icon={ICONS.id} label="Cédula" value={colaborador.cedula} />
           <FilaDetalleIcono icon={ICONS.phone} label="Teléfono" value={colaborador.telefono} />
           <FilaDetalleIcono icon={ICONS.user} label="Correo" value={colaborador.email} />
           <FilaDetalleIcono icon={ICONS.location} label="Finca" value={fincaNombre} />
         </Card>
-
-        {/* Estadísticas de actividad */}
-        {estadisticas && (
-          <Card title="Actividad del colaborador" titleStyle={styles.statsTitle}>
-            <View style={styles.statsGrid}>
-              <View style={styles.statItem}>
-                <CustomText style={styles.statValue}>{estadisticas.alimentaciones}</CustomText>
-                <CustomText style={styles.statLabel}>Alimentaciones</CustomText>
-              </View>
-              <View style={styles.statItem}>
-                <CustomText style={styles.statValue}>{estadisticas.estanquesCreados}</CustomText>
-                <CustomText style={styles.statLabel}>Estanques creados</CustomText>
-              </View>
-              <View style={styles.statItem}>
-                <CustomText style={styles.statValue}>{estadisticas.siembrasRegistradas}</CustomText>
-                <CustomText style={styles.statLabel}>Siembras registradas</CustomText>
-              </View>
-            </View>
-            {estadisticas.ultimaActividad && (
-              <CustomText style={styles.lastActive}>
-                Última actividad: {estadisticas.ultimaActividad}
-              </CustomText>
-            )}
-          </Card>
-        )}
 
         {/* Trabajadores a cargo (si es dueño externo) */}
         {colaborador.rol === 'external_owner' && (
