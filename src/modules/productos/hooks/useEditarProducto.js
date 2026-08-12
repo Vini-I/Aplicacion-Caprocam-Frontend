@@ -254,6 +254,7 @@ export function useEditarProducto() {
     } catch (error) {
       setGuardando(false);
       setErrorGuardado("No se pudo guardar el producto. Intenta de nuevo.");
+      mostrarError(error);
       return;
     }
     setGuardando(false);

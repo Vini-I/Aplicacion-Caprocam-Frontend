@@ -199,6 +199,7 @@ export function useEditarCompradorScreen() {
         variant: "danger",
         message: "No se pudo actualizar el comprador. Intenta de nuevo.",
       });
+      mostrarError(err);
       return;
     }
     setGuardando(false);

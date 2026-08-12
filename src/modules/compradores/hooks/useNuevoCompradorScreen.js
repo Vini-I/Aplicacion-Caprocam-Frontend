@@ -44,6 +44,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
 import { compradorService } from "../services/comprador.service";
+import { useError } from "../../../shared/context/ErrorContext";
 
 // Regex para validar teléfonos con o sin código de país +506
 const TELEFONO_REGEX = /^\d{8}$/;
@@ -67,6 +68,7 @@ const MENSAJE_ERROR_GUARDADO = "No se pudo guardar el comprador. Intenta de nuev
 
 export function useNuevoCompradorScreen() {
   const router = useRouter();
+  const { mostrarError } = useError();
 
   // Campos del formulario
   const [nombre, setNombre] = useState("");
@@ -134,6 +136,7 @@ export function useNuevoCompradorScreen() {
     } catch (error) {
       setMensajeError(MENSAJE_ERROR_GUARDADO);
       setGuardando(false);
+      mostrarError(error);
       return;
     }
     setGuardando(false);
