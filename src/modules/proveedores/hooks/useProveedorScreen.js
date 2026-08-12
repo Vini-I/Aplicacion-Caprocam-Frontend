@@ -8,12 +8,15 @@
  *
  * REGLAS IMPORTANTES:
  * - Refresca los datos cada vez que la pantalla recibe el foco.
+ * - No maneja routing: useRouter vive en el archivo de ruta (app/(drawer)/
+ *   proveedores/proveedorScreen.jsx), que arma los handlers de navegación
+ *   y los pasa como props (onDetail, onNew) al screen, igual que en finca.
  *
- * @dependencies - React, expo-router, proveedor.service, ProveedorContext
+ * @dependencies - React, expo-router (useNavigation), proveedor.service, ProveedorContext
  * @validations - N/A
- * @navigation - N/A
+ * @navigation - N/A (delegado a la ruta vía props)
  */
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useNavigation } from "expo-router";
 import { tiposProducto } from "../services/proveedor.service";
 import { useProveedor } from "../context/ProveedorContext";
