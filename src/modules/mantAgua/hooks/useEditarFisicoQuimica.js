@@ -21,6 +21,7 @@ import {
   validarFormularioFisicoQuimica,
   validarSeleccionAntesDeAgregar,
 } from "../services/FisicoQuimicaServices";
+import { useError } from "../../../shared/context/ErrorContext.js";
 
 function mapearLecturas(lecturas, esDiaNoche = false) {
   return (lecturas ?? []).map((lectura, index) => {
@@ -79,6 +80,7 @@ function fechaHoyISO() {
 }
 
 export default function useEditarFisicoQuimica(registroId, onGuardado) {
+  const { mostrarError } = useError();
   const [cargando, setCargando] = useState(true);
   const [fincaSeleccionada, setFincaSeleccionada] = useState("");
   const [estanqueSeleccionado, setEstanqueSeleccionado] = useState("");
@@ -116,7 +118,12 @@ export default function useEditarFisicoQuimica(registroId, onGuardado) {
       .then((opts) => {
         if (activo) setOpcionesFincas(Array.isArray(opts) ? opts : []);
       })
-      .catch(() => { });
+      .catch((err) => {
+        if (activo) {
+          setOpcionesFincas([]);
+          if (err?.response?.status !== 401) mostrarError(err);
+        }
+      });
     return () => {
       activo = false;
     };
@@ -134,8 +141,11 @@ export default function useEditarFisicoQuimica(registroId, onGuardado) {
       .then((opts) => {
         if (activo) setEstanquesFiltrados(Array.isArray(opts) ? opts : []);
       })
-      .catch(() => {
-        if (activo) setEstanquesFiltrados([]);
+      .catch((err) => {
+        if (activo) {
+          setEstanquesFiltrados([]);
+          if (err?.response?.status !== 401) mostrarError(err);
+        }
       });
     return () => {
       activo = false;
@@ -182,7 +192,10 @@ export default function useEditarFisicoQuimica(registroId, onGuardado) {
         setMedicionesPorEstanque(mediciones);
         setTieneMedicionesExistentes(true);
       } catch (e) {
-        if (activo) setErrorMessage("No se pudo cargar la lectura.");
+        if (activo) {
+          setErrorMessage("No se pudo cargar la lectura.");
+          if (e?.response?.status !== 401) mostrarError(e);
+        }
       } finally {
         if (activo) setCargando(false);
       }
