@@ -47,10 +47,6 @@ function registroAForm(registro) {
   };
 }
 
-// Mapeo form -> DTO backend. Mismo criterio que (según el comentario de)
-// alimentacionService.create(): idFinca/idEstanque en vez de finca/estanque.
-// Confirmar contra el flujo real de creación (GestionAlimentacion.jsx o
-// donde llames a alimentacionService.create) que el shape coincide.
 function formADto(form) {
   return {
     idFinca: form.finca,
@@ -81,9 +77,6 @@ export default function useEditarAlimentacionScreen(registroId, onGuardado) {
   const [alerta, setAlerta] = useState({ visible: false, variant: "success", mensaje: "" });
 
   const { form, updateField, resetForm, validarForm } = useAlimentacionForm();
-  // resetForm no sirve para precargar valores custom (solo vuelve a
-  // estadoInicial), así que precargamos directo con setForm vía updateField
-  // en el useEffect de abajo.
 
   useEffect(() => {
     if (!registroId) {
@@ -101,9 +94,13 @@ export default function useEditarAlimentacionScreen(registroId, onGuardado) {
         const valores = registroAForm(registro);
         Object.entries(valores).forEach(([campo, valor]) => updateField(campo, valor));
       })
-      .catch(() => {
+      .catch((error) => {
         if (activo) {
-          setAlerta({ visible: true, variant: "error", mensaje: "No se pudo cargar el registro." });
+          setAlerta({
+            visible: true,
+            variant: "danger",
+            mensaje: error?.message || "No se pudo cargar el registro.",
+          });
         }
       })
       .finally(() => {
@@ -113,7 +110,7 @@ export default function useEditarAlimentacionScreen(registroId, onGuardado) {
     return () => {
       activo = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, [registroId]);
 
   const [errores, setErrores] = useState({});
@@ -124,7 +121,7 @@ export default function useEditarAlimentacionScreen(registroId, onGuardado) {
     setErrores(erroresValidacion);
 
     if (!valido) {
-      setAlerta({ visible: true, variant: "error", mensaje: "Revisá los campos marcados." });
+      setAlerta({ visible: true, variant: "danger", mensaje: "Revisá los campos marcados." });
       return;
     }
 
@@ -138,8 +135,11 @@ export default function useEditarAlimentacionScreen(registroId, onGuardado) {
     } catch (error) {
       setAlerta({
         visible: true,
-        variant: "error",
-        mensaje: error.response?.data?.message || "No se pudo actualizar el registro.",
+        variant: "danger",
+        mensaje:
+          error?.response?.data?.message ||
+          error?.message ||
+          "No se pudo actualizar el registro.",
       });
     } finally {
       setGuardando(false);
