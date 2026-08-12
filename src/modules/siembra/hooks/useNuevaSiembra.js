@@ -135,6 +135,8 @@ export default function useNuevaSiembra() {
 
   const mensajeTimeoutRef = useRef(null);
 
+  const scrollRef = useRef(null);
+
   function mostrarMensaje(texto, variant) {
     if (mensajeTimeoutRef.current) {
       clearTimeout(mensajeTimeoutRef.current);
@@ -153,6 +155,12 @@ export default function useNuevaSiembra() {
       if (mensajeTimeoutRef.current) clearTimeout(mensajeTimeoutRef.current);
     };
   }, []);
+
+  useEffect(() => {
+  if (mensaje !== "" && mensajeVariant === "danger") {
+    scrollRef.current?.scrollToEnd({ animated: true });
+  }
+}, [mensaje, mensajeVariant]);
 
   const [formData, setFormData] = useState(initialFormData);
   const params = useLocalSearchParams();
@@ -601,6 +609,7 @@ export default function useNuevaSiembra() {
     mensajeVariant,
     cargandoCatalogos,
     guardando,
+    scrollRef,
     handleChange,
     handleChangeFinca,
     handleChangeEstanque,

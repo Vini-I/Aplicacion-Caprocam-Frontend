@@ -56,7 +56,7 @@
  *
  * =========================================================================
  */
-import React, { useRef, useEffect } from "react";
+import React from "react";
 import { View, ScrollView, Text } from "react-native";
 
 import { STYLE } from "../../../theme/style";
@@ -120,6 +120,7 @@ export default function NuevaSiembraScreen() {
 
     handleCrearSiembra,
     guardando,
+    scrollRef,
 
     handleAgregarProveedorLarva,
 
@@ -141,14 +142,6 @@ export default function NuevaSiembraScreen() {
 
     fieldHelpers,
   } = useNuevaSiembra();
-
-  const scrollRef = useRef(null);
-
-  useEffect(() => {
-    if (mensaje !== "" && mensajeVariant === "danger") {
-      scrollRef.current?.scrollToEnd({ animated: true });
-    }
-  }, [mensaje, mensajeVariant]);
 
   return (
     <>
