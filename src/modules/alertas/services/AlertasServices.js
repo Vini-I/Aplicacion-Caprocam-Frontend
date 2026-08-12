@@ -6,8 +6,6 @@
  * Descripcion:
  * Construye alertas operativas usando los datos reales
  * recibidos desde el backend.
- *
- * Fisico quimica queda temporalmente fuera.
  */
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -58,6 +56,7 @@ function parsearFecha(valor) {
 
 function formatearFechaCorta(valor) {
   const fecha = parsearFecha(valor);
+
   if (fecha === null) return "Sin fecha";
 
   const dia = String(fecha.getDate()).padStart(2, "0");
@@ -256,6 +255,7 @@ ALIMENTACION
 
 function obtenerHoraNumero(horaTexto) {
   const texto = obtenerTextoSeguro(horaTexto).toLowerCase();
+
   if (texto === "") return -1;
 
   const partes = texto.split(":");
@@ -398,6 +398,7 @@ function obtenerAlertasBombeo(equipos) {
     if (minutosActuales >= inicio && minutosActuales <= fin) horarioActivo = horario;
 
     let diferencia = inicio - minutosActuales;
+
     if (diferencia < 0) diferencia += 1440;
 
     if (diferencia < diferenciaMenor) {
@@ -545,6 +546,194 @@ function obtenerAlertasSanitarias(registrosEnfermedades, registrosParasitologia)
 
 /*
 ============================================================
+FISICO QUIMICA
+============================================================
+*/
+
+function obtenerValorLectura(item) {
+  if (item === undefined || item === null) return null;
+
+  if (typeof item === "number" || typeof item === "string") {
+    const numero = Number(String(item).replace(",", "."));
+    return Number.isNaN(numero) ? null : numero;
+  }
+
+  if (typeof item === "object") {
+    const valor = item.valor ?? item.value;
+    const numero = Number(String(valor ?? "").replace(",", "."));
+    return Number.isNaN(numero) ? null : numero;
+  }
+
+  return null;
+}
+
+function obtenerLecturasComoNumeros(valor) {
+  if (Array.isArray(valor)) {
+    return valor
+      .map(obtenerValorLectura)
+      .filter(function (numero) {
+        return numero !== null;
+      });
+  }
+
+  if (typeof valor === "string") {
+    try {
+      const datos = JSON.parse(valor);
+
+      if (Array.isArray(datos)) {
+        return datos
+          .map(obtenerValorLectura)
+          .filter(function (numero) {
+            return numero !== null;
+          });
+      }
+    } catch (error) {
+      const numero = obtenerValorLectura(valor);
+      return numero !== null ? [numero] : [];
+    }
+  }
+
+  const numero = obtenerValorLectura(valor);
+  return numero !== null ? [numero] : [];
+}
+
+function obtenerPromedioLecturas(valor) {
+  const lecturas = obtenerLecturasComoNumeros(valor);
+
+  if (lecturas.length === 0) return null;
+
+  const suma = lecturas.reduce(function (total, lectura) {
+    return total + lectura;
+  }, 0);
+
+  return Number((suma / lecturas.length).toFixed(2));
+}
+
+function obtenerDatosUbicacionFisicoQuimica(registro) {
+  return {
+    finca: obtenerTextoSeguro(registro.fincaNombre, obtenerTextoSeguro(registro.finca, "Sin finca")),
+    estanque: obtenerTextoSeguro(registro.estanqueCodigo, obtenerTextoSeguro(registro.estanque, "Sin estanque")),
+    fecha: obtenerTextoSeguro(registro.fecha, obtenerTextoSeguro(registro.fechaRegistro, registro.fecha_reporte)),
+    registroId: registro.id ?? registro.servidorId ?? registro.servidor_id ?? null,
+  };
+}
+
+function agregarAlertaFisicoQuimicaParametro({
+  alertas,
+  registro,
+  parametro,
+  valor,
+  minimo,
+  maximo,
+  unidad,
+  prioridad,
+}) {
+  if (valor === null) return;
+
+  const datos = obtenerDatosUbicacionFisicoQuimica(registro);
+  const unidadTexto = unidad ? ` ${unidad}` : "";
+  const fechaDetalle = datos.fecha ? `Fecha de lectura: ${formatearFechaCorta(datos.fecha)}.` : "";
+
+  if (valor < minimo) {
+    agregarAlerta(alertas, {
+      id: `fisico-quimica-${parametro.toLowerCase().replaceAll(" ", "-")}-bajo-${datos.registroId}`,
+      tipo: parametro === "Oxigeno disuelto" ? "critica" : "advertencia",
+      categoria: "Fisico Quimica",
+      titulo: `${parametro} bajo`,
+      mensaje: `${datos.estanque} · ${datos.finca}: ${parametro} en ${valor}${unidadTexto}. Rango ideal: ${minimo} - ${maximo}${unidadTexto}.`,
+      detalle: fechaDetalle,
+      fecha: datos.fecha,
+      icono: ICONS.chemicalContainer,
+      color: parametro === "Oxigeno disuelto" ? COLORS.error : COLORS.warning,
+      prioridad,
+      modulo: "fisicoQuimica",
+      registroId: datos.registroId,
+    });
+
+    return;
+  }
+
+  if (valor > maximo) {
+    agregarAlerta(alertas, {
+      id: `fisico-quimica-${parametro.toLowerCase().replaceAll(" ", "-")}-alto-${datos.registroId}`,
+      tipo: "advertencia",
+      categoria: "Fisico Quimica",
+      titulo: `${parametro} alto`,
+      mensaje: `${datos.estanque} · ${datos.finca}: ${parametro} en ${valor}${unidadTexto}. Rango ideal: ${minimo} - ${maximo}${unidadTexto}.`,
+      detalle: fechaDetalle,
+      fecha: datos.fecha,
+      icono: ICONS.chemicalContainer,
+      color: COLORS.warning,
+      prioridad,
+      modulo: "fisicoQuimica",
+      registroId: datos.registroId,
+    });
+  }
+}
+
+function obtenerAlertasFisicoQuimicas(registrosFisicoQuimicos) {
+  const alertas = [];
+
+  normalizarLista(registrosFisicoQuimicos).forEach(function (registro) {
+    const ph = obtenerPromedioLecturas(registro.ph);
+    const salinidad = obtenerPromedioLecturas(registro.salinidad);
+    const temperatura = obtenerPromedioLecturas(registro.temperatura);
+    const oxigeno = obtenerPromedioLecturas(
+      registro.oxigenoDisuelto ??
+      registro.oxigeno_disuelto ??
+      registro.ox
+    );
+
+    agregarAlertaFisicoQuimicaParametro({
+      alertas,
+      registro,
+      parametro: "pH",
+      valor: ph,
+      minimo: 7.5,
+      maximo: 8.5,
+      unidad: "",
+      prioridad: 4,
+    });
+
+    agregarAlertaFisicoQuimicaParametro({
+      alertas,
+      registro,
+      parametro: "Salinidad",
+      valor: salinidad,
+      minimo: 10,
+      maximo: 25,
+      unidad: "ppt",
+      prioridad: 5,
+    });
+
+    agregarAlertaFisicoQuimicaParametro({
+      alertas,
+      registro,
+      parametro: "Temperatura",
+      valor: temperatura,
+      minimo: 28,
+      maximo: 32,
+      unidad: "°C",
+      prioridad: 5,
+    });
+
+    agregarAlertaFisicoQuimicaParametro({
+      alertas,
+      registro,
+      parametro: "Oxigeno disuelto",
+      valor: oxigeno,
+      minimo: 5,
+      maximo: 9,
+      unidad: "mg/L",
+      prioridad: 2,
+    });
+  });
+
+  return alertas;
+}
+
+/*
+============================================================
 CONSTRUCCION PRINCIPAL
 ============================================================
 */
@@ -554,6 +743,7 @@ export function construirAlertasOperativas(datos = {}) {
 
   const alertas = [
     ...obtenerAlertasSanitarias(datosFinales.registrosEnfermedades, datosFinales.registrosParasitologia),
+    ...obtenerAlertasFisicoQuimicas(datosFinales.registrosFisicoQuimicos),
     ...obtenerAlertasCosecha(datosFinales.siembras),
     ...obtenerAlertasAireadores(datosFinales.equipos),
     ...obtenerAlertasInventario(datosFinales.productosInventario),
