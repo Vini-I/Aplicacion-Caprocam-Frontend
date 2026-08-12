@@ -367,7 +367,10 @@ export default function useNuevaSiembra() {
         : "";
 
       setFormData((previo) => {
-        const densidad = previo.densidadPoblacional || "8";
+        const densidadRecalculada = calcularDensidadDesdeCantidad(
+          area,
+          precria.cantidad_final,
+        );
         const actualizado = {
           ...previo,
           finca: precria.finca_id || previo.finca,
@@ -378,7 +381,7 @@ export default function useNuevaSiembra() {
           fechaSalidaPrecria: formatearFechaDesdeISO(precria.fecha_fin),
           pasoPorPrecria: "si",
           precriaId: String(precriaId),
-          densidadPoblacional: densidad,
+          densidadPoblacional: densidadRecalculada,  
           areaHectareas: area,
           loteId: precria.lote_larva_id,
           codigoLoteLarva: lote?.codigo_lote || "",

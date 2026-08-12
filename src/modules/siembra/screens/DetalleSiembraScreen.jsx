@@ -75,7 +75,7 @@
  * =========================================================================
  */
 
-import React, { useState } from "react";
+import React from "react";
 
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { View, ScrollView } from "react-native";
@@ -113,7 +113,7 @@ import useDetalleSiembra from "../hooks/useDetalleSiembra";
 export default function DetalleSiembraScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
-  const [confirmarFinalizar, setConfirmarFinalizar] = useState(false);
+
 
   const {
     siembra,
@@ -136,6 +136,8 @@ export default function DetalleSiembraScreen() {
     handleFinalizarSiembra,
     handleCrearSiembraDesdePrecria,
     fieldHelpers,
+    confirmarFinalizar,
+    setConfirmarFinalizar,
   } = useDetalleSiembra(id);
 
   if (!siembra || !formData) {

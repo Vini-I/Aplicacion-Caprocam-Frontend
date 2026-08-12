@@ -70,7 +70,7 @@
  *
  * =========================================================================
  */
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect} from "react";
 import { useLocalSearchParams } from "expo-router";
 import { View, ScrollView } from "react-native";
 
@@ -98,7 +98,6 @@ import useDetalleSiembra from "../hooks/useDetalleSiembra";
 export default function EditarSiembraScreen() {
   const { id, finalizar } = useLocalSearchParams();
   const esFinalizar = finalizar === "1";
-  const [confirmarFinalizar, setConfirmarFinalizar] = useState(false);
 
   const {
     siembra,
@@ -129,6 +128,8 @@ export default function EditarSiembraScreen() {
     handleEliminarLaboratorioLarva,
     handleEliminarProcedenciaLarva,
     fieldHelpers,
+    confirmarFinalizar,
+    setConfirmarFinalizar,
   } = useDetalleSiembra(id);
 
   const scrollRef = useRef(null);
