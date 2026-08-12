@@ -2,9 +2,15 @@
  * ============================================================
  * HOOK useEditarFisicoQuimica
  * ============================================================
- * Calco de useFisicoQuimica orientado a edición desde reportería:
- * carga por id (getLecturaPorId) y guarda con actualizarLectura.
- * Misma API de retorno para que la screen sea idéntica a la original.
+ *
+ * Descripción:
+ * Maneja el estado y flujo de edición para lecturas físico-químicas
+ * desde reportería: carga por ID (getLecturaPorId), edición de mediciones y
+ * actualización (actualizarLectura) manteniendo compatibilidad con ModalError.
+ *
+ * @dependencies FisicoQuimicaServices, ErrorContext
+ * @validations Finca y estanque requeridos; al menos una medición para guardar.
+ * @navigation Notifica guardado mediante callback `onGuardado`.
  */
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import {
