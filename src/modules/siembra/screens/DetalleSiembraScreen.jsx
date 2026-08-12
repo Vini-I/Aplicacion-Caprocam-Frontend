@@ -35,6 +35,8 @@
  * LÓGICA:
  * - La gestión del estado y la carga de datos se realiza mediante:
  *  -useDetalleSiembra.
+ * - fincaLabel/estanqueLabel se consumen ya resueltos desde el hook
+ *   (no se recalculan en este componente).
  *
  * COMPONENTES UTILIZADOS:
  *
@@ -50,6 +52,8 @@
  * - /siembra/editar
  *      Se navega hacia aquí al presionar "Editar Siembra/Pre-Cría" o
  *      "Finalizar Pre-Cría" (este último agrega el param "finalizar").
+ *      Se usa useRouter directamente en el screen (se deja así por
+ *      ahora, es un tema aparte del reparto lógica/UI).
  *
  * - /siembra/nueva
  *      Se navega hacia aquí al presionar "Registrar Siembra", cuando
@@ -111,9 +115,11 @@ import { STYLE } from "../../../theme/style";
 import useDetalleSiembra from "../hooks/useDetalleSiembra";
 
 export default function DetalleSiembraScreen() {
+  // useLocalSearchParams se mantiene aquí únicamente para obtener el "id"
+  // y pasárselo al hook. useRouter se mantiene aquí para la navegación
+  // de los botones (se deja así por ahora).
   const { id } = useLocalSearchParams();
   const router = useRouter();
-
 
   const {
     siembra,
@@ -138,6 +144,8 @@ export default function DetalleSiembraScreen() {
     fieldHelpers,
     confirmarFinalizar,
     setConfirmarFinalizar,
+    fincaLabel,
+    estanqueLabel,
   } = useDetalleSiembra(id);
 
   if (!siembra || !formData) {
@@ -149,12 +157,6 @@ export default function DetalleSiembraScreen() {
       />
     );
   }
-
-  const fincaLabel =
-    fincas.find((f) => f.value === formData.finca)?.label || "Sin finca";
-  const estanqueLabel =
-    estanques.find((e) => e.value === formData.estanque)?.label ||
-    "Sin estanque";
 
   return (
     <>
