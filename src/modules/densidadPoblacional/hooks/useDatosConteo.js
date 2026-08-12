@@ -68,7 +68,7 @@
 
 import { useState } from "react";
 
-const MAX_TIROS = 20;
+const MAX_TIROS = 30;
 
 const VALORES_INICIALES = {
   tiros: [""],
