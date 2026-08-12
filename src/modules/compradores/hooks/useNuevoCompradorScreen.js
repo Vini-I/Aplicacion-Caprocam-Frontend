@@ -49,7 +49,7 @@ import { compradorService } from "../services/comprador.service";
 const TELEFONO_REGEX = /^\d{8}$/;
 
 export const TELEFONO_MAX_LENGTH = 8;
-export const CEDULA_MAX_LENGTH = 10;
+export const CEDULA_MAX_LENGTH = 20;
 
 // Regex básico para validar formato de correo electrónico
 const CORREO_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
