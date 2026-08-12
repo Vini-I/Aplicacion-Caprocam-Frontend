@@ -67,7 +67,7 @@ export default function DetalleProveedorScreen() {
 
   return (
     <View style={STYLE.container}>
-      <ScrollView ScrollView showsVerticalScrollIndicator={false}
+      <ScrollView
         style={styles.scroll}
         showsVerticalScrollIndicator={false}
       >

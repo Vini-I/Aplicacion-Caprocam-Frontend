@@ -113,16 +113,13 @@ export default function DateInput({
   }
 
   let showError = false;
-  let finalHelperText = helperText;
 
   if (error !== "") {
     showError = true;
-    finalHelperText = error;
   }
 
   if (submitted === true && required === true && String(value).trim() === "") {
     showError = true;
-    finalHelperText = "Este campo es obligatorio.";
   }
 
   function abrirCalendarioWeb() {
@@ -278,14 +275,6 @@ export default function DateInput({
         )}
       </Pressable>
 
-      {finalHelperText !== "" && (
-        <Text
-          style={[styles.helperText, showError === true && styles.errorText]}
-        >
-          {finalHelperText}
-        </Text>
-      )}
-
       {showCalendar === true && Platform.OS !== "web" && (
         <DateTimePicker
           value={selectedDate}
@@ -312,7 +301,7 @@ const styles = StyleSheet.create({
   },
 
   requiredMark: {
-    color: COLORS.error,
+    color: COLORS.black,
   },
 
   input: {
@@ -353,16 +342,5 @@ const styles = StyleSheet.create({
   disabledInput: {
     backgroundColor: COLORS.surface,
     opacity: 0.7,
-  },
-
-  helperText: {
-    marginTop: 5,
-    fontSize: 12,
-    color: COLORS.textTertiary,
-    fontFamily: TYPOGRAPHY.fontFamily.regular,
-  },
-
-  errorText: {
-    color: COLORS.error,
   },
 });

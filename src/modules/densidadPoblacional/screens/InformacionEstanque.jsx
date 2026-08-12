@@ -13,7 +13,8 @@
  *   value ni onChangeText (no capturaban nada). Ahora usan el
  *   estado siembraPorM2/areaEstanque agregado a
  *   hooks/useDatosConteo.js y recibido aqui como props desde la
- *   screen (a traves de useDensidadPoblacional).
+ *   screen (a traves de useDensidadPoblacional). Ambos valores son
+ *   de solo lectura y provienen del estanque seleccionado.
  * - Usa la prop nativa `label` de Select/Input en vez de <Text>
  *   manuales, para poder agregar el asterisco de forma consistente.
  * - Aplica el contrato de campos obligatorios (asterisco + borde
@@ -64,9 +65,20 @@ export default function InformacionEstanque({
   setSiembraPorM2,
   areaEstanque,
   setAreaEstanque,
+  cargandoDatosBase = false,
   submitted = false,
   errores = {},
 }) {
+  /*
+    Un solo mensaje para los dos campos que el sistema carga
+    automaticamente al seleccionar el estanque.
+  */
+  const ayudaAutocompletado = cargandoDatosBase
+    ? "Cargando los datos del estanque..."
+    : estanque
+      ? "✓ Datos cargados automáticamente desde el estanque."
+      : "";
+
   return (
     <View>
     <Card>
@@ -98,11 +110,18 @@ export default function InformacionEstanque({
         error={submitted ? (errores.estanque || "") : ""}
       />
 
+      {/*
+        Este campo y el del área se completan solos al elegir el
+        estanque (ver hooks/useDatosBaseEstanque.js): la siembra por
+        m² sale de una siembra real registrada para el estanque y el
+        área sale de su largo × ancho. Ambos quedan bloqueados para
+        evitar que el usuario reemplace los datos reales del estanque.
+      */}
       <Input
         label="Cantidad de siembra por m² "
-        placeholder="Ej: 25"
+        placeholder="Se completa al elegir el estanque"
+        editable={false}
         value={siembraPorM2}
-        onChangeText={(v) => setSiembraPorM2(v.replace(/[^0-9.]/g, ""))}
         keyboardType="numeric"
         maxLength={6}
         required
@@ -110,19 +129,38 @@ export default function InformacionEstanque({
         error={submitted ? (errores.siembraPorM2 || "") : ""}
       />
 
+      {/*
+        La unidad ahora va explicita en la etiqueta. La formula del
+        documento multiplica esta area por 10 000, o sea espera
+        HECTAREAS; antes el campo no declaraba unidad y su
+        placeholder ("Ej: 500") sugeria metros cuadrados, lo que
+        daba una poblacion total 10 000 veces mas grande.
+      */}
       <Input
-        label="Tamaño del área del estanque"
-        placeholder="Ej: 500"
+        label="Área del estanque (hectáreas)"
+        placeholder="Se completa al elegir el estanque"
+        editable={false}
         value={areaEstanque}
-        onChangeText={(v) => setAreaEstanque(v.replace(/[^0-9.]/g, ""))}
         keyboardType="numeric"
         maxLength={6}
         required
         submitted={submitted}
         error={submitted ? (errores.areaEstanque || "") : ""}
       />
+
+      {ayudaAutocompletado ? (
+        <Text
+          size={13}
+          color={COLORS.textTertiary}
+          style={styles.ayudaAutocompletado}
+        >
+          {ayudaAutocompletado}
+        </Text>
+      ) : null}
     </Card>
     </View>
   );
 }
+
+
 

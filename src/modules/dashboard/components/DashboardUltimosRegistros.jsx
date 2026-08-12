@@ -14,15 +14,15 @@ modulos utilizados por el Dashboard.
 
 import { View } from "react-native";
 
-import Card from "../../../shared/components/Card";
-import Icon from "../../../shared/components/Icons";
-import CustomText from "../../../shared/components/Text";
+import Card from "../../../shared/components/Card.jsx";
+import Icon from "../../../shared/components/Icons.jsx";
+import CustomText from "../../../shared/components/Text.jsx";
 
-import { COLORS } from "../../../theme/colors";
-import { ICONS } from "../../../theme/icons";
+import { COLORS } from "../../../theme/colors.js";
+import { ICONS } from "../../../theme/icons.js";
 
-import { obtenerTextoSeguro } from "../utils/DashboardUtils";
-import { styles } from "../styles/DashboardStyle";
+import { obtenerTextoSeguro } from "../utils/DashboardUtils.js";
+import { styles } from "../styles/DashboardStyle.js";
 
 function EmptyMessage({ text }) {
   return (
@@ -39,9 +39,15 @@ export default function DashboardUltimosRegistros({ registros }) {
 
   return (
     <Card style={styles.detailCard}>
-      <CustomText size={13} color={COLORS.textTertiary} style={styles.panelSubtitle}>
-        ULTIMOS REGISTROS
-      </CustomText>
+      <View style={styles.sectionHeader}>
+        <Icon icon={ICONS.clipboard} size={18} color={COLORS.textTertiary} />
+
+        <CustomText size={13} color={COLORS.textTertiary} weight="700" style={styles.sectionTitle}>
+          ULTIMOS REGISTROS
+        </CustomText>
+      </View>
+
+      <View style={styles.divider} />
 
       {registrosSeguros.length === 0 ? (
         <EmptyMessage text="No hay registros recientes para mostrar." />

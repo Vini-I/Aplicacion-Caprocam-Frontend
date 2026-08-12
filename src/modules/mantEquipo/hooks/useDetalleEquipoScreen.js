@@ -71,7 +71,6 @@ export function useDetalleEquipoScreen({ id, router }) {
   const [error, setError] = useState(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
-  const [alert, setAlert] = useState(null);
   const { mostrarError } = useError();
 
   const cargarDatos = useCallback(async () => {
@@ -122,13 +121,16 @@ export function useDetalleEquipoScreen({ id, router }) {
   const confirmDelete = async () => {
     try {
       await equiposService.deleteEquipo(equipo.id);
-      setAlert({ type: 'danger', message: `Equipo "${equipo.nombre}" eliminado.` });
       setShowConfirmModal(false);
-      setTimeout(() => router.replace('/equipos/equipos'), 1500);
+      router.replace({
+        pathname: '/equipos/equipos',
+        params: {
+          alertType: 'success',
+          alertMessage: `Equipo "${equipo.nombre}" eliminado.`,
+        },
+      });
     } catch (err) {
-      setAlert({ type: 'danger', message: err.message || 'No se pudo eliminar el equipo.' });
       setShowConfirmModal(false);
-      mostrarError(err);
     }
   };
 
@@ -161,7 +163,6 @@ export function useDetalleEquipoScreen({ id, router }) {
     estanque,
     loading,
     error,
-    alert,
     showConfirmModal,
     deleteTarget,
     handleEditar,

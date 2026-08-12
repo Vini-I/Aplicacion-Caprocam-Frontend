@@ -3,8 +3,7 @@
  * SCREEN REGISTROCONTEO
  * ============================================================
  *
- * Card con la fecha de registro del conteo y el metodo de
- * conteo usado.
+ * Card con la fecha de registro del conteo.
  *
  * Funcionalidad:
  * - Corrige un bug funcional: este componente recibia las props
@@ -16,11 +15,12 @@
  * - Elimina el import no usado de Icon (no se usaba en este
  *   archivo) y un <Text> vacio sin contenido que no cumplia
  *   ninguna funcion.
- * - El campo "Metodo de conteo" es intencionalmente un Input
- *   deshabilitado con value="Directo" fijo: este modulo no ofrece
- *   mas de un metodo de conteo (a diferencia de Alimentacion o
- *   Raleo), por lo que es un valor fijo del sistema y no un
- *   bug ni un campo editable por el usuario.
+ * - Se elimino el campo "Metodo de conteo": era un Input
+ *   deshabilitado con value="Directo" fijo, sin estado en el
+ *   formulario, que no se enviaba al backend y que no existe como
+ *   columna en la base de datos. No aparece en el documento de
+ *   requerimientos, asi que se quito junto con el resto de campos
+ *   que no se ocupan.
  * - Aplica asterisco a la Fecha de Registro (obligatoria) y
  *   muestra borde rojo/mensaje de error via la prop `inputStyle`
  *   de DateInput cuando `submitted && !fecha`.
@@ -42,7 +42,6 @@
 import { View } from "react-native";
 import React from "react";
 import Card from "../../../shared/components/Card";
-import Input from "../../../shared/components/Input";
 import DateInput from "../../../shared/components/DateInput";
 import Text from "../../../shared/components/Text";
 import { COLORS } from "../../../theme/colors";
@@ -64,6 +63,12 @@ export default function RegistroConteo({
             Registro de conteo
           </Text>
               </View>
+      {/*
+        Se elimino el campo "Metodo de conteo": era un Input fijo en
+        "Directo", deshabilitado, sin estado en el formulario, que no
+        se enviaba al backend y que no existe como columna en la base
+        de datos. No aparece en el documento de requerimientos.
+      */}
       <DateInput
         label="Fecha de Registro"
         value={fecha}
@@ -72,12 +77,6 @@ export default function RegistroConteo({
         required
         submitted={submitted}
         error={submitted ? (errores.fecha || "") : ""}
-      />
-
-      <Input
-        label="Método de conteo"
-        value="Directo"
-        editable={false}
       />
     </Card>
   );

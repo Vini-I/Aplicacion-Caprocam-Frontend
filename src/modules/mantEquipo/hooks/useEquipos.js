@@ -45,7 +45,6 @@ export function useEquipos(initialFilters = {}) {
       const data = await equiposService.getEquipos(filters);
       setEquipos(data);
     } catch (err) {
-      setError(err.message);
       mostrarError(err);
     } finally {
       setLoading(false);
@@ -125,7 +124,6 @@ export function useEquipos(initialFilters = {}) {
       return true;
     } catch (err) {
       setError(err.message);
-      mostrarError(err);
       throw err;
     } finally {
       setLoading(false);

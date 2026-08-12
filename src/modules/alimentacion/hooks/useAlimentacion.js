@@ -51,8 +51,8 @@ const useAlimentacion = () => {
         try {
             const datos = await alimentacionService.getAll();
             setAlimentaciones((datos || []).map(conAliasFincaEstanque));
-        } catch {
-            setError("No se pudieron cargar los registros.");
+        } catch(error) {
+            setError(error.message);
         } finally {
             setLoading(false);
         }

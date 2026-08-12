@@ -56,6 +56,7 @@ export default function RaleoScreen() {
   const {
     form,
     updateField,
+    porcentajeRaleo,
     biomasaRestante,
     submitted,
     errores,
@@ -75,49 +76,51 @@ export default function RaleoScreen() {
 
   return (
     <>
-    <NavbarRegistro
-      Titulo="Raleo"
-      Subtitulo="Cosecha parcial y densidad"
-      Icono="raleo"
-    />
+      <NavbarRegistro
+        Titulo="Raleo"
+        Subtitulo="Cosecha parcial y densidad"
+        Icono="raleo"
+      />
 
-    <View style={STYLE.container}>
-
-
-    <ScrollView
-      ref={scrollRef}
-      contentContainerStyle={STYLE.contentWrapper}
-      showsVerticalScrollIndicator={false}
-    >
-        <RaleoForm
-          form={form}
-          updateField={updateField}
-          submitted={submitted}
-          errores={errores}
-          biomasaCalculada={biomasaRestante}
-        />
-
-        <View style={styles.contenido}>
-          <View style={STYLE.contentWrapper}>
-        {alerta.visible && (
-          <Alert
-            variant={alerta.variant}
-            message={alerta.mensaje}
-            style={styles.alert}
+      <View style={STYLE.container}>
+        <ScrollView
+          ref={scrollRef}
+          contentContainerStyle={STYLE.contentWrapper}
+          showsVerticalScrollIndicator={false}
+        >
+          <RaleoForm
+            form={form}
+            updateField={updateField}
+            submitted={submitted}
+            errores={errores}
+            porcentajeCalculado={porcentajeRaleo}
+            biomasaCalculada={biomasaRestante}
           />
-        )}
+
+          <View style={styles.contenido}>
+            <View style={STYLE.contentWrapper}>
+              {alerta.visible && (
+                <Alert
+                  variant={alerta.variant}
+                  message={alerta.mensaje}
+                  style={styles.alert}
+                />
+              )}
+            </View>
+            <Button
+              variant="outline"
+              onPress={() => handleGuardar()}
+              style={styles.submitButton}
+            >
+              <View style={styles.buttonContent}>
+                <Icon icon={ICONS.save} size={24} color={COLORS.primary} />
+                <Text style={styles.buttonText}>Registrar Raleo</Text>
+              </View>
+            </Button>
+          </View>
+        </ScrollView>
       </View>
-      <Button variant="outline" onPress={() => handleGuardar(mostrarError)} style={styles.submitButton}>
-        <View style={styles.buttonContent}>
-          <Icon icon={ICONS.save} size={24} color={COLORS.primary}/>
-          <Text style={styles.buttonText}>
-            Registrar Raleo
-          </Text>
-        </View>
-      </Button>
-      </View>
-    </ScrollView>
-  </View>
-  </>
+    </>
   );
 }
+

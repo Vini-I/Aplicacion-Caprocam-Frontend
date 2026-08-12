@@ -15,14 +15,15 @@ Los dias de cultivo provienen del modulo de siembra.
 
 import { Platform, View } from "react-native";
 
-import Card from "../../../shared/components/Card";
-import Icon from "../../../shared/components/Icons";
-import CustomText from "../../../shared/components/Text";
-import Title from "../../../shared/components/Title";
+import Button from "../../../shared/components/Button.jsx";
+import Card from "../../../shared/components/Card.jsx";
+import Icon from "../../../shared/components/Icons.jsx";
+import CustomText from "../../../shared/components/Text.jsx";
+import Title from "../../../shared/components/Title.jsx";
 
-import { COLORS } from "../../../theme/colors";
-import { ICONS } from "../../../theme/icons";
-import { TYPOGRAPHY } from "../../../theme/typography";
+import { COLORS } from "../../../theme/colors.js";
+import { ICONS } from "../../../theme/icons.js";
+import { TYPOGRAPHY } from "../../../theme/typography.js";
 
 import {
   obtenerEstanquesActivos,
@@ -30,9 +31,9 @@ import {
   obtenerMayorKgSemanal,
   obtenerPorcentaje,
   obtenerTextoSeguro,
-} from "../utils/DashboardUtils";
+} from "../utils/DashboardUtils.js";
 
-import { styles } from "../styles/DashboardStyle";
+import { styles } from "../styles/DashboardStyle.js";
 
 function GraficaPastelEstanques({ activos, cosechados }) {
   const total = activos + cosechados;
@@ -117,13 +118,6 @@ function GraficaAlimentacionSemanal({ alimentacionSemanal }) {
 
   return (
     <View style={styles.lineChart}>
-      <View style={styles.chartGridLines}>
-        <View style={styles.gridLine} />
-        <View style={styles.gridLine} />
-        <View style={styles.gridLine} />
-        <View style={styles.gridLine} />
-      </View>
-
       <View style={styles.lineBars}>
         {registros.map(function (item, index) {
           const porcentaje = obtenerPorcentaje(item.kg, mayorKg);
@@ -143,7 +137,7 @@ function GraficaAlimentacionSemanal({ alimentacionSemanal }) {
   );
 }
 
-export default function DashboardEstanquesPanel({ estanques, alimentacionSemanal }) {
+export default function DashboardEstanquesPanel({ estanques, alimentacionSemanal, onPressEstanque }) {
   const estanquesSeguros = Array.isArray(estanques) ? estanques : [];
   const alimentacionSegura = Array.isArray(alimentacionSemanal) ? alimentacionSemanal : [];
   const activos = obtenerEstanquesActivos(estanquesSeguros);
@@ -224,7 +218,19 @@ export default function DashboardEstanquesPanel({ estanques, alimentacionSemanal
                 : COLORS.textSecondary;
 
           return (
-            <View key={estanque.id ?? `estanque-${index}`} style={styles.infoRowIndigo}>
+            <Button
+              key={estanque.id ?? `estanque-${index}`}
+              variant="ghost"
+              style={[
+                styles.infoRowIndigo,
+                {
+                  marginTop: 0,
+                  borderWidth: 0,
+                  justifyContent: "flex-start",
+                },
+              ]}
+              onPress={() => onPressEstanque?.(estanque)}
+            >
               <View style={styles.rowIconBoxIndigo}>
                 <Icon icon={ICONS.waterFlow} size={20} color={COLORS.primary} />
               </View>
@@ -250,7 +256,7 @@ export default function DashboardEstanquesPanel({ estanques, alimentacionSemanal
                   {diasCultivo}
                 </CustomText>
               </View>
-            </View>
+            </Button>
           );
         })
       )}

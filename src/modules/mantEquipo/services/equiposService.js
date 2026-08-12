@@ -85,6 +85,22 @@ const ESTADO_OPERATIVO_FRONTEND_A_BACKEND = {
 // ============================================================
 
 // Convierte YYYY-MM-DD (formato que devuelve el backend) a dd/mm/aaaa (formato del formulario)
+
+function construirErrorHttp(error, mensajeGenerico) {
+  const status = error?.response?.status;
+  const mensaje = error?.response?.data?.message || error?.response?.data?.error || error?.message;
+  if (status === 500) {
+    return new Error(mensajeGenerico);
+  }
+  if (status) {
+    const err = new Error(mensaje || mensajeGenerico);
+    err.status = status;
+    return err;
+  }
+
+  return new Error(mensajeGenerico);
+}
+
 function fechaBackendAFormulario(fecha) {
   if (!fecha) return "";
   const [anio, mes, dia] = String(fecha).split("-");
@@ -212,7 +228,7 @@ export const equiposService = {
       resultados.sort((a, b) => a.nombre.localeCompare(b.nombre));
       return resultados;
     } catch (err) {
-      throw new Error(err.response?.data?.message || "No se pudieron obtener los equipos.");
+      throw construirErrorHttp(err, "No se pudieron obtener los equipos");
     }
   },
 
@@ -224,7 +240,7 @@ export const equiposService = {
       const response = await api.get(`/equipos/${id}`);
       return mapEquipoBackend(response.data.data);
     } catch (err) {
-      throw new Error(err.response?.data?.message || "Equipo no encontrado");
+      throw construirErrorHttp(err, "No se pudo encontrar el equipo");
     }
   },
 
@@ -237,7 +253,7 @@ export const equiposService = {
       const response = await api.post("/equipos", payload);
       return mapEquipoBackend(response.data.data);
     } catch (err) {
-      throw new Error(err.response?.data?.message || "No se pudo crear el equipo.");
+      throw construirErrorHttp(err, "No se pudo crear el equipo");
     }
   },
 
@@ -250,7 +266,7 @@ export const equiposService = {
       const response = await api.put(`/equipos/${id}`, payload);
       return mapEquipoBackend(response.data.data);
     } catch (err) {
-      throw new Error(err.response?.data?.message || "No se pudo actualizar el equipo.");
+      throw construirErrorHttp(err, "No se pudo actualizar el equipo");
     }
   },
 
@@ -262,7 +278,7 @@ export const equiposService = {
       await api.delete(`/equipos/${id}`);
       return true;
     } catch (err) {
-      throw new Error(err.response?.data?.message || "No se pudo eliminar el equipo.");
+      throw construirErrorHttp(err, "No se pudo eliminar el equipo");
     }
   },
 
@@ -287,7 +303,7 @@ export const equiposService = {
       const response = await api.put(`/equipos/${id}`, payload);
       return mapEquipoBackend(response.data.data);
     } catch (err) {
-      throw new Error(err.response?.data?.message || "No se pudo cambiar el estado del equipo.");
+      throw construirErrorHttp(err, "No se pudo cambiar el estado del equipo");
     }
   },
 
@@ -344,6 +360,7 @@ export const equiposService = {
         value: String(estanque.id),
       }));
     } catch (err) {
+      throw construirErrorHttp(err, "No se pudieron obtener los estanques");
       return [];
     }
   },

@@ -15,7 +15,6 @@
 
 import React, { useState, useEffect } from "react";
 import { ScrollView, View } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
 
 import Alert from "../../../shared/components/Alert";
 import Button from "../../../shared/components/Button";
