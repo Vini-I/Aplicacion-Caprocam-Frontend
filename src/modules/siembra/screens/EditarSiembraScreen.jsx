@@ -35,8 +35,11 @@
  *    de guardar/handleFinalizarPreCria).
  *
  * LÓGICA:
- * - La gestión del estado, validaciones y acciones se realiza mediante:
- *  -useDetalleSiembra.
+ * - Toda la gestión de estado, cálculos derivados (esFinalizar,
+ *   fincaLabel, estanqueLabel) y comportamiento (handlePresionarGuardar,
+ *   scroll automático en caso de error) vive en useDetalleSiembra.
+ * - Este componente NO usa useState/useEffect/useRef propios: solo
+ *   consume lo que el hook expone y pinta UI.
  *
  * COMPONENTES UTILIZADOS:
  *
@@ -49,6 +52,7 @@
  * NAVEGACIÓN:
  * - Pantalla anterior (router.back())
  *      Se vuelve aquí al guardar/finalizar con éxito, o al cancelar.
+ *      (cancelarEdicion vive en el hook y usa router.back() internamente).
  *
  * DEPENDENCIAS PRINCIPALES:
  *
@@ -63,18 +67,18 @@
  * IMPORTANTE:
  *
  * - No contiene reglas de negocio.
- * - No realiza cálculos directamente.
+ * - No realiza cálculos directamente (fincaLabel/estanqueLabel/esFinalizar
+ *   vienen ya resueltos del hook).
  * - Comparte el hook con DetalleSiembraScreen: separar en dos pantallas
  *   evita combinar "editar" y "detalle" en un mismo screen, según el
  *   estándar de una ventana por operación CRUD.
  *
  * =========================================================================
  */
-import React, { useRef, useEffect} from "react";
+import React from "react";
 import { useLocalSearchParams } from "expo-router";
 import { View, ScrollView } from "react-native";
 
-import Card from "../../../shared/components/Card";
 import Button from "../../../shared/components/Button";
 import Alert from "../../../shared/components/Alert";
 import Icon from "../../../shared/components/Icons";
@@ -96,8 +100,11 @@ import { STYLE } from "../../../theme/style";
 import useDetalleSiembra from "../hooks/useDetalleSiembra";
 
 export default function EditarSiembraScreen() {
-  const { id, finalizar } = useLocalSearchParams();
-  const esFinalizar = finalizar === "1";
+  // useLocalSearchParams se mantiene aquí únicamente para obtener el "id"
+  // y pasárselo al hook (el hook necesita recibirlo como parámetro, ya que
+  // hoy no lo resuelve internamente). No se deriva ningún otro dato de
+  // aquí: "finalizar"/esFinalizar ya vienen resueltos desde el hook.
+  const { id } = useLocalSearchParams();
 
   const {
     siembra,
@@ -111,13 +118,17 @@ export default function EditarSiembraScreen() {
     tecnicasCultivo,
     mensaje,
     mensajeVariant,
+    guardando,
+    scrollRef,
+    esFinalizar,
+    fincaLabel,
+    estanqueLabel,
     handleChange,
     handleChangeFinca,
     handleChangeEstanque,
-    guardar,
-    handleFinalizarPreCria,
-    guardando,
+    handlePresionarGuardar,
     cancelarEdicion,
+    handleFinalizarPreCria,
     handleAgregarProveedorLarva,
     handleAgregarLaboratorioLarva,
     handleAgregarProcedenciaLarva,
@@ -132,13 +143,6 @@ export default function EditarSiembraScreen() {
     setConfirmarFinalizar,
   } = useDetalleSiembra(id);
 
-  const scrollRef = useRef(null);
-  useEffect(() => {
-    if (mensaje !== "" && mensajeVariant === "danger") {
-      scrollRef.current?.scrollToEnd({ animated: true });
-    }
-  }, [mensaje, mensajeVariant]);
-
   if (!siembra || !formData) {
     return (
       <NavbarRegistro
@@ -148,20 +152,6 @@ export default function EditarSiembraScreen() {
       />
     );
   }
-
-  const fincaLabel =
-    fincas.find((f) => f.value === formData.finca)?.label || "Sin finca";
-  const estanqueLabel =
-    estanques.find((e) => e.value === formData.estanque)?.label ||
-    "Sin estanque";
-
-  const handlePresionarGuardar = () => {
-    if (esFinalizar) {
-      setConfirmarFinalizar(true);
-    } else {
-      guardar();
-    }
-  };
 
   return (
     <>

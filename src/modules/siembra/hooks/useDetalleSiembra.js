@@ -210,6 +210,10 @@ export default function useDetalleSiembra(id) {
   const navigation = useNavigation();
   const { tipoRegistro: tipoRegistroParam } = useLocalSearchParams();
 
+  const { finalizar } = useLocalSearchParams();
+  const scrollRef = useRef(null);
+  const esFinalizar = finalizar === "1";
+
   const [siembra, setSiembra] = useState(null);
   const [formData, setFormData] = useState(null);
   const [cargando, setCargando] = useState(true);
@@ -240,6 +244,12 @@ export default function useDetalleSiembra(id) {
       if (mensajeTimeoutRef.current) clearTimeout(mensajeTimeoutRef.current);
     };
   }, []);
+
+  useEffect(() => {
+    if (mensaje !== "" && mensajeVariant === "danger") {
+      scrollRef.current?.scrollToEnd({ animated: true });
+    }
+  }, [mensaje, mensajeVariant]);
 
   const {
     submitted,
@@ -803,6 +813,20 @@ export default function useDetalleSiembra(id) {
     }
   }, [id]);
 
+  const fincaLabel =
+    fincas.find((f) => f.value === formData?.finca)?.label || "Sin finca";
+  const estanqueLabel =
+    estanques.find((e) => e.value === formData?.estanque)?.label ||
+    "Sin estanque";
+
+  const handlePresionarGuardar = () => {
+    if (esFinalizar) {
+      setConfirmarFinalizar(true);
+    } else {
+      guardar();
+    }
+  };
+
   return {
     siembra,
     formData,
@@ -821,6 +845,11 @@ export default function useDetalleSiembra(id) {
     totalDias,
     etapa,
     progreso,
+    scrollRef,
+    esFinalizar,
+    fincaLabel,
+    estanqueLabel,
+    handlePresionarGuardar,
     handleChange,
     handleChangeFinca,
     handleChangeEstanque,
