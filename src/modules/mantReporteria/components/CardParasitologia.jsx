@@ -105,33 +105,6 @@ export default function CardParasitologia({ fincaId, estanqueId, onEditar, onAle
                                 </Text>
                             </View>
 
-                            <View style={styles.infoItem}>
-                                <Text style={styles.label}>
-                                    Camarones Muestreados
-                                </Text>
-                                <Text style={styles.value}>
-                                    {registro.camaronesMuestreados}
-                                </Text>
-                            </View>
-
-                            <View style={styles.infoItem}>
-                                <Text style={styles.label}>
-                                    Camarones Infectados
-                                </Text>
-                                <Text style={styles.value}>
-                                    {registro.camaronesInfectados}
-                                </Text>
-                            </View>
-                        </View>
-
-                        <View style={styles.pesoContainer}>
-                            <Text style={styles.label}>
-                                Porcetaje Infeccion
-                            </Text>
-
-                            <Text style={styles.infeccion}>
-                                {registro.porcentajeInfeccion} %
-                            </Text>
                         </View>
 
                         <View style={styles.Buttons}>

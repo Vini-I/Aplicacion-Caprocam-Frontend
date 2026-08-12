@@ -58,6 +58,7 @@ export default function EditarRaleoScreen({ registroId }) {
   const {
     form,
     updateField,
+    porcentajeRaleo,
     biomasaRestante,
     submitted,
     errores,
@@ -120,6 +121,7 @@ export default function EditarRaleoScreen({ registroId }) {
           updateField={updateField}
           submitted={submitted}
           errores={errores}
+          porcentajeCalculado={porcentajeRaleo}
           biomasaCalculada={biomasaRestante}
         />
 

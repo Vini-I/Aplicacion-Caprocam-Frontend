@@ -94,4 +94,103 @@ export const styles = StyleSheet.create({
     marginTop: 12,
   },
 
+  /*
+  ----------------------------------------------------------------
+  Ayuda de campos autocompletados
+  ----------------------------------------------------------------
+  Texto corto bajo "Cantidad de siembra por m2" y "Area del
+  estanque" que explica de donde salio el valor. Sube un poco
+  (marginTop negativo) para quedar pegado a su campo y no parecer
+  la etiqueta del campo siguiente.
+  */
+
+  ayudaAutocompletado: {
+    marginTop: -6,
+    marginBottom: 12,
+  },
+
+  /*
+  ----------------------------------------------------------------
+  Lista de tiros de atarraya
+  ----------------------------------------------------------------
+  Reusa los mismos valores que ya usa Input.jsx (borderColor
+  COLORS.secondary, borderRadius 8) para que las filas se vean
+  parte del mismo formulario y no como un bloque aparte.
+  */
+
+  tirosAyuda: {
+    marginBottom: 10,
+  },
+
+  tiroFila: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    gap: 8,
+    marginBottom: 8,
+  },
+
+  // Numero del tiro. Mismo alto que el input para que quede alineado.
+  tiroBadge: {
+    width: 30,
+    height: 42,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: COLORS.primaryLight,
+  },
+
+  tiroCampo: {
+    flex: 1,
+  },
+
+  // Anula el marginBottom por defecto del Input: el espaciado
+  // entre tiros lo da tiroFila.
+  tiroInputContainer: {
+    marginBottom: 0,
+  },
+
+  tiroEliminar: {
+    width: 38,
+    height: 42,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  agregarTiro: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingVertical: 11,
+    paddingHorizontal: 18,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    backgroundColor: COLORS.white,
+    marginTop: 4,
+    marginBottom: 12,
+  },
+
+  agregarTiroDeshabilitado: {
+    borderColor: COLORS.textQuaternary,
+    opacity: 0.6,
+  },
+
+  bordeError: {
+    borderColor: COLORS.error,
+  },
+
+  /*
+  ----------------------------------------------------------------
+  Resultados calculados
+  ----------------------------------------------------------------
+  */
+
+  resultadosSeparador: {
+    height: 1,
+    backgroundColor: COLORS.secondary,
+    marginTop: 4,
+    marginBottom: 14,
+  },
+
 });

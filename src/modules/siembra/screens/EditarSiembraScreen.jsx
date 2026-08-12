@@ -19,9 +19,10 @@
  * 3. Permite guardar o cancelar los cambios realizados.
  *
  * 4. Si la pantalla recibe el param "finalizar" (llega desde el botón
- *    "Finalizar Pre-Cría" del Detalle), el botón de guardar ejecuta
- *    handleFinalizarPreCria en vez de guardar - mismo formulario,
- *    distinta acción de submit.
+ *    "Finalizar Pre-Cría" del Detalle), el botón de guardar abre un
+ *    modal de confirmación (la acción es irreversible) y, al
+ *    confirmar, ejecuta handleFinalizarPreCria en vez de guardar -
+ *    mismo formulario, distinta acción de submit.
  *
  * 5. Cuando la Siembra viene de una Pre-Cría (pasoPorPrecria === "si"),
  *    el resumen embebido de Pre-Cría y la sección "Datos de larva"
@@ -42,6 +43,7 @@
  * - Card.
  * - Button.
  * - Alert.
+ * - Modal, Title (confirmación antes de finalizar).
  * - Componentes de sección del módulo Siembra.
  *
  * NAVEGACIÓN:
@@ -68,7 +70,7 @@
  *
  * =========================================================================
  */
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect} from "react";
 import { useLocalSearchParams } from "expo-router";
 import { View, ScrollView } from "react-native";
 
@@ -78,6 +80,8 @@ import Alert from "../../../shared/components/Alert";
 import Icon from "../../../shared/components/Icons";
 import NavbarRegistro from "../../../shared/components/NavbarRegistro";
 import Text from "../../../shared/components/Text";
+import Modal from "../../../shared/components/Modal";
+import Title from "../../../shared/components/Title";
 
 import InformacionGeneralSection from "../components/InformacionGeneralSection";
 import DatosLarvaSection from "../components/DatosLarvaSection";
@@ -124,6 +128,8 @@ export default function EditarSiembraScreen() {
     handleEliminarLaboratorioLarva,
     handleEliminarProcedenciaLarva,
     fieldHelpers,
+    confirmarFinalizar,
+    setConfirmarFinalizar,
   } = useDetalleSiembra(id);
 
   const scrollRef = useRef(null);
@@ -149,7 +155,13 @@ export default function EditarSiembraScreen() {
     estanques.find((e) => e.value === formData.estanque)?.label ||
     "Sin estanque";
 
-  const onGuardar = esFinalizar ? handleFinalizarPreCria : guardar;
+  const handlePresionarGuardar = () => {
+    if (esFinalizar) {
+      setConfirmarFinalizar(true);
+    } else {
+      guardar();
+    }
+  };
 
   return (
     <>
@@ -266,7 +278,7 @@ export default function EditarSiembraScreen() {
           <View style={styles.actions}>
             <Button
               style={styles.button}
-              onPress={onGuardar}
+              onPress={handlePresionarGuardar}
               disabled={guardando}
               textStyle={styles.textoBoton}
               variant="outline"
@@ -292,6 +304,30 @@ export default function EditarSiembraScreen() {
           </View>
         </View>
       </ScrollView>
+      <Modal
+        visible={confirmarFinalizar}
+        onClose={() => setConfirmarFinalizar(false)}
+        closeText="Cancelar"
+        containerStyle={STYLE.contentWrapper}
+        buttonStyle={styles.modalCancelButton}
+        buttonTextStyle={styles.modalCancelButtonText}
+      >
+        <Title level={3} style={styles.modalTitle}>
+          ¿Finalizar Pre-Cría?
+        </Title>
+        <Text style={styles.modalMessage}>
+          Esta acción no se puede deshacer.
+        </Text>
+        <Button
+          style={styles.modalConfirmButton}
+          onPress={() => {
+            setConfirmarFinalizar(false);
+            handleFinalizarPreCria();
+          }}
+        >
+          <Text style={styles.modalConfirmButtonText}>Sí, finalizar</Text>
+        </Button>
+      </Modal>
     </>
   );
 }

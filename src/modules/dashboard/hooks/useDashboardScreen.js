@@ -87,6 +87,7 @@ export default function useDashboardScreen() {
       equipos,
       registrosEnfermedades: enfermedades,
       registrosParasitologia: parasitologias,
+      registrosFisicoQuimicos: fisicoQuimicos,
     });
   }, [
     inventario,
@@ -96,6 +97,7 @@ export default function useDashboardScreen() {
     equipos,
     enfermedades,
     parasitologias,
+    fisicoQuimicos,
   ]);
 
   const alertasDashboard = useMemo(function () {
@@ -240,6 +242,21 @@ export default function useDashboardScreen() {
       }
 
       router.push("/registros/Parasitologia");
+      return;
+    }
+
+    if (alerta.modulo === "fisicoQuimica") {
+      if (alerta.registroId) {
+        router.push({
+          pathname: "/registros/EditarFisicoQuimica",
+          params: {
+            id: alerta.registroId,
+          },
+        });
+        return;
+      }
+
+      router.push("/registros/FisicoQuimica");
       return;
     }
 
