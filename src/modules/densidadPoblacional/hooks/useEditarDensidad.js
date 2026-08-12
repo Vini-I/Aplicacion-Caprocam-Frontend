@@ -133,6 +133,36 @@ export default function useEditarDensidad(registroId, onGuardado) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [registroId]);
 
+  /*
+  Revalida en vivo mientras el usuario escribe, pero solo despues de
+  que ya intento guardar una vez (submitted=true). Sin este efecto,
+  `errores` quedaba congelado con el resultado del ultimo click en
+  Guardar: un campo que el usuario ya corrigio se seguia viendo en
+  rojo hasta el proximo intento de guardado.
+  */
+  useEffect(() => {
+    if (!submitted) return;
+
+    const err = {};
+    if (!finca) err.finca = "La finca es obligatoria";
+    if (!estanque) err.estanque = "El estanque es obligatorio";
+    if (!fecha) err.fecha = "La fecha es obligatoria";
+
+    const { errores: erroresDatos } = datosConteo.validar();
+
+    setErrores({ ...err, ...erroresDatos });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    submitted,
+    finca,
+    estanque,
+    fecha,
+    datosConteo.tiros,
+    datosConteo.areaAtarraya,
+    datosConteo.siembraPorM2,
+    datosConteo.areaEstanque,
+  ]);
+
   const handleGuardar = useCallback(async () => {
     setSubmitted(true);
 

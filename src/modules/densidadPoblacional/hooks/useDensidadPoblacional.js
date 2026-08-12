@@ -154,6 +154,34 @@ export default function useDensidadPoblacional() {
     return erroresPrincipales;
   };
 
+  /*
+  Revalida en vivo mientras el usuario escribe, pero solo despues de
+  que ya intento guardar una vez (submitted=true): antes de ese
+  primer intento no tiene sentido mostrar errores. Sin este efecto,
+  `errores` quedaba congelado con el resultado del ultimo click en
+  Guardar: un campo que el usuario ya corrigio se seguia viendo en
+  rojo hasta el proximo intento de guardado, porque nada volvia a
+  correr la validacion mientras tanto.
+  */
+  useEffect(() => {
+    if (!submitted) return;
+
+    const erroresPrincipales = validarPrincipal();
+    const { errores: erroresDatos } = datosConteo.validar();
+
+    setErrores({ ...erroresPrincipales, ...erroresDatos });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    submitted,
+    finca,
+    estanque,
+    fecha,
+    datosConteo.tiros,
+    datosConteo.areaAtarraya,
+    datosConteo.siembraPorM2,
+    datosConteo.areaEstanque,
+  ]);
+
   const handleGuardar = async () => {
     setSubmitted(true);
 
