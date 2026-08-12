@@ -218,6 +218,7 @@ export default function useDetalleSiembra(id) {
   const [mensaje, setMensaje] = useState("");
   const [mensajeVariant, setMensajeVariant] = useState("info");
   const { mostrarError } = useError();
+  const [confirmarFinalizar, setConfirmarFinalizar] = useState(false);
 
   const mensajeTimeoutRef = useRef(null);
 
@@ -824,6 +825,8 @@ export default function useDetalleSiembra(id) {
     handleChangeFinca,
     handleChangeEstanque,
     cancelarEdicion,
+    confirmarFinalizar,
+    setConfirmarFinalizar,
     guardar,
     handleFinalizarPreCria,
     handleFinalizarSiembra,
