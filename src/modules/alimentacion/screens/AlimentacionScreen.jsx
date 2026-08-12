@@ -39,6 +39,7 @@ export default function AlimentacionScreen({ navigation, onBack }) {
   const {
     alimentaciones,
     loading,
+    errorListado,
     form,
     updateField,
     submitted,
@@ -60,6 +61,7 @@ export default function AlimentacionScreen({ navigation, onBack }) {
       <View style={STYLE.container}>
         <GestionAlimentacion
           alimentaciones={alimentaciones}
+          errorListado={errorListado}
           form={form}
           updateField={updateField}
           submitted={submitted}

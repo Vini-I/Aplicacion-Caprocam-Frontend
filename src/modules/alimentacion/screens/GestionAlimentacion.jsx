@@ -46,6 +46,7 @@ import { STYLE } from "../../../theme/style";
 
 export default function GestionAlimentacion({
   alimentaciones,
+  errorListado,
   form,
   updateField,
   submitted,
@@ -60,9 +61,10 @@ export default function GestionAlimentacion({
 
   const scrollRef = useRef(null);
   const catalogoError = catalogoErrors.infoGeneral || catalogoErrors.consumo;
-  const alertVisible = catalogoError || alerta.visible;
-  const alertMessage = catalogoError || alerta.mensaje;
-  const alertVariant = catalogoError ? "danger" : alerta.variant;
+  // Prioridad: alerta de guardado > error de catálogos > error al cargar el listado.
+  const alertVisible = alerta.visible || !!catalogoError || !!errorListado;
+  const alertMessage = alerta.visible ? alerta.mensaje : (catalogoError || errorListado);
+  const alertVariant = alerta.visible ? alerta.variant : "danger";
 
   useEffect(() => {
     if (alertVisible) {

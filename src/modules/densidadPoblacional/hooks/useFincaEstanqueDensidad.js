@@ -56,20 +56,25 @@ import { fincaService } from "../../finca/services/finca.service";
 import { estanqueService } from "../../estanques/services/estanque.service";
 
 function extraerMensajeError(error) {
+    /*
+    Descripcion:
+    Extrae un mensaje legible de un error lanzado por
+    fincaService.getFincas() / estanqueService.getEstanques(). Esos
+    services normalizan cualquier error de axios a un Error plano
+    con el mensaje ya resuelto en error.message (mismo patron que
+    DensidadPoblacional.service.js): no hay que volver a buscarlo en
+    error.response, porque ese objeto ya no existe en este punto.
+
+    Parametros:
+    - error: Error capturado (tipicamente de fincaService/estanqueService).
+
+    Retorna:
+    - String con el mensaje mas especifico disponible.
+    */
     if (!error) return "Ocurrió un error inesperado.";
     if (typeof error === "string") return error;
 
-    const data = error?.response?.data;
-    if (Array.isArray(data?.error) && data.error.length > 0) {
-        return data.error.join(" ");
-    }
-    if (Array.isArray(data?.errors) && data.errors.length > 0) {
-        return data.errors.join(" ");
-    }
-    if (Array.isArray(data?.errores) && data.errores.length > 0) {
-        return data.errores.join(" ");
-    }
-    return data?.mensaje || data?.message || error?.message || "No se pudieron cargar fincas y estanques.";
+    return error?.message || "No se pudieron cargar fincas y estanques.";
 }
 
 export function useFincaEstanqueDensidad(idFincaSeleccionada) {
