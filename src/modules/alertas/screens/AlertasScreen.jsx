@@ -25,6 +25,7 @@ import { obtenerSiembras } from "../../siembra/services/SiembraService.js";
 import useAlimentacion from "../../alimentacion/hooks/useAlimentacion.js";
 import { getProductosInventario } from "../../inventarios/services/InventarioService.js";
 import { EQUIPOS_MOCK } from "../../mantEquipo/services/mantEquipoService.js";
+import { getLecturas } from "../../mantAgua/services/FisicoQuimicaServices.js";
 import enfermedadesService from "../../enfermedades/services/EnfermedadesService.js";
 import parasitologiaService from "../../parasitologia/services/ParasitologiaService.js";
 
@@ -59,9 +60,23 @@ function ResumenAlertas({ grupos }) {
       </View>
 
       <View style={styles.summaryGrid}>
-        <ResumenItem label="Criticas" value={grupos.critica.length} color={COLORS.error} />
-        <ResumenItem label="Advertencias" value={grupos.advertencia.length} color={COLORS.warning} />
-        <ResumenItem label="Informativas" value={grupos.info.length} color={COLORS.primary} />
+        <ResumenItem
+          label="Criticas"
+          value={grupos.critica.length}
+          color={COLORS.error}
+        />
+
+        <ResumenItem
+          label="Advertencias"
+          value={grupos.advertencia.length}
+          color={COLORS.warning}
+        />
+
+        <ResumenItem
+          label="Informativas"
+          value={grupos.info.length}
+          color={COLORS.primary}
+        />
       </View>
     </Card>
   );
@@ -74,7 +89,11 @@ function ResumenItem({ label, value, color }) {
         {value}
       </CustomText>
 
-      <CustomText size={12} color={COLORS.textTertiary} style={styles.summaryLabel}>
+      <CustomText
+        size={12}
+        color={COLORS.textTertiary}
+        style={styles.summaryLabel}
+      >
         {label}
       </CustomText>
     </View>
@@ -111,11 +130,19 @@ function DropdownAlertas({
         </View>
 
         <View style={styles.dropdownHeaderText}>
-          <CustomText size={16} color={COLORS.textPrimary} style={styles.dropdownTitle}>
+          <CustomText
+            size={16}
+            color={COLORS.textPrimary}
+            style={styles.dropdownTitle}
+          >
             {obtenerTituloTipo(tipo)}
           </CustomText>
 
-          <CustomText size={12} color={COLORS.textTertiary} style={styles.dropdownSubtitle}>
+          <CustomText
+            size={12}
+            color={COLORS.textTertiary}
+            style={styles.dropdownSubtitle}
+          >
             Separadas por categoria y ordenadas por prioridad
           </CustomText>
         </View>
@@ -142,7 +169,11 @@ function DropdownAlertas({
           {nombresCategorias.map(function (categoria) {
             return (
               <View key={categoria}>
-                <CustomText size={12} color={COLORS.textTertiary} style={styles.categoryTitle}>
+                <CustomText
+                  size={12}
+                  color={COLORS.textTertiary}
+                  style={styles.categoryTitle}
+                >
                   {categoria}
                 </CustomText>
 
@@ -187,16 +218,28 @@ function AlertaItem({ alerta, onDismiss, onPressAlerta }) {
         </View>
 
         <View style={styles.alertContent}>
-          <CustomText size={14} color={COLORS.textSecondary} style={styles.alertTitle}>
+          <CustomText
+            size={14}
+            color={COLORS.textSecondary}
+            style={styles.alertTitle}
+          >
             {alerta.titulo}
           </CustomText>
 
-          <CustomText size={12} color={COLORS.textTertiary} style={styles.alertMessage}>
+          <CustomText
+            size={12}
+            color={COLORS.textTertiary}
+            style={styles.alertMessage}
+          >
             {alerta.mensaje}
           </CustomText>
 
           {alerta.detalle !== "" && (
-            <CustomText size={12} color={COLORS.textSecondary} style={styles.alertDetail}>
+            <CustomText
+              size={12}
+              color={COLORS.textSecondary}
+              style={styles.alertDetail}
+            >
               {alerta.detalle}
             </CustomText>
           )}
@@ -230,6 +273,7 @@ export default function AlertasScreen() {
   const [productosInventario, setProductosInventario] = useState([]);
   const [registrosEnfermedades, setRegistrosEnfermedades] = useState([]);
   const [registrosParasitologia, setRegistrosParasitologia] = useState([]);
+  const [registrosFisicoQuimicos, setRegistrosFisicoQuimicos] = useState([]);
 
   useEffect(function () {
     let activo = true;
@@ -239,6 +283,7 @@ export default function AlertasScreen() {
       let productos = [];
       let enfermedades = [];
       let parasitos = [];
+      let fisicoQuimicos = [];
 
       try {
         ids = await obtenerAlertasDescartadas();
@@ -264,11 +309,18 @@ export default function AlertasScreen() {
         parasitos = [];
       }
 
+      try {
+        fisicoQuimicos = await getLecturas();
+      } catch (error) {
+        fisicoQuimicos = [];
+      }
+
       if (activo === true) {
         setDescartadas(Array.isArray(ids) ? ids : []);
         setProductosInventario(Array.isArray(productos) ? productos : []);
         setRegistrosEnfermedades(Array.isArray(enfermedades) ? enfermedades : []);
         setRegistrosParasitologia(Array.isArray(parasitos) ? parasitos : []);
+        setRegistrosFisicoQuimicos(Array.isArray(fisicoQuimicos) ? fisicoQuimicos : []);
       }
     }
 
@@ -287,6 +339,7 @@ export default function AlertasScreen() {
     equipos: EQUIPOS_MOCK,
     registrosEnfermedades,
     registrosParasitologia,
+    registrosFisicoQuimicos,
   });
 
   const alertas = filtrarAlertasDescartadas(alertasBase, descartadas);
@@ -329,6 +382,18 @@ export default function AlertasScreen() {
               params: { id: alerta.registroId },
             }
           : "/registros/Parasitologia",
+      );
+      return;
+    }
+
+    if (alerta.modulo === "fisicoQuimica") {
+      router.push(
+        alerta.registroId
+          ? {
+              pathname: "/registros/EditarFisicoQuimica",
+              params: { id: alerta.registroId },
+            }
+          : "/registros/FisicoQuimica",
       );
       return;
     }
