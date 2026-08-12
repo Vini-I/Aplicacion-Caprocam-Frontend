@@ -19,10 +19,15 @@
  * por el catálogo real, y agrega el catálogo de productos que
  * antes no existía (producto_id también quedaba en NULL).
  *
- * Filtrado: productosOptions solo incluye los productos cuyo
- * proveedorId coincide con idProveedorSeleccionado (mismo patrón
- * que useFincaEstanqueAlimentacion filtra estanques por finca).
- * Si no hay proveedor elegido, productosOptions retorna [].
+ * Filtrado:
+ * - proveedoresOptions solo incluye proveedores cuyo tipoProducto
+ *   sea "Alimento" (mismo value que el catálogo tiposProducto de
+ *   proveedor.service.js), para que el Select de Proveedor en
+ *   Alimentación solo muestre proveedores de alimento balanceado.
+ * - productosOptions solo incluye los productos cuyo proveedorId
+ *   coincide con idProveedorSeleccionado (mismo patrón que
+ *   useFincaEstanqueAlimentacion filtra estanques por finca).
+ *   Si no hay proveedor elegido, productosOptions retorna [].
  *
  * Parametros:
  * - idProveedorSeleccionado: id del proveedor elegido en el Select.
@@ -119,10 +124,12 @@ export function useProveedorProductoAlimentacion(idProveedorSeleccionado) {
 
     const proveedoresOptions = useMemo(
         () =>
-            proveedores.map((proveedor) => ({
-                label: proveedor.nombre,
-                value: proveedor.id,
-            })),
+            proveedores
+                .filter((proveedor) => proveedor.tipoProducto === "Alimento")
+                .map((proveedor) => ({
+                    label: proveedor.nombre,
+                    value: proveedor.id,
+                })),
         [proveedores]
     );
 

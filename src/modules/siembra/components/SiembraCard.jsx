@@ -147,6 +147,16 @@ export default function SiembraCard({
                 camarones
               </Text>
             </View>
+            {registro.estado === "Finalizada" && (
+              <View style={styles.infoRow}>
+                <View style={styles.infoRowLabel}>
+                  <Text style={styles.infoLabel}>Producción:</Text>
+                </View>
+                <Text style={styles.infoValue}>
+                  {Number(registro.produccionKg ?? 0).toLocaleString()} kg
+                </Text>
+              </View>
+            )}
           </>
         )}
 

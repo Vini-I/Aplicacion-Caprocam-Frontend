@@ -42,7 +42,7 @@ import {
 } from "./useFieldValidation";
 import { obtenerCamposObligatorios as obtenerCamposObligatoriosPorTipo } from "./siembraValidationRules";
 import {
-  calcularCantidadSembrada,
+  calcularDensidadDesdeCantidad,
   calcularProgresoCiclo,
 } from "./siembraCalculos";
 import {
@@ -119,9 +119,11 @@ function mapSiembraAFormData(siembra, lote, precriaOrigen) {
     precriaId: siembra.precria_id ? String(siembra.precria_id) : "",
     finca: siembra.finca_id || "",
     estanque: siembra.estanque_id || "",
-    estado: siembra.estado === "FINALIZADA" ? "Finalizada" : "Activa",
+    estado: siembra.estado === "Finalizada" ? "Finalizada" : "Activa",
     fechaSiembra: formatearFechaDesdeISO(siembra.fecha_siembra),
     tecnicaCultivo: siembra.tecnica_cultivo || "",
+    produccionKg:
+      siembra.produccion_kg != null ? Number(siembra.produccion_kg) : 0,
     densidadPoblacional:
       siembra.densidad_poblacional != null
         ? String(siembra.densidad_poblacional)
@@ -216,6 +218,7 @@ export default function useDetalleSiembra(id) {
   const [mensaje, setMensaje] = useState("");
   const [mensajeVariant, setMensajeVariant] = useState("info");
   const { mostrarError } = useError();
+  const [confirmarFinalizar, setConfirmarFinalizar] = useState(false);
 
   const mensajeTimeoutRef = useRef(null);
 
@@ -304,10 +307,10 @@ export default function useDetalleSiembra(id) {
       setFormData((previousData) => {
         const updatedData = { ...previousData, [field]: value };
 
-        if (field === "areaHectareas" || field === "densidadPoblacional") {
-          updatedData.cantidadSembrada = calcularCantidadSembrada(
+        if (field === "areaHectareas" || field === "cantidadSembrada") {
+          updatedData.densidadPoblacional = calcularDensidadDesdeCantidad(
             updatedData.areaHectareas,
-            updatedData.densidadPoblacional,
+            updatedData.cantidadSembrada,
           );
         }
 
@@ -363,9 +366,9 @@ export default function useDetalleSiembra(id) {
         ...previousData,
         estanque: value,
         areaHectareas: area,
-        cantidadSembrada: calcularCantidadSembrada(
+        densidadPoblacional: calcularDensidadDesdeCantidad(
           area,
-          previousData.densidadPoblacional,
+          previousData.cantidadSembrada,
         ),
       }));
     },
@@ -630,7 +633,7 @@ export default function useDetalleSiembra(id) {
     setGuardando(true);
     try {
       let actualizado;
-      const loteActualizado = await getLoteById(formData.loteId)
+      const loteActualizado = await getLoteById(formData.loteId);
 
       if (formData.tipoRegistro === "precria") {
         actualizado = await updatePrecria(
@@ -722,7 +725,7 @@ export default function useDetalleSiembra(id) {
         new FinalizarPrecriaDTO(formData),
       );
 
-     const loteActualizado = await getLoteById(formData.loteId);
+      const loteActualizado = await getLoteById(formData.loteId);
 
       const mapeado = mapPrecriaAFormData(registro, loteActualizado);
 
@@ -785,7 +788,7 @@ export default function useDetalleSiembra(id) {
     try {
       const registro = await finalizarSiembra(id);
       const estadoMostrado =
-        registro.estado === "FINALIZADA" ? "Finalizada" : "Activa";
+        registro.estado === "Finalizada" ? "Finalizada" : "Activa";
       setSiembra((prev) => ({ ...prev, estado: estadoMostrado }));
       setFormData((prev) => ({ ...prev, estado: estadoMostrado }));
       mostrarMensaje("Siembra finalizada correctamente.", "success");
@@ -822,6 +825,8 @@ export default function useDetalleSiembra(id) {
     handleChangeFinca,
     handleChangeEstanque,
     cancelarEdicion,
+    confirmarFinalizar,
+    setConfirmarFinalizar,
     guardar,
     handleFinalizarPreCria,
     handleFinalizarSiembra,

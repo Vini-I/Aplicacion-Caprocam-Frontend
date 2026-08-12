@@ -14,8 +14,8 @@ utilizados por el Dashboard.
 
 import { StyleSheet } from "react-native";
 
-import { COLORS } from "../../../theme/colors";
-import { TYPOGRAPHY } from "../../../theme/typography";
+import { COLORS } from "../../../theme/colors.js";
+import { TYPOGRAPHY } from "../../../theme/typography.js";
 
 const PRIMARY_LIGHT = COLORS.primaryLight ? COLORS.primaryLight : "#ECF8FF";
 const BORDER_COLOR = COLORS.border ? COLORS.border : "#E5E7EB";
@@ -294,7 +294,7 @@ export const styles = StyleSheet.create({
 
   statsGridTablet: {
     flexDirection: "row",
-    flexWrap: "wrap",
+    flexWrap: "nowrap",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -302,20 +302,22 @@ export const styles = StyleSheet.create({
   statCard: {
     width: "100%",
     alignSelf: "center",
-    minHeight: 118,
+    minHeight: 105,
     borderRadius: 18,
-    padding: 16,
+    padding: 14,
     marginTop: 0,
     borderWidth: 1,
     borderColor: "transparent",
-    alignItems: "flex-start",
+    alignItems: "center",
     justifyContent: "space-between",
     shadowOpacity: 0,
     elevation: 0,
   },
 
   statCardTablet: {
-    width: "48.5%",
+    width: "31.5%",
+    height: 120,
+    maxWidth: 220,
   },
 
   statCardActive: {
@@ -335,10 +337,6 @@ export const styles = StyleSheet.create({
     backgroundColor: COLORS.warningLight,
   },
 
-  cardRed: {
-    backgroundColor: COLORS.errorLight,
-  },
-
   statTopRow: {
     width: "100%",
     flexDirection: "row",
@@ -348,6 +346,7 @@ export const styles = StyleSheet.create({
 
   statBottom: {
     width: "100%",
+    alignItems: "center",
   },
 
   statIconBox: {
@@ -370,26 +369,20 @@ export const styles = StyleSheet.create({
     backgroundColor: COLORS.warningLight,
   },
 
-  iconRed: {
-    backgroundColor: COLORS.errorLight,
-  },
-
   statValue: {
     fontSize: 28,
     lineHeight: 32,
     fontFamily: TYPOGRAPHY.fontFamily.bold,
     fontWeight: "900",
     color: COLORS.textSecondary,
-    marginTop: 12,
-  },
-
-  statValueDanger: {
-    color: COLORS.error,
+    marginTop: 4,
+    textAlign: "center",
   },
 
   statLabel: {
-    marginTop: 4,
+    marginTop: 2,
     fontFamily: TYPOGRAPHY.fontFamily.medium,
+    textAlign: "center",
   },
 
   detailCard: {
@@ -795,32 +788,6 @@ export const styles = StyleSheet.create({
   badgeBaja: {
     backgroundColor: COLORS.successLight,
     borderColor: COLORS.success,
-  },
-
-  mortalityTotalBox: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: COLORS.errorLight,
-    borderRadius: 14,
-    padding: 18,
-    borderWidth: 1,
-    borderColor: COLORS.errorLight,
-  },
-
-  totalBoxText: {
-    marginLeft: 18,
-    flex: 1,
-    minWidth: 0,
-  },
-
-  mortalityRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: COLORS.errorLight,
-    borderRadius: 14,
-    padding: 14,
-    marginBottom: 10,
-    gap: 10,
   },
 
   recordRow: {

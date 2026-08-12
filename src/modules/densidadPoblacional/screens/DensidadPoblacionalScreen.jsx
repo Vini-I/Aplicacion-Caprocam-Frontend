@@ -44,7 +44,7 @@
  * <DensidadPoblacionalScreen />
  */
 
-import React, { useEffect, useRef } from "react";
+import React from "react";
 import { ScrollView, View } from "react-native";
 
 import Text from "../../../shared/components/Text.jsx";
@@ -63,10 +63,9 @@ import { ICONS } from "../../../theme/icons";
 import { COLORS } from "../../../theme/colors";
 
 import useDensidadPoblacional from "../hooks/useDensidadPoblacional";
+import useScrollAlAparecerAlerta from "../hooks/useScrollAlAparecerAlerta";
 
 export default function DensidadPoblacionalScreen({ onBack }) {
-  const scrollRef = useRef(null);
-
   const {
     finca,
     setFinca,
@@ -85,22 +84,29 @@ export default function DensidadPoblacionalScreen({ onBack }) {
 
     alerta,
     errorCatalogos,
+    cargandoDatosBase,
     handleGuardar,
 
-    numeroCamarones,
-    setNumeroCamarones,
+    // Tiros de atarraya: la lista es la fuente de verdad, la
+    // cantidad de tiros y el total de camarones salen de ella.
+    tiros,
+    setTiro,
+    agregarTiro,
+    eliminarTiro,
+    setCantidadTiros,
+    maxTiros,
 
-    tirosAtarraya,
-    setTirosAtarraya,
+    // Calculados, solo para mostrar
+    numeroCamarones,
+    areaMuestreadaTexto,
+    promedioPorTiroTexto,
+    densidadPorM2Texto,
+    poblacionTotalTexto,
 
     areaAtarraya,
     setAreaAtarraya,
 
-    promedioPorTiro,
-    setPromedioPorTiro,
-
     supervivencia,
-    setSupervivencia,
 
     notasConteo,
     setNotasConteo,
@@ -116,13 +122,7 @@ export default function DensidadPoblacionalScreen({ onBack }) {
   const mensajeAlerta = alerta.visible ? alerta.mensaje : errorCatalogos || "";
   const varianteAlerta = alerta.visible ? alerta.variant : "danger";
 
-  useEffect(() => {
-    if (mostrarAlertaLocal) {
-      scrollRef.current?.scrollToEnd({
-        animated: true,
-      });
-    }
-  }, [mostrarAlertaLocal]);
+  const scrollRef = useScrollAlAparecerAlerta(mostrarAlertaLocal);
 
   return (
     <>
@@ -150,6 +150,7 @@ export default function DensidadPoblacionalScreen({ onBack }) {
               setSiembraPorM2={setSiembraPorM2}
               areaEstanque={areaEstanque}
               setAreaEstanque={setAreaEstanque}
+              cargandoDatosBase={cargandoDatosBase}
               submitted={submitted}
               errores={errores}
             />
@@ -162,16 +163,20 @@ export default function DensidadPoblacionalScreen({ onBack }) {
             />
 
             <DatosConteo
-              numeroCamarones={numeroCamarones}
-              setNumeroCamarones={setNumeroCamarones}
-              tirosAtarraya={tirosAtarraya}
-              setTirosAtarraya={setTirosAtarraya}
+              tiros={tiros}
+              setTiro={setTiro}
+              agregarTiro={agregarTiro}
+              eliminarTiro={eliminarTiro}
+              setCantidadTiros={setCantidadTiros}
+              maxTiros={maxTiros}
               areaAtarraya={areaAtarraya}
               setAreaAtarraya={setAreaAtarraya}
-              promedioPorTiro={promedioPorTiro}
-              setPromedioPorTiro={setPromedioPorTiro}
+              numeroCamarones={numeroCamarones}
+              areaMuestreadaTexto={areaMuestreadaTexto}
+              promedioPorTiroTexto={promedioPorTiroTexto}
+              densidadPorM2Texto={densidadPorM2Texto}
+              poblacionTotalTexto={poblacionTotalTexto}
               supervivencia={supervivencia}
-              setSupervivencia={setSupervivencia}
               notasConteo={notasConteo}
               setNotasConteo={setNotasConteo}
               submitted={submitted}

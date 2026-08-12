@@ -136,6 +136,12 @@ export default function InformacionGeneralSection({
           style={hasError("duracionCiclo") ? styles.inputError : null}
         />
       )}
+      {isViewMode && formData.estado === "Finalizada" && (
+        <CampoLectura
+          label="Producción"
+          value={`${Number(formData.produccionKg ?? 0).toLocaleString()} kg`}
+        />
+      )}
     </Card>
   );
 }

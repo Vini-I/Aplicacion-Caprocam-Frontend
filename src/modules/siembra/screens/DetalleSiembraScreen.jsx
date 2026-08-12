@@ -24,6 +24,8 @@
  *    navega a /siembra/editar, y el botón "Finalizar Pre-Cría" navega
  *    a la misma ruta con el param "finalizar", según el estándar de
  *    una ventana por operación CRUD (no combinar editar y detalle).
+ *    El botón "Finalizar Siembra" abre un modal de confirmación
+ *    antes de ejecutar la acción, ya que es irreversible.
  *
  * 5. Cuando la Siembra viene de una Pre-Cría (pasoPorPrecria === "si"),
  *    el resumen embebido de Pre-Cría y la sección "Datos de larva"
@@ -41,6 +43,7 @@
  * - Button.
  * - ProgressBar.
  * - Alert.
+ * - Modal, Title (confirmación antes de finalizar).
  * - Componentes de sección del módulo Siembra.
  *
  * NAVEGACIÓN:
@@ -87,6 +90,8 @@ import Alert from "../../../shared/components/Alert";
 import Icon from "../../../shared/components/Icons";
 import NavbarRegistro from "../../../shared/components/NavbarRegistro";
 import Text from "../../../shared/components/Text";
+import Modal from "../../../shared/components/Modal";
+import Title from "../../../shared/components/Title";
 
 // Secciones del formulario
 
@@ -109,6 +114,7 @@ export default function DetalleSiembraScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
 
+
   const {
     siembra,
     formData,
@@ -130,6 +136,8 @@ export default function DetalleSiembraScreen() {
     handleFinalizarSiembra,
     handleCrearSiembraDesdePrecria,
     fieldHelpers,
+    confirmarFinalizar,
+    setConfirmarFinalizar,
   } = useDetalleSiembra(id);
 
   if (!siembra || !formData) {
@@ -299,28 +307,28 @@ export default function DetalleSiembraScreen() {
                   </View>
                 </Button>
               )}
-             
+
             {formData.estado !== "Finalizada" && (
-            <Button
-              style={styles.button}
-              onPress={() =>
-                router.push({
-                  pathname: "/siembra/editar",
-                  params: { id, tipoRegistro: formData.tipoRegistro },
-                })
-              }
-              textStyle={styles.textoBoton}
-              variant="outline"
-            >
-              <View style={styles.buttonContent}>
-                <Icon icon={ICONS.edit} color={COLORS.primary} />
-                <Text style={styles.textoBoton}>
-                  {formData.tipoRegistro === "precria"
-                    ? "Editar Pre-Cría"
-                    : "Editar Siembra"}
-                </Text>
-              </View>
-            </Button>
+              <Button
+                style={styles.button}
+                onPress={() =>
+                  router.push({
+                    pathname: "/siembra/editar",
+                    params: { id, tipoRegistro: formData.tipoRegistro },
+                  })
+                }
+                textStyle={styles.textoBoton}
+                variant="outline"
+              >
+                <View style={styles.buttonContent}>
+                  <Icon icon={ICONS.edit} color={COLORS.primary} />
+                  <Text style={styles.textoBoton}>
+                    {formData.tipoRegistro === "precria"
+                      ? "Editar Pre-Cría"
+                      : "Editar Siembra"}
+                  </Text>
+                </View>
+              </Button>
             )}
 
             {formData.tipoRegistro === "precria" &&
@@ -351,7 +359,7 @@ export default function DetalleSiembraScreen() {
               formData.estado !== "Finalizada" && (
                 <Button
                   style={styles.button}
-                  onPress={handleFinalizarSiembra}
+                  onPress={() => setConfirmarFinalizar(true)}
                   disabled={guardando}
                   textStyle={styles.textoBoton}
                   variant="outline"
@@ -367,6 +375,30 @@ export default function DetalleSiembraScreen() {
           </View>
         </View>
       </ScrollView>
+      <Modal
+        visible={confirmarFinalizar}
+        onClose={() => setConfirmarFinalizar(false)}
+        closeText="Cancelar"
+        containerStyle={STYLE.contentWrapper}
+        buttonStyle={styles.modalCancelButton}
+        buttonTextStyle={styles.modalCancelButtonText}
+      >
+        <Title level={3} style={styles.modalTitle}>
+          ¿Finalizar Siembra?
+        </Title>
+        <Text style={styles.modalMessage}>
+          Esta acción no se puede deshacer.
+        </Text>
+        <Button
+          style={styles.modalConfirmButton}
+          onPress={() => {
+            setConfirmarFinalizar(false);
+            handleFinalizarSiembra();
+          }}
+        >
+          <Text style={styles.modalConfirmButtonText}>Sí, finalizar</Text>
+        </Button>
+      </Modal>
     </>
   );
 }
