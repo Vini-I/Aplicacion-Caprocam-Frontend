@@ -76,7 +76,6 @@
  * =========================================================================
  */
 import React from "react";
-import { useLocalSearchParams } from "expo-router";
 import { View, ScrollView } from "react-native";
 
 import Button from "../../../shared/components/Button";
@@ -99,13 +98,14 @@ import { STYLE } from "../../../theme/style";
 
 import useDetalleSiembra from "../hooks/useDetalleSiembra";
 
-export default function EditarSiembraScreen() {
-  // useLocalSearchParams se mantiene aquí únicamente para obtener el "id"
-  // y pasárselo al hook (el hook necesita recibirlo como parámetro, ya que
-  // hoy no lo resuelve internamente). No se deriva ningún otro dato de
-  // aquí: "finalizar"/esFinalizar ya vienen resueltos desde el hook.
-  const { id } = useLocalSearchParams();
-
+export default function EditarSiembraScreen({
+  id,
+  tipoRegistroParam,
+  finalizar,
+  onGoBack,
+  onSuccess,
+  onSuccessFinalizarPrecria,
+}) {
   const {
     siembra,
     formData,
@@ -141,7 +141,14 @@ export default function EditarSiembraScreen() {
     fieldHelpers,
     confirmarFinalizar,
     setConfirmarFinalizar,
-  } = useDetalleSiembra(id);
+  } = useDetalleSiembra({
+    id,
+    tipoRegistroParam,
+    finalizar,
+    onGoBack,
+    onSuccess,
+    onSuccessFinalizarPrecria,
+  });
 
   if (!siembra || !formData) {
     return (
