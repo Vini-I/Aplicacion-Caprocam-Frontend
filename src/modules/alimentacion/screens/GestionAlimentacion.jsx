@@ -5,15 +5,19 @@
  *
  * Compone las estadísticas del día, el formulario de registro y
  * la lista de registros ya guardados dentro de la pantalla de
- * Alimentación. No contiene lógica de negocio propia: recibe
- * todo (datos, callbacks y estado de validación) desde
- * AlimentacionScreen.
+ * Alimentación. No contiene lógica de negocio propia: los datos y
+ * callbacks del formulario llegan desde AlimentacionScreen, y el
+ * cálculo de estadísticas, los errores de catálogos, la
+ * resolución de la alerta y el auto-scroll viven en
+ * hooks/useGestionAlimentacion.js.
  *
  * Props principales:
  * - alimentaciones: lista de registros ya guardados.
+ * - errorListado: mensaje de error al cargar el listado, o null.
  * - form / updateField: estado y setter del formulario.
  * - submitted / errores: estado de validación, se reenvían tal
  *   cual a AlimentacionForm.
+ * - alerta: { visible, variant, mensaje } del feedback de guardado.
  * - handleGuardar: callback del botón de guardar.
  * - onBack: callback opcional de navegación hacia atrás.
  *
@@ -27,10 +31,11 @@
  *   handleGuardar={handleGuardar}
  * />
  */
- 
-import React, { useEffect, useRef, useState } from "react";
+
+import React from "react";
 import { View, ScrollView } from "react-native";
 
+import useGestionAlimentacion from "../hooks/useGestionAlimentacion";
 import AlimentacionStats from "../components/AlimentacionStats";
 import AlimentacionForm from "../components/AlimentacionForm";
 
@@ -54,45 +59,18 @@ export default function GestionAlimentacion({
   alerta,
   handleGuardar,
 }) {
-  const [catalogoErrors, setCatalogoErrors] = useState({
-    infoGeneral: "",
-    consumo: "",
+  const {
+    scrollRef,
+    stats,
+    alertVisible,
+    alertVariant,
+    alertMessage,
+    handleCatalogoErrorChange,
+  } = useGestionAlimentacion({
+    alimentaciones,
+    errorListado,
+    alerta,
   });
-
-  const scrollRef = useRef(null);
-  const catalogoError = catalogoErrors.infoGeneral || catalogoErrors.consumo;
-  // Prioridad: alerta de guardado > error de catálogos > error al cargar el listado.
-  const alertVisible = alerta.visible || !!catalogoError || !!errorListado;
-  const alertMessage = alerta.visible ? alerta.mensaje : (catalogoError || errorListado);
-  const alertVariant = alerta.visible ? alerta.variant : "danger";
-
-  useEffect(() => {
-    if (alertVisible) {
-      scrollRef.current?.scrollToEnd({
-        animated: true,
-      });
-    }
-  }, [alertVisible]);
-
-  const calcularStats = (registros = []) => {
-    const registrosHoy = registros.length;
-
-    const kgSuministrados = registros.reduce((total, registro) => {
-      return total + Number(registro.cantidadKg || 0);
-    }, 0);
-
-    const estanquesActivos = new Set(
-      registros
-        .map((registro) => registro.estanque)
-        .filter(Boolean)
-    ).size;
-
-    return {
-      registrosHoy,
-      kgSuministrados,
-      estanquesActivos,
-    };
-  };
 
   return (
     <ScrollView
@@ -103,21 +81,14 @@ export default function GestionAlimentacion({
       keyboardShouldPersistTaps="handled"
     >
       <View style={STYLE.contentWrapper}>
-        <AlimentacionStats
-          {...calcularStats(alimentaciones)}
-        />
+        <AlimentacionStats {...stats} />
 
         <AlimentacionForm
           form={form}
           updateField={updateField}
           submitted={submitted}
           errores={errores}
-          onCatalogoErrorChange={(section, message) =>
-            setCatalogoErrors((prev) => ({
-              ...prev,
-              [section]: message || "",
-            }))
-          }
+          onCatalogoErrorChange={handleCatalogoErrorChange}
         />
 
         {alertVisible && (

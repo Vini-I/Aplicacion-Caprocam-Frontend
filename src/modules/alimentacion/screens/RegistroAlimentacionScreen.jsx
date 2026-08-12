@@ -4,12 +4,13 @@
  * ============================================================
  *
  * Pantalla alterna de registro de alimentación (sin listado ni
- * estadísticas): valida el formulario y lo persiste mediante
- * Alimentacion.service.js.
+ * estadísticas). Toda la lógica (estado del formulario, validación,
+ * guardado vía Alimentacion.service.js y cierre del modal) vive en
+ * hooks/useRegistroAlimentacion.js; esta screen solo arma la UI a
+ * partir de lo que ese hook retorna.
  *
  * Funcionalidad:
- * - Corrige el import de estilos para apuntar al archivo real
- *   AlimentacionStyles.js.
+ * - Importa los estilos desde el archivo real AlimentacionStyles.js.
  * - El feedback de guardado (éxito, campos incompletos, error de
  *   guardado) se muestra con los componentes globales Modal +
  *   Alert de shared/components/, en vez de window.alert/
@@ -27,44 +28,28 @@
  * Ejemplo:
  * <RegistroAlimentacionScreen navigation={navigation} />
  */
- 
-import React, { useState } from "react";
+
+import React from "react";
 import { View, ScrollView, Pressable } from "react-native";
-import useAlimentacionForm from "../hooks/useAlimentacionForm";
+
+import useRegistroAlimentacion from "../hooks/useRegistroAlimentacion";
 import AlimentacionForm from "../components/AlimentacionForm";
-import alimentacionService from "../services/Alimentacion.service";
+
 import Text from "../../../shared/components/Text";
 import Modal from "../../../shared/components/Modal";
 import Alert from "../../../shared/components/Alert";
+
 import { styles } from "../styles/AlimentacionStyles";
 import { STYLE } from "../../../theme/style";
 
 export default function RegistroAlimentacionScreen({ navigation }) {
-    const { form, updateField, resetForm, validarForm } = useAlimentacionForm();
-    const [modal, setModal] = useState({ visible: false, variant: "success", mensaje: "" });
-
-    const handleGuardar = async () => {
-        const { valido, errores } = validarForm();
-        if (!valido) {
-            const lista = Object.values(errores).map(e => `• ${e}`).join('\n');
-            setModal({ visible: true, variant: "warning", mensaje: `Por favor complete:\n${lista}` });
-            return;
-        }
-        try {
-            await alimentacionService.create(form);
-            setModal({ visible: true, variant: "success", mensaje: "Alimentación registrada correctamente" });
-        } catch {
-            setModal({ visible: true, variant: "danger", mensaje: "No se pudo guardar el registro" });
-        }
-    };
-
-    const cerrarModal = () => {
-        setModal((prev) => ({ ...prev, visible: false }));
-        if (modal.variant === "success") {
-            resetForm();
-            navigation?.goBack();
-        }
-    };
+  const {
+    form,
+    updateField,
+    modal,
+    handleGuardar,
+    cerrarModal,
+  } = useRegistroAlimentacion(navigation);
 
   return (
     <View style={styles.screen}>
