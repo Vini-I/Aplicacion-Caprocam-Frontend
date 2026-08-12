@@ -7,14 +7,16 @@
  * Permite a los usuarios autenticarse ingresando usuario y contraseña.
  * Ambos campos son obligatorios y se marcan con asterisco (*).
  *
- * @dependencies - Card, Alert, Spinner, Button, Header, Separator, FormField (shared)
+ * @dependencies - Card, Alert, Spinner, Button, Header, FormField (shared)
  *               - useAuth (hooks/useAuth) para lógica de autenticación
  *               - styles/webLoginStyles, theme/style
  * @validations  - Usuario y Contraseña obligatorios (*).
  *               - Errores de validación visibles solo tras primer intento de envío.
  *               - createChangeHandler limpia serverError en cada cambio de campo.
  * @navigation   - onLoginSuccess → sección principal de la aplicación.
- *               - onGoToRegister → flujo de registro de administradores.
+ *               - El registro de administradores ya no vive aquí: solo es
+ *                 accesible desde Configuración dentro del drawer, y
+ *                 solamente para usuarios ya autenticados.
  */
 
 import { View, ScrollView } from 'react-native';
@@ -23,7 +25,6 @@ import Card from '../../../shared/components/Card';
 import Spinner from '../../../shared/components/Spinner';
 import Button from '../../../shared/components/Button';
 import Header from '../../../shared/components/Header';
-import Separator from '../../../shared/components/Separator';
 import Input from '../../../shared/components/Input';
 import Alert from '../../../shared/components/Alert';
 
@@ -34,7 +35,6 @@ import { STYLE } from '../../../theme/style';
 
 export default function WebLoginScreen({
   onLoginSuccess = () => { },
-  onGoToRegister = () => { },
 }) {
   const {
     username, setUsername,
@@ -98,12 +98,6 @@ export default function WebLoginScreen({
 
             <Button variant="outline" disabled={loading} onPress={handleLogin}>
               {MSG.BUTTON_LOGIN}
-            </Button>
-
-            <Separator text={MSG.SEPARATOR_TEXT_LOGIN} />
-
-            <Button variant="outline" disabled={loading} onPress={onGoToRegister}>
-              {MSG.BUTTON_GO_TO_REGISTER}
             </Button>
 
           </Card>

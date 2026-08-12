@@ -6,10 +6,10 @@
  *
  * Responsabilidad:
  * Pantalla principal de administración de colaboradores. Muestra
- * una lista paginada con búsqueda y filtros, y acciones de CRUD.
+ * una lista paginada con búsqueda y acciones de CRUD.
  *
  * @dependencies - useColaboradoresList, shared components.
- * @validations  - Filtrado por texto y rol.
+ * @validations  - Filtrado por texto.
  * @navigation   - Navega a detalle, edición y creación.
  * ============================================================
  */
@@ -25,7 +25,6 @@ import Button from '../../../shared/components/Button';
 import CustomText from '../../../shared/components/Text';
 import Icon from '../../../shared/components/Icons';
 import SearchBar from '../../../shared/components/SearchBar';
-import FilterButton from '../../../shared/components/FilterButton';
 import Alert from '../../../shared/components/Alert';
 import ModalEliminar from '../../../shared/components/ModalEliminar';
 import EmptyState from '../../../shared/components/EmptyState';
@@ -34,14 +33,6 @@ import { STYLE } from '../../../theme/style';
 import { ICONS } from '../../../theme/icons';
 import { COLORS } from '../../../theme/colors';
 import { styles } from '../styles/colaboradoresListStyles';
-
-// ─── Opciones de filtro por rol ───────────────────────────────────
-const CATEGORIAS = [
-  { label: 'Todos', value: 'todos' },
-  { label: 'Trabajador Camprocam', value: 'camprocam_worker' },
-  { label: 'Dueño Externo', value: 'external_owner' },
-  { label: 'Trabajador Externo', value: 'external_worker' },
-];
 
 export default function ColaboradoresListScreen() {
   const router = useRouter();
@@ -65,15 +56,6 @@ export default function ColaboradoresListScreen() {
     confirmDelete,
     fetchColaboradores,
   } = useColaboradoresList();
-
-  // ─── Filtros activos (categorías, etc.) ──────────────────────
-  const [filtros, setFiltros] = useState({
-    categories: [],
-    suppliers: [],
-    units: [],
-    lowStock: false,
-    expiryDate: '',
-  });
 
   // ─── Efectos ──────────────────────────────────────────────────
 
@@ -99,7 +81,7 @@ export default function ColaboradoresListScreen() {
     }, [editId, router])
   );
 
-  // Refrescar lista al volver a la pantalla (evitando doble carga inicial)
+  // Refrescar lista al volver a la pantalla
   const firstFocus = useRef(true);
   useFocusEffect(
     useCallback(() => {
@@ -110,26 +92,17 @@ export default function ColaboradoresListScreen() {
     }, [fetchColaboradores])
   );
 
-  // ─── Filtrado de la lista (búsqueda y roles) ──────────────────
+  // ─── Filtrado de la lista (solo búsqueda) ──────────────────
   const listaFiltrada = useMemo(() => {
-    let result = colaboradores;
-
-    if (searchText.trim()) {
-      const q = searchText.toLowerCase().trim();
-      result = result.filter((c) =>
-        (c.nombre?.toLowerCase() || '').includes(q) ||
-        (c.cedula?.toLowerCase() || '').includes(q) ||
-        (c.telefono?.toLowerCase() || '').includes(q) ||
-        (c.email?.toLowerCase() || '').includes(q)
-      );
-    }
-
-    if (filtros.categories.length > 0 && !filtros.categories.includes('todos')) {
-      result = result.filter((c) => filtros.categories.includes(c.rol));
-    }
-
-    return result;
-  }, [colaboradores, searchText, filtros]);
+    if (!searchText.trim()) return colaboradores;
+    const q = searchText.toLowerCase().trim();
+    return colaboradores.filter((c) =>
+      (c.nombre?.toLowerCase() || '').includes(q) ||
+      (c.cedula?.toLowerCase() || '').includes(q) ||
+      (c.telefono?.toLowerCase() || '').includes(q) ||
+      (c.email?.toLowerCase() || '').includes(q)
+    );
+  }, [colaboradores, searchText]);
 
   // ─── Navegación ─────────────────────────────────────────────────
   const openDetail = (colaboradorId) => {
@@ -154,7 +127,7 @@ export default function ColaboradoresListScreen() {
   if (loading) return <Spinner text="Cargando colaboradores..." />;
 
   // ─── Mensajes del estado vacío ────────────────────────────────
-  const hayFiltrosActivos = searchText.trim() !== '' || filtros.categories.length > 0;
+  const hayFiltrosActivos = searchText.trim() !== '';
   const emptyTitle = hayFiltrosActivos ? 'Sin resultados' : 'No hay colaboradores registrados';
   const emptyDescription = hayFiltrosActivos
     ? 'No se encontraron colaboradores con los criterios de búsqueda seleccionados.'
@@ -165,22 +138,13 @@ export default function ColaboradoresListScreen() {
   // ─── Render ────────────────────────────────────────────────────
   return (
     <View style={styles.screenContainer}>
-      {/* Barra de búsqueda y filtro */}
+      {/* Barra de búsqueda */}
       <View style={styles.searchRow}>
         <SearchBar
           value={searchText}
           onChangeText={setSearchText}
           placeholder="Buscar por nombre, teléfono, email o cédula"
           containerStyle={styles.searchInput}
-        />
-        <FilterButton
-          categories={CATEGORIAS}
-          suppliers={[]}
-          activeFilters={filtros}
-          onApply={setFiltros}
-          showLowStock={false}
-          showExpiryDate={false}
-          buttonStyle={styles.filterButtonStyle}
         />
       </View>
 
@@ -232,7 +196,7 @@ export default function ColaboradoresListScreen() {
         </Button>
       </View>
 
-      {/* Modal de confirmación de eliminación usando componente reutilizable */}
+      {/* Modal de confirmación de eliminación */}
       <ModalEliminar
         visible={showConfirmModal}
         title="colaborador"
