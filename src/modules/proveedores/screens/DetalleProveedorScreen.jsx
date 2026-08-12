@@ -10,12 +10,11 @@
  * - Si no existe el proveedor, muestra un estado vacío (EmptyState).
  * - Confirmar eliminación abre un modal.
  *
- * @dependencies - React, expo-router, Componentes UI, useDetalleProveedorScreen, Styles
+ * @dependencies - React, Componentes UI, useDetalleProveedorScreen, Styles
  * @validations - N/A
- * @navigation - /(drawer)/proveedores (al eliminar)
+ * @navigation - N/A (delegado a la ruta vía props onVolverAlListado, onEditarProveedor, onEliminado)
  */
 import { View, ScrollView } from "react-native";
-import { useRouter } from "expo-router";
 
 import Icon from "../../../shared/components/Icons";
 import Card from "../../../shared/components/Card";
@@ -34,8 +33,11 @@ import { styles } from "../styles/DetalleProveedorStyles";
 import { useDetalleProveedorScreen } from "../hooks/useDetalleProveedorScreen";
 import { formatearTelefono } from "../utils/contactValidators";
 
-export default function DetalleProveedorScreen() {
-  const router = useRouter();
+export default function DetalleProveedorScreen({
+  onVolverAlListado,
+  onEditarProveedor,
+  onEliminado,
+}) {
   const {
     proveedor,
     modalVisible,
@@ -43,7 +45,7 @@ export default function DetalleProveedorScreen() {
     cerrarModal,
     confirmarEliminar,
     getTipoLabel,
-  } = useDetalleProveedorScreen();
+  } = useDetalleProveedorScreen({ onEliminado });
 
   if (!proveedor) {
     return (
@@ -55,7 +57,7 @@ export default function DetalleProveedorScreen() {
           />
           <Button
             style={styles.volverButton}
-            onPress={() => router.replace("/(drawer)/proveedores/proveedorScreen")}
+            onPress={onVolverAlListado}
           >
             <Icon icon={ICONS.exit} color={COLORS.primary} />
             <CustomText style={styles.volverButtonText}>Volver al listado</CustomText>
@@ -133,12 +135,7 @@ export default function DetalleProveedorScreen() {
           <View style={styles.botones}>
             <Button
               style={[styles.boton, styles.botonEditar]}
-              onPress={() =>
-                router.push({
-                  pathname: "/(drawer)/proveedores/editarProveedor",
-                  params: { id: proveedor.id.toString() },
-                })
-              }
+              onPress={() => onEditarProveedor(proveedor.id)}
             >
               <Icon icon={ICONS.edit} color={COLORS.primary} />
               <CustomText style={[styles.botonTexto, styles.botonTextoEditar]}>
@@ -164,10 +161,7 @@ export default function DetalleProveedorScreen() {
         title="proveedor"
         message={proveedor.nombre}
         onCancel={cerrarModal}
-        onConfirm={async () => {
-          await confirmarEliminar();
-          router.replace("/(drawer)/proveedores");
-        }}
+        onConfirm={confirmarEliminar}
 
       />
     </View>

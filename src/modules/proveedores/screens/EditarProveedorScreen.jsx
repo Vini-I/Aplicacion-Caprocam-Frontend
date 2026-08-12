@@ -4,18 +4,20 @@
  *
  * FUNCIONALIDAD:
  * - Renderiza el formulario de edición (nombre de solo lectura).
- * - Muestra un alert de éxito si la edición es correcta.
+ * - Muestra un alert de error si la edición falla.
  *
  * REGLAS IMPORTANTES:
  * - Deshabilita la edición del nombre del proveedor (editable=false).
- * - Delega la lógica de negocio al hook.
+ * - Delega toda la lógica de negocio al hook.
+ * - Solo construye la pantalla: no usa useRouter, ese vive en app/
+ *   (mismo patrón que las demás pantallas de proveedores y que finca).
  *
- * @dependencies - React, expo-router, Componentes UI, Alert, useEditarProveedorScreen
+ * @dependencies - React, Componentes UI, Alert, useEditarProveedorScreen
  * @validations - Valida campos requeridos y formato numérico en UI
- * @navigation - /(drawer)/proveedores (al guardar)
+ * @navigation - N/A (delegado al wrapper de ruta vía prop onProveedor)
  */
 import React from "react";
-import { View, ScrollView, ActivityIndicator } from "react-native";
+import { View, ScrollView } from "react-native";
 
 import Card from "../../../shared/components/Card";
 import Input from "../../../shared/components/Input";
@@ -32,7 +34,7 @@ import { tiposProducto } from "../services/proveedor.service";
 
 import { useEditarProveedorScreen, telefonoMaxLength } from "../hooks/useEditarProveedorScreen";
 
-export default function EditarProveedorScreen() {
+export default function EditarProveedorScreen({ onProveedor, id }) {
   const {
     scrollViewRef,
     nombre,
@@ -49,8 +51,7 @@ export default function EditarProveedorScreen() {
     handleTelefonoChange,
     handleCorreoChange,
     guardar,
-    guardadoExitoso,
-  } = useEditarProveedorScreen();
+  } = useEditarProveedorScreen({ onProveedor, id });
 
   return (
     <View style={STYLE.container}>

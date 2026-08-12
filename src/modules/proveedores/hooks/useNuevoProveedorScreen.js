@@ -9,12 +9,13 @@
  * REGLAS IMPORTANTES:
  * - Teléfono debe ser estrictamente de 8 dígitos.
  * - Reutiliza validadores de utils/contactValidators.js.
- * - No maneja routing: expone guardadoExitoso y es el screen quien
- *   decide navegar al verlo en true (useRouter vive solo en screens).
+ * - No maneja routing: useRouter vive en el archivo de ruta (app/(drawer)/
+ *   proveedores/nuevoProveedor.jsx), que arma el handler de navegación y
+ *   lo pasa como prop (onProveedor) al screen, igual que en finca.
  *
  * @dependencies - React, ProveedorContext, contactValidators, ProveedorDTO
  * @validations - Teléfono de 8 dígitos, Correo válido, Campos requeridos
- * @navigation - N/A (delegado al screen vía guardadoExitoso)
+ * @navigation - N/A (delegado a la ruta vía prop onProveedor)
  */
 import { useState, useRef, useEffect } from "react";
 import { validarTelefono, validarCorreo } from "../utils/contactValidators";
@@ -36,7 +37,7 @@ function obtenerMensajeError(nuevosErrores) {
   return "";
 }
 
-export function useNuevoProveedorScreen() {
+export function useNuevoProveedorScreen({ onProveedor } = {}) {
   const { crearProveedor } = useProveedor();
   const scrollViewRef = useRef(null);
   const [nombre, setNombre] = useState("");
@@ -62,6 +63,12 @@ export function useNuevoProveedorScreen() {
       scrollViewRef.current?.scrollToEnd({ animated: true });
     }
   }, [mensajeError]);
+
+  useEffect(() => {
+    if (guardadoExitoso) {
+      onProveedor?.();
+    }
+  }, [guardadoExitoso, onProveedor]);
 
   function handleTelefonoChange(valor) {
     setTelefono(valor.replace(/[^0-9]/g, ""));
