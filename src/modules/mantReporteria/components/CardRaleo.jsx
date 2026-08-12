@@ -88,23 +88,23 @@ export default function CardRaleo({ fincaId, estanqueId, onEditar, onAlertChange
                         </View>
 
                         <View style={styles.infoItem}>
-                            <Text style={styles.label}>Metodo de Raleo</Text>
-                            <Text style={styles.value}>{registro.metodo}</Text>
+                            <Text style={styles.label}>Biomasa anterior</Text>
+                            <Text style={styles.value}>{registro.biomasaEstimada} Kg</Text>
                         </View>
 
                         <View style={styles.infoItem}>
-                            <Text style={styles.label}>Peso Estimado</Text>
-                            <Text style={styles.value}>{registro.pesoEstimado} g</Text>
+                            <Text style={styles.label}>Cantidad retirada</Text>
+                            <Text style={styles.value}>{registro.kgRetirados} Kg</Text>
                         </View>
 
                         <View style={styles.infoItem}>
-                            <Text style={styles.label}>Biomasa Estimada</Text>
-                            <Text style={styles.value}>{registro.biomasaEstimado} Kg</Text>
+                            <Text style={styles.label}>Biomasa restante</Text>
+                            <Text style={styles.value}>{registro.biomasaRestante} Kg</Text>
                         </View>
 
                         <View style={styles.infoItem}>
-                            <Text style={styles.label}>Objetivo de Raleo</Text>
-                            <Text style={styles.value}>{registro.objetivo} g</Text>
+                            <Text style={styles.label}>Porcentaje raleado</Text>
+                            <Text style={styles.value}>{registro.porcentaje} %</Text>
                         </View>
 
                         <View style={styles.infoItem}>
