@@ -9,13 +9,15 @@
  * REGLAS IMPORTANTES:
  * - Los errores solo se muestran al intentar guardar.
  * - Si no hay cambios, previene la petición al backend.
+ * - No maneja routing: expone guardadoExitoso y es el screen quien
+ *   decide navegar al verlo en true (useRouter vive solo en screens).
  *
  * @dependencies - React, expo-router, ProveedorContext, contactValidators, ProveedorDTO
  * @validations - Teléfono de 8 dígitos, Correo válido, Campos requeridos
- * @navigation - N/A
+ * @navigation - N/A (delegado al screen vía guardadoExitoso)
  */
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import { useProveedor } from "../context/ProveedorContext";
 import { validarTelefono, validarCorreo } from "../utils/contactValidators";
 import { ProveedorDTO } from "../dtos/proveedor.dto";
@@ -34,7 +36,6 @@ function validarTipoProducto(valor) {
 
 export function useEditarProveedorScreen() {
   const { id } = useLocalSearchParams();
-  const router = useRouter();
   const { buscarProveedor, editarProveedor } = useProveedor();
 
   const scrollViewRef = useRef(null);
@@ -87,12 +88,6 @@ export function useEditarProveedorScreen() {
       scrollViewRef.current?.scrollToEnd({ animated: true });
     }
   }, [alerta]);
-
-  useEffect(() => {
-    if (guardadoExitoso) {
-      router.replace("/(drawer)/proveedores");
-    }
-  }, [guardadoExitoso, router]);
 
   function handleTelefonoChange(valor) {
     setTelefono(valor.replace(/[^0-9]/g, ""));
