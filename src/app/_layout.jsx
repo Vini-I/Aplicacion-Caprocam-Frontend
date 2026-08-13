@@ -24,6 +24,8 @@ export default function RootLayout() {
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="loginWeb" />
 
+          <Stack.Screen name="creditos" />
+
           <Stack.Screen name="index" />
         </Stack>
       </SessionMonitor>
