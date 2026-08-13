@@ -10,13 +10,12 @@
  * - Renderiza botón flotante para agregar en la parte inferior.
  * - Pantalla de solo lectura; la lógica de búsqueda está en el hook.
  *
- * @dependencies - React, expo-router, Componentes UI, FilterButton, useProveedorScreen
+ * @dependencies - React, Componentes UI, FilterButton, useProveedorScreen
  * @validations - N/A
- * @navigation - nuevoProveedor, detalleProveedor
+ * @navigation - N/A (delegado a la ruta vía props onDetail, onNew)
  */
 import React from "react";
 import { View, ScrollView } from "react-native";
-import { useRouter } from "expo-router";
 
 import CardPress from "../../../shared/components/CardPress";
 import Button from "../../../shared/components/Button";
@@ -34,14 +33,13 @@ import { styles, ICON_STYLES } from "../styles/ProveedorStyles";
 import { useProveedorScreen } from "../hooks/useProveedorScreen";
 import { formatearTelefono } from "../utils/contactValidators";
 
-export default function ProveedorScreen() {
-  const router = useRouter();
+export default function ProveedorScreen({ onDetail, onNew }) {
   const {
     proveedoresFiltrados,
     busqueda,
     setBusqueda,
     filtros,
-    TIPOS,
+    tipos,
     handleAplicarFiltros,
     alert,
     recargar,
@@ -83,7 +81,7 @@ export default function ProveedorScreen() {
             containerStyle={styles.searchBarContainer}
           />
           <FilterButton
-            categories={TIPOS}
+            categories={tipos}
             activeFilters={{
               categories: filtros.tipos,
               suppliers: [],
@@ -116,12 +114,7 @@ export default function ProveedorScreen() {
           <CardPress
             key={proveedor.id}
             style={styles.card}
-            onPress={() =>
-              router.push({
-                pathname: "/(drawer)/proveedores/detalleProveedor",
-                params: { id: proveedor.id.toString() },
-              })
-            }
+            onPress={() => onDetail(proveedor.id)}
           >
             <View style={styles.cardHeader}>
               <View style={styles.avatar}>
@@ -167,7 +160,7 @@ export default function ProveedorScreen() {
       <View style={styles.floatingButtonWrapper} pointerEvents="box-none">
         <View style={STYLE.contentWrapper}>
           <Button
-            onPress={() => router.push("/(drawer)/proveedores/nuevoProveedor")}
+            onPress={onNew}
             style={styles.btnAgregar}
           >
             <Icon icon={ICONS.add} color={ICON_STYLES.add.color} />

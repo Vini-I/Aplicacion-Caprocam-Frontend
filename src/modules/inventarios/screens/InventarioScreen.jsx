@@ -17,6 +17,9 @@
  * - El feedback (feedback) se arma en useInventario.js leyendo el
  *   parámetro de navegación alertaProducto enviado por Productos; no
  *   depende del estado interno de sus hooks.
+ * - Solo estructura/JSX: los cálculos de negocio viven en
+ *   InventarioCalculos.js y el formateo de presentación en
+ *   InventarioFormatters.js.
  *
  * @dependencies - React, SearchBar, FilterButton, Alert, useInventario
  * @validations - N/A
@@ -42,6 +45,13 @@ import { STYLE } from "../../../theme/style";
 import { styles } from "../styles/InventarioStyles";
 
 import { useInventario } from "../hooks/useInventario";
+import { esStockBajo } from "../utils/InventarioCalculos";
+import {
+  getIconForCategory,
+  getPluralizedUnit,
+  formatearPrecioUnidad,
+  formatearFechaCaducidad,
+} from "../utils/InventarioFormatters";
 
 function FilaDetalle({ etiqueta, valor, resaltado = false }) {
   return (
@@ -65,70 +75,12 @@ function FilaDetalle({ etiqueta, valor, resaltado = false }) {
   );
 }
 
-const iconoPorCategoria = [
-  { match: ["alimentación", "alimentacion"], icon: ICONS.food },
-  { match: ["tratamiento"], icon: ICONS.treatment },
-  { match: ["químico", "quimico"], icon: ICONS.chemicalContainer },
-  { match: ["fertilizante"], icon: ICONS.fertilizer },
-  { match: ["antibiótico", "antibiotico"], icon: ICONS.microscope },
-  { match: ["probiótico", "probiotico"], icon: ICONS.microscope },
-  { match: ["mantenimiento"], icon: ICONS.tools },
-];
-
-function getIconForCategory(categoria) {
-  const cat = (categoria || "").toLowerCase();
-  const encontrado = iconoPorCategoria.find(({ match }) =>
-    match.some((palabra) => cat.includes(palabra)),
-  );
-  return encontrado ? encontrado.icon : ICONS.box;
-}
-
-const unidadesInvariables = ["kg", "g", "mg", "ml", "l", "cc"];
-
-const vocales = "aeiouáéíóú";
-const acentos = { á: "a", é: "e", í: "i", ó: "o", ú: "u" };
-
-function pluralizarPalabra(palabra) {
-  if (!palabra || palabra.toLowerCase().endsWith("s")) return palabra;
-
-  const ultima = palabra.charAt(palabra.length - 1).toLowerCase();
-  if (vocales.includes(ultima)) {
-    return `${palabra}s`;
-  }
-
-  const penultima = palabra.charAt(palabra.length - 2).toLowerCase();
-  if (acentos[penultima]) {
-    return `${palabra.slice(0, -2)}${acentos[penultima]}${ultima}es`;
-  }
-  return `${palabra}es`;
-}
-
-function getPluralizedUnit(cantidad, unidad) {
-  if (Number(cantidad) <= 1 || !unidad) return unidad;
-
-  const [primeraPalabra, ...resto] = unidad.trim().split(" ");
-
-  if (unidadesInvariables.includes(primeraPalabra.toLowerCase())) {
-    return unidad;
-  }
-
-  const palabraPlural = pluralizarPalabra(primeraPalabra);
-  return resto.length ? `${palabraPlural} ${resto.join(" ")}` : palabraPlural;
-}
-
 function TarjetaProducto({ producto, onVerDetalle }) {
-  const tieneStockBajo = producto.cantidad < producto.stockMinimo;
-  const precioFormateado =
-    producto.precioUnidad != null && producto.precioUnidad !== ""
-      ? `₡${Number(producto.precioUnidad).toLocaleString("es-CR")}`
-      : "₡0";
-
-  const fechaCaducidadFormateada =
-    producto.fechaCaducidad != null && 
-    producto.fechaCaducidad.toString().trim() !== "" && 
-    producto.fechaCaducidad !== "-"
-      ? producto.fechaCaducidad
-      : "Sin Fecha de Caducidad";
+  const tieneStockBajo = esStockBajo(producto);
+  const precioFormateado = formatearPrecioUnidad(producto.precioUnidad);
+  const fechaCaducidadFormateada = formatearFechaCaducidad(
+    producto.fechaCaducidad,
+  );
 
   return (
     <CardPress
