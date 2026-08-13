@@ -113,6 +113,11 @@ export default function CardRaleo({ fincaId, estanqueId, onEditar, onAlertChange
                         </View>
                     </View>
 
+                    <View style={styles.pesoContainer}>
+                        <Text style={styles.label}>Porcentaje de Raleo</Text>
+                        <Text style={styles.cantidadKg}>{registro.porcentaje}%</Text>
+                    </View>
+
                     <View style={styles.Buttons}>
                         <Button
                             style={styles.Eliminar}
@@ -126,7 +131,7 @@ export default function CardRaleo({ fincaId, estanqueId, onEditar, onAlertChange
 
                         <Button
                             style={styles.Editar}
-                            onPress={() => {onEditar(registro.id)}}
+                            onPress={() => { onEditar(registro.id) }}
                         >
                             <Icon icon={ICONS.edit} color={COLORS.primary} size={20} />
                             <Text size={12} color={COLORS.primary}>
