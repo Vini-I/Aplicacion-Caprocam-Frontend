@@ -31,7 +31,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { useNavigation, useRouter, useLocalSearchParams } from "expo-router";
+import { useNavigation, useLocalSearchParams } from "expo-router";
 import { calcularProgresoCiclo } from "./siembraCalculos";
 import { getSiembras } from "../services/siembra.service";
 import { getPrecrias } from "../services/precria.service";
@@ -42,17 +42,10 @@ import { getLotes } from "../services/lote.service";
 import { formatearFechaDesdeISO } from "./dateUtils";
 
 function haFinalizado(registro) {
-  if (registro.tipoRegistro === "precria") {
-    return registro.estado === "Finalizada";
-  }
-  return (
-    registro.estado === "Finalizada" ||
-    calcularProgresoCiclo(registro).progreso >= 100
-  );
+  return registro.estado === "Finalizada";
 }
 
 export default function useSiembraList() {
-  const router = useRouter();
   const navigation = useNavigation();
 
   const [registros, setRegistros] = useState([]);
@@ -217,18 +210,7 @@ export default function useSiembraList() {
       });
   }, [busqueda, filtros, registros, fincas, estanques, lotes, vista]);
 
-  const handleNuevaSiembra = useCallback(
-    () => router.push("/siembra/nueva"),
-    [router],
-  );
-  const handleDetalleSiembra = useCallback(
-    (registro) =>
-      router.push({
-        pathname: "/siembra/detalle",
-        params: { id: registro.id, tipoRegistro: registro.tipoRegistro },
-      }),
-    [router],
-  );
+
 
   return {
     siembrasFiltradas,
@@ -242,8 +224,6 @@ export default function useSiembraList() {
     cargando,
     mensaje,
     mensajeVariant,
-    handleNuevaSiembra,
-    handleDetalleSiembra,
     recargar: cargar,
   };
 }

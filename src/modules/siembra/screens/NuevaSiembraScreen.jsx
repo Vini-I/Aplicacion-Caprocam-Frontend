@@ -80,7 +80,7 @@ import { COLORS } from "../../../theme/colors";
 
 import useNuevaSiembra from "../hooks/useNuevaSiembra";
 
-export default function NuevaSiembraScreen() {
+export default function NuevaSiembraScreen({ onSuccess }) {
   const {
     formData,
 
@@ -141,7 +141,7 @@ export default function NuevaSiembraScreen() {
     handleEliminarProcedenciaLarva,
 
     fieldHelpers,
-  } = useNuevaSiembra();
+  } = useNuevaSiembra(onSuccess);
 
   return (
     <>

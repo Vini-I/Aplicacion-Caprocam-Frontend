@@ -75,8 +75,7 @@
  *
  * =========================================================================
  */
-import React, { useRef, useEffect} from "react";
-import { useLocalSearchParams } from "expo-router";
+import React from "react";
 import { View, ScrollView } from "react-native";
 
 import Button from "../../../shared/components/Button";
@@ -99,10 +98,14 @@ import { STYLE } from "../../../theme/style";
 
 import useDetalleSiembra from "../hooks/useDetalleSiembra";
 
-export default function EditarSiembraScreen() {
-  const { id, finalizar } = useLocalSearchParams();
-  const esFinalizar = finalizar === "1";
-
+export default function EditarSiembraScreen({
+  id,
+  tipoRegistroParam,
+  finalizar,
+  onGoBack,
+  onSuccess,
+  onSuccessFinalizarPrecria,
+}) {
   const {
     siembra,
     formData,
@@ -138,7 +141,14 @@ export default function EditarSiembraScreen() {
     fieldHelpers,
     confirmarFinalizar,
     setConfirmarFinalizar,
-  } = useDetalleSiembra(id);
+  } = useDetalleSiembra({
+    id,
+    tipoRegistroParam,
+    finalizar,
+    onGoBack,
+    onSuccess,
+    onSuccessFinalizarPrecria,
+  });
 
   if (!siembra || !formData) {
     return (

@@ -81,7 +81,6 @@
 
 import React from "react";
 
-import { useLocalSearchParams, useRouter } from "expo-router";
 import { View, ScrollView } from "react-native";
 
 // Componentes compartidos
@@ -114,13 +113,14 @@ import { STYLE } from "../../../theme/style";
 // Hook principal
 import useDetalleSiembra from "../hooks/useDetalleSiembra";
 
-export default function DetalleSiembraScreen() {
-  // useLocalSearchParams se mantiene aquí únicamente para obtener el "id"
-  // y pasárselo al hook. useRouter se mantiene aquí para la navegación
-  // de los botones (se deja así por ahora).
-  const { id } = useLocalSearchParams();
-  const router = useRouter();
-
+export default function DetalleSiembraScreen({
+  id,
+  tipoRegistroParam,
+  finalizar,
+  onEdit,
+  onCrearSiembra,
+  onSuccessFinalizarSiembra,
+}) {
   const {
     siembra,
     formData,
@@ -146,7 +146,13 @@ export default function DetalleSiembraScreen() {
     setConfirmarFinalizar,
     fincaLabel,
     estanqueLabel,
-  } = useDetalleSiembra(id);
+  } = useDetalleSiembra({
+    id,
+    tipoRegistroParam,
+    finalizar,
+    onCrearSiembra,
+    onSuccessFinalizarSiembra,
+  });
 
   if (!siembra || !formData) {
     return (
@@ -313,12 +319,7 @@ export default function DetalleSiembraScreen() {
             {formData.estado !== "Finalizada" && (
               <Button
                 style={styles.button}
-                onPress={() =>
-                  router.push({
-                    pathname: "/siembra/editar",
-                    params: { id, tipoRegistro: formData.tipoRegistro },
-                  })
-                }
+                onPress={() => onEdit(id, formData.tipoRegistro)}
                 textStyle={styles.textoBoton}
                 variant="outline"
               >
@@ -337,16 +338,7 @@ export default function DetalleSiembraScreen() {
               formData.estado !== "Finalizada" && (
                 <Button
                   style={styles.button}
-                  onPress={() =>
-                    router.push({
-                      pathname: "/siembra/editar",
-                      params: {
-                        id,
-                        tipoRegistro: formData.tipoRegistro,
-                        finalizar: "1",
-                      },
-                    })
-                  }
+                  onPress={() => onEdit(id, formData.tipoRegistro, "1")}
                   disabled={guardando}
                   textStyle={styles.textoBoton}
                   variant="outline"
