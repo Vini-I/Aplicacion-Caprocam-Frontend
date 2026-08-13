@@ -7,6 +7,7 @@
  * Responsabilidad:
  * - Obtener la lista de fincas disponibles para asociar a un colaborador.
  * - Conecta con el backend real (GET /fincas) o usa fallback local.
+ * - Incluye una opción "Sin finca" para permitir que el campo sea opcional.
  *
  * Dependencias:
  * - api (axios) desde src/api/api.js
@@ -36,8 +37,6 @@ export const getFincas = async (grupoDatos) => {
     const response = await api.get("/fincas");
     const data = response.data.data || [];
 
-    // El backend devuelve: { id, nombreFinca, codigoCBO, provincia, ... }
-    // Solo necesitamos id y nombreFinca para el select
     return data.map((finca) => ({
       id: finca.id,
       nombreFinca: finca.nombreFinca || `Finca ${finca.id}`,
@@ -50,12 +49,16 @@ export const getFincas = async (grupoDatos) => {
 
 /**
  * Obtiene las fincas formateadas para el componente <Select>.
- * Retorna { label: nombreFinca, value: id }
+ * Retorna { label: nombreFinca, value: id }.
+ * Incluye una opción "Sin finca" con value vacío para permitir campo opcional.
  */
 export const getFincasOptions = async (grupoDatos) => {
   const fincas = await getFincas(grupoDatos);
-  return fincas.map((finca) => ({
-    label: finca.nombreFinca,
-    value: finca.id,
-  }));
+  return [
+    { label: "Sin finca", value: "" },
+    ...fincas.map((finca) => ({
+      label: finca.nombreFinca,
+      value: finca.id,
+    })),
+  ];
 };

@@ -1,3 +1,32 @@
+/**
+ * ============================================================
+ * SCREEN EDITARALIMENTACIONSCREEN
+ * ============================================================
+ *
+ * Pantalla de edición de un registro de alimentación ya
+ * existente. Toda la lógica (carga del registro por id,
+ * precarga del formulario, validación y guardado del cambio)
+ * vive en hooks/useEditarAlimentacion.js; esta screen solo arma
+ * la UI a partir de lo que ese hook retorna.
+ *
+ * Funcionalidad:
+ * - Usa NavbarRegistro (header celeste con botón volver), igual
+ *   que el resto de pantallas de edición del proyecto.
+ * - Mientras se carga el registro, o si no se recibió registroId,
+ *   se muestra un mensaje centrado en vez del formulario.
+ * - El feedback de guardado (éxito, campos incompletos o error
+ *   del backend) se muestra con el componente Alert de
+ *   shared/components/, en el mismo lugar en el que se muestra
+ *   en AlimentacionForm/GestionAlimentacion: justo antes del
+ *   botón de guardar.
+ *
+ * Props principales:
+ * - registroId: id del registro de alimentación a editar.
+ *
+ * Ejemplo:
+ * <EditarAlimentacionScreen registroId={id} />
+ */
+
 import React from "react";
 import { View, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
@@ -78,7 +107,15 @@ export default function EditarAlimentacionScreen({ registroId }) {
               submitted={submitted}
               errores={errores}
             />
-            
+
+            {alerta.visible && (
+              <Alert
+                variant={alerta.variant}
+                message={alerta.mensaje}
+                style={styles.alert}
+              />
+            )}
+
             <Button
               variant="outline"
               onPress={handleGuardar}

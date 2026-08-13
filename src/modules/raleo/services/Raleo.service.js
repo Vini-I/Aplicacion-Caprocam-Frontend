@@ -20,7 +20,6 @@ async function getAll() {
     const response = await api.get("/raleo");
    return response.data.data;
   } catch(error) {
-    console.error("Error al obtener raleos:", error.response?.data || error.message);
     throw error;
   }
 };
@@ -30,7 +29,6 @@ async function getById(id) {
     const response = await api.get(`/raleo/${id}`);
     return response.data.data;
   } catch(error) {
-    console.error("Error al obtener raleo:", error.response?.data || error.message);
   throw error;
   }
 };
@@ -40,7 +38,6 @@ async function create(raleoDTO) {
     const response = await api.post("/raleo", raleoDTO);
     return response.data.data;
   } catch(error) {
-    console.error("Error al crear raleo:", error.response?.data || error.message);
     throw error;
   }
 };
@@ -49,7 +46,7 @@ async function update(id, raleoDTO) {
   try {
     const response = await api.put(`/raleo/${id}`, raleoDTO);
     return response.data.data;
-  } catch(error) {console.error("Error al actualizar raleo:", error.response?.data || error.message);
+  } catch(error) {
     throw error;
   }
 };
@@ -59,7 +56,6 @@ async function deleteById(id) {
     const response = await api.delete(`/raleo/${id}`);
     return response.data.data;
   } catch(error) {
-    console.error( "Error al eliminar raleo:", error.response?.data || error.message);
     throw error;
     }
 };

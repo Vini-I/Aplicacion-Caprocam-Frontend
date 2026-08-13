@@ -35,7 +35,7 @@ function registroAForm(registro) {
     finca: String(registro.idFinca ?? registro.fincaId ?? registro.finca ?? ""),
     estanque: String(registro.idEstanque ?? registro.estanqueId ?? registro.estanque ?? ""),
     fecha,
-    biomasaAntes: String(registro.biomasaAntes ?? registro.biomasaEstimado ?? ""),
+    biomasaAntes: String(registro.biomasaAntes ?? registro.biomasaEstimada ?? ""),
     kgRetirados: String(registro.kgRetirados ?? registro.pesoEstimado ?? ""),
     observaciones: registro.observaciones ?? "",
   };
@@ -48,7 +48,7 @@ function convertirFecha(fecha) {
   return `${anio}-${mes}-${dia}`;
 }
 
-function formADto(form) {
+function formADto(form, porcentajeRaleo, biomasaRestante) {
   /*
   Solo se envian los datos que el usuario captura. El porcentaje y
   la biomasa restante los recalcula el backend al guardar, para que
@@ -58,8 +58,10 @@ function formADto(form) {
     idFinca: form.finca,
     idEstanque: form.estanque,
     fecha: convertirFecha(form.fecha),
-    biomasaAntes: Number(form.biomasaAntes),
+    porcentaje: Number(porcentajeRaleo),
     kgRetirados: Number(form.kgRetirados),
+    biomasaRestante: Number(biomasaRestante),
+    biomasaEstimada: Number(form.biomasaAntes),
     observaciones: form.observaciones?.trim()
       ? form.observaciones
       : "No se realizan observaciones",
@@ -104,7 +106,7 @@ export default function useEditarRaleo(registroId, onGuardado) {
       return;
     }
     try {
-      await raleoService.update(registroId, formADto(form));
+      await raleoService.update(registroId, formADto(form, porcentajeRaleo, biomasaRestante));
       setAlerta({ visible: true, variant: "success", mensaje: "Raleo actualizado correctamente" });
       onGuardado?.();
     } catch (error) {

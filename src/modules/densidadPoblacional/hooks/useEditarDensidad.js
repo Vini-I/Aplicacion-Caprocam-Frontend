@@ -119,13 +119,49 @@ export default function useEditarDensidad(registroId, onGuardado) {
         datosConteo.setAreaEstanque(String(r.areaEstanque ?? ""));
         datosConteo.setNotasConteo(r.notasConteo ?? "");
       })
-      .catch(() => {
-        if (activo) setAlerta({ visible: true, variant: "danger", mensaje: "No se pudo cargar el registro." });
+      .catch((error) => {
+        if (activo) {
+          setAlerta({
+            visible: true,
+            variant: "danger",
+            mensaje: error?.message || "No se pudo cargar el registro.",
+          });
+        }
       })
       .finally(() => { if (activo) setCargando(false); });
     return () => { activo = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [registroId]);
+
+  /*
+  Revalida en vivo mientras el usuario escribe, pero solo despues de
+  que ya intento guardar una vez (submitted=true). Sin este efecto,
+  `errores` quedaba congelado con el resultado del ultimo click en
+  Guardar: un campo que el usuario ya corrigio se seguia viendo en
+  rojo hasta el proximo intento de guardado.
+  */
+  useEffect(() => {
+    if (!submitted) return;
+
+    const err = {};
+    if (!finca) err.finca = "La finca es obligatoria";
+    if (!estanque) err.estanque = "El estanque es obligatorio";
+    if (!fecha) err.fecha = "La fecha es obligatoria";
+
+    const { errores: erroresDatos } = datosConteo.validar();
+
+    setErrores({ ...err, ...erroresDatos });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    submitted,
+    finca,
+    estanque,
+    fecha,
+    datosConteo.tiros,
+    datosConteo.areaAtarraya,
+    datosConteo.siembraPorM2,
+    datosConteo.areaEstanque,
+  ]);
 
   const handleGuardar = useCallback(async () => {
     setSubmitted(true);
@@ -164,7 +200,7 @@ export default function useEditarDensidad(registroId, onGuardado) {
       setAlerta({
         visible: true,
         variant: "danger",
-        mensaje: e.response?.data?.message || e.message || "No se pudo actualizar el registro.",
+        mensaje: e?.message || "No se pudo actualizar el registro.",
       });
     }
   }, [finca, estanque, fecha, datosConteo, registroId, onGuardado]);
