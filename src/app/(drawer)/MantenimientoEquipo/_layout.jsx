@@ -1,7 +1,10 @@
-import { Stack } from "expo-router";
+import { Stack, useRouter } from "expo-router";
+import { HeaderBackButton } from "expo-router/react-navigation.js";
 import { COLORS } from "../../../theme/colors.js";
 
 export default function MantEquipoStackLayout() {
+  const router = useRouter();
+
   return (
     <Stack
       screenOptions={{
@@ -9,6 +12,13 @@ export default function MantEquipoStackLayout() {
         headerStyle: { backgroundColor: COLORS.primary },
         headerTintColor: COLORS.white,
         headerTitleStyle: { fontWeight: "700", fontSize: 18 },
+        headerBackVisible: false,
+        headerLeft: (props) => (
+          <HeaderBackButton
+            {...props}
+            onPress={() => router.dismissAll()}
+          />
+        ),
       }}
     >
       <Stack.Screen
