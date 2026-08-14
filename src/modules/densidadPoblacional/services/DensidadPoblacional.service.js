@@ -4,13 +4,29 @@ import api from "../../../api/api";
 
 function construirErrorHttp(error, mensajeGenerico) {
   const status = error?.response?.status;
-  const mensaje = error?.response?.data?.message || error?.response?.data?.error || error?.message;
+  const data = error?.response?.data;
 
   if (status === 500) {
+    // Un 500 no trae un mensaje seguro para mostrar (puede ser un
+    // detalle interno del servidor): siempre se usa el generico.
     return new Error(mensajeGenerico);
   }
-  
+
   if (status) {
+    // data.error puede venir como un arreglo de mensajes especificos
+    // por campo (ver validarCuerpo en el controller: junta uno por
+    // cada validacion que fallo y responde 422 con ese arreglo). Ese
+    // detalle vale mas que data.message, que es siempre el mismo
+    // texto generico ("Datos invalidos para el registro...") sin
+    // importar cual campo fallo. Por eso se revisa primero.
+    let mensaje;
+
+    if (Array.isArray(data?.error) && data.error.length > 0) {
+      mensaje = data.error.join(" ");
+    } else {
+      mensaje = data?.message || (typeof data?.error === "string" ? data.error : null) || error?.message;
+    }
+
     const err = new Error(mensaje || mensajeGenerico);
     err.status = status;
     return err;

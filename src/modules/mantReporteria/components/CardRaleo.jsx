@@ -103,6 +103,11 @@ export default function CardRaleo({ fincaId, estanqueId, onEditar, onAlertChange
                         </View>
 
                         <View style={styles.infoItem}>
+                            <Text style={styles.label}>Porcentaje raleado</Text>
+                            <Text style={styles.value}>{registro.porcentaje} %</Text>
+                        </View>
+
+                        <View style={styles.infoItem}>
                             <Text style={styles.label}>Observaciones</Text>
                             <Text style={styles.value}>{registro.observaciones}</Text>
                         </View>

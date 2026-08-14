@@ -54,7 +54,7 @@
 import { useEffect, useState } from "react";
 import useRaleo from "./useRaleo";
 import raleoService from "../services/Raleo.service";
-import siembraRaleoService from "../services/siembraRaleo.services";
+import { useError } from "../../../shared/context/ErrorContext.js"
 
 function convertirFecha(fecha) {
   const [dia, mes, anio] = fecha.split("/");
@@ -98,6 +98,7 @@ export function calcularRaleo(biomasaAntes, kgRetirados) {
 
 export default function useRaleoScreen() {
   const { form, updateField, resetForm, validarForm } = useRaleo();
+  const { mostrarError } = useError();
   const [submitted, setSubmitted] = useState(false);
   const [errores, setErrores] = useState({});
   const [alerta, setAlerta] = useState({ visible: false, variant: "success", mensaje: "" });
@@ -135,15 +136,10 @@ export default function useRaleoScreen() {
     }
 
     try {
-      const siembra = await siembraRaleoService.getSiembraActivaPorEstanque(
-        form.estanque
-      );
-      console.log("SIEMBRA RECIBIDA FRONT:", siembra);
       //Se modifican los nombres para que queden como en backend
       const registro = {
         idFinca: form.finca,
         idEstanque: form.estanque,
-        idSiembra: siembra.id,
         fecha: convertirFecha(form.fecha),
         biomasaEstimada: Number(form.biomasaAntes),
         kgRetirados: Number(form.kgRetirados),
@@ -156,7 +152,7 @@ export default function useRaleoScreen() {
       await raleoService.create(registro);
       setAlerta({ visible: true, variant: "success", mensaje: "Raleo registrado correctamente" });
     } catch (error) {
-      setAlerta({ visible: true, variant: "danger", mensaje: error.message });
+      mostrarError(error);
     }
   };
 

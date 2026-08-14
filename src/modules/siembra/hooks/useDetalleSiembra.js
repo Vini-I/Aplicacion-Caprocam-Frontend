@@ -34,7 +34,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useState, useRef } from "react";
-import { useRouter, useLocalSearchParams, useNavigation } from "expo-router";
+import { useNavigation } from "expo-router";
 
 import {
   useFieldValidation,
@@ -205,10 +205,19 @@ function calcularEtapa(progreso) {
   return 1;
 }
 
-export default function useDetalleSiembra(id) {
-  const router = useRouter();
+export default function useDetalleSiembra({
+  id,
+  tipoRegistroParam,
+  finalizar,
+  onGoBack,
+  onSuccess,
+  onCrearSiembra,
+  onSuccessFinalizarSiembra,
+  onSuccessFinalizarPrecria,
+}) {
   const navigation = useNavigation();
-  const { tipoRegistro: tipoRegistroParam } = useLocalSearchParams();
+  const scrollRef = useRef(null);
+  const esFinalizar = finalizar === "1";
 
   const [siembra, setSiembra] = useState(null);
   const [formData, setFormData] = useState(null);
@@ -218,6 +227,7 @@ export default function useDetalleSiembra(id) {
   const [mensaje, setMensaje] = useState("");
   const [mensajeVariant, setMensajeVariant] = useState("info");
   const { mostrarError } = useError();
+  const [confirmarFinalizar, setConfirmarFinalizar] = useState(false);
 
   const mensajeTimeoutRef = useRef(null);
 
@@ -239,6 +249,12 @@ export default function useDetalleSiembra(id) {
       if (mensajeTimeoutRef.current) clearTimeout(mensajeTimeoutRef.current);
     };
   }, []);
+
+  useEffect(() => {
+    if (mensaje !== "" && mensajeVariant === "danger") {
+      scrollRef.current?.scrollToEnd({ animated: true });
+    }
+  }, [mensaje, mensajeVariant]);
 
   const {
     submitted,
@@ -568,8 +584,8 @@ export default function useDetalleSiembra(id) {
   );
 
   const cancelarEdicion = useCallback(() => {
-    router.back();
-  }, [router]);
+    if (onGoBack) onGoBack();
+  }, [onGoBack]);
 
   const huboCambios = useCallback(() => {
     if (!siembra || !formData) return false;
@@ -665,8 +681,11 @@ export default function useDetalleSiembra(id) {
       setSiembra(conHerencia);
       setFormData(conHerencia);
       setSubmitted(false);
-      mostrarMensaje("Registro actualizado correctamente.", "success");
-      router.back();
+      const m =
+        formData.tipoRegistro === "precria"
+          ? "Pre-Cría actualizada correctamente."
+          : "Siembra actualizada correctamente.";
+      if (onSuccess) onSuccess(m);
     } catch (err) {
       const mensajeBackend = err.response?.data?.message;
       mostrarMensaje(
@@ -769,28 +788,19 @@ export default function useDetalleSiembra(id) {
     const registroFinalizado = await finalizarPreCria();
     if (!registroFinalizado) return;
 
-    router.replace({
-      pathname: "/(drawer)/siembra/nueva",
-      params: construirParamsSiembraDesdePrecria(),
-    });
-  }, [finalizarPreCria, construirParamsSiembraDesdePrecria, router]);
+    if (onSuccessFinalizarPrecria) onSuccessFinalizarPrecria(id);
+  }, [finalizarPreCria, onSuccessFinalizarPrecria, id]);
 
   const handleCrearSiembraDesdePrecria = useCallback(() => {
-    router.push({
-      pathname: "/(drawer)/siembra/nueva",
-      params: construirParamsSiembraDesdePrecria(),
-    });
-  }, [construirParamsSiembraDesdePrecria, router]);
+    if (onCrearSiembra) onCrearSiembra(id);
+  }, [onCrearSiembra, id]);
 
   const handleFinalizarSiembra = useCallback(async () => {
     setGuardando(true);
     try {
-      const registro = await finalizarSiembra(id);
-      const estadoMostrado =
-        registro.estado === "Finalizada" ? "Finalizada" : "Activa";
-      setSiembra((prev) => ({ ...prev, estado: estadoMostrado }));
-      setFormData((prev) => ({ ...prev, estado: estadoMostrado }));
-      mostrarMensaje("Siembra finalizada correctamente.", "success");
+      await finalizarSiembra(id);
+      if (onSuccessFinalizarSiembra)
+        onSuccessFinalizarSiembra("Siembra finalizada correctamente.");
     } catch (err) {
       const mensajeBackend = err.response?.data?.message;
       mostrarMensaje(
@@ -801,6 +811,20 @@ export default function useDetalleSiembra(id) {
       setGuardando(false);
     }
   }, [id]);
+
+  const fincaLabel =
+    fincas.find((f) => f.value === formData?.finca)?.label || "Sin finca";
+  const estanqueLabel =
+    estanques.find((e) => e.value === formData?.estanque)?.label ||
+    "Sin estanque";
+
+  const handlePresionarGuardar = () => {
+    if (esFinalizar) {
+      setConfirmarFinalizar(true);
+    } else {
+      guardar();
+    }
+  };
 
   return {
     siembra,
@@ -820,10 +844,17 @@ export default function useDetalleSiembra(id) {
     totalDias,
     etapa,
     progreso,
+    scrollRef,
+    esFinalizar,
+    fincaLabel,
+    estanqueLabel,
+    handlePresionarGuardar,
     handleChange,
     handleChangeFinca,
     handleChangeEstanque,
     cancelarEdicion,
+    confirmarFinalizar,
+    setConfirmarFinalizar,
     guardar,
     handleFinalizarPreCria,
     handleFinalizarSiembra,

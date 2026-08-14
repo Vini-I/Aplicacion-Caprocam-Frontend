@@ -92,14 +92,18 @@ function hoy() {
 function extraerMensaje(error) {
   /*
   Descripcion:
-  Extrae un mensaje legible de un error de axios (o de cualquier
-  error). Se agrego porque handleGuardar ya llamaba a esta funcion
-  en su catch, pero no existia en el archivo: si el backend
-  respondia con error (422/409/500...), la app lanzaba un
-  ReferenceError en vez de mostrar el Alert de error.
+  Extrae un mensaje legible de un error lanzado por
+  DensidadPoblacional.service.js. El service ya resuelve el mensaje
+  mas especifico disponible (incluyendo el arreglo de errores por
+  campo que manda el backend en un 422) dentro de
+  construirErrorHttp() y siempre lanza un Error plano con ese
+  mensaje ya listo en error.message: aqui no hay que volver a
+  buscarlo en error.response, porque ese objeto ya no existe en
+  este punto.
 
   Parametros:
-  - error: Error capturado (tipicamente de una llamada axios).
+  - error: Error capturado (tipicamente de
+    densidadPoblacionalService.create()).
 
   Retorna:
   - String con el mensaje mas especifico disponible.
@@ -108,16 +112,7 @@ function extraerMensaje(error) {
     return error;
   }
 
-  const detalles = error?.response?.data?.error;
-  if (Array.isArray(detalles) && detalles.length > 0) {
-    return detalles.join(" ");
-  }
-
-  return (
-    error?.response?.data?.message ||
-    error?.message ||
-    "Ocurrió un error inesperado."
-  );
+  return error?.message || "Ocurrió un error inesperado.";
 }
 
 export default function useDensidadPoblacional() {
@@ -158,6 +153,34 @@ export default function useDensidadPoblacional() {
     if (!fecha) erroresPrincipales.fecha = "La fecha es obligatoria";
     return erroresPrincipales;
   };
+
+  /*
+  Revalida en vivo mientras el usuario escribe, pero solo despues de
+  que ya intento guardar una vez (submitted=true): antes de ese
+  primer intento no tiene sentido mostrar errores. Sin este efecto,
+  `errores` quedaba congelado con el resultado del ultimo click en
+  Guardar: un campo que el usuario ya corrigio se seguia viendo en
+  rojo hasta el proximo intento de guardado, porque nada volvia a
+  correr la validacion mientras tanto.
+  */
+  useEffect(() => {
+    if (!submitted) return;
+
+    const erroresPrincipales = validarPrincipal();
+    const { errores: erroresDatos } = datosConteo.validar();
+
+    setErrores({ ...erroresPrincipales, ...erroresDatos });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    submitted,
+    finca,
+    estanque,
+    fecha,
+    datosConteo.tiros,
+    datosConteo.areaAtarraya,
+    datosConteo.siembraPorM2,
+    datosConteo.areaEstanque,
+  ]);
 
   const handleGuardar = async () => {
     setSubmitted(true);

@@ -35,6 +35,8 @@
  * LÓGICA:
  * - La gestión del estado y la carga de datos se realiza mediante:
  *  -useDetalleSiembra.
+ * - fincaLabel/estanqueLabel se consumen ya resueltos desde el hook
+ *   (no se recalculan en este componente).
  *
  * COMPONENTES UTILIZADOS:
  *
@@ -50,6 +52,8 @@
  * - /siembra/editar
  *      Se navega hacia aquí al presionar "Editar Siembra/Pre-Cría" o
  *      "Finalizar Pre-Cría" (este último agrega el param "finalizar").
+ *      Se usa useRouter directamente en el screen (se deja así por
+ *      ahora, es un tema aparte del reparto lógica/UI).
  *
  * - /siembra/nueva
  *      Se navega hacia aquí al presionar "Registrar Siembra", cuando
@@ -75,9 +79,8 @@
  * =========================================================================
  */
 
-import React, { useState } from "react";
+import React from "react";
 
-import { useLocalSearchParams, useRouter } from "expo-router";
 import { View, ScrollView } from "react-native";
 
 // Componentes compartidos
@@ -110,11 +113,14 @@ import { STYLE } from "../../../theme/style";
 // Hook principal
 import useDetalleSiembra from "../hooks/useDetalleSiembra";
 
-export default function DetalleSiembraScreen() {
-  const { id } = useLocalSearchParams();
-  const router = useRouter();
-  const [confirmarFinalizar, setConfirmarFinalizar] = useState(false);
-
+export default function DetalleSiembraScreen({
+  id,
+  tipoRegistroParam,
+  finalizar,
+  onEdit,
+  onCrearSiembra,
+  onSuccessFinalizarSiembra,
+}) {
   const {
     siembra,
     formData,
@@ -136,7 +142,17 @@ export default function DetalleSiembraScreen() {
     handleFinalizarSiembra,
     handleCrearSiembraDesdePrecria,
     fieldHelpers,
-  } = useDetalleSiembra(id);
+    confirmarFinalizar,
+    setConfirmarFinalizar,
+    fincaLabel,
+    estanqueLabel,
+  } = useDetalleSiembra({
+    id,
+    tipoRegistroParam,
+    finalizar,
+    onCrearSiembra,
+    onSuccessFinalizarSiembra,
+  });
 
   if (!siembra || !formData) {
     return (
@@ -147,12 +163,6 @@ export default function DetalleSiembraScreen() {
       />
     );
   }
-
-  const fincaLabel =
-    fincas.find((f) => f.value === formData.finca)?.label || "Sin finca";
-  const estanqueLabel =
-    estanques.find((e) => e.value === formData.estanque)?.label ||
-    "Sin estanque";
 
   return (
     <>
@@ -309,12 +319,7 @@ export default function DetalleSiembraScreen() {
             {formData.estado !== "Finalizada" && (
               <Button
                 style={styles.button}
-                onPress={() =>
-                  router.push({
-                    pathname: "/siembra/editar",
-                    params: { id, tipoRegistro: formData.tipoRegistro },
-                  })
-                }
+                onPress={() => onEdit(id, formData.tipoRegistro)}
                 textStyle={styles.textoBoton}
                 variant="outline"
               >
@@ -333,16 +338,7 @@ export default function DetalleSiembraScreen() {
               formData.estado !== "Finalizada" && (
                 <Button
                   style={styles.button}
-                  onPress={() =>
-                    router.push({
-                      pathname: "/siembra/editar",
-                      params: {
-                        id,
-                        tipoRegistro: formData.tipoRegistro,
-                        finalizar: "1",
-                      },
-                    })
-                  }
+                  onPress={() => onEdit(id, formData.tipoRegistro, "1")}
                   disabled={guardando}
                   textStyle={styles.textoBoton}
                   variant="outline"

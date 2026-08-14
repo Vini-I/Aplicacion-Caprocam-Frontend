@@ -113,28 +113,6 @@ export default function CompradorScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Alerta de éxito al llegar desde "guardar comprador" */}
-      {guardadoExitoso && (
-        <View style={STYLE.contentWrapper}>
-          <Alert
-            variant="success"
-            message="Comprador guardado correctamente."
-            style={styles.alertExito}
-          />
-        </View>
-      )}
-
-      {/* Alerta de éxito al llegar desde "eliminar comprador" */}
-      {eliminadoExitoso && (
-        <View style={STYLE.contentWrapper}>
-          <Alert
-            variant="success"
-            message="Comprador eliminado correctamente."
-            style={styles.alertExito}
-          />
-        </View>
-      )}
-
       {/* Barra de búsqueda por texto y filtro por tipo de producto */}
       <View style={[styles.barraBusqueda, STYLE.contentWrapper]}>
         <SearchBar
@@ -146,8 +124,9 @@ export default function CompradorScreen() {
        
       </View>
 
-      {/* Alerta de éxito al llegar desde "guardar comprador" */}
-      {guardadoExitoso && (
+      {/* Alerta de éxito: solo una a la vez. Si llegan ambos parámetros
+          (guardado y eliminado) a la vez, se prioriza "guardado". */}
+      {guardadoExitoso ? (
         <View style={STYLE.contentWrapper}>
           <Alert
             variant="success"
@@ -155,10 +134,7 @@ export default function CompradorScreen() {
             style={styles.alertExito}
           />
         </View>
-      )}
-
-      {/* Alerta de éxito al llegar desde "eliminar comprador" */}
-      {eliminadoExitoso && (
+      ) : eliminadoExitoso ? (
         <View style={STYLE.contentWrapper}>
           <Alert
             variant="success"
@@ -166,7 +142,7 @@ export default function CompradorScreen() {
             style={styles.alertExito}
           />
         </View>
-      )}
+      ) : null}
 
       {/* Alerta de error al cargar, con botón para reintentar */}
       {!!error && (

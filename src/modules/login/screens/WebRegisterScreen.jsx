@@ -3,8 +3,10 @@
  * PANTALLA: WebRegisterScreen
  * ============================================================
  *
- * Responsabilidad: Pantalla de registro de usuarios administradores
- * para la plataforma web de Caprocam.
+ * Responsabilidad: Pantalla de registro de usuarios administradores.
+ * Vive dentro del drawer (Configuración) y solo es accesible para
+ * usuarios ya autenticados con permisos de administrador — un admin
+ * crea la cuenta de otro admin, no es un flujo público.
  *
  * FUNCIONALIDAD:
  * 1. Formulario de registro con Nombre, Apellidos, Correo, Usuario y Contraseña.
@@ -12,15 +14,16 @@
  * 3. Spinner de carga durante el proceso de registro.
  * 4. Modal de confirmación tras un registro exitoso.
  *
- * @dependencies - Card, CustomText, Spinner, Button, Modal, Header, Separator, FormField, Alert, Icon
+ * @dependencies - Card, CustomText, Spinner, Button, Modal, Header, FormField, Alert, Icon
  *               - Hook useRegister para gestión de envio y validación
  *               - styles/webRegisterStyles, theme/style, theme/colors, theme/icons
  * @validations  - Todos los campos obligatorios (*)
  *               - Formato de correo válido
  *               - Contraseña con criterios de robustez
  *               - Errores visuales solo tras intento de envío
- * @navigation   - onRegisterSuccess → pantalla de login
- *               - onBackToLogin → pantalla de login directamente
+ * @navigation   - onRegisterSuccess → se dispara al cerrar el modal de
+ *                 éxito y vuelve al inicio del drawer (no hay ruta de
+ *                 "volver al login": el usuario ya estaba autenticado).
  */
 
 import { View, ScrollView } from 'react-native';
@@ -31,7 +34,6 @@ import Spinner from '../../../shared/components/Spinner';
 import Button from '../../../shared/components/Button';
 import Modal from '../../../shared/components/Modal';
 import Header from '../../../shared/components/Header';
-import Separator from '../../../shared/components/Separator';
 import Input from '../../../shared/components/Input';
 import Alert from '../../../shared/components/Alert';
 import Icon from '../../../shared/components/Icons';
@@ -45,7 +47,6 @@ import styles from '../styles/webRegisterStyles';
 
 export default function WebRegisterScreen({
   onRegisterSuccess = () => { },
-  onBackToLogin = () => { },
 }) {
   const {
     nombre, setNombre, apellidos, setApellidos,
@@ -138,12 +139,6 @@ export default function WebRegisterScreen({
 
             <Button disabled={loading} onPress={handleRegister}>
               {MSG.BUTTON_SUBMIT_REGISTER}
-            </Button>
-
-            <Separator text={MSG.SEPARATOR_TEXT_REGISTER} />
-
-            <Button variant="outline" disabled={loading} onPress={onBackToLogin}>
-              {MSG.BUTTON_BACK_TO_LOGIN}
             </Button>
 
           </Card>
