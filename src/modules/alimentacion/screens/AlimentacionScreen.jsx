@@ -56,6 +56,7 @@ export default function AlimentacionScreen({ navigation, onBack }) {
         Titulo="Alimentación"
         Subtitulo="Registro de alimentación"
         Icono="food"
+        RutaVolver="/registros"
       />
 
       <View style={STYLE.container}>

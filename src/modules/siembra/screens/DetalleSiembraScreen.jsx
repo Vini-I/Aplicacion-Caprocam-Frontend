@@ -160,6 +160,7 @@ export default function DetalleSiembraScreen({
         Titulo="Detalle de Siembra"
         Subtitulo="Cargando información..."
         Icono="shrimp"
+        RutaVolver="/siembra"
       />
     );
   }

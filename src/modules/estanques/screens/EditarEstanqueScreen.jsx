@@ -91,6 +91,7 @@ export default function EditarEstanqueScreen({ codigoCBO, id }) {
         Titulo="Editar Estanque"
         Subtitulo={`${codigo}`}
         Icono="water"
+        RutaVolver={`/finca/editarEstanque?codigoCBO=${codigoCBO}&id=${id}`}
       />
 
       <ScrollView style={STYLE.container} showsVerticalScrollIndicator={false}>
