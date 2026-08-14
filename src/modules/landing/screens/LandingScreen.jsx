@@ -48,7 +48,7 @@ export default function LandingScreen({ onLogin }) {
   const { esMovil, esTablet } = useLandingResponsive();
 
   const { indiceHero, opacity, cambiarSlide } =
-    useLandingCarousel(HERO_SLIDES.length);
+    useLandingCarousel(HERO_SLIDES);
 
   const { preguntaAbierta, alternarPregunta } =
     useLandingFaq();
@@ -96,10 +96,12 @@ export default function LandingScreen({ onLogin }) {
           />
           <LandingAbout
             esMovil={esMovil}
+            esTablet={esTablet}
             guardarPosicion={guardarPosicion}
           />
           <LandingServices
             esMovil={esMovil}
+            esTablet={esTablet}
             guardarPosicion={guardarPosicion}
             preguntaAbierta={preguntaAbierta}
             alternarPregunta={alternarPregunta}
@@ -112,6 +114,7 @@ export default function LandingScreen({ onLogin }) {
           />
           <LandingFooter
             esMovil={esMovil}
+            esTablet={esTablet}
             guardarPosicion={guardarPosicion}
           />
         </ScrollView>
