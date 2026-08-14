@@ -8,32 +8,48 @@ import Text from "./Text";
 import Title from "./Title";
 import Button from "./Button";
 
-
-export default function NavbarRegistros({ Titulo, Subtitulo, Icono }) {
-
+export default function NavbarRegistros({ Titulo, Subtitulo, Icono, RutaVolver }) {
+  
   const router = useRouter();
+
+  const handleVolver = () => {
+    if (RutaVolver) {
+      router.replace(RutaVolver);
+      return;
+    }
+
+    router.back();
+  };
 
   return (
     <View style={styles.header}>
-      <Button variant="outline" onPress={() => router.back()} style={styles.backBtn}>
+      <Button variant="outline" onPress={handleVolver} style={styles.backBtn} >
         <View style={styles.backBtnContent}>
           <Icon icon={ICONS.exit} size={18} color={COLORS.white} />
-          <Text size={16} color={COLORS.white} style={styles.backBtnText}>Volver</Text>
+
+          <Text size={16} color={COLORS.white} style={styles.backBtnText}>
+            Volver
+          </Text>
         </View>
       </Button>
 
       <View style={styles.headerTitle}>
         <View style={styles.headerIcon}>
-          <Icon icon={ICONS[Icono]} size={28} color={COLORS.primary} />
+          <Icon icon={ICONS[Icono]} size={28} color={COLORS.primary}  />
         </View>
 
         <View>
-          <Title level={3} color={COLORS.white}>{Titulo}</Title>
-          <Text size={14} color={COLORS.white}>{Subtitulo}</Text>
+          <Title level={3} color={COLORS.white}>
+            {Titulo}
+          </Title>
+
+          <Text size={14} color={COLORS.white}>
+            {Subtitulo}
+          </Text>
         </View>
       </View>
     </View>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
@@ -71,7 +87,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 14,
   },
-  
+
   headerIcon: {
     width: 54,
     height: 54,
@@ -80,5 +96,4 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-})
-
+});

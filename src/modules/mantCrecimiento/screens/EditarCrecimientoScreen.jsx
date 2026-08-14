@@ -72,6 +72,7 @@ export default function EditarCrecimientoScreen({ registroId }) {
           Titulo="Crecimiento"
           Subtitulo="Editar registro"
           Icono="growth"
+          RutaVolver="/registros/Reporteria"
         />
         <View style={STYLE.container}>
           <Text>Cargando...</Text>

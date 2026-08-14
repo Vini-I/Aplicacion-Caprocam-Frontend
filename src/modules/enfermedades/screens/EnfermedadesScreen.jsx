@@ -45,6 +45,7 @@ export default function EnfermedadesScreen() {
         Titulo="Enfermedades"
         Subtitulo="Registro de enfermedades"
         Icono="shieldAlert"
+        RutaVolver="/registros"
       />
 
       <ScrollView

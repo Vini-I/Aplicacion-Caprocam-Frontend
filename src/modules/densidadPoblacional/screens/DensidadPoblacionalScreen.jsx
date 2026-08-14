@@ -130,6 +130,7 @@ export default function DensidadPoblacionalScreen({ onBack }) {
         Titulo="Densidad Poblacional"
         Subtitulo="Registro de conteo"
         Icono="chart"
+        RutaVolver="/registros"
       />
 
       <View style={STYLE.container}>
