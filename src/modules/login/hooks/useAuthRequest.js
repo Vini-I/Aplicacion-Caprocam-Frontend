@@ -9,7 +9,7 @@
  */
 
 import { useState } from 'react';
-import { saveToken, saveUsuario } from '../utils/tokenStorage';
+import { saveToken, saveUsuario, saveRefreshToken } from '../utils/tokenStorage';
 
 /**
  * useAuthRequest({ onSuccess })
@@ -41,8 +41,9 @@ export const useAuthRequest = ({ onSuccess = () => { } } = {}) => {
     setLoading(true);
 
     try {
-      const { token, user } = await requestFn();
+      const { token, refreshToken, user } = await requestFn();
       if (token) saveToken(token);
+      if (refreshToken) saveRefreshToken(refreshToken);
       if (user) saveUsuario(user);
       onSuccess();
     } catch (error) {
