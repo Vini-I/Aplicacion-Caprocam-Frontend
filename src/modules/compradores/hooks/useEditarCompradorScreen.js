@@ -38,12 +38,12 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { compradorService, mapComprador } from "../services/comprador.service";
 import { useError } from "../../../shared/context/ErrorContext";
 
-// Regex para validar teléfonos con o sin código de país +506
-const TELEFONO_REGEX = /^\d{8}$/;
-export const TELEFONO_MAX_LENGTH = 8;
+// Acepta entre 7 y 12 dígitos (rango, no un largo fijo)
+const TELEFONO_REGEX = /^\d{7,12}$/;
+export const TELEFONO_MAX_LENGTH = 12;
 
-// Regex básico para validar formato de correo electrónico
-const CORREO_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// Exige que termine EXACTAMENTE en ".com" -- nada después
+const CORREO_REGEX = /^[^\s@]+@[^\s@]+\.com$/i;
 
 // Retorna mensaje de error si el teléfono está vacío o tiene formato inválido
 function validarTelefono(valor) {
@@ -132,7 +132,7 @@ export function useEditarCompradorScreen() {
     } finally {
       setCargando(false);
     }
-  }, [id, mostrarError]);
+  }, [id]);
 
   useEffect(() => {
     if (id) cargarComprador();
