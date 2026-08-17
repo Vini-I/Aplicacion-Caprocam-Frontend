@@ -242,7 +242,7 @@ export default function FincaDetalleScreen({
       <View style={styles.addButtonContainer}>
         <Button
           style={[STYLE.contentWrapper, styles.addButton]}
-          onPress={() => onEstanque(finca.codigoCBO)}
+          onPress={() => onEstanque(finca.codigoCBO, finca.id)}
         >
           <Icon style={styles.addButtonText} icon={ICONS.add} size={15} />
           <Text style={styles.addButtonText} size={15}>

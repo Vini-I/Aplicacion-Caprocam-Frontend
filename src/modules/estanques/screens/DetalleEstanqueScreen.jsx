@@ -84,7 +84,7 @@ export default function DetalleEstanqueScreen() {
         Titulo="Detalle de Estanque"
         Subtitulo={`${estanque.codigo}`}
         Icono="document"
-        RutaVolver="/finca"
+        RutaVolver={`/finca/detalle?id=${estanque.idFinca}`}
       />
 
       <ScrollView style={STYLE.container} showsVerticalScrollIndicator={false}>
