@@ -69,6 +69,7 @@ export default function FincaDetalleScreen({
         Titulo="Detalle de Finca"
         Subtitulo={finca.nombreFinca}
         Icono="document"
+        RutaVolver="/finca"
       />
       <ScrollView showsVerticalScrollIndicator={false} style={STYLE.container}>
         <View style={[STYLE.contentWrapper, styles.content]}>

@@ -53,6 +53,7 @@ export default function EditarEnfermedadScreen({ registroId }) {
           Titulo="Enfermedades"
           Subtitulo="Editar registro de enfermedad"
           Icono="shieldAlert"
+          RutaVolver="/registros/Reporteria"
         />
 
         <CustomText style={{ textAlign: "center", marginTop: 24 }}>

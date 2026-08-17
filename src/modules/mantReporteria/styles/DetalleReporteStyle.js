@@ -313,4 +313,20 @@ export const styles = StyleSheet.create({
         borderRadius: 10,
         marginBottom: 10,
     },
+
+    muestreoNumero: {
+        width: "25%",
+        fontSize: 12,
+        fontFamily: TYPOGRAPHY.fontFamily.medium,
+        color: COLORS.textSecondary,
+        textAlign: "center",
+    },
+
+    muestreoCantidad: {
+        width: "75%",
+        fontSize: 12,
+        fontFamily: TYPOGRAPHY.fontFamily.medium,
+        color: COLORS.textSecondary,
+        textAlign: "center",
+    },
 });

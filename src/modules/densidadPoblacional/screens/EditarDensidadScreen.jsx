@@ -139,6 +139,7 @@ export default function EditarDensidadScreen({ registroId }) {
           Titulo="Densidad Poblacional"
           Subtitulo="Editar registro"
           Icono="chart"
+          RutaVolver="/registros/Reporteria"
         />
         <Text style={{ textAlign: "center", marginTop: 24 }}>
           No se encontró el registro a editar.

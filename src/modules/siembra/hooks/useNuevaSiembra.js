@@ -33,7 +33,7 @@
  */
 
 import { useState, useEffect, useMemo, useRef } from "react";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 
 import {
   useFieldValidation,
@@ -54,6 +54,7 @@ import {
   createPrecriaConLote,
 } from "../services/precria.service";
 import {
+  getSiembras,
   createSiembra,
   createSiembraConLote,
 } from "../services/siembra.service";
@@ -124,8 +125,7 @@ const initialFormData = {
   cantidadSobrevivientePrecria: "",
 };
 
-export default function useNuevaSiembra() {
-  const router = useRouter();
+export default function useNuevaSiembra(onSuccess) {
 
   const [mensaje, setMensaje] = useState("");
   const [mensajeVariant, setMensajeVariant] = useState("info");
@@ -134,6 +134,8 @@ export default function useNuevaSiembra() {
   const { mostrarError } = useError();
 
   const mensajeTimeoutRef = useRef(null);
+
+  const scrollRef = useRef(null);
 
   function mostrarMensaje(texto, variant) {
     if (mensajeTimeoutRef.current) {
@@ -153,6 +155,12 @@ export default function useNuevaSiembra() {
       if (mensajeTimeoutRef.current) clearTimeout(mensajeTimeoutRef.current);
     };
   }, []);
+
+  useEffect(() => {
+  if (mensaje !== "" && mensajeVariant === "danger") {
+    scrollRef.current?.scrollToEnd({ animated: true });
+  }
+}, [mensaje, mensajeVariant]);
 
   const [formData, setFormData] = useState(initialFormData);
   const params = useLocalSearchParams();
@@ -262,14 +270,24 @@ export default function useNuevaSiembra() {
   const [preCriasDisponibles, setPreCriasDisponibles] = useState([]);
 
   useEffect(() => {
-    async function cargarPrecriasDisponibles() {
-      try {
-        const precrias = await getPrecrias();
-        setPreCriasDisponibles(
-          precrias
-            .filter((p) => p.estado === "Finalizada")
-            .map((p) => ({ label: `Pre-Cría #${p.id}`, value: String(p.id) })),
-        );
+  async function cargarPrecriasDisponibles() {
+    try {
+      const [precrias, siembras] = await Promise.all([
+        getPrecrias(),
+        getSiembras()
+      ]);
+      
+      const precriasUsadasIds = new Set(
+        siembras
+          .filter((s) => s.precria_id)
+          .map((s) => String(s.precria_id))
+      );
+
+      setPreCriasDisponibles(
+        precrias
+          .filter((p) => p.estado === "Finalizada" && !precriasUsadasIds.has(String(p.id)))
+          .map((p) => ({ label: `Pre-Cría #${p.id}`, value: String(p.id) })),
+      );
       } catch (err) {
         // No bloquea el formulario si esto falla - la siembra directa
         // sigue funcionando igual.
@@ -563,15 +581,8 @@ export default function useNuevaSiembra() {
       }
 
       setSubmitted(false);
-      router.push({
-        pathname: "/siembra",
-        params: {
-          mensajeExito:
-            formData.tipoRegistro === "precria"
-              ? "Pre-Cría registrada correctamente."
-              : "Siembra registrada correctamente.",
-        },
-      });
+      const m = formData.tipoRegistro === "precria" ? "Pre-Cría registrada correctamente." : "Siembra registrada correctamente.";
+      if (onSuccess) onSuccess(m);
     } catch (err) {
       const mensajeBackend = err.response?.data?.message;
       mostrarMensaje(
@@ -601,6 +612,7 @@ export default function useNuevaSiembra() {
     mensajeVariant,
     cargandoCatalogos,
     guardando,
+    scrollRef,
     handleChange,
     handleChangeFinca,
     handleChangeEstanque,

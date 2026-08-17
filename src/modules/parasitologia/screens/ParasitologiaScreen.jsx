@@ -45,6 +45,7 @@ export default function ParasitologiaScreen() {
         Titulo="Parasitologia"
         Subtitulo="Registro por grados de infeccion"
         Icono="parasite"
+        RutaVolver="/registros"
       />
 
       <ScrollView

@@ -36,7 +36,7 @@ import { CONTACTO } from "../data/landing.data";
 // ==============
 // Funcion de carrusel: controla el cambio automatico y la animacion de las imagenes principales.
 // ==============
-export function useLandingCarousel(totalSlides) {
+export function useLandingCarousel(slides) {
   const opacity = useRef(new Animated.Value(1)).current;
 
   const [indiceHero, setIndiceHero] = useState(0);
@@ -65,13 +65,15 @@ export function useLandingCarousel(totalSlides) {
   );
 
   useEffect(() => {
+    const totalSlides = slides.length;
+
     const timer = setTimeout(
       () => cambiarSlide((indiceHero + 1) % totalSlides),
       5000,
     );
 
     return () => clearTimeout(timer);
-  }, [cambiarSlide, indiceHero, totalSlides]);
+  }, [cambiarSlide, indiceHero, slides]);
 
   return {
     indiceHero,
@@ -187,8 +189,8 @@ export function useLandingResponsive() {
   const { width } = useWindowDimensions();
 
   return {
-    esMovil: width < 760,
-    esTablet: width >= 760 && width < 1100,
+    esMovil: width < 900,
+    esTablet: width >= 900 && width < 1100,
   };
 }
 
