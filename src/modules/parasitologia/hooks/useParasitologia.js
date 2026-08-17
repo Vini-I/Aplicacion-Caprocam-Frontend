@@ -10,16 +10,23 @@
 import { useEffect, useState } from "react";
 
 import parasitologiaService from "../services/ParasitologiaService.js";
+import { useError } from "../../../shared/context/ErrorContext.js";
 
 export default function useParasitologia() {
+  const { mostrarError } = useError();
+
   const [catalogoParasitos, setCatalogoParasitos] = useState([]);
   const [loading, setLoading] = useState(false);
 
   async function cargarCatalogo() {
     try {
       setLoading(true);
+
       const catalogo = await parasitologiaService.getCatalogo();
-      setCatalogoParasitos(Array.isArray(catalogo) ? catalogo : []);
+
+      setCatalogoParasitos(
+        Array.isArray(catalogo) ? catalogo : [],
+      );
     } finally {
       setLoading(false);
     }
@@ -28,6 +35,7 @@ export default function useParasitologia() {
   async function guardarRegistro(registro) {
     try {
       setLoading(true);
+
       return await parasitologiaService.create(registro);
     } finally {
       setLoading(false);
@@ -36,7 +44,7 @@ export default function useParasitologia() {
 
   useEffect(() => {
     cargarCatalogo().catch((error) => {
-      console.error("[Parasitologia] Error al cargar catalogo:", error);
+      mostrarError(error);
     });
   }, []);
 

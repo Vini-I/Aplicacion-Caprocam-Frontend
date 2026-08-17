@@ -25,12 +25,14 @@ import {
   Linking,
   useWindowDimensions,
 } from "react-native";
+
 import {
   useCallback,
   useEffect,
   useRef,
   useState,
 } from "react";
+
 import { CONTACTO } from "../data/landing.data";
 
 // ==============
@@ -97,7 +99,10 @@ export function useLandingNavigation() {
   function irASeccion(nombre) {
     const posicion = posicionesRef.current[nombre];
 
-    if (typeof posicion === "number" && scrollRef.current) {
+    if (
+      typeof posicion === "number" &&
+      scrollRef.current
+    ) {
       scrollRef.current.scrollTo({
         y: posicion,
         animated: true,
@@ -152,10 +157,12 @@ export function useWhatsapp() {
       CONTACTO.mensajeWhatsapp,
     );
 
-    const enlace = `https://wa.me/${CONTACTO.numeroWhatsapp}?text=${mensaje}`;
+    const enlace =
+      `https://wa.me/${CONTACTO.numeroWhatsapp}?text=${mensaje}`;
 
     try {
-      const disponible = await Linking.canOpenURL(enlace);
+      const disponible =
+        await Linking.canOpenURL(enlace);
 
       if (disponible === false) {
         Alert.alert(
@@ -167,12 +174,10 @@ export function useWhatsapp() {
       }
 
       await Linking.openURL(enlace);
-    } catch (error) {
-      console.error("Error abriendo WhatsApp:", error);
-
+    } catch {
       Alert.alert(
         "WhatsApp",
-        "OcurriÃ³ un error al abrir WhatsApp.",
+        "Ocurrió un error al abrir WhatsApp.",
       );
     }
   }
@@ -198,10 +203,13 @@ export function useLandingResponsive() {
 // Función de menu movil: abre y cierra las opciones de navegacion en pantallas pequeñas.
 // ==============
 export function useLandingMobileMenu() {
-  const [menuAbierto, setMenuAbierto] = useState(false);
+  const [menuAbierto, setMenuAbierto] =
+    useState(false);
 
   function alternarMenu() {
-    setMenuAbierto((estaAbierto) => !estaAbierto);
+    setMenuAbierto(
+      (estaAbierto) => !estaAbierto,
+    );
   }
 
   function cerrarMenu() {
