@@ -113,25 +113,12 @@ export default function CompradorScreen() {
 
   return (
     <View style={styles.container}>
-<<<<<<< Updated upstream
-      {/* Alerta de éxito al llegar desde "guardar comprador" */}
-      {guardadoExitoso && (
-=======
       {/* Barra de búsqueda por texto y filtro por tipo de producto */}
-      <View style={[styles.barraBusqueda, STYLE.contentWrapper]}>
-        <SearchBar
-          value={busqueda}
-          onChangeText={setBusqueda}
-          placeholder="Buscar comprador, tipo, correo..."
-          containerStyle={styles.searchBarContainer}
-        />
-       
-      </View>
+     
 
       {/* Alerta de éxito: solo una a la vez. Si llegan ambos parámetros
           (guardado y eliminado) a la vez, se prioriza "guardado". */}
       {guardadoExitoso ? (
->>>>>>> Stashed changes
         <View style={STYLE.contentWrapper}>
           <Alert
             variant="success"
