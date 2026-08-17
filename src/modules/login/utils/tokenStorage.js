@@ -24,7 +24,7 @@ export const saveToken = (token) => {
   try {
     if (token) localStorage.setItem(TOKEN_KEY, token);
   } catch (error) {
-    console.error('[tokenStorage] Error al guardar el token:', error);
+    throw new Error('No se pudo guardar la sesión. Verifica el almacenamiento del navegador.');
   }
 };
 
@@ -39,8 +39,7 @@ export const saveToken = (token) => {
 export const getToken = () => {
   try {
     return localStorage.getItem(TOKEN_KEY);
-  } catch (error) {
-    console.error('[tokenStorage] Error al leer el token:', error);
+  } catch {
     return null;
   }
 };
@@ -49,7 +48,7 @@ export const saveUsuario = (user) => {
   try {
     if (user) localStorage.setItem(USUARIO_KEY, JSON.stringify(user));
   } catch (error) {
-    console.error('[tokenStorage] Error al guardar usuario:', error);
+    throw new Error('No se pudo guardar los datos del usuario en la sesión.');
   }
 };
 
@@ -57,7 +56,7 @@ export const getUsuario = () => {
   try {
     const data = localStorage.getItem(USUARIO_KEY);
     return data ? JSON.parse(data) : null;
-  } catch (error) {
+  } catch {
     return null;
   }
 };
@@ -73,7 +72,7 @@ export const saveRefreshToken = (refreshToken) => {
   try {
     if (refreshToken) localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
   } catch (error) {
-    console.error('[tokenStorage] Error al guardar el refresh token:', error);
+    throw new Error('No se pudo guardar el token de sesión extendida.');
   }
 };
 
@@ -86,8 +85,7 @@ export const saveRefreshToken = (refreshToken) => {
 export const getRefreshToken = () => {
   try {
     return localStorage.getItem(REFRESH_TOKEN_KEY);
-  } catch (error) {
-    console.error('[tokenStorage] Error al leer el refresh token:', error);
+  } catch {
     return null;
   }
 };
@@ -102,8 +100,9 @@ export const removeToken = () => {
   try {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USUARIO_KEY);
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
   } catch (error) {
-    console.error('[tokenStorage] Error al eliminar el token:', error);
+    throw new Error('No se pudo cerrar la sesión correctamente. Intenta de nuevo.');
   }
 };
 

@@ -10,15 +10,22 @@ import CustomText from "../../shared/components/Text";
 import { COLORS } from "../../theme/colors.js";
 import { removeToken } from "../../modules/login/utils/tokenStorage";
 import { logout as logoutService } from "../../modules/login/services/authService";
+import { useError } from "../../shared/context/ErrorContext";
 
 export default function DrawerLayout() {
   const router = useRouter();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const { mostrarError } = useError();
 
   const handleLogout = async () => {
-    await logoutService();  // invalida el refreshToken en el backend
-    removeToken();          // limpia accessToken, refreshToken y usuario del localStorage
-    router.replace('/loginWeb');
+    setShowLogoutModal(false);
+    try {
+      await logoutService();  // invalida el refreshToken en el backend
+      removeToken();          // limpia accessToken, refreshToken y usuario del localStorage
+      router.replace('/loginWeb');
+    } catch (error) {
+      mostrarError(error);    // muestra ModalError global si algo falla
+    }
   };
 
   return (
