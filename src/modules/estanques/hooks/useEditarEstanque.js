@@ -157,7 +157,7 @@ export default function useEditarEstanque(codigoCBO, id) {
       setMensaje("Cambios guardados correctamente");
 
       router.push({
-        pathname: `/finca/detalle?id=${estanque.idFinca}`,
+        pathname: `/finca/detalle?id=${estanqueOriginal.idFinca}`,
       });
     } catch (error) {
       setTipoMensaje("danger");
