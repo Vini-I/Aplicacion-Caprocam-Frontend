@@ -1,9 +1,10 @@
 import { Drawer } from "expo-router/drawer";
-import React from "react";
+import React, { useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import { ICONS } from "../../theme/icons";
 import Icon from "../../shared/components/Icons";
+import ModalSesion from "../../modules/login/components/modalSesion";
 import Button from "../../shared/components/Button";
 import CustomText from "../../shared/components/Text";
 import { COLORS } from "../../theme/colors.js";
@@ -12,6 +13,7 @@ import { logout as logoutService } from "../../modules/login/services/authServic
 
 export default function DrawerLayout() {
   const router = useRouter();
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const handleLogout = async () => {
     await logoutService();  // invalida el refreshToken en el backend
@@ -20,7 +22,14 @@ export default function DrawerLayout() {
   };
 
   return (
-    <Drawer
+    <>
+      <ModalSesion
+        visible={showLogoutModal}
+        onConfirm={handleLogout}
+        onCancel={() => setShowLogoutModal(false)}
+      />
+
+      <Drawer
     screenOptions={{
       headerShown: true,
       headerStyle: {
@@ -32,7 +41,7 @@ export default function DrawerLayout() {
         <View style={styles.logoutWrapper}>
           <Button
             variant="danger"
-            onPress={handleLogout}
+            onPress={() => setShowLogoutModal(true)}
             style={styles.logoutButton}
           >
             <View style={styles.logoutContent}>
@@ -204,11 +213,12 @@ export default function DrawerLayout() {
       <Drawer.Screen name="mantenimientoEquipo/tareas/tareaForm"   options={{ drawerItemStyle: { display: "none" } }} />
       <Drawer.Screen name="mantenimientoEquipo/tareas/detalleTarea"   options={{ drawerItemStyle: { display: "none" } }} />
 
-    </Drawer>
+      </Drawer>
+    </>
   );
 }
 
-//estilos de los botones (creo no debe de quedar aca pero no se donde ponerlo :p)
+//estilos de los botones 
 const styles = StyleSheet.create({
   logoutWrapper: {
     paddingRight: 12,
