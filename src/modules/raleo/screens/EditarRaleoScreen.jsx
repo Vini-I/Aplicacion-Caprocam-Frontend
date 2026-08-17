@@ -81,7 +81,7 @@ export default function EditarRaleoScreen({ registroId }) {
   if (!registroId) {
     return (
       <>
-        <NavbarRegistro Titulo="Raleo" Subtitulo="Editar registro" Icono="raleo" />
+        <NavbarRegistro Titulo="Raleo" Subtitulo="Editar registro" Icono="raleo" RutaVolver="/registros/Reporteria" />
         <View style={STYLE.container}>
           <Text style={{ textAlign: "center", marginTop: 24 }}>No se encontró el registro a editar.</Text>
         </View>

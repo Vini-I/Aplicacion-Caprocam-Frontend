@@ -317,8 +317,8 @@ export const styles = StyleSheet.create({
     muestreoNumero: {
         width: "25%",
         fontSize: 12,
-        fontFamily: TYPOGRAPHY.fontFamily.bold,
-        color: COLORS.Densidad,
+        fontFamily: TYPOGRAPHY.fontFamily.medium,
+        color: COLORS.textSecondary,
         textAlign: "center",
     },
 

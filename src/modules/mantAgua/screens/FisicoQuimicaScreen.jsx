@@ -66,6 +66,7 @@ export default function FisicoQuimicaScreen({ onBack }) {
         Titulo="Físico-Química"
         Subtitulo="Registro de mediciones"
         Icono="chemicalContainer"
+        RutaVolver="/registros"
       />
 
       <View style={STYLE.container}>

@@ -170,6 +170,7 @@ export default function EditarSiembraScreen({
         }
         Subtitulo={`${estanqueLabel} – ${fincaLabel}`}
         Icono="shrimp"
+        RutaVolver={`/siembra/detalle?id=${id}&tipoRegistro=${tipoRegistroParam}`}
       />
       <ScrollView
         ref={scrollRef}

@@ -27,7 +27,6 @@ import {
   hayMedicionesRegistradas,
   obtenerEstanquesPorFinca,
   obtenerOpcionesFincas,
-  sincronizarLecturasLocales,
   validarFormularioFisicoQuimica,
   validarSeleccionAntesDeAgregar,
 } from '../services/FisicoQuimicaServices';
@@ -128,11 +127,7 @@ export default function useFisicoQuimica() {
     ox: [],
   });
 
-  // Copias locales de las lecturas, usadas para saber si hay al menos una medición
-  const [lecturasPhLocal, setLecturasPhLocal] = useState([]);
-  const [lecturasSalinidadLocal, setLecturasSalinidadLocal] = useState([]);
-  const [lecturasTempLocal, setLecturasTempLocal] = useState([]);
-  const [lecturasOxLocal, setLecturasOxLocal] = useState([]);
+  // Selección de finca/estanque y mediciones precargadas del estanque
 
   // Validación y estado de edición
   const [submitted, setSubmitted] = useState(false);
@@ -172,18 +167,7 @@ export default function useFisicoQuimica() {
     };
   }, []);
 
-  // Sincroniza las lecturas locales cada vez que cambian las mediciones del estanque
-  useEffect(() => {
-    sincronizarLecturasLocales({
-      medicionesPorEstanque,
-      setters: {
-        ph: setLecturasPhLocal,
-        salinidad: setLecturasSalinidadLocal,
-        temperatura: setLecturasTempLocal,
-        ox: setLecturasOxLocal,
-      },
-    });
-  }, [medicionesPorEstanque]);
+
 
   // Carga las fincas desde la API al montar la pantalla
   useEffect(() => {
@@ -196,13 +180,18 @@ export default function useFisicoQuimica() {
   }, []);
 
   const tieneAlgunaMedicion = useMemo(
-    () => hayMedicionesRegistradas([
-      lecturasPhLocal,
-      lecturasSalinidadLocal,
-      lecturasTempLocal,
-      lecturasOxLocal,
-    ]),
-    [lecturasPhLocal, lecturasSalinidadLocal, lecturasTempLocal, lecturasOxLocal],
+    () =>
+      hayMedicionesRegistradas([
+        lecturasPh,
+        lecturasSalinidad,
+        lecturasTemp,
+        lecturasOx,
+        medicionesPorEstanque.ph,
+        medicionesPorEstanque.salinidad,
+        medicionesPorEstanque.temperatura,
+        medicionesPorEstanque.ox,
+      ]),
+    [lecturasPh, lecturasSalinidad, lecturasTemp, lecturasOx, medicionesPorEstanque],
   );
 
 
@@ -269,19 +258,19 @@ export default function useFisicoQuimica() {
   }, [fechaHoy]);
 
   const handlePhChange = useCallback((values) => {
-    manejarCambioPh({ values, setters: { ph: setLecturasPh }, localSetters: { ph: setLecturasPhLocal } });
+    manejarCambioPh({ values, setters: { ph: setLecturasPh } });
   }, []);
 
   const handleSalinidadChange = useCallback((values) => {
-    manejarCambioSalinidad({ values, setters: { salinidad: setLecturasSalinidad }, localSetters: { salinidad: setLecturasSalinidadLocal } });
+    manejarCambioSalinidad({ values, setters: { salinidad: setLecturasSalinidad } });
   }, []);
 
   const handleTempChange = useCallback((values) => {
-    manejarCambioTemperatura({ values, setters: { temperatura: setLecturasTemp }, localSetters: { temperatura: setLecturasTempLocal } });
+    manejarCambioTemperatura({ values, setters: { temperatura: setLecturasTemp } });
   }, []);
 
   const handleOxChange = useCallback((values) => {
-    manejarCambioOxigeno({ values, setters: { ox: setLecturasOx }, localSetters: { ox: setLecturasOxLocal } });
+    manejarCambioOxigeno({ values, setters: { ox: setLecturasOx } });
   }, []);
 
   const resetearFormulario = useCallback(() => {
@@ -293,10 +282,6 @@ export default function useFisicoQuimica() {
     setLecturasSalinidad([]);
     setLecturasTemp([]);
     setLecturasOx([]);
-    setLecturasPhLocal([]);
-    setLecturasSalinidadLocal([]);
-    setLecturasTempLocal([]);
-    setLecturasOxLocal([]);
     setTieneMedicionesExistentes(false);
     setLecturaIdActual(null);
     setSubmitted(false);
