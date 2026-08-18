@@ -220,15 +220,24 @@ async function createColaborador(data) {
 
 /**
  * Actualiza un colaborador existente.
- * Si se proporciona un nuevo PIN, se envía en pinHash.
+ * Si el objeto `data` contiene un campo `pin`, se usa para actualizar el PIN.
+ * El PIN debe ser un string de 4 dígitos.
  */
-async function updateColaborador(id, data, newPin = null) {
+async function updateColaborador(id, data) {
   try {
-    const payload = prepareForBackend(data, newPin);
+    // Extraer el PIN del objeto data si existe
+    const { pin, ...restData } = data;
+
+    // Si hay PIN, lo pasamos a prepareForBackend; si no, null.
+    const payload = prepareForBackend(restData, pin || null);
     if (!payload) {
       throw new Error("No se pudo preparar los datos del colaborador.");
     }
-    if (!newPin) delete payload.pinHash;
+    // Si no se proporcionó PIN, eliminamos pinHash del payload para que no se actualice.
+    if (!pin) {
+      delete payload.pinHash;
+    }
+
     const response = await api.put(`/colaboradores/${id}`, payload);
     return mapBackendToFrontend(response.data.data);
   } catch (error) {
@@ -245,24 +254,6 @@ async function deleteColaborador(id) {
     return response.data.data ? true : false;
   } catch (error) {
     throw construirErrorHttp(error, "No se pudo eliminar el colaborador");
-  }
-}
-
-/**
- * Restablece el PIN de un colaborador.
- * @param {string|number} id - ID del colaborador.
- * @returns {Promise<{message: string}>}
- */
-async function resetPin(id) {
-  try {
-    // Simulación: esperar 1 segundo y devolver éxito
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    return { message: "PIN restablecido correctamente" };
-    // Cuando el backend esté listo, descomentar:
-    // const response = await api.post(`/colaboradores/${id}/reset-pin`);
-    // return response.data;
-  } catch (error) {
-    throw construirErrorHttp(error, "No se pudo restablecer el PIN");
   }
 }
 
@@ -303,7 +294,6 @@ export const colaboradoresService = {
   createColaborador,
   updateColaborador,
   deleteColaborador,
-  resetPin,
   getEstadisticasColaborador,
   getTrabajadoresByOwner,
 };

@@ -10,13 +10,12 @@
  * - Toda la lógica reside en el hook, la pantalla es solo UI.
  * - Navega de regreso al listado únicamente al guardar con éxito.
  *
- * @dependencies - React, expo-router, Componentes UI, Alert, useNuevoProveedorScreen
+ * @dependencies - React, Componentes UI, Alert, useNuevoProveedorScreen
  * @validations - Valida campos requeridos y formato numérico en UI
- * @navigation - /(drawer)/proveedores (al guardar)
+ * @navigation - N/A (delegado a la ruta vía prop onProveedor)
  */
-import React, { useRef, useEffect } from "react";
+import React from "react";
 import { View, ScrollView } from "react-native";
-import { useRouter } from "expo-router";
 
 import Card from "../../../shared/components/Card";
 import Input from "../../../shared/components/Input";
@@ -34,8 +33,9 @@ import { tiposProducto } from "../services/proveedor.service.js";
 
 import { useNuevoProveedorScreen, telefonoMaxLength } from "../hooks/useNuevoProveedorScreen";
 
-export default function NuevoProveedorScreen() {
+export default function NuevoProveedorScreen({ onProveedor }) {
   const {
+    scrollViewRef,
     nombre,
     setNombre,
     tipoProducto,
@@ -48,26 +48,10 @@ export default function NuevoProveedorScreen() {
     notas,
     setNotas,
     mensajeError,
-    guardadoExitoso,
     errores,
     handleTelefonoChange,
     handleSubmit,
-  } = useNuevoProveedorScreen();
-
-  const router = useRouter();
-  const scrollViewRef = useRef(null);
-
-  useEffect(() => {
-    if (mensajeError !== "") {
-      scrollViewRef.current?.scrollToEnd({ animated: true });
-    }
-  }, [mensajeError]);
-
-  useEffect(() => {
-    if (guardadoExitoso) {
-      router.replace("/(drawer)/proveedores");
-    }
-  }, [guardadoExitoso, router]);
+  } = useNuevoProveedorScreen({ onProveedor });
 
   return (
     <View style={STYLE.container}>

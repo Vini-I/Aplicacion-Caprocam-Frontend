@@ -63,6 +63,7 @@ export default function FincaCrecimientoScreen() {
         Titulo="Crecimiento"
         Subtitulo="Registro de peso"
         Icono="growth"
+        RutaVolver="/registros"
       />
       <ScrollView
         style={STYLE.container}

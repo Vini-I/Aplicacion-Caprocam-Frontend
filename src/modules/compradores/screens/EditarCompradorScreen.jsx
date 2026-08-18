@@ -68,14 +68,14 @@ export default function EditarCompradorScreen() {
 
   if (cargando) {
     return (
-      <View style={[styles.container, styles.loadingContainer]}>
+      <View style={[STYLE.container, styles.loadingContainer]}>
         <ActivityIndicator size="large" color={COLORS.primary} />
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View style={STYLE.container}>
 
 
       {/* Formulario con scroll para evitar que el teclado tape los campos */}

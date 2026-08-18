@@ -63,7 +63,7 @@ import { STYLE } from "../../../theme/style";
 import SiembraCard from "../components/SiembraCard";
 import useSiembraList from "../hooks/useSiembraList";
 
-export default function SiembraListScreen() {
+export default function SiembraListScreen({ onDetail, onNew }) {
   const {
     busqueda,
     setBusqueda,
@@ -75,8 +75,6 @@ export default function SiembraListScreen() {
     setVista,
     tiposRegistro,
     siembrasFiltradas,
-    handleNuevaSiembra,
-    handleDetalleSiembra,
   } = useSiembraList();
 
   return (
@@ -157,7 +155,7 @@ export default function SiembraListScreen() {
                 registro={registro}
                 fincaLabel={registro.fincaLabel}
                 estanqueLabel={registro.estanqueLabel}
-                onVerDetalle={() => handleDetalleSiembra(registro)}
+                onVerDetalle={() => onDetail(registro)}
               />
             ))
           )}
@@ -165,11 +163,7 @@ export default function SiembraListScreen() {
       </ScrollView>
 
       <View style={styles.buttonWrapper}>
-        <Button
-          variant="outline"
-          onPress={handleNuevaSiembra}
-          style={styles.addButton}
-        >
+        <Button variant="outline" onPress={onNew} style={styles.addButton}>
           <View style={styles.newButtonContent}>
             <Icon icon={ICONS.add} color={COLORS.primary} />
             <Text style={styles.newButtonText}>Añadir Siembra</Text>

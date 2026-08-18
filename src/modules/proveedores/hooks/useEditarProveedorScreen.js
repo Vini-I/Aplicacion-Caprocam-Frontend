@@ -3,19 +3,20 @@
  * Hook para la lógica de la pantalla de edición de proveedores.
  *
  * FUNCIONALIDAD:
- * - Carga el proveedor existente mediante su ID.
+ * - Carga el proveedor existente mediante su ID (recibido por props).
  * - Maneja el estado de edición permitiendo modificar campos excepto el nombre.
  *
  * REGLAS IMPORTANTES:
  * - Los errores solo se muestran al intentar guardar.
  * - Si no hay cambios, previene la petición al backend.
+ * - No maneja routing: recibe onProveedor por props y lo invoca al
+ *   guardar con éxito (useRouter vive solo en app/, dentro del wrapper de ruta).
  *
- * @dependencies - React, expo-router, ProveedorContext, contactValidators, ProveedorDTO
+ * @dependencies - React, ProveedorContext, contactValidators, ProveedorDTO
  * @validations - Teléfono de 8 dígitos, Correo válido, Campos requeridos
- * @navigation - N/A
+ * @navigation - N/A (delegado a la ruta vía onProveedor)
  */
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useLocalSearchParams } from "expo-router";
 import { useProveedor } from "../context/ProveedorContext";
 import { validarTelefono, validarCorreo } from "../utils/contactValidators";
 import { ProveedorDTO } from "../dtos/proveedor.dto";
@@ -32,10 +33,10 @@ function validarTipoProducto(valor) {
   return "";
 }
 
-export function useEditarProveedorScreen() {
-  const { id } = useLocalSearchParams();
+export function useEditarProveedorScreen({ onProveedor, id } = {}) {
   const { buscarProveedor, editarProveedor } = useProveedor();
 
+  const scrollViewRef = useRef(null);
   const [base, setBase] = useState(null);
   const [nombre, setNombreState] = useState("");
   const [tipoProducto, setTipoProducto] = useState("");
@@ -47,7 +48,6 @@ export function useEditarProveedorScreen() {
   const [alerta, setAlerta] = useState(null);
   const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
-  const [guardadoExitoso, setGuardadoExitoso] = useState(false);
   const errorTimeout = useRef(null);
 
   useEffect(() => {
@@ -80,6 +80,12 @@ export function useEditarProveedorScreen() {
     cargarProveedor();
   }, [cargarProveedor]);
 
+  useEffect(() => {
+    if (alerta?.variant === "danger") {
+      scrollViewRef.current?.scrollToEnd({ animated: true });
+    }
+  }, [alerta]);
+
   function handleTelefonoChange(valor) {
     setTelefono(valor.replace(/[^0-9]/g, ""));
   }
@@ -108,7 +114,7 @@ export function useEditarProveedorScreen() {
         variant: "danger",
         message: "No hay cambios para guardar.",
       });
-      
+
       if (errorTimeout.current) clearTimeout(errorTimeout.current);
       errorTimeout.current = setTimeout(() => {
         setErrores({});
@@ -154,7 +160,7 @@ export function useEditarProveedorScreen() {
         variant: "danger",
         message: mensajeAlerta,
       });
-      
+
       if (errorTimeout.current) clearTimeout(errorTimeout.current);
       errorTimeout.current = setTimeout(() => {
         setErrores({});
@@ -176,17 +182,15 @@ export function useEditarProveedorScreen() {
       });
 
       await editarProveedor(base.id, proveedorDTO);
-      const actualizado = await buscarProveedor(base.id);
 
-      setBase(actualizado);
-      setGuardadoExitoso(true);
+      onProveedor?.();
     } catch (error) {
       const mensajeBackend = error.message;
       setAlerta({
         variant: "danger",
         message: mensajeBackend || "No fue posible actualizar el proveedor.",
       });
-      
+
       if (errorTimeout.current) clearTimeout(errorTimeout.current);
       errorTimeout.current = setTimeout(() => {
         setErrores({});
@@ -198,6 +202,7 @@ export function useEditarProveedorScreen() {
   }
 
   return {
+    scrollViewRef,
     base,
     nombre,
     tipoProducto,
@@ -212,7 +217,6 @@ export function useEditarProveedorScreen() {
     alerta,
     cargando,
     guardando,
-    guardadoExitoso,
     handleTelefonoChange,
     handleCorreoChange,
     guardar,

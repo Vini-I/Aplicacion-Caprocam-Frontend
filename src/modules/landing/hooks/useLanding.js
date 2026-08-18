@@ -25,18 +25,20 @@ import {
   Linking,
   useWindowDimensions,
 } from "react-native";
+
 import {
   useCallback,
   useEffect,
   useRef,
   useState,
 } from "react";
+
 import { CONTACTO } from "../data/landing.data";
 
 // ==============
 // Funcion de carrusel: controla el cambio automatico y la animacion de las imagenes principales.
 // ==============
-export function useLandingCarousel(totalSlides) {
+export function useLandingCarousel(slides) {
   const opacity = useRef(new Animated.Value(1)).current;
 
   const [indiceHero, setIndiceHero] = useState(0);
@@ -65,13 +67,15 @@ export function useLandingCarousel(totalSlides) {
   );
 
   useEffect(() => {
+    const totalSlides = slides.length;
+
     const timer = setTimeout(
       () => cambiarSlide((indiceHero + 1) % totalSlides),
       5000,
     );
 
     return () => clearTimeout(timer);
-  }, [cambiarSlide, indiceHero, totalSlides]);
+  }, [cambiarSlide, indiceHero, slides]);
 
   return {
     indiceHero,
@@ -95,7 +99,10 @@ export function useLandingNavigation() {
   function irASeccion(nombre) {
     const posicion = posicionesRef.current[nombre];
 
-    if (typeof posicion === "number" && scrollRef.current) {
+    if (
+      typeof posicion === "number" &&
+      scrollRef.current
+    ) {
       scrollRef.current.scrollTo({
         y: posicion,
         animated: true,
@@ -150,10 +157,12 @@ export function useWhatsapp() {
       CONTACTO.mensajeWhatsapp,
     );
 
-    const enlace = `https://wa.me/${CONTACTO.numeroWhatsapp}?text=${mensaje}`;
+    const enlace =
+      `https://wa.me/${CONTACTO.numeroWhatsapp}?text=${mensaje}`;
 
     try {
-      const disponible = await Linking.canOpenURL(enlace);
+      const disponible =
+        await Linking.canOpenURL(enlace);
 
       if (disponible === false) {
         Alert.alert(
@@ -165,12 +174,10 @@ export function useWhatsapp() {
       }
 
       await Linking.openURL(enlace);
-    } catch (error) {
-      console.error("Error abriendo WhatsApp:", error);
-
+    } catch {
       Alert.alert(
         "WhatsApp",
-        "OcurriÃ³ un error al abrir WhatsApp.",
+        "Ocurrió un error al abrir WhatsApp.",
       );
     }
   }
@@ -187,8 +194,8 @@ export function useLandingResponsive() {
   const { width } = useWindowDimensions();
 
   return {
-    esMovil: width < 760,
-    esTablet: width >= 760 && width < 1100,
+    esMovil: width < 900,
+    esTablet: width >= 900 && width < 1100,
   };
 }
 
@@ -196,10 +203,13 @@ export function useLandingResponsive() {
 // Función de menu movil: abre y cierra las opciones de navegacion en pantallas pequeñas.
 // ==============
 export function useLandingMobileMenu() {
-  const [menuAbierto, setMenuAbierto] = useState(false);
+  const [menuAbierto, setMenuAbierto] =
+    useState(false);
 
   function alternarMenu() {
-    setMenuAbierto((estaAbierto) => !estaAbierto);
+    setMenuAbierto(
+      (estaAbierto) => !estaAbierto,
+    );
   }
 
   function cerrarMenu() {

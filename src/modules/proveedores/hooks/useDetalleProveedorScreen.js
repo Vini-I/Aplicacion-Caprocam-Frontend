@@ -8,10 +8,13 @@
  *
  * REGLAS IMPORTANTES:
  * - Se comunica con ProveedorContext para eliminar o buscar.
+ * - No maneja routing: useRouter vive en el archivo de ruta (app/(drawer)/
+ *   proveedores/detalleProveedor.jsx), que arma los handlers de navegación
+ *   y los pasa como props (onEliminado) al screen, igual que en finca.
  *
- * @dependencies - React, expo-router, ProveedorContext, proveedor.service
+ * @dependencies - React, expo-router (useLocalSearchParams), ProveedorContext, proveedor.service
  * @validations - N/A
- * @navigation - N/A
+ * @navigation - N/A (delegado a la ruta vía prop onEliminado)
  */
 import { useState, useCallback, useRef } from "react";
 import { useFocusEffect } from "expo-router";
@@ -19,10 +22,10 @@ import { useLocalSearchParams } from "expo-router";
 import { useProveedor } from "../context/ProveedorContext";
 import { getTipoProductoLabel } from "../services/proveedor.service";
 
-export function useDetalleProveedorScreen() {
+export function useDetalleProveedorScreen({ onEliminado } = {}) {
   const { id } = useLocalSearchParams();
   const { buscarProveedor, eliminarProveedor } = useProveedor();
-  
+
   const [proveedor, setProveedor] = useState(undefined);
   const [modalVisible, setModalVisible] = useState(false);
   const [cargando, setCargando] = useState(true);
@@ -63,6 +66,7 @@ export function useDetalleProveedorScreen() {
       eliminando.current = true;
       await eliminarProveedor(id);
       setModalVisible(false);
+      onEliminado?.();
     } catch (err) {
       eliminando.current = false;
       setModalVisible(false);

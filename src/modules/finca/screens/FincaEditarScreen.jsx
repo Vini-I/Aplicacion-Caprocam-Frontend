@@ -55,6 +55,7 @@ export default function FincaEditarScreen({ onFinca, id }) {
         Titulo="Editar Finca"
         Subtitulo={finca?.nombreFinca ?? "Cargando..."}
         Icono="edit"
+        RutaVolver="/finca"
       />
       <ScrollView
         style={STYLE.container}

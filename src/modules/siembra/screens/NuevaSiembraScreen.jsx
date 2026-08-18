@@ -56,7 +56,7 @@
  *
  * =========================================================================
  */
-import React, { useRef, useEffect } from "react";
+import React from "react";
 import { View, ScrollView, Text } from "react-native";
 
 import { STYLE } from "../../../theme/style";
@@ -80,7 +80,7 @@ import { COLORS } from "../../../theme/colors";
 
 import useNuevaSiembra from "../hooks/useNuevaSiembra";
 
-export default function NuevaSiembraScreen() {
+export default function NuevaSiembraScreen({ onSuccess }) {
   const {
     formData,
 
@@ -120,6 +120,7 @@ export default function NuevaSiembraScreen() {
 
     handleCrearSiembra,
     guardando,
+    scrollRef,
 
     handleAgregarProveedorLarva,
 
@@ -140,15 +141,7 @@ export default function NuevaSiembraScreen() {
     handleEliminarProcedenciaLarva,
 
     fieldHelpers,
-  } = useNuevaSiembra();
-
-  const scrollRef = useRef(null);
-
-  useEffect(() => {
-    if (mensaje !== "" && mensajeVariant === "danger") {
-      scrollRef.current?.scrollToEnd({ animated: true });
-    }
-  }, [mensaje, mensajeVariant]);
+  } = useNuevaSiembra(onSuccess);
 
   return (
     <>

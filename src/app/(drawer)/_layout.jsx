@@ -137,6 +137,17 @@ export default function DrawerLayout() {
         }}
       />
 
+      <Drawer.Screen
+        name="registroWeb"
+        options={{
+          drawerLabel: "Registrar Usuario",
+          title: "Registro Web",
+          drawerIcon: ({ color, size }) => (
+            <Icon icon={ICONS.user} size={22} color={color} />
+          ),
+        }}
+      />
+
       <Drawer.Screen name="inicio" options={{ drawerItemStyle: { display: "none" } }} />
       <Drawer.Screen name="registros" options={{ drawerItemStyle: { display: "none" } }} />
       

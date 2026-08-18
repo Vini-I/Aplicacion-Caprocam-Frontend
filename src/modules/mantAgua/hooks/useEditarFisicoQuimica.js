@@ -2,9 +2,15 @@
  * ============================================================
  * HOOK useEditarFisicoQuimica
  * ============================================================
- * Calco de useFisicoQuimica orientado a edición desde reportería:
- * carga por id (getLecturaPorId) y guarda con actualizarLectura.
- * Misma API de retorno para que la screen sea idéntica a la original.
+ *
+ * Descripción:
+ * Maneja el estado y flujo de edición para lecturas físico-químicas
+ * desde reportería: carga por ID (getLecturaPorId), edición de mediciones y
+ * actualización (actualizarLectura) manteniendo compatibilidad con ModalError.
+ *
+ * @dependencies FisicoQuimicaServices, ErrorContext
+ * @validations Finca y estanque requeridos; al menos una medición para guardar.
+ * @navigation Notifica guardado mediante callback `onGuardado`.
  */
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import {
@@ -17,10 +23,10 @@ import {
   manejarCambioTemperatura,
   obtenerEstanquesPorFinca,
   obtenerOpcionesFincas,
-  sincronizarLecturasLocales,
   validarFormularioFisicoQuimica,
   validarSeleccionAntesDeAgregar,
 } from "../services/FisicoQuimicaServices";
+import { useError } from "../../../shared/context/ErrorContext.js";
 
 function mapearLecturas(lecturas, esDiaNoche = false) {
   return (lecturas ?? []).map((lectura, index) => {
@@ -79,6 +85,7 @@ function fechaHoyISO() {
 }
 
 export default function useEditarFisicoQuimica(registroId, onGuardado) {
+  const { mostrarError } = useError();
   const [cargando, setCargando] = useState(true);
   const [fincaSeleccionada, setFincaSeleccionada] = useState("");
   const [estanqueSeleccionado, setEstanqueSeleccionado] = useState("");
@@ -90,10 +97,6 @@ export default function useEditarFisicoQuimica(registroId, onGuardado) {
   const [lecturasSalinidad, setLecturasSalinidad] = useState([]);
   const [lecturasTemp, setLecturasTemp] = useState([]);
   const [lecturasOx, setLecturasOx] = useState([]);
-  const [lecturasPhLocal, setLecturasPhLocal] = useState([]);
-  const [lecturasSalinidadLocal, setLecturasSalinidadLocal] = useState([]);
-  const [lecturasTempLocal, setLecturasTempLocal] = useState([]);
-  const [lecturasOxLocal, setLecturasOxLocal] = useState([]);
 
   const [medicionesPorEstanque, setMedicionesPorEstanque] = useState({
     ph: [],
@@ -116,7 +119,12 @@ export default function useEditarFisicoQuimica(registroId, onGuardado) {
       .then((opts) => {
         if (activo) setOpcionesFincas(Array.isArray(opts) ? opts : []);
       })
-      .catch(() => { });
+      .catch((err) => {
+        if (activo) {
+          setOpcionesFincas([]);
+          if (err?.response?.status !== 401) mostrarError(err);
+        }
+      });
     return () => {
       activo = false;
     };
@@ -134,8 +142,11 @@ export default function useEditarFisicoQuimica(registroId, onGuardado) {
       .then((opts) => {
         if (activo) setEstanquesFiltrados(Array.isArray(opts) ? opts : []);
       })
-      .catch(() => {
-        if (activo) setEstanquesFiltrados([]);
+      .catch((err) => {
+        if (activo) {
+          setEstanquesFiltrados([]);
+          if (err?.response?.status !== 401) mostrarError(err);
+        }
       });
     return () => {
       activo = false;
@@ -182,7 +193,10 @@ export default function useEditarFisicoQuimica(registroId, onGuardado) {
         setMedicionesPorEstanque(mediciones);
         setTieneMedicionesExistentes(true);
       } catch (e) {
-        if (activo) setErrorMessage("No se pudo cargar la lectura.");
+        if (activo) {
+          setErrorMessage("No se pudo cargar la lectura.");
+          if (e?.response?.status !== 401) mostrarError(e);
+        }
       } finally {
         if (activo) setCargando(false);
       }
@@ -194,18 +208,8 @@ export default function useEditarFisicoQuimica(registroId, onGuardado) {
     };
   }, [registroId]);
 
-  // Sincroniza arrays locales cuando cambian medicionesPorEstanque
+  // Sincroniza lecturas cuando cambian medicionesPorEstanque
   useEffect(() => {
-    sincronizarLecturasLocales({
-      medicionesPorEstanque,
-      setters: {
-        ph: setLecturasPhLocal,
-        salinidad: setLecturasSalinidadLocal,
-        temperatura: setLecturasTempLocal,
-        ox: setLecturasOxLocal,
-      },
-    });
-    // también los que se envían
     setLecturasPh(
       (medicionesPorEstanque.ph ?? []).map((v, i) =>
         typeof v === "object" ? v : { id: `ph-${i}`, value: v }
@@ -276,7 +280,6 @@ export default function useEditarFisicoQuimica(registroId, onGuardado) {
     manejarCambioPh({
       values,
       setters: { ph: setLecturasPh },
-      localSetters: { ph: setLecturasPhLocal },
     });
   }, []);
 
@@ -284,7 +287,6 @@ export default function useEditarFisicoQuimica(registroId, onGuardado) {
     manejarCambioSalinidad({
       values,
       setters: { salinidad: setLecturasSalinidad },
-      localSetters: { salinidad: setLecturasSalinidadLocal },
     });
   }, []);
 
@@ -292,7 +294,6 @@ export default function useEditarFisicoQuimica(registroId, onGuardado) {
     manejarCambioTemperatura({
       values,
       setters: { temperatura: setLecturasTemp },
-      localSetters: { temperatura: setLecturasTempLocal },
     });
   }, []);
 
@@ -300,7 +301,6 @@ export default function useEditarFisicoQuimica(registroId, onGuardado) {
     manejarCambioOxigeno({
       values,
       setters: { ox: setLecturasOx },
-      localSetters: { ox: setLecturasOxLocal },
     });
   }, []);
 

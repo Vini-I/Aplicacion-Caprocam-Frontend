@@ -52,6 +52,7 @@ export default function EditarParasitologiaScreen({ registroId }) {
           Titulo="Parasitologia"
           Subtitulo="Editar registro"
           Icono="parasite"
+          RutaVolver="/registros/Reporteria"
         />
 
         <CustomText style={{ textAlign: "center", marginTop: 24 }}>

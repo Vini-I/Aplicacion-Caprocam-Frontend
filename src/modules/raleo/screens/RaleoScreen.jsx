@@ -80,6 +80,7 @@ export default function RaleoScreen() {
         Titulo="Raleo"
         Subtitulo="Cosecha parcial y densidad"
         Icono="raleo"
+        RutaVolver="/registros"
       />
 
       <View style={STYLE.container}>
