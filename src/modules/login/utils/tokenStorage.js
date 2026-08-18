@@ -10,6 +10,7 @@
 // Clave utilizada para guardar el token en localStorage
 const TOKEN_KEY = 'caprocam_auth_token';
 const USUARIO_KEY = 'caprocam_usuario';
+const REFRESH_TOKEN_KEY = 'caprocam_refresh_token';
 
 /**
  * Guarda el JWT en localStorage.
@@ -23,7 +24,7 @@ export const saveToken = (token) => {
   try {
     if (token) localStorage.setItem(TOKEN_KEY, token);
   } catch (error) {
-    console.error('[tokenStorage] Error al guardar el token:', error);
+    throw new Error('No se pudo guardar la sesión. Verifica el almacenamiento del navegador.');
   }
 };
 
@@ -38,8 +39,7 @@ export const saveToken = (token) => {
 export const getToken = () => {
   try {
     return localStorage.getItem(TOKEN_KEY);
-  } catch (error) {
-    console.error('[tokenStorage] Error al leer el token:', error);
+  } catch {
     return null;
   }
 };
@@ -48,7 +48,7 @@ export const saveUsuario = (user) => {
   try {
     if (user) localStorage.setItem(USUARIO_KEY, JSON.stringify(user));
   } catch (error) {
-    console.error('[tokenStorage] Error al guardar usuario:', error);
+    throw new Error('No se pudo guardar los datos del usuario en la sesión.');
   }
 };
 
@@ -56,7 +56,36 @@ export const getUsuario = () => {
   try {
     const data = localStorage.getItem(USUARIO_KEY);
     return data ? JSON.parse(data) : null;
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * Guarda el Refresh Token en localStorage.
+ * Se llama después de un login exitoso.
+ *
+ * @param {string} refreshToken
+ * @returns {void}
+ */
+export const saveRefreshToken = (refreshToken) => {
+  try {
+    if (refreshToken) localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
   } catch (error) {
+    throw new Error('No se pudo guardar el token de sesión extendida.');
+  }
+};
+
+/**
+ * Lee el Refresh Token guardado en localStorage.
+ * Retorna null si no existe.
+ *
+ * @returns {string|null}
+ */
+export const getRefreshToken = () => {
+  try {
+    return localStorage.getItem(REFRESH_TOKEN_KEY);
+  } catch {
     return null;
   }
 };
@@ -71,8 +100,9 @@ export const removeToken = () => {
   try {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USUARIO_KEY);
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
   } catch (error) {
-    console.error('[tokenStorage] Error al eliminar el token:', error);
+    throw new Error('No se pudo cerrar la sesión correctamente. Intenta de nuevo.');
   }
 };
 

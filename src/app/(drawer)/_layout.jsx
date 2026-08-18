@@ -1,12 +1,42 @@
 import { Drawer } from "expo-router/drawer";
-import React from "react";
+import React, { useState } from "react";
+import { View, StyleSheet } from "react-native";
+import { useRouter } from "expo-router";
 import { ICONS } from "../../theme/icons";
 import Icon from "../../shared/components/Icons";
+import ModalSesion from "../../modules/login/components/modalSesion";
+import Button from "../../shared/components/Button";
+import CustomText from "../../shared/components/Text";
 import { COLORS } from "../../theme/colors.js";
+import { removeToken } from "../../modules/login/utils/tokenStorage";
+import { logout as logoutService } from "../../modules/login/services/authService";
+import { useError } from "../../shared/context/ErrorContext";
 
 export default function DrawerLayout() {
+  const router = useRouter();
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const { mostrarError } = useError();
+
+  const handleLogout = async () => {
+    setShowLogoutModal(false);
+    try {
+      await logoutService();  // invalida el refreshToken en el backend
+      removeToken();          // limpia accessToken, refreshToken y usuario del localStorage
+      router.replace('/loginWeb');
+    } catch (error) {
+      mostrarError(error);    // muestra ModalError global si algo falla
+    }
+  };
+
   return (
-    <Drawer
+    <>
+      <ModalSesion
+        visible={showLogoutModal}
+        onConfirm={handleLogout}
+        onCancel={() => setShowLogoutModal(false)}
+      />
+
+      <Drawer
     screenOptions={{
       headerShown: true,
       headerStyle: {
@@ -14,6 +44,20 @@ export default function DrawerLayout() {
         borderBottomWidth: 0,
       },
       headerTintColor: COLORS.white,
+      headerRight: () => (
+        <View style={styles.logoutWrapper}>
+          <Button
+            variant="danger"
+            onPress={() => setShowLogoutModal(true)}
+            style={styles.logoutButton}
+          >
+            <View style={styles.logoutContent}>
+              <Icon icon={ICONS.exit} size={16} color={COLORS.white} />
+              <CustomText size={13} color={COLORS.white} weight="600">Cerrar sesión</CustomText>
+            </View>
+          </Button>
+        </View>
+      ),
     }}
   >
       <Drawer.Screen
@@ -176,6 +220,29 @@ export default function DrawerLayout() {
       <Drawer.Screen name="mantenimientoEquipo/tareas/tareaForm"   options={{ drawerItemStyle: { display: "none" } }} />
       <Drawer.Screen name="mantenimientoEquipo/tareas/detalleTarea"   options={{ drawerItemStyle: { display: "none" } }} />
 
-    </Drawer>
+      </Drawer>
+    </>
   );
 }
+
+//estilos de los botones 
+const styles = StyleSheet.create({
+  logoutWrapper: {
+    paddingRight: 12,
+  },
+  logoutButton: {
+    backgroundColor: COLORS.error,
+    borderColor: COLORS.error,
+    marginTop: 0,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  logoutContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+});

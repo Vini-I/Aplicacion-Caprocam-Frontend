@@ -98,7 +98,7 @@ export default function SessionMonitor({ children }) {
       {children}
       <Modal
         visible={showModal}
-        onClose={() => {}}
+        onClose={() => { }}
         showCloseButton={false}
         containerStyle={[STYLE.contentWrapper, styles.modalContainer]}
       >
