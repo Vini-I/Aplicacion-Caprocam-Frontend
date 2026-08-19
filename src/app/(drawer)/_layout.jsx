@@ -88,7 +88,7 @@ export default function DrawerLayout() {
           drawerLabel: "Inventario",
           title: "Inventario",
           drawerIcon: ({ color, size }) => (
-            <Icon icon={ICONS.dropbox} size={22} />
+            <Icon icon={ICONS.dropbox} size={23} />
           ),
         }}
       />
@@ -99,7 +99,7 @@ export default function DrawerLayout() {
           drawerLabel: "Proveedores",
           title: "Proveedores",
           drawerIcon: ({ color, size }) => (
-            <Icon icon={ICONS.truck} size={18} />
+            <Icon icon={ICONS.truck} size={20} />
           ),
         }}
       />
@@ -110,7 +110,7 @@ export default function DrawerLayout() {
           drawerLabel: "Compradores",
           title: "Compradores",
           drawerIcon: ({ color, size }) => (
-            <Icon icon={ICONS.people} size={22} />
+            <Icon icon={ICONS.people} size={23} />
           ),
         }}
       />
@@ -132,7 +132,7 @@ export default function DrawerLayout() {
           drawerLabel: "Colaboradores",
           title: "Colaboradores",
           drawerIcon: ({ color, size }) => (
-            <Icon icon={ICONS.people} size={22}/>
+            <Icon icon={ICONS.people} size={23}/>
           )
         }}
       />
@@ -165,7 +165,7 @@ export default function DrawerLayout() {
           drawerLabel: "Venta",
           title: "Venta",
           drawerIcon: ({ color, size }) => (
-            <Icon icon={ICONS.money} size={25} />
+            <Icon icon={ICONS.money} size={23} />
           )
         }}
       />
@@ -176,7 +176,7 @@ export default function DrawerLayout() {
           drawerLabel: "Alertas",
           title: "Alertas",
           drawerIcon: ({ color, size }) => (
-            <Icon icon={ICONS.notification} size={22} color={color} />
+            <Icon icon={ICONS.notification} size={23} />
           ),
         }}
       />
@@ -187,7 +187,7 @@ export default function DrawerLayout() {
           drawerLabel: "Registrar Usuario",
           title: "Registro Web",
           drawerIcon: ({ color, size }) => (
-            <Icon icon={ICONS.user} size={22} color={color} />
+            <Icon icon={ICONS.user} size={23} />
           ),
         }}
       />

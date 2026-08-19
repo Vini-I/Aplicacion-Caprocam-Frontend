@@ -16,6 +16,9 @@ import { validatePassword as validatePasswordRule } from './passwordValidator';
 // Exige @, un dominio y que termine en .com (ej: nombre@dominio.com)
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.com$/i;
 
+// Exactamente 3 dígitos (últimos 3 dígitos del CBO)
+const GRUPO_DATOS_REGEX = /^\d{3}$/;
+
 export const validateNombre    = (v) => (!v || !v.trim() ? AUTH_MESSAGES.ERROR_REQUIRED : '');
 export const validateApellidos = (v) => (!v || !v.trim() ? AUTH_MESSAGES.ERROR_REQUIRED : '');
 export const validateUsername  = (v) => (!v || !v.trim() ? AUTH_MESSAGES.ERROR_REQUIRED : '');
@@ -29,12 +32,20 @@ export const validateEmail = (email) => {
 export const validatePassword = (v) =>
   validatePasswordRule(v, AUTH_MESSAGES);
 
-export const validateRegisterForm = ({ nombre, apellidos, email, username, password }) => ({
+export const validateGrupoDatos = (v, esGlobal) => {
+  if (!esGlobal) return '';
+  if (!v || !String(v).trim()) return AUTH_MESSAGES.ERROR_REQUIRED;
+  if (!GRUPO_DATOS_REGEX.test(String(v).trim())) return AUTH_MESSAGES.ERROR_GRUPO_DATOS_INVALID;
+  return '';
+};
+
+export const validateRegisterForm = ({ nombre, apellidos, email, username, password, grupoDatos, esGlobal }) => ({
   nombre:    validateNombre(nombre),
   apellidos: validateApellidos(apellidos),
   email:     validateEmail(email),
   username:  validateUsername(username),
   password:  validatePassword(password),
+  grupoDatos: validateGrupoDatos(grupoDatos, esGlobal),
 });
 
 export const isRegisterFormValid = (errors) =>
@@ -42,7 +53,7 @@ export const isRegisterFormValid = (errors) =>
 
 export const getRegisterButtonVariant = () => 'primary';
 
-const FIELD_ORDER = ['nombre', 'apellidos', 'email', 'username', 'password'];
+const FIELD_ORDER = ['nombre', 'apellidos', 'email', 'username', 'grupoDatos', 'password'];
 
 const isEmptyError = (err) =>
   err === AUTH_MESSAGES.ERROR_REQUIRED || err === AUTH_MESSAGES.ERROR_PASSWORD_REQUIRED;

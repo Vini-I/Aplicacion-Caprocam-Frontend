@@ -10,10 +10,10 @@
  * @navigation   - N/A (servicio de autenticación).
  */
 
-import { AUTH_MESSAGES } from '../constants/authMessages';
-import { postAuth } from './httpAuthClient';
-import api from '../../../api/api';
-import { getRefreshToken } from '../utils/tokenStorage';
+import { AUTH_MESSAGES } from "../constants/authMessages";
+import { postAuth } from "./httpAuthClient";
+import api from "../../../api/api";
+import { getRefreshToken } from "../utils/tokenStorage";
 
 /**
  * login(username, password)
@@ -27,9 +27,9 @@ import { getRefreshToken } from '../utils/tokenStorage';
  */
 export const login = (username, password) => {
   return postAuth(
-    '/login',
+    "/login",
     { usuario: username.trim(), contrasena: password },
-    { 401: AUTH_MESSAGES.ERROR_INVALID_CREDENTIALS }
+    { 401: AUTH_MESSAGES.ERROR_INVALID_CREDENTIALS },
   );
 };
 
@@ -47,16 +47,31 @@ export const login = (username, password) => {
  * @throws {Error}
  */
 export const register = (username, password, profileData = {}) => {
-  const { nombre, apellidos, email } = profileData;
+  const { nombre, apellidos, email, grupoDatos } = profileData;
 
-  return postAuth('/login/registro', {
-    nombre: nombre || '',
-    apellidos: apellidos || '',
-    correo: email || '',
+  const payload = {
+    nombre: nombre || "",
+
+    apellidos: apellidos || "",
+
+    correo: email || "",
+
     usuario: username.trim(),
+
     contrasena: password,
-    rolId: 1
-  });
+
+    rolId: 1,
+  };
+
+  if (
+    grupoDatos !== undefined &&
+    grupoDatos !== null &&
+    String(grupoDatos).trim() !== ""
+  ) {
+    payload.grupoDatos = Number(grupoDatos);
+  }
+
+  return postAuth("/login/registro", payload);
 };
 
 /**
@@ -72,7 +87,7 @@ export const logout = async () => {
   const refreshToken = getRefreshToken();
   if (refreshToken) {
     try {
-      await api.post('/login/logout', { refreshToken });
+      await api.post("/login/logout", { refreshToken });
     } catch {
       // El token ya pudo haber expirado en el backend; ignoramos el error
       // para que el cierre de sesión local siempre proceda.

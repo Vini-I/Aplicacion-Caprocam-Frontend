@@ -62,6 +62,32 @@ export const getUsuario = () => {
 };
 
 /**
+ * Decodifica el payload (segunda parte) del JWT almacenado.
+ * Retorna el objeto con los claims del token (id, grupoDatos, accesoGlobal, etc.).
+ * No verifica la firma — eso lo hace el backend.
+ *
+ * @returns {Object|null}
+ */
+export const getTokenPayload = () => {
+  try {
+    const token = getToken();
+    if (!token) return null;
+
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    return JSON.parse(jsonPayload);
+  } catch {
+    return null;
+  }
+};
+
+/**
  * Guarda el Refresh Token en localStorage.
  * Se llama después de un login exitoso.
  *
