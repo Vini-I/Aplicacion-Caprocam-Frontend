@@ -18,12 +18,8 @@
  *      - Registro de una nueva siembra.
  *      - Detalle y edición de una siembra existente.
  *
- * 4. Muestra la cantidad total de siembras activas disponibles.
- *
- * 4.1 El hook useSiembraList oculta automáticamente del listado las
- *     siembras y pre-crías que ya completaron su ciclo, para que no se
- *     acumulen tarjetas de registros finalizados en esta pantalla. Esto
- *     solo las oculta de este listado: el registro no se borra.
+ * 4. Permite alternar entre siembras/pre-crías Activas y Finalizadas
+ *    mediante un toggle, conectado al estado "vista" del hook.
  *
  * 5. Utiliza componentes visuales reutilizables para mantener la
  *    consistencia del diseño:
@@ -33,7 +29,7 @@
  * COMPONENTES UTILIZADOS:
  *
  * - SiembraCard: tarjeta de cada siembra/pre-cría.
- * - Button: acciones de navegación.
+ * - Button: acciones de navegación y toggle de vista.
  * - Icon: representación visual de acciones.
  *
  * NAVEGACIÓN:
@@ -67,7 +63,7 @@ import { STYLE } from "../../../theme/style";
 import SiembraCard from "../components/SiembraCard";
 import useSiembraList from "../hooks/useSiembraList";
 
-export default function SiembraListScreen() {
+export default function SiembraListScreen({ onDetail, onNew }) {
   const {
     busqueda,
     setBusqueda,
@@ -75,10 +71,10 @@ export default function SiembraListScreen() {
     mensajeVariant,
     filtros,
     setFiltros,
+    vista,
+    setVista,
     tiposRegistro,
     siembrasFiltradas,
-    handleNuevaSiembra,
-    handleDetalleSiembra,
   } = useSiembraList();
 
   return (
@@ -102,6 +98,23 @@ export default function SiembraListScreen() {
                 Siembras y Pre-Crías ({siembrasFiltradas.length})
               </Text>
             </View>
+          </View>
+
+          <View style={styles.toggleContainer}>
+            <Button
+              variant={vista === "activas" ? "primary" : "outline"}
+              onPress={() => setVista("activas")}
+              style={styles.toggleButton}
+            >
+              Activas
+            </Button>
+            <Button
+              variant={vista === "finalizadas" ? "primary" : "outline"}
+              onPress={() => setVista("finalizadas")}
+              style={styles.toggleButton}
+            >
+              Finalizadas
+            </Button>
           </View>
 
           <View style={styles.barraBusqueda}>
@@ -142,7 +155,7 @@ export default function SiembraListScreen() {
                 registro={registro}
                 fincaLabel={registro.fincaLabel}
                 estanqueLabel={registro.estanqueLabel}
-                onVerDetalle={() => handleDetalleSiembra(registro)}
+                onVerDetalle={() => onDetail(registro)}
               />
             ))
           )}
@@ -150,11 +163,7 @@ export default function SiembraListScreen() {
       </ScrollView>
 
       <View style={styles.buttonWrapper}>
-        <Button
-          variant="outline"
-          onPress={handleNuevaSiembra}
-          style={styles.addButton}
-        >
+        <Button variant="outline" onPress={onNew} style={styles.addButton}>
           <View style={styles.newButtonContent}>
             <Icon icon={ICONS.add} color={COLORS.primary} />
             <Text style={styles.newButtonText}>Añadir Siembra</Text>

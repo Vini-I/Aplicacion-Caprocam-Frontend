@@ -113,7 +113,6 @@ export default function CompradorScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Barra de búsqueda por texto y filtro por tipo de producto */}
      
 
       {/* Alerta de éxito: solo una a la vez. Si llegan ambos parámetros
@@ -136,38 +135,16 @@ export default function CompradorScreen() {
         </View>
       ) : null}
 
-      {/* Barra de búsqueda por texto y filtro por tipo de producto */}
-      <View style={[styles.barraBusqueda, STYLE.contentWrapper]}>
-        <SearchBar
-          value={busqueda}
-          onChangeText={setBusqueda}
-          placeholder="Buscar comprador, tipo, correo..."
-          containerStyle={styles.searchBarContainer}
-        />
-       
-      </View>
-
-      {/* Alerta de éxito al llegar desde "guardar comprador" */}
-      {guardadoExitoso && (
-        <View style={STYLE.contentWrapper}>
-          <Alert
-            variant="success"
-            message="Comprador guardado correctamente."
-            style={styles.alertExito}
-          />
-        </View>
-      )}
-
-      {/* Alerta de éxito al llegar desde "eliminar comprador" */}
-      {eliminadoExitoso && (
-        <View style={STYLE.contentWrapper}>
-          <Alert
-            variant="success"
-            message="Comprador eliminado correctamente."
-            style={styles.alertExito}
-          />
-        </View>
-      )}
+       {/* Barra de búsqueda por texto y filtro por tipo de producto */}
+     <View style={[styles.barraBusqueda, STYLE.contentWrapper]}>
+             <SearchBar
+               value={busqueda}
+               onChangeText={setBusqueda}
+               placeholder="Buscar comprador, tipo, correo..."
+               containerStyle={styles.searchBarContainer}
+             />
+            
+           </View>
 
       {/* Alerta de error al cargar, con botón para reintentar */}
       {!!error && (

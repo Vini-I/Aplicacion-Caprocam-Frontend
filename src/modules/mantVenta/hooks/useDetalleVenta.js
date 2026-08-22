@@ -8,6 +8,7 @@
  */
 import { fincaService } from "../../finca/services/finca.service.js";
 import { estanqueService } from "../../estanques/services/estanque.service.js";
+import { compradorService } from "../../compradores/services/comprador.service.js";
 import { getVentas, deleteVenta } from "../services/mantVentas.service.js";
 
 import Text from "../../../shared/components/Text.jsx";
@@ -30,6 +31,7 @@ export function useDetalleVenta({ onEdit, success, message } = {}) {
 
   const [fincas, setFincas] = useState([]);
   const [estanques, setEstanques] = useState([]);
+  const [compradores, setCompradores] = useState([]);
 
   const [mostrarExito, setMostrarExito] = useState(
     success === "1" && Boolean(message)
@@ -52,14 +54,20 @@ export function useDetalleVenta({ onEdit, success, message } = {}) {
     let activo = true;
 
     async function cargarCatalogos() {
-      const [dataFincas, dataEstanques] = await Promise.all([
-        fincaService.getFincas(),
-        estanqueService.getEstanques(),
-      ]);
+      try {
+        const [dataFincas, dataEstanques, dataCompradores] = await Promise.all([
+          fincaService.getFincas(),
+          estanqueService.getEstanques(),
+          compradorService.getCompradores(),
+        ]);
 
-      if (activo) {
-        setFincas(dataFincas);
-        setEstanques(dataEstanques);
+        if (activo) {
+          setFincas(dataFincas);
+          setEstanques(dataEstanques);
+          setCompradores(Array.isArray(dataCompradores) ? dataCompradores : []);
+        }
+      } catch (error) {
+        if (activo) mostrarError(error);
       }
     }
 
@@ -197,6 +205,16 @@ export function useDetalleVenta({ onEdit, success, message } = {}) {
   function TarjetaVenta({ venta }) {
     const finca = fincas.find((item) => item.id === venta.finca);
     const estanque = estanques.find((item) => item.id === venta.estanque);
+    const compradorId = venta.comprador ?? venta.compradorId ?? venta.comprador_id;
+    const comprador = compradores.find(
+      (item) => Number(item.id) === Number(compradorId),
+    );
+    const nombreCliente =
+      comprador?.nombre ??
+      comprador?.nombreComprador ??
+      (compradorId == null || compradorId === ""
+        ? "Cliente genérico"
+        : "Cliente");
 
     return (
       <Card style={styles.tarjeta}>
@@ -225,18 +243,29 @@ export function useDetalleVenta({ onEdit, success, message } = {}) {
         </View>
 
         <View style={styles.filasDetalle}>
+          <FilaDetalle etiqueta="Cliente" 
+          valor={nombreCliente} 
+          />
           <FilaDetalle
             etiqueta="Fecha"
             valor={new Date(venta.fecha).toLocaleDateString("es-CR")}
           />
-          <FilaDetalle
-            etiqueta="Total"
-            valor={formatearMontoColones(venta.total)}
+            <FilaDetalle
+            etiqueta="Peso promedio"
+            valor={
+              venta.pesoPromedio != null && venta.pesoPromedio !== ""
+                ? `${Number(venta.pesoPromedio).toLocaleString("es-CR")} g`
+                : "-"
+            }
           />
           <FilaDetalle etiqueta="Kilos" valor={`${venta.cantVendida} kg`} />
           <FilaDetalle
             etiqueta="Precio/kg"
             valor={`₡ ${Number(venta.precioKilo).toLocaleString("es-CR")}`}
+          />
+          <FilaDetalle
+            etiqueta="Total"
+            valor={formatearMontoColones(venta.total)}
           />
         </View>
       </Card>

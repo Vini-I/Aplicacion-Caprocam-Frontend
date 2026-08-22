@@ -4,11 +4,28 @@
  * ============================================================
  *
  * Orquesta la pantalla principal del módulo de Raleo: estado del
- * formulario (useRaleo), validación, guardado real del registro
- * (Raleo.service.js) y la alerta de feedback tras guardar. Antes
- * vivía como lógica inline dentro de RaleoScreen.jsx; se extrajo
- * aquí para seguir el mismo patrón de separación de hooks que
- * useAlimentacionScreen.js / useDensidadPoblacional.js.
+ * formulario (useRaleo), validación, cálculo del porcentaje y de
+ * la biomasa restante, guardado real del registro
+ * (Raleo.service.js) y la alerta de feedback tras guardar.
+ *
+ * CAMBIO (documento de requerimientos): el cálculo se invirtió.
+ *
+ * Antes el usuario digitaba el porcentaje y el sistema derivaba la
+ * biomasa restante:
+ *     restante = biomasaActual x (1 - porcentaje / 100)
+ *
+ * Ahora el usuario digita los kilogramos retirados y el sistema
+ * deriva las dos cosas que el documento pide guardar:
+ *     porcentaje       = (kgRetirados / biomasaAntes) x 100
+ *     biomasaRestante  = biomasaAntes - kgRetirados
+ *
+ * Ejemplo del documento: 2000 kg antes, 1000 kg retirados ->
+ * 1000 / 2000 x 100 = 50 % de raleo, restante 1000 kg.
+ *
+ * Ambos valores calculados SI se persisten (el documento los lista
+ * explícitamente entre los datos que se deben guardar). Antes la
+ * biomasa restante se calculaba solo para mostrarla en pantalla y
+ * nunca se enviaba al backend: se perdía en cada registro.
  *
  * Funcionalidad:
  * - alerta.visible se mantiene 3s si es "success" y 6s si es
@@ -20,44 +37,76 @@
  * - `observaciones` no es obligatorio: si el usuario no escribe
  *   nada, se completa con "No se realizan observaciones" antes de
  *   persistir el registro.
- * - Los errores que devuelve el backend al guardar se propagan
- *   con throw para que RaleoScreen.jsx los muestre con el
- *   ModalError global (useError().mostrarError), igual que antes.
  *
  * Retorna:
- * - form, updateField, biomasaRestante: estado del formulario.
+ * - form, updateField: estado del formulario.
+ * - porcentajeRaleo, biomasaRestante: valores calculados, listos
+ *   para mostrarse como campos de solo lectura ("" si todavía no
+ *   se puede calcular).
  * - submitted, errores: estado de validación.
  * - alerta: { visible, variant, mensaje }.
- * - handleGuardar(onError): valida y persiste el registro; si el
- *   guardado falla, llama a onError(error) en vez de manejarlo.
+ * - handleGuardar(): valida y persiste el registro.
  *
  * Ejemplo:
  * const { form, updateField, handleGuardar, alerta } = useRaleoScreen();
- * handleGuardar(mostrarError);
  */
 
 import { useEffect, useState } from "react";
 import useRaleo from "./useRaleo";
 import raleoService from "../services/Raleo.service";
+import { useError } from "../../../shared/context/ErrorContext.js"
 
 function convertirFecha(fecha) {
   const [dia, mes, anio] = fecha.split("/");
   return `${anio}-${mes}-${dia}`;
 }
 
+export function calcularRaleo(biomasaAntes, kgRetirados) {
+  /*
+  Descripcion:
+  Aplica las dos formulas del documento de requerimientos.
+  Se exporta para poder reusarla desde useEditarRaleo.js y para
+  que el calculo viva en un solo lugar.
+
+  Parametros:
+  - biomasaAntes: Biomasa del estanque antes del raleo, en kg.
+  - kgRetirados: Kilogramos retirados mediante el raleo.
+
+  Retorna:
+  - { porcentaje, biomasaRestante } como strings con 2 decimales,
+    o ambos en "" si los datos todavia no permiten calcular.
+  */
+  const antes = Number(biomasaAntes);
+  const retirados = Number(kgRetirados);
+
+  const datosIncompletos =
+    biomasaAntes === "" ||
+    kgRetirados === "" ||
+    Number.isNaN(antes) ||
+    Number.isNaN(retirados) ||
+    antes <= 0;
+
+  if (datosIncompletos) {
+    return { porcentaje: "", biomasaRestante: "" };
+  }
+
+  return {
+    porcentaje: ((retirados / antes) * 100).toFixed(2),
+    biomasaRestante: (antes - retirados).toFixed(2),
+  };
+}
+
 export default function useRaleoScreen() {
   const { form, updateField, resetForm, validarForm } = useRaleo();
+  const { mostrarError } = useError();
   const [submitted, setSubmitted] = useState(false);
   const [errores, setErrores] = useState({});
   const [alerta, setAlerta] = useState({ visible: false, variant: "success", mensaje: "" });
 
-  const biomasaActual = Number(form.biomasaActual);
-  const porcentaje = Number(form.porcentajeRaleo);
-
-  const biomasaRestante =
-    form.biomasaActual !== "" && form.porcentajeRaleo !== ""
-      ? biomasaActual * (1 - porcentaje / 100)
-      : "";
+  const { porcentaje: porcentajeRaleo, biomasaRestante } = calcularRaleo(
+    form.biomasaAntes,
+    form.kgRetirados
+  );
 
   useEffect(() => {
     if (!alerta.visible) return;
@@ -87,15 +136,15 @@ export default function useRaleoScreen() {
     }
 
     try {
+      //Se modifican los nombres para que queden como en backend
       const registro = {
         idFinca: form.finca,
         idEstanque: form.estanque,
         fecha: convertirFecha(form.fecha),
-        porcentaje: Number(form.porcentajeRaleo),
-        pesoEstimado: Number(form.pesoPromedio),
-        biomasaEstimado: Number(form.biomasaActual),
-        objetivo: form.objetivo,
-        metodo: form.metodo,
+        biomasaEstimada: Number(form.biomasaAntes),
+        kgRetirados: Number(form.kgRetirados),
+        porcentaje: Number(porcentajeRaleo),
+        biomasaRestante: Number(biomasaRestante),
         observaciones: form.observaciones?.trim()
           ? form.observaciones
           : "No se realizan observaciones",
@@ -103,13 +152,14 @@ export default function useRaleoScreen() {
       await raleoService.create(registro);
       setAlerta({ visible: true, variant: "success", mensaje: "Raleo registrado correctamente" });
     } catch (error) {
-      setAlerta({ visible: true, variant: "danger", mensaje: error.message });
+      mostrarError(error);
     }
   };
 
   return {
     form,
     updateField,
+    porcentajeRaleo,
     biomasaRestante,
     submitted,
     errores,

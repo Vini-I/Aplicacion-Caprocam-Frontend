@@ -13,16 +13,26 @@ Renderiza las tarjetas de resumen general del Dashboard.
 
 import { View } from "react-native";
 
-import Button from "../../../shared/components/Button";
-import Icon from "../../../shared/components/Icons";
-import CustomText from "../../../shared/components/Text";
+import Button from "../../../shared/components/Button.jsx";
+import Icon from "../../../shared/components/Icons.jsx";
+import CustomText from "../../../shared/components/Text.jsx";
 
-import { COLORS } from "../../../theme/colors";
-import { ICONS } from "../../../theme/icons";
-import { formatearNumero } from "../utils/DashboardUtils";
-import { styles } from "../styles/DashboardStyle";
+import { COLORS } from "../../../theme/colors.js";
+import { ICONS } from "../../../theme/icons.js";
+import { styles } from "../styles/DashboardStyle.js";
 
-function StatCard({ id, selectedId, onPress, icon, value, label, cardStyle, iconStyle, iconColor, danger, isTablet }) {
+function StatCard({
+  id,
+  selectedId,
+  onPress,
+  icon,
+  value,
+  label,
+  cardStyle,
+  iconStyle,
+  iconColor,
+  isTablet,
+}) {
   const cardStyles = [
     styles.statCard,
     cardStyle,
@@ -30,16 +40,19 @@ function StatCard({ id, selectedId, onPress, icon, value, label, cardStyle, icon
     selectedId === id ? styles.statCardActive : null,
   ];
 
-  const valueStyles = [
-    styles.statValue,
-    danger ? styles.statValueDanger : null,
-  ];
-
   return (
-    <Button variant="ghost" style={cardStyles} onPress={() => onPress(id)}>
+    <Button
+      variant="ghost"
+      style={cardStyles}
+      onPress={() => onPress(id)}
+    >
       <View style={styles.statTopRow}>
         <View style={[styles.statIconBox, iconStyle]}>
-          <Icon icon={icon} size={22} color={iconColor} />
+          <Icon
+            icon={icon}
+            size={22}
+            color={iconColor}
+          />
         </View>
 
         <Icon
@@ -50,11 +63,15 @@ function StatCard({ id, selectedId, onPress, icon, value, label, cardStyle, icon
       </View>
 
       <View style={styles.statBottom}>
-        <CustomText style={valueStyles}>
+        <CustomText style={styles.statValue}>
           {value}
         </CustomText>
 
-        <CustomText size={12} color={COLORS.textTertiary} style={styles.statLabel}>
+        <CustomText
+          size={12}
+          color={COLORS.textTertiary}
+          style={styles.statLabel}
+        >
           {label}
         </CustomText>
       </View>
@@ -68,16 +85,20 @@ export default function DashboardEstadisticas({
   totalFincas,
   totalEstanques,
   totalCasosSanitarios,
-  totalMortalidad,
   onSelect,
 }) {
   return (
-    <View style={[styles.statsGrid, isTablet ? styles.statsGridTablet : null]}>
+    <View
+      style={[
+        styles.statsGrid,
+        isTablet ? styles.statsGridTablet : null,
+      ]}
+    >
       <StatCard
         id="fincas"
         selectedId={selectedCard}
         onPress={onSelect}
-        icon={ICONS.home}
+        icon={ICONS.location}
         value={totalFincas}
         label="Fincas registradas"
         cardStyle={styles.cardBlue}
@@ -109,20 +130,6 @@ export default function DashboardEstadisticas({
         cardStyle={styles.cardYellow}
         iconStyle={styles.iconYellow}
         iconColor={COLORS.warning}
-        isTablet={isTablet}
-      />
-
-      <StatCard
-        id="mortalidad"
-        selectedId={selectedCard}
-        onPress={onSelect}
-        icon={ICONS.mortality}
-        value={formatearNumero(totalMortalidad)}
-        label="Mortalidad total"
-        cardStyle={styles.cardRed}
-        iconStyle={styles.iconRed}
-        iconColor={COLORS.error}
-        danger={true}
         isTablet={isTablet}
       />
     </View>

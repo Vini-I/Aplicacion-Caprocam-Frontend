@@ -27,7 +27,7 @@ export async function obtenerDetalleReporte({
       const registros = await crecimientoService.getAll();
 
       return ordenarRecientesPrimero(
-        registros.filter(
+        (Array.isArray(registros) ? registros : []).filter(
           (r) =>
             Number(r.finca ?? r.finca_id ?? r.fincaId) === Number(fincaId) &&
             Number(r.estanque ?? r.estanque_id ?? r.estanqueId) === Number(estanqueId)
@@ -85,7 +85,7 @@ export async function obtenerDetalleReporte({
       const registrosDensidad = await densidadPoblacionalService.getAll();
 
       return ordenarRecientesPrimero(
-        registrosDensidad.filter(
+        (Array.isArray(registrosDensidad) ? registrosDensidad : []).filter(
           (r) =>
             Number(r.idFinca) === Number(fincaId) &&
             Number(r.idEstanque) === Number(estanqueId)
@@ -94,6 +94,7 @@ export async function obtenerDetalleReporte({
 
     case "fisico_quimico": {
       const registrosFq = await getLecturas();
+      
       return ordenarRecientesPrimero(
         (Array.isArray(registrosFq) ? registrosFq : []).filter(
           (r) =>

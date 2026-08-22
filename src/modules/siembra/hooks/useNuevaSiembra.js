@@ -33,14 +33,14 @@
  */
 
 import { useState, useEffect, useMemo, useRef } from "react";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 
 import {
   useFieldValidation,
   validarCamposObligatorios,
 } from "./useFieldValidation";
 import { obtenerCamposObligatorios as obtenerCamposObligatoriosPorTipo } from "./siembraValidationRules";
-import { calcularCantidadSembrada } from "./siembraCalculos";
+import { calcularDensidadDesdeCantidad } from "./siembraCalculos";
 import { obtenerFechaHoy, formatearFechaDesdeISO } from "./dateUtils";
 
 import { fincaService } from "../../finca/services/finca.service";
@@ -54,6 +54,7 @@ import {
   createPrecriaConLote,
 } from "../services/precria.service";
 import {
+  getSiembras,
   createSiembra,
   createSiembraConLote,
 } from "../services/siembra.service";
@@ -100,7 +101,7 @@ const initialFormData = {
 
   fechaSiembra: "",
   tecnicaCultivo: "",
-  densidadPoblacional: "8",
+  densidadPoblacional: "",
   cantidadSembrada: "",
   plSiembra: "",
   duracionCiclo: "90",
@@ -124,8 +125,7 @@ const initialFormData = {
   cantidadSobrevivientePrecria: "",
 };
 
-export default function useNuevaSiembra() {
-  const router = useRouter();
+export default function useNuevaSiembra(onSuccess) {
 
   const [mensaje, setMensaje] = useState("");
   const [mensajeVariant, setMensajeVariant] = useState("info");
@@ -134,6 +134,8 @@ export default function useNuevaSiembra() {
   const { mostrarError } = useError();
 
   const mensajeTimeoutRef = useRef(null);
+
+  const scrollRef = useRef(null);
 
   function mostrarMensaje(texto, variant) {
     if (mensajeTimeoutRef.current) {
@@ -153,6 +155,12 @@ export default function useNuevaSiembra() {
       if (mensajeTimeoutRef.current) clearTimeout(mensajeTimeoutRef.current);
     };
   }, []);
+
+  useEffect(() => {
+  if (mensaje !== "" && mensajeVariant === "danger") {
+    scrollRef.current?.scrollToEnd({ animated: true });
+  }
+}, [mensaje, mensajeVariant]);
 
   const [formData, setFormData] = useState(initialFormData);
   const params = useLocalSearchParams();
@@ -262,14 +270,24 @@ export default function useNuevaSiembra() {
   const [preCriasDisponibles, setPreCriasDisponibles] = useState([]);
 
   useEffect(() => {
-    async function cargarPrecriasDisponibles() {
-      try {
-        const precrias = await getPrecrias();
-        setPreCriasDisponibles(
-          precrias
-            .filter((p) => p.estado === "Finalizada")
-            .map((p) => ({ label: `Pre-Cría #${p.id}`, value: String(p.id) })),
-        );
+  async function cargarPrecriasDisponibles() {
+    try {
+      const [precrias, siembras] = await Promise.all([
+        getPrecrias(),
+        getSiembras()
+      ]);
+      
+      const precriasUsadasIds = new Set(
+        siembras
+          .filter((s) => s.precria_id)
+          .map((s) => String(s.precria_id))
+      );
+
+      setPreCriasDisponibles(
+        precrias
+          .filter((p) => p.estado === "Finalizada" && !precriasUsadasIds.has(String(p.id)))
+          .map((p) => ({ label: `Pre-Cría #${p.id}`, value: String(p.id) })),
+      );
       } catch (err) {
         // No bloquea el formulario si esto falla - la siembra directa
         // sigue funcionando igual.
@@ -288,11 +306,11 @@ export default function useNuevaSiembra() {
       const updatedData = { ...previousData, [field]: value };
       if (
         updatedData.tipoRegistro === "siembra" &&
-        (field === "areaHectareas" || field === "densidadPoblacional")
+        (field === "areaHectareas" || field === "cantidadSembrada")
       ) {
-        updatedData.cantidadSembrada = calcularCantidadSembrada(
+        updatedData.densidadPoblacional = calcularDensidadDesdeCantidad(
           updatedData.areaHectareas,
-          updatedData.densidadPoblacional,
+          updatedData.cantidadSembrada,
         );
       }
       return updatedData;
@@ -317,9 +335,9 @@ export default function useNuevaSiembra() {
       const updatedData = { ...previousData, estanque: value };
       if (previousData.tipoRegistro === "siembra") {
         updatedData.areaHectareas = area;
-        updatedData.cantidadSembrada = calcularCantidadSembrada(
+        updatedData.densidadPoblacional = calcularDensidadDesdeCantidad(
           area,
-          previousData.densidadPoblacional,
+          previousData.cantidadSembrada,
         );
       }
       return updatedData;
@@ -367,7 +385,10 @@ export default function useNuevaSiembra() {
         : "";
 
       setFormData((previo) => {
-        const densidad = previo.densidadPoblacional || "8";
+        const densidadRecalculada = calcularDensidadDesdeCantidad(
+          area,
+          precria.cantidad_final,
+        );
         const actualizado = {
           ...previo,
           finca: precria.finca_id || previo.finca,
@@ -378,7 +399,7 @@ export default function useNuevaSiembra() {
           fechaSalidaPrecria: formatearFechaDesdeISO(precria.fecha_fin),
           pasoPorPrecria: "si",
           precriaId: String(precriaId),
-          densidadPoblacional: densidad,
+          densidadPoblacional: densidadRecalculada,  
           areaHectareas: area,
           loteId: precria.lote_larva_id,
           codigoLoteLarva: lote?.codigo_lote || "",
@@ -560,15 +581,8 @@ export default function useNuevaSiembra() {
       }
 
       setSubmitted(false);
-      router.push({
-        pathname: "/siembra",
-        params: {
-          mensajeExito:
-            formData.tipoRegistro === "precria"
-              ? "Pre-Cría registrada correctamente."
-              : "Siembra registrada correctamente.",
-        },
-      });
+      const m = formData.tipoRegistro === "precria" ? "Pre-Cría registrada correctamente." : "Siembra registrada correctamente.";
+      if (onSuccess) onSuccess(m);
     } catch (err) {
       const mensajeBackend = err.response?.data?.message;
       mostrarMensaje(
@@ -598,6 +612,7 @@ export default function useNuevaSiembra() {
     mensajeVariant,
     cargandoCatalogos,
     guardando,
+    scrollRef,
     handleChange,
     handleChangeFinca,
     handleChangeEstanque,

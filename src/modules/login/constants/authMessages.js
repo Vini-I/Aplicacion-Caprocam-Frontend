@@ -24,6 +24,7 @@ export const AUTH_MESSAGES = {
   ERROR_PASSWORD_LOWERCASE:  'Debe incluir al menos una letra minúscula',
   ERROR_PASSWORD_DIGIT:      'Debe incluir al menos un número',
   ERROR_PASSWORD_SYMBOL:     'Debe incluir al menos un símbolo (@$!%*?&._-#)',
+  ERROR_GRUPO_DATOS_INVALID: 'Ingresa los últimos 3 dígitos del CBO (solo números)',
   ERROR_SERVER:              'Error del servidor. Intenta de nuevo más tarde',
   ERROR_NETWORK:             'Sin conexión. Verifica tu red e intenta de nuevo',
   ERROR_UNKNOWN:             'Ocurrió un error. Intenta de nuevo',
@@ -32,29 +33,27 @@ export const AUTH_MESSAGES = {
   COMPANY_NAME:               'Caprocam',
   SUBTITLE:                   'Ingresa tus credenciales para continuar',
   BUTTON_LOGIN:               'Iniciar Sesión',
-  BUTTON_GO_TO_REGISTER:      'Registrarse',
   LOADING_LOGIN:              'Verificando credenciales...',
   ERROR_INVALID_CREDENTIALS:  'Usuario o contraseña incorrectos',
-  SEPARATOR_TEXT_LOGIN:       '¿No tienes cuenta?',
 
-  // SECCIÓN: Registro Web
+  // SECCIÓN: Registro Web (solo accesible desde el drawer, admins)
   REGISTER_TITLE:           'Crear cuenta',
   REGISTER_SUBTITLE:        'Completa tus datos para registrarte',
   LABEL_NOMBRE:             'Nombre',
   LABEL_APELLIDOS:          'Apellidos',
   LABEL_EMAIL:              'Correo electrónico',
+  LABEL_GRUPO_DATOS:        'Grupo de datos (últimos 3 dígitos del CBO)',
   PLACEHOLDER_NOMBRE:       'Ingresa tu nombre',
   PLACEHOLDER_APELLIDOS:    'Ingresa tus apellidos',
   PLACEHOLDER_EMAIL:        'Ingresa tu correo electrónico',
+  PLACEHOLDER_GRUPO_DATOS:  'Ej: 678',
   BUTTON_SUBMIT_REGISTER:   'Registrarme',
-  BUTTON_BACK_TO_LOGIN:     'Ya tengo cuenta',
   LOADING_REGISTER:         'Creando tu cuenta...',
-  SEPARATOR_TEXT_REGISTER:  'o',
 
   // SECCIÓN: Modal de éxito del registro
   MODAL_SUCCESS_TITLE:   '¡Cuenta creada con éxito!',
   MODAL_SUCCESS_BODY:    'Recibirás un correo electrónico con la información de acceso a tu cuenta.',
-  MODAL_SUCCESS_BUTTON:  'Volver al Login',
+  MODAL_SUCCESS_BUTTON:  'Volver al inicio',
 };
 
 export const LOGIN_MESSAGES = {

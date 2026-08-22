@@ -24,9 +24,7 @@ export default function RootLayout() {
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="loginWeb" />
 
-          <Stack.Screen name="login" />
-
-          <Stack.Screen name="colaboradores" />
+          <Stack.Screen name="creditos" />
 
           <Stack.Screen name="index" />
         </Stack>

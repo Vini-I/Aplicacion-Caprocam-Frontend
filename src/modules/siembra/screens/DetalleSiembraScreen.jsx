@@ -24,6 +24,8 @@
  *    navega a /siembra/editar, y el botón "Finalizar Pre-Cría" navega
  *    a la misma ruta con el param "finalizar", según el estándar de
  *    una ventana por operación CRUD (no combinar editar y detalle).
+ *    El botón "Finalizar Siembra" abre un modal de confirmación
+ *    antes de ejecutar la acción, ya que es irreversible.
  *
  * 5. Cuando la Siembra viene de una Pre-Cría (pasoPorPrecria === "si"),
  *    el resumen embebido de Pre-Cría y la sección "Datos de larva"
@@ -33,6 +35,8 @@
  * LÓGICA:
  * - La gestión del estado y la carga de datos se realiza mediante:
  *  -useDetalleSiembra.
+ * - fincaLabel/estanqueLabel se consumen ya resueltos desde el hook
+ *   (no se recalculan en este componente).
  *
  * COMPONENTES UTILIZADOS:
  *
@@ -41,12 +45,15 @@
  * - Button.
  * - ProgressBar.
  * - Alert.
+ * - Modal, Title (confirmación antes de finalizar).
  * - Componentes de sección del módulo Siembra.
  *
  * NAVEGACIÓN:
  * - /siembra/editar
  *      Se navega hacia aquí al presionar "Editar Siembra/Pre-Cría" o
  *      "Finalizar Pre-Cría" (este último agrega el param "finalizar").
+ *      Se usa useRouter directamente en el screen (se deja así por
+ *      ahora, es un tema aparte del reparto lógica/UI).
  *
  * - /siembra/nueva
  *      Se navega hacia aquí al presionar "Registrar Siembra", cuando
@@ -74,7 +81,6 @@
 
 import React from "react";
 
-import { useLocalSearchParams, useRouter } from "expo-router";
 import { View, ScrollView } from "react-native";
 
 // Componentes compartidos
@@ -87,6 +93,8 @@ import Alert from "../../../shared/components/Alert";
 import Icon from "../../../shared/components/Icons";
 import NavbarRegistro from "../../../shared/components/NavbarRegistro";
 import Text from "../../../shared/components/Text";
+import Modal from "../../../shared/components/Modal";
+import Title from "../../../shared/components/Title";
 
 // Secciones del formulario
 
@@ -105,10 +113,14 @@ import { STYLE } from "../../../theme/style";
 // Hook principal
 import useDetalleSiembra from "../hooks/useDetalleSiembra";
 
-export default function DetalleSiembraScreen() {
-  const { id } = useLocalSearchParams();
-  const router = useRouter();
-
+export default function DetalleSiembraScreen({
+  id,
+  tipoRegistroParam,
+  finalizar,
+  onEdit,
+  onCrearSiembra,
+  onSuccessFinalizarSiembra,
+}) {
   const {
     siembra,
     formData,
@@ -130,7 +142,17 @@ export default function DetalleSiembraScreen() {
     handleFinalizarSiembra,
     handleCrearSiembraDesdePrecria,
     fieldHelpers,
-  } = useDetalleSiembra(id);
+    confirmarFinalizar,
+    setConfirmarFinalizar,
+    fincaLabel,
+    estanqueLabel,
+  } = useDetalleSiembra({
+    id,
+    tipoRegistroParam,
+    finalizar,
+    onCrearSiembra,
+    onSuccessFinalizarSiembra,
+  });
 
   if (!siembra || !formData) {
     return (
@@ -138,15 +160,10 @@ export default function DetalleSiembraScreen() {
         Titulo="Detalle de Siembra"
         Subtitulo="Cargando información..."
         Icono="shrimp"
+        RutaVolver="/siembra"
       />
     );
   }
-
-  const fincaLabel =
-    fincas.find((f) => f.value === formData.finca)?.label || "Sin finca";
-  const estanqueLabel =
-    estanques.find((e) => e.value === formData.estanque)?.label ||
-    "Sin estanque";
 
   return (
     <>
@@ -158,6 +175,7 @@ export default function DetalleSiembraScreen() {
         }
         Subtitulo={`${estanqueLabel} – ${fincaLabel}`}
         Icono="shrimp"
+        RutaVolver={`/siembra`}
       />
       <ScrollView
         style={STYLE.container}
@@ -299,44 +317,30 @@ export default function DetalleSiembraScreen() {
                   </View>
                 </Button>
               )}
-             
+
             {formData.estado !== "Finalizada" && (
-            <Button
-              style={styles.button}
-              onPress={() =>
-                router.push({
-                  pathname: "/siembra/editar",
-                  params: { id, tipoRegistro: formData.tipoRegistro },
-                })
-              }
-              textStyle={styles.textoBoton}
-              variant="outline"
-            >
-              <View style={styles.buttonContent}>
-                <Icon icon={ICONS.edit} color={COLORS.primary} />
-                <Text style={styles.textoBoton}>
-                  {formData.tipoRegistro === "precria"
-                    ? "Editar Pre-Cría"
-                    : "Editar Siembra"}
-                </Text>
-              </View>
-            </Button>
+              <Button
+                style={styles.button}
+                onPress={() => onEdit(id, formData.tipoRegistro)}
+                textStyle={styles.textoBoton}
+                variant="outline"
+              >
+                <View style={styles.buttonContent}>
+                  <Icon icon={ICONS.edit} color={COLORS.primary} />
+                  <Text style={styles.textoBoton}>
+                    {formData.tipoRegistro === "precria"
+                      ? "Editar Pre-Cría"
+                      : "Editar Siembra"}
+                  </Text>
+                </View>
+              </Button>
             )}
 
             {formData.tipoRegistro === "precria" &&
               formData.estado !== "Finalizada" && (
                 <Button
                   style={styles.button}
-                  onPress={() =>
-                    router.push({
-                      pathname: "/siembra/editar",
-                      params: {
-                        id,
-                        tipoRegistro: formData.tipoRegistro,
-                        finalizar: "1",
-                      },
-                    })
-                  }
+                  onPress={() => onEdit(id, formData.tipoRegistro, "1")}
                   disabled={guardando}
                   textStyle={styles.textoBoton}
                   variant="outline"
@@ -351,7 +355,7 @@ export default function DetalleSiembraScreen() {
               formData.estado !== "Finalizada" && (
                 <Button
                   style={styles.button}
-                  onPress={handleFinalizarSiembra}
+                  onPress={() => setConfirmarFinalizar(true)}
                   disabled={guardando}
                   textStyle={styles.textoBoton}
                   variant="outline"
@@ -367,6 +371,30 @@ export default function DetalleSiembraScreen() {
           </View>
         </View>
       </ScrollView>
+      <Modal
+        visible={confirmarFinalizar}
+        onClose={() => setConfirmarFinalizar(false)}
+        closeText="Cancelar"
+        containerStyle={STYLE.contentWrapper}
+        buttonStyle={styles.modalCancelButton}
+        buttonTextStyle={styles.modalCancelButtonText}
+      >
+        <Title level={3} style={styles.modalTitle}>
+          ¿Finalizar Siembra?
+        </Title>
+        <Text style={styles.modalMessage}>
+          Esta acción no se puede deshacer.
+        </Text>
+        <Button
+          style={styles.modalConfirmButton}
+          onPress={() => {
+            setConfirmarFinalizar(false);
+            handleFinalizarSiembra();
+          }}
+        >
+          <Text style={styles.modalConfirmButtonText}>Sí, finalizar</Text>
+        </Button>
+      </Modal>
     </>
   );
 }

@@ -56,6 +56,7 @@ export default function RaleoScreen() {
   const {
     form,
     updateField,
+    porcentajeRaleo,
     biomasaRestante,
     submitted,
     errores,
@@ -79,6 +80,7 @@ export default function RaleoScreen() {
         Titulo="Raleo"
         Subtitulo="Cosecha parcial y densidad"
         Icono="raleo"
+        RutaVolver="/registros"
       />
 
       <View style={STYLE.container}>
@@ -92,6 +94,7 @@ export default function RaleoScreen() {
             updateField={updateField}
             submitted={submitted}
             errores={errores}
+            porcentajeCalculado={porcentajeRaleo}
             biomasaCalculada={biomasaRestante}
           />
 
@@ -121,3 +124,4 @@ export default function RaleoScreen() {
     </>
   );
 }
+

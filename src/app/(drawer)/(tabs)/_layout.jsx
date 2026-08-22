@@ -10,7 +10,7 @@ import Icon from "../../../shared/components/Icons";
 export default function TabsLayout() {
   return (
 
-    <Tabs screenOptions={{ tabBarActiveTintColor: "teal", headerShown: false }}>
+    <Tabs screenOptions={{ tabBarActiveTintColor: "#009EF5", headerShown: false }}>
       <Tabs.Screen
         name="inicio"
         options={{
@@ -28,7 +28,7 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, size }) => (
             <Icon icon={ICONS.location} size={17} color={color} />
           ),
-          tabBarActiveTintColor: "teal",
+          tabBarActiveTintColor: "#009EF5",
           tabBarLabel: "Finca",
           title: "Finca",
         }}
@@ -40,7 +40,7 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, size }) => (
             <Icon icon={ICONS.document} color={color} size={20} />
           ),
-          tabBarActiveTintColor: "teal",
+          tabBarActiveTintColor: "#009EF5",
           tabBarLabel: "Registros",
           title: "Registros",
         }}
@@ -53,6 +53,7 @@ export default function TabsLayout() {
             <Icon icon={ICONS.shrimp} color={color} size={20}
             />
           ),
+          tabBarActiveTintColor: "#009EF5",
           tabBarLabel: "Siembra",
           title: "Siembra",
         }}

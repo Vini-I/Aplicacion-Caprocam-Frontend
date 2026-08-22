@@ -59,6 +59,7 @@ export default function FincaNuevaScreen({ onFinca }) {
         Titulo="Nueva Finca"
         Subtitulo="Registro de finca"
         Icono="add"
+        RutaVolver="/finca"
       />
       <ScrollView
         style={STYLE.container}

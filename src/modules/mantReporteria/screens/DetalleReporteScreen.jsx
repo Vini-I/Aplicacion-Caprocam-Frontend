@@ -79,6 +79,7 @@ export default function DetalleReporteScreen({ onEditar }) {
         Titulo="Detalle Registro"
         Subtitulo="Historico Registros"
         Icono="document"
+        RutaVolver="/registros"
       />
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={STYLE.container}>

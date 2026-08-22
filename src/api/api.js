@@ -18,18 +18,30 @@ api.interceptors.request.use(
                 config.headers.Authorization = `Bearer ${token}`;
             }
         } catch (e) {
-            // Ignorar en entornos sin localStorage
+            // Ignorar
         }
         return config;
     },
     (error) => Promise.reject(error)
 );
 
-// ── Interceptor: limpia el token si el backend responde 401 (Inválido/Expirado) ──
+// ── Interceptor:  Maneja respuestas y renovación del token ──
 api.interceptors.response.use(
-    (response) => response,
+    (response) => {
+        try {
+            const renewedToken = response.headers['x-renewed-token'] ||
+                response.headers['X-Renewed-Token'];
+            if (renewedToken) {
+                localStorage.setItem('caprocam_auth_token', renewedToken);
+            }
+        } catch (e) {
+            // Ignorar
+        }
+        return response;
+    },
     (error) => {
-        if (error.response && error.response.status === 401) {
+        if (error.response && (error.response.status === 401 || 
+                error.response.status === 403)) {
             try {
                 localStorage.removeItem('caprocam_auth_token');
                 localStorage.removeItem('caprocam_usuario');

@@ -81,6 +81,7 @@ export default function useAlimentacionScreen(navigation) {
   const {
     alimentaciones,
     loading,
+    error: errorListado,
     recargar,
   } = useAlimentacion();
 
@@ -225,6 +226,7 @@ export default function useAlimentacionScreen(navigation) {
   return {
     alimentaciones,
     loading,
+    errorListado,
     form,
     updateField,
     submitted,

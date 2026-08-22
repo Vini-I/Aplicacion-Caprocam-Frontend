@@ -186,6 +186,7 @@ export default function AgregarProducto() {
               label="Fecha de ingreso"
               value={form.entryDate}
               onChangeText={(val) => handleField("entryDate", val)}
+              allowFutureDates={false}
               containerStyle={styles.field}
               labelStyle={styles.label}
             />

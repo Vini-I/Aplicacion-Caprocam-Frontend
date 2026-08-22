@@ -28,9 +28,7 @@ export function formatearNumero(valor) {
 }
 
 export function convertirFecha(valor) {
-  if (!valor) {
-    return null;
-  }
+  if (!valor) return null;
 
   if (valor instanceof Date) {
     return Number.isNaN(valor.getTime()) ? null : new Date(valor);
@@ -42,16 +40,10 @@ export function convertirFecha(valor) {
 
   if (textoCorto.includes("-")) {
     const partes = textoCorto.split("-");
-
-    if (partes.length === 3) {
-      fecha = new Date(Number(partes[0]), Number(partes[1]) - 1, Number(partes[2]));
-    }
+    if (partes.length === 3) fecha = new Date(Number(partes[0]), Number(partes[1]) - 1, Number(partes[2]));
   } else if (textoCorto.includes("/")) {
     const partes = textoCorto.split("/");
-
-    if (partes.length === 3) {
-      fecha = new Date(Number(partes[2]), Number(partes[1]) - 1, Number(partes[0]));
-    }
+    if (partes.length === 3) fecha = new Date(Number(partes[2]), Number(partes[1]) - 1, Number(partes[0]));
   } else {
     fecha = new Date(texto);
   }
@@ -61,10 +53,7 @@ export function convertirFecha(valor) {
 
 export function formatearFechaCorta(valor) {
   const fecha = convertirFecha(valor);
-
-  if (!fecha) {
-    return "Sin fecha";
-  }
+  if (!fecha) return "Sin fecha";
 
   const dia = String(fecha.getDate()).padStart(2, "0");
   const mes = String(fecha.getMonth() + 1).padStart(2, "0");
@@ -84,10 +73,7 @@ function obtenerTiempo(valor) {
 
 function estaDentroUltimosSieteDias(valor) {
   const fecha = convertirFecha(valor);
-
-  if (!fecha) {
-    return false;
-  }
+  if (!fecha) return false;
 
   const hoy = new Date();
   hoy.setHours(0, 0, 0, 0);
@@ -101,8 +87,6 @@ export function obtenerResumenEnfermedadesVacio() {
   return {
     totalCasos: 0,
     totalRegistros: 0,
-    totalMortalidad: 0,
-    totalMortalidadRegistrada: 0,
     enfermedadesFrecuentes: [],
     severidadesFrecuentes: [],
   };
@@ -111,12 +95,6 @@ export function obtenerResumenEnfermedadesVacio() {
 export function obtenerResumenParasitologiasVacio() {
   return {
     totalRegistros: 0,
-    totalMuestreados: 0,
-    totalCamaronesMuestreados: 0,
-    totalInfectados: 0,
-    totalCamaronesInfectados: 0,
-    porcentajePromedio: 0,
-    promedioInfeccion: 0,
     parasitosFrecuentes: [],
     gradosFrecuentes: [],
   };
@@ -220,18 +198,14 @@ export function obtenerAlimentacionSemanal(alimentaciones) {
   const lista = Array.isArray(alimentaciones) ? alimentaciones : [];
 
   lista.forEach(function (registro) {
-    if (!estaDentroUltimosSieteDias(registro.fecha)) {
-      return;
-    }
+    if (!estaDentroUltimosSieteDias(registro.fecha)) return;
 
     const diaRegistro = obtenerDiaSemana(registro.fecha);
     const dia = dias.find(function (item) {
       return item.dia === diaRegistro;
     });
 
-    if (dia) {
-      dia.kg += obtenerNumeroSeguro(registro.cantidadKg);
-    }
+    if (dia) dia.kg += obtenerNumeroSeguro(registro.cantidadKg);
   });
 
   return dias.map(function (dia) {
@@ -257,10 +231,6 @@ export function obtenerTotalCasosSanitarios(resumenEnfermedades, resumenParasito
   return totalEnfermedades + totalParasitologias;
 }
 
-export function obtenerMortalidadTotal(resumenEnfermedades) {
-  return obtenerNumeroSeguro(resumenEnfermedades?.totalMortalidad ?? resumenEnfermedades?.totalMortalidadRegistrada);
-}
-
 export function obtenerCasosSanitarios(registrosEnfermedades, registrosParasitologias) {
   const enfermedades = Array.isArray(registrosEnfermedades) ? registrosEnfermedades : [];
   const parasitologias = Array.isArray(registrosParasitologias) ? registrosParasitologias : [];
@@ -270,6 +240,7 @@ export function obtenerCasosSanitarios(registrosEnfermedades, registrosParasitol
 
     return {
       id: `enfermedad-${registro.id}`,
+      registroId: registro.id,
       tipo: "enfermedad",
       nombre: obtenerTextoSeguro(registro.enfermedadNombre, registro.enfermedad),
       finca: obtenerTextoSeguro(registro.fincaNombre, registro.finca),
@@ -287,6 +258,7 @@ export function obtenerCasosSanitarios(registrosEnfermedades, registrosParasitol
 
     return {
       id: `parasitologia-${registro.id}`,
+      registroId: registro.id,
       tipo: "parasitologia",
       nombre: obtenerTextoSeguro(registro.parasitoNombre, registro.parasito),
       finca: obtenerTextoSeguro(registro.fincaNombre, registro.finca),
@@ -298,31 +270,11 @@ export function obtenerCasosSanitarios(registrosEnfermedades, registrosParasitol
     };
   });
 
-  return [...casosEnfermedades, ...casosParasitologias].sort(function (a, b) {
-    return b.fechaOrden - a.fechaOrden;
-  }).slice(0, 6);
-}
-
-export function obtenerRegistrosMortalidad(registrosEnfermedades) {
-  const lista = Array.isArray(registrosEnfermedades) ? registrosEnfermedades : [];
-
-  return lista.map(function (registro) {
-    const fecha = obtenerTextoSeguro(registro.fechaReporte, registro.timestamp);
-
-    return {
-      id: registro.id,
-      nombre: obtenerTextoSeguro(registro.enfermedadNombre, registro.enfermedad),
-      finca: obtenerTextoSeguro(registro.fincaNombre, registro.finca),
-      estanque: obtenerTextoSeguro(registro.estanqueCodigo, registro.estanque),
-      fecha,
-      mortalidad: obtenerNumeroSeguro(registro.mortalidadRegistrada ?? registro.mortalidad),
-      fechaOrden: obtenerTiempo(registro.timestamp ?? fecha),
-    };
-  }).filter(function (registro) {
-    return registro.mortalidad > 0;
-  }).sort(function (a, b) {
-    return b.fechaOrden - a.fechaOrden;
-  }).slice(0, 6);
+  return [...casosEnfermedades, ...casosParasitologias]
+    .sort(function (a, b) {
+      return b.fechaOrden - a.fechaOrden;
+    })
+    .slice(0, 6);
 }
 
 function crearUltimoRegistro(id, modulo, detalle, fecha, fechaVisible) {
@@ -384,9 +336,7 @@ export function obtenerCategoriasAlertas(alertas) {
   return lista.reduce(function (categorias, alerta) {
     const categoria = obtenerTextoSeguro(alerta.categoria, alerta.tipo);
 
-    if (!categorias[categoria]) {
-      categorias[categoria] = [];
-    }
+    if (!categorias[categoria]) categorias[categoria] = [];
 
     categorias[categoria].push(alerta);
     return categorias;
