@@ -51,6 +51,7 @@ export default function WebRegisterScreen({
   const {
     nombre, setNombre, apellidos, setApellidos,
     email, setEmail, username, setUsername, password, setPassword,
+    grupoDatos, setGrupoDatos, esGlobal,
     errors, validationResult, loading, serverError, setServerError,
     handleRegister, showSuccessModal, handleModalClose,
   } = useRegister({ onRegisterSuccess });
@@ -65,6 +66,11 @@ export default function WebRegisterScreen({
       { key: 'apellidos', label: MSG.LABEL_APELLIDOS, value: apellidos, onChangeText: createChangeHandler(setApellidos), placeholder: MSG.PLACEHOLDER_APELLIDOS, error: errors.apellidos, maxLength: 120 },
       { key: 'email', label: MSG.LABEL_EMAIL, value: email, onChangeText: createChangeHandler(setEmail), placeholder: MSG.PLACEHOLDER_EMAIL, error: errors.email, autoCapitalize: 'none', autoCorrect: false, keyboardType: 'email-address', maxLength: 120 },
       { key: 'username', label: MSG.LABEL_USERNAME, value: username, onChangeText: createChangeHandler(setUsername), placeholder: MSG.PLACEHOLDER_USERNAME, error: errors.username, autoCapitalize: 'none', autoCorrect: false, maxLength: 80 },
+      // Solo el admin global (accesoGlobal = true) ve y llena este campo.
+      // Para un admin normal ni se muestra ni se envía en el payload.
+      ...(esGlobal ? [
+        { key: 'grupoDatos', label: MSG.LABEL_GRUPO_DATOS, value: grupoDatos, onChangeText: createChangeHandler(setGrupoDatos), placeholder: MSG.PLACEHOLDER_GRUPO_DATOS, error: errors.grupoDatos, keyboardType: 'numeric', maxLength: 3 },
+      ] : []),
       { key: 'password', label: MSG.LABEL_PASSWORD, value: password, onChangeText: createChangeHandler(setPassword), placeholder: MSG.PLACEHOLDER_PASSWORD, error: errors.password, secureTextEntry: true },
     ];
     
