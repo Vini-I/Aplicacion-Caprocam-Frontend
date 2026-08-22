@@ -46,14 +46,13 @@ import { useRouter } from "expo-router";
 import { compradorService } from "../services/comprador.service";
 import { useError } from "../../../shared/context/ErrorContext";
 
-// Acepta entre 7 y 12 dígitos (rango, no un largo fijo)
-const TELEFONO_REGEX = /^\d{7,12}$/;
+// Exige exactamente 8 dígitos
+const TELEFONO_REGEX = /^\d{8}$/;
 
-export const TELEFONO_MAX_LENGTH = 12;
+export const TELEFONO_MAX_LENGTH = 8;
 export const CEDULA_MAX_LENGTH = 20;
 
-// Exige que termine EXACTAMENTE en ".com" -- nada después
-const CORREO_REGEX = /^[^\s@]+@[^\s@]+\.com$/i;
+const CORREO_REGEX = /^[^\s@]+@[^\s@]+$/;
 
 function esTelefonoValido(valor) {
   return valor.trim() !== "" && TELEFONO_REGEX.test(valor.trim());
