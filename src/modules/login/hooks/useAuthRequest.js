@@ -9,7 +9,8 @@
  */
 
 import { useState } from 'react';
-import { saveToken, saveUsuario } from '../utils/tokenStorage';
+import { saveToken, saveUsuario, saveRefreshToken } from '../utils/tokenStorage';
+import { useError } from '../../../shared/context/ErrorContext';
 
 /**
  * useAuthRequest({ onSuccess })
@@ -21,6 +22,7 @@ import { saveToken, saveUsuario } from '../utils/tokenStorage';
 export const useAuthRequest = ({ onSuccess = () => { } } = {}) => {
   const [loading, setLoading] = useState(false);
   const [serverError, setServerError] = useState(null);
+  const { mostrarError } = useError();
 
   /**
    * submit(requestFn, isFormValid)
@@ -41,12 +43,19 @@ export const useAuthRequest = ({ onSuccess = () => { } } = {}) => {
     setLoading(true);
 
     try {
-      const { token, user } = await requestFn();
+      const { token, refreshToken, user } = await requestFn();
       if (token) saveToken(token);
+      if (refreshToken) saveRefreshToken(refreshToken);
       if (user) saveUsuario(user);
       onSuccess();
     } catch (error) {
-      setServerError(error.message);
+      // Errores de red/servidor → Alert en el formulario
+      // Errores de storage (tokenStorage throw) → ModalError global
+      if (error?.response || error?.message?.includes('sesión') || error?.message?.includes('token') || error?.message?.includes('usuario')) {
+        mostrarError(error);
+      } else {
+        setServerError(error.message);
+      }
     } finally {
       setLoading(false);
     }

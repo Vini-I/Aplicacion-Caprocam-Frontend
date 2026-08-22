@@ -45,7 +45,7 @@ export const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 12,
-    backgroundColor: "rgba(255,255,255,0.2)",
+    backgroundColor: COLORS.black,
     borderWidth: 0,
     paddingHorizontal: 0,
     paddingVertical: 0,
@@ -180,7 +180,7 @@ export const styles = StyleSheet.create({
   },
 
   modalOverlay: { 
-    backgroundColor: "#00000066" 
+    backgroundColor: COLORS.overlay 
   },
 
   modalContainer: {

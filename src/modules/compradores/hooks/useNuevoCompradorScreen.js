@@ -46,14 +46,14 @@ import { useRouter } from "expo-router";
 import { compradorService } from "../services/comprador.service";
 import { useError } from "../../../shared/context/ErrorContext";
 
-// Regex para validar teléfonos con o sin código de país +506
-const TELEFONO_REGEX = /^\d{8}$/;
+// Acepta entre 7 y 12 dígitos (rango, no un largo fijo)
+const TELEFONO_REGEX = /^\d{7,12}$/;
 
-export const TELEFONO_MAX_LENGTH = 8;
+export const TELEFONO_MAX_LENGTH = 12;
 export const CEDULA_MAX_LENGTH = 20;
 
-// Regex básico para validar formato de correo electrónico
-const CORREO_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// Exige que termine EXACTAMENTE en ".com" -- nada después
+const CORREO_REGEX = /^[^\s@]+@[^\s@]+\.com$/i;
 
 function esTelefonoValido(valor) {
   return valor.trim() !== "" && TELEFONO_REGEX.test(valor.trim());
