@@ -253,6 +253,9 @@ export function useEditarProducto() {
       await productoService.actualizarProducto(productoId, producto);
     } catch (error) {
       setGuardando(false);
+      // Muestra el mensaje real del back (ej. código duplicado en un 400)
+      // via toast/alert del ErrorContext, igual que con errorProveedores.
+      mostrarError(error);
       setErrorGuardado("No se pudo guardar el producto. Intenta de nuevo.");
       return;
     }

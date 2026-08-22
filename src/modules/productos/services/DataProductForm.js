@@ -29,6 +29,8 @@ export const CATEGORIAS = [
   { label: "Alimentación", value: "Alimentación" },
   { label: "Tratamiento", value: "Tratamiento" },
   { label: "Químico", value: "Químico" },
+  { label: "Mantenimiento", value: "Mantenimiento" },
+  { label: "Equipos", value: "Equipos" },
 ];
 
 export const UNIDADES = [

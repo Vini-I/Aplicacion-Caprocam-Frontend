@@ -191,6 +191,7 @@ export default function EditarProducto() {
               label="Fecha de ingreso"
               value={form.entryDate}
               onChangeText={(val) => handleField("entryDate", val)}
+              allowFutureDates={false}
               containerStyle={styles.field}
               labelStyle={styles.label}
             />
