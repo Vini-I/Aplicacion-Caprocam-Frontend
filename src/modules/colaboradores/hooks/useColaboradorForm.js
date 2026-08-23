@@ -31,6 +31,24 @@ const validarNombre = (nombre) => nombre.trim().length >= 2;
 const validarApellidos = (apellidos) => apellidos.trim().length >= 2;
 const validarPin = (pin) => /^\d{4}$/.test(pin);
 
+/**
+ * Valida que el PIN sea seguro:
+ * - No todos los dígitos iguales (0000, 1111, ...)
+ * - No sea una secuencia ascendente (0123, 1234, ...)
+ * - No sea una secuencia descendente (9876, 8765, ...)
+ */
+function esPinSeguro(pin) {
+  if (!validarPin(pin)) return false;
+  const digits = pin.split('').map(Number);
+  // Todos iguales
+  if (digits.every(d => d === digits[0])) return false;
+  // Secuencia ascendente o descendente
+  const ascendente = digits.every((d, i) => i === 0 || d === digits[i-1] + 1);
+  const descendente = digits.every((d, i) => i === 0 || d === digits[i-1] - 1);
+  if (ascendente || descendente) return false;
+  return true;
+}
+
 const INITIAL_FORM = {
   cedula: "",
   nombre: "",
@@ -186,6 +204,9 @@ export function useColaboradorForm({
       } else if (!validarPin(pin)) {
         newErrors.pin = "El PIN debe tener 4 dígitos numéricos";
         hasError = true;
+      } else if (!esPinSeguro(pin)) {
+        newErrors.pin = "El PIN no es seguro, elija otro (evite dígitos repetidos o secuencias)";
+        hasError = true;
       }
 
       if (!confirmProvided) {
@@ -202,6 +223,9 @@ export function useColaboradorForm({
           hasError = true;
         } else if (!validarPin(pin)) {
           newErrors.pin = "El PIN debe tener 4 dígitos numéricos";
+          hasError = true;
+        } else if (!esPinSeguro(pin)) {
+          newErrors.pin = "El PIN no es seguro, elija otro (evite dígitos repetidos o secuencias)";
           hasError = true;
         }
 
