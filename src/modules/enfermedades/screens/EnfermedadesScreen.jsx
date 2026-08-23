@@ -18,6 +18,7 @@ import Icon from "../../../shared/components/Icons.jsx";
 import Input from "../../../shared/components/Input.jsx";
 import NavbarRegistro from "../../../shared/components/NavbarRegistro.jsx";
 import Select from "../../../shared/components/Select.jsx";
+import Spinner from "../../../shared/components/Spinner.jsx";
 import CustomText from "../../../shared/components/Text.jsx";
 
 import EnfermedadesSectionTitle from "../components/EnfermedadesSectionTitle.jsx";
@@ -54,6 +55,10 @@ export default function EnfermedadesScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={[STYLE.contentWrapper, styles.content]}>
+          {pantalla.loading && (
+            <Spinner text="Cargando datos de enfermedades..." />
+          )}
+
           <Card style={styles.card}>
             <EnfermedadesSectionTitle
               title="Ubicacion del caso"
@@ -93,7 +98,9 @@ export default function EnfermedadesScreen() {
                   value={pantalla.fechaReporte}
                   onChangeText={pantalla.cambiarFechaReporte}
                   labelStyle={styles.label}
-                  inputStyle={pantalla.errorFechaReporte && styles.campoConError}
+                  inputStyle={
+                    pantalla.errorFechaReporte && styles.campoConError
+                  }
                 />
               </View>
 
@@ -178,8 +185,8 @@ export default function EnfermedadesScreen() {
           >
             <View style={styles.inlineButtonContentCentered}>
               <Icon icon={ICONS.save} size={18} color={COLORS.primary} />
-              <CustomText size={16} color={COLORS.primary} style={styles.saveText}>
-                Guardar
+              <CustomText size={16} color={COLORS.primary}>
+                Registrar enfermedad
               </CustomText>
             </View>
           </Button>

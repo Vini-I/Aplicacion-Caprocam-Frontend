@@ -18,6 +18,7 @@ import Icon from "../../../shared/components/Icons.jsx";
 import Input from "../../../shared/components/Input.jsx";
 import NavbarRegistro from "../../../shared/components/NavbarRegistro.jsx";
 import Select from "../../../shared/components/Select.jsx";
+import Spinner from "../../../shared/components/Spinner.jsx";
 import CustomText from "../../../shared/components/Text.jsx";
 
 import ParasitologiaSectionTitle from "../components/ParasitologiaSectionTitle.jsx";
@@ -55,12 +56,7 @@ export default function ParasitologiaScreen() {
       >
         <View style={[STYLE.contentWrapper, styles.content]}>
           {pantalla.loading && (
-            <Alert
-              variant="info"
-              message="Cargando datos de parasitologia..."
-              style={styles.alert}
-              textStyle={styles.alertText}
-            />
+            <Spinner text="Cargando datos de parasitologia..." />
           )}
 
           <Card>
@@ -103,7 +99,9 @@ export default function ParasitologiaScreen() {
                   onChangeText={pantalla.setFechaReporte}
                   disabled={pantalla.loading}
                   labelStyle={styles.label}
-                  inputStyle={pantalla.errorFechaReporte && styles.campoConError}
+                  inputStyle={
+                    pantalla.errorFechaReporte && styles.campoConError
+                  }
                 />
               </View>
 
@@ -184,12 +182,8 @@ export default function ParasitologiaScreen() {
             <View style={styles.inlineButtonContentCentered}>
               <Icon icon={ICONS.save} size={18} color={COLORS.primary} />
 
-              <CustomText
-                size={16}
-                color={COLORS.primary}
-                style={styles.saveText}
-              >
-                Registrar Parasitologia
+              <CustomText size={16} color={COLORS.primary}>
+                Registrar parasitologia
               </CustomText>
             </View>
           </Button>
