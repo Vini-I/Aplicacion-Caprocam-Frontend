@@ -56,3 +56,29 @@ export const initialForm = {
   entryDate: "",
   expirationDate: "",
 };
+
+// ─────────────────────────────────────────────
+// Fecha de hoy en formato ISO (YYYY-MM-DD), en hora LOCAL
+// Se usa para validar fecha de ingreso (no futura) y fecha de
+// caducidad (debe ser posterior a hoy). Ambos hooks
+// (useAgregarProducto / useEditarProducto) 
+// ─────────────────────────────────────────────
+export function obtenerFechaHoyISO() {
+  const hoy = new Date();
+  const year = hoy.getFullYear();
+  const month = String(hoy.getMonth() + 1).padStart(2, "0");
+  const day = String(hoy.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+// ─────────────────────────────────────────────
+// DateInput de AgregarProducto.jsx / EditarProducto.jsx devuelve la fecha en formato
+// ─────────────────────────────────────────────
+export function convertirDDMMYYYYaISO(fechaDDMMYYYY) {
+  if (!fechaDDMMYYYY) return "";
+  const partes = String(fechaDDMMYYYY).split("/");
+  if (partes.length !== 3) return "";
+  const [dia, mes, anio] = partes;
+  if (!dia || !mes || !anio) return "";
+  return `${anio.padStart(4, "0")}-${mes.padStart(2, "0")}-${dia.padStart(2, "0")}`;
+}
