@@ -30,9 +30,11 @@
  * - Mismo regex y misma regla de teléfono/correo que
  *   useEditarCompradorScreen.js, para que ambas pantallas validen
  *   igual.
- * - La cédula solo se valida como obligatoria (no se le exige un
- *   formato exacto): una vez guardado el comprador, la cédula ya no
- *   se puede modificar (en EditarComprador se muestra deshabilitada).
+ * - La cédula se valida como obligatoria y con una longitud de entre
+ *   CEDULA_MIN_LENGTH (8) y CEDULA_MAX_LENGTH (15) dígitos (no se le
+ *   exige un formato exacto por tipo de cédula): una vez guardado el
+ *   comprador, la cédula ya no se puede modificar (en EditarComprador
+ *   se muestra deshabilitada).
  * - El campo "Tipo de producto" se eliminó: no tenía sentido en
  *   este flujo (antibióticos, fertilizantes, equipos, etc. no
  *   aplican a un comprador).
@@ -50,12 +52,18 @@ import { useError } from "../../../shared/context/ErrorContext";
 const TELEFONO_REGEX = /^\d{8}$/;
 
 export const TELEFONO_MAX_LENGTH = 8;
-export const CEDULA_MAX_LENGTH = 20;
+export const CEDULA_MIN_LENGTH = 8;
+export const CEDULA_MAX_LENGTH = 15;
 
 const CORREO_REGEX = /^[^\s@]+@[^\s@]+$/;
 
 function esTelefonoValido(valor) {
   return valor.trim() !== "" && TELEFONO_REGEX.test(valor.trim());
+}
+
+function esCedulaValida(valor) {
+  const limpio = valor.trim();
+  return limpio.length >= CEDULA_MIN_LENGTH && limpio.length <= CEDULA_MAX_LENGTH;
 }
 
 function esCorreoValido(valor) {
@@ -106,7 +114,7 @@ export function useNuevoCompradorScreen() {
   // Valida los campos y guarda el comprador si no hay errores
   async function handleSubmit() {
     const errNombre = nombre.trim() === "";
-    const errCedula = cedula.trim() === "";
+    const errCedula = !esCedulaValida(cedula);
     const errTel = !esTelefonoValido(telefono);
     const errCorreo = !esCorreoValido(correo);
 

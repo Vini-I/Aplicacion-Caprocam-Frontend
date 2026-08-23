@@ -112,7 +112,7 @@ export default function CompradorScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={STYLE.container}>
      
 
       {/* Alerta de éxito: solo una a la vez. Si llegan ambos parámetros
@@ -146,6 +146,21 @@ export default function CompradorScreen() {
             
            </View>
 
+      {/* Contador de resultados: debe mostrarse siempre junto al searchBar,
+          incluso mientras cargando=true reemplaza la lista por el spinner
+          (antes vivía dentro de ListHeaderComponent y desaparecía en ese caso). */}
+      <View style={STYLE.contentWrapper}>
+        <Text style={styles.contadorResultados}>
+          {cargando
+            ? "Cargando compradores..."
+            : `${compradoresFiltrados.length} ${
+                compradoresFiltrados.length === 1
+                  ? "comprador encontrado"
+                  : "compradores encontrados"
+              }`}
+        </Text>
+      </View>
+
       {/* Alerta de error al cargar, con botón para reintentar */}
       {!!error && (
         <View style={[STYLE.contentWrapper, styles.barraBusqueda]}>
@@ -173,14 +188,6 @@ export default function CompradorScreen() {
             contentContainerStyle={[styles.lista, STYLE.contentWrapper]}
             refreshing={cargando}
             onRefresh={recargar}
-            ListHeaderComponent={
-              <Text style={styles.contadorResultados}>
-                {compradoresFiltrados.length}{" "}
-                {compradoresFiltrados.length === 1
-                  ? "comprador encontrado"
-                  : "compradores encontrados"}
-              </Text>
-            }
             ListEmptyComponent={
               <EmptyState
                 title="Sin compradores"
