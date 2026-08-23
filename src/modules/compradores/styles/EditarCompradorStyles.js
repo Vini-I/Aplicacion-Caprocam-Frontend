@@ -131,7 +131,7 @@ export const styles = StyleSheet.create({
     gap: 8,
   },
   inputError: {
-   borderColor: COLORS.error,
+   borderBottomColor: COLORS.error,
   },
 
   errorText: {

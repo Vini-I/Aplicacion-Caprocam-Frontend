@@ -10,5 +10,9 @@ export default function LoginWeb() {
         router.push("/inicio");
     };
 
-    return <WebLoginScreen onLoginSuccess={handleLogin} />;
+    const handleGoToLanding = () => {
+        router.replace('/landing');
+    };
+
+    return <WebLoginScreen onLoginSuccess={handleLogin} onGoToLanding={handleGoToLanding} />;
 }
