@@ -17,7 +17,7 @@
  */
 import { useLocalSearchParams } from "expo-router";
 import { useFinca } from "../context/FincaContext.js";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { estanqueService } from "../../estanques/services/estanque.service.js";
 import { useEstanque } from "../../estanques/context/EstanqueContext.js";

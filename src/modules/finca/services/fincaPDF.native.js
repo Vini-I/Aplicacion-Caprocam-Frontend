@@ -8,7 +8,6 @@
 import * as Print from "expo-print";
 import * as Sharing from "expo-sharing";
 import * as FileSystem from "expo-file-system/legacy";
-import { useError } from "../../../shared/context/ErrorContext";
 
 export const generarRegistroPDF = async (finca, estanquesFinca = []) => {
   try {

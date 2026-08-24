@@ -139,11 +139,9 @@ export default function useNuevoEstanque({ codigoCVO }) {
     mensaje,
     tipoMensaje,
     submitted,
-
     errores,
+
     registrarEstanque,
-    // Mensaje único para mostrar en UI (validación o servidor)
     displayErrorMessage: mensaje || null,
-    displayErrorVariant: tipoMensaje || null,
   };
 }

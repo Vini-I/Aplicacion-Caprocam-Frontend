@@ -13,8 +13,6 @@
  * - Select de aireador requerido solo cuando aplica.
  */
 
-
-import React from "react";
 import { ScrollView, View } from "react-native";
 
 import useNuevoEstanque from "../hooks/useNuevoEstanque";
@@ -38,7 +36,6 @@ import {
   FUENTES_AGUA,
   OPCIONES_PRECRIA,
   TIPOS_ESTANQUE,
-  validarFormularioEstanque,
 } from "../hooks/useEstanque";
 
 import { COLORS } from "../../../theme/colors";
@@ -66,7 +63,6 @@ export default function NuevoEstanqueScreen({ codigoCVO, id }) {
 
     registrarEstanque,
     displayErrorMessage,
-    displayErrorVariant,
   } = useNuevoEstanque({ codigoCVO });
 
   return (
