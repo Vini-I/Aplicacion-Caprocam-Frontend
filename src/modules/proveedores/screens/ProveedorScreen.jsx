@@ -25,6 +25,7 @@ import SearchBar from "../../../shared/components/SearchBar";
 import FilterButton from "../../../shared/components/FilterButton";
 import EmptyState from "../../../shared/components/EmptyState";
 import Alert from "../../../shared/components/Alert";
+import Spinner from "../../../shared/components/Spinner";
 
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
@@ -42,6 +43,7 @@ export default function ProveedorScreen({ onDetail, onNew }) {
     tipos,
     handleAplicarFiltros,
     alert,
+    cargando,
     recargar,
   } = useProveedorScreen();
 
@@ -103,57 +105,59 @@ export default function ProveedorScreen({ onDetail, onNew }) {
             : "proveedores encontrados"}
         </CustomText>
 
-        {proveedoresFiltrados.length === 0 && (
+        {cargando ? (
+          <Spinner text="Cargando proveedores..." style={{ marginVertical: 32 }} />
+        ) : proveedoresFiltrados.length === 0 ? (
           <EmptyState
             title="Sin proveedores"
             description="No se encontraron proveedores con esa búsqueda."
           />
+        ) : (
+          proveedoresFiltrados.map((proveedor) => (
+            <CardPress
+              key={proveedor.id}
+              style={styles.card}
+              onPress={() => onDetail(proveedor.id)}
+            >
+              <View style={styles.cardHeader}>
+                <View style={styles.avatar}>
+                  <CustomText style={styles.avatarText}>
+                    {proveedor.iniciales}
+                  </CustomText>
+                </View>
+
+                <View style={styles.providerInfo}>
+                  <CustomText style={styles.providerName}>
+                    {proveedor.nombre}
+                  </CustomText>
+                  <CustomText style={styles.providerType}>
+                    {proveedor.tipoProducto}
+                  </CustomText>
+                </View>
+
+                <Icon
+                  icon={ICONS.growth}
+                  color={ICON_STYLES.verDetalle?.color || COLORS.primary}
+                />
+              </View>
+
+              <View style={styles.contactTitleRow}>
+                <Icon icon={ICONS.phone} color={ICON_STYLES.phone.color} />
+                <CustomText style={styles.contactTitle}>Contacto</CustomText>
+              </View>
+
+              <View style={styles.contactRow}>
+                <CustomText style={styles.contactText}>
+                  {formatearTelefono(proveedor.telefono)}
+                </CustomText>
+              </View>
+
+              <View style={styles.contactRow}>
+                <CustomText style={styles.contactText}>{proveedor.correo}</CustomText>
+              </View>
+            </CardPress>
+          ))
         )}
-
-        {proveedoresFiltrados.map((proveedor) => (
-          <CardPress
-            key={proveedor.id}
-            style={styles.card}
-            onPress={() => onDetail(proveedor.id)}
-          >
-            <View style={styles.cardHeader}>
-              <View style={styles.avatar}>
-                <CustomText style={styles.avatarText}>
-                  {proveedor.iniciales}
-                </CustomText>
-              </View>
-
-              <View style={styles.providerInfo}>
-                <CustomText style={styles.providerName}>
-                  {proveedor.nombre}
-                </CustomText>
-                <CustomText style={styles.providerType}>
-                  {proveedor.tipoProducto}
-                </CustomText>
-              </View>
-
-              <Icon
-                icon={ICONS.growth}
-                color={ICON_STYLES.verDetalle?.color || COLORS.primary}
-              />
-            </View>
-
-            <View style={styles.contactTitleRow}>
-              <Icon icon={ICONS.phone} color={ICON_STYLES.phone.color} />
-              <CustomText style={styles.contactTitle}>Contacto</CustomText>
-            </View>
-
-            <View style={styles.contactRow}>
-              <CustomText style={styles.contactText}>
-                {formatearTelefono(proveedor.telefono)}
-              </CustomText>
-            </View>
-
-            <View style={styles.contactRow}>
-              <CustomText style={styles.contactText}>{proveedor.correo}</CustomText>
-            </View>
-          </CardPress>
-        ))}
         </View>
       </ScrollView>
 

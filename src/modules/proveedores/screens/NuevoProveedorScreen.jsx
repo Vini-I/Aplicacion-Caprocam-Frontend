@@ -60,6 +60,7 @@ export default function NuevoProveedorScreen({ onProveedor }) {
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{ paddingBottom: 24 }}
       >
         <View style={STYLE.contentWrapper}>
           <Card style={styles.card}>
@@ -73,6 +74,7 @@ export default function NuevoProveedorScreen({ onProveedor }) {
             value={nombre}
             onChangeText={setNombre}
             placeholder="Ej. Biomar S.A."
+            maxLength={100}
             containerStyle={styles.field}
             style={[styles.input, errores.nombre && styles.inputError]}
             labelStyle={styles.label}
@@ -110,6 +112,7 @@ export default function NuevoProveedorScreen({ onProveedor }) {
             placeholder="ventas@empresa.com"
             keyboardType="email-address"
             autoCapitalize="none"
+            maxLength={100}
             containerStyle={styles.field}
             style={[styles.input, errores.correo && styles.inputError]}
             labelStyle={styles.label}
@@ -120,6 +123,7 @@ export default function NuevoProveedorScreen({ onProveedor }) {
             value={direccion}
             onChangeText={setDireccion}
             placeholder="San José, Costa Rica"
+            maxLength={255}
             containerStyle={styles.field}
             style={[styles.input, errores.direccion && styles.inputError]}
             labelStyle={styles.label}
@@ -131,6 +135,7 @@ export default function NuevoProveedorScreen({ onProveedor }) {
             onChangeText={setNotas}
             placeholder="Observaciones adicionales..."
             multiline={true}
+            maxLength={500}
             containerStyle={styles.field}
             style={styles.input}
             labelStyle={styles.label}

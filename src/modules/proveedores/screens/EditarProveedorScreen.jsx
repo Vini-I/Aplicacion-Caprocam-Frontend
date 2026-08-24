@@ -26,6 +26,7 @@ import Button from "../../../shared/components/Button";
 import CustomText from "../../../shared/components/Text";
 import Icon from "../../../shared/components/Icons";
 import Alert from "../../../shared/components/Alert";
+import Spinner from "../../../shared/components/Spinner";
 
 import { styles, ICON_STYLES } from "../styles/EditarProveedorStyles";
 import { ICONS } from "../../../theme/icons";
@@ -48,10 +49,21 @@ export default function EditarProveedorScreen({ onProveedor, id }) {
     setNotas,
     errores,
     alerta,
+    cargando,
     handleTelefonoChange,
     handleCorreoChange,
     guardar,
   } = useEditarProveedorScreen({ onProveedor, id });
+
+  if (cargando) {
+    return (
+      <View style={STYLE.container}>
+        <View style={STYLE.contentWrapper}>
+          <Spinner text="Cargando datos del proveedor..." style={{ marginTop: 40 }} />
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={STYLE.container}>
@@ -60,6 +72,7 @@ export default function EditarProveedorScreen({ onProveedor, id }) {
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{ paddingBottom: 24 }}
       >
         <View style={STYLE.contentWrapper}>
         <Card style={styles.card}>
@@ -105,6 +118,7 @@ export default function EditarProveedorScreen({ onProveedor, id }) {
             onChangeText={handleCorreoChange}
             placeholder="ventas@empresa.com"
             keyboardType="email-address"
+            maxLength={100}
             containerStyle={styles.field}
             style={[styles.input, !!errores.correo && styles.inputError]}
             labelStyle={styles.label}
@@ -115,6 +129,7 @@ export default function EditarProveedorScreen({ onProveedor, id }) {
             value={direccion}
             onChangeText={setDireccion}
             placeholder="San José, Costa Rica"
+            maxLength={255}
             containerStyle={styles.field}
             style={[styles.input, !!errores.direccion && styles.inputError]}
             labelStyle={styles.label}
@@ -126,6 +141,7 @@ export default function EditarProveedorScreen({ onProveedor, id }) {
             onChangeText={setNotas}
             placeholder="Observaciones adicionales..."
             multiline={true}
+            maxLength={500}
             containerStyle={styles.field}
             style={styles.input}
             labelStyle={styles.label}

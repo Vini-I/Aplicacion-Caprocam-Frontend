@@ -134,9 +134,9 @@ export const styles = StyleSheet.create({
 
   floatingButtonWrapper: {
     position: "absolute",
-    bottom: 24,
-    left: 0,
-    right: 0,
+    bottom: 16,
+    left: 16,
+    right: 16,
   },
 
   btnAgregar: {
