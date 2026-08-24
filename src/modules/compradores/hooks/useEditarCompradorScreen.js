@@ -26,6 +26,12 @@
  * - handleTelefonoChange/handleCorreoChange solo actualizan el
  *   valor: no validan en cada tecla, para que el borde/mensaje
  *   rojo aparezca únicamente después de intentar guardar.
+ * - sinCambios: se activa al presionar "Guardar" sin haber tocado
+ *   ningún campo editable (teléfono, correo, dirección, notas), y
+ *   pone en rojo el borde de los 4 para indicar que hay que
+ *   modificar alguno. Se limpia automáticamente en cuanto el
+ *   usuario edita cualquiera de esos campos, o al intentar guardar
+ *   de nuevo.
  * - Igual que nombre, cedula se carga desde el comprador base pero
  *   no se expone ningún setter: no se puede modificar una vez
  *   creado el comprador (en la pantalla se muestra deshabilitada).
@@ -38,12 +44,12 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { compradorService, mapComprador } from "../services/comprador.service";
 import { useError } from "../../../shared/context/ErrorContext";
 
-// Regex para validar teléfonos con o sin código de país +506
-const TELEFONO_REGEX = /^\d{8}$/;
-export const TELEFONO_MAX_LENGTH = 8;
+// Acepta entre 7 y 12 dígitos (rango, no un largo fijo)
+const TELEFONO_REGEX = /^\d{7,12}$/;
+export const TELEFONO_MAX_LENGTH = 12;
 
-// Regex básico para validar formato de correo electrónico
-const CORREO_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// Exige que termine EXACTAMENTE en ".com" -- nada después
+const CORREO_REGEX = /^[^\s@]+@[^\s@]+\.com$/i;
 
 // Retorna mensaje de error si el teléfono está vacío o tiene formato inválido
 function validarTelefono(valor) {
@@ -99,6 +105,16 @@ export function useEditarCompradorScreen() {
   const [errorCorreo, setErrorCorreo] = useState("");
   const [alerta, setAlerta] = useState(null);
 
+  // Se activa cuando el usuario presiona "Guardar" sin haber modificado
+  // ningún campo: pone en rojo los 4 campos editables (teléfono, correo,
+  // dirección, notas) para que quede claro qué se puede/debe cambiar.
+  // Se limpia apenas el usuario toca cualquiera de esos campos.
+  const [sinCambios, setSinCambios] = useState(false);
+
+  useEffect(() => {
+    setSinCambios(false);
+  }, [telefono, correo, direccion, notas]);
+
   //se autolimpia a los 6 segundos
   useEffect(() => {
     if (alerta && (alerta.variant === "danger" || alerta.variant === "warning")) {
@@ -132,7 +148,7 @@ export function useEditarCompradorScreen() {
     } finally {
       setCargando(false);
     }
-  }, [id, mostrarError]);
+  }, [id]);
 
   useEffect(() => {
     if (id) cargarComprador();
@@ -160,6 +176,7 @@ export function useEditarCompradorScreen() {
     const errorCorr = validarCorreo(correo);
     setErrorTelefono(errorTel);
     setErrorCorreo(errorCorr);
+    setSinCambios(false);
 
     if (errorTel !== "" || errorCorr !== "") {
       setAlerta({
@@ -176,6 +193,7 @@ export function useEditarCompradorScreen() {
       notas !== original.notas;
 
     if (!hayCambios) {
+      setSinCambios(true);
       setAlerta({
         variant: "warning",
         message: "Realiza algún cambio antes de guardar.",
@@ -231,6 +249,7 @@ export function useEditarCompradorScreen() {
     setNotas,
     errorTelefono,
     errorCorreo,
+    sinCambios,
     alerta,
     handleTelefonoChange,
     handleCorreoChange,

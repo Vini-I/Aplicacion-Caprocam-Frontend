@@ -57,9 +57,9 @@ export const postAuth = async (endpoint, body, statusMessages = {}) => {
     
     // Extraer datos usando la estructura que envía el backend Caprocam
     // { data: { accessToken, refreshToken, usuario } }
-    const { accessToken, usuario } = response.data.data || {};
+    const { accessToken, refreshToken, usuario } = response.data.data || {};
 
-    return { token: accessToken, user: usuario };
+    return { token: accessToken, refreshToken, user: usuario };
   } catch (error) {
     if (error.response) {
       throw mapStatusError(error.response.status, error.response.data, statusMessages);
