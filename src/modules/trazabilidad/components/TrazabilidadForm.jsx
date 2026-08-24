@@ -7,8 +7,8 @@
  * Formulario reutilizable para capturar el movimiento de un lote de camarón de pre-cría a engorde.
  * Utiliza DateInput de forma unificada para la selección de fecha.
  *
- * @dependencies Select, Input, DateInput, TrazabilidadFormStyles
- * @validations Encadenamiento de estanques, origen != destino, formato de fecha y valores numéricos.
+ * @dependencies Select, NumberInput, DateInput, Card, TrazabilidadFormStyles
+ * @validations Encadenamiento de estanques, origen != destino, formato de fecha y valores numéricos mayores a cero.
  * @navigation N/A
  */
 import { View } from "react-native";
@@ -17,7 +17,6 @@ import Text from "../../../shared/components/Text";
 import Card from "../../../shared/components/Card";
 import NumberInput from "../../../shared/components/NumberInput";
 import Select from "../../../shared/components/Select";
-import Input from "../../../shared/components/Input";
 import DateInput from "../../../shared/components/DateInput";
 import Icon from "../../../shared/components/Icons";
 import { COLORS } from "../../../theme/colors";
@@ -32,7 +31,6 @@ import {
 export default function TrazabilidadForm({
   formData,
   fincas,
-  colaboradorSesion,
   estanquesOrigen,
   estanquesDestino,
   onChange,
@@ -65,8 +63,8 @@ export default function TrazabilidadForm({
   const mostrarErrorTamano = submitted && (!formData.tamaño || Number(formData.tamaño) <= 0);
   const mostrarErrorDias = submitted && (!formData.dias || Number(formData.dias) <= 0);
   const mostrarErrorPl = submitted && (!formData.pl || Number(formData.pl) <= 0);
-  return (
 
+  return (
     <View style={[STYLE.contentWrapper]}>
       <Card>
         <View style={styles.cardTitleRow}>
@@ -116,14 +114,6 @@ export default function TrazabilidadForm({
           inputStyle={mostrarErrorFecha ? styles.errorInput : undefined}
           labelStyle={styles.label}
           placeholder="dd/mm/aaaa"
-        />
-
-        <Input
-          label={colaboradorSesion?.labelCampo || "Responsable"}
-          value={colaboradorSesion?.nombre || colaboradorSesion?.label || ""}
-          editable={false}
-          containerStyle={styles.field}
-          labelStyle={styles.label}
         />
       </Card>
 

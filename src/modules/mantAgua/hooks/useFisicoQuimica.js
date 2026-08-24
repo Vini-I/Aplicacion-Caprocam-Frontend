@@ -4,13 +4,12 @@
  * ============================================================
  *
  * Descripción:
- * Maneja todo el estado de la pantalla Físico-Química: selección
- * de finca/estanque, lecturas de las 4 mediciones (locales y enviadas),
- * precargado de datos, validación al guardar/actualizar/eliminar y alertas.
+ * Maneja el estado del registro de Físico-Química: selección de finca, estanque y fecha (DateInput),
+ * gestión de lecturas de las 4 variables con hora individual (TimeInput 12h AM/PM) y serialización a 24h para el backend.
  *
- * @dependencies FisicoQuimicaServices, ErrorContext
- * @validations Finca y estanque requeridos; al menos una medición para guardar.
- * @navigation Muestra mensaje de éxito local y resetea el formulario tras 3s.
+ * @dependencies FisicoQuimicaServices, dateUtils, ErrorContext
+ * @validations Finca, estanque y fecha requeridos (sin fechas futuras); al menos una medición para guardar.
+ * @navigation Muestra mensaje de éxito local y resetea el formulario tras guardar.
  */
 
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
@@ -31,9 +30,15 @@ import {
   validarSeleccionAntesDeAgregar,
 } from '../services/FisicoQuimicaServices';
 import { useError } from '../../../shared/context/ErrorContext';
+import {
+  getCurrentDate,
+  toMysqlDate,
+  formatTime12,
+  toMysqlTime,
+} from '../../../shared/utils/dateUtils';
 
-// Convierte las lecturas de RangeCard ({id, value}) al formato que
-// espera la API ([{valor, etiqueta}]).
+// Convierte las lecturas de RangeCard ({id, value, horaMedicion}) al formato que
+// espera la API ([{valor, etiqueta, horaMedicion}]).
 function mapearLecturas(lecturas, esDiaNoche = false) {
   return (lecturas ?? []).map((lectura, index) => {
     let etiqueta = String(index + 1);
@@ -44,9 +49,18 @@ function mapearLecturas(lecturas, esDiaNoche = false) {
         etiqueta = 'Tarde (16:00)';
       }
     }
+
+    let h12 = (typeof lectura === 'object' && lectura !== null) ? lectura.horaMedicion : null;
+    if (!h12 && esDiaNoche) {
+      h12 = index === 0 ? "05:00 AM" : "04:00 PM";
+    }
+
+    const val = (typeof lectura === 'object' && lectura !== null) ? (lectura.value ?? lectura.valor) : lectura;
+
     return {
-      valor: lectura.value,
+      valor: Number(val) || 0,
       etiqueta,
+      horaMedicion: toMysqlTime(h12 || "08:00 AM"),
     };
   });
 }
@@ -54,72 +68,78 @@ function mapearLecturas(lecturas, esDiaNoche = false) {
 // Inverso de mapearLecturas, para precargar el formulario.
 function desmapearLecturas(valor, esDiaNoche = false) {
   if (!Array.isArray(valor)) {
-    if (typeof valor === 'number') return [valor];
+    if (typeof valor === 'number') return [{ value: valor, horaMedicion: esDiaNoche ? "05:00 AM" : "08:00 AM" }];
     return [];
   }
 
   if (!esDiaNoche) {
-    return valor.map((lectura) =>
-      typeof lectura === 'object' && lectura !== null ? lectura.valor : lectura
-    );
+    return valor.map((item) => {
+      if (typeof item === 'object' && item !== null) {
+        const val = Number(item.valor ?? item.value ?? 0);
+        const h24 = item.horaMedicion || item.hora_medicion || "";
+        const h12 = h24 ? formatTime12(h24) : "08:00 AM";
+        return { value: val, horaMedicion: h12 };
+      }
+      return { value: Number(item) || 0, horaMedicion: "08:00 AM" };
+    });
   }
 
-  let mananaVal = null;
-  let tardeVal = null;
+  let mananaObj = null;
+  let tardeObj = null;
   const libres = [];
 
   for (const item of valor) {
     if (typeof item === 'object' && item !== null) {
       const et = String(item.etiqueta || '').toLowerCase();
-      if (
-        et.includes('manana') ||
-        et.includes('mañana') ||
-        et.includes('05:00') ||
-        et === '1'
-      ) {
-        mananaVal = item.valor;
-      } else if (
-        et.includes('tarde') ||
-        et.includes('16:00') ||
-        et === '2'
-      ) {
-        tardeVal = item.valor;
+      const val = Number(item.valor ?? item.value ?? 0);
+      const h24 = item.horaMedicion || item.hora_medicion || "";
+      const h12 = h24 ? formatTime12(h24) : "";
+
+      if (et.includes('manana') || et.includes('mañana') || et.includes('05:00') || et === '1') {
+        mananaObj = { value: val, horaMedicion: h12 || "05:00 AM" };
+      } else if (et.includes('tarde') || et.includes('16:00') || et === '2') {
+        tardeObj = { value: val, horaMedicion: h12 || "04:00 PM" };
       } else {
-        libres.push(item.valor);
+        libres.push({ value: val, horaMedicion: h12 || "08:00 AM" });
       }
     } else {
-      libres.push(item);
+      libres.push({ value: Number(item) || 0, horaMedicion: "08:00 AM" });
     }
   }
 
-  if (mananaVal !== null || tardeVal !== null) {
+  if (mananaObj !== null || tardeObj !== null) {
     const res = [];
-    if (mananaVal !== null) res.push(mananaVal);
-    if (tardeVal !== null) res.push(tardeVal);
+    if (mananaObj !== null) res.push(mananaObj);
+    if (tardeObj !== null) res.push(tardeObj);
     return res;
   }
 
-  return valor.map((lectura) =>
-    typeof lectura === 'object' && lectura !== null ? lectura.valor : lectura
-  );
+  return valor.map((item, index) => {
+    if (typeof item === 'object' && item !== null) {
+      const val = Number(item.valor ?? item.value ?? 0);
+      const h24 = item.horaMedicion || item.hora_medicion || "";
+      const h12 = h24 ? formatTime12(h24) : (index === 0 ? "05:00 AM" : "04:00 PM");
+      return { value: val, horaMedicion: h12 };
+    }
+    return { value: Number(item) || 0, horaMedicion: index === 0 ? "05:00 AM" : "04:00 PM" };
+  });
 }
 
 export default function useFisicoQuimica() {
   const { mostrarError } = useError();
 
   const [estanquesFiltrados, setEstanquesFiltrados] = useState([]);
-  // Lecturas que se envían a guardar/actualizar
   const [lecturasPh, setLecturasPh] = useState([]);
   const [lecturasSalinidad, setLecturasSalinidad] = useState([]);
   const [lecturasTemp, setLecturasTemp] = useState([]);
   const [lecturasOx, setLecturasOx] = useState([]);
 
-  // Alerta de éxito local (3 segundos)
   const [mensajeExito, setMensajeExito] = useState("");
 
-  // Selección de finca/estanque y mediciones precargadas del estanque
   const [fincaSeleccionada, setFincaSeleccionada] = useState("");
   const [estanqueSeleccionado, setEstanqueSeleccionado] = useState("");
+  const [fechaSeleccionada, setFechaSeleccionada] = useState(() => getCurrentDate());
+
   const [medicionesPorEstanque, setMedicionesPorEstanque] = useState({
     ph: [],
     salinidad: [],
@@ -127,25 +147,18 @@ export default function useFisicoQuimica() {
     ox: [],
   });
 
-  // Selección de finca/estanque y mediciones precargadas del estanque
-
-  // Validación y estado de edición
   const [submitted, setSubmitted] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [tieneMedicionesExistentes, setTieneMedicionesExistentes] = useState(false);
   const [lecturaIdActual, setLecturaIdActual] = useState(null);
 
-  // Opciones de finca, ahora vienen de la API (async)
   const [opcionesFincas, setOpcionesFincas] = useState([]);
 
   const timerAlertaRef = useRef(null);
-  const fechaHoy = useMemo(() => {
-    const hoy = new Date();
-    const anio = hoy.getFullYear();
-    const mes = String(hoy.getMonth() + 1).padStart(2, '0');
-    const dia = String(hoy.getDate()).padStart(2, '0');
-    return `${anio}-${mes}-${dia}`;
-  }, []);
+
+  const fechaMysql = useMemo(() => {
+    return toMysqlDate(fechaSeleccionada) || toMysqlDate(getCurrentDate());
+  }, [fechaSeleccionada]);
 
   useEffect(() => {
     if (!fincaSeleccionada) {
@@ -160,16 +173,12 @@ export default function useFisicoQuimica() {
       });
   }, [fincaSeleccionada]);
 
-  // Limpia el timer de alertas al desmontar
   useEffect(() => {
     return () => {
       if (timerAlertaRef.current) clearTimeout(timerAlertaRef.current);
     };
   }, []);
 
-
-
-  // Carga las fincas desde la API al montar la pantalla
   useEffect(() => {
     obtenerOpcionesFincas()
       .then(setOpcionesFincas)
@@ -194,7 +203,6 @@ export default function useFisicoQuimica() {
     [lecturasPh, lecturasSalinidad, lecturasTemp, lecturasOx, medicionesPorEstanque],
   );
 
-
   const estanqueSeleccionadoObj = useMemo(
     () =>
       estanquesFiltrados.find((item) => item.value === estanqueSeleccionado) || null,
@@ -204,11 +212,11 @@ export default function useFisicoQuimica() {
   const puedeAgregarMediciones = Boolean(fincaSeleccionada && estanqueSeleccionado);
 
   const handleIntentoAgregarSinSeleccion = useCallback(() => {
-  setSubmitted(true);
-  setErrorMessage(
-    validarSeleccionAntesDeAgregar({ fincaSeleccionada, estanqueSeleccionado }),
-  );
-}, [fincaSeleccionada, estanqueSeleccionado]);
+    setSubmitted(true);
+    setErrorMessage(
+      validarSeleccionAntesDeAgregar({ fincaSeleccionada, estanqueSeleccionado }),
+    );
+  }, [fincaSeleccionada, estanqueSeleccionado]);
 
   const handleFincaChange = useCallback((value) => {
     manejarCambioFinca({
@@ -223,19 +231,21 @@ export default function useFisicoQuimica() {
     setTieneMedicionesExistentes(false);
   }, []);
 
-  const handleEstanqueChange = useCallback(async (value) => {
-    setEstanqueSeleccionado(value);
+  const handleFechaChange = useCallback((nuevaFecha) => {
+    setFechaSeleccionada(nuevaFecha);
     setErrorMessage("");
+  }, []);
+
+  const cargarLecturasDeEstanque = useCallback(async (estanqueId, fechaFormato) => {
+    if (!estanqueId) return;
 
     let lecturaExistente = null;
     try {
-      lecturaExistente = await getLecturaPorEstanqueYFecha(value, fechaHoy);
+      lecturaExistente = await getLecturaPorEstanqueYFecha(estanqueId, toMysqlDate(fechaFormato));
     } catch (error) {
       lecturaExistente = null;
     }
 
-    // La API devuelve "oxigenoDisuelto" (confirmado por API); el front
-    // usa "ox" en todo el formulario.
     const mediciones = lecturaExistente
       ? {
         ph: desmapearLecturas(lecturaExistente.ph, true),
@@ -255,7 +265,19 @@ export default function useFisicoQuimica() {
         mediciones.ox,
       ]),
     );
-  }, [fechaHoy]);
+  }, []);
+
+  const handleEstanqueChange = useCallback(async (value) => {
+    setEstanqueSeleccionado(value);
+    setErrorMessage("");
+    await cargarLecturasDeEstanque(value, fechaSeleccionada);
+  }, [fechaSeleccionada, cargarLecturasDeEstanque]);
+
+  useEffect(() => {
+    if (estanqueSeleccionado) {
+      cargarLecturasDeEstanque(estanqueSeleccionado, fechaSeleccionada);
+    }
+  }, [fechaSeleccionada, estanqueSeleccionado, cargarLecturasDeEstanque]);
 
   const handlePhChange = useCallback((values) => {
     manejarCambioPh({ values, setters: { ph: setLecturasPh } });
@@ -277,6 +299,7 @@ export default function useFisicoQuimica() {
     setFincaSeleccionada("");
     setEstanqueSeleccionado("");
     setEstanquesFiltrados([]);
+    setFechaSeleccionada(getCurrentDate());
     setMedicionesPorEstanque({ ph: [], salinidad: [], temperatura: [], ox: [] });
     setLecturasPh([]);
     setLecturasSalinidad([]);
@@ -292,7 +315,7 @@ export default function useFisicoQuimica() {
       await guardarLectura({
         fincaId: fincaSeleccionada,
         estanqueId: estanqueSeleccionado,
-        fecha: fechaHoy,
+        fecha: fechaMysql,
         ph: mapearLecturas(lecturasPh, true),
         salinidad: mapearLecturas(lecturasSalinidad, true),
         temperatura: mapearLecturas(lecturasTemp, true),
@@ -313,7 +336,7 @@ export default function useFisicoQuimica() {
       setMensajeExito('');
       timerAlertaRef.current = null;
     }, 3000);
-  }, [fincaSeleccionada, estanqueSeleccionado, fechaHoy, lecturasPh, lecturasSalinidad, lecturasTemp, lecturasOx, resetearFormulario]);
+  }, [fincaSeleccionada, estanqueSeleccionado, fechaMysql, lecturasPh, lecturasSalinidad, lecturasTemp, lecturasOx, resetearFormulario]);
 
   const alEditar = useCallback(async () => {
     if (!tieneAlgunaMedicion) {
@@ -341,7 +364,7 @@ export default function useFisicoQuimica() {
       await actualizarLectura(lecturaIdActual, {
         fincaId: fincaSeleccionada,
         estanqueId: estanqueSeleccionado,
-        fecha: fechaHoy,
+        fecha: fechaMysql,
         ph: mapearLecturas(lecturasPh, true),
         salinidad: mapearLecturas(lecturasSalinidad, true),
         temperatura: mapearLecturas(lecturasTemp, true),
@@ -362,9 +385,8 @@ export default function useFisicoQuimica() {
       setMensajeExito('');
       timerAlertaRef.current = null;
     }, 3000);
-  }, [lecturaIdActual, fincaSeleccionada, estanqueSeleccionado, fechaHoy, lecturasPh, lecturasSalinidad, lecturasTemp, lecturasOx, tieneAlgunaMedicion, resetearFormulario]);
+  }, [lecturaIdActual, fincaSeleccionada, estanqueSeleccionado, fechaMysql, lecturasPh, lecturasSalinidad, lecturasTemp, lecturasOx, tieneAlgunaMedicion, resetearFormulario]);
 
-  // Valida el formulario y, si pasa, dispara el guardado o actualización
   const handleGuardarClick = useCallback(() => {
     setSubmitted(true);
 
@@ -388,6 +410,7 @@ export default function useFisicoQuimica() {
   return {
     fincaSeleccionada,
     estanqueSeleccionado,
+    fechaSeleccionada,
     medicionesPorEstanque,
     submitted,
     errorMessage,
@@ -400,6 +423,7 @@ export default function useFisicoQuimica() {
     estanqueSeleccionadoObj,
     handleFincaChange,
     handleEstanqueChange,
+    handleFechaChange,
     handlePhChange,
     handleSalinidadChange,
     handleTempChange,

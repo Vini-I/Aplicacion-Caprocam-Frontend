@@ -85,8 +85,10 @@ import Button from '../../../shared/components/Button';
 import Text from '../../../shared/components/Text';
 import Title from '../../../shared/components/Title';
 import Icon from '../../../shared/components/Icons';
+import TimeInput from '../../../shared/components/TimeInput';
 import { COLORS } from '../../../theme/colors';
 import { ICONS } from '../../../theme/icons';
+import { getCurrentTime12 } from '../../../shared/utils/dateUtils';
 import useRangeCard from '../hooks/useRangeCard';
 import RangeTrack from './RangeTrack';
 import { cardStyles as s, innerStyles as inner } from '../styles/RangeCardStyles';
@@ -254,6 +256,7 @@ export default function RangeCard({
     lecturas,
     agregarLectura,
     eliminarLectura,
+    actualizaHora,
     tieneMaxIdeal,
     obtenerManejadores,
   } = useRangeCard({ idealMin, idealMax, sliderMin, sliderMax, step, decimals, maxLecturas: effectiveMax, onChange, initialValues });
@@ -296,7 +299,7 @@ export default function RangeCard({
 
         return (
           <View key={r.id} style={inner.readingItem}>
-            {/* Fila Superior: Identificador (Día/Noche/Número) + Valor Badge + Botones de Acción */}
+            {/* Fila 1: Identificación (Día/Noche/Número) + Botones de Acción (+ / Eliminar) */}
             <View style={inner.readingTopRow}>
               <View style={inner.labelWrap}>
                 <View style={inner.labelCircle}>
@@ -311,13 +314,7 @@ export default function RangeCard({
                 )}
               </View>
 
-              <View style={inner.readingTopRight}>
-                <View style={[inner.valueBadge, { borderColor: colorValor }]}>
-                  <Text size={14} color={colorValor} weight="700">
-                    {r.value.toFixed(decimals)} {unit}
-                  </Text>
-                </View>
-
+              <View style={inner.readingActions}>
                 {puedeMostrarAgregar && (
                   <Button onPress={intentarAgregar} style={[inner.stepBtn, inner.stepBtnIdle]}>
                     <Icon icon={ICONS.add} size={16} color={COLORS.white} />
@@ -327,6 +324,23 @@ export default function RangeCard({
                 <Button variant='ghost' onPress={() => eliminarLectura(r.id)} style={inner.iconBtn}>
                   <Icon icon={ICONS.delete} size={18} color={COLORS.error} />
                 </Button>
+              </View>
+            </View>
+
+            {/* Fila 2: Hora 12h + Badge de Valor Prominente */}
+            <View style={inner.readingDataRow}>
+              <TimeInput
+                value={r.horaMedicion}
+                onChangeText={(newTime12) => actualizaHora(r.id, newTime12)}
+                containerStyle={inner.timeInputWrap}
+                inputStyle={inner.timeInput}
+                textStyle={inner.timeText}
+              />
+
+              <View style={[inner.valueBadge, { borderColor: colorValor }]}>
+                <Text size={14} color={colorValor} weight="700">
+                  {r.value.toFixed(decimals)} {unit}
+                </Text>
               </View>
             </View>
 
