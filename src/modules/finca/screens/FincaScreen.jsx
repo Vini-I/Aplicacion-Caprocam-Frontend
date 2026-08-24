@@ -37,6 +37,7 @@ export default function FincaScreen({ onDetail, onNew, onEdit }) {
     fincas,
     isCompact,
     alert,
+    loading,
     ModalVisible,
     FincaNombreSeleccionada,
     abrirModalEliminar,
@@ -62,6 +63,18 @@ export default function FincaScreen({ onDetail, onNew, onEdit }) {
             <Alert style={styles.alertIncorrect}>
               Finca eliminada correctamente
             </Alert>
+          )}
+
+          {!loading && fincas.length === 0 && (
+            <View style={styles.emptyState}>
+              <Icon icon={ICONS.location} size={40} color={COLORS.textTertiary} />
+              <Title level={5} color={COLORS.textSecondary} style={styles.emptyStateTitle}>
+                No hay fincas registradas
+              </Title>
+              <Text color={COLORS.textTertiary} align="center">
+                Presiona "Añadir Finca" para registrar la primera.
+              </Text>
+            </View>
           )}
 
           {fincas.map((Finca) => (

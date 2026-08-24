@@ -26,6 +26,7 @@ export function useFincaScreen() {
   const { 
     fincas, 
     alert, 
+    loading,
     eliminarFinca 
   } = useFinca();
   const { estanques } = useEstanque();
@@ -64,6 +65,7 @@ export function useFincaScreen() {
   return {
     fincas: fincasConConteo,
     alert,
+    loading,
     isCompact,
     ModalVisible,
     FincaNombreSeleccionada,
