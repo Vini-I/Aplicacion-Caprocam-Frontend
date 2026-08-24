@@ -66,7 +66,7 @@ import {
   updatePrecria,
   finalizarPrecria,
 } from "../services/precria.service";
-import { getLoteById } from "../services/lote.service";
+import { getLoteById, updateLote } from "../services/lote.service";
 import {
   getProveedoresLarva,
   createProveedorLarva,
@@ -648,6 +648,12 @@ export default function useDetalleSiembra({
     setGuardando(true);
     try {
       let actualizado;
+      const debeActualizarLote =
+        formData.tipoRegistro === "precria" || formData.pasoPorPrecria !== "si";
+      if (debeActualizarLote) {
+        await updateLote(formData.loteId, new LoteLarvaDTO(formData));
+      }
+
       const loteActualizado = await getLoteById(formData.loteId);
 
       if (formData.tipoRegistro === "precria") {

@@ -73,6 +73,7 @@ export default function InformacionGeneralSection({
           onChangeText={(value) => onChange("fechaSiembra", value)}
           labelStyle={styles.requiredLabel}
           inputStyle={hasError("fechaSiembra") ? styles.inputError : null}
+          allowFutureDates={false}
         />
       )}
 
