@@ -18,9 +18,6 @@
  */
 
 import { Pressable, Text, View } from "react-native";
-import { useRouter } from "expo-router";
-import { useState } from "react";
-
 import Icon from "../../../shared/components/Icons";
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
@@ -91,9 +88,11 @@ export default function LandingFooter({
   esMovil,
   esTablet,
   guardarPosicion,
+  irACreditos,
+  enlaceActivo,
+  activarEnlace,
+  desactivarEnlace,
 }) {
-  const router = useRouter();
-  const [enlaceActivo, setEnlaceActivo] = useState(false);
 
   return (
     <View
@@ -202,9 +201,9 @@ export default function LandingFooter({
           </Text>
           <View style={styles.footerLinks}>
             <Pressable
-              onPress={() => router.push("/creditos")}
-              onHoverIn={() => setEnlaceActivo(true)}
-              onHoverOut={() => setEnlaceActivo(false)}
+              onPress={irACreditos}
+              onHoverIn={activarEnlace}
+              onHoverOut={desactivarEnlace}
               style={({ pressed }) => [
                 styles.footerLinkButton,
                 pressed && styles.footerLinkButtonPressed,

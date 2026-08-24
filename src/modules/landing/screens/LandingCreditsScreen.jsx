@@ -23,11 +23,9 @@ import {
   SafeAreaView,
   ScrollView,
   Text,
-  useWindowDimensions,
   View,
 } from "react-native";
-import { useRouter } from "expo-router";
-
+import { useLandingCredits } from "../hooks/useLandingCredits";
 import { styles } from "../styles/LandingCreditsStyle";
 
 const LIDERES = [
@@ -42,7 +40,7 @@ const LIDERES = [
 const EQUIPO_DESARROLLO = [
   "Andrés Jesús Gutiérrez Herrera",
   "Ariana María Araya Cordero",
-  "Dennis Alberto Marchena Delgado",
+  "Dennis Marchena Delgado",
   "Génesis Pamela Leiva Gómez",
   "Gloriana Paola Carrillo Alfaro",
   "Greivin Eliecer Arguedas Gudiel",
@@ -54,7 +52,7 @@ const EQUIPO_DESARROLLO = [
   "Kristy Daniela Alvarado Gutiérrez",
   "Leandro Sanchez Rojas",
   "Luis Daniel Álvarez Vargas",
-  "Marco Vinicio Vasquez Barrantes",
+  "Marco Vinicio Vásquez Barrantes",
   "Marisol Alfaro López",
   "Oscar Mario Álvarez Cruz",
   "Reynold José Ruiz Obregón",
@@ -65,26 +63,26 @@ const EQUIPO_DESARROLLO = [
   "Wendy María Martínez López",
 ];
 
-const PROFESOR = "Franklin Jose Chaves Baltodano";
+const PROFESOR = "Franklin José Chavez Baltodano";
 
 export default function LandingCreditsScreen() {
-  const router = useRouter();
-  const { width } = useWindowDimensions();
-
-const esMovil = width < 650;
-const esTablet = width >= 650 && width < 900;
-const esPantallaMediana = width >= 900 && width < 1200;
+  const {
+    esMovil,
+    esTablet,
+    esPantallaMediana,
+    volver,
+  } = useLandingCredits();
 
   function mostrarIntegrantes(integrantes) {
     return integrantes.map((integrante) => (
       <View
         key={integrante}
         style={[
-  styles.studentItem,
-  esPantallaMediana && styles.studentItemMedium,
-  esTablet && styles.studentItemTablet,
-  esMovil && styles.studentItemMobile,
-]}
+          styles.studentItem,
+          esPantallaMediana && styles.studentItemMedium,
+          esTablet && styles.studentItemTablet,
+          esMovil && styles.studentItemMobile,
+        ]}
       >
         <View style={styles.studentBullet} />
 
@@ -107,7 +105,7 @@ const esPantallaMediana = width >= 900 && width < 1200;
           </Text>
 
           <Text style={styles.campus}>
-            Sede Guanacaste
+            Sede Guanacaste, Recinto Corobicí
           </Text>
 
           <Text style={styles.title}>
@@ -151,7 +149,7 @@ const esPantallaMediana = width >= 900 && width < 1200;
           </View>
 
           <Pressable
-            onPress={() => router.back()}
+            onPress={volver}
             style={({ pressed }) => [
               styles.backButton,
               pressed && styles.backButtonPressed,
