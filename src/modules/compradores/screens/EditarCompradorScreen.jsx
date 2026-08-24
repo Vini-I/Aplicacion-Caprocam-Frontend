@@ -16,9 +16,14 @@
  *    corresponda.
  *
  * IMPORTANTE:
- * - El borde rojo de Teléfono/Correo se activa por campo, pero el
- *   texto de error es un solo mensaje general (la alerta de abajo),
- *   no uno por campo, según el estándar 1.5.
+ * - El borde rojo de Teléfono/Correo se activa por campo si el
+ *   formato es inválido, pero el texto de error es un solo mensaje
+ *   general (la alerta de abajo), no uno por campo, según el
+ *   estándar 1.5.
+ * - Si se presiona "Guardar" sin haber modificado nada, los 4
+ *   campos editables (teléfono, correo, dirección, notas) también
+ *   se ponen en rojo (sinCambios), para señalar que hay que
+ *   cambiar alguno.
  * - guardar() no navega a otra pantalla: solo muestra la alerta de
  *   resultado en el mismo formulario.
  * - El campo "Tipo de producto" se eliminó del formulario: las
@@ -59,6 +64,7 @@ export default function EditarCompradorScreen() {
     setNotas,
     errorTelefono,
     errorCorreo,
+    sinCambios,
     alerta,
     handleTelefonoChange,
     handleCorreoChange,
@@ -68,14 +74,14 @@ export default function EditarCompradorScreen() {
 
   if (cargando) {
     return (
-      <View style={[styles.container, styles.loadingContainer]}>
+      <View style={[STYLE.container, styles.loadingContainer]}>
         <ActivityIndicator size="large" color={COLORS.primary} />
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View style={STYLE.container}>
 
 
       {/* Formulario con scroll para evitar que el teclado tape los campos */}
@@ -128,7 +134,7 @@ export default function EditarCompradorScreen() {
             keyboardType="phone-pad"
             maxLength={TELEFONO_MAX_LENGTH}
             containerStyle={styles.field}
-            style={[styles.input, errorTelefono !== "" && styles.inputError]}
+            style={[styles.input, (errorTelefono !== "" || sinCambios) && styles.inputError]}
             labelStyle={styles.label}
           />
 
@@ -139,7 +145,7 @@ export default function EditarCompradorScreen() {
             placeholder="ventas@empresa.com"
             keyboardType="email-address"
             containerStyle={styles.field}
-            style={[styles.input, errorCorreo !== "" && styles.inputError]}
+            style={[styles.input, (errorCorreo !== "" || sinCambios) && styles.inputError]}
             labelStyle={styles.label}
           />
 
@@ -149,7 +155,7 @@ export default function EditarCompradorScreen() {
             onChangeText={setDireccion}
             placeholder="San José, Costa Rica"
             containerStyle={styles.field}
-            style={styles.input}
+            style={[styles.input, sinCambios && styles.inputError]}
             labelStyle={styles.label}
           />
 
@@ -160,7 +166,7 @@ export default function EditarCompradorScreen() {
             placeholder="Observaciones adicionales..."
             multiline={true}
             containerStyle={styles.field}
-            style={styles.input}
+            style={[styles.input, sinCambios && styles.inputError]}
             labelStyle={styles.label}
           />
 

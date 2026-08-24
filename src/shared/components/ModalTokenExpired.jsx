@@ -25,24 +25,16 @@ import { getTokenExpiration } from '../utils/jwtUtils';
 import { COLORS } from '../../theme/colors';
 import { ICONS } from '../../theme/icons';
 import { STYLE } from '../../theme/style';
+import { useError } from '../context/ErrorContext';
 
 // Rutas que no requieren autenticación
 const RUTAS_PUBLICAS = ['/landing', '/loginWeb', '/registerWeb', '/login'];
-
-const clearSession = () => {
-  try {
-    localStorage.removeItem('caprocam_auth_token');
-    localStorage.removeItem('caprocam_refresh_token');
-    localStorage.removeItem('caprocam_usuario');
-  } catch (error) {
-    console.error('Error al limpiar sesión:', error);
-  }
-};
 
 export default function SessionMonitor({ children }) {
   const router = useRouter();
   const pathname = usePathname();
   const [showModal, setShowModal] = useState(false);
+  const { mostrarError } = useError();
 
   // Determina si la ruta actual es pública
   const esRutaPublica = RUTAS_PUBLICAS.some((ruta) => pathname?.startsWith(ruta));
@@ -52,6 +44,7 @@ export default function SessionMonitor({ children }) {
     if (esRutaPublica) return;
 
     let interval;
+    let initialTimeout;
 
     const checkToken = () => {
       const token = getToken();
@@ -72,10 +65,16 @@ export default function SessionMonitor({ children }) {
       }
     };
 
-    checkToken();
-    interval = setInterval(checkToken, 5000);
+    // Retrasamos la primera comprobación para permitir que el token recién
+    // guardado tras el login se asiente en localStorage antes de verificarlo,
+    // evitando falsos positivos de "sesión expirada" al navegar desde /loginWeb.
+    initialTimeout = setTimeout(() => {
+      checkToken();
+      interval = setInterval(checkToken, 5000);
+    }, 1500);
 
     return () => {
+      clearTimeout(initialTimeout);
       if (interval) clearInterval(interval);
     };
   }, [esRutaPublica]);
@@ -84,6 +83,16 @@ export default function SessionMonitor({ children }) {
   if (esRutaPublica) {
     return <>{children}</>;
   }
+
+  const clearSession = () => {
+    try {
+      localStorage.removeItem('caprocam_auth_token');
+      localStorage.removeItem('caprocam_refresh_token');
+      localStorage.removeItem('caprocam_usuario');
+    } catch (error) {
+      mostrarError('Error al limpiar la sesión. Por favor, cierra la aplicación y vuelve a iniciar sesión.');
+    }
+  };
 
   const handleLogin = () => {
     clearSession();

@@ -175,6 +175,7 @@ export default function DetalleSiembraScreen({
         }
         Subtitulo={`${estanqueLabel} – ${fincaLabel}`}
         Icono="shrimp"
+        RutaVolver={`/siembra`}
       />
       <ScrollView
         style={STYLE.container}

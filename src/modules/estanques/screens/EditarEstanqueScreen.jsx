@@ -91,7 +91,7 @@ export default function EditarEstanqueScreen({ codigoCBO, id }) {
         Titulo="Editar Estanque"
         Subtitulo={`${codigo}`}
         Icono="water"
-        RutaVolver={`/finca/editarEstanque?codigoCBO=${codigoCBO}&id=${id}`}
+        RutaVolver={`/finca/detalle?id=${estanqueOriginal.idFinca}`}
       />
 
       <ScrollView style={STYLE.container} showsVerticalScrollIndicator={false}>
@@ -219,7 +219,7 @@ export default function EditarEstanqueScreen({ codigoCBO, id }) {
             />
 
             <Select
-              label="Se usa precria"
+              label="¿Se usa precría?"
               required={true}
               submitted={submitted}
               options={OPCIONES_PRECRIA}

@@ -44,7 +44,7 @@ import {
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
 
-export default function NuevoEstanqueScreen({ codigoCBO }) {
+export default function NuevoEstanqueScreen({ codigoCBO, id }) {
   const {
     finca,
 
@@ -75,7 +75,7 @@ export default function NuevoEstanqueScreen({ codigoCBO }) {
         Titulo="Nuevo Estanque"
         Subtitulo={`${finca?.nombreFinca ?? "Cargando..."}`}
         Icono="water"
-        RutaVolver={`/finca/editarEstanque?codigoCBO=${codigoCBO}&id=${id}`}
+        RutaVolver={`/finca/detalle?id=${id}`}
       />
 
       <ScrollView style={STYLE.container} showsVerticalScrollIndicator={false}>
@@ -203,7 +203,7 @@ export default function NuevoEstanqueScreen({ codigoCBO }) {
             />
 
             <Select
-              label="Se usa precria"
+              label="¿Se usa precria?"
               required={true}
               submitted={submitted}
               options={OPCIONES_PRECRIA}
