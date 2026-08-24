@@ -30,9 +30,11 @@
  * - Mismo regex y misma regla de teléfono/correo que
  *   useEditarCompradorScreen.js, para que ambas pantallas validen
  *   igual.
- * - La cédula solo se valida como obligatoria (no se le exige un
- *   formato exacto): una vez guardado el comprador, la cédula ya no
- *   se puede modificar (en EditarComprador se muestra deshabilitada).
+ * - La cédula se valida como obligatoria y con una longitud de entre
+ *   CEDULA_MIN_LENGTH (8) y CEDULA_MAX_LENGTH (15) dígitos (no se le
+ *   exige un formato exacto por tipo de cédula): una vez guardado el
+ *   comprador, la cédula ya no se puede modificar (en EditarComprador
+ *   se muestra deshabilitada).
  * - El campo "Tipo de producto" se eliminó: no tenía sentido en
  *   este flujo (antibióticos, fertilizantes, equipos, etc. no
  *   aplican a un comprador).
@@ -46,20 +48,41 @@ import { useRouter } from "expo-router";
 import { compradorService } from "../services/comprador.service";
 import { useError } from "../../../shared/context/ErrorContext";
 
-// Exige exactamente 8 dígitos
-const TELEFONO_REGEX = /^\d{8}$/;
+// Formato internacional (estilo E.164): "+" + código de país (1 a 3
+// dígitos) + número local, con espacio opcional -- igual criterio
+// que useEditarCompradorScreen.js. Ya no exige exactamente 8 dígitos
+// "a la costarricense".
+// Ejemplos válidos: +506 88888888, +1 2025550123, +52 5512345678,
+// +34 612345678
+const TELEFONO_FORMATO_REGEX = /^\+\d{1,3}\s?\d{4,14}$/;
+const TELEFONO_DIGITOS_MIN = 8;
+const TELEFONO_DIGITOS_MAX = 15;
 
-export const TELEFONO_MAX_LENGTH = 8;
-export const CEDULA_MAX_LENGTH = 20;
+export const TELEFONO_MAX_LENGTH = 20; // "+" + espacio + hasta 15 dígitos + margen
+export const CEDULA_MIN_LENGTH = 8;
+export const CEDULA_MAX_LENGTH = 15;
 
 const CORREO_REGEX = /^[^\s@]+@[^\s@]+$/;
+const CORREO_LARGO_MINIMO = 5;
 
 function esTelefonoValido(valor) {
-  return valor.trim() !== "" && TELEFONO_REGEX.test(valor.trim());
+  const limpio = valor.trim();
+  if (!TELEFONO_FORMATO_REGEX.test(limpio)) return false;
+  const totalDigitos = limpio.replace(/\D/g, "").length;
+  return totalDigitos >= TELEFONO_DIGITOS_MIN && totalDigitos <= TELEFONO_DIGITOS_MAX;
 }
 
+function esCedulaValida(valor) {
+  const limpio = valor.trim();
+  return limpio.length >= CEDULA_MIN_LENGTH && limpio.length <= CEDULA_MAX_LENGTH;
+}
+
+// Igual que en useEditarCompradorScreen.js: opcional, pero si se
+// llena exige un largo mínimo además del formato.
 function esCorreoValido(valor) {
-  return valor.trim() === "" || CORREO_REGEX.test(valor.trim()); // correo no es obligatorio
+  const limpio = valor.trim();
+  if (limpio === "") return true; // correo no es obligatorio
+  return limpio.length >= CORREO_LARGO_MINIMO && CORREO_REGEX.test(limpio);
 }
 
 const MENSAJE_ERROR_GENERAL = "Revisa los campos obligatorios marcados con * antes de guardar.";
@@ -93,9 +116,12 @@ export function useNuevoCompradorScreen() {
     }
   }, [mensajeError]);
 
-    // Permite solo dígitos en el teléfono
+    // Permite dígitos, espacios y un "+" al inicio (prefijo de país);
+    // ya no se limita a dígitos puros de 8 cifras.
   const handleTelefonoChange = (valor) => {
-    setTelefono(valor.replace(/[^\d]/g, ""));
+    let limpio = valor.replace(/[^\d+\s]/g, "");
+    limpio = limpio.replace(/(?!^)\+/g, "");
+    setTelefono(limpio);
   };
 
   // Permite solo dígitos en la cédula
@@ -106,7 +132,7 @@ export function useNuevoCompradorScreen() {
   // Valida los campos y guarda el comprador si no hay errores
   async function handleSubmit() {
     const errNombre = nombre.trim() === "";
-    const errCedula = cedula.trim() === "";
+    const errCedula = !esCedulaValida(cedula);
     const errTel = !esTelefonoValido(telefono);
     const errCorreo = !esCorreoValido(correo);
 
