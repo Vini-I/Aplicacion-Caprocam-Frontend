@@ -150,7 +150,7 @@ export function useFincaEditar({ onFinca, id }) {
     }
 
     const EditarFincaDTO = {
-      codigoCBO: finca.codigoCBO,
+      codigoCVO: finca.codigoCVO,
       nombreFinca: formulario.nombre,
       provincia: finca.provincia,
       canton: finca.canton,
@@ -163,7 +163,7 @@ export function useFincaEditar({ onFinca, id }) {
     };
 
     try {
-      await editarFinca(finca.codigoCBO, EditarFincaDTO);
+      await editarFinca(finca.codigoCVO, EditarFincaDTO);
       onFinca();
     } catch (err) {
       return;

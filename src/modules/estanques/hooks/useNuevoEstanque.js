@@ -3,7 +3,7 @@
  * HOOK: useNuevoEstanque
  * ============================================================
  * Maneja la lógica del formulario para registrar un nuevo estanque.
- * - Carga la finca por `codigoCBO`.
+ * - Carga la finca por `codigoCVO`.
  * - Normaliza valores numéricos.
  * - Valida datos usando `validarFormularioEstanque`.
  * - Expone `errores` y `displayErrorMessage` para la UI.
@@ -22,7 +22,7 @@ import {
   normalizarNumeroDecimal,
 } from "./useEstanque";
 
-export default function useNuevoEstanque({ navigation, codigoCBO }) {
+export default function useNuevoEstanque({ codigoCVO }) {
   const router = useRouter();
 
   const { crearEstanque } = useEstanque();
@@ -54,7 +54,7 @@ export default function useNuevoEstanque({ navigation, codigoCBO }) {
 
   async function obtenerFinca() {
     try {
-      const data = await buscarFinca(codigoCBO);
+      const data = await buscarFinca(codigoCVO);
       setFinca(data);
     } catch (error) {
       mostrarError(error.message);

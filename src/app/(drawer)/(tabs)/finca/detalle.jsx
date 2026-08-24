@@ -23,10 +23,10 @@ export default function Detalle() {
     });
   };
 
-  const handleEditarEstanque = (codigoCBO, id) => {
+  const handleEditarEstanque = (codigoCVO, id) => {
     router.push({
       pathname: "/finca/editarEstanque",
-      params: { codigoCBO, id }
+      params: { codigoCVO, id }
     });
   }
 

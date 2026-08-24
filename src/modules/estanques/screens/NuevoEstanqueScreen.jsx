@@ -44,7 +44,7 @@ import {
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
 
-export default function NuevoEstanqueScreen({ codigoCBO, id }) {
+export default function NuevoEstanqueScreen({ codigoCVO, id }) {
   const {
     finca,
 
@@ -67,7 +67,7 @@ export default function NuevoEstanqueScreen({ codigoCBO, id }) {
     registrarEstanque,
     displayErrorMessage,
     displayErrorVariant,
-  } = useNuevoEstanque({ codigoCBO });
+  } = useNuevoEstanque({ codigoCVO });
 
   return (
     <>

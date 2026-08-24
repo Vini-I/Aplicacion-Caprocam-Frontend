@@ -44,9 +44,9 @@ export function FincaProvider({ children }) {
     cargarFincas();
   }, []);
 
-  async function buscarFinca(codigoCBO) {
+  async function buscarFinca(codigoCVO) {
     try {
-      const data = await fincaService.getFincasById(codigoCBO);
+      const data = await fincaService.getFincasById(codigoCVO);
       return data;
     } catch (error) {
       mostrarError(error);
@@ -65,9 +65,9 @@ export function FincaProvider({ children }) {
     }
   }
 
-  async function editarFinca(codigoCBO, datosActualizados) {
+  async function editarFinca(codigoCVO, datosActualizados) {
     try {
-      await fincaService.updateFincas(datosActualizados, codigoCBO);
+      await fincaService.updateFincas(datosActualizados, codigoCVO);
       await cargarFincas();
       setAlert("edited");
     } catch (error) {
@@ -77,9 +77,9 @@ export function FincaProvider({ children }) {
     }
   }
 
-  async function eliminarFinca(codigoCBO) {
+  async function eliminarFinca(codigoCVO) {
     try {
-      await fincaService.deleteFincas(codigoCBO);
+      await fincaService.deleteFincas(codigoCVO);
       await cargarFincas();
       setAlert("deleted");
     } catch (error) {

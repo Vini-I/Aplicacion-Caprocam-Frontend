@@ -27,7 +27,7 @@ export const generarRegistroPDF = async (finca, estanquesFinca = []) => {
           <th colspan="2" style="text-align:left; padding:6px;">Datos de la finca</th>
         </tr>
         ${filaTabla("Nombre", finca.nombreFinca)}
-        ${filaTabla("Código", finca.codigoCBO)}
+        ${filaTabla("Código", finca.codigoCVO)}
         ${filaTabla("Provincia", finca.provincia)}
         ${filaTabla("Cantón", finca.canton)}
         ${filaTabla("Distrito", finca.distrito)}
@@ -122,7 +122,7 @@ export const generarRegistroPDF = async (finca, estanquesFinca = []) => {
       throw new Error("printToFileAsync no devolvió contenido en base64");
     }
 
-    const nombreArchivo = `reporte_${finca.codigoCBO || "finca"}.pdf`;
+    const nombreArchivo = `reporte_${finca.codigoCVO || "finca"}.pdf`;
     const nuevaRuta = `${FileSystem.documentDirectory}${nombreArchivo}`;
 
     await FileSystem.writeAsStringAsync(nuevaRuta, result.base64, {

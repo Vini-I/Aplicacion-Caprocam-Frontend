@@ -19,7 +19,7 @@ import {
   normalizarNumeroDecimal,
 } from "./useEstanque";
 
-export default function useEditarEstanque(codigoCBO, id) {
+export default function useEditarEstanque(codigoCVO, id) {
   const router = useRouter();
 
   const { buscarFinca } = useFinca();
@@ -80,10 +80,10 @@ export default function useEditarEstanque(codigoCBO, id) {
     }
   }, [id]);
 
-  // Función para obtener la finca asociada al código CBO
+  // Función para obtener la finca asociada al código CVO
   async function obtenerFinca() {
     try {
-      const data = await buscarFinca(codigoCBO);
+      const data = await buscarFinca(codigoCVO);
       setFinca(data);
     } catch (error) {
       mostrarError(error);
