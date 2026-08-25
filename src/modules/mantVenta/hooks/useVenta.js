@@ -34,6 +34,7 @@ import { compradorService } from "../../compradores/services/comprador.service.j
 
 import { styles } from "../styles/VentaStyles.js";
 import { COLORS } from "../../../theme/colors.js";
+import { esFechaFutura } from "../../../shared/utils/dateUtils.js";
 
 export function obtenerFechaActual() {
   const fecha = new Date();
@@ -93,6 +94,7 @@ export function validarVentaFormulario({
   precioKiloNumero,
   colaboradorSeleccionado,
   compradorSeleccionado,
+  fechaVenta,
 }) {
   const errores = {};
 
@@ -102,6 +104,7 @@ export function validarVentaFormulario({
   if (Number(kilosVendidos) <= 0) errores.kilosVendidos = true;
   if (precioKiloNumero <= 0) errores.precioKilo = true;
   if (!compradorSeleccionado) errores.comprador = true;
+  if (esFechaFutura(fechaVenta)) errores.fechaVenta = true;
 
   return errores;
 }
@@ -341,12 +344,17 @@ export function useVenta() {
       precioKiloNumero,
       colaboradorSeleccionado,
       compradorSeleccionado,
+      fechaVenta,
     });
 
     setErrores(nuevosErrores);
 
     if (Object.keys(nuevosErrores).length > 0) {
-      setErrorMessage("Rellenar campos obligatorios.");
+      setErrorMessage(
+        nuevosErrores.fechaVenta
+          ? "No se puede registrar la venta porque la fecha no puede ser futura."
+          : "Rellenar campos obligatorios.",
+      );
       return;
     }
 
