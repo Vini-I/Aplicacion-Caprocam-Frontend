@@ -12,6 +12,7 @@ import Button from "../../../shared/components/Button";
 import Alert from "../../../shared/components/Alert";
 import Card from "../../../shared/components/Card";
 import Select from "../../../shared/components/Select";
+import DateInput from "../../../shared/components/DateInput";
 import Text from "../../../shared/components/Text";
 import Icon from "../../../shared/components/Icons";
 import NavbarRegistro from "../../../shared/components/NavbarRegistro";
@@ -30,6 +31,7 @@ export default function EditarFisicoQuimicaScreen({ registroId }) {
     cargando,
     fincaSeleccionada,
     estanqueSeleccionado,
+    fechaSeleccionada,
     medicionesPorEstanque,
     submitted,
     errorMessage,
@@ -42,6 +44,7 @@ export default function EditarFisicoQuimicaScreen({ registroId }) {
     estanqueSeleccionadoObj,
     handleFincaChange,
     handleEstanqueChange,
+    handleFechaChange,
     handlePhChange,
     handleSalinidadChange,
     handleTempChange,
@@ -119,7 +122,7 @@ export default function EditarFisicoQuimicaScreen({ registroId }) {
                   color={COLORS.primary}
                   size={22}
                 />
-                <Text style={styles.cardTitle}>Finca y estanque</Text>
+                <Text style={styles.cardTitle}>Finca, estanque y fecha</Text>
               </View>
 
               <Select
@@ -149,6 +152,22 @@ export default function EditarFisicoQuimicaScreen({ registroId }) {
                     ? styles.errorInput
                     : undefined
                 }
+              />
+
+              <DateInput
+                label="Fecha de la medición"
+                value={fechaSeleccionada}
+                onChangeText={handleFechaChange}
+                allowFutureDates={false}
+                required
+                submitted={submitted}
+                labelStyle={styles.label}
+                inputStyle={
+                  submitted && !fechaSeleccionada
+                    ? styles.errorInput
+                    : undefined
+                }
+                placeholder="dd/mm/aaaa"
               />
 
               {estanqueSeleccionadoObj && (

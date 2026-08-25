@@ -112,8 +112,7 @@ export default function CompradorScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      {/* Barra de búsqueda por texto y filtro por tipo de producto */}
+    <View style={STYLE.container}>
      
 
       {/* Alerta de éxito: solo una a la vez. Si llegan ambos parámetros
@@ -135,6 +134,32 @@ export default function CompradorScreen() {
           />
         </View>
       ) : null}
+
+       {/* Barra de búsqueda por texto y filtro por tipo de producto */}
+     <View style={[styles.barraBusqueda, STYLE.contentWrapper]}>
+             <SearchBar
+               value={busqueda}
+               onChangeText={setBusqueda}
+               placeholder="Buscar comprador, tipo, correo..."
+               containerStyle={styles.searchBarContainer}
+             />
+            
+           </View>
+
+      {/* Contador de resultados: debe mostrarse siempre junto al searchBar,
+          incluso mientras cargando=true reemplaza la lista por el spinner
+          (antes vivía dentro de ListHeaderComponent y desaparecía en ese caso). */}
+      <View style={STYLE.contentWrapper}>
+        <Text style={styles.contadorResultados}>
+          {cargando
+            ? "Cargando compradores..."
+            : `${compradoresFiltrados.length} ${
+                compradoresFiltrados.length === 1
+                  ? "comprador encontrado"
+                  : "compradores encontrados"
+              }`}
+        </Text>
+      </View>
 
       {/* Alerta de error al cargar, con botón para reintentar */}
       {!!error && (
@@ -163,14 +188,6 @@ export default function CompradorScreen() {
             contentContainerStyle={[styles.lista, STYLE.contentWrapper]}
             refreshing={cargando}
             onRefresh={recargar}
-            ListHeaderComponent={
-              <Text style={styles.contadorResultados}>
-                {compradoresFiltrados.length}{" "}
-                {compradoresFiltrados.length === 1
-                  ? "comprador encontrado"
-                  : "compradores encontrados"}
-              </Text>
-            }
             ListEmptyComponent={
               <EmptyState
                 title="Sin compradores"

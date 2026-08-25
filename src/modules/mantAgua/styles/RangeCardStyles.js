@@ -13,6 +13,7 @@
 
 import { StyleSheet } from 'react-native';
 import { COLORS } from '../../../theme/colors';
+import { TYPOGRAPHY } from '../../../theme/typography';
 
 export const cardStyles = StyleSheet.create({
   card: {
@@ -41,6 +42,26 @@ export const cardStyles = StyleSheet.create({
     gap: 8,
     flexShrink: 1,
   },
+  cardHeaderRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  headerTimeWrap: {
+    marginBottom: 0,
+  },
+  headerTimeInput: {
+    minHeight: 32,
+    paddingVertical: 2,
+    paddingLeft: 8,
+    paddingRight: 4,
+    borderRadius: 8,
+    backgroundColor: COLORS.surface,
+    borderColor: COLORS.secondary,
+  },
+  headerTimeText: {
+    fontSize: 12,
+  },
 });
 
 export const innerStyles = StyleSheet.create({
@@ -50,20 +71,34 @@ export const innerStyles = StyleSheet.create({
     padding: 12,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: COLORS.surface,
+    borderColor: COLORS.secondary,
   },
 
   readingTopRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 6,
+    marginBottom: 8,
   },
 
   labelWrap: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 8,
+  },
+
+  readingActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 6,
+  },
+
+  readingDataRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 10,
+    marginBottom: 10,
   },
 
   labelCircle: {
@@ -85,14 +120,40 @@ export const innerStyles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+    flexWrap: 'wrap',
+  },
+
+  timeInputWrap: {
+    marginBottom: 0,
+  },
+
+  timeInput: {
+    height: 36,
+    paddingVertical: 0,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+    borderWidth: 1.5,
+    borderColor: COLORS.secondary,
+    backgroundColor: COLORS.white,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  timeText: {
+    fontSize: 13.5,
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
+    color: COLORS.textPrimary,
   },
 
   valueBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    height: 36,
+    paddingVertical: 0,
+    paddingHorizontal: 12,
     borderRadius: 8,
     backgroundColor: COLORS.white,
-    borderWidth: 1,
+    borderWidth: 1.5,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 
   sliderRow: {

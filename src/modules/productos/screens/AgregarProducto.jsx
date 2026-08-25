@@ -69,6 +69,8 @@ export default function AgregarProducto() {
     errorCantidad,
     errorStockMinimo,
     errorPrecio,
+    errorEntryDate,
+    errorExpirationDate,
     handleField,
     handleCategoriaChange,
     handleSubmit,
@@ -186,8 +188,10 @@ export default function AgregarProducto() {
               label="Fecha de ingreso"
               value={form.entryDate}
               onChangeText={(val) => handleField("entryDate", val)}
+              allowFutureDates={false}
               containerStyle={styles.field}
               labelStyle={styles.label}
+              error={errorEntryDate ? "La fecha de ingreso no puede ser una fecha futura." : ""}
             />
 
             {(form.categoria === "Alimentación" || form.categoria === "Tratamiento") && (
@@ -199,6 +203,11 @@ export default function AgregarProducto() {
                 allowFutureDates={true}
                 containerStyle={styles.field}
                 labelStyle={styles.label}
+                error={
+                  errorExpirationDate
+                    ? "La fecha de caducidad debe ser posterior a hoy (no puede ser hoy ni una fecha pasada)."
+                    : ""
+                }
               />
             )}
 
