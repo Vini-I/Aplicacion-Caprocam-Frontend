@@ -47,7 +47,7 @@ export const AUTH_MESSAGES = {
   PLACEHOLDER_APELLIDOS:    'Ingresa tus apellidos',
   PLACEHOLDER_EMAIL:        'Ingresa tu correo electrónico',
   PLACEHOLDER_GRUPO_DATOS:  'Ej: 678',
-  BUTTON_SUBMIT_REGISTER:   'Registrarme',
+  BUTTON_SUBMIT_REGISTER:   'Registrar',
   LOADING_REGISTER:         'Creando tu cuenta...',
 
   // SECCIÓN: Modal de éxito del registro

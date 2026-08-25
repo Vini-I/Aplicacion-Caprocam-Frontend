@@ -135,23 +135,54 @@ export default function EquipoCard({ equipo, onPress, onToggle }) {
         </View>
       </View>
 
-      {/* Botón Encender/Apagar */}
+      {/* Estado actual + Botón de acción */}
       <View style={styles.actions}>
+        {/* Indicador de estado actual (pasivo, no clickeable) */}
+        <View style={styles.estadoActualRow}>
+          <View
+            style={[
+              styles.estadoDot,
+              equipo.encendido ? styles.estadoDotEncendido : styles.estadoDotApagado,
+            ]}
+          />
+          <CustomText
+            style={[
+              styles.estadoActualText,
+              equipo.encendido
+                ? styles.estadoActualTextEncendido
+                : styles.estadoActualTextApagado,
+            ]}
+          >
+            {equipo.encendido ? "Encendido" : "Apagado"}
+          </CustomText>
+        </View>
+
+        {/* Botón que muestra la ACCIÓN a ejecutar */}
         <Button
           variant="outline"
           onPress={(e) => {
             e?.stopPropagation?.();
             onToggle?.(equipo.id);
           }}
-          style={[styles.toggleBtn, styles.toggleBtnOutline]}
+          style={[
+            styles.toggleBtn,
+            equipo.encendido ? styles.toggleBtnApagar : styles.toggleBtnEncender,
+          ]}
         >
           <Icon
-            icon={equipo.encendido ? ICONS.check : ICONS.close}
-            size={16}
-            color={COLORS.primary}
+            icon={ICONS.engine}
+            size={15}
+            color={equipo.encendido ? COLORS.error : COLORS.success}
           />
-          <CustomText style={styles.toggleBtnLabel}>
-            {equipo.encendido ? "Encendido" : "Apagado"}
+          <CustomText
+            style={[
+              styles.toggleBtnLabel,
+              equipo.encendido
+                ? styles.toggleBtnLabelApagar
+                : styles.toggleBtnLabelEncender,
+            ]}
+          >
+            {equipo.encendido ? "Apagar" : "Encender"}
           </CustomText>
         </Button>
       </View>

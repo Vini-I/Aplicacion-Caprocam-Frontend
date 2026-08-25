@@ -53,7 +53,7 @@ export default function DrawerLayout() {
           >
             <View style={styles.logoutContent}>
               <Icon icon={ICONS.exit} size={16} color={COLORS.white} />
-              <CustomText size={12} color={COLORS.white} weight="600">Salir</CustomText>
+              <CustomText size={13} color={COLORS.white} weight="600">Cerrar Sesion</CustomText>
             </View>
           </Button>
         </View>
@@ -234,23 +234,21 @@ export default function DrawerLayout() {
 //estilos de los botones 
 const styles = StyleSheet.create({
   logoutWrapper: {
-    paddingRight: 16,
+    paddingRight: 12,
   },
   logoutButton: {
     backgroundColor: COLORS.error,
     borderColor: COLORS.error,
     marginTop: 0,
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    borderRadius: 20,
-    minHeight: 32,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    gap: 6,
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: 'center'
   },
   logoutContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 6,
   },
 });
