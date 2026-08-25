@@ -35,7 +35,7 @@ import { useRouter } from "expo-router";
 
 import { productoService } from "../services/producto.service";
 import { getProveedores, filtrarProveedoresPorCategoria } from "../services/proveedoresLookup";
-import { initialForm } from "../services/DataProductForm";
+import { initialForm, obtenerFechaHoyISO, convertirDDMMYYYYaISO } from "../services/DataProductForm";
 import { useError } from "../../../shared/context/ErrorContext";
 
 export function useAgregarProducto() {
@@ -112,12 +112,35 @@ export function useAgregarProducto() {
     form.stockMinimo !== "" &&
     form.precioUnidad !== "";
 
-  const canSave = hasRequiredData;
+  const showExpirationDate =
+    form.categoria === "Alimentación" || form.categoria === "Tratamiento";
+
+  // ── Validación de fechas ──
+  const hoyISO = obtenerFechaHoyISO();
+  const entryDateISO = convertirDDMMYYYYaISO(form.entryDate);
+  const expirationDateISO = convertirDDMMYYYYaISO(form.expirationDate);
+
+  // Fecha de ingreso: no puede ser una fecha futura.
+  const entryDateValida =
+    form.entryDate === "" || entryDateISO === "" || entryDateISO <= hoyISO;
+
+  // Fecha de caducidad
+  const expirationDateValida =
+    !showExpirationDate ||
+    form.expirationDate === "" ||
+    expirationDateISO === "" ||
+    expirationDateISO > hoyISO;
+
+  const canSave = hasRequiredData && entryDateValida && expirationDateValida;
 
   const validationMessage = !mostrarAlertaValidacion
     ? ""
     : !hasRequiredData
     ? "Revisa los campos obligatorios marcados con * antes de guardar."
+    : !entryDateValida
+    ? "La fecha de ingreso no puede ser una fecha futura."
+    : !expirationDateValida
+    ? "La fecha de caducidad debe ser posterior a hoy (no puede ser hoy ni una fecha pasada)."
     : "";
 
   const errorNombre = intentoGuardar && form.nombre.trim() === "";
@@ -127,8 +150,8 @@ export function useAgregarProducto() {
   const errorCantidad = intentoGuardar && form.cantidad === "";
   const errorStockMinimo = intentoGuardar && form.stockMinimo === "";
   const errorPrecio = intentoGuardar && form.precioUnidad === "";
-  const showExpirationDate =
-    form.categoria === "Alimentación" || form.categoria === "Tratamiento";
+  const errorEntryDate = intentoGuardar && !entryDateValida;
+  const errorExpirationDate = intentoGuardar && !expirationDateValida;
 
   // ─────────────────────────────────────────────
   // Handlers
@@ -194,7 +217,14 @@ export function useAgregarProducto() {
       await productoService.crearProducto(producto);
     } catch (error) {
       setGuardando(false);
-      setErrorGuardado("No se pudo guardar el producto. Intenta de nuevo.");
+      // Muestra el mensaje real del back (ej. "Ya existe un producto
+      // con ese código" en un 400)
+      mostrarError(error);
+      const mensaje =
+        error?.response?.data?.message ||
+        error?.message ||
+        "No se pudo guardar el producto. Intenta de nuevo.";
+      setErrorGuardado(mensaje);
       return;
     }
     setGuardando(false);
@@ -231,6 +261,8 @@ export function useAgregarProducto() {
     errorCantidad,
     errorStockMinimo,
     errorPrecio,
+    errorEntryDate,
+    errorExpirationDate,
     guardando,
     errorGuardado,
     handleField,

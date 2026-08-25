@@ -53,7 +53,7 @@ export default function DrawerLayout() {
           >
             <View style={styles.logoutContent}>
               <Icon icon={ICONS.exit} size={16} color={COLORS.white} />
-              <CustomText size={13} color={COLORS.white} weight="600">Cerrar sesión</CustomText>
+              <CustomText size={12} color={COLORS.white} weight="600">Salir</CustomText>
             </View>
           </Button>
         </View>
@@ -69,6 +69,12 @@ export default function DrawerLayout() {
             <Icon icon={ICONS.dashboard} size={22} />
           )
         }}
+        listeners={({ navigation }) => ({
+          drawerItemPress: (e) => {
+            e.preventDefault();
+            navigation.navigate("(tabs)", { screen: "inicio" });
+          },
+        })}
       />
 
       <Drawer.Screen
@@ -228,21 +234,23 @@ export default function DrawerLayout() {
 //estilos de los botones 
 const styles = StyleSheet.create({
   logoutWrapper: {
-    paddingRight: 12,
+    paddingRight: 16,
   },
   logoutButton: {
     backgroundColor: COLORS.error,
     borderColor: COLORS.error,
     marginTop: 0,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 20,
+    minHeight: 32,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    justifyContent: 'center',
   },
   logoutContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 4,
   },
 });

@@ -30,7 +30,6 @@ export default function AgregarTrazabilidadScreen() {
   const {
     formData,
     fincas,
-    colaboradorSesion,
     estanquesOrigen,
     estanquesDestino,
     mensajeError,
@@ -88,7 +87,6 @@ export default function AgregarTrazabilidadScreen() {
           <TrazabilidadForm
             formData={formData}
             fincas={fincas}
-            colaboradorSesion={colaboradorSesion}
             estanquesOrigen={estanquesOrigen}
             estanquesDestino={estanquesDestino}
             onChange={manejarCambio}
