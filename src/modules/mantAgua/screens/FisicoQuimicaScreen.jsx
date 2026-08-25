@@ -18,6 +18,7 @@ import Button from '../../../shared/components/Button';
 import Alert from '../../../shared/components/Alert';
 import Card from '../../../shared/components/Card';
 import Select from '../../../shared/components/Select';
+import DateInput from '../../../shared/components/DateInput';
 import Text from '../../../shared/components/Text';
 import Icon from '../../../shared/components/Icons';
 import NavbarRegistro from '../../../shared/components/NavbarRegistro';
@@ -34,6 +35,7 @@ export default function FisicoQuimicaScreen({ onBack }) {
   const {
     fincaSeleccionada,
     estanqueSeleccionado,
+    fechaSeleccionada,
     medicionesPorEstanque,
     submitted,
     errorMessage,
@@ -46,6 +48,7 @@ export default function FisicoQuimicaScreen({ onBack }) {
     estanqueSeleccionadoObj,
     handleFincaChange,
     handleEstanqueChange,
+    handleFechaChange,
     handlePhChange,
     handleSalinidadChange,
     handleTempChange,
@@ -81,7 +84,7 @@ export default function FisicoQuimicaScreen({ onBack }) {
             <Card style={styles.formCard}>
               <View style={styles.cardHeader}>
                 <Icon icon={ICONS.chemicalContainer} color={COLORS.primary} size={22} />
-                <Text style={styles.cardTitle}>Finca y estanque</Text>
+                <Text style={styles.cardTitle}>Finca, estanque y fecha</Text>
               </View>
 
               <Select
@@ -103,6 +106,18 @@ export default function FisicoQuimicaScreen({ onBack }) {
                 disabled={!fincaSeleccionada}
                 labelStyle={styles.label}
                 selectStyle={submitted && !estanqueSeleccionado ? styles.errorInput : undefined}
+              />
+
+              <DateInput
+                label="Fecha de la medición"
+                value={fechaSeleccionada}
+                onChangeText={handleFechaChange}
+                allowFutureDates={false}
+                required
+                submitted={submitted}
+                labelStyle={styles.label}
+                inputStyle={submitted && !fechaSeleccionada ? styles.errorInput : undefined}
+                placeholder="dd/mm/aaaa"
               />
 
               {estanqueSeleccionadoObj && (

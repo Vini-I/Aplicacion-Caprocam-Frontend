@@ -32,6 +32,8 @@ export const colorCategoria = {
     Alimentación: { fondo: COLORS.warningLight, texto: COLORS.warning },
     Tratamiento: { fondo: COLORS.secondary, texto: COLORS.primary },
     Químico: { fondo: COLORS.secondary, texto: COLORS.primary },
+    Mantenimiento: { fondo: COLORS.secondary, texto: COLORS.primary },
+    Equipos: { fondo: COLORS.secondary, texto: COLORS.primary },
 };
 
 export const colorCategoriaDefault = {
