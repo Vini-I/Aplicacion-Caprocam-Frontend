@@ -265,3 +265,60 @@ export function toMysqlDate(fechaTexto) {
 
   return anio + "-" + mes + "-" + dia;
 }
+
+/**
+ * Convierte una hora en formato 24h ("08:30:00", "14:15") a formato 12h ("08:30 AM", "02:15 PM").
+ */
+export function formatTime12(horaStr) {
+  if (!horaStr || typeof horaStr !== "string") return "";
+  const partes = horaStr.trim().split(":");
+  if (partes.length < 2) return horaStr;
+
+  let horas = parseInt(partes[0], 10);
+  const minutos = partes[1].slice(0, 2);
+  if (isNaN(horas)) return horaStr;
+
+  const ampm = horas >= 12 ? "PM" : "AM";
+  horas = horas % 12;
+  if (horas === 0) horas = 12;
+
+  const horasStr = String(horas).padStart(2, "0");
+  return `${horasStr}:${minutos} ${ampm}`;
+}
+
+/**
+ * Convierte una hora en formato 12h ("02:15 PM", "8:30 AM") a formato 24h ("14:15:00", "08:30:00").
+ */
+export function toMysqlTime(hora12Str) {
+  if (!hora12Str || typeof hora12Str !== "string") return "";
+  const texto = hora12Str.trim();
+  const match = texto.match(/^(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM|am|pm)?$/i);
+  if (!match) {
+    if (/^\d{2}:\d{2}(:\d{2})?$/.test(texto)) {
+      return texto.length === 5 ? `${texto}:00` : texto;
+    }
+    return "";
+  }
+
+  let horas = parseInt(match[1], 10);
+  const minutos = match[2];
+  const ampm = (match[3] || "AM").toUpperCase();
+
+  if (ampm === "PM" && horas < 12) horas += 12;
+  if (ampm === "AM" && horas === 12) horas = 0;
+
+  const horasStr = String(horas).padStart(2, "0");
+  return `${horasStr}:${minutos}:00`;
+}
+
+export function getCurrentTime12() {
+  const ahora = new Date();
+  let horas = ahora.getHours();
+  const minutos = String(ahora.getMinutes()).padStart(2, "0");
+  const ampm = horas >= 12 ? "PM" : "AM";
+  horas = horas % 12;
+  if (horas === 0) horas = 12;
+  const horasStr = String(horas).padStart(2, "0");
+  return `${horasStr}:${minutos} ${ampm}`;
+}
+

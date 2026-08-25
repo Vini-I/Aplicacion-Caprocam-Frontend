@@ -145,7 +145,8 @@ export default function VentaScreen({ onDetalleVentas }) {
             label="Fecha *"
             value={fechaVenta}
             onChangeText={handleFechaChange}
-            allowFutureDates={true}
+            allowFutureDates={false}
+            inputStyle={errores.fechaVenta ? errorInputStyle : null}
           />
         </View>
 

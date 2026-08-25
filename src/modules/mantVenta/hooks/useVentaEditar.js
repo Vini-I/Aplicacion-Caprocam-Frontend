@@ -224,6 +224,14 @@ export function useVentaEditar({ id, onGuardado } = {}) {
     [limpiarError],
   );
 
+  const handleFechaChange = useCallback(
+    (value) => {
+      setFechaVenta(value);
+      limpiarError("fechaVenta");
+    },
+    [limpiarError],
+  );
+
   const guardarCambios = useCallback(async () => {
     const nuevosErrores = validarVentaFormulario({
       fincaSeleccionada,
@@ -232,13 +240,18 @@ export function useVentaEditar({ id, onGuardado } = {}) {
       kilosVendidos,
       precioKiloNumero,
       compradorSeleccionado,
+      fechaVenta,
     });
 
     setErrores(nuevosErrores);
 
     if (Object.keys(nuevosErrores).length > 0) {
       setTipoMensaje("error");
-      setMensaje("Completa los datos obligatorios para guardar los cambios.");
+      setMensaje(
+        nuevosErrores.fechaVenta
+          ? "No se puede actualizar la venta porque la fecha no puede ser futura."
+          : "Completa los datos obligatorios para guardar los cambios.",
+      );
       return;
     }
 
@@ -314,6 +327,7 @@ export function useVentaEditar({ id, onGuardado } = {}) {
     handleKilosVendidosChange,
     handlePrecioChange,
     handleCompradorChange,
+    handleFechaChange,
     limpiarError,
     guardarCambios,
   };
