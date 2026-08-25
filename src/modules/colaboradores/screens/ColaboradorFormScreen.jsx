@@ -149,7 +149,11 @@ export default function ColaboradorFormScreen() {
 
   return (
     <>
-      <ScrollView style={STYLE.container} contentContainerStyle={STYLE.contentWrapper}>
+      <ScrollView
+        style={STYLE.container}
+        contentContainerStyle={STYLE.contentWrapper}
+        showsVerticalScrollIndicator={false}
+      >
         <ColaboradorForm
           ref={formRef}
           initialData={initialData}
