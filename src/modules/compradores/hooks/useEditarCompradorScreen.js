@@ -44,51 +44,39 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { compradorService, mapComprador } from "../services/comprador.service";
 import { useError } from "../../../shared/context/ErrorContext";
 
-// Formato internacional (estilo E.164): "+" seguido del código de
-// país (1 a 3 dígitos) y el número local, con un espacio opcional
-// entre ambos -- ya NO asume que todo teléfono es de Costa Rica.
-// Ejemplos válidos: +506 88888888, +1 2025550123, +52 5512345678,
-// +34 612345678
-const TELEFONO_FORMATO_REGEX = /^\+\d{1,3}\s?\d{4,14}$/;
-// Mínimo de dígitos totales (sin contar el "+"), para filtrar
-// números claramente incompletos como "5" o "55555" -- no un
-// mínimo pensado para un solo país.
-const TELEFONO_DIGITOS_MIN = 8;
-// Máximo de dígitos totales, siguiendo el estándar internacional E.164.
-const TELEFONO_DIGITOS_MAX = 15;
-export const TELEFONO_MAX_LENGTH = 20; // "+" + espacio + hasta 15 dígitos + margen
+// Exige exactamente 8 dígitos
+const TELEFONO_REGEX = /^\d{8}$/;
+export const TELEFONO_MAX_LENGTH = 8;
 
 const CORREO_REGEX = /^[^\s@]+@[^\s@]+$/;
-const CORREO_LARGO_MINIMO = 5;
 
-// Retorna mensaje de error si el teléfono está vacío o tiene formato inválido.
-// Exige código de país (+506, +1, +34, +52, etc.) y un total de
-// dígitos dentro de un rango internacional razonable -- ya no exige
-// exactamente 8 dígitos "a la costarricense".
+const CORREO_LARGO_MINIMO = 4;
+
+function normalizarTelefonoLocal(valor) {
+  const soloDigitos = String(valor || "").replace(/\D/g, "");
+  return soloDigitos.slice(-8);
+}
+
+// Retorna mensaje de error si el teléfono está vacío o tiene formato inválido
 function validarTelefono(valor) {
   if (!valor) return "El teléfono es obligatorio.";
-  const limpio = valor.trim();
-  if (!TELEFONO_FORMATO_REGEX.test(limpio)) {
-    return "Ingrese un teléfono con código de país. Ej: +506 88888888";
-  }
-  const totalDigitos = limpio.replace(/\D/g, "").length;
-  if (totalDigitos < TELEFONO_DIGITOS_MIN || totalDigitos > TELEFONO_DIGITOS_MAX) {
-    return "Ingrese un teléfono con código de país. Ej: +506 88888888";
-  }
+  if (!TELEFONO_REGEX.test(valor))
+    return "Ingrese un teléfono válido. Ej: 22223344";
   return "";
 }
 
 // Retorna mensaje de error si el correo tiene formato inválido (es opcional,
 // igual que en useNuevoCompradorScreen.js: solo se valida si el usuario
-// escribió algo, nunca se exige). Igual que en Proveedores, exige un
-// largo mínimo de caracteres además del formato.
+// escribió algo, nunca se exige). El mínimo de caracteres aplica a la
+// parte ANTES del @, no al correo completo.
 function validarCorreo(valor) {
   if (!valor) return "";
   const limpio = valor.trim();
-  if (limpio.length < CORREO_LARGO_MINIMO)
-    return `El correo debe tener al menos ${CORREO_LARGO_MINIMO} caracteres.`;
   if (!CORREO_REGEX.test(limpio))
     return "Ingrese un correo válido. Ej: ventas@empresa.com";
+  const parteLocal = limpio.split("@")[0];
+  if (parteLocal.length < CORREO_LARGO_MINIMO)
+    return `La parte antes del @ debe tener al menos ${CORREO_LARGO_MINIMO} caracteres.`;
   return "";
 }
 
@@ -163,18 +151,16 @@ export function useEditarCompradorScreen() {
     try {
       const data = await compradorService.getCompradorPorId(id);
       const comprador = mapComprador(data);
-      // Se conserva el teléfono TAL CUAL vino guardado (con su
-      // prefijo de país completo, sea +506, +1, +34, +52, etc.). Ya
-      // no se recorta a 8 dígitos asumiendo Costa Rica -- eso era lo
-      // que hacía perder el prefijo al guardar.
+      
+      const telefonoLocal = normalizarTelefonoLocal(comprador.telefono);
       setNombre(comprador.nombre);
       setCedula(comprador.cedula);
-      setTelefono(comprador.telefono);
+      setTelefono(telefonoLocal);
       setCorreo(comprador.correo);
       setDireccion(comprador.direccion);
       setNotas(comprador.notas);
       setOriginal({
-        telefono: comprador.telefono,
+        telefono: telefonoLocal,
         correo: comprador.correo,
         direccion: comprador.direccion,
         notas: comprador.notas,
@@ -191,15 +177,9 @@ export function useEditarCompradorScreen() {
     if (id) cargarComprador();
   }, [id, cargarComprador]);
 
-  // Solo actualizan el valor: no validan mientras se escribe
+    // Solo actualizan el valor: no validan mientras se escribe
   function handleTelefonoChange(valor) {
-    // Permite dígitos, espacios y un "+" -- pero el "+" solo se
-    // conserva si aparece al inicio (prefijo de país). Ya no se
-    // recortan los caracteres a 8 dígitos: se acepta el número
-    // internacional completo tal como lo escribe el usuario.
-    let limpio = valor.replace(/[^\d+\s]/g, "");
-    limpio = limpio.replace(/(?!^)\+/g, "");
-    setTelefono(limpio);
+    setTelefono(valor.replace(/[^\d]/g, ""));
   }
 
   function handleCorreoChange(valor) {
