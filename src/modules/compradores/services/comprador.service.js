@@ -101,6 +101,19 @@ export function mapComprador(apiComprador) {
   };
 }
 
+// Normaliza el espaciado del teléfono para mostrarlo en la lista.
+// Antes esta función asumía que TODO teléfono era de Costa Rica
+// (tomaba los últimos 8 dígitos y forzaba "+506" al inicio), lo cual
+// rompía números de otros países -- por ejemplo "+34 612345678"
+// terminaba mostrado como "+506 6123-4567". Ahora que el teléfono se
+// guarda completo con su propio prefijo de país (+506, +1, +34,
+// +52, etc., ver useNuevoCompradorScreen.js / useEditarCompradorScreen.js),
+// esta función ya no reformatea el número -- solo limpia espacios
+// repetidos y lo muestra tal como fue registrado.
+export function formatearTelefono(telefono) {
+  return String(telefono || "").trim().replace(/\s+/g, " ");
+}
+
 function obtenerIniciales(nombre = "") {
   const palabras = nombre.trim().split(/\s+/).filter(Boolean);
   if (palabras.length === 0) return "";

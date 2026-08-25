@@ -61,7 +61,7 @@ export default function DetalleCompradorScreen() {
 
   if (cargando) {
     return (
-      <View style={[styles.container, styles.loadingContainer]}>
+      <View style={[STYLE.container, styles.loadingContainer]}>
         <ActivityIndicator size="large" color={COLORS.primary} />
       </View>
     );
@@ -69,7 +69,7 @@ export default function DetalleCompradorScreen() {
 
   if (!comprador) {
     return (
-      <View style={STYLE.contenedor}>
+      <View style={STYLE.container}>
         <EmptyState
           title="Comprador no encontrado"
           description={error || "El comprador que buscas no existe."}

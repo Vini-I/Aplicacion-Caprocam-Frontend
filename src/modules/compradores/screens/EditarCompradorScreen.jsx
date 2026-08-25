@@ -65,6 +65,7 @@ export default function EditarCompradorScreen() {
     errorTelefono,
     errorCorreo,
     sinCambios,
+    hayCambios,
     alerta,
     handleTelefonoChange,
     handleCorreoChange,
@@ -130,7 +131,7 @@ export default function EditarCompradorScreen() {
             label="Teléfono *"
             value={telefono}
             onChangeText={handleTelefonoChange}
-            placeholder="88881234"
+            placeholder="+506 88888888"
             keyboardType="phone-pad"
             maxLength={TELEFONO_MAX_LENGTH}
             containerStyle={styles.field}
@@ -184,11 +185,14 @@ export default function EditarCompradorScreen() {
             />
           )}
 
-          {/* Botón para guardar, dispara la validación completa */}
+          {/* Botón para guardar, dispara la validación completa.
+              Deshabilitado también si no hay ningún cambio real, para
+              no depender de que el usuario presione y reciba la
+              alerta de "sin cambios" (ver hayCambios). */}
           <Button
             variant="outline"
             onPress={guardar}
-            disabled={guardando}
+            disabled={guardando || !hayCambios}
             style={styles.saveButton}
             textStyle={styles.saveButtonText}
           >
