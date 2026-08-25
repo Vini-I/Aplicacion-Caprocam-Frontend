@@ -191,6 +191,7 @@ export default function NuevoEstanqueScreen({ codigoCVO, id }) {
             
             <DateInput
               label="Fecha último mantenimiento"
+              allowFutureDates={false}
               required={true} 
               value={fechaMantenimiento}
               onChangeText={setFechaMantenimiento}
