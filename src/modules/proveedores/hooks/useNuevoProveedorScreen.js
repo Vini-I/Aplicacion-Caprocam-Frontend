@@ -27,7 +27,7 @@ import {
 import { useProveedor } from "../context/ProveedorContext";
 import { ProveedorDTO } from "../dtos/proveedor.dto";
 
-export const telefonoMaxLength = 8;
+export const telefonoMaxLength = 9;
 
 const mensajeCamposObligatorios =
   "Revisa los campos obligatorios marcados con * antes de guardar.";

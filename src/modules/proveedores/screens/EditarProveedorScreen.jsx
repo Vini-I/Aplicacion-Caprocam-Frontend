@@ -34,6 +34,7 @@ import { STYLE } from "../../../theme/style";
 import { tiposProducto } from "../services/proveedor.service";
 
 import { useEditarProveedorScreen, telefonoMaxLength } from "../hooks/useEditarProveedorScreen";
+import { formatearTelefono } from "../utils/contactValidators";
 
 export default function EditarProveedorScreen({ onProveedor, id }) {
   const {
@@ -102,9 +103,9 @@ export default function EditarProveedorScreen({ onProveedor, id }) {
 
           <Input
             label="Teléfono *"
-            value={telefono}
+            value={formatearTelefono(telefono)}
             onChangeText={handleTelefonoChange}
-            placeholder="Ej: 12345678"
+            placeholder="Ej: 1234-5678"
             keyboardType="numeric"
             maxLength={telefonoMaxLength}
             containerStyle={styles.field}

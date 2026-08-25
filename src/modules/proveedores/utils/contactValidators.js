@@ -86,11 +86,11 @@ export function validarDireccion(
 export function formatearTelefono(valor) {
   const limpio = (valor || "").replace(/[^\d]/g, "");
   const soloNumero = limpio.startsWith("506") ? limpio.slice(3) : limpio;
-  const ochoDigitos = soloNumero.slice(0, 8);
-  if (ochoDigitos.length === 8) {
-    return `${ochoDigitos.slice(0, 4)}-${ochoDigitos.slice(4, 8)}`;
+  const maxOcho = soloNumero.slice(0, 8);
+  if (maxOcho.length > 4) {
+    return `${maxOcho.slice(0, 4)}-${maxOcho.slice(4)}`;
   }
-  return ochoDigitos;
+  return maxOcho;
 }
 
 // Formato de 8 dígitos que exige el backend.

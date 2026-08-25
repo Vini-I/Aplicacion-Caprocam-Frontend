@@ -25,7 +25,7 @@ import {
 } from "../utils/contactValidators";
 import { ProveedorDTO } from "../dtos/proveedor.dto";
 
-export const telefonoMaxLength = 8;
+export const telefonoMaxLength = 9;
 
 function validarTipoProducto(valor) {
   if (!valor || !valor.trim()) return "El tipo de producto es obligatorio.";
