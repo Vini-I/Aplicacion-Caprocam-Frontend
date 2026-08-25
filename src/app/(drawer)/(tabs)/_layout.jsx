@@ -37,6 +37,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="registros"
         options={{
+          popToTopOnBlur: true,
           tabBarIcon: ({ color, size }) => (
             <Icon icon={ICONS.document} color={color} size={20} />
           ),
