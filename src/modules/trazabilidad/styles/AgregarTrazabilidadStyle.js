@@ -29,6 +29,11 @@ export const styles = StyleSheet.create({
     backgroundColor: COLORS.primaryLight,
   },
 
+  infoBannerHistorico: {
+    marginBottom: 16,
+    alignItems: "center",
+  },
+
   floatingButtonContainer: {
     position: "absolute",
     left: 0,

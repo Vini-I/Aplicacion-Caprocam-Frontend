@@ -309,11 +309,13 @@ export async function toggleActivoRegistro(id) {
 export async function obtenerFincas() {
   try {
     const fincas = await fincaService.getFincas();
-    return fincas.map((finca) => ({ label: finca.nombreFinca, value: finca.id }));
+    const lista = Array.isArray(fincas) ? fincas : [];
+    return lista.map((finca) => ({
+      label: finca.nombreFinca || finca.nombre || `Finca #${finca.id}`,
+      value: finca.id,
+    }));
   } catch (error) {
-    throw new Error(
-      obtenerMensajeErrorBackend(error, "No se pudieron obtener las fincas.")
-    );
+    return [];
   }
 }
 
@@ -453,14 +455,12 @@ export async function obtenerSiembraActivaPorEstanque(estanqueId) {
 export async function obtenerColaboradores() {
   try {
     const colaboradores = await colaboradorService.getColaboradores();
-    return colaboradores.map((colaborador) => ({
+    return (colaboradores ?? []).map((colaborador) => ({
       label: [colaborador.nombre, colaborador.apellidos].filter(Boolean).join(" "),
       value: colaborador.id,
     }));
   } catch (error) {
-    throw new Error(
-      obtenerMensajeErrorBackend(error, "No se pudieron obtener los colaboradores.")
-    );
+    return [];
   }
 }
 
@@ -536,14 +536,14 @@ export function enriquecerRegistro(registro = {}, mapas = {}, sesionOpt = null) 
 
   return {
     ...registro,
-    fincaNombre: fincasMap.get(registro.fincaId) ?? registro.fincaNombre ?? "",
+    fincaNombre: fincasMap.get(registro.fincaId) || registro.fincaNombre || (registro.fincaId ? `Finca #${registro.fincaId}` : "Finca"),
     colaboradorNombre: responsableNombre,
     tipoResponsable,
     responsableTexto: `${tipoResponsable}: ${responsableNombre}`,
     estanqueOrigenLabel:
-      estanquesMap.get(registro.estanqueOrigenId) ?? registro.estanqueOrigenLabel ?? "",
+      estanquesMap.get(registro.estanqueOrigenId) || registro.estanqueOrigenLabel || (registro.estanqueOrigenId ? `Estanque #${registro.estanqueOrigenId}` : "Estanque Origen"),
     estanqueDestinoLabel:
-      estanquesMap.get(registro.estanqueDestinoId) ?? registro.estanqueDestinoLabel ?? "",
+      estanquesMap.get(registro.estanqueDestinoId) || registro.estanqueDestinoLabel || (registro.estanqueDestinoId ? `Estanque #${registro.estanqueDestinoId}` : "Estanque Destino"),
   };
 }
 
