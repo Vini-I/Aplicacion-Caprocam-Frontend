@@ -6,15 +6,14 @@
  * Descripción:
  * Consulta, filtrado y registro de movimientos de trazabilidad con la API (compatible con Web y Móvil mediante AsyncStorage y consulta unificada de siembras/pre-crías).
  *
- * @dependencies AsyncStorage, api, fincaService, colaboradorService
- * @validations Normalización de estanques, cruce de nombres, sesión JWT con AsyncStorage y autocompletado de PL/días.
+ * @dependencies AsyncStorage, api, fincaService
+ * @validations Normalización de estanques, cruce de nombres de fincas/estanques y autocompletado de PL/días.
  * @navigation N/A
  */
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import api from "../../../api/api";
 import { fincaService } from "../../finca/services/finca.service";
-import { colaboradorService } from "../../colaboradores/services/colaborador.service";
 import { isSameDate, toMysqlDate } from "../../../shared/utils/dateUtils";
 
 function decodificarJwtPayload(token) {
@@ -477,44 +476,6 @@ export async function obtenerSesionFormulario() {
     colaboradorId: sesion.colaboradorId,
     usuarioId: esUsuario ? sesion.id : null,
   };
-}
-
-export function obtenerColaboradorSesion(esAsync = false) {
-  if (!esAsync) {
-    const sesionSync = obtenerSesionDesdeTokenLocalSync();
-    const esUsuario = sesionSync.tipo === "usuario";
-    return {
-      tipo: sesionSync.tipo,
-      labelCampo: esUsuario ? "Usuario responsable" : "Colaborador responsable",
-      nombre: sesionSync.nombre,
-      label: esUsuario ? `Usuario: ${sesionSync.nombre}` : `Colaborador: ${sesionSync.nombre}`,
-      colaboradorId: sesionSync.colaboradorId,
-      usuarioId: esUsuario ? sesionSync.id : null,
-    };
-  }
-
-  return (async () => {
-    const sesion = await obtenerSesionFormulario();
-    if (sesion.tipo === "usuario" || !sesion.colaboradorId) {
-      return sesion;
-    }
-
-    try {
-      const colaborador = await colaboradorService.getColaboradorById(sesion.colaboradorId);
-      const nombreCompleto = [colaborador?.nombre, colaborador?.apellidos]
-        .filter(Boolean)
-        .join(" ");
-      const nombre = nombreCompleto || `Colaborador ${sesion.colaboradorId}`;
-      return {
-        ...sesion,
-        nombre,
-        label: `Colaborador: ${nombre}`,
-        colaboradorId: sesion.colaboradorId,
-      };
-    } catch (error) {
-      return sesion;
-    }
-  })();
 }
 
 /**

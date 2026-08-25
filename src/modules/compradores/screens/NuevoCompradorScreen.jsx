@@ -114,7 +114,7 @@ export default function NuevoCompradorScreen() {
             label="Teléfono *"
             value={telefono}
             onChangeText={handleTelefonoChange}
-            placeholder="88881234"
+            placeholder="+506 88888888"
             keyboardType="phone-pad"
             maxLength={TELEFONO_MAX_LENGTH}
             containerStyle={styles.field}
