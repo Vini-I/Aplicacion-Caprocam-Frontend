@@ -72,6 +72,7 @@ export default function FincaEditarScreen({ onFinca, id }) {
                   value={formulario.nombre}
                   onChangeText={(valor) => actualizarCampo("nombre", valor)}
                   placeholder="Ej: Finca El Pacífico"
+                  maxLength={80}
                   style={errores.nombre ? [styles.errorInput] : null}
                 />
               </View>
