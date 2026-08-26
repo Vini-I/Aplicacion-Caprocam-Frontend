@@ -42,7 +42,7 @@ export const AUTH_MESSAGES = {
   LABEL_NOMBRE:             'Nombre',
   LABEL_APELLIDOS:          'Apellidos',
   LABEL_EMAIL:              'Correo electrónico',
-  LABEL_GRUPO_DATOS:        'Grupo de datos (últimos 3 dígitos del CBO)',
+  LABEL_GRUPO_DATOS:        'Grupo de datos (últimos 3 dígitos del CVO)',
   PLACEHOLDER_NOMBRE:       'Ingresa tu nombre',
   PLACEHOLDER_APELLIDOS:    'Ingresa tus apellidos',
   PLACEHOLDER_EMAIL:        'Ingresa tu correo electrónico',
