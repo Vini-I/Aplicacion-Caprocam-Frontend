@@ -39,7 +39,7 @@ import {
   useFieldValidation,
   validarCamposObligatorios,
 } from "./useFieldValidation";
-import { obtenerCamposObligatorios as obtenerCamposObligatoriosPorTipo } from "./siembraValidationRules";
+import { obtenerCamposObligatorios as obtenerCamposObligatoriosPorTipo, determinarCampoDelError } from "./siembraValidationRules";
 import { calcularDensidadDesdeCantidad } from "./siembraCalculos";
 import { obtenerFechaHoy, formatearFechaDesdeISO } from "./dateUtils";
 
@@ -583,12 +583,17 @@ export default function useNuevaSiembra(onSuccess) {
       setSubmitted(false);
       const m = formData.tipoRegistro === "precria" ? "Pre-Cría registrada correctamente." : "Siembra registrada correctamente.";
       if (onSuccess) onSuccess(m);
-    } catch (err) {
-      const mensajeBackend = err.response?.data?.message;
-      mostrarMensaje(
-        mensajeBackend || "No fue posible registrar el ciclo.",
-        "danger",
-      );
+     } catch (err) {
+      const data = err.response?.data;
+      const detalle = Array.isArray(data?.error) ? data.error[0] : "";
+      const mensajeFinal = detalle || data?.message || "No fue posible registrar el ciclo.";
+
+      const campoConError = determinarCampoDelError(mensajeFinal);
+      if (campoConError) {
+      setErrors({ [campoConError]: mensajeFinal });
+     }
+
+  mostrarMensaje(mensajeFinal, "danger");
     } finally {
       setGuardando(false);
     }

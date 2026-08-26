@@ -230,7 +230,13 @@ export default function DatosLarvaSection({
           label={requiredLabel("Código de lote")}
           placeholder="Ej: LARV2026001"
           value={formData.codigoLoteLarva}
-          onChangeText={(value) => onChange("codigoLoteLarva", value)}
+          onChangeText={(value) =>
+            onChange(
+              "codigoLoteLarva",
+              value.replace(/[^a-zA-Z0-9]/g, "").slice(0, 14),
+            )
+          }
+          maxLength={14}
           labelStyle={styles.requiredLabel}
           style={hasError("codigoLoteLarva") ? styles.inputError : null}
         />
@@ -261,7 +267,10 @@ export default function DatosLarvaSection({
           label={requiredLabel("Certificado de larva")}
           placeholder="Ej: 1823092503E"
           value={formData.certificadoLarva}
-          onChangeText={(value) => onChange("certificadoLarva", value)}
+          onChangeText={(value) =>
+            onChange("certificadoLarva", value.replace(/[^a-zA-Z0-9]/g, "").slice(0, 14))
+          }
+          maxLength={14}
           labelStyle={styles.requiredLabel}
           style={hasError("certificadoLarva") ? styles.inputError : null}
         />
