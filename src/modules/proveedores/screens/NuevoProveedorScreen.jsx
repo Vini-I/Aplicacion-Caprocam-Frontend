@@ -32,6 +32,7 @@ import { styles } from "../styles/NuevoProveedorStyles.js";
 import { tiposProducto } from "../services/proveedor.service.js";
 
 import { useNuevoProveedorScreen, telefonoMaxLength } from "../hooks/useNuevoProveedorScreen";
+import { formatearTelefono } from "../utils/contactValidators";
 
 export default function NuevoProveedorScreen({ onProveedor }) {
   const {
@@ -60,6 +61,7 @@ export default function NuevoProveedorScreen({ onProveedor }) {
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
+        contentContainerStyle={styles.scrollContainer}
       >
         <View style={STYLE.contentWrapper}>
           <Card style={styles.card}>
@@ -73,6 +75,7 @@ export default function NuevoProveedorScreen({ onProveedor }) {
             value={nombre}
             onChangeText={setNombre}
             placeholder="Ej. Biomar S.A."
+            maxLength={150}
             containerStyle={styles.field}
             style={[styles.input, errores.nombre && styles.inputError]}
             labelStyle={styles.label}
@@ -93,9 +96,9 @@ export default function NuevoProveedorScreen({ onProveedor }) {
 
           <Input
             label="Teléfono *"
-            value={telefono}
+            value={formatearTelefono(telefono)}
             onChangeText={handleTelefonoChange}
-            placeholder="Ej: 12345678"
+            placeholder="Ej: 1234-5678"
             keyboardType="numeric"
             maxLength={telefonoMaxLength}
             containerStyle={styles.field}
@@ -110,6 +113,7 @@ export default function NuevoProveedorScreen({ onProveedor }) {
             placeholder="ventas@empresa.com"
             keyboardType="email-address"
             autoCapitalize="none"
+            maxLength={120}
             containerStyle={styles.field}
             style={[styles.input, errores.correo && styles.inputError]}
             labelStyle={styles.label}
@@ -120,6 +124,7 @@ export default function NuevoProveedorScreen({ onProveedor }) {
             value={direccion}
             onChangeText={setDireccion}
             placeholder="San José, Costa Rica"
+            maxLength={255}
             containerStyle={styles.field}
             style={[styles.input, errores.direccion && styles.inputError]}
             labelStyle={styles.label}
@@ -131,6 +136,7 @@ export default function NuevoProveedorScreen({ onProveedor }) {
             onChangeText={setNotas}
             placeholder="Observaciones adicionales..."
             multiline={true}
+            maxLength={255}
             containerStyle={styles.field}
             style={styles.input}
             labelStyle={styles.label}

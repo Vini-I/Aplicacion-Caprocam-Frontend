@@ -46,6 +46,14 @@ export const styles = StyleSheet.create({
     flex: 1 
   },
 
+  scrollContainer: {
+    paddingBottom: 24,
+  },
+
+  spinner: {
+    marginTop: 40,
+  },
+
   tarjeta: {
     marginBottom: 20,
   },
