@@ -145,18 +145,52 @@ export function useDetalleEquipoScreen({ id, router }) {
     }
   };
 
+  // Contador en vivo
+  const [now, setNow] = useState(Date.now());
+
+  useEffect(() => {
+    if (!equipo?.encendido || !equipo?.fechaUltimoEncendido) return;
+    const interval = setInterval(() => {
+      setNow(Date.now());
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [equipo?.encendido, equipo?.fechaUltimoEncendido]);
+
+  // Cálculo de horas en vivo
+  const horasUsoActuales = useMemo(() => {
+    let base = Number(equipo?.horasBase ?? equipo?.horasActuales ?? equipo?.horasUso ?? 0);
+    if (equipo?.encendido && equipo?.fechaUltimoEncendido) {
+      const msInicio = new Date(equipo.fechaUltimoEncendido).getTime();
+      if (!isNaN(msInicio)) {
+        const msTranscurridos = Math.max(0, now - msInicio);
+        const horasTranscurridas = msTranscurridos / (1000 * 60 * 60);
+        base = parseFloat((base + horasTranscurridas).toFixed(4));
+      }
+    }
+    return base;
+  }, [equipo, now]);
+
   // Valores derivados para la UI (antes definidos en la pantalla)
   const tipoIcon = useMemo(() => (equipo ? (TIPOS_ICONS[equipo.tipo] || ICONS.gear) : ICONS.gear), [equipo]);
   const tipoLabel = useMemo(() => (equipo ? (TIPOS_LABELS[equipo.tipo] || equipo.tipo) : ''), [equipo]);
   const estadoLabel = useMemo(() => (equipo ? (ESTADO_LABELS[equipo.estado] || equipo.estado) : ''), [equipo]);
   const estadoVariant = useMemo(() => (equipo ? (ESTADO_VARIANTS[equipo.estado] || 'info') : 'info'), [equipo]);
-  const horasRestantes = useMemo(() => horasRestantesMantenimiento(equipo), [equipo]);
+  const horasRestantes = useMemo(() => {
+    if (!equipo?.horasMantenimiento) return 0;
+    const restantes = equipo.horasMantenimiento - horasUsoActuales;
+    return restantes > 0 ? restantes : 0;
+  }, [equipo, horasUsoActuales]);
   const necesitaMant = useMemo(() => horasRestantes === 0, [horasRestantes]);
   const horasUsoFormateado = useMemo(() => {
     if (!equipo) return '—';
-    const uso = equipo.horasUso || 0;
-    return uso < 1 ? `${Math.round(uso * 60)} min` : `${Math.round(uso)} h`;
-  }, [equipo]);
+    const totalMinutos = Math.max(0, Math.round(horasUsoActuales * 60));
+    if (totalMinutos < 60) {
+      return `${totalMinutos} min`;
+    }
+    const horas = Math.floor(totalMinutos / 60);
+    const mins = totalMinutos % 60;
+    return mins > 0 ? `${horas} h ${mins} min` : `${horas} h`;
+  }, [equipo, horasUsoActuales]);
 
   return {
     equipo,

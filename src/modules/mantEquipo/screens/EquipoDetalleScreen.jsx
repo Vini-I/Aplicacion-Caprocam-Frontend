@@ -220,15 +220,29 @@ export default function EquipoDetalleScreen({
           </Button>
           <Button
             variant="outline"
+            disabled={!equipo.encendido && (equipo.estado === "mantenimiento" || equipo.estado === "inactivo")}
             onPress={handleTogglePress}
-            style={[styles.boton, styles.botonEditar]}
+            style={[
+              styles.boton,
+              styles.botonEditar,
+              !equipo.encendido && (equipo.estado === "mantenimiento" || equipo.estado === "inactivo") && { opacity: 0.4 },
+            ]}
           >
             <Icon
               icon={equipo.encendido ? ICONS.close : ICONS.check}
               size={ICON_SIZE.boton}
-              color={COLORS.primary}
+              color={
+                !equipo.encendido && (equipo.estado === "mantenimiento" || equipo.estado === "inactivo")
+                  ? COLORS.textTertiary
+                  : COLORS.primary
+              }
             />
-            <CustomText style={styles.botonTexto}>
+            <CustomText
+              style={[
+                styles.botonTexto,
+                !equipo.encendido && (equipo.estado === "mantenimiento" || equipo.estado === "inactivo") && { color: COLORS.textTertiary },
+              ]}
+            >
               {equipo.encendido ? "Apagar" : "Encender"}
             </CustomText>
           </Button>

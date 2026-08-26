@@ -14,7 +14,7 @@
  * @navigation   - Recibe callback onPress para navegar al detalle del equipo.
  */
 
-import React from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { View } from "react-native";
 import CardPress from "../../../shared/components/CardPress";
 import Badge from "../../../shared/components/Badge";
@@ -56,18 +56,60 @@ const ESTADO_VARIANTS = {
   mantenimiento: "warning",
 };
 
-export default function EquipoCard({ equipo, onPress, onToggle }) {
+export default function EquipoCard({ equipo, onPress, onToggle, isToggling = false }) {
   const tipoLabel = TIPOS_LABELS[equipo.tipo] || equipo.tipo;
   const tipoIcon = TIPOS_ICONS[equipo.tipo] || ICONS.gear;
   const estadoLabel = ESTADO_LABELS[equipo.estado] || equipo.estado;
   const estadoVariant = ESTADO_VARIANTS[equipo.estado] || "info";
 
-  const horasUsoFormateado =
-    equipo.horasUso < 1
-      ? `${Math.round(equipo.horasUso * 60)} min`
-      : `${Math.round(equipo.horasUso)} h`;
+  // Refresco reactivo en vivo mientras el equipo esté encendido
+  const [now, setNow] = useState(Date.now());
 
-  const necesitaMantenimiento = equipo.horasUso >= equipo.horasMantenimiento;
+  useEffect(() => {
+    if (!equipo.encendido || !equipo.fechaUltimoEncendido) return;
+    const interval = setInterval(() => {
+      setNow(Date.now());
+    }, 1000); // actualiza cada segundo
+    return () => clearInterval(interval);
+  }, [equipo.encendido, equipo.fechaUltimoEncendido]);
+
+  const horasUsoActuales = useMemo(() => {
+    let base = Number(equipo.horasBase ?? equipo.horasActuales ?? equipo.horasUso ?? 0);
+    if (equipo.encendido && equipo.fechaUltimoEncendido) {
+      const msInicio = new Date(equipo.fechaUltimoEncendido).getTime();
+      if (!isNaN(msInicio)) {
+        const msTranscurridos = Math.max(0, now - msInicio);
+        const horasTranscurridas = msTranscurridos / (1000 * 60 * 60);
+        base = parseFloat((base + horasTranscurridas).toFixed(4));
+      }
+    }
+    return base;
+  }, [equipo, now]);
+
+  const horasUsoFormateado = useMemo(() => {
+    const totalMinutos = Math.max(0, Math.round(horasUsoActuales * 60));
+
+    if (totalMinutos < 60) {
+      return `${totalMinutos} min`;
+    }
+
+    const horas = Math.floor(totalMinutos / 60);
+    const mins = totalMinutos % 60;
+
+    return mins > 0 ? `${horas} h ${mins} min` : `${horas} h`;
+  }, [horasUsoActuales]);
+
+  const horasRestantes = useMemo(() => {
+    if (!equipo.horasMantenimiento) return 0;
+    const restantes = equipo.horasMantenimiento - horasUsoActuales;
+    return restantes > 0 ? restantes : 0;
+  }, [equipo.horasMantenimiento, horasUsoActuales]);
+
+  const necesitaMantenimiento = equipo.horasMantenimiento ? horasRestantes === 0 : false;
+
+  const bloqueadoParaEncender =
+    !equipo.encendido &&
+    (equipo.estado === "mantenimiento" || equipo.estado === "inactivo");
 
   return (
     <CardPress onPress={() => onPress?.(equipo.id)} style={styles.card}>
@@ -130,7 +172,7 @@ export default function EquipoCard({ equipo, onPress, onToggle }) {
           >
             {necesitaMantenimiento
               ? "Requiere mantenimiento"
-              : `${Math.round(equipo.horasMantenimiento - equipo.horasUso)} h restantes`}
+              : `${Math.round(horasRestantes)} h restantes`}
           </CustomText>
         </View>
       </View>
@@ -160,24 +202,38 @@ export default function EquipoCard({ equipo, onPress, onToggle }) {
         {/* Botón que muestra la ACCIÓN a ejecutar */}
         <Button
           variant="outline"
+          disabled={bloqueadoParaEncender || isToggling}
           onPress={(e) => {
             e?.stopPropagation?.();
+            if (bloqueadoParaEncender || isToggling) return;
             onToggle?.(equipo.id);
           }}
           style={[
             styles.toggleBtn,
-            equipo.encendido ? styles.toggleBtnApagar : styles.toggleBtnEncender,
+            bloqueadoParaEncender || isToggling
+              ? styles.toggleBtnDeshabilitado
+              : equipo.encendido
+              ? styles.toggleBtnApagar
+              : styles.toggleBtnEncender,
           ]}
         >
           <Icon
             icon={ICONS.engine}
             size={15}
-            color={equipo.encendido ? COLORS.error : COLORS.success}
+            color={
+              bloqueadoParaEncender || isToggling
+                ? COLORS.textTertiary
+                : equipo.encendido
+                ? COLORS.error
+                : COLORS.success
+            }
           />
           <CustomText
             style={[
               styles.toggleBtnLabel,
-              equipo.encendido
+              bloqueadoParaEncender
+                ? styles.toggleBtnLabelDeshabilitado
+                : equipo.encendido
                 ? styles.toggleBtnLabelApagar
                 : styles.toggleBtnLabelEncender,
             ]}

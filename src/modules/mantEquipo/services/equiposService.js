@@ -113,43 +113,55 @@ function fechaBackendAFormulario(fecha) {
  * al shape que espera el frontend (lista, formulario, detalle).
  */
 function mapEquipoBackend(equipo) {
+  if (!equipo) return null;
+
+  const encendido = equipo.estado === "Encendido";
+
+  // horasBase = valor persistido en BD (sin cálculo en vivo)
+  // El cálculo en vivo lo hace EquipoCard usando fechaUltimoEncendido
+  const horasBase = Number(equipo.horasActuales ?? equipo.horas_actuales ?? 0);
+  const fechaUltimoEncendido =
+    equipo.fechaUltimoEncendido || equipo.fecha_ultimo_encendido || null;
+
   return {
     id: equipo.id,
     uuid: equipo.uuid,
 
     // Identificación
     codigo: equipo.identificador,
-    codigoInterno: equipo.identificador, // alias usado por el formulario de registro
+    codigoInterno: equipo.identificador,
 
     nombre: equipo.nombreEquipo,
     descripcion: equipo.descripcion,
 
-    // Tipo (antes tipo + subcategoria, ahora un solo campo)
     tipo: TIPO_BACKEND_A_FRONTEND[equipo.tipoEquipo] || "otro",
 
     fechaInstalacion: fechaBackendAFormulario(equipo.fechaInstalacion),
     funcionEquipo: equipo.funcionEquipo,
 
-    // Ubicación (antes texto libre, ahora es el estanque asociado)
     estanqueId: equipo.estanqueId,
     ubicacion: equipo.estanqueId,
 
-    // Horas
+    // Horas: horasBase es el valor persistido en BD
+    // horasUso = horasBase (el componente EquipoCard suma el delta en vivo)
     horasMantenimiento: equipo.horasMantenimiento,
-    horasUso: Number(equipo.horasActuales || 0),
+    horasActuales: horasBase,
+    horasBase,
+    horasUso: horasBase,
+    fechaUltimoEncendido,
 
     // Estado operativo: activo / inactivo / mantenimiento
     estado: ESTADO_OPERATIVO_BACKEND_A_FRONTEND[equipo.estadoOperativo] || "activo",
 
     // Encendido / Apagado
-    encendido: equipo.estado === "Encendido",
+    encendido,
 
     activo: Boolean(equipo.activo),
   };
 }
 
 function mapEquiposBackend(lista) {
-  return (lista || []).map(mapEquipoBackend);
+  return (lista || []).map(mapEquipoBackend).filter(Boolean);
 }
 
 /**
@@ -283,24 +295,12 @@ export const equiposService = {
   },
 
   /**
-   * Cambia el estado de encendido/apagado de un equipo — CONECTADO a la API real.
-   *
-   * IMPORTANTE: el backend actual no registra la fecha/hora en que
-   * el equipo se encendió, por lo que este toggle NO puede calcular
-   * automáticamente las horas a sumar a horasActuales. Solo actualiza
-   * el campo "estado" (Encendido/Apagado). Si se necesita el conteo
-   * automático de horas, el backend debe agregar un campo tipo
-   * "fecha_ultimo_encendido" y sumar el delta al apagar.
-   *
-   * Requiere el objeto del equipo actual (tal como viene de la lista)
-   * porque el backend exige el body completo en el PUT.
+   * Cambia el estado de encendido/apagado de un equipo y actualiza horas de uso acumuladas.
+   * Conectado a PUT /api/v0/equipos/:id/toggle.
    */
-  async toggleEquipoEstado(id, equipoActual) {
+  async toggleEquipoEstado(id) {
     try {
-      const payload = mapEquipoFrontendABackend(equipoActual);
-      payload.estado = equipoActual.encendido ? "Apagado" : "Encendido";
-
-      const response = await api.put(`/equipos/${id}`, payload);
+      const response = await api.put(`/equipos/${id}/toggle`);
       return mapEquipoBackend(response.data.data);
     } catch (err) {
       throw construirErrorHttp(err, "No se pudo cambiar el estado del equipo");
