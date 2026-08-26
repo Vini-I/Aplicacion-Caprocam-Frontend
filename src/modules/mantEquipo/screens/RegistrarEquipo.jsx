@@ -144,185 +144,176 @@ export default function RegistrarEquipoScreen() {
         },
       });
     } catch (error) {
-      // Error de validación (campo faltante) se muestra en el formulario
-      // Error de red/backend ya se mostró en el modal global, pero mostramos
-      // un mensaje local si es un error de validación controlado.
-      if (error.message && error.message.includes('obligatorio')) {
-        showAlert(
-          'danger',
-          error.message,
-          ALERT_DURACION_ERROR
-        );
-        setTimeout(() => {
-          scrollRef.current?.scrollToEnd({ animated: true });
-        }, 100);
-      } else {
-        // Ya se mostró el modal global, no mostramos alert adicional
-        // para evitar duplicación.
-        console.warn('Error no controlado:', error);
-      }
+      showAlert(
+        'danger',
+        error.message,
+        ALERT_DURACION_ERROR
+      );
+      setTimeout(() => {
+        scrollRef.current?.scrollToEnd({ animated: true });
+      }, 100);
     }
-  };
-
-  const handleCancelar = () => {
-    router.back();
-  };
-
-  if (cargandoDatos) {
-    return (
-      <View style={[STYLE.container, styles.loadingContainer]}>
-        <Text>Cargando equipo...</Text>
-      </View>
-    );
   }
 
+
+const handleCancelar = () => {
+  router.back();
+};
+
+if (cargandoDatos) {
   return (
-    <ScrollView
-      ref={scrollRef}
-      style={STYLE.container}
-      contentContainerStyle={[
-        styles.content,
-        isLargeScreen ? styles.contentPaddingLarge : styles.contentPaddingSmall,
-      ]}
-      keyboardShouldPersistTaps="handled"
-      showsVerticalScrollIndicator={false}
-    >
-      <View style={STYLE.contentWrapper}>
-        {/* Card con título e ícono representativo del contenido (Estándar 9) */}
-        <Card style={styles.card}>
-          <View style={styles.cardHeader}>
-            <Icon icon={ICONS.engine} size={20} color={COLORS.primary} />
-            <Text style={styles.cardTitle}>
-              {isEditing ? 'Información del Equipo' : 'Datos del Nuevo Equipo'}
-            </Text>
-          </View>
-
-          {/* Número de serie / Identificador - solo lectura en edición */}
-          <Input
-            label="Número de serie / Identificador"
-            value={formulario.codigoInterno}
-            onChangeText={(valor) => actualizarCampo('codigoInterno', valor)}
-            placeholder="Ej: EQ001"
-            editable={!isEditing}
-            required
-            submitted={submitted}
-            error={submitted && errores.codigoInterno ? errores.codigoInterno : ''}
-            labelStyle={styles.labelMedium}
-          />
-
-          <Input
-            label="Nombre del equipo"
-            value={formulario.nombre}
-            onChangeText={(valor) => actualizarCampo('nombre', valor)}
-            placeholder="Ej: Aireador principal"
-            required
-            submitted={submitted}
-            error={submitted && errores.nombre ? errores.nombre : ''}
-            labelStyle={styles.labelMedium}
-          />
-
-          <Input
-            label="Descripción"
-            value={formulario.descripcion}
-            onChangeText={(valor) => actualizarCampo('descripcion', valor)}
-            placeholder="Ej: Aireador de paletas para oxigenación"
-            required
-            submitted={submitted}
-            error={submitted && errores.descripcion ? errores.descripcion : ''}
-            labelStyle={styles.labelMedium}
-          />
-
-          <Select
-            label="Tipo de equipo"
-            value={formulario.tipo}
-            onChange={(valor) => actualizarCampo('tipo', valor)}
-            options={tiposEquipo}
-            placeholder="Seleccione el tipo"
-            required
-            submitted={submitted}
-            error={submitted && errores.tipo ? errores.tipo : ''}
-            labelStyle={styles.labelMedium}
-          />
-
-          {/* Fecha de instalación - deshabilitada en edición */}
-          <EquipoFechaInput
-            label="Fecha de instalación"
-            value={formulario.fechaInstalacion}
-            onChangeText={(valor) => actualizarCampo('fechaInstalacion', valor)}
-            placeholder="Seleccione la fecha de instalación"
-            disabled={isEditing}
-            required
-            submitted={submitted}
-            error={submitted && errores.fechaInstalacion ? errores.fechaInstalacion : ''}
-            labelStyle={styles.labelMedium}
-          />
-
-          <Input
-            label="Función del equipo"
-            value={formulario.funcionEquipo}
-            onChangeText={(valor) => actualizarCampo('funcionEquipo', valor)}
-            placeholder="Ej: Mantener la oxigenación constante"
-            multiline
-            required
-            submitted={submitted}
-            error={submitted && errores.funcionEquipo ? errores.funcionEquipo : ''}
-            style={styles.textArea}
-            labelStyle={styles.labelMedium}
-          />
-
-          <Select
-            label="Estanque asociado"
-            value={formulario.estanqueId}
-            onChange={(valor) => actualizarCampo('estanqueId', valor)}
-            options={estanquesDisponibles}
-            placeholder="Seleccione un estanque (opcional)"
-            labelStyle={styles.labelMedium}
-          />
-
-          <NumberInput
-            label="Horas para mantenimiento"
-            value={String(formulario.horasMantenimiento ?? '')}
-            onChangeText={(valor) => actualizarCampo('horasMantenimiento', valor)}
-            min={0}
-            max={99999}
-            step={1}
-            labelStyle={styles.labelMedium}
-          />
-
-          <Select
-            label="Estado operativo"
-            value={formulario.estadoOperativo}
-            onChange={(valor) => actualizarCampo('estadoOperativo', valor)}
-            options={estadosOperativos}
-            placeholder="Seleccione el estado operativo"
-            required
-            submitted={submitted}
-            error={submitted && errores.estadoOperativo ? errores.estadoOperativo : ''}
-            labelStyle={styles.labelMedium}
-          />
-        </Card>
-
-        {alert && (
-          <View style={styles.alertWrapper}>
-            <Alert variant={alert.type} message={alert.message} />
-          </View>
-        )}
-
-        {/* Botón: Guardar / Actualizar Equipo — nomenclatura PascalCase (Estándar 4) */}
-        <View style={styles.botonesContainer}>
-          <Button
-            variant="outline"
-            onPress={handleGuardar}
-            disabled={guardando}
-            style={styles.saveButtonOutline}
-          >
-            <Icon icon={ICONS.save} size={18} color={COLORS.primary} />
-            <Text style={styles.saveButtonText}>
-              {guardando ? 'Guardando...' : isEditing ? 'Editar Equipo' : 'Registrar Equipo'}
-            </Text>
-          </Button>
-        </View>
-      </View>
-    </ScrollView>
+    <View style={[STYLE.container, styles.loadingContainer]}>
+      <Text>Cargando equipo...</Text>
+    </View>
   );
+}
+
+return (
+  <ScrollView
+    ref={scrollRef}
+    style={STYLE.container}
+    contentContainerStyle={[
+      styles.content,
+      isLargeScreen ? styles.contentPaddingLarge : styles.contentPaddingSmall,
+    ]}
+    keyboardShouldPersistTaps="handled"
+    showsVerticalScrollIndicator={false}
+  >
+    <View style={STYLE.contentWrapper}>
+      {/* Card con título e ícono representativo del contenido (Estándar 9) */}
+      <Card style={styles.card}>
+        <View style={styles.cardHeader}>
+          <Icon icon={ICONS.engine} size={20} color={COLORS.primary} />
+          <Text style={styles.cardTitle}>
+            {isEditing ? 'Información del Equipo' : 'Datos del Nuevo Equipo'}
+          </Text>
+        </View>
+
+        {/* Número de serie / Identificador - solo lectura en edición */}
+        <Input
+          label="Número de serie / Identificador"
+          value={formulario.codigoInterno}
+          onChangeText={(valor) => actualizarCampo('codigoInterno', valor)}
+          placeholder="Ej: EQ001"
+          editable={!isEditing}
+          required
+          submitted={submitted}
+          error={submitted && errores.codigoInterno ? errores.codigoInterno : ''}
+          labelStyle={styles.labelMedium}
+        />
+
+        <Input
+          label="Nombre del equipo"
+          value={formulario.nombre}
+          onChangeText={(valor) => actualizarCampo('nombre', valor)}
+          placeholder="Ej: Aireador principal"
+          required
+          submitted={submitted}
+          error={submitted && errores.nombre ? errores.nombre : ''}
+          labelStyle={styles.labelMedium}
+        />
+
+        <Input
+          label="Descripción"
+          value={formulario.descripcion}
+          onChangeText={(valor) => actualizarCampo('descripcion', valor)}
+          placeholder="Ej: Aireador de paletas para oxigenación"
+          required
+          submitted={submitted}
+          error={submitted && errores.descripcion ? errores.descripcion : ''}
+          labelStyle={styles.labelMedium}
+        />
+
+        <Select
+          label="Tipo de equipo"
+          value={formulario.tipo}
+          onChange={(valor) => actualizarCampo('tipo', valor)}
+          options={tiposEquipo}
+          placeholder="Seleccione el tipo"
+          required
+          submitted={submitted}
+          error={submitted && errores.tipo ? errores.tipo : ''}
+          labelStyle={styles.labelMedium}
+        />
+
+        {/* Fecha de instalación - deshabilitada en edición */}
+        <EquipoFechaInput
+          label="Fecha de instalación"
+          value={formulario.fechaInstalacion}
+          onChangeText={(valor) => actualizarCampo('fechaInstalacion', valor)}
+          placeholder="Seleccione la fecha de instalación"
+          disabled={isEditing}
+          required
+          submitted={submitted}
+          error={submitted && errores.fechaInstalacion ? errores.fechaInstalacion : ''}
+          labelStyle={styles.labelMedium}
+        />
+
+        <Input
+          label="Función del equipo"
+          value={formulario.funcionEquipo}
+          onChangeText={(valor) => actualizarCampo('funcionEquipo', valor)}
+          placeholder="Ej: Mantener la oxigenación constante"
+          multiline
+          required
+          submitted={submitted}
+          error={submitted && errores.funcionEquipo ? errores.funcionEquipo : ''}
+          style={styles.textArea}
+          labelStyle={styles.labelMedium}
+        />
+
+        <Select
+          label="Estanque asociado"
+          value={formulario.estanqueId}
+          onChange={(valor) => actualizarCampo('estanqueId', valor)}
+          options={estanquesDisponibles}
+          placeholder="Seleccione un estanque (opcional)"
+          labelStyle={styles.labelMedium}
+        />
+
+        <NumberInput
+          label="Horas para mantenimiento"
+          value={String(formulario.horasMantenimiento ?? '')}
+          onChangeText={(valor) => actualizarCampo('horasMantenimiento', valor)}
+          min={0}
+          max={99999}
+          step={1}
+          labelStyle={styles.labelMedium}
+        />
+
+        <Select
+          label="Estado operativo"
+          value={formulario.estadoOperativo}
+          onChange={(valor) => actualizarCampo('estadoOperativo', valor)}
+          options={estadosOperativos}
+          placeholder="Seleccione el estado operativo"
+          required
+          submitted={submitted}
+          error={submitted && errores.estadoOperativo ? errores.estadoOperativo : ''}
+          labelStyle={styles.labelMedium}
+        />
+      </Card>
+
+      {alert && (
+        <View style={styles.alertWrapper}>
+          <Alert variant={alert.type} message={alert.message} />
+        </View>
+      )}
+
+      {/* Botón: Guardar / Actualizar Equipo — nomenclatura PascalCase (Estándar 4) */}
+      <View style={styles.botonesContainer}>
+        <Button
+          variant="outline"
+          onPress={handleGuardar}
+          style={styles.saveButtonOutline}
+        >
+          <Icon icon={ICONS.save} size={18} color={COLORS.primary} />
+          <Text style={styles.saveButtonText}>
+            {isEditing ? 'Editar Equipo' : 'Registrar Equipo'}
+          </Text>
+        </Button>
+      </View>
+    </View>
+  </ScrollView>
+);
 }

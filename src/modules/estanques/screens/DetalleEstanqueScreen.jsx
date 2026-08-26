@@ -12,7 +12,6 @@
  * - Mantiene botones outline.
  */
 
-import React from "react";
 import { ScrollView, View } from "react-native";
 
 import Alert from "../../../shared/components/Alert";
@@ -84,6 +83,7 @@ export default function DetalleEstanqueScreen() {
         Titulo="Detalle de Estanque"
         Subtitulo={`${estanque.codigo}`}
         Icono="document"
+        RutaVolver={`/finca/detalle?id=${estanque.idFinca}`}
       />
 
       <ScrollView style={STYLE.container} showsVerticalScrollIndicator={false}>

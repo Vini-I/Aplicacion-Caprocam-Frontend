@@ -28,26 +28,18 @@ export function EstanqueProvider({ children }) {
 
   async function cargarEstanques() {
     try {
-
       setLoading(true);
       const data = await estanqueService.getEstanques();
       setEstanques(data);
-    
     } catch (error) {
-    
       mostrarError(error);
-    
     } finally {
-    
       setLoading(false);
-    
     }
   }
 
   useEffect(() => {
-  
     cargarEstanques();
-  
   }, []);
 
   async function buscarEstanque(id) {
@@ -55,27 +47,39 @@ export function EstanqueProvider({ children }) {
       const data = await estanqueService.getEstanqueById(id);
       return data;
     } catch (error) {
-      mostrarError(error);
       throw error;
     }
   }
 
   async function crearEstanque(nuevoEstanque) {
-    await estanqueService.createEstanque(nuevoEstanque);
-    await cargarEstanques();
-    setAlert("created");
+    try {
+      await estanqueService.createEstanque(nuevoEstanque);
+      await cargarEstanques();
+      setAlert("created");
+    } catch (error) {
+      throw error;
+    }
+    
   }
 
   async function editarEstanque(codigo, datosActualizados) {
+    try{
     await estanqueService.actualizarEstanque(codigo, datosActualizados);
     await cargarEstanques();
     setAlert("edited");
+    } catch (error) {
+      throw error;
+    }
   }
 
   async function eliminarEstanque(id) {
+    try{
     await estanqueService.eliminarEstanque(id);
     await cargarEstanques();
     setAlert("deleted");
+     } catch (error) {
+      mostrarError(error);
+    }
   }
 
   function limpiarAlert() {

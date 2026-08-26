@@ -46,16 +46,9 @@ export default function LandingHeader({
   alternarMenu,
   cerrarMenu,
   irAlInicio,
-  irASeccion,
   iniciarSesion,
+  navegarA,
 }) {
-  function navegarA(nombre) {
-    irASeccion(nombre);
-
-    if (esMovil === true) {
-      cerrarMenu();
-    }
-  }
 
   return (
     <View style={styles.header}>
@@ -83,7 +76,14 @@ export default function LandingHeader({
           accessibilityRole="button"
           onPress={irAlInicio}
         >
-          <Text style={styles.brandText}>CAPROCAM</Text>
+          <Text
+            style={[
+              styles.brandText,
+              esMovil && styles.brandTextMobile,
+            ]}
+          >
+            CAPROCAM
+          </Text>
         </Pressable>
         <View
           style={[
@@ -93,11 +93,11 @@ export default function LandingHeader({
           ]}
         >
           <NavItem
-            texto="Quienes somos"
+            texto="Quiénes somos"
             onPress={() => navegarA("quienes")}
           />
           <NavItem
-            texto="Que hacemos"
+            texto="Qué hacemos"
             onPress={() => navegarA("servicios")}
           />
           <NavItem
@@ -118,11 +118,13 @@ export default function LandingHeader({
           ]}
         >
           <View style={styles.buttonContent}>
-            <Icon
-              icon={ICONS.shrimp}
-              size={16}
-              color={COLORS.white}
-            />
+            {!esMovil && (
+              <Icon
+                icon={ICONS.shrimp}
+                size={16}
+                color={COLORS.white}
+              />
+            )}
             <Text style={styles.loginButtonText}>
               Iniciar sesión
             </Text>

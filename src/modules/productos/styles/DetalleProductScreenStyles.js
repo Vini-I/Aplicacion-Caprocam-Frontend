@@ -32,6 +32,8 @@ export const colorCategoria = {
     Alimentación: { fondo: COLORS.warningLight, texto: COLORS.warning },
     Tratamiento: { fondo: COLORS.secondary, texto: COLORS.primary },
     Químico: { fondo: COLORS.secondary, texto: COLORS.primary },
+    Mantenimiento: { fondo: COLORS.secondary, texto: COLORS.primary },
+    Equipos: { fondo: COLORS.secondary, texto: COLORS.primary },
 };
 
 export const colorCategoriaDefault = {
@@ -51,7 +53,7 @@ export const styles = StyleSheet.create({
         width: 42,
         height: 42,
         borderRadius: 12,
-        backgroundColor: "rgba(255,255,255,0.2)",
+        backgroundColor: COLORS.black,
         borderWidth: 0,
         paddingHorizontal: 0,
         paddingVertical: 0,
@@ -105,7 +107,7 @@ export const styles = StyleSheet.create({
         backgroundColor: COLORS.textTertiary,
     },
     modalOverlay: {
-        backgroundColor: "#00000066",
+        backgroundColor: COLORS.overlay,
     },
     modalContainer: {
         width: "100%",

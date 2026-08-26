@@ -6,29 +6,23 @@
 
 import { StyleSheet } from "react-native";
 
-import { COLORS } from "../../../theme/colors";
-import { TYPOGRAPHY } from "../../../theme/typography";
+import { COLORS } from "../../../theme/colors.js";
+import { TYPOGRAPHY } from "../../../theme/typography.js";
 
 export const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: COLORS.surface,
-  },
-
-  content: {
-    width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 32,
-  },
 
   summaryCard: {
     marginBottom: 14,
   },
 
-  summaryRow: {
+  summaryHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 12,
+  },
+
+  summaryGrid: {
     flexDirection: "row",
     gap: 10,
   },

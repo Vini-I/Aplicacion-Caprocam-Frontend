@@ -9,6 +9,7 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useFocusEffect } from "expo-router";
+import { useError } from "../../../shared/context/ErrorContext";
 import * as tareasService from "../services/tareasService";
 import { OPCIONES_CATEGORIA } from "../constants/tareasMensajes";
 
@@ -18,7 +19,6 @@ export const useTareas = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [alert, setAlert] = useState(null);
-  const initialLoadDone = useRef(false);
   const alertTimeoutRef = useRef(null);
 
   // ─── FILTROS ADICIONALES ──────────────────────────────────────
@@ -32,36 +32,26 @@ export const useTareas = () => {
     []
   );
 
-  // ─── CARGA DE DATOS ────────────────────────────────────────────
-  const cargarTareas = useCallback(async (force = false) => {
-    if (!force && tareas.length > 0 && initialLoadDone.current) {
-      return;
-    }
+  const { mostrarError } = useError();
 
+  // ─── CARGA DE DATOS ────────────────────────────────────────────
+  const cargarTareas = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const datos = await tareasService.obtenerTareas();
-      setTareas(datos);
-      initialLoadDone.current = true;
+      setTareas(datos || []);
     } catch (err) {
-      setError(err.message || "Error al cargar las tareas");
+      mostrarError(err);
     } finally {
       setLoading(false);
     }
-  }, [tareas.length]);
+  }, [mostrarError]);
 
-  // Carga inicial
-  useEffect(() => {
-    cargarTareas(true);
-  }, []);
-
-  // Recarga al recibir foco
+  // Recarga garantizada cada vez que la pantalla recibe foco (al entrar o al volver atrás)
   useFocusEffect(
     useCallback(() => {
-      if (initialLoadDone.current) {
-        cargarTareas(true);
-      }
+      cargarTareas();
     }, [cargarTareas])
   );
 

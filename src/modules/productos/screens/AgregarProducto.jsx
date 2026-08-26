@@ -21,6 +21,11 @@
  * CAMPOS DEL PRODUCTO:
  * - Código, Nombre, Categoría, Proveedor, Fecha de ingreso,
  *   Fecha de caducidad, Cantidad, Unidad, Stock mínimo, Precio.
+ *
+ * IMPORTANTE:
+ * - Todos los alerts generales (error al cargar proveedores, error
+ *   al guardar, validación) van agrupados arriba del botón de
+ *   guardar, nunca junto al campo que los originó.
  * ============================================================
  */
 
@@ -64,6 +69,8 @@ export default function AgregarProducto() {
     errorCantidad,
     errorStockMinimo,
     errorPrecio,
+    errorEntryDate,
+    errorExpirationDate,
     handleField,
     handleCategoriaChange,
     handleSubmit,
@@ -127,14 +134,6 @@ export default function AgregarProducto() {
               labelStyle={styles.label}
             />
 
-            {!!errorProveedores && (
-              <Alert
-                variant="danger"
-                message={errorProveedores}
-                style={styles.alertBox}
-              />
-            )}
-
             {/* Cantidad */}
             <NumberInput
               label="Cantidad *"
@@ -189,8 +188,10 @@ export default function AgregarProducto() {
               label="Fecha de ingreso"
               value={form.entryDate}
               onChangeText={(val) => handleField("entryDate", val)}
+              allowFutureDates={false}
               containerStyle={styles.field}
               labelStyle={styles.label}
+              error={errorEntryDate ? "La fecha de ingreso no puede ser una fecha futura." : ""}
             />
 
             {(form.categoria === "Alimentación" || form.categoria === "Tratamiento") && (
@@ -202,6 +203,19 @@ export default function AgregarProducto() {
                 allowFutureDates={true}
                 containerStyle={styles.field}
                 labelStyle={styles.label}
+                error={
+                  errorExpirationDate
+                    ? "La fecha de caducidad debe ser posterior a hoy (no puede ser hoy ni una fecha pasada)."
+                    : ""
+                }
+              />
+            )}
+
+            {!!errorProveedores && (
+              <Alert
+                variant="danger"
+                message={errorProveedores}
+                style={styles.alertBox}
               />
             )}
 

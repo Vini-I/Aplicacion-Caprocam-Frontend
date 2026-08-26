@@ -6,14 +6,12 @@
  * Descripcion:
  * Construye alertas operativas usando los datos reales
  * recibidos desde el backend.
- *
- * Fisico quimica queda temporalmente fuera.
  */
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import { COLORS } from "../../../theme/colors";
-import { ICONS } from "../../../theme/icons";
+import { COLORS } from "../../../theme/colors.js";
+import { ICONS } from "../../../theme/icons.js";
 
 const CLAVE_ALERTAS_DESCARTADAS = "caprocam_alertas_descartadas_v1";
 const UMBRAL_MANTENIMIENTO_AIREADOR = 80;
@@ -80,6 +78,8 @@ function agregarAlerta(alertas, alerta) {
     icono: alerta.icono,
     color: alerta.color,
     prioridad: alerta.prioridad,
+    modulo: alerta.modulo,
+    registroId: alerta.registroId ?? null,
   });
 }
 
@@ -108,6 +108,8 @@ function obtenerAlertasInventario(productosInventario) {
         icono: ICONS.notification,
         color: COLORS.error,
         prioridad: 3,
+        modulo: "inventario",
+        registroId: producto.id,
       });
     }
 
@@ -121,6 +123,8 @@ function obtenerAlertasInventario(productosInventario) {
         icono: ICONS.notification,
         color: COLORS.warning,
         prioridad: 7,
+        modulo: "inventario",
+        registroId: producto.id,
       });
     }
   });
@@ -150,12 +154,13 @@ function obtenerAlertasCosecha(siembras) {
     const fecha = obtenerTextoSeguro(siembra.fechaSiembra);
     const fechaVisible = formatearFechaCorta(fecha);
     const activa = estado.includes("activa") || estado.includes("activo");
+    const siembraId = siembra.siembraId ?? siembra.id;
 
     if (!activa) return;
 
     if (diasMaduracion > 0 && diasRestantes <= 0) {
       agregarAlerta(alertas, {
-        id: "cosecha-vencida-" + siembra.siembraId,
+        id: "cosecha-vencida-" + siembraId,
         tipo: "critica",
         categoria: "Cosecha",
         titulo: "Cosecha pendiente",
@@ -166,12 +171,14 @@ function obtenerAlertasCosecha(siembras) {
         icono: ICONS.shrimp,
         color: COLORS.error,
         prioridad: 2,
+        modulo: "siembra",
+        registroId: siembraId,
       });
     }
 
     if (diasMaduracion > 0 && diasRestantes > 0 && diasRestantes <= 20) {
       agregarAlerta(alertas, {
-        id: "cosecha-pronta-" + siembra.siembraId,
+        id: "cosecha-pronta-" + siembraId,
         tipo: "advertencia",
         categoria: "Cosecha",
         titulo: "Cosecha proxima",
@@ -182,6 +189,8 @@ function obtenerAlertasCosecha(siembras) {
         icono: ICONS.shrimp,
         color: COLORS.warning,
         prioridad: 3,
+        modulo: "siembra",
+        registroId: siembraId,
       });
     }
   });
@@ -214,6 +223,8 @@ function obtenerAlertasEstanques(estanques) {
         icono: ICONS.waterFlow,
         color: COLORS.warning,
         prioridad: 5,
+        modulo: "estanques",
+        registroId: estanque.id,
       });
     }
 
@@ -227,6 +238,8 @@ function obtenerAlertasEstanques(estanques) {
         icono: ICONS.waterFlow,
         color: COLORS.primary,
         prioridad: 9,
+        modulo: "estanques",
+        registroId: estanque.id,
       });
     }
   });
@@ -296,6 +309,7 @@ function obtenerAlertasAlimentacion(alimentaciones) {
         icono: ICONS.food,
         color: COLORS.warning,
         prioridad: 8,
+        modulo: "alimentacion",
       });
     }
 
@@ -309,6 +323,7 @@ function obtenerAlertasAlimentacion(alimentaciones) {
         icono: ICONS.clock,
         color: COLORS.primary,
         prioridad: 10,
+        modulo: "alimentacion",
       });
     }
   });
@@ -404,6 +419,7 @@ function obtenerAlertasBombeo(equipos) {
       icono: ICONS.waterFlow,
       color: COLORS.primary,
       prioridad: 9,
+      modulo: "equipos",
     });
   }
 
@@ -417,6 +433,7 @@ function obtenerAlertasBombeo(equipos) {
       icono: ICONS.waterFlow,
       color: COLORS.warning,
       prioridad: 6,
+      modulo: "equipos",
     });
   }
 
@@ -453,6 +470,8 @@ function obtenerAlertasAireadores(equipos) {
         icono: ICONS.wind,
         color: COLORS.error,
         prioridad: 3,
+        modulo: "equipos",
+        registroId: equipo.id,
       });
     }
 
@@ -466,6 +485,8 @@ function obtenerAlertasAireadores(equipos) {
         icono: ICONS.wind,
         color: COLORS.warning,
         prioridad: 6,
+        modulo: "equipos",
+        registroId: equipo.id,
       });
     }
   });
@@ -495,6 +516,8 @@ function obtenerAlertasSanitarias(registrosEnfermedades, registrosParasitologia)
         icono: ICONS.shieldAlert,
         color: COLORS.error,
         prioridad: 1,
+        modulo: "enfermedades",
+        registroId: registro.id,
       });
     }
   });
@@ -512,8 +535,198 @@ function obtenerAlertasSanitarias(registrosEnfermedades, registrosParasitologia)
         icono: ICONS.parasite,
         color: COLORS.warning,
         prioridad: 2,
+        modulo: "parasitologia",
+        registroId: registro.id,
       });
     }
+  });
+
+  return alertas;
+}
+
+/*
+============================================================
+FISICO QUIMICA
+============================================================
+*/
+
+function obtenerValorLectura(item) {
+  if (item === undefined || item === null) return null;
+
+  if (typeof item === "number" || typeof item === "string") {
+    const numero = Number(String(item).replace(",", "."));
+    return Number.isNaN(numero) ? null : numero;
+  }
+
+  if (typeof item === "object") {
+    const valor = item.valor ?? item.value;
+    const numero = Number(String(valor ?? "").replace(",", "."));
+    return Number.isNaN(numero) ? null : numero;
+  }
+
+  return null;
+}
+
+function obtenerLecturasComoNumeros(valor) {
+  if (Array.isArray(valor)) {
+    return valor
+      .map(obtenerValorLectura)
+      .filter(function (numero) {
+        return numero !== null;
+      });
+  }
+
+  if (typeof valor === "string") {
+    try {
+      const datos = JSON.parse(valor);
+
+      if (Array.isArray(datos)) {
+        return datos
+          .map(obtenerValorLectura)
+          .filter(function (numero) {
+            return numero !== null;
+          });
+      }
+    } catch (error) {
+      const numero = obtenerValorLectura(valor);
+      return numero !== null ? [numero] : [];
+    }
+  }
+
+  const numero = obtenerValorLectura(valor);
+  return numero !== null ? [numero] : [];
+}
+
+function obtenerPromedioLecturas(valor) {
+  const lecturas = obtenerLecturasComoNumeros(valor);
+
+  if (lecturas.length === 0) return null;
+
+  const suma = lecturas.reduce(function (total, lectura) {
+    return total + lectura;
+  }, 0);
+
+  return Number((suma / lecturas.length).toFixed(2));
+}
+
+function obtenerDatosUbicacionFisicoQuimica(registro) {
+  return {
+    finca: obtenerTextoSeguro(registro.fincaNombre, obtenerTextoSeguro(registro.finca, "Sin finca")),
+    estanque: obtenerTextoSeguro(registro.estanqueCodigo, obtenerTextoSeguro(registro.estanque, "Sin estanque")),
+    fecha: obtenerTextoSeguro(registro.fecha, obtenerTextoSeguro(registro.fechaRegistro, registro.fecha_reporte)),
+    registroId: registro.id ?? registro.servidorId ?? registro.servidor_id ?? null,
+  };
+}
+
+function agregarAlertaFisicoQuimicaParametro({
+  alertas,
+  registro,
+  parametro,
+  valor,
+  minimo,
+  maximo,
+  unidad,
+  prioridad,
+}) {
+  if (valor === null) return;
+
+  const datos = obtenerDatosUbicacionFisicoQuimica(registro);
+  const unidadTexto = unidad ? ` ${unidad}` : "";
+  const fechaDetalle = datos.fecha ? `Fecha de lectura: ${formatearFechaCorta(datos.fecha)}.` : "";
+
+  if (valor < minimo) {
+    agregarAlerta(alertas, {
+      id: `fisico-quimica-${parametro.toLowerCase().replaceAll(" ", "-")}-bajo-${datos.registroId}`,
+      tipo: parametro === "Oxigeno disuelto" ? "critica" : "advertencia",
+      categoria: "Fisico Quimica",
+      titulo: `${parametro} bajo`,
+      mensaje: `${datos.estanque} · ${datos.finca}: ${parametro} en ${valor}${unidadTexto}. Rango ideal: ${minimo} - ${maximo}${unidadTexto}.`,
+      detalle: fechaDetalle,
+      fecha: datos.fecha,
+      icono: ICONS.chemicalContainer,
+      color: parametro === "Oxigeno disuelto" ? COLORS.error : COLORS.warning,
+      prioridad,
+      modulo: "fisicoQuimica",
+      registroId: datos.registroId,
+    });
+
+    return;
+  }
+
+  if (valor > maximo) {
+    agregarAlerta(alertas, {
+      id: `fisico-quimica-${parametro.toLowerCase().replaceAll(" ", "-")}-alto-${datos.registroId}`,
+      tipo: "advertencia",
+      categoria: "Fisico Quimica",
+      titulo: `${parametro} alto`,
+      mensaje: `${datos.estanque} · ${datos.finca}: ${parametro} en ${valor}${unidadTexto}. Rango ideal: ${minimo} - ${maximo}${unidadTexto}.`,
+      detalle: fechaDetalle,
+      fecha: datos.fecha,
+      icono: ICONS.chemicalContainer,
+      color: COLORS.warning,
+      prioridad,
+      modulo: "fisicoQuimica",
+      registroId: datos.registroId,
+    });
+  }
+}
+
+function obtenerAlertasFisicoQuimicas(registrosFisicoQuimicos) {
+  const alertas = [];
+
+  normalizarLista(registrosFisicoQuimicos).forEach(function (registro) {
+    const ph = obtenerPromedioLecturas(registro.ph);
+    const salinidad = obtenerPromedioLecturas(registro.salinidad);
+    const temperatura = obtenerPromedioLecturas(registro.temperatura);
+    const oxigeno = obtenerPromedioLecturas(
+      registro.oxigenoDisuelto ??
+      registro.oxigeno_disuelto ??
+      registro.ox
+    );
+
+    agregarAlertaFisicoQuimicaParametro({
+      alertas,
+      registro,
+      parametro: "pH",
+      valor: ph,
+      minimo: 7.5,
+      maximo: 8.5,
+      unidad: "",
+      prioridad: 4,
+    });
+
+    agregarAlertaFisicoQuimicaParametro({
+      alertas,
+      registro,
+      parametro: "Salinidad",
+      valor: salinidad,
+      minimo: 10,
+      maximo: 25,
+      unidad: "ppt",
+      prioridad: 5,
+    });
+
+    agregarAlertaFisicoQuimicaParametro({
+      alertas,
+      registro,
+      parametro: "Temperatura",
+      valor: temperatura,
+      minimo: 28,
+      maximo: 32,
+      unidad: "°C",
+      prioridad: 5,
+    });
+
+    agregarAlertaFisicoQuimicaParametro({
+      alertas,
+      registro,
+      parametro: "Oxigeno disuelto",
+      valor: oxigeno,
+      minimo: 5,
+      maximo: 9,
+      unidad: "mg/L",
+      prioridad: 2,
+    });
   });
 
   return alertas;
@@ -530,6 +743,7 @@ export function construirAlertasOperativas(datos = {}) {
 
   const alertas = [
     ...obtenerAlertasSanitarias(datosFinales.registrosEnfermedades, datosFinales.registrosParasitologia),
+    ...obtenerAlertasFisicoQuimicas(datosFinales.registrosFisicoQuimicos),
     ...obtenerAlertasCosecha(datosFinales.siembras),
     ...obtenerAlertasAireadores(datosFinales.equipos),
     ...obtenerAlertasInventario(datosFinales.productosInventario),
@@ -580,8 +794,7 @@ export async function obtenerAlertasDescartadas() {
     const lista = JSON.parse(datos);
     return normalizarLista(lista);
   } catch (error) {
-    console.error("Error leyendo alertas descartadas:", error);
-    return [];
+    throw error;
   }
 }
 

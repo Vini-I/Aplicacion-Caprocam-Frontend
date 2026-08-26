@@ -30,7 +30,6 @@ export default function AgregarTrazabilidadScreen() {
   const {
     formData,
     fincas,
-    colaboradorSesion,
     estanquesOrigen,
     estanquesDestino,
     mensajeError,
@@ -70,7 +69,7 @@ export default function AgregarTrazabilidadScreen() {
             <Alert
               variant="danger"
               message={errorCarga}
-              style={styles.infoBanner}
+              style={styles.alertBox}
               textStyle={styles.errorAlertText}
             />
           )}
@@ -79,7 +78,7 @@ export default function AgregarTrazabilidadScreen() {
             <Button
               variant="outline"
               onPress={sesionExpirada ? irALogin : cerrarErrorCarga}
-              style={styles.infoBanner}
+              style={styles.alertBox}
             >
               {sesionExpirada ? "Ir a iniciar sesión" : "Cerrar"}
             </Button>
@@ -88,7 +87,6 @@ export default function AgregarTrazabilidadScreen() {
           <TrazabilidadForm
             formData={formData}
             fincas={fincas}
-            colaboradorSesion={colaboradorSesion}
             estanquesOrigen={estanquesOrigen}
             estanquesDestino={estanquesDestino}
             onChange={manejarCambio}
@@ -104,7 +102,7 @@ export default function AgregarTrazabilidadScreen() {
                 mensajeError ||
                 "Revisa los campos obligatorios marcados con * antes de guardar."
               }
-              style={styles.infoBanner}
+              style={styles.alertBox}
               textStyle={styles.errorAlertText}
             />
           )}

@@ -24,7 +24,7 @@ export const camposSiembraObligatorios = [
   "finca",
   "estanque",
   "tecnicaCultivo",
-  "diasMaduracion",
+  "duracionCiclo",
   "proveedorLarva",
   "laboratorioLarva",
   "procedenciaLarva",
@@ -83,4 +83,32 @@ export function obtenerCamposObligatorios(formData, { finalizando = false } = {}
   }
 
   return campos;
+}
+
+/**
+ * Determina a qué campo del formulario corresponde un mensaje de
+ * error devuelto por el backend, para poder marcarlo en rojo además
+ * de mostrar el mensaje. El backend no indica el campo de forma
+ * estructurada, así que se infiere buscando palabras clave dentro
+ * del texto del mensaje (ej. "estanque", "codigo_lote").
+ *
+ * Se usa tanto al crear (useNuevaSiembra) como al editar
+ * (useDetalleSiembra) una Siembra o Pre-Cría, ya que ambos flujos
+ * pueden recibir los mismos tipos de rechazo del backend.
+ *
+ * Devuelve el nombre del campo si encuentra una coincidencia, o
+ * null si el mensaje no corresponde a ningún campo conocido.
+ */
+export function determinarCampoDelError(mensaje) {
+  const reglas = [
+    { patron: /cantidad_sembrada/i, campo: "cantidadSembrada" },
+    { patron: /codigo_lote|ese codigo/i, campo: "codigoLoteLarva" },
+    { patron: /certificado_larva/i, campo: "certificadoLarva" },
+    { patron: /la pre-cria/i, campo: "precriaId" },
+    { patron: /lote de larva/i, campo: "codigoLoteLarva" },
+    { patron: /estanque/i, campo: "estanque" },
+    { patron: /finca/i, campo: "finca" },
+  ];
+  const regla = reglas.find((r) => r.patron.test(mensaje));
+  return regla ? regla.campo : null;
 }

@@ -1,27 +1,21 @@
 /**
- * ============================================================
- * ESTILOS DETALLE PROVEEDOR
- * ============================================================
- *
- * Estilos de la pantalla DetalleProveedorScreen, incluyendo el estado
- * proveedor no encontrado y el modal de confirmación de eliminar.
+ * DetalleProveedorStyles.js
+ * Estilos para la pantalla de detalle de un proveedor.
  *
  * FUNCIONALIDAD:
- * 1. Colores y tipografia salen de theme/colors y theme/typography.
- * 
- * 2. El card y los botones no definen ancho/centrado propio: eso lo
- *    resuelve STYLE.contentWrapper (theme/style) desde la screen. El
- *    padding raíz tampoco se define aquí.
- * 
- * 3. Todos los botones (Editar, Eliminar, Volver, confirmar eliminar,
- *    cancelar eliminar) son outline (borde + icono + texto de color,
- *    sin relleno sólido): azul (COLORS.primary) para acciones
- *    neutras/editar/volver/cancelar, rojo (COLORS.error) para eliminar.
- * 
- * 4. seccionNotas comparte el mismo formato de seccion para que la
- *    seccion de notas (icono + titulo) luzca igual al resto cuando se
- *    renderiza condicionalmente.
+ * - Provee todos los estilos visuales para DetalleProveedorScreen.
+ * - Define el espaciado y colores de las secciones de contacto.
+ * - Incluye los estilos para renderizar el badge de tipo de producto.
+ * - Asegura la legibilidad de las notas usando estilos de tipografía.
  *
+ * REGLAS IMPORTANTES:
+ * - Se deben usar constantes del tema (COLORS, TYPOGRAPHY) siempre.
+ * - Los botones usan borde y no fondo sólido, según diseño (outline).
+ * - No define paddings generales, eso lo maneja STYLE.container.
+ *
+ * @dependencies - StyleSheet, COLORS, TYPOGRAPHY, theme/style
+ * @validations - N/A
+ * @navigation - N/A
  */
 import { StyleSheet } from "react-native";
 import { COLORS } from "../../../theme/colors";
@@ -50,6 +44,14 @@ export const styles = StyleSheet.create({
 
   scroll: { 
     flex: 1 
+  },
+
+  scrollContainer: {
+    paddingBottom: 24,
+  },
+
+  spinner: {
+    marginTop: 40,
   },
 
   tarjeta: {

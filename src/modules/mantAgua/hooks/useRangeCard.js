@@ -13,19 +13,34 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { getCurrentTime12 } from '../../../shared/utils/dateUtils';
 
 const limitar = (val, min, max) => Math.min(Math.max(val, min), max);
 const formatear = (val, decimals) => val.toFixed(decimals);
 
-function crearLectura(id, value, decimals) {
-  return { id, value, rawInput: formatear(value, decimals), editing: false };
+function crearLectura(id, value, decimals, horaMedicion) {
+  return {
+    id,
+    value,
+    rawInput: formatear(value, decimals),
+    editing: false,
+    horaMedicion: horaMedicion || getCurrentTime12(),
+  };
 }
 
 // Convierte valores iniciales en objetos de lectura reutilizables por RangeCard.
 function crearLecturasDesdeValores(valores, idealMin, decimals) {
-  return (Array.isArray(valores) ? valores : []).map((value, index) =>
-    crearLectura(index + 1, Number(value) || idealMin, decimals),
-  );
+  return (Array.isArray(valores) ? valores : []).map((item, index) => {
+    if (typeof item === 'object' && item !== null) {
+      return crearLectura(
+        item.id || index + 1,
+        Number(item.value ?? item.valor) || idealMin,
+        decimals,
+        item.horaMedicion || item.hora_medicion
+      );
+    }
+    return crearLectura(index + 1, Number(item) || idealMin, decimals);
+  });
 }
 
 export default function useRangeCard({
@@ -45,42 +60,66 @@ export default function useRangeCard({
     if (initialLecturas.length > 0) {
       return crearLecturasDesdeValores(initialLecturas, idealMin, decimals);
     }
-
-    // Start empty by default (no measurement created until user adds one
-    // or initialValues are provided).
     return [];
   });
 
+  const onChangeRef = useRef(onChange);
   useEffect(() => {
-    const next = initialLecturas.length > 0
-      ? crearLecturasDesdeValores(initialLecturas, idealMin, decimals)
+    onChangeRef.current = onChange;
+  }, [onChange]);
+
+  const sonValoresIguales = (valoresIniciales, lecturasActuales) => {
+    const arr = Array.isArray(valoresIniciales) ? valoresIniciales : [];
+    if (arr.length !== lecturasActuales.length) return false;
+    for (let i = 0; i < arr.length; i++) {
+      const item = arr[i];
+      const val = typeof item === 'object' && item !== null ? item.value ?? item.valor : item;
+      const hora = typeof item === 'object' && item !== null ? item.horaMedicion ?? item.hora_medicion : undefined;
+      if (Number(val) !== Number(lecturasActuales[i]?.value)) {
+        return false;
+      }
+      if (hora && hora !== lecturasActuales[i]?.horaMedicion) {
+        return false;
+      }
+    }
+    return true;
+  };
+
+  useEffect(() => {
+    const arr = Array.isArray(initialValues) ? initialValues : [];
+
+    if (sonValoresIguales(arr, lecturas)) {
+      return;
+    }
+
+    const next = arr.length > 0
+      ? crearLecturasDesdeValores(arr, idealMin, decimals)
       : [];
 
     setLecturas(next);
-  }, [JSON.stringify(initialLecturas), idealMin, decimals]);
+  }, [JSON.stringify(initialValues), idealMin, decimals]);
 
-  // Ref para evitar que el montaje inicial emita onChange([]) antes de
-  // que los initialValues se apliquen (race condition cuando el key del
-  // RangeCard cambia y el componente se remonta con datos vacíos
-  // transitorios mientras el fetch de mediciones está en vuelo).
   const mountedRef = useRef(false);
+  const lastEmittedRef = useRef('');
 
-  // Única fuente que notifica al padre: se dispara después del render
-  // (nunca dentro de un reducer de setState), así el drag continuo no
-  // intenta actualizar FisicoQuimicaScreen mientras RangeCard se está
-  // renderizando.
   useEffect(() => {
+    const serialized = JSON.stringify(
+      lecturas.map((r) => ({ value: r.value, horaMedicion: r.horaMedicion }))
+    );
+    if (serialized === lastEmittedRef.current) {
+      return;
+    }
+    lastEmittedRef.current = serialized;
+
     if (!mountedRef.current) {
       mountedRef.current = true;
-      // En el primer render, solo emitir si ya hay lecturas reales.
-      // Si está vacío, no notificar — evita borrar los datos del padre.
       if (lecturas.length > 0) {
-        onChange?.(lecturas);
+        onChangeRef.current?.(lecturas);
       }
       return;
     }
-    onChange?.(lecturas);
-  }, [lecturas, onChange]);
+    onChangeRef.current?.(lecturas);
+  }, [lecturas]);
 
   const actualizarLectura = useCallback(
     (id, patch) => {
@@ -88,6 +127,10 @@ export default function useRangeCard({
     },
     []
   );
+
+  const actualizaHora = useCallback((id, horaMedicion) => {
+    setLecturas((prev) => prev.map((r) => (r.id === id ? { ...r, horaMedicion } : r)));
+  }, []);
 
   const agregarLectura = useCallback(() => {
     if (lecturas.length >= maxLecturas) return;
@@ -127,11 +170,11 @@ export default function useRangeCard({
   const normalizar = (v) => (v - sliderMin) / (sliderMax - sliderMin);
   const tieneMaxIdeal = Number.isFinite(idealMax);
 
-  // Devuelve los manejadores de una lectura puntual (botones +/-, input, blur)
   const obtenerManejadores = useCallback(
     (r) => ({
       decrementar: () => decrementar(r.id),
       incrementar: () => incrementar(r.id),
+      actualizaHora: (hora12) => actualizaHora(r.id, hora12),
       handleChangeText: (text) => {
         const cleaned = text.replace(/[^0-9.]/g, '');
         const parts = cleaned.split('.');
@@ -153,22 +196,21 @@ export default function useRangeCard({
           : parseFloat(limitar(parsed, sliderMin, sliderMax).toFixed(decimals));
         actualizarLectura(r.id, { value: safe, rawInput: formatear(safe, decimals), editing: false });
       },
-      // Actualiza el valor mientras se arrastra el thumb de RangeTrack.
-      // El valor ya llega redondeado/clampeado desde el componente.
       handleArrastre: (nuevoValor) => {
         const next = parseFloat(limitar(nuevoValor, sliderMin, sliderMax).toFixed(decimals));
         actualizarLectura(r.id, { value: next, rawInput: formatear(next, decimals) });
       },
     }),
-    [decrementar, incrementar, sliderMin, sliderMax, decimals, actualizarLectura]
+    [decrementar, incrementar, actualizaHora, sliderMin, sliderMax, decimals, actualizarLectura]
   );
 
   return {
     lecturas,
     agregarLectura,
     eliminarLectura,
+    actualizaHora,
     normalizar,
     tieneMaxIdeal,
     obtenerManejadores,
   };
-}
+}

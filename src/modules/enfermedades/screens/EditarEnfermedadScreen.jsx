@@ -1,46 +1,65 @@
 /**
- * ============================================================
+ * =============================================================
  * SCREEN: ENFERMEDADES
- * ============================================================
+ * =============================================================
  *
- * Renderiza el formulario para registrar enfermedades.
- * Toda la logica se encuentra en useEnfermedadesScreen.
+ * Renderiza el formulario para editar enfermedades.
+ * Toda la logica se encuentra en useEditarEnfermedad.
  */
 
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { ScrollView, View } from "react-native";
-
-import Alert from "../../../shared/components/Alert";
-import Button from "../../../shared/components/Button";
-import Card from "../../../shared/components/Card";
-import DateInput from "../../../shared/components/DateInput";
-import Icon from "../../../shared/components/Icons";
-import Input from "../../../shared/components/Input";
-import NavbarRegistro from "../../../shared/components/NavbarRegistro";
-import NumberInput from "../../../shared/components/NumberInput";
-import Select from "../../../shared/components/Select";
-import CustomText from "../../../shared/components/Text";
-
-import EnfermedadesSectionTitle from "../components/EnfermedadesSectionTitle";
 import { useRouter } from "expo-router";
-import useEditarEnfermedad from "../hooks/useEditarEnfermedad";
 
-import { styles } from "../styles/EnfermedadesStyle";
-import { COLORS } from "../../../theme/colors";
-import { ICONS } from "../../../theme/icons";
-import { STYLE } from "../../../theme/style";
+import Alert from "../../../shared/components/Alert.jsx";
+import Button from "../../../shared/components/Button.jsx";
+import Card from "../../../shared/components/Card.jsx";
+import DateInput from "../../../shared/components/DateInput.jsx";
+import Icon from "../../../shared/components/Icons.jsx";
+import Input from "../../../shared/components/Input.jsx";
+import NavbarRegistro from "../../../shared/components/NavbarRegistro.jsx";
+import Select from "../../../shared/components/Select.jsx";
+import CustomText from "../../../shared/components/Text.jsx";
+
+import EnfermedadesSectionTitle from "../components/EnfermedadesSectionTitle.jsx";
+import useEditarEnfermedad from "../hooks/useEditarEnfermedad.js";
+
+import { styles } from "../styles/EnfermedadesStyle.js";
+import { COLORS } from "../../../theme/colors.js";
+import { ICONS } from "../../../theme/icons.js";
+import { STYLE } from "../../../theme/style.js";
 
 export default function EditarEnfermedadScreen({ registroId }) {
   const router = useRouter();
   const pantalla = useEditarEnfermedad(registroId, () => {
-    router.replace({ pathname: "/registros/Reporteria", params: { alert: "edited" } });
+    router.replace({
+      pathname: "/registros/Reporteria",
+      params: { alert: "edited" },
+    });
   });
+
+  const scrollRef = useRef(null);
+
+  //Hook aquí para que haga el scrollToEnd en caso de que haya algún error de cargar
+  useEffect(() => {
+    if (pantalla.mensaje && pantalla.tipoMensaje === "danger") {
+      scrollRef.current?.scrollToEnd({ animated: true });
+    }
+  }, [pantalla.mensaje, pantalla.tipoMensaje]);
 
   if (!registroId) {
     return (
       <>
-        <NavbarRegistro Titulo="Enfermedades" Subtitulo="Editar registro" Icono="document" />
-        <CustomText style={{ textAlign: "center", marginTop: 24 }}>No se encontró el registro a editar.</CustomText>
+        <NavbarRegistro
+          Titulo="Enfermedades"
+          Subtitulo="Editar registro de enfermedad"
+          Icono="shieldAlert"
+          RutaVolver="/registros/Reporteria"
+        />
+
+        <CustomText style={{ textAlign: "center", marginTop: 24 }}>
+          No se encontró el registro a editar.
+        </CustomText>
       </>
     );
   }
@@ -48,22 +67,32 @@ export default function EditarEnfermedadScreen({ registroId }) {
   if (pantalla.cargandoRegistro) {
     return (
       <>
-        <NavbarRegistro Titulo="Enfermedades" Subtitulo="Editar registro" Icono="document" />
-        <CustomText style={{ textAlign: "center", marginTop: 24 }}>Cargando registro...</CustomText>
+        <NavbarRegistro
+          Titulo="Enfermedades"
+          Subtitulo="Editar registro de enfermedad"
+          Icono="shieldAlert"
+        />
+
+        <CustomText style={{ textAlign: "center", marginTop: 24 }}>
+          Cargando registro...
+        </CustomText>
       </>
     );
   }
-
 
   return (
     <>
       <NavbarRegistro
         Titulo="Enfermedades"
-        Subtitulo="Editar registro"
+        Subtitulo="Editar registro de enfermedad"
         Icono="shieldAlert"
       />
 
-      <ScrollView style={STYLE.container} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        ref={scrollRef}
+        style={STYLE.container}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={[STYLE.contentWrapper, styles.content]}>
           <Card style={styles.card}>
             <EnfermedadesSectionTitle
@@ -81,9 +110,7 @@ export default function EditarEnfermedadScreen({ registroId }) {
                   placeholder={pantalla.placeholderFinca}
                   disabled={pantalla.loading}
                   labelStyle={styles.label}
-                  selectStyle={
-                    pantalla.errorFinca && styles.campoConError
-                  }
+                  selectStyle={pantalla.errorFinca && styles.campoConError}
                 />
               </View>
 
@@ -96,9 +123,7 @@ export default function EditarEnfermedadScreen({ registroId }) {
                   placeholder={pantalla.placeholderEstanque}
                   disabled={pantalla.loading || pantalla.finca === ""}
                   labelStyle={styles.label}
-                  selectStyle={
-                    pantalla.errorEstanque && styles.campoConError
-                  }
+                  selectStyle={pantalla.errorEstanque && styles.campoConError}
                 />
               </View>
 
@@ -108,21 +133,7 @@ export default function EditarEnfermedadScreen({ registroId }) {
                   value={pantalla.fechaReporte}
                   onChangeText={pantalla.cambiarFechaReporte}
                   labelStyle={styles.label}
-                  inputStyle={
-                    pantalla.errorFechaReporte && styles.campoConError
-                  }
-                />
-              </View>
-
-              <View style={pantalla.itemStyle} pointerEvents="none">
-                <Input
-                  label="Responsable"
-                  value={pantalla.responsable}
-                  editable={false}
-                  readOnly={true}
-                  selectTextOnFocus={false}
-                  labelStyle={styles.label}
-                  style={styles.disabledInput}
+                  inputStyle={pantalla.errorFechaReporte && styles.campoConError}
                 />
               </View>
             </View>
@@ -142,9 +153,7 @@ export default function EditarEnfermedadScreen({ registroId }) {
               placeholder={pantalla.placeholderEnfermedad}
               disabled={pantalla.loading}
               labelStyle={styles.label}
-              selectStyle={
-                pantalla.errorEnfermedad && styles.campoConError
-              }
+              selectStyle={pantalla.errorEnfermedad && styles.campoConError}
             />
           </Card>
 
@@ -164,36 +173,19 @@ export default function EditarEnfermedadScreen({ registroId }) {
                   placeholder={pantalla.placeholderSeveridad}
                   disabled={pantalla.loading}
                   labelStyle={styles.label}
-                  selectStyle={
-                    pantalla.errorSeveridad && styles.campoConError
-                  }
-                />
-              </View>
-
-              <View style={pantalla.itemStyle}>
-                <NumberInput
-                  label="Mortalidad registrada (U)"
-                  value={pantalla.mortalidad}
-                  onChangeText={pantalla.cambiarMortalidad}
-                  min={0}
-                  max={999999}
-                  step={1}
-                  labelStyle={styles.label}
+                  selectStyle={pantalla.errorSeveridad && styles.campoConError}
                 />
               </View>
 
               <View style={pantalla.itemFullStyle}>
                 <Input
-                  label="Reporte *"
+                  label="Reporte"
                   value={pantalla.reporte}
                   onChangeText={pantalla.cambiarReporte}
                   placeholder="Describa sintomas, observaciones o acciones realizadas"
                   multiline={true}
                   labelStyle={styles.label}
-                  style={[
-                    styles.textArea,
-                    pantalla.errorReporte && styles.campoConError,
-                  ]}
+                  style={styles.textArea}
                 />
               </View>
             </View>

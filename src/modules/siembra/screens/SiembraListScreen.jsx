@@ -18,12 +18,8 @@
  *      - Registro de una nueva siembra.
  *      - Detalle y edición de una siembra existente.
  *
- * 4. Muestra la cantidad total de siembras activas disponibles.
- *
- * 4.1 El hook useSiembraList oculta automáticamente del listado las
- *     siembras y pre-crías que ya completaron su ciclo, para que no se
- *     acumulen tarjetas de registros finalizados en esta pantalla. Esto
- *     solo las oculta de este listado: el registro no se borra.
+ * 4. Permite alternar entre siembras/pre-crías Activas y Finalizadas
+ *    mediante un toggle, conectado al estado "vista" del hook.
  *
  * 5. Utiliza componentes visuales reutilizables para mantener la
  *    consistencia del diseño:
@@ -33,7 +29,7 @@
  * COMPONENTES UTILIZADOS:
  *
  * - SiembraCard: tarjeta de cada siembra/pre-cría.
- * - Button: acciones de navegación.
+ * - Button: acciones de navegación y toggle de vista.
  * - Icon: representación visual de acciones.
  *
  * NAVEGACIÓN:
@@ -59,6 +55,7 @@ import Icon from "../../../shared/components/Icons";
 import EmptyState from "../../../shared/components/EmptyState";
 import SearchBar from "../../../shared/components/SearchBar";
 import FilterButton from "../../../shared/components/FilterButton";
+import Alert from "../../../shared/components/Alert";
 import { ICONS } from "../../../theme/icons";
 import { COLORS } from "../../../theme/colors";
 import { STYLE } from "../../../theme/style";
@@ -66,21 +63,18 @@ import { STYLE } from "../../../theme/style";
 import SiembraCard from "../components/SiembraCard";
 import useSiembraList from "../hooks/useSiembraList";
 
-export default function SiembraListScreen() {
+export default function SiembraListScreen({ onDetail, onNew }) {
   const {
     busqueda,
     setBusqueda,
-
+    mensaje,
+    mensajeVariant,
     filtros,
     setFiltros,
-
+    vista,
+    setVista,
     tiposRegistro,
-
     siembrasFiltradas,
-
-    handleNuevaSiembra,
-
-    handleDetalleSiembra,
   } = useSiembraList();
 
   return (
@@ -90,6 +84,13 @@ export default function SiembraListScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={STYLE.contentWrapper}>
+          {mensaje !== "" && (
+            <Alert
+              message={mensaje}
+              variant={mensajeVariant}
+              textStyle={{ textAlign: "center" }}
+            />
+          )}
           <View style={styles.contentHeader}>
             <View style={styles.cardTitleRow}>
               <Icon icon={ICONS.shrimp} color={COLORS.primary} />
@@ -99,6 +100,23 @@ export default function SiembraListScreen() {
             </View>
           </View>
 
+          <View style={styles.toggleContainer}>
+            <Button
+              variant={vista === "activas" ? "primary" : "outline"}
+              onPress={() => setVista("activas")}
+              style={styles.toggleButton}
+            >
+              Activas
+            </Button>
+            <Button
+              variant={vista === "finalizadas" ? "primary" : "outline"}
+              onPress={() => setVista("finalizadas")}
+              style={styles.toggleButton}
+            >
+              Finalizadas
+            </Button>
+          </View>
+
           <View style={styles.barraBusqueda}>
             <SearchBar
               value={busqueda}
@@ -106,30 +124,16 @@ export default function SiembraListScreen() {
               placeholder="Buscar finca, estanque, lote, proveedor..."
               containerStyle={styles.searchBarContainer}
             />
-            <View style={styles.filterColumn}>
-              <FilterButton
-                categories={tiposRegistro}
-                suppliers={[]}
-                units={[]}
-                activeFilters={filtros}
-                onApply={setFiltros}
-                showLowStock={false}
-                showExpiryDate={false}
-                buttonStyle={styles.filterButton}
-              />
-              <Button
-                variant="outline"
-                onPress={handleNuevaSiembra}
-                style={[styles.newButton, styles.newButtonCompact]}
-              >
-                <View style={styles.newButtonContent}>
-                  <Icon icon={ICONS.add} color={COLORS.primary} />
-                  <Text style={styles.newButtonText} numberOfLines={1}>
-                    Nueva Siembra
-                  </Text>
-                </View>
-              </Button>
-            </View>
+            <FilterButton
+              categories={tiposRegistro}
+              suppliers={[]}
+              units={[]}
+              activeFilters={filtros}
+              onApply={setFiltros}
+              showLowStock={false}
+              showExpiryDate={false}
+              buttonStyle={styles.filterButton}
+            />
           </View>
 
           <Text style={styles.contadorResultados}>
@@ -151,12 +155,21 @@ export default function SiembraListScreen() {
                 registro={registro}
                 fincaLabel={registro.fincaLabel}
                 estanqueLabel={registro.estanqueLabel}
-                onVerDetalle={() => handleDetalleSiembra(registro)}
+                onVerDetalle={() => onDetail(registro)}
               />
             ))
           )}
         </View>
       </ScrollView>
+
+      <View style={styles.buttonWrapper}>
+        <Button variant="outline" onPress={onNew} style={styles.addButton}>
+          <View style={styles.newButtonContent}>
+            <Icon icon={ICONS.add} color={COLORS.primary} />
+            <Text style={styles.newButtonText}>Añadir Siembra</Text>
+          </View>
+        </Button>
+      </View>
     </View>
   );
 }

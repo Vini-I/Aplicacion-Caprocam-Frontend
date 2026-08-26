@@ -23,6 +23,11 @@
  * CAMPOS DEL PRODUCTO:
  * - Código, Nombre, Categoría, Proveedor, Fecha de ingreso,
  *   Fecha de caducidad, Cantidad, Unidad, Stock mínimo, Precio.
+ *
+ * IMPORTANTE:
+ * - Todos los alerts generales (error al cargar proveedores, error
+ *   al guardar, éxito, validación) van agrupados arriba del botón
+ *   de guardar, nunca junto al campo que los originó.
  * ============================================================
  */
 
@@ -53,6 +58,7 @@ import { styles } from "../styles/ProductFormStyles";
 export default function EditarProducto() {
   const {
     form,
+    productoId,
     opcionesProveedores,
     cargandoProveedores,
     errorProveedores,
@@ -65,6 +71,8 @@ export default function EditarProducto() {
     errorCantidad,
     errorStockMinimo,
     errorPrecio,
+    errorEntryDate,
+    errorExpirationDate,
     guardadoExitoso,
     guardando,
     errorGuardado,
@@ -112,6 +120,7 @@ export default function EditarProducto() {
 
             {/* Categoría */}
             <Select
+              key={`categoria-${productoId ?? "cargando"}`}
               label="Categoría *"
               value={form.categoria}
               options={CATEGORIAS}
@@ -132,14 +141,6 @@ export default function EditarProducto() {
               labelStyle={styles.label}
             />
 
-            {!!errorProveedores && (
-              <Alert
-                variant="danger"
-                message={errorProveedores}
-                style={styles.alertBox}
-              />
-            )}
-
             {/* Cantidad */}
             <NumberInput
               label="Cantidad *"
@@ -153,8 +154,9 @@ export default function EditarProducto() {
               style={[styles.numberInput, errorCantidad && styles.inputError]}
             />
 
-            {/* Unidad */}
+            {/* Unidad -- mismo fix de sincronización que en Categoría */}
             <Select
+              key={`unidad-${productoId ?? "cargando"}`}
               label="Unidad"
               value={form.unidad}
               options={UNIDADES}
@@ -194,8 +196,10 @@ export default function EditarProducto() {
               label="Fecha de ingreso"
               value={form.entryDate}
               onChangeText={(val) => handleField("entryDate", val)}
+              allowFutureDates={false}
               containerStyle={styles.field}
               labelStyle={styles.label}
+              error={errorEntryDate ? "La fecha de ingreso no puede ser una fecha futura." : ""}
             />
 
             {(form.categoria === "Alimentación" || form.categoria === "Tratamiento") && (
@@ -207,6 +211,17 @@ export default function EditarProducto() {
                 allowFutureDates={true}
                 containerStyle={styles.field}
                 labelStyle={styles.label}
+                error={
+                  errorExpirationDate ? "La fecha de caducidad debe ser posterior a hoy (no puede ser hoy ni una fecha pasada)." : ""
+                }
+              />
+            )}
+
+            {!!errorProveedores && (
+              <Alert
+                variant="danger"
+                message={errorProveedores}
+                style={styles.alertBox}
               />
             )}
 

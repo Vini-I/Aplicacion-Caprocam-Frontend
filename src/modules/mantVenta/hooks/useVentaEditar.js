@@ -9,7 +9,7 @@
  * venta nueva.
  *
  * NOTA: los nombres de campo de lectura (peso_promedio,
- * tamano_promedio, comprador_id) se infieren a partir de los
+ * comprador_id) se infieren a partir de los
  * ya confirmados en useDetalleVenta.js (finca_id, estanque_id,
  * fecha, total, cantidad_vendida, precio_kilo). Verifica contra
  * la respuesta real de GET /ventas/:id y ajusta si difiere.
@@ -70,7 +70,6 @@ export function useVentaEditar({ id, onGuardado } = {}) {
   const [fincaSeleccionada, setFincaSeleccionadaState] = useState("");
   const [estanqueSeleccionado, setEstanqueSeleccionado] = useState("");
   const [pesoPromedio, setPesoPromedio] = useState("0.1");
-  const [tamanoPromedio, setTamanoPromedio] = useState("0.1");
   const [kilosVendidos, setKilosVendidos] = useState("0");
   const [precioKilo, setPrecioKilo] = useState("0");
   const [fechaVenta, setFechaVenta] = useState("");
@@ -123,7 +122,6 @@ export function useVentaEditar({ id, onGuardado } = {}) {
         setFincaSeleccionadaState(venta?.finca ?? "");
         setEstanqueSeleccionado(venta?.estanque ?? "");
         setPesoPromedio(String(venta?.pesoPromedio ?? "0.1"));
-        setTamanoPromedio(String(venta?.tamanoPromedio ?? "0.1"));
         setKilosVendidos(String(venta?.cantVendida ?? "0"));
         setPrecioKilo(String(venta?.precioKilo ?? "0"));
         setFechaVenta(formatearFechaDesdeBackend(venta?.fecha));
@@ -202,14 +200,6 @@ export function useVentaEditar({ id, onGuardado } = {}) {
     [limpiarError],
   );
 
-  const handleTamanoPromedioChange = useCallback(
-    (value) => {
-      setTamanoPromedio(normalizarDecimal(value));
-      limpiarError("tamanoPromedio");
-    },
-    [limpiarError],
-  );
-
   const handleKilosVendidosChange = useCallback(
     (value) => {
       setKilosVendidos(normalizarDecimal(value));
@@ -234,22 +224,34 @@ export function useVentaEditar({ id, onGuardado } = {}) {
     [limpiarError],
   );
 
+  const handleFechaChange = useCallback(
+    (value) => {
+      setFechaVenta(value);
+      limpiarError("fechaVenta");
+    },
+    [limpiarError],
+  );
+
   const guardarCambios = useCallback(async () => {
     const nuevosErrores = validarVentaFormulario({
       fincaSeleccionada,
       estanqueSeleccionado,
       pesoPromedio,
-      tamanoPromedio,
       kilosVendidos,
       precioKiloNumero,
       compradorSeleccionado,
+      fechaVenta,
     });
 
     setErrores(nuevosErrores);
 
     if (Object.keys(nuevosErrores).length > 0) {
       setTipoMensaje("error");
-      setMensaje("Completa los datos obligatorios para guardar los cambios.");
+      setMensaje(
+        nuevosErrores.fechaVenta
+          ? "No se puede actualizar la venta porque la fecha no puede ser futura."
+          : "Completa los datos obligatorios para guardar los cambios.",
+      );
       return;
     }
 
@@ -269,7 +271,6 @@ export function useVentaEditar({ id, onGuardado } = {}) {
           ? null
           : Number(compradorSeleccionado),
       pesoPromedio: Number(pesoPromedio),
-      tamanoPromedio: Number(tamanoPromedio),
       cantVendida: Number(kilosVendidos),
       precioKilo: precioKiloNumero,
       fecha: convertirFechaParaBackend(fechaVenta),
@@ -293,7 +294,6 @@ export function useVentaEditar({ id, onGuardado } = {}) {
     fincaSeleccionada,
     estanqueSeleccionado,
     pesoPromedio,
-    tamanoPromedio,
     kilosVendidos,
     precioKiloNumero,
     compradorSeleccionado,
@@ -308,7 +308,6 @@ export function useVentaEditar({ id, onGuardado } = {}) {
     fincaSeleccionada,
     estanqueSeleccionado,
     pesoPromedio,
-    tamanoPromedio,
     kilosVendidos,
     precioKilo,
     fechaVenta,
@@ -325,10 +324,10 @@ export function useVentaEditar({ id, onGuardado } = {}) {
     setEstanqueSeleccionado,
     handleFincaChange,
     handlePesoPromedioChange,
-    handleTamanoPromedioChange,
     handleKilosVendidosChange,
     handlePrecioChange,
     handleCompradorChange,
+    handleFechaChange,
     limpiarError,
     guardarCambios,
   };

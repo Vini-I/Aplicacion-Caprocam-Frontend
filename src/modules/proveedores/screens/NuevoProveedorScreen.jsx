@@ -1,34 +1,18 @@
 /**
- * ============================================================
- * PANTALLA NUEVO PROVEEDOR
- * ============================================================
- *
- * Pantalla para registrar un nuevo proveedor.
+ * NuevoProveedorScreen.jsx
+ * Pantalla con el formulario para registrar un nuevo proveedor.
  *
  * FUNCIONALIDAD:
- * 1. Muestra un formulario con nombre, tipo de producto, telefono,
- *    correo, direccion y notas.
- * 
- * 2. Los campos obligatorios (nombre, tipo de producto, telefono,
- *    correo, direccion) llevan asterisco visible desde el primer
- *    render. Notas es el unico campo opcional.
- * 
- * 3. Al presionar Guardar proveedor se valida el formulario:
- *    - Cada campo invalido se marca en rojo solo el borde, sin
- *      mensaje ni icono individual debajo del campo.
- *    - Arriba del boton Guardar proveedor aparece el mensaje
- *      general, dentro de una alerta.
- * 
- * 4. Si el guardado es exitoso, se muestra una alerta de confirmacion
- *    tambien arriba del boton "Guardar proveedor", y el proveedor
- *    queda agregado a proveedoresMock (se refleja en ProveedorScreen).
+ * - Renderiza el formulario con campos requeridos marcados con asterisco.
+ * - Muestra la alerta de éxito o error al presionar Guardar.
  *
- * IMPORTANTE:
- * - No navega a otras pantallas; al guardar exitosamente se queda en
- *   la misma vista.
-
- * - Toda la logica de validacion vive en useNuevoProveedorScreen, la
- *   screen solo pinta el estado.
+ * REGLAS IMPORTANTES:
+ * - Toda la lógica reside en el hook, la pantalla es solo UI.
+ * - Navega de regreso al listado únicamente al guardar con éxito.
+ *
+ * @dependencies - React, Componentes UI, Alert, useNuevoProveedorScreen
+ * @validations - Valida campos requeridos y formato numérico en UI
+ * @navigation - N/A (delegado a la ruta vía prop onProveedor)
  */
 import React from "react";
 import { View, ScrollView } from "react-native";
@@ -47,13 +31,12 @@ import { STYLE } from "../../../theme/style";
 import { styles } from "../styles/NuevoProveedorStyles.js";
 import { tiposProducto } from "../services/proveedor.service.js";
 
-import {
-  useNuevoProveedorScreen,
-  TELEFONO_MAX_LENGTH,
-} from "../hooks/useNuevoProveedorScreen";
+import { useNuevoProveedorScreen, telefonoMaxLength } from "../hooks/useNuevoProveedorScreen";
+import { formatearTelefono } from "../utils/contactValidators";
 
-export default function NuevoProveedorScreen() {
+export default function NuevoProveedorScreen({ onProveedor }) {
   const {
+    scrollViewRef,
     nombre,
     setNombre,
     tipoProducto,
@@ -66,18 +49,19 @@ export default function NuevoProveedorScreen() {
     notas,
     setNotas,
     mensajeError,
-    guardadoExitoso,
     errores,
     handleTelefonoChange,
     handleSubmit,
-  } = useNuevoProveedorScreen();
+  } = useNuevoProveedorScreen({ onProveedor });
 
   return (
     <View style={STYLE.container}>
       <ScrollView
+        ref={scrollViewRef}
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
+        contentContainerStyle={styles.scrollContainer}
       >
         <View style={STYLE.contentWrapper}>
           <Card style={styles.card}>
@@ -91,6 +75,7 @@ export default function NuevoProveedorScreen() {
             value={nombre}
             onChangeText={setNombre}
             placeholder="Ej. Biomar S.A."
+            maxLength={150}
             containerStyle={styles.field}
             style={[styles.input, errores.nombre && styles.inputError]}
             labelStyle={styles.label}
@@ -111,11 +96,11 @@ export default function NuevoProveedorScreen() {
 
           <Input
             label="Teléfono *"
-            value={telefono}
+            value={formatearTelefono(telefono)}
             onChangeText={handleTelefonoChange}
-            placeholder="+506 7689-9087"
-            keyboardType="phone-pad"
-            maxLength={TELEFONO_MAX_LENGTH}
+            placeholder="Ej: 1234-5678"
+            keyboardType="numeric"
+            maxLength={telefonoMaxLength}
             containerStyle={styles.field}
             style={[styles.input, errores.telefono && styles.inputError]}
             labelStyle={styles.label}
@@ -128,6 +113,7 @@ export default function NuevoProveedorScreen() {
             placeholder="ventas@empresa.com"
             keyboardType="email-address"
             autoCapitalize="none"
+            maxLength={120}
             containerStyle={styles.field}
             style={[styles.input, errores.correo && styles.inputError]}
             labelStyle={styles.label}
@@ -138,6 +124,7 @@ export default function NuevoProveedorScreen() {
             value={direccion}
             onChangeText={setDireccion}
             placeholder="San José, Costa Rica"
+            maxLength={255}
             containerStyle={styles.field}
             style={[styles.input, errores.direccion && styles.inputError]}
             labelStyle={styles.label}
@@ -149,6 +136,7 @@ export default function NuevoProveedorScreen() {
             onChangeText={setNotas}
             placeholder="Observaciones adicionales..."
             multiline={true}
+            maxLength={255}
             containerStyle={styles.field}
             style={styles.input}
             labelStyle={styles.label}
@@ -163,19 +151,10 @@ export default function NuevoProveedorScreen() {
             />
           )}
 
-          {guardadoExitoso && (
-            <CustomAlert
-              variant="success"
-              message="Proveedor guardado correctamente."
-              style={[styles.alertBox, styles.alertSuccess]}
-              textStyle={styles.alertText}
-            />
-          )}
-
           <Button onPress={handleSubmit} style={styles.saveButton}>
             <View style={styles.buttonContent}>
               <Icon icon={ICONS.save} color={COLORS.primary} />
-              <Text style={styles.saveButtonText}>Guardar proveedor</Text>
+              <Text style={styles.saveButtonText}>Registrar Proveedor</Text>
             </View>
           </Button>
         </Card>

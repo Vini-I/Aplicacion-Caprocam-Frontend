@@ -5,6 +5,7 @@ import Button from "../../../shared/components/Button.jsx";
 import Card from "../../../shared/components/Card.jsx";
 import Icon from "../../../shared/components/Icons.jsx";
 import Input from "../../../shared/components/Input.jsx";
+import DateInput from "../../../shared/components/DateInput.jsx";
 import NumberInput from "../../../shared/components/NumberInput.jsx";
 import Select from "../../../shared/components/Select.jsx";
 import Text from "../../../shared/components/Text.jsx";
@@ -33,7 +34,6 @@ export default function VentaEditarScreen({ id, onVenta }) {
     fincaSeleccionada,
     estanqueSeleccionado,
     pesoPromedio,
-    tamanoPromedio,
     kilosVendidos,
     precioKilo,
     fechaVenta,
@@ -50,10 +50,10 @@ export default function VentaEditarScreen({ id, onVenta }) {
     setEstanqueSeleccionado,
     handleFincaChange,
     handlePesoPromedioChange,
-    handleTamanoPromedioChange,
     handleKilosVendidosChange,
     handlePrecioChange,
     handleCompradorChange,
+    handleFechaChange,
     limpiarError,
     guardarCambios,
   } = useVentaEditar({ id, onGuardado: onVenta });
@@ -142,18 +142,6 @@ export default function VentaEditarScreen({ id, onVenta }) {
                 style={errores.pesoPromedio ? errorInputStyle : null}
               />
             </View>
-
-            <View style={styles.inputItem}>
-              <NumberInput
-                label="Tamaño promedio (cm) *"
-                value={tamanoPromedio}
-                onChangeText={handleTamanoPromedioChange}
-                step={0.1}
-                min={0.1}
-                max={20}
-                style={errores.tamanoPromedio ? errorInputStyle : null}
-              />
-            </View>
           </View>
 
           <View style={gridStyle}>
@@ -182,12 +170,13 @@ export default function VentaEditarScreen({ id, onVenta }) {
             </View>
           </View>
 
-          <Input label="Fecha *" value={fechaVenta} editable={false} />
-
-          <View style={styles.summaryBox}>
-            <Text style={styles.summaryLabel}>Total estimado</Text>
-            <Text style={styles.summaryValue}>{formatearMontoColones(totalVenta)}</Text>
-          </View>
+          <DateInput
+            label="Fecha *"
+            value={fechaVenta}
+            onChangeText={handleFechaChange}
+            allowFutureDates={false}
+            inputStyle={errores.fechaVenta ? errorInputStyle : null}
+          />
 
           <SectionTitle icon={ICONS.user} title="Comprador" />
 
@@ -202,6 +191,11 @@ export default function VentaEditarScreen({ id, onVenta }) {
                 selectStyle={errores.comprador ? errorInputStyle : null}
               />
             </View>
+          </View>
+
+          <View style={styles.summaryBox}>
+            <Text style={styles.summaryLabel}>Total estimado</Text>
+            <Text style={styles.summaryValue}>{formatearMontoColones(totalVenta)}</Text>
           </View>
 
           {tipoMensaje === "error" && mensaje !== "" && (

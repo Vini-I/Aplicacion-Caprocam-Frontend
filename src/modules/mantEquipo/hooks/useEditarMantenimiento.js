@@ -100,19 +100,28 @@ export function useEditarMantenimiento({ id, onNavigateToDetail, onNavigateToMai
           const resProd = await MantService.getProductosCatalogo();
           if (!activo) return;
           const raw = Array.isArray(resProd) ? resProd : (Array.isArray(resProd?.data) ? resProd.data : []);
-          prodList = raw.map(p => {
-            const prodId = String(p.id || p.producto_id || p.productoId || '');
-            const price = Number(p.precioUnidad || p.precio_unidad || p.precio) || 0;
-            return {
-              ...p,
-              id:           prodId,
-              productoId:    prodId,
-              nombre:       p.nombre || p.nombreProducto || p.producto?.nombre || `Producto ${prodId}`,
-              precioUnidad: price,
-              costoUnitario: price,
-              stockMaximo:  p.cantidad !== undefined ? Number(p.cantidad) : (p.stock !== undefined ? Number(p.stock) : 999),
-            };
-          });
+          prodList = raw
+            .filter((p) => {
+              const cat = String(p.categoria ?? "")
+                .trim()
+                .toLowerCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "");
+              return cat === "equipos" || cat === "equipo" || cat === "mantenimiento";
+            })
+            .map(p => {
+              const prodId = String(p.id || p.producto_id || p.productoId || '');
+              const price = Number(p.precioUnidad || p.precio_unidad || p.precio) || 0;
+              return {
+                ...p,
+                id:           prodId,
+                productoId:    prodId,
+                nombre:       p.nombre || p.nombreProducto || p.producto?.nombre || `Producto ${prodId}`,
+                precioUnidad: price,
+                costoUnitario: price,
+                stockMaximo:  p.cantidad !== undefined ? Number(p.cantidad) : (p.stock !== undefined ? Number(p.stock) : 999),
+              };
+            });
         } catch (errProd) {
           console.warn('useEditarMantenimiento: no se pudieron cargar productos:', errProd?.message);
         }
@@ -149,7 +158,6 @@ export function useEditarMantenimiento({ id, onNavigateToDetail, onNavigateToMai
         }
 
       } catch (err) {
-        console.error('useEditarMantenimiento.cargar:', err?.message || err);
         if (activo) setErrorCarga(MENSAJES_ERROR_CARGA.errorCargarTicket);
       } finally {
         if (activo) setCargando(false);
@@ -319,7 +327,6 @@ export function useEditarMantenimiento({ id, onNavigateToDetail, onNavigateToMai
         alertaMensaje: ALERTAS_NOTIFICACIONES.exitoEditarTicket(ticketOriginal?.id),
       });
     } catch (e) {
-      console.error('Error al actualizar ticket:', e?.response?.data || e?.message || e);
       const mensajeError = e?.response?.data?.error || e?.response?.data?.message || e?.message || TEXTOS_MODAL_AGREGAR.errorEditarTicket(ticketOriginal?.id);
       setAlertaServidor(mensajeError);
     }

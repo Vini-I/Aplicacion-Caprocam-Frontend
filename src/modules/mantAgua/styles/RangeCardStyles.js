@@ -4,7 +4,7 @@
  * ============================================================
  *
  * Descripción:
- * Estilos para RangeCard, separando layout de la tarjeta, botones de paso (-/+) con hold y controles internos.
+ * Estilos para RangeCard, separando layout de la tarjeta en 2 filas responsivas (header/badge superior y slider a ancho completo inferior).
  *
  * @dependencies StyleSheet, COLORS, TYPOGRAPHY
  * @validations N/A
@@ -13,12 +13,14 @@
 
 import { StyleSheet } from 'react-native';
 import { COLORS } from '../../../theme/colors';
+import { TYPOGRAPHY } from '../../../theme/typography';
 
 export const cardStyles = StyleSheet.create({
   card: {
     backgroundColor: COLORS.white,
-    borderRadius: 14,
+    borderRadius: 16,
     padding: 16,
+    marginBottom: 16,
     shadowColor: COLORS.black,
     shadowOpacity: 0.05,
     shadowRadius: 8,
@@ -30,147 +32,165 @@ export const cardStyles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 14,
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.surface,
   },
   cardHeaderLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
+    flexShrink: 1,
+  },
+  cardHeaderRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  headerTimeWrap: {
+    marginBottom: 0,
+  },
+  headerTimeInput: {
+    minHeight: 32,
+    paddingVertical: 2,
+    paddingLeft: 8,
+    paddingRight: 4,
+    borderRadius: 8,
+    backgroundColor: COLORS.surface,
+    borderColor: COLORS.secondary,
+  },
+  headerTimeText: {
+    fontSize: 12,
   },
 });
 
 export const innerStyles = StyleSheet.create({
-  readingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 22,
-    gap: 10,
+  readingItem: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: COLORS.secondary,
   },
 
-  numBadge: {
+  readingTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+
+  labelWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+
+  readingActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+
+  readingDataRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 10,
+    marginBottom: 10,
+  },
+
+  labelCircle: {
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: COLORS.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-  // ─── Etiqueta izquierda (sol/luna o numérica) ───────────────
-  labelWrap: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: 40,
-  },
-  labelCircle: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
     borderWidth: 1.5,
     borderColor: COLORS.primaryLight,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: COLORS.white,
   },
+
   labelText: {
-    marginTop: 2,
+    marginLeft: 2,
   },
 
-  // ─── Botones de paso +/- con Hold ───────────────────────────
+  readingTopRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flexWrap: 'wrap',
+  },
+
+  timeInputWrap: {
+    marginBottom: 0,
+  },
+
+  timeInput: {
+    height: 36,
+    paddingVertical: 0,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+    borderWidth: 1.5,
+    borderColor: COLORS.secondary,
+    backgroundColor: COLORS.white,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  timeText: {
+    fontSize: 13.5,
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
+    color: COLORS.textPrimary,
+  },
+
+  valueBadge: {
+    height: 36,
+    paddingVertical: 0,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    backgroundColor: COLORS.white,
+    borderWidth: 1.5,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  sliderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 2,
+    gap: 4,
+  },
+
   stepHoldBtn: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     backgroundColor: COLORS.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 8,
   },
 
-  // ─── Botón circular de agregar (reemplaza al antiguo stepBtn +) ──
   stepBtn: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 0,
     paddingHorizontal: 0,
-    marginTop: 0,
   },
-  stepBtnIdle: { backgroundColor: COLORS.primary },
 
-  // ─── Botón de eliminar lectura ──────────────────────────────
+  stepBtnIdle: {
+    backgroundColor: COLORS.primary,
+  },
+
   iconBtn: {
     backgroundColor: 'transparent',
     paddingVertical: 0,
     paddingHorizontal: 0,
-    marginTop: 0,
-    marginLeft: 2,
     borderWidth: 0,
     borderColor: COLORS.transparent,
-  },
-
-  // ─── Valor de lectura a la derecha del slider ───────────────
-  rightValueWrap: {
-    minWidth: 64,
-    alignItems: 'flex-end',
-  },
-
-  rightContainer: {
-    marginLeft: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-  rightValue: {
-    fontWeight: '700',
-    marginBottom: 6,
-  },
-
-  smallCircleBtn: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: COLORS.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 6,
-  },
-
-  smallCircleBtnDelete: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: COLORS.error,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-  // ─── Input de valor ────────────────────────────────────────
-  valueRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-
-  valueInput: {
-    fontSize: 15,
-    fontWeight: '700',
-    minWidth: 36,
-    maxWidth: 64,
-    margin: 0,
-    borderWidth: 0,
-    borderRadius: 0,
-    backgroundColor: 'transparent',
-    padding: 0,
-    paddingVertical: 0,
-    paddingHorizontal: 0,
-    borderBottomColor: COLORS.primary,
-
-  },
-
-  valueInputContainer: {
-    marginBottom: 0,
-    flex: 1,
   },
 });

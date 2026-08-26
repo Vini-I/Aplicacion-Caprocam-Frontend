@@ -1,61 +1,80 @@
 /**
- * ============================================================
- * PANTALLA LISTADO DE PROVEEDORES
- * ============================================================
- *
- * Pantalla principal del módulo de proveedores.
+ * ProveedorScreen.jsx
+ * Pantalla principal que lista los proveedores con filtros y búsqueda.
  *
  * FUNCIONALIDAD:
- * 1. Muestra el listado de proveedores en cards (avatar, nombre, tipo,
- *    teléfono, correo).
- * 
- * 2. Permite buscar por texto y filtrar por tipo de producto.
- * 
- * 3. "Ver Detalle" navega a
- *    /(drawer)/proveedores/detalleProveedor?id=.
- * 
- * 4. "Agregar proveedor" navega a
- *    /(drawer)/proveedores/nuevoProveedor.
- * 
- * 5. Muestra un EmptyState cuando no hay resultados para la búsqueda o
- *    los filtros aplicados.
+ * - Lista de tarjetas con la información básica de cada proveedor.
+ * - Contiene la barra de búsqueda y botón de filtro.
  *
- * IMPORTANTE:
- * - Es una pantalla de solo lectura/listado, sin formulario.
- * - El filtro y la búsqueda no modifican datos.
+ * REGLAS IMPORTANTES:
+ * - Renderiza botón flotante para agregar en la parte inferior.
+ * - Pantalla de solo lectura; la lógica de búsqueda está en el hook.
+ *
+ * @dependencies - React, Componentes UI, FilterButton, useProveedorScreen
+ * @validations - N/A
+ * @navigation - N/A (delegado a la ruta vía props onDetail, onNew)
  */
 import React from "react";
 import { View, ScrollView } from "react-native";
-import { useRouter } from "expo-router";
 
-import Card from "../../../shared/components/Card";
+import CardPress from "../../../shared/components/CardPress";
 import Button from "../../../shared/components/Button";
 import Icon from "../../../shared/components/Icons";
 import CustomText from "../../../shared/components/Text";
 import SearchBar from "../../../shared/components/SearchBar";
 import FilterButton from "../../../shared/components/FilterButton";
 import EmptyState from "../../../shared/components/EmptyState";
+import Alert from "../../../shared/components/Alert";
+import Spinner from "../../../shared/components/Spinner";
 
+import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
 import { STYLE } from "../../../theme/style";
 import { styles, ICON_STYLES } from "../styles/ProveedorStyles";
 import { useProveedorScreen } from "../hooks/useProveedorScreen";
 import { formatearTelefono } from "../utils/contactValidators";
 
-export default function ProveedorScreen() {
-  const router = useRouter();
+export default function ProveedorScreen({ onDetail, onNew }) {
   const {
     proveedoresFiltrados,
     busqueda,
     setBusqueda,
     filtros,
-    TIPOS,
+    tipos,
     handleAplicarFiltros,
+    alert,
+    cargando,
+    recargar,
   } = useProveedorScreen();
 
   return (
-    <ScrollView style={STYLE.container} ScrollView showsVerticalScrollIndicator={false}>
-      <View style={STYLE.contentWrapper}>
+    <View style={STYLE.container}>
+      <ScrollView 
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContainer}
+      >
+        <View style={STYLE.contentWrapper}>
+          {alert === "created" && (
+            <Alert
+              variant="success"
+              message="Proveedor registrado correctamente"
+              style={styles.alertSuccess}
+            />
+          )}
+          {alert === "edited" && (
+            <Alert
+              variant="success"
+              message="Proveedor editado correctamente"
+              style={styles.alertSuccess}
+            />
+          )}
+          {alert === "deleted" && (
+            <Alert
+              variant="success"
+              message="Proveedor eliminado correctamente"
+              style={styles.alertSuccess}
+            />
+          )}
         <View style={styles.barraBusqueda}>
           <SearchBar
             value={busqueda}
@@ -64,7 +83,7 @@ export default function ProveedorScreen() {
             containerStyle={styles.searchBarContainer}
           />
           <FilterButton
-            categories={TIPOS}
+            categories={tipos}
             activeFilters={{
               categories: filtros.tipos,
               suppliers: [],
@@ -86,71 +105,73 @@ export default function ProveedorScreen() {
             : "proveedores encontrados"}
         </CustomText>
 
-        {proveedoresFiltrados.length === 0 && (
+        {cargando ? (
+          <Spinner text="Cargando proveedores..." style={styles.spinner} />
+        ) : proveedoresFiltrados.length === 0 ? (
           <EmptyState
             title="Sin proveedores"
             description="No se encontraron proveedores con esa búsqueda."
           />
+        ) : (
+          proveedoresFiltrados.map((proveedor) => (
+            <CardPress
+              key={proveedor.id}
+              style={styles.card}
+              onPress={() => onDetail(proveedor.id)}
+            >
+              <View style={styles.cardHeader}>
+                <View style={styles.avatar}>
+                  <CustomText style={styles.avatarText}>
+                    {proveedor.iniciales}
+                  </CustomText>
+                </View>
+
+                <View style={styles.providerInfo}>
+                  <CustomText style={styles.providerName}>
+                    {proveedor.nombre}
+                  </CustomText>
+                  <CustomText style={styles.providerType}>
+                    {proveedor.tipoProducto}
+                  </CustomText>
+                </View>
+
+                <Icon
+                  icon={ICONS.growth}
+                  color={ICON_STYLES.verDetalle?.color || COLORS.primary}
+                />
+              </View>
+
+              <View style={styles.contactTitleRow}>
+                <Icon icon={ICONS.phone} color={ICON_STYLES.phone.color} />
+                <CustomText style={styles.contactTitle}>Contacto</CustomText>
+              </View>
+
+              <View style={styles.contactRow}>
+                <CustomText style={styles.contactText}>
+                  {formatearTelefono(proveedor.telefono)}
+                </CustomText>
+              </View>
+
+              <View style={styles.contactRow}>
+                <CustomText style={styles.contactText}>{proveedor.correo}</CustomText>
+              </View>
+            </CardPress>
+          ))
         )}
+        </View>
+      </ScrollView>
 
-        {proveedoresFiltrados.map((proveedor) => (
-          <Card key={proveedor.id} style={styles.card}>
-            <View style={styles.cardHeader}>
-              <View style={styles.avatar}>
-                <CustomText style={styles.avatarText}>
-                  {proveedor.iniciales}
-                </CustomText>
-              </View>
-
-              <View style={styles.providerInfo}>
-                <CustomText style={styles.providerName}>
-                  {proveedor.nombre}
-                </CustomText>
-                <CustomText style={styles.providerType}>
-                  {proveedor.tipoProducto}
-                </CustomText>
-              </View>
-
-              <Button
-                onPress={() =>
-                  router.push({
-                    pathname: "/(drawer)/proveedores/detalleProveedor",
-                    params: { id: proveedor.id.toString() },
-                  })
-                }
-                style={styles.btnVerDetalle}
-              >
-                <Icon icon={ICONS.growth} color={ICON_STYLES.verDetalle.color} />
-                <CustomText style={styles.btnVerDetalleText}>Ver Detalle</CustomText>
-              </Button>
-            </View>
-
-            <View style={styles.contactTitleRow}>
-              <Icon icon={ICONS.phone} color={ICON_STYLES.phone.color} />
-              <CustomText style={styles.contactTitle}>Contacto</CustomText>
-            </View>
-
-            <View style={styles.contactRow}>
-              <CustomText style={styles.contactText}>
-                {formatearTelefono(proveedor.telefono)}
-              </CustomText>
-            </View>
-
-            <View style={styles.contactRow}>
-              <CustomText style={styles.contactText}>{proveedor.correo}</CustomText>
-            </View>
-          </Card>
-        ))}
-
-        <Button
-          variant="ghost"
-          onPress={() => router.push("/(drawer)/proveedores/nuevoProveedor")}
-          style={styles.btnAgregar}
-        >
-          <Icon icon={ICONS.add} color={ICON_STYLES.add.color} />
-          <CustomText style={styles.btnAgregarText}>Agregar proveedor</CustomText>
-        </Button>
+      <View style={styles.floatingButtonWrapper} pointerEvents="box-none">
+        <View style={STYLE.contentWrapper}>
+          <Button
+            onPress={onNew}
+            style={styles.btnAgregar}
+          >
+            <Icon icon={ICONS.add} color={ICON_STYLES.add.color} />
+            <CustomText style={styles.btnAgregarText}>Añadir Proveedor</CustomText>
+          </Button>
+        </View>
       </View>
-    </ScrollView>
+    </View>
   );
 }

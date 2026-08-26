@@ -23,6 +23,35 @@ const rolMapToId = {
   external_worker: 3,
 };
 
+function construirErrorHttp(error, mensajeGenerico) {
+  const status = error?.response?.status;
+  const mensaje = error?.response?.data?.message || error?.response?.data?.error || error?.message;
+  if (status === 500) {
+    return new Error(mensajeGenerico);
+  }
+  if (status) {
+    const err = new Error(mensaje || mensajeGenerico);
+    err.status = status;
+    return err;
+  }
+
+  return new Error(mensajeGenerico);
+}
+
+function esErrorDuplicadoColaborador(error) {
+  const status = error?.response?.status;
+  const mensaje = `${error?.response?.data?.message || ''} ${error?.response?.data?.error || ''} ${error?.message || ''}`.toLowerCase();
+
+  return (
+    status === 409 ||
+    mensaje.includes('duplicate entry') ||
+    mensaje.includes('duplicate') ||
+    mensaje.includes('uq_colaborador_usuario_grupo') ||
+    mensaje.includes('colaborador_usuario_grupo') ||
+    mensaje.includes('unique')
+  );
+}
+
 // ─── MAPEO BACKEND → FRONTEND ──────────────────────────────────────
 function mapBackendToFrontend(data) {
   // IMPORTANTE: el backend no es 100% consistente con el formato de sus
@@ -145,15 +174,7 @@ async function getColaboradores(filtros = {}) {
 
     return data.map(mapBackendToFrontend);
   } catch (error) {
-    // Si es un error de red (sin respuesta del servidor), mostrar mensaje en español
-    if (!error.response) {
-      throw new Error("No se pudieron obtener los colaboradores.");
-    }
-    const message =
-      error.response?.data?.message ||
-      error.message ||
-      "Error al obtener colaboradores";
-    throw new Error(message);
+    throw construirErrorHttp(error, "No se pudieron obtener los colaboradores");
   }
 }
 
@@ -167,14 +188,7 @@ async function getColaboradorById(id) {
     if (!data) throw new Error("Colaborador no encontrado");
     return mapBackendToFrontend(data);
   } catch (error) {
-    if (!error.response) {
-      throw new Error("No se pudo cargar el colaborador.");
-    }
-    const message =
-      error.response?.data?.message ||
-      error.message ||
-      "Error al obtener colaborador";
-    throw new Error(message);
+    throw construirErrorHttp(error, "No se pudo cargar el colaborador");
   }
 }
 
@@ -185,7 +199,7 @@ async function getColaboradorById(id) {
  */
 async function createColaborador(data) {
   try {
-    const pin = String(Math.floor(1000 + Math.random() * 9000));
+    const pin = data.pin || String(data.pin);
     const payload = prepareForBackend(data, pin);
     if (!payload) {
       throw new Error("No se pudo preparar los datos del colaborador.");
@@ -197,42 +211,37 @@ async function createColaborador(data) {
       pin,
     };
   } catch (error) {
-    if (!error.response) {
-      throw new Error("No se pudo crear el colaborador.");
+    if (esErrorDuplicadoColaborador(error)) {
+      throw construirErrorHttp(error, "Ya existe un colaborador con esa cedula");
     }
-    const errorData = error.response?.data;
-    const errorMessage = errorData?.message || error.message || "Error al crear colaborador";
-    const errorDetail = errorData?.error || errorData?.errors;
-
-    if (typeof errorDetail === "string" && errorDetail.includes("cedula")) {
-      throw new Error("Colaborador ya existente.");
-    }
-    throw new Error(errorMessage);
+    throw construirErrorHttp(error, "No se pudo crear el colaborador");
   }
 }
 
 /**
  * Actualiza un colaborador existente.
- * Si se proporciona un nuevo PIN, se envía en pinHash.
+ * Si el objeto `data` contiene un campo `pin`, se usa para actualizar el PIN.
+ * El PIN debe ser un string de 4 dígitos.
  */
-async function updateColaborador(id, data, newPin = null) {
+async function updateColaborador(id, data) {
   try {
-    const payload = prepareForBackend(data, newPin);
+    // Extraer el PIN del objeto data si existe
+    const { pin, ...restData } = data;
+
+    // Si hay PIN, lo pasamos a prepareForBackend; si no, null.
+    const payload = prepareForBackend(restData, pin || null);
     if (!payload) {
       throw new Error("No se pudo preparar los datos del colaborador.");
     }
-    if (!newPin) delete payload.pinHash;
+    // Si no se proporcionó PIN, eliminamos pinHash del payload para que no se actualice.
+    if (!pin) {
+      delete payload.pinHash;
+    }
+
     const response = await api.put(`/colaboradores/${id}`, payload);
     return mapBackendToFrontend(response.data.data);
   } catch (error) {
-    if (!error.response) {
-      throw new Error("No se pudo actualizar el colaborador.");
-    }
-    const message =
-      error.response?.data?.message ||
-      error.message ||
-      "Error al actualizar colaborador";
-    throw new Error(message);
+    throw construirErrorHttp(error, "No se pudo actualizar el colaborador");
   }
 }
 
@@ -244,39 +253,7 @@ async function deleteColaborador(id) {
     const response = await api.delete(`/colaboradores/${id}`);
     return response.data.data ? true : false;
   } catch (error) {
-    if (!error.response) {
-      throw new Error("No se pudo eliminar el colaborador.");
-    }
-    const message =
-      error.response?.data?.message ||
-      error.message ||
-      "Error al eliminar colaborador";
-    throw new Error(message);
-  }
-}
-
-/**
- * Restablece el PIN de un colaborador.
- * @param {string|number} id - ID del colaborador.
- * @returns {Promise<{message: string}>}
- */
-async function resetPin(id) {
-  try {
-    // Simulación: esperar 1 segundo y devolver éxito
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    return { message: "PIN restablecido correctamente" };
-    // Cuando el backend esté listo, descomentar:
-    // const response = await api.post(`/colaboradores/${id}/reset-pin`);
-    // return response.data;
-  } catch (error) {
-    if (!error.response) {
-      throw new Error("No se pudo restablecer el PIN.");
-    }
-    const message =
-      error.response?.data?.message ||
-      error.message ||
-      "Error al restablecer el PIN";
-    throw new Error(message);
+    throw construirErrorHttp(error, "No se pudo eliminar el colaborador");
   }
 }
 
@@ -294,7 +271,7 @@ async function getEstadisticasColaborador(colaboradorId) {
       ultimaActividad: null,
     };
   } catch (error) {
-    throw new Error("Error al obtener estadísticas del colaborador");
+    throw construirErrorHttp(error, "No se pudieron obtener las estadísticas del colaborador");
   }
 }
 
@@ -305,7 +282,7 @@ async function getTrabajadoresByOwner(ownerId) {
   try {
     return [];
   } catch (error) {
-    throw new Error("Error al obtener trabajadores del dueño");
+    throw construirErrorHttp(error, "No se pudieron obtener los trabajadores asociados al dueño");
   }
 }
 
@@ -317,7 +294,6 @@ export const colaboradoresService = {
   createColaborador,
   updateColaborador,
   deleteColaborador,
-  resetPin,
   getEstadisticasColaborador,
   getTrabajadoresByOwner,
 };

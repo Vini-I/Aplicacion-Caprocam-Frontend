@@ -16,6 +16,7 @@ import Spinner from "../../../shared/components/Spinner";
 import Button from "../../../shared/components/Button";
 import Icon from "../../../shared/components/Icons";
 import CustomText from "../../../shared/components/Text";
+import { useError } from "../../../shared/context/ErrorContext";
 import Alert from "../../../shared/components/Alert";
 import SearchBar from "../../../shared/components/SearchBar";
 import FilterButton from "../../../shared/components/FilterButton";
@@ -43,6 +44,7 @@ export default function TareasScreen() {
     opcionesCategoria,
   } = useTareas();
 
+  
   const params = useLocalSearchParams();
   const handleAgregar = () => router.push("/mantenimientoEquipo/tareas/tareaForm");
   const abrirDetalle = (tarea) =>
@@ -65,11 +67,7 @@ export default function TareasScreen() {
   }
 
   if (error) {
-    return (
-      <View style={[STYLE.container, styles.centerContainer]}>
-        <CustomText style={styles.errorTextLine}>Error: {error}</CustomText>
-      </View>
-    );
+    return mostrarError(error);
   }
 
   return (
@@ -113,37 +111,31 @@ export default function TareasScreen() {
               </CustomText>
             </View>
           ) : (
-            <FlatList
-              data={tareasFinales}
-              keyExtractor={(item, index) => `${item.id}_${index}`}
-              renderItem={({ item }) => (
-                <CardPress
-                  style={styles.taskCard}
-                  onPress={() => abrirDetalle(item)}
-                >
-                  <View style={styles.taskCardHeader}>
-                    <CustomText style={styles.taskTitle}>
-                      Tarea {item.id}
-                    </CustomText>
-
-                    <BadgeCategoria categoria={item.categoria} />
-                  </View>
-                  <CustomText style={styles.taskCardTitle} numberOfLines={2}>
-                    {item.nombre}
+            tareasFinales.map((item, index) => (
+              <CardPress
+                key={`${item.id}_${index}`}
+                style={styles.taskCard}
+                onPress={() => abrirDetalle(item)}
+              >
+                <View style={styles.taskCardHeader}>
+                  <CustomText style={styles.taskTitle}>
+                    Tarea {item.id}
                   </CustomText>
 
-                  {/* Descripción mostrada solo en detalle */}
-                  <View style={styles.taskCardFooter}>
-                    <CustomText style={styles.taskCardMeta}>
-                      Duración de {item.duracionEstimada} h
-                    </CustomText>
-                  </View>
-                </CardPress>
-              )}
-              scrollEnabled
-              style={styles.flatList}
-              contentContainerStyle={styles.flatListContent}
-            />
+                  <BadgeCategoria categoria={item.categoria} />
+                </View>
+                <CustomText style={styles.taskCardTitle} numberOfLines={2}>
+                  {item.nombre}
+                </CustomText>
+
+                {/* Descripción mostrada solo en detalle */}
+                <View style={styles.taskCardFooter}>
+                  <CustomText style={styles.taskCardMeta}>
+                    Duración de {item.duracionEstimada} h
+                  </CustomText>
+                </View>
+              </CardPress>
+            ))
           )}
         </View>
       </View>

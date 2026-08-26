@@ -69,7 +69,7 @@ export default function useEditarEstanque(codigoCBO, id) {
 
       } catch (error) {
         setTipoMensaje("danger");
-        setMensaje("No se pudo cargar el estanque");
+        setMensaje(error.message);
      } finally {
         setLoading(false);
       }
@@ -131,7 +131,11 @@ export default function useEditarEstanque(codigoCBO, id) {
       return;
     }
 
-    const estanque = await buscarEstanque(id);
+    if (!estanqueOriginal) {
+      setTipoMensaje("danger");
+      setMensaje("No se pudo cargar la información del estanque.");
+      return;
+    }
 
     const EstanqueEditadoDTO = {
       idFinca: estanqueOriginal.idFinca,
@@ -153,19 +157,16 @@ export default function useEditarEstanque(codigoCBO, id) {
       setMensaje("Cambios guardados correctamente");
 
       router.push({
-        pathname: `/finca/detalle?id=${estanque.idFinca}`,
+        pathname: `/finca/detalle?id=${estanqueOriginal.idFinca}`,
       });
     } catch (error) {
       setTipoMensaje("danger");
-      setMensaje(
-        error.response?.data?.message || "Error al guardar los cambios",
-      );
+      setMensaje(error.message);
     }
   }
 
 
   return {
-    finca,
     loading,
     estanqueOriginal,
 
@@ -188,6 +189,5 @@ export default function useEditarEstanque(codigoCBO, id) {
     errores,
     displayErrorMessage: mensaje || null,
     displayErrorVariant: tipoMensaje || null,
-
   };
 }

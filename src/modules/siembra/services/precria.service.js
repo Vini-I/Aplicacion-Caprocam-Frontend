@@ -23,7 +23,6 @@ export const getPrecrias = async () => {
     const response = await api.get("/precrias");
     return response.data.data;
   } catch (error) {
-    console.error("Error al obtener pre-crías:", error);
     throw error;
   }
 };
@@ -36,7 +35,6 @@ export const getPrecriaById = async (id) => {
     const response = await api.get(`/precrias/${id}`);
     return response.data.data;
   } catch (error) {
-    console.error("Error al obtener pre-cría:", error);
     throw error;
   }
 };
@@ -49,10 +47,6 @@ export const createPrecria = async (precriaDTO) => {
     const response = await api.post("/precrias", precriaDTO);
     return response.data.data;
   } catch (error) {
-    console.error(
-      "Error al crear pre-cría:",
-      error.response?.data || error.message,
-    );
     throw error;
   }
 };
@@ -65,10 +59,6 @@ export const updatePrecria = async (id, precriaDTO) => {
     const response = await api.put(`/precrias/${id}`, precriaDTO);
     return response.data.data;
   } catch (error) {
-    console.error(
-      "Error al actualizar pre-cría:",
-      error.response?.data || error.message,
-    );
     throw error;
   }
 };
@@ -84,10 +74,6 @@ export const finalizarPrecria = async (id, finalizarPrecriaDTO) => {
     );
     return response.data.data;
   } catch (error) {
-    console.error(
-      "Error al finalizar pre-cría:",
-      error.response?.data || error.message,
-    );
     throw error;
   }
 };
@@ -100,10 +86,18 @@ export const eliminarPrecria = async (id) => {
     const response = await api.delete(`/precrias/${id}`);
     return response.data.data;
   } catch (error) {
-    console.error(
-      "Error al eliminar pre-cría:",
-      error.response?.data || error.message,
-    );
+    throw error;
+  }
+};
+
+/*
+CREAR LOTE + PRE-CRÍA EN UNA SOLA PETICIÓN (evita el lote huérfano)
+*/
+export const createPrecriaConLote = async (precriaConLoteDTO) => {
+  try {
+    const response = await api.post("/precrias/con-lote", precriaConLoteDTO);
+    return response.data.data; // { lote, precria }
+  } catch (error) {
     throw error;
   }
 };

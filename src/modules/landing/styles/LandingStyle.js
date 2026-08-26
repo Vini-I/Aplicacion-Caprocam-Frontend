@@ -58,7 +58,7 @@ export const styles = StyleSheet.create({
   },
 
   scrollContent: {
-    paddingBottom: 36,
+    flexGrow: 1,
   },
   /*
   ============================================================
@@ -88,6 +88,8 @@ export const styles = StyleSheet.create({
 
   headerInnerMobile: {
     position: "relative",
+    width: "94%",
+    gap: 8,
     paddingVertical: 12,
   },
 
@@ -107,6 +109,11 @@ export const styles = StyleSheet.create({
     fontSize: 20,
     color: COLORS.textSecondary,
     letterSpacing: 0.6,
+  },
+
+  brandTextMobile: {
+    fontSize: 16,
+    letterSpacing: 0.2,
   },
 
   nav: {
@@ -179,6 +186,9 @@ export const styles = StyleSheet.create({
   loginButtonMobile: {
     order: 2,
     marginLeft: "auto",
+    minHeight: 40,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
   },
 
   loginButtonText: {
@@ -203,7 +213,13 @@ export const styles = StyleSheet.create({
   },
 
   heroMobile: {
-    minHeight: 790,
+    minHeight: 760,
+    backgroundColor: COLORS.textSecondary,
+  },
+
+  heroTablet: {
+    minHeight: 700,
+    backgroundColor: COLORS.textSecondary,
   },
 
   heroImage: {
@@ -211,6 +227,7 @@ export const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
   },
+
 
   heroGradient: {
     ...StyleSheet.absoluteFillObject,
@@ -220,7 +237,7 @@ export const styles = StyleSheet.create({
   heroDarkLayer: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: COLORS.black,
-    opacity: 0.08,
+    opacity: 0.03,
     zIndex: 2,
   },
 
@@ -236,9 +253,14 @@ export const styles = StyleSheet.create({
   },
 
   heroContentMobile: {
-    width: "90%",
-    paddingTop: 45,
-    paddingBottom: 115,
+    width: "92%",
+    paddingTop: 32,
+    paddingBottom: 92,
+  },
+
+  heroContentTablet: {
+    paddingTop: 44,
+    paddingBottom: 95,
   },
 
   heroBadge: {
@@ -252,7 +274,7 @@ export const styles = StyleSheet.create({
     borderColor: COLORS.white,
     borderRadius: 24,
     backgroundColor: "rgba(255, 255, 255, 0.14)",
-    marginBottom: 24,
+    marginBottom: 18,
   },
 
   heroBadgeText: {
@@ -314,7 +336,7 @@ export const styles = StyleSheet.create({
 
   heroButton: {
     minHeight: 53,
-    marginTop: 30,
+    marginTop: 22,
     paddingHorizontal: 29,
     paddingVertical: 12,
     borderWidth: 2,
@@ -333,7 +355,7 @@ export const styles = StyleSheet.create({
     width: "100%",
     maxWidth: 720,
     minHeight: 100,
-    marginTop: 48,
+    marginTop: 34,
     paddingHorizontal: 20,
     paddingVertical: 17,
     borderWidth: 1,
@@ -349,8 +371,8 @@ export const styles = StyleSheet.create({
     width: "100%",
     maxWidth: 340,
     flexDirection: "column",
-    gap: 13,
-    paddingVertical: 20,
+    gap: 8,
+    paddingVertical: 14,
   },
 
   statGroup: {
@@ -394,14 +416,17 @@ export const styles = StyleSheet.create({
 
   carouselIndicators: {
     flexDirection: "row",
+    flexWrap: "wrap",
     alignItems: "center",
     justifyContent: "center",
+    maxWidth: 520,
+    alignSelf: "center",
     marginTop: 20,
   },
 
   carouselIndicatorButton: {
-    paddingHorizontal: 4,
-    paddingVertical: 8,
+    paddingHorizontal: 3,
+    paddingVertical: 5,
   },
 
   carouselDot: {
@@ -546,6 +571,15 @@ export const styles = StyleSheet.create({
     minWidth: 290,
   },
 
+  aboutTextColumnStacked: {
+    flex: 0,
+    flexGrow: 0,
+    flexShrink: 0,
+    flexBasis: "auto",
+    width: "100%",
+    minWidth: 0,
+  },
+
   paragraph: {
     fontFamily: TYPOGRAPHY.fontFamily.regular,
     fontSize: 15,
@@ -563,6 +597,9 @@ export const styles = StyleSheet.create({
   },
 
   benefitsGridMobile: {
+    flex: 0,
+    flexGrow: 0,
+    flexShrink: 0,
     minWidth: 0,
     width: "100%",
   },
@@ -580,7 +617,9 @@ export const styles = StyleSheet.create({
 
   cardFullWidth: {
     width: "100%",
-    flexBasis: "100%",
+    flexGrow: 0,
+    flexShrink: 0,
+    flexBasis: "auto",
     minHeight: 120,
   },
 
@@ -862,9 +901,29 @@ export const styles = StyleSheet.create({
     gap: 35,
   },
 
+  footerColumnsTablet: {
+    flexWrap: "wrap",
+    justifyContent: "flex-start",
+    columnGap: 32,
+    rowGap: 36,
+  },
+
   footerColumn: {
     flex: 1,
     minWidth: 220,
+  },
+
+  footerColumnTablet: {
+    flexBasis: "45%",
+  },
+
+  footerColumnMobile: {
+    flex: 0,
+    flexGrow: 0,
+    flexShrink: 0,
+    flexBasis: "auto",
+    width: "100%",
+    minWidth: 0,
   },
 
   footerTitle: {
@@ -996,7 +1055,12 @@ export const styles = StyleSheet.create({
   },
 
   footerBottomMobile: {
-    flexDirection: "column",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
+    justifyContent: "space-between",
+    columnGap: 20,
+    rowGap: 10,
   },
 
   copyright: {
@@ -1005,18 +1069,32 @@ export const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 20,
     color: COLORS.textQuaternary,
-    textAlign: "center",
+    textAlign: "left",
   },
 
   footerLinks: {
     flexDirection: "row",
-    justifyContent: "center",
+    justifyContent: "flex-end",
     gap: 20,
+  },
+
+  footerLinkButton: {
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+
+  footerLinkButtonPressed: {
+    opacity: 0.85,
   },
 
   footerLink: {
     fontFamily: TYPOGRAPHY.fontFamily.medium,
     fontSize: 13,
     color: COLORS.textQuaternary,
+  },
+
+  footerLinkActive: {
+    color: COLORS.white,
   },
 });

@@ -13,8 +13,6 @@
  * - Select de aireador requerido solo cuando aplica.
  */
 
-
-import React from "react";
 import { ScrollView, View } from "react-native";
 
 import useNuevoEstanque from "../hooks/useNuevoEstanque";
@@ -38,13 +36,12 @@ import {
   FUENTES_AGUA,
   OPCIONES_PRECRIA,
   TIPOS_ESTANQUE,
-  validarFormularioEstanque,
 } from "../hooks/useEstanque";
 
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
 
-export default function NuevoEstanqueScreen({ codigoCBO }) {
+export default function NuevoEstanqueScreen({ codigoCBO, id }) {
   const {
     finca,
 
@@ -66,7 +63,6 @@ export default function NuevoEstanqueScreen({ codigoCBO }) {
 
     registrarEstanque,
     displayErrorMessage,
-    displayErrorVariant,
   } = useNuevoEstanque({ codigoCBO });
 
   return (
@@ -75,6 +71,7 @@ export default function NuevoEstanqueScreen({ codigoCBO }) {
         Titulo="Nuevo Estanque"
         Subtitulo={`${finca?.nombreFinca ?? "Cargando..."}`}
         Icono="water"
+        RutaVolver={`/finca/detalle?id=${id}`}
       />
 
       <ScrollView style={STYLE.container} showsVerticalScrollIndicator={false}>
@@ -194,6 +191,7 @@ export default function NuevoEstanqueScreen({ codigoCBO }) {
             
             <DateInput
               label="Fecha último mantenimiento"
+              allowFutureDates={false}
               required={true} 
               value={fechaMantenimiento}
               onChangeText={setFechaMantenimiento}
@@ -202,7 +200,7 @@ export default function NuevoEstanqueScreen({ codigoCBO }) {
             />
 
             <Select
-              label="Se usa precria"
+              label="¿Se usa precria?"
               required={true}
               submitted={submitted}
               options={OPCIONES_PRECRIA}
@@ -216,8 +214,8 @@ export default function NuevoEstanqueScreen({ codigoCBO }) {
           
           {displayErrorMessage && (
             <Alert
-              variant={displayErrorVariant}
-              message={displayErrorMessage}
+              variant={tipoMensaje}
+              message={mensaje}
               style={styles.alert}
               textStyle={styles.alertText}
             />

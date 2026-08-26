@@ -47,6 +47,16 @@ export const ICONS = {
     provider: "AntDesign",
     name: "arrow-left",
   },
+
+  // Visibilidad / contraseña
+  eye: {
+    provider: "Ionicons",
+    name: "eye-outline",
+  },
+  eyeOff: {
+    provider: "Ionicons",
+    name: "eye-off-outline",
+  },
   home: {
     provider: "MaterialIcons",
     name: "home-filled",
@@ -205,6 +215,10 @@ export const ICONS = {
     provider: "Feather",
     name: "trending-up",
   },
+  fertilizer: {
+    provider: "MaterialCommunityIcons",
+    name: "sprout",
+  },
   shrimp: {
     provider: "FontAwesome6",
     name: "shrimp",
@@ -244,6 +258,10 @@ export const ICONS = {
   shieldAlert: {
     provider: "MaterialCommunityIcons",
     name: "shield-alert-outline",
+  },
+  treatment: {
+    provider: "MaterialCommunityIcons",
+    name: "medical-bag",
   },
   mortality: {
     provider: "MaterialCommunityIcons",

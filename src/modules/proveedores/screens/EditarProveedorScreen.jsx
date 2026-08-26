@@ -1,30 +1,20 @@
 /**
- * ============================================================
- * PANTALLA EDITAR PROVEEDOR
- * ============================================================
- *
- * Pantalla para editar la informacion de un proveedor existente.
+ * EditarProveedorScreen.jsx
+ * Pantalla con el formulario para editar un proveedor.
  *
  * FUNCIONALIDAD:
- * 1. Permite modificar tipo de producto, telefono, correo, direccion y
- *    notas (nombre queda de solo lectura).
- * 
- * 2. Tipo de producto, telefono, correo y direccion son obligatorios,
- *    con asterisco visible desde el primer render. Notas es el unico
- *    campo opcional.
- * 
- * 3. Al presionar Guardar proveedor se valida el formulario:
- *    - Cada campo invalido se marca en rojo solo el borde, sin
- *      mensaje ni icono individual debajo del campo.
- *    - Arriba del boton "Guardar proveedor" aparece la alerta general
- *      alerta, centrada.
- * 
- * 4. Si no se modifico ningun campo respecto al proveedor original, no
- *    se guarda: se muestra una alerta de error en su lugar.
+ * - Renderiza el formulario de edición (nombre de solo lectura).
+ * - Muestra un alert de error si la edición falla.
  *
- * IMPORTANTE:
- * - Al guardar exitosamente permanece en la pantalla mostrando la
- *   alerta de exito; no redirige automaticamente a otra ruta.
+ * REGLAS IMPORTANTES:
+ * - Deshabilita la edición del nombre del proveedor (editable=false).
+ * - Delega toda la lógica de negocio al hook.
+ * - Solo construye la pantalla: no usa useRouter, ese vive en app/
+ *   (mismo patrón que las demás pantallas de proveedores y que finca).
+ *
+ * @dependencies - React, Componentes UI, Alert, useEditarProveedorScreen
+ * @validations - Valida campos requeridos y formato numérico en UI
+ * @navigation - N/A (delegado al wrapper de ruta vía prop onProveedor)
  */
 import React from "react";
 import { View, ScrollView } from "react-native";
@@ -36,19 +26,19 @@ import Button from "../../../shared/components/Button";
 import CustomText from "../../../shared/components/Text";
 import Icon from "../../../shared/components/Icons";
 import Alert from "../../../shared/components/Alert";
+import Spinner from "../../../shared/components/Spinner";
 
 import { styles, ICON_STYLES } from "../styles/EditarProveedorStyles";
 import { ICONS } from "../../../theme/icons";
 import { STYLE } from "../../../theme/style";
 import { tiposProducto } from "../services/proveedor.service";
 
-import {
-  useEditarProveedorScreen,
-  TELEFONO_MAX_LENGTH,
-} from "../hooks/useEditarProveedorScreen";
+import { useEditarProveedorScreen, telefonoMaxLength } from "../hooks/useEditarProveedorScreen";
+import { formatearTelefono } from "../utils/contactValidators";
 
-export default function EditarProveedorScreen() {
+export default function EditarProveedorScreen({ onProveedor, id }) {
   const {
+    scrollViewRef,
     nombre,
     tipoProducto,
     setTipoProducto,
@@ -60,17 +50,30 @@ export default function EditarProveedorScreen() {
     setNotas,
     errores,
     alerta,
+    cargando,
     handleTelefonoChange,
     handleCorreoChange,
     guardar,
-  } = useEditarProveedorScreen();
+  } = useEditarProveedorScreen({ onProveedor, id });
+
+  if (cargando) {
+    return (
+      <View style={STYLE.container}>
+        <View style={STYLE.contentWrapper}>
+          <Spinner text="Cargando datos del proveedor..." style={styles.spinner} />
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={STYLE.container}>
       <ScrollView
+        ref={scrollViewRef}
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
+        contentContainerStyle={styles.scrollContainer}
       >
         <View style={STYLE.contentWrapper}>
         <Card style={styles.card}>
@@ -100,11 +103,11 @@ export default function EditarProveedorScreen() {
 
           <Input
             label="Teléfono *"
-            value={telefono}
+            value={formatearTelefono(telefono)}
             onChangeText={handleTelefonoChange}
-            placeholder="+506 2222-3344"
-            keyboardType="phone-pad"
-            maxLength={TELEFONO_MAX_LENGTH}
+            placeholder="Ej: 1234-5678"
+            keyboardType="numeric"
+            maxLength={telefonoMaxLength}
             containerStyle={styles.field}
             style={[styles.input, !!errores.telefono && styles.inputError]}
             labelStyle={styles.label}
@@ -116,6 +119,7 @@ export default function EditarProveedorScreen() {
             onChangeText={handleCorreoChange}
             placeholder="ventas@empresa.com"
             keyboardType="email-address"
+            maxLength={120}
             containerStyle={styles.field}
             style={[styles.input, !!errores.correo && styles.inputError]}
             labelStyle={styles.label}
@@ -126,6 +130,7 @@ export default function EditarProveedorScreen() {
             value={direccion}
             onChangeText={setDireccion}
             placeholder="San José, Costa Rica"
+            maxLength={255}
             containerStyle={styles.field}
             style={[styles.input, !!errores.direccion && styles.inputError]}
             labelStyle={styles.label}
@@ -137,6 +142,7 @@ export default function EditarProveedorScreen() {
             onChangeText={setNotas}
             placeholder="Observaciones adicionales..."
             multiline={true}
+            maxLength={255}
             containerStyle={styles.field}
             style={styles.input}
             labelStyle={styles.label}
@@ -146,7 +152,10 @@ export default function EditarProveedorScreen() {
             <Alert
               variant={alerta.variant}
               message={alerta.message}
-              style={[styles.alertContainer, alerta.variant === "success" && styles.alertSuccess]}
+              style={[
+                styles.alertBox,
+                alerta.variant === "success" && styles.alertSuccess,
+              ]}
               textStyle={styles.alertText}
             />
           )}
@@ -158,7 +167,7 @@ export default function EditarProveedorScreen() {
           >
             <View style={styles.buttonContent}>
               <Icon icon={ICONS.save} color={ICON_STYLES.save.color} />
-              <CustomText style={styles.saveButtonText}>Guardar proveedor</CustomText>
+              <CustomText style={styles.saveButtonText}>Editar Proveedor</CustomText>
             </View>
           </Button>
         </Card>

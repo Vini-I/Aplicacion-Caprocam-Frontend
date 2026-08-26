@@ -1,29 +1,20 @@
 /**
- * ============================================================
- * PANTALLA DETALLE PROVEEDOR
- * ============================================================
- *
- * Muestra la informacion completa de un proveedor y permite editarlo o
- * eliminarlo.
+ * DetalleProveedorScreen.jsx
+ * Pantalla que muestra el detalle de un proveedor.
  *
  * FUNCIONALIDAD:
- * 1. Muestra contacto (telefono, correo, direccion) del proveedor.
- * 
- * 2. Muestra la seccion "Notas adicionales" con su icono solo si el
- *    proveedor tiene notas guardadas; si no hay notas, la seccion se
- *    quita por completo (no se renderiza vacia).
- * 
- * 3. Si el proveedor no existe muestra un EmptyState y un botón
- *    outline "Volver al listado".
- * 
- * 4. Editar navega a /(drawer)/proveedores/editarProveedor?id=.
- * 
+ * - Muestra la información de contacto y notas de un proveedor.
+ * - Renderiza botones de acción (Editar y Eliminar).
  *
- * IMPORTANTE:
- * - Es una pantalla de solo lectura, no aplica validacion de formulario.
+ * REGLAS IMPORTANTES:
+ * - Si no existe el proveedor, muestra un estado vacío (EmptyState).
+ * - Confirmar eliminación abre un modal.
+ *
+ * @dependencies - React, Componentes UI, useDetalleProveedorScreen, Styles
+ * @validations - N/A
+ * @navigation - N/A (delegado a la ruta vía props onVolverAlListado, onEditarProveedor, onEliminado)
  */
 import { View, ScrollView } from "react-native";
-import { useRouter } from "expo-router";
 
 import Icon from "../../../shared/components/Icons";
 import Card from "../../../shared/components/Card";
@@ -33,6 +24,7 @@ import Title from "../../../shared/components/Title";
 import Badge from "../../../shared/components/Badge";
 import ModalEliminar from "../../../shared/components/ModalEliminar";
 import EmptyState from "../../../shared/components/EmptyState";
+import Spinner from "../../../shared/components/Spinner";
 
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
@@ -42,8 +34,11 @@ import { styles } from "../styles/DetalleProveedorStyles";
 import { useDetalleProveedorScreen } from "../hooks/useDetalleProveedorScreen";
 import { formatearTelefono } from "../utils/contactValidators";
 
-export default function DetalleProveedorScreen() {
-  const router = useRouter();
+export default function DetalleProveedorScreen({
+  onVolverAlListado,
+  onEditarProveedor,
+  onEliminado,
+}) {
   const {
     proveedor,
     modalVisible,
@@ -51,7 +46,18 @@ export default function DetalleProveedorScreen() {
     cerrarModal,
     confirmarEliminar,
     getTipoLabel,
-  } = useDetalleProveedorScreen();
+    cargando,
+  } = useDetalleProveedorScreen({ onEliminado });
+
+  if (cargando) {
+    return (
+      <View style={STYLE.container}>
+        <View style={STYLE.contentWrapper}>
+          <Spinner text="Cargando proveedor..." style={styles.spinner} />
+        </View>
+      </View>
+    );
+  }
 
   if (!proveedor) {
     return (
@@ -63,7 +69,7 @@ export default function DetalleProveedorScreen() {
           />
           <Button
             style={styles.volverButton}
-            onPress={() => router.replace("/(drawer)/proveedores/proveedorScreen")}
+            onPress={onVolverAlListado}
           >
             <Icon icon={ICONS.exit} color={COLORS.primary} />
             <CustomText style={styles.volverButtonText}>Volver al listado</CustomText>
@@ -75,9 +81,10 @@ export default function DetalleProveedorScreen() {
 
   return (
     <View style={STYLE.container}>
-      <ScrollView ScrollView showsVerticalScrollIndicator={false}
+      <ScrollView
         style={styles.scroll}
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContainer}
       >
         <View style={STYLE.contentWrapper}>
           <Card style={styles.tarjeta}>
@@ -107,7 +114,9 @@ export default function DetalleProveedorScreen() {
 
               <View style={styles.filaDetalle}>
                 <CustomText style={styles.filaEtiqueta}>Teléfono</CustomText>
-                <CustomText style={styles.filaValor}>{formatearTelefono(proveedor.telefono)}</CustomText>
+                <CustomText style={styles.filaValor}>
+                  {formatearTelefono(proveedor.telefono)}
+                </CustomText>
               </View>
 
               <View style={styles.filaDetalle}>
@@ -139,15 +148,12 @@ export default function DetalleProveedorScreen() {
           <View style={styles.botones}>
             <Button
               style={[styles.boton, styles.botonEditar]}
-              onPress={() =>
-                router.push({
-                  pathname: "/(drawer)/proveedores/editarProveedor",
-                  params: { id: proveedor.id.toString() },
-                })
-              }
+              onPress={() => onEditarProveedor(proveedor.id)}
             >
               <Icon icon={ICONS.edit} color={COLORS.primary} />
-              <CustomText style={[styles.botonTexto, styles.botonTextoEditar]}>Editar</CustomText>
+              <CustomText style={[styles.botonTexto, styles.botonTextoEditar]}>
+                Editar Proveedor
+              </CustomText>
             </Button>
 
             <Button
@@ -155,7 +161,9 @@ export default function DetalleProveedorScreen() {
               onPress={abrirModal}
             >
               <Icon icon={ICONS.delete} color={COLORS.error} />
-              <CustomText style={[styles.botonTexto, styles.botonTextoEliminar]}>Eliminar</CustomText>
+              <CustomText style={[styles.botonTexto, styles.botonTextoEliminar]}>
+                Eliminar Proveedor
+              </CustomText>
             </Button>
           </View>
         </View>
@@ -166,10 +174,7 @@ export default function DetalleProveedorScreen() {
         title="proveedor"
         message={proveedor.nombre}
         onCancel={cerrarModal}
-        onConfirm={async () => {
-          await confirmarEliminar();
-          router.replace("/(drawer)/proveedores/proveedorScreen");
-        }}
+        onConfirm={confirmarEliminar}
 
       />
     </View>

@@ -13,9 +13,7 @@
  * - Select de aireador requerido solo si tiene aireadores.
  */
 
-import React, { useState, useEffect } from "react";
 import { ScrollView, View } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
 
 import Alert from "../../../shared/components/Alert";
 import Button from "../../../shared/components/Button";
@@ -23,17 +21,12 @@ import Card from "../../../shared/components/Card";
 import DateInput from "../../../shared/components/DateInput";
 import Icon from "../../../shared/components/Icons";
 import Input from "../../../shared/components/Input";
-import NumberInput from "../../../shared/components/NumberInput";
 import Select from "../../../shared/components/Select";
 import CustomText from "../../../shared/components/Text";
-import Title from "../../../shared/components/Title";
 import NavbarRegistro from "../../../shared/components/NavbarRegistro";
 
 import { styles } from "../styles/EstanqueStyle";
 import { STYLE } from "../../../theme/style";
-
-import { useEstanque } from "../context/EstanqueContext";
-import { useFinca } from "../../finca/context/FincaContext";
 
 import useEditarEstanque from "../hooks/useEditarEstanque";
 import { SectionTitle, OptionButton } from "../components/componentsEstanque";
@@ -42,16 +35,13 @@ import {
   FUENTES_AGUA,
   OPCIONES_PRECRIA,
   TIPOS_ESTANQUE,
-  validarFormularioEstanque,
 } from "../hooks/useEstanque";
 
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
-import { TYPOGRAPHY } from "../../../theme/typography";
 
 export default function EditarEstanqueScreen({ codigoCBO, id }) {
   const {
-    finca,
     loading,
     estanqueOriginal,
 
@@ -63,17 +53,18 @@ export default function EditarEstanqueScreen({ codigoCBO, id }) {
     profundidad,    setProfundidadState,
     fuenteAgua,    setFuenteAgua,
 
-      fechaMantenimiento,    setFechaMantenimiento,
+    fechaMantenimiento,    setFechaMantenimiento,
     precria,    setPrecria,
 
-      mensaje,
-      tipoMensaje,
-      submitted,
-      errores,
-      displayErrorMessage,
-      displayErrorVariant,
+    mensaje,
+    tipoMensaje,
+    submitted,
 
     guardarCambios,
+    errores,
+    displayErrorMessage,
+    displayErrorVariant,
+
   } = useEditarEstanque(codigoCBO, id);
 
   if (loading) {
@@ -92,6 +83,7 @@ export default function EditarEstanqueScreen({ codigoCBO, id }) {
         Titulo="Editar Estanque"
         Subtitulo={`${codigo}`}
         Icono="water"
+        RutaVolver={`/finca/detalle?id=${estanqueOriginal.idFinca}`}
       />
 
       <ScrollView style={STYLE.container} showsVerticalScrollIndicator={false}>
@@ -211,6 +203,7 @@ export default function EditarEstanqueScreen({ codigoCBO, id }) {
 
             <DateInput
               label="Fecha último mantenimiento"
+              allowFutureDates={false}
               required={true}
               value={fechaMantenimiento}
               onChangeText={setFechaMantenimiento}
@@ -219,7 +212,7 @@ export default function EditarEstanqueScreen({ codigoCBO, id }) {
             />
 
             <Select
-              label="Se usa precria"
+              label="¿Se usa precría?"
               required={true}
               submitted={submitted}
               options={OPCIONES_PRECRIA}

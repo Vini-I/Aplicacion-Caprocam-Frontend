@@ -62,10 +62,14 @@ export function useFincaNueva({ onFinca }) {
   }
 
   const actualizarCampo = (campo, valor) => {
-    const nuevoValor =
-      campo === "areaTotal" || campo === "espejoAgua"
-        ? normalizarNumeroDecimal(valor)
-        : valor;
+    let nuevoValor = valor;
+    if (campo === "areaTotal" || campo === "espejoAgua") {
+      nuevoValor = normalizarNumeroDecimal(valor);
+    } else if (campo === "codigoCBO") {
+      nuevoValor = String(valor).slice(0, 40);
+    } else if (campo === "nombre") {
+      nuevoValor = String(valor).slice(0, 80);
+    }
 
     setFormulario((actual) => ({
       ...actual,
@@ -112,7 +116,11 @@ export function useFincaNueva({ onFinca }) {
     const telefonosLimpios = telefonos.map((tel) => String(tel ?? "").trim()).filter((tel) => tel !== "");
 
     if (!formulario.codigoCBO.trim()) nuevosErrores.codigoCBO = "Código CVO obligatorio";
+    else if (formulario.codigoCBO.trim().length > 40) nuevosErrores.codigoCBO = "Código CVO no puede exceder 40 caracteres";
+
     if (!formulario.nombre.trim()) nuevosErrores.nombre = "Nombre de la finca obligatorio";
+    else if (formulario.nombre.trim().length > 80) nuevosErrores.nombre = "Nombre de la finca no puede exceder 80 caracteres";
+
     if (!formulario.provincia) nuevosErrores.provincia = "Provincia obligatoria";
     if (!formulario.canton) nuevosErrores.canton = "Cantón obligatorio";
     if (!formulario.distrito) nuevosErrores.distrito = "Distrito obligatorio";

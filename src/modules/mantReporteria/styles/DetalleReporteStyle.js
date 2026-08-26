@@ -157,26 +157,107 @@ export const styles = StyleSheet.create({
         color: COLORS.Crecimiento,
     },
 
-infeccion: {
+    infeccion: {
         fontSize: 26,
         fontFamily: TYPOGRAPHY.fontFamily.bold,
         fontWeight: "800",
         color: COLORS.Parasitologia,
- },
+    },
 
- cantidadKg: {
+    cantidadKg: {
         fontSize: 26,
         fontFamily: TYPOGRAPHY.fontFamily.bold,
         fontWeight: "800",
         color: COLORS.Alimentacion,
- },
+    },
 
- Sobrevivencia: {
+    Sobrevivencia: {
         fontSize: 26,
         fontFamily: TYPOGRAPHY.fontFamily.bold,
         fontWeight: "800",
         color: COLORS.Densidad,
- },
+    },
+
+    muestreosContainer: {
+        marginTop: 8,
+        marginBottom: 8,
+        paddingVertical: 10,
+        paddingHorizontal: 12,
+        backgroundColor: COLORS.surface,
+        borderRadius: 10,
+    },
+
+    muestreosTitle: {
+        fontSize: 11,
+        color: COLORS.textTertiary,
+        fontFamily: TYPOGRAPHY.fontFamily.bold,
+        textTransform: "uppercase",
+        letterSpacing: 0.4,
+        marginBottom: 8,
+    },
+
+    muestreoHeader: {
+        flexDirection: "row",
+        alignItems: "center",
+        paddingBottom: 6,
+        borderBottomWidth: 1,
+        borderBottomColor: COLORS.secondary,
+    },
+
+    muestreoRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        paddingVertical: 8,
+        borderBottomWidth: 1,
+        borderBottomColor: COLORS.secondary,
+    },
+
+    muestreoNumero: {
+        width: "12%",
+        fontSize: 12,
+        fontFamily: TYPOGRAPHY.fontFamily.bold,
+        color: COLORS.Crecimiento,
+    },
+
+    muestreoCantidad: {
+        width: "30%",
+        fontSize: 12,
+        fontFamily: TYPOGRAPHY.fontFamily.medium,
+        color: COLORS.textSecondary,
+    },
+
+    muestreoPesoTotal: {
+        width: "30%",
+        fontSize: 12,
+        fontFamily: TYPOGRAPHY.fontFamily.medium,
+        color: COLORS.textSecondary,
+    },
+
+    muestreoPromedio: {
+        width: "28%",
+        fontSize: 12,
+        fontFamily: TYPOGRAPHY.fontFamily.bold,
+        color: COLORS.textSecondary,
+        textAlign: "right",
+    },
+
+    muestreoHeaderText: {
+        fontSize: 10,
+        fontFamily: TYPOGRAPHY.fontFamily.bold,
+        color: COLORS.textTertiary,
+        textTransform: "uppercase",
+    },
+
+    muestreosEmpty: {
+        paddingVertical: 12,
+        alignItems: "center",
+    },
+
+    muestreosEmptyText: {
+        fontSize: 12,
+        color: COLORS.textTertiary,
+        fontFamily: TYPOGRAPHY.fontFamily.medium,
+    },
 
     Buttons: {
         flexDirection: "row",
@@ -231,5 +312,21 @@ infeccion: {
         paddingVertical: 10,
         borderRadius: 10,
         marginBottom: 10,
+    },
+
+    muestreoNumero: {
+        width: "25%",
+        fontSize: 12,
+        fontFamily: TYPOGRAPHY.fontFamily.medium,
+        color: COLORS.textSecondary,
+        textAlign: "center",
+    },
+
+    muestreoCantidad: {
+        width: "75%",
+        fontSize: 12,
+        fontFamily: TYPOGRAPHY.fontFamily.medium,
+        color: COLORS.textSecondary,
+        textAlign: "center",
     },
 });

@@ -6,12 +6,16 @@
  * Muestra un modal cuando el token JWT ya expiró,
  * con el mismo estilo y márgenes que el modal de éxito del registro.
  * El usuario debe volver a iniciar sesión en /loginWeb.
+ *
+ * IMPORTANTE: Este componente solo debe activarse en rutas protegidas.
+ * En rutas públicas (landing, login, registro) no debe mostrar el modal
+ * aunque exista un token expirado en localStorage.
  * ============================================================
  */
 
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, usePathname } from 'expo-router';
 import Modal from './Modal';
 import Button from './Button';
 import CustomText from './Text';
@@ -21,23 +25,26 @@ import { getTokenExpiration } from '../utils/jwtUtils';
 import { COLORS } from '../../theme/colors';
 import { ICONS } from '../../theme/icons';
 import { STYLE } from '../../theme/style';
+import { useError } from '../context/ErrorContext';
 
-const clearSession = () => {
-  try {
-    localStorage.removeItem('caprocam_auth_token');
-    localStorage.removeItem('caprocam_refresh_token');
-    localStorage.removeItem('caprocam_usuario');
-  } catch (error) {
-    console.error('Error al limpiar sesión:', error);
-  }
-};
+// Rutas que no requieren autenticación
+const RUTAS_PUBLICAS = ['/landing', '/loginWeb', '/registerWeb', '/login'];
 
 export default function SessionMonitor({ children }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [showModal, setShowModal] = useState(false);
+  const { mostrarError } = useError();
+
+  // Determina si la ruta actual es pública
+  const esRutaPublica = RUTAS_PUBLICAS.some((ruta) => pathname?.startsWith(ruta));
 
   useEffect(() => {
+    // Si estamos en una ruta pública, no activamos el monitor
+    if (esRutaPublica) return;
+
     let interval;
+    let initialTimeout;
 
     const checkToken = () => {
       const token = getToken();
@@ -47,26 +54,45 @@ export default function SessionMonitor({ children }) {
       if (!exp) return;
 
       const now = Date.now();
-      const diff = exp - now;
-
-      if (diff <= 0) {
-        if (!showModal) {
+      if (exp <= now) {
+        if (!esRutaPublica) {
           setShowModal(true);
-        }
-        if (interval) {
-          clearInterval(interval);
-          interval = null;
+          if (interval) {
+            clearInterval(interval);
+            interval = null;
+          }
         }
       }
     };
 
-    interval = setInterval(checkToken, 5000);
-    checkToken();
+    // Retrasamos la primera comprobación para permitir que el token recién
+    // guardado tras el login se asiente en localStorage antes de verificarlo,
+    // evitando falsos positivos de "sesión expirada" al navegar desde /loginWeb.
+    initialTimeout = setTimeout(() => {
+      checkToken();
+      interval = setInterval(checkToken, 5000);
+    }, 1500);
 
     return () => {
+      clearTimeout(initialTimeout);
       if (interval) clearInterval(interval);
     };
-  }, [showModal]);
+  }, [esRutaPublica]);
+
+  // Si es ruta pública, no renderizamos el modal
+  if (esRutaPublica) {
+    return <>{children}</>;
+  }
+
+  const clearSession = () => {
+    try {
+      localStorage.removeItem('caprocam_auth_token');
+      localStorage.removeItem('caprocam_refresh_token');
+      localStorage.removeItem('caprocam_usuario');
+    } catch (error) {
+      mostrarError('Error al limpiar la sesión. Por favor, cierra la aplicación y vuelve a iniciar sesión.');
+    }
+  };
 
   const handleLogin = () => {
     clearSession();
@@ -79,7 +105,7 @@ export default function SessionMonitor({ children }) {
       {children}
       <Modal
         visible={showModal}
-        onClose={() => {}}
+        onClose={() => { }}
         showCloseButton={false}
         containerStyle={[STYLE.contentWrapper, styles.modalContainer]}
       >

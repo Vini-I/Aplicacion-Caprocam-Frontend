@@ -18,16 +18,40 @@ api.interceptors.request.use(
                 config.headers.Authorization = `Bearer ${token}`;
             }
         } catch (e) {
-            // Ignorar en entornos sin localStorage
+            // Ignorar
         }
         return config;
     },
     (error) => Promise.reject(error)
 );
 
-// ── Interceptor: limpia el token si el backend responde 401 (Inválido/Expirado) ──
+// ── Interceptor:  Maneja respuestas y renovación del token ──
 api.interceptors.response.use(
-    (response) => response,
+    (response) => {
+        try {
+            const renewedToken = response.headers['x-renewed-token'] ||
+                response.headers['X-Renewed-Token'];
+            if (renewedToken) {
+                // Validar que el token renovado no esté expirado antes de guardarlo.
+                // Las respuestas 304 del caché del browser incluyen headers de sesiones
+                // anteriores; sin esta validación, un X-Renewed-Token vencido sobreescribiría
+                // el token válido recién guardado tras el login.
+                try {
+                    const payload = renewedToken.split('.')[1];
+                    const decoded = JSON.parse(atob(payload));
+                    const esValido = decoded.exp && decoded.exp * 1000 > Date.now();
+                    if (esValido) {
+                        localStorage.setItem('caprocam_auth_token', renewedToken);
+                    }
+                } catch {
+                    // No se puede decodificar → ignorar el token renovado
+                }
+            }
+        } catch (e) {
+            // Ignorar
+        }
+        return response;
+    },
     (error) => {
         if (error.response && error.response.status === 401) {
             try {

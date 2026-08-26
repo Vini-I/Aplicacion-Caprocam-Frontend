@@ -30,7 +30,6 @@ import { useState, useMemo, useEffect } from 'react';
 import { useMantEquipo } from './useMantEquipo';
 import { obtenerTareas } from '../services/tareasService';
 import { equiposService } from '../services/equiposService';
-import { useError } from '../../../shared/context/ErrorContext.js';
 
 export function useMantPrincipalScreen({ alertaTipo, alertaMensaje, refreshTimestamp }) {
   const {
@@ -38,9 +37,8 @@ export function useMantPrincipalScreen({ alertaTipo, alertaMensaje, refreshTimes
     busqueda,
     cargando,
     setBusqueda,
+    error: errorTickets,
   } = useMantEquipo();
-
-  const { mostrarError } = useError();
 
   // ── Filtros de estado ────────────────────────────────────────
   const [filtros, setFiltros] = useState({
@@ -51,6 +49,7 @@ export function useMantPrincipalScreen({ alertaTipo, alertaMensaje, refreshTimes
 
   // ── Alertas temporales (pasadas por props desde el layout) ──
   const [alerta, setAlerta] = useState(null);
+  const [error, setError] = useState(null);
 
   // ── Catálogos para búsqueda cruzada ──────────────────────────
   const [tareasCatalog, setTareasCatalog] = useState([]);
@@ -61,11 +60,12 @@ export function useMantPrincipalScreen({ alertaTipo, alertaMensaje, refreshTimes
     equiposService.getEquipos()
       .then(data => setEquiposList(data || []))
       .catch((err) => {
-        mostrarError(err);
-        mostrarError('No se pudo cargar la lista de equipos. Verifica la conexión con el servidor.');
+        setError(
+          err?.message || 'No se pudo cargar la lista de equipos. Verifica la conexión con el servidor.'
+        );
         setEquiposList([]);
       });
-  }, [mostrarError]);
+  }, []);
 
   // ── Alerta por props ────────────────────────────────────────
   useEffect(() => {
@@ -141,6 +141,7 @@ export function useMantPrincipalScreen({ alertaTipo, alertaMensaje, refreshTimes
     busqueda,
     setBusqueda,
     cargando,
+    error: error || errorTickets,
     filtros,
     setFiltros,
     alerta,

@@ -20,12 +20,7 @@
  * - Adapta el contenido para móviles y tabletas.
  */
 
-import {
-  Animated,
-  Pressable,
-  Text,
-  View,
-} from "react-native";
+import { Animated, Pressable, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import Button from "../../../shared/components/Button";
 import Icon from "../../../shared/components/Icons";
@@ -40,9 +35,9 @@ const rgba = (hex, opacity) => {
 };
 
 const gradient = [
-  rgba(COLORS.textSecondary, 0.97),
-  rgba(COLORS.primary, 0.8),
-  rgba(COLORS.primary, 0.52),
+  rgba(COLORS.textSecondary, 0.65),
+  rgba(COLORS.primary, 0.6),
+  rgba(COLORS.primary, 0.45),
 ];
 
 export default function LandingHero({
@@ -54,6 +49,9 @@ export default function LandingHero({
   irASeccion,
 }) {
   const slide = HERO_SLIDES[indiceHero];
+  // "cover" hace que la imagen ocupe todo el carrusel
+  // sin dejar bordes visibles en ningún tamaño de pantalla.
+  const ajusteMedia = "cover";
   const title = [
     styles.heroTitle,
     esTablet && styles.heroTitleTablet,
@@ -61,11 +59,15 @@ export default function LandingHero({
   ];
   return (
     <View
-      style={[styles.hero, esMovil && styles.heroMobile]}
+      style={[
+        styles.hero,
+        esTablet && styles.heroTablet,
+        esMovil && styles.heroMobile,
+      ]}
     >
       <Animated.Image
-        source={slide.imagen}
-        resizeMode="cover"
+        source={slide.recurso}
+        resizeMode={ajusteMedia}
         style={[styles.heroImage, { opacity }]}
       />
       <LinearGradient
@@ -83,6 +85,7 @@ export default function LandingHero({
       <View
         style={[
           styles.heroContent,
+          esTablet && styles.heroContentTablet,
           esMovil && styles.heroContentMobile,
         ]}
       >
@@ -155,6 +158,8 @@ export default function LandingHero({
               key={item.id}
               onPress={() => cambiarSlide(index)}
               style={styles.carouselIndicatorButton}
+              accessibilityRole="button"
+              accessibilityLabel={`Mostrar ${item.descripcion}`}
             >
               <View
                 style={[

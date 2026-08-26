@@ -12,15 +12,25 @@ navegacion y actualizacion automatica del Dashboard.
 //////////////////////////////////////////////////////////
 */
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useWindowDimensions } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
 
-import { useError } from "../../../shared/context/ErrorContext";
-import { construirAlertasOperativas, descartarAlerta, filtrarAlertasDescartadas, obtenerAlertasDescartadas } from "../../alertas/services/AlertasServices";
+import { useError } from "../../../shared/context/ErrorContext.js";
+import {
+  construirAlertasOperativas,
+  descartarAlerta,
+  filtrarAlertasDescartadas,
+  obtenerAlertasDescartadas,
+} from "../../alertas/services/AlertasServices.js";
 
-import useDashboard from "./useDashboard";
-import { construirFincasDashboard, obtenerAlimentacionSemanal, obtenerMortalidadTotal, obtenerTotalCasosSanitarios, obtenerUltimosRegistros } from "../utils/DashboardUtils";
+import useDashboard from "./useDashboard.js";
+import {
+  construirFincasDashboard,
+  obtenerAlimentacionSemanal,
+  obtenerTotalCasosSanitarios,
+  obtenerUltimosRegistros,
+} from "../utils/DashboardUtils.js";
 
 const ALERTAS_ABIERTAS_INICIALES = {
   critica: true,
@@ -32,6 +42,8 @@ export default function useDashboardScreen() {
   const router = useRouter();
   const { width } = useWindowDimensions();
   const { mostrarError } = useError();
+  const mostrarErrorRef = useRef(mostrarError);
+  mostrarErrorRef.current = mostrarError;
 
   const {
     fincas,
@@ -50,60 +62,100 @@ export default function useDashboardScreen() {
   } = useDashboard();
 
   const [selectedCard, setSelectedCard] = useState(null);
-  const [alertasAbiertas, setAlertasAbiertas] = useState(ALERTAS_ABIERTAS_INICIALES);
+  const [alertasAbiertas, setAlertasAbiertas] = useState(
+    ALERTAS_ABIERTAS_INICIALES,
+  );
   const [alertasDescartadas, setAlertasDescartadas] = useState([]);
 
-  const fincasDashboard = useMemo(function () {
-    return construirFincasDashboard(fincas, estanques);
-  }, [fincas, estanques]);
+  const fincasDashboard = useMemo(
+    function () {
+      return construirFincasDashboard(fincas, estanques);
+    },
+    [fincas, estanques],
+  );
 
-  const alimentacionSemanal = useMemo(function () {
-    return obtenerAlimentacionSemanal(alimentaciones);
-  }, [alimentaciones]);
+  const alimentacionSemanal = useMemo(
+    function () {
+      return obtenerAlimentacionSemanal(alimentaciones);
+    },
+    [alimentaciones],
+  );
 
-  const totalCasosSanitarios = useMemo(function () {
-    return obtenerTotalCasosSanitarios(resumenEnfermedades, resumenParasitologias);
-  }, [resumenEnfermedades, resumenParasitologias]);
+  const totalCasosSanitarios = useMemo(
+    function () {
+      return obtenerTotalCasosSanitarios(
+        resumenEnfermedades,
+        resumenParasitologias,
+      );
+    },
+    [resumenEnfermedades, resumenParasitologias],
+  );
 
-  const totalMortalidad = useMemo(function () {
-    return obtenerMortalidadTotal(resumenEnfermedades);
-  }, [resumenEnfermedades]);
-
-  const alertasBase = useMemo(function () {
-    return construirAlertasOperativas({
-      productosInventario: inventario,
+  const alertasBase = useMemo(
+    function () {
+      return construirAlertasOperativas({
+        productosInventario: inventario,
+        siembras,
+        alimentaciones,
+        estanques,
+        equipos,
+        registrosEnfermedades: enfermedades,
+        registrosParasitologia: parasitologias,
+        registrosFisicoQuimicos: fisicoQuimicos,
+      });
+    },
+    [
+      inventario,
       siembras,
       alimentaciones,
       estanques,
       equipos,
-      registrosEnfermedades: enfermedades,
-      registrosParasitologia: parasitologias,
-      registrosFisicoQuimicos: fisicoQuimicos,
-    });
-  }, [inventario, siembras, alimentaciones, estanques, equipos, enfermedades, parasitologias, fisicoQuimicos]);
+      enfermedades,
+      parasitologias,
+      fisicoQuimicos,
+    ],
+  );
 
-  const alertasDashboard = useMemo(function () {
-    return filtrarAlertasDescartadas(alertasBase, alertasDescartadas).slice(0, 10);
-  }, [alertasBase, alertasDescartadas]);
+  const alertasDashboard = useMemo(
+    function () {
+      return filtrarAlertasDescartadas(alertasBase, alertasDescartadas).slice(
+        0,
+        10,
+      );
+    },
+    [alertasBase, alertasDescartadas],
+  );
 
-  const ultimosRegistros = useMemo(function () {
-    return obtenerUltimosRegistros(alimentaciones, siembras, enfermedades, parasitologias, fisicoQuimicos);
-  }, [alimentaciones, siembras, enfermedades, parasitologias, fisicoQuimicos]);
+  const ultimosRegistros = useMemo(
+    function () {
+      return obtenerUltimosRegistros(
+        alimentaciones,
+        siembras,
+        enfermedades,
+        parasitologias,
+        fisicoQuimicos,
+      );
+    },
+    [alimentaciones, siembras, enfermedades, parasitologias, fisicoQuimicos],
+  );
 
   const cargarAlertasDescartadas = useCallback(async function () {
     try {
       const ids = await obtenerAlertasDescartadas();
       setAlertasDescartadas(Array.isArray(ids) ? ids : []);
     } catch (error) {
-      mostrarError(error);
+      mostrarErrorRef.current(error);
     }
-  }, [mostrarError]);
+  }, []);
 
   useFocusEffect(
-    useCallback(function () {
-      recargar();
-      cargarAlertasDescartadas();
-    }, [recargar, cargarAlertasDescartadas]),
+    useCallback(
+      function () {
+        recargar();
+        cargarAlertasDescartadas();
+      },
+      [recargar, cargarAlertasDescartadas],
+    ),
   );
 
   const manejarSeleccionCard = useCallback(function (cardId) {
@@ -121,18 +173,166 @@ export default function useDashboardScreen() {
     });
   }, []);
 
-  const descartarAlertaDashboard = useCallback(async function (id) {
-    try {
-      const ids = await descartarAlerta(id);
-      setAlertasDescartadas(Array.isArray(ids) ? ids : []);
-    } catch (error) {
-      mostrarError(error);
-    }
-  }, [mostrarError]);
+  const descartarAlertaDashboard = useCallback(
+    async function (id) {
+      try {
+        const ids = await descartarAlerta(id);
+        setAlertasDescartadas(Array.isArray(ids) ? ids : []);
+      } catch (error) {
+        mostrarError(error);
+      }
+    },
+    [mostrarError],
+  );
 
-  const irAAlertas = useCallback(function () {
-    router.push("/alertas");
-  }, [router]);
+  const irAFinca = useCallback(
+    function (finca) {
+      if (!finca?.id) return;
+
+      router.push({
+        pathname: "/finca/detalle",
+        params: {
+          id: finca.id,
+        },
+      });
+    },
+    [router],
+  );
+
+  const irAEstanque = useCallback(
+    function (estanque) {
+      if (!estanque?.id) return;
+
+      router.push({
+        pathname: "/finca/detalleEstanque",
+        params: {
+          id: estanque.id,
+          fincaNombre:
+            estanque.fincaNombre ?? estanque.finca ?? "Finca asociada",
+        },
+      });
+    },
+    [router],
+  );
+
+  const irACasoSanitario = useCallback(
+    function (caso) {
+      if (!caso?.registroId) return;
+
+      if (caso.tipo === "parasitologia") {
+        router.push({
+          pathname: "/registros/EditarParasitologia",
+          params: {
+            id: caso.registroId,
+          },
+        });
+        return;
+      }
+
+      if (caso.tipo === "enfermedad") {
+        router.push({
+          pathname: "/registros/EditarEnfermedad",
+          params: {
+            id: caso.registroId,
+          },
+        });
+      }
+    },
+    [router],
+  );
+
+  const irAAlerta = useCallback(
+    function (alerta) {
+      if (!alerta?.modulo) return;
+
+      if (alerta.modulo === "enfermedades") {
+        if (alerta.registroId) {
+          router.push({
+            pathname: "/registros/EditarEnfermedad",
+            params: {
+              id: alerta.registroId,
+            },
+          });
+          return;
+        }
+
+        router.push("/registros/Enfermedades");
+        return;
+      }
+
+      if (alerta.modulo === "parasitologia") {
+        if (alerta.registroId) {
+          router.push({
+            pathname: "/registros/EditarParasitologia",
+            params: {
+              id: alerta.registroId,
+            },
+          });
+          return;
+        }
+
+        router.push("/registros/Parasitologia");
+        return;
+      }
+
+      if (alerta.modulo === "fisicoQuimica") {
+        if (alerta.registroId) {
+          router.push({
+            pathname: "/registros/EditarFisicoQuimica",
+            params: {
+              id: alerta.registroId,
+            },
+          });
+          return;
+        }
+
+        router.push("/registros/FisicoQuimica");
+        return;
+      }
+
+      if (alerta.modulo === "estanques") {
+        if (alerta.registroId) {
+          router.push({
+            pathname: "/finca/detalleEstanque",
+            params: {
+              id: alerta.registroId,
+            },
+          });
+          return;
+        }
+
+        router.push("/finca");
+        return;
+      }
+
+      if (alerta.modulo === "siembra") {
+        router.push("/siembra");
+        return;
+      }
+
+      if (alerta.modulo === "alimentacion") {
+        router.push("/registros/Alimentacion");
+        return;
+      }
+
+      if (alerta.modulo === "inventario") {
+        router.push("/inventarios");
+        return;
+      }
+
+      if (alerta.modulo === "equipos") {
+        router.push("/equipos");
+      }
+    },
+    [router],
+  );
+
+  const irAAlertas = useCallback(
+    function () {
+      router.push("/alertas");
+    },
+    [router],
+  );
 
   return {
     selectedCard,
@@ -158,7 +358,6 @@ export default function useDashboardScreen() {
     registrosFisicoQuimicos: fisicoQuimicos,
 
     totalCasosSanitarios,
-    totalMortalidad,
     alertasDashboard,
     ultimosRegistros,
 
@@ -166,6 +365,11 @@ export default function useDashboardScreen() {
     manejarSeleccionCard,
     alternarAlertas,
     descartarAlertaDashboard,
+
+    irAFinca,
+    irAEstanque,
+    irACasoSanitario,
+    irAAlerta,
     irAAlertas,
   };
 }

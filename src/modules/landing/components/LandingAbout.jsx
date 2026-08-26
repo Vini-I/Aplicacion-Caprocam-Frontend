@@ -44,6 +44,7 @@ function BenefitCard({ item, esMovil }) {
 
 export default function LandingAbout({
   esMovil,
+  esTablet,
   guardarPosicion,
 }) {
   return (
@@ -65,10 +66,16 @@ export default function LandingAbout({
         <View
           style={[
             styles.aboutGrid,
-            esMovil && styles.aboutGridMobile,
+            (esMovil || esTablet) && styles.aboutGridMobile,
           ]}
         >
-          <View style={styles.aboutTextColumn}>
+          <View
+            style={[
+              styles.aboutTextColumn,
+              (esMovil || esTablet) &&
+                styles.aboutTextColumnStacked,
+            ]}
+          >
             <SectionBadge texto="QUIÉNES SOMOS" />
             <Text
               style={[

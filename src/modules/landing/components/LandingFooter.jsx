@@ -17,8 +17,7 @@
  * - Adapta la distribución del pie de página para dispositivos móviles.
  */
 
-import { Text, View } from "react-native";
-
+import { Pressable, Text, View } from "react-native";
 import Icon from "../../../shared/components/Icons";
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
@@ -87,8 +86,14 @@ function ScheduleItem({ dia, horario, activo = true }) {
 
 export default function LandingFooter({
   esMovil,
+  esTablet,
   guardarPosicion,
+  irACreditos,
+  enlaceActivo,
+  activarEnlace,
+  desactivarEnlace,
 }) {
+
   return (
     <View
       style={styles.footer}
@@ -100,10 +105,17 @@ export default function LandingFooter({
         <View
           style={[
             styles.footerColumns,
+            esTablet && styles.footerColumnsTablet,
             esMovil && styles.footerColumnsMobile,
           ]}
         >
-          <View style={styles.footerColumn}>
+          <View
+            style={[
+              styles.footerColumn,
+              esTablet && styles.footerColumnTablet,
+              esMovil && styles.footerColumnMobile,
+            ]}
+          >
             <Text style={styles.footerTitle}>
               CONTÁCTANOS
             </Text>
@@ -121,7 +133,13 @@ export default function LandingFooter({
             />
           </View>
 
-          <View style={styles.footerColumn}>
+          <View
+            style={[
+              styles.footerColumn,
+              esTablet && styles.footerColumnTablet,
+              esMovil && styles.footerColumnMobile,
+            ]}
+          >
             <Text style={styles.footerTitle}>
               HORARIO DE ATENCIÓN
             </Text>
@@ -146,7 +164,13 @@ export default function LandingFooter({
             </View>
           </View>
 
-          <View style={styles.footerColumn}>
+          <View
+            style={[
+              styles.footerColumn,
+              esTablet && styles.footerColumnTablet,
+              esMovil && styles.footerColumnMobile,
+            ]}
+          >
             <Text style={styles.footerTitle}>
               AGREMIADOS
             </Text>
@@ -176,10 +200,28 @@ export default function LandingFooter({
             © 2026 CAPROCAM. Todos los derechos reservados.
           </Text>
           <View style={styles.footerLinks}>
-            <Text style={styles.footerLink}>
-              Privacidad
-            </Text>
-            <Text style={styles.footerLink}>Términos</Text>
+            <Pressable
+              onPress={irACreditos}
+              onHoverIn={activarEnlace}
+              onHoverOut={desactivarEnlace}
+              style={({ pressed }) => [
+                styles.footerLinkButton,
+                pressed && styles.footerLinkButtonPressed,
+              ]}
+              accessibilityRole="link"
+              accessibilityLabel="Ver estudiantes creadores de la página"
+            >
+              {({ pressed }) => (
+                <Text
+                  style={[
+                    styles.footerLink,
+                    (enlaceActivo || pressed) && styles.footerLinkActive,
+                  ]}
+                >
+                  UTN, Sede Guanacaste, Integrador I
+                </Text>
+              )}
+            </Pressable>
           </View>
         </View>
       </View>

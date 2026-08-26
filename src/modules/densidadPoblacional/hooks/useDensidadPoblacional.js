@@ -29,7 +29,7 @@
  *   validacion de los datos de conteo en validar() de
  *   useDatosConteo; solo si todo es valido arma el DTO con los
  *   nombres reales de columna del backend (idFinca, idEstanque,
- *   cantidadSiembra, sobrevivencia...) y la fecha ya convertida a
+ *   cantidadSiembra...) y la fecha ya convertida a
  *   ISO YYYY-MM-DD (toMysqlDate), y lo persiste con
  *   DensidadPoblacional.service.js. Si es invalido, no navega ni
  *   muestra exito: deja `submitted=true` para que la UI muestre
@@ -62,14 +62,14 @@
  *   para renderizar el Alert en linea (se oculta sola con un timer).
  * - handleGuardar: valida y guarda el registro si es valido.
  * - todos los campos/setters de datos de conteo (numeroCamarones,
- *   tirosAtarraya, areaAtarraya, promedioPorTiro, supervivencia,
- *   notasConteo, siembraPorM2, areaEstanque), reexportados desde
+ *   tirosAtarraya, areaAtarraya, promedioPorTiro, notasConteo,
+ *   siembraPorM2, areaEstanque), reexportados desde
  *   useDatosConteo para que la screen los distribuya hacia
  *   InformacionEstanque y DatosConteo/FormularioConteo.
  * - Si notasConteo queda vacio, handleGuardar lo completa con
  *   "No hay notas" antes de persistir el registro (no bloquea el
- *   guardado, a diferencia de promedioPorTiro/supervivencia que
- *   si son obligatorios).
+ *   guardado). supervivencia se muestra como resultado de solo
+ *   lectura en tiempo real; el backend la recalcula al guardar.
  *
  * Ejemplo:
  * const { finca, estanque, fecha, handleGuardar } = useDensidadPoblacional();
@@ -79,6 +79,7 @@ import { useState,useEffect } from "react";
 import { useDatosConteo } from "./useDatosConteo";
 import densidadPoblacionalService from "../services/DensidadPoblacional.service";
 import { useFincaEstanqueDensidad } from "./useFincaEstanqueDensidad";
+import { useDatosBaseEstanque } from "./useDatosBaseEstanque";
 import { toMysqlDate } from "../../../shared/utils/dateUtils";
 
 function hoy() {
@@ -91,14 +92,18 @@ function hoy() {
 function extraerMensaje(error) {
   /*
   Descripcion:
-  Extrae un mensaje legible de un error de axios (o de cualquier
-  error). Se agrego porque handleGuardar ya llamaba a esta funcion
-  en su catch, pero no existia en el archivo: si el backend
-  respondia con error (422/409/500...), la app lanzaba un
-  ReferenceError en vez de mostrar el Alert de error.
+  Extrae un mensaje legible de un error lanzado por
+  DensidadPoblacional.service.js. El service ya resuelve el mensaje
+  mas especifico disponible (incluyendo el arreglo de errores por
+  campo que manda el backend en un 422) dentro de
+  construirErrorHttp() y siempre lanza un Error plano con ese
+  mensaje ya listo en error.message: aqui no hay que volver a
+  buscarlo en error.response, porque ese objeto ya no existe en
+  este punto.
 
   Parametros:
-  - error: Error capturado (tipicamente de una llamada axios).
+  - error: Error capturado (tipicamente de
+    densidadPoblacionalService.create()).
 
   Retorna:
   - String con el mensaje mas especifico disponible.
@@ -107,16 +112,7 @@ function extraerMensaje(error) {
     return error;
   }
 
-  const detalles = error?.response?.data?.error;
-  if (Array.isArray(detalles) && detalles.length > 0) {
-    return detalles.join(" ");
-  }
-
-  return (
-    error?.response?.data?.message ||
-    error?.message ||
-    "Ocurrió un error inesperado."
-  );
+  return error?.message || "Ocurrió un error inesperado.";
 }
 
 export default function useDensidadPoblacional() {
@@ -129,9 +125,21 @@ export default function useDensidadPoblacional() {
 
   const datosConteo = useDatosConteo();
 
-  const { fincasOptions, estanquesOptions } = useFincaEstanqueDensidad(finca);
+  const { fincasOptions, estanquesOptions, errorCatalogos } = useFincaEstanqueDensidad(finca);
   const fincas = fincasOptions;
   const estanques = estanquesOptions;
+
+  /*
+  Al elegir un estanque se precargan "Cantidad de siembra por m2" y
+  "Area del estanque (hectareas)" desde el backend, mas la cantidad
+  de tiros recomendada y el area de atarraya sugerida. Los campos
+  siguen siendo editables: rellenarDesdeEstanque no pisa nada que el
+  usuario ya haya escrito (ver useDatosConteo.js).
+  */
+  const { cargandoDatosBase, errorDatosBase } = useDatosBaseEstanque(
+    estanque,
+    datosConteo.rellenarDesdeEstanque
+  );
 
   const setFincaYResetEstanque = (idFinca) => {
     setFinca(idFinca);
@@ -145,6 +153,34 @@ export default function useDensidadPoblacional() {
     if (!fecha) erroresPrincipales.fecha = "La fecha es obligatoria";
     return erroresPrincipales;
   };
+
+  /*
+  Revalida en vivo mientras el usuario escribe, pero solo despues de
+  que ya intento guardar una vez (submitted=true): antes de ese
+  primer intento no tiene sentido mostrar errores. Sin este efecto,
+  `errores` quedaba congelado con el resultado del ultimo click en
+  Guardar: un campo que el usuario ya corrigio se seguia viendo en
+  rojo hasta el proximo intento de guardado, porque nada volvia a
+  correr la validacion mientras tanto.
+  */
+  useEffect(() => {
+    if (!submitted) return;
+
+    const erroresPrincipales = validarPrincipal();
+    const { errores: erroresDatos } = datosConteo.validar();
+
+    setErrores({ ...erroresPrincipales, ...erroresDatos });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    submitted,
+    finca,
+    estanque,
+    fecha,
+    datosConteo.tiros,
+    datosConteo.areaAtarraya,
+    datosConteo.siembraPorM2,
+    datosConteo.areaEstanque,
+  ]);
 
   const handleGuardar = async () => {
     setSubmitted(true);
@@ -164,16 +200,27 @@ export default function useDensidadPoblacional() {
     // El service ahora es un passthrough puro (no mapea nombres de
     // campo ni convierte la fecha): este objeto ya tiene que tener
     // exactamente los nombres que espera el backend
-    // (dtos/densidadpoblacional.dto.js) y la fecha en ISO YYYY-MM-DD.
+    // (dtos/densidadPoblacional.dto.js) y la fecha en ISO YYYY-MM-DD.
+    //
+    // CAMBIO (documento de requerimientos): aqui solo van los datos
+    // que el usuario captura. `numeroCamarones`, `tirosAtarraya`,
+    // `areaMuestreada`, `promedioPorTiro`, `densidad` y la poblacion
+    // estimada NO se envian aunque la pantalla los muestre: son
+    // valores generados por formula y los calcula el backend al
+    // guardar, a partir del detalle de tiros. Si los mandara el
+    // frontend, se podria guardar un promedio o una densidad que no
+    // corresponden a los tiros registrados.
+    //
+    // `tiros` es el dato crudo del muestreo: cuantos camarones
+    // salieron en cada tiro, en orden. El backend guarda una fila
+    // por tiro en la tabla densidad_detalle_tiros y de ahi deriva
+    // todo lo demas.
     const densidadDTO = {
       idFinca: finca,
       idEstanque: estanque,
       fecha: toMysqlDate(fecha),
-      numeroCamarones: datosConteo.numeroCamarones,
-      tirosAtarraya: datosConteo.tirosAtarraya,
+      tiros: datosConteo.tirosParaEnviar,
       areaAtarraya: datosConteo.areaAtarraya,
-      promedioPorTiro: datosConteo.promedioPorTiro,
-      sobrevivencia: datosConteo.supervivencia,
       notasConteo: datosConteo.notasConteo?.trim()
         ? datosConteo.notasConteo
         : "No hay notas",
@@ -227,6 +274,11 @@ export default function useDensidadPoblacional() {
     submitted,
     errores,
     alerta,
+    // Si falla la precarga del estanque no se bloquea el registro:
+    // se muestra junto al error de catalogos y el usuario puede
+    // digitar el area y la siembra a mano.
+    errorCatalogos: errorCatalogos || errorDatosBase,
+    cargandoDatosBase,
     handleGuardar,
     ...datosConteo,
   };

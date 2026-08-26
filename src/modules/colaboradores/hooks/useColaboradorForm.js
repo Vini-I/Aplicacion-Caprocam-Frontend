@@ -9,34 +9,52 @@
  * Parámetros:
  * - initialData: objeto con datos iniciales (para edición)
  * - isEditing: booleano
- * - userRole: "camprocam_admin" o "external_owner"
  * - fincaId: ID de finca (para asignación automática)
  * - onSubmit: función que recibe los datos al enviar
- * - availableRoles: opciones de roles para el select (array de {label, value})
+ * - fincasOptions: opciones de fincas para el select (array de {label, value})
  *
  * Retorna:
  * - form, errors, submitted, validationMessage (mensaje específico)
  * - handleChange, handleSubmit
- * - rolesDisponibles
  * - handleCedulaChange, handleTelefonoChange, handleNombreChange, handleApellidosChange
+ * - handlePinChange, handleConfirmPinChange, pin, confirmPin
  * - resetForm: función para limpiar el formulario y estados de validación
  * ============================================================
  */
 
 import { useState } from "react";
 
-// Constantes y validadores
-const ROLES_CAMPROCAM = [
-  { label: "Trabajador Camprocam", value: "camprocam_worker" },
-  { label: "Dueño Externo", value: "external_owner" },
-];
-const ROLES_EXTERNO = [{ label: "Trabajador Externo", value: "external_worker" }];
-
 const validarCedula = (cedula) => /^\d{9}$/.test(cedula);
 const validarTelefono = (telefono) => /^\d{8}$/.test(telefono);
-const validarEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+const validarEmail = (email) => {
+  if (!email || typeof email !== "string") return false;
+  const trimmed = email.trim();
+  const partes = trimmed.split("@");
+  if (partes.length !== 2) return false;
+  if (partes[0].length < 3) return false;
+  return /^[^\s@]{3,}@[^\s@]+\.[^\s@]+$/.test(trimmed);
+};
 const validarNombre = (nombre) => nombre.trim().length >= 2;
 const validarApellidos = (apellidos) => apellidos.trim().length >= 2;
+const validarPin = (pin) => /^\d{4}$/.test(pin);
+
+/**
+ * Valida que el PIN sea seguro:
+ * - No todos los dígitos iguales (0000, 1111, ...)
+ * - No sea una secuencia ascendente (0123, 1234, ...)
+ * - No sea una secuencia descendente (9876, 8765, ...)
+ */
+function esPinSeguro(pin) {
+  if (!validarPin(pin)) return false;
+  const digits = pin.split('').map(Number);
+  // Todos iguales
+  if (digits.every(d => d === digits[0])) return false;
+  // Secuencia ascendente o descendente
+  const ascendente = digits.every((d, i) => i === 0 || d === digits[i-1] + 1);
+  const descendente = digits.every((d, i) => i === 0 || d === digits[i-1] - 1);
+  if (ascendente || descendente) return false;
+  return true;
+}
 
 const INITIAL_FORM = {
   cedula: "",
@@ -44,17 +62,14 @@ const INITIAL_FORM = {
   apellidos: "",
   telefono: "",
   email: "",
-  rol: "",
   fincaId: "",
 };
 
 export function useColaboradorForm({
   initialData,
   isEditing,
-  userRole,
   fincaId,
   onSubmit,
-  availableRoles,
   fincasOptions = [],
 }) {
   const [form, setForm] = useState({
@@ -63,17 +78,15 @@ export function useColaboradorForm({
     apellidos: initialData.nombre?.split(" ").slice(1).join(" ") || "",
     telefono: initialData.telefono || "",
     email: initialData.email || "",
-    rol: initialData.rolId ?? initialData.rol ?? "",
     fincaId: initialData.fincaId || fincaId || "",
   });
+
+  const [pin, setPin] = useState("");
+  const [confirmPin, setConfirmPin] = useState("");
 
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
   const [validationMessage, setValidationMessage] = useState("");
-
-  const rolesDisponibles =
-    availableRoles ||
-    (userRole === "camprocam_admin" ? ROLES_CAMPROCAM : ROLES_EXTERNO);
 
   // ─── FUNCIONES DE FILTRADO POR CAMPO ──────────────────────
 
@@ -95,6 +108,28 @@ export function useColaboradorForm({
   const handleApellidosChange = (value) => {
     const soloLetras = value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, "");
     handleChange("apellidos", soloLetras);
+  };
+
+  const handlePinChange = (value) => {
+    const soloNumeros = value.replace(/\D/g, "").slice(0, 4);
+    setPin(soloNumeros);
+    if (errors.pin) {
+      setErrors((prev) => ({ ...prev, pin: null }));
+    }
+    if (submitted && validationMessage) {
+      setValidationMessage("");
+    }
+  };
+
+  const handleConfirmPinChange = (value) => {
+    const soloNumeros = value.replace(/\D/g, "").slice(0, 4);
+    setConfirmPin(soloNumeros);
+    if (errors.confirmPin) {
+      setErrors((prev) => ({ ...prev, confirmPin: null }));
+    }
+    if (submitted && validationMessage) {
+      setValidationMessage("");
+    }
   };
 
   // ─── FUNCIONES EXISTENTES ──────────────────────────────────
@@ -138,27 +173,11 @@ export function useColaboradorForm({
       hasError = true;
     }
 
-    // Rol obligatorio (sin valor por defecto)
-    if (!form.rol) {
-      newErrors.rol = "El rol es obligatorio";
-      hasError = true;
-    }
-
-    // Validar fincaId SOLO si el rol requiere finca asociada (IDs 3 y 5)
-    const ROLES_CON_FINCA = [3, 5];
-    const rolId = Number(form.rol);
-    if (ROLES_CON_FINCA.includes(rolId) && !form.fincaId) {
-      newErrors.fincaId = "La finca es obligatoria para este rol";
-      hasError = true;
-    }
-
     // ─── VALIDACIÓN DE MEDIOS DE CONTACTO (teléfono o email) ───
     const telefonoValido = form.telefono && validarTelefono(form.telefono);
     const emailValido = form.email && validarEmail(form.email);
 
-    // Al menos uno debe estar presente y ser válido
     if (!telefonoValido && !emailValido) {
-      // Ambos vacíos o inválidos
       if (!form.telefono) {
         newErrors.telefono = "Debe proporcionar al menos un medio de contacto (teléfono o correo)";
       } else if (!validarTelefono(form.telefono)) {
@@ -167,18 +186,73 @@ export function useColaboradorForm({
       if (!form.email) {
         newErrors.email = "Debe proporcionar al menos un medio de contacto (teléfono o correo)";
       } else if (!validarEmail(form.email)) {
-        newErrors.email = "Correo electrónico inválido";
+        const partes = String(form.email).trim().split("@");
+        if (partes[0] && partes[0].length < 3) {
+          newErrors.email = "El correo debe tener un mínimo de 3 caracteres antes del @";
+        } else {
+          newErrors.email = "Correo electrónico inválido";
+        }
       }
       hasError = true;
     } else {
-      // Si al menos uno es válido, validar el otro si está presente
       if (form.telefono && !validarTelefono(form.telefono)) {
         newErrors.telefono = "Teléfono debe tener 8 dígitos";
         hasError = true;
       }
       if (form.email && !validarEmail(form.email)) {
-        newErrors.email = "Correo electrónico inválido";
+        const partes = String(form.email).trim().split("@");
+        if (partes[0] && partes[0].length < 3) {
+          newErrors.email = "El correo debe tener un mínimo de 3 caracteres antes del @";
+        } else {
+          newErrors.email = "Correo electrónico inválido";
+        }
         hasError = true;
+      }
+    }
+
+    // ─── VALIDACIÓN DE PIN ──────────────────────────────────────
+    const pinProvided = pin && pin.trim() !== "";
+    const confirmProvided = confirmPin && confirmPin.trim() !== "";
+
+    if (!isEditing) {
+      if (!pinProvided) {
+        newErrors.pin = "El PIN es obligatorio";
+        hasError = true;
+      } else if (!validarPin(pin)) {
+        newErrors.pin = "El PIN debe tener 4 dígitos numéricos";
+        hasError = true;
+      } else if (!esPinSeguro(pin)) {
+        newErrors.pin = "El PIN no es seguro, elija otro (evite dígitos repetidos o secuencias)";
+        hasError = true;
+      }
+
+      if (!confirmProvided) {
+        newErrors.confirmPin = "Debe confirmar el PIN";
+        hasError = true;
+      } else if (pin !== confirmPin) {
+        newErrors.confirmPin = "Los PIN no coinciden";
+        hasError = true;
+      }
+    } else {
+      if (pinProvided || confirmProvided) {
+        if (!pinProvided) {
+          newErrors.pin = "Debe ingresar el PIN para actualizarlo";
+          hasError = true;
+        } else if (!validarPin(pin)) {
+          newErrors.pin = "El PIN debe tener 4 dígitos numéricos";
+          hasError = true;
+        } else if (!esPinSeguro(pin)) {
+          newErrors.pin = "El PIN no es seguro, elija otro (evite dígitos repetidos o secuencias)";
+          hasError = true;
+        }
+
+        if (!confirmProvided) {
+          newErrors.confirmPin = "Debe confirmar el PIN";
+          hasError = true;
+        } else if (pin !== confirmPin) {
+          newErrors.confirmPin = "Los PIN no coinciden";
+          hasError = true;
+        }
       }
     }
 
@@ -187,9 +261,8 @@ export function useColaboradorForm({
   };
 
   // ─── CONSTRUCCIÓN DEL MENSAJE: UN SOLO ERROR A LA VEZ ──────
-  // Orden de prioridad: cedula, nombre, apellidos, rol, fincaId, telefono, email
   const buildValidationMessage = (errorsObj) => {
-    const order = ['cedula', 'nombre', 'apellidos', 'rol', 'fincaId', 'telefono', 'email'];
+    const order = ['cedula', 'nombre', 'apellidos', 'telefono', 'email', 'pin', 'confirmPin'];
     for (const field of order) {
       if (errorsObj[field]) {
         return errorsObj[field];
@@ -211,6 +284,11 @@ export function useColaboradorForm({
     const fullName = `${form.nombre} ${form.apellidos}`;
     const submitData = { ...form, nombre: fullName };
     delete submitData.apellidos;
+
+    if (pin && pin.trim() !== "" && validarPin(pin)) {
+      submitData.pin = pin;
+    }
+
     onSubmit(submitData);
   };
 
@@ -222,9 +300,10 @@ export function useColaboradorForm({
       apellidos: "",
       telefono: "",
       email: "",
-      rol: "",
       fincaId: fincaId || "",
     });
+    setPin("");
+    setConfirmPin("");
     setErrors({});
     setSubmitted(false);
     setValidationMessage("");
@@ -235,13 +314,15 @@ export function useColaboradorForm({
     errors,
     submitted,
     validationMessage,
-    rolesDisponibles,
-    fincasOptions,
     handleChange,
     handleCedulaChange,
     handleTelefonoChange,
     handleNombreChange,
     handleApellidosChange,
+    handlePinChange,
+    handleConfirmPinChange,
+    pin,
+    confirmPin,
     handleSubmit,
     resetForm,
   };

@@ -1,46 +1,45 @@
 /**
- * ============================================================
- * HOOK: useInventario
- * ============================================================
+ * useInventario.js
+ * Hook para manejar el estado y lógica de la pantalla de Inventarios.
  *
- * Responsabilidad:
- * Maneja el estado de la pantalla de Inventarios: carga de productos desde la API,
- * texto de búsqueda, filtros activos (categoría, proveedor, unidad,
- * stock bajo, caducidad) y el cálculo de la lista filtrada final.
- * El filtro de caducidad muestra los productos cuya fechaCaducidad
- * sea igual o anterior a la fecha elegida en FilterButton (es decir,
- * "productos que caducan en o antes de esta fecha"), que es el uso
- * esperado para revisar próximos vencimientos.
+ * FUNCIONALIDAD:
+ * - Carga el listado de productos desde la API mediante InventarioService.
+ * - Centraliza el estado de la barra de búsqueda y los filtros activos.
+ * - Aplica filtros múltiples (categoría, proveedor, unidad, caducidad, stock).
+ * - Muestra el alert de éxito cuando Productos navega de vuelta a esta
+ *   pantalla luego de guardar o eliminar un producto.
  *
- * Datos:
- * Lee los productos mediante la llamada asíncronica a InventarioService.getProductosInventario(),
- * que ya devuelve el producto más reciente de primero. Cada producto
- * incluye fechaCaducidad como string dd/mm/aaaa (mismo formato que
- * entrega el DateInput compartido); es un dato real que ya existe en
- * el módulo de Productos, aquí solo se consume para el filtro.
+ * REGLAS IMPORTANTES:
+ * - Se manejan errores globales usando ErrorContext.
+ * - El aviso de guardado/eliminado NO se calcula en este módulo: llega
+ *   por parámetro de navegación (useLocalSearchParams) desde Productos,
+ *   que al terminar de guardar o eliminar un producto navega así:
+ *     router.replace({
+ *       pathname: "/(drawer)/inventarios",
+ *       params: { alertaProducto: "guardado" | "eliminado" },
+ *     });
+ *   Este hook solo lee ese parámetro (alertaProducto) y muestra el
+ *   alert correspondiente durante 3 segundos, según el estándar de
+ *   alerts de acciones exitosas. No se depende del estado interno de
+ *   ningún hook de Productos.
  *
- * Validaciones:
- * No aplica validación de formulario; solo filtra sobre datos ya
- * existentes en memoria.
- *
- * Navegación:
- * Recarga los productos de la API automáticamente cada vez que la
- * pantalla recibe foco gracias a useFocusEffect.
- *
- * Dependencias:
- * services/InventarioService.js.
+ * @dependencies - React, expo-router, InventarioService, ErrorContext
+ * @validations - N/A
+ * @navigation - N/A
  */
 
-import { useCallback, useRef, useState } from "react";
-import { useFocusEffect } from "expo-router";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useFocusEffect, useLocalSearchParams } from "expo-router";
 
 import { getProductosInventario } from "../services/InventarioService.js";
+import { esStockBajo, ordenarPorMasReciente } from "../utils/InventarioCalculos.js";
+import { useError } from "../../../shared/context/ErrorContext.js";
 
-/**
- * Convierte un string "dd/mm/aaaa" a Date para poder comparar fechas.
- * No usa regex, solo split. Devuelve null si el string viene vacío o
- * mal formado (así el filtro simplemente no aplica en vez de romper).
- */
+const mensajesAlertaProducto = {
+  guardado: "Producto guardado correctamente.",
+  eliminado: "Producto eliminado correctamente.",
+};
+
 function parsearFechaDDMMAAAA(fecha) {
   if (!fecha) return null;
   const partes = fecha.split("/");
@@ -54,9 +53,12 @@ function parsearFechaDDMMAAAA(fecha) {
 
 export function useInventario() {
   const flatListRef = useRef(null);
+  const { mostrarError } = useError();
+  const { alertaProducto } = useLocalSearchParams();
 
   const [productos, setProductos] = useState([]);
   const [busqueda, setBusqueda] = useState("");
+  const [feedback, setFeedback] = useState(null);
 
   const [filtros, setFiltros] = useState({
     categories: [],
@@ -77,7 +79,7 @@ export function useInventario() {
             setProductos(data);
           }
         } catch (error) {
-          console.error("Error al cargar productos de inventario:", error);
+          if (isActive) mostrarError(error);
         }
       };
       loadData();
@@ -88,21 +90,30 @@ export function useInventario() {
     }, []),
   );
 
+  useEffect(() => {
+    const mensaje = mensajesAlertaProducto[alertaProducto];
+    if (mensaje) {
+      setFeedback({ variant: "success", message: mensaje });
+      const t = setTimeout(() => setFeedback(null), 3000);
+      return () => clearTimeout(t);
+    }
+  }, [alertaProducto]);
+
   const categorias = Array.isArray(productos)
     ? [...new Set(productos.map((p) => p.categoria).filter(Boolean))]
     : [];
   const proveedores = Array.isArray(productos)
-    ? [...new Set(productos.map((p) => p.proveedor).filter(Boolean))]
+    ? [...new Set(productos.map((p) => p.nombreProveedor).filter(Boolean))]
     : [];
   const unidades = Array.isArray(productos)
     ? [...new Set(productos.map((p) => p.unidad).filter(Boolean))]
     : [];
 
   const productosFiltrados = Array.isArray(productos)
-    ? productos.filter((p) => {
+    ? ordenarPorMasReciente(productos).filter((p) => {
         const texto = busqueda.toLowerCase();
         const nombre = (p.nombre || "").toLowerCase();
-        const proveedor = (p.proveedor || "").toLowerCase();
+        const proveedor = (p.nombreProveedor || "").toLowerCase();
         const categoria = (p.categoria || "").toLowerCase();
         const codigo = (p.codigo || "").toLowerCase();
 
@@ -118,12 +129,12 @@ export function useInventario() {
 
         const coincideProveedor =
           filtros.suppliers.length === 0 ||
-          filtros.suppliers.includes(p.proveedor);
+          filtros.suppliers.includes(p.nombreProveedor);
 
         const coincideUnidad =
           filtros.units.length === 0 || filtros.units.includes(p.unidad);
 
-        const coincideStock = !filtros.lowStock || Number(p.cantidad) < Number(p.stockMinimo);
+        const coincideStock = !filtros.lowStock || esStockBajo(p);
 
         const fechaFiltro = parsearFechaDDMMAAAA(filtros.expiryDate);
         const fechaProducto = parsearFechaDDMMAAAA(p.fechaCaducidad);
@@ -142,7 +153,7 @@ export function useInventario() {
     : [];
 
   const cantidadStockBajo = Array.isArray(productos)
-    ? productos.filter((p) => Number(p.cantidad) < Number(p.stockMinimo)).length
+    ? productos.filter(esStockBajo).length
     : 0;
 
   return {
@@ -157,5 +168,6 @@ export function useInventario() {
     unidades,
     productosFiltrados,
     cantidadStockBajo,
+    feedback,
   };
 }

@@ -80,7 +80,7 @@ import { COLORS } from "../../../theme/colors";
 
 import useNuevaSiembra from "../hooks/useNuevaSiembra";
 
-export default function NuevaSiembraScreen() {
+export default function NuevaSiembraScreen({ onSuccess }) {
   const {
     formData,
 
@@ -120,6 +120,7 @@ export default function NuevaSiembraScreen() {
 
     handleCrearSiembra,
     guardando,
+    scrollRef,
 
     handleAgregarProveedorLarva,
 
@@ -140,7 +141,7 @@ export default function NuevaSiembraScreen() {
     handleEliminarProcedenciaLarva,
 
     fieldHelpers,
-  } = useNuevaSiembra();
+  } = useNuevaSiembra(onSuccess);
 
   return (
     <>
@@ -155,6 +156,7 @@ export default function NuevaSiembraScreen() {
       />
 
       <ScrollView
+        ref={scrollRef}
         style={STYLE.container}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
@@ -326,8 +328,8 @@ export default function NuevaSiembraScreen() {
                 {guardando
                   ? "Guardando..."
                   : formData.tipoRegistro === "precria"
-                    ? "Guardar Pre-Cría"
-                    : "Guardar Siembra"}
+                    ? "Registrar Pre-Cría"
+                    : "Registrar Siembra"}
               </Text>
             </View>
           </Button>

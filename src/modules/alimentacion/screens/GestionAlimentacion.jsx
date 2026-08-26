@@ -28,7 +28,7 @@
  * />
  */
  
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { View, ScrollView } from "react-native";
 
 import AlimentacionStats from "../components/AlimentacionStats";
@@ -46,6 +46,7 @@ import { STYLE } from "../../../theme/style";
 
 export default function GestionAlimentacion({
   alimentaciones,
+  errorListado,
   form,
   updateField,
   submitted,
@@ -53,15 +54,25 @@ export default function GestionAlimentacion({
   alerta,
   handleGuardar,
 }) {
+  const [catalogoErrors, setCatalogoErrors] = useState({
+    infoGeneral: "",
+    consumo: "",
+  });
+
   const scrollRef = useRef(null);
+  const catalogoError = catalogoErrors.infoGeneral || catalogoErrors.consumo;
+  // Prioridad: alerta de guardado > error de catálogos > error al cargar el listado.
+  const alertVisible = alerta.visible || !!catalogoError || !!errorListado;
+  const alertMessage = alerta.visible ? alerta.mensaje : (catalogoError || errorListado);
+  const alertVariant = alerta.visible ? alerta.variant : "danger";
 
   useEffect(() => {
-    if (alerta.visible) {
+    if (alertVisible) {
       scrollRef.current?.scrollToEnd({
         animated: true,
       });
     }
-  }, [alerta.visible]);
+  }, [alertVisible]);
 
   const calcularStats = (registros = []) => {
     const registrosHoy = registros.length;
@@ -101,12 +112,18 @@ export default function GestionAlimentacion({
           updateField={updateField}
           submitted={submitted}
           errores={errores}
+          onCatalogoErrorChange={(section, message) =>
+            setCatalogoErrors((prev) => ({
+              ...prev,
+              [section]: message || "",
+            }))
+          }
         />
 
-        {alerta.visible && (
+        {alertVisible && (
           <Alert
-            variant={alerta.variant}
-            message={alerta.mensaje}
+            variant={alertVariant}
+            message={alertMessage}
             style={styles.alert}
           />
         )}

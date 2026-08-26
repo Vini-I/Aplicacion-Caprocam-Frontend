@@ -45,6 +45,23 @@ import { useEffect, useMemo, useState } from "react";
 import { fincaService } from "../../finca/services/finca.service";
 import { estanqueService } from "../../estanques/services/estanque.service";
 
+function extraerMensajeError(error) {
+    if (!error) return "Ocurrió un error inesperado.";
+    if (typeof error === "string") return error;
+
+    const data = error?.response?.data;
+    if (Array.isArray(data?.error) && data.error.length > 0) {
+        return data.error.join(" ");
+    }
+    if (Array.isArray(data?.errors) && data.errors.length > 0) {
+        return data.errors.join(" ");
+    }
+    if (Array.isArray(data?.errores) && data.errores.length > 0) {
+        return data.errores.join(" ");
+    }
+    return data?.mensaje || data?.message || error?.message || "No se pudieron cargar fincas y estanques.";
+}
+
 export function useFincaEstanqueAlimentacion(idFincaSeleccionada) {
     const [fincas, setFincas] = useState([]);
     const [estanques, setEstanques] = useState([]);
@@ -59,18 +76,37 @@ export function useFincaEstanqueAlimentacion(idFincaSeleccionada) {
             setErrorCatalogos(null);
 
             try {
-                const [fincasData, estanquesData] = await Promise.all([
+                const [fincasResult, estanquesResult] = await Promise.allSettled([
                     fincaService.getFincas(),
                     estanqueService.getEstanques(),
                 ]);
 
                 if (!activo) return;
 
-                setFincas(fincasData || []);
-                setEstanques(estanquesData || []);
+                const mensajesError = [];
+
+                if (fincasResult.status === "fulfilled") {
+                    setFincas(fincasResult.value || []);
+                } else {
+                    mensajesError.push(`${extraerMensajeError(fincasResult.reason)}`);
+                    setFincas([]);
+                }
+
+                if (estanquesResult.status === "fulfilled") {
+                    setEstanques(estanquesResult.value || []);
+                } else {
+                    mensajesError.push(`${extraerMensajeError(estanquesResult.reason)}`);
+                    setEstanques([]);
+                }
+
+                if (mensajesError.length > 0) {
+                    setErrorCatalogos(mensajesError[0]);
+                }
             } catch (error) {
                 if (activo) {
-                    setErrorCatalogos("No se pudieron cargar fincas y estanques.");
+                    setErrorCatalogos(extraerMensajeError(error));
+                    setFincas([]);
+                    setEstanques([]);
                 }
             } finally {
                 if (activo) {

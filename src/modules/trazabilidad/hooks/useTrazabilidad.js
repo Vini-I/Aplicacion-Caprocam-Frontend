@@ -19,7 +19,6 @@ import {
   obtenerEstanquesPreCriaPorFinca,
   obtenerEstanquesEngordePorFinca,
   obtenerFincas,
-  obtenerColaboradorSesion,
   obtenerSiembraActivaPorEstanque,
 } from "../services/TrazabilidadServices";
 import { crearRegistroTrazabilidad } from "../services/AgregarTrazabilidadService";
@@ -27,12 +26,10 @@ import { esFechaFutura, esFechaValida, getCurrentDate } from "../../../shared/ut
 
 export function useTrazabilidad() {
   const router = useRouter();
-  const [colaboradorSesion, setColaboradorSesion] = useState(() => obtenerColaboradorSesion());
 
   const [formData, setFormData] = useState(() => ({
     ...initialForm,
     fecha: initialForm.fecha || getCurrentDate(),
-    colaboradorId: colaboradorSesion.colaboradorId ?? null,
   }));
   const [mensajeError, setMensajeError] = useState("");
   const [plAutocompletado, setPlAutocompletado] = useState(false);
@@ -77,19 +74,6 @@ export function useTrazabilidad() {
         setFincas([]);
         mostrarErrorCarga("No se pudieron cargar las fincas.", error);
       });
-  }, []);
-
-  // Resuelve el nombre/datos reales de la sesión actual (usuario o colaborador)
-  useEffect(() => {
-    let cancelado = false;
-    obtenerColaboradorSesion(true).then((real) => {
-      if (cancelado) return;
-      setColaboradorSesion(real);
-      setFormData((previousData) => ({ ...previousData, colaboradorId: real.colaboradorId ?? null }));
-    });
-    return () => {
-      cancelado = true;
-    };
   }, []);
 
   const [estanquesOrigen, setEstanquesOrigen] = useState([]);
@@ -150,7 +134,7 @@ export function useTrazabilidad() {
 
         setFormData((previousData) => ({
           ...previousData,
-          pl: siembra ? String(siembra.pl_siembra ?? "") : "",
+          pl: siembra ? String(siembra.pl_siembra ?? siembra.plSiembra ?? siembra.pl ?? siembra.cantidad_sembrada ?? siembra.cantidadSembrada ?? "") : "",
           dias: siembra ? String(siembra.dias ?? "") : "",
         }));
         setPlAutocompletado(Boolean(siembra));
@@ -252,12 +236,22 @@ export function useTrazabilidad() {
         mostrarErrorCarga("", error);
         return;
       }
-      const mensajeApi = error?.response?.data?.message;
-      setMensajeError(
-        error?.response?.status === 400 && mensajeApi
+      const mensajeApi =
+        error?.message ||
+        error?.response?.data?.message ||
+        error?.response?.data?.error;
+
+      const mensajeAMostrar =
+        mensajeApi && typeof mensajeApi === "string" && mensajeApi.trim() !== ""
           ? mensajeApi
-          : "No se pudo guardar el registro. Intenta de nuevo."
-      );
+          : "No se pudo guardar el registro. Intenta de nuevo.";
+
+      setMensajeError(mensajeAMostrar);
+      if (timerErrorRef.current) clearTimeout(timerErrorRef.current);
+      timerErrorRef.current = setTimeout(() => {
+        setMensajeError("");
+        timerErrorRef.current = null;
+      }, 6000);
       return;
     }
     setMensajeError("");
@@ -272,7 +266,6 @@ export function useTrazabilidad() {
   return {
     formData,
     fincas,
-    colaboradorSesion,
     estanquesOrigen,
     estanquesDestino,
     plAutocompletado,

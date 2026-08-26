@@ -7,34 +7,41 @@
  * Permite a los usuarios autenticarse ingresando usuario y contraseña.
  * Ambos campos son obligatorios y se marcan con asterisco (*).
  *
- * @dependencies - Card, Alert, Spinner, Button, Header, Separator, FormField (shared)
+ * @dependencies - Card, Alert, Spinner, Button, Header, Input, Icon (shared)
  *               - useAuth (hooks/useAuth) para lógica de autenticación
  *               - styles/webLoginStyles, theme/style
  * @validations  - Usuario y Contraseña obligatorios (*).
  *               - Errores de validación visibles solo tras primer intento de envío.
+ *               - Borde rojo por campo cuando hay error de validación (prop error de Input).
  *               - createChangeHandler limpia serverError en cada cambio de campo.
  * @navigation   - onLoginSuccess → sección principal de la aplicación.
- *               - onGoToRegister → flujo de registro de administradores.
+ *               - onGoToLanding → redirige a la pantalla /landing.
+ *               - El registro de administradores ya no vive aquí: solo es
+ *                 accesible desde Configuración dentro del drawer, y
+ *                 solamente para usuarios ya autenticados.
  */
 
-import { View, ScrollView } from 'react-native';
+import { useState, useEffect } from 'react';
+import { View, ScrollView, TouchableOpacity, Platform } from 'react-native';
 
 import Card from '../../../shared/components/Card';
 import Spinner from '../../../shared/components/Spinner';
 import Button from '../../../shared/components/Button';
 import Header from '../../../shared/components/Header';
-import Separator from '../../../shared/components/Separator';
 import Input from '../../../shared/components/Input';
 import Alert from '../../../shared/components/Alert';
+import Icon from '../../../shared/components/Icons';
 
 import { useAuth } from '../hooks/useAuth';
 import { AUTH_MESSAGES as MSG } from '../constants/authMessages';
 import styles from '../styles/webLoginStyles';
 import { STYLE } from '../../../theme/style';
+import { ICONS } from '../../../theme/icons';
+import { COLORS } from '../../../theme/colors';
 
 export default function WebLoginScreen({
   onLoginSuccess = () => { },
-  onGoToRegister = () => { },
+  onGoToLanding = () => { },
 }) {
   const {
     username, setUsername,
@@ -42,6 +49,31 @@ export default function WebLoginScreen({
     errors, loading, serverError, setServerError,
     handleLogin,
   } = useAuth({ onLoginSuccess });
+
+  // Suprime el botón nativo del browser para mostrar contraseña (solo web),
+  // que se superponía con el ícono personalizado del campo.
+  useEffect(() => {
+    if (Platform.OS !== 'web') return;
+    const style = document.createElement('style');
+    style.innerHTML = [
+      'input[type="password"]::-ms-reveal { display: none !important; }',
+      'input[type="password"]::-ms-clear { display: none !important; }',
+      'input::-webkit-contacts-auto-fill-button { visibility: hidden; }',
+      'input::-webkit-credentials-auto-fill-button { visibility: hidden; }',
+    ].join(' ');
+    document.head.appendChild(style);
+    return () => document.head.removeChild(style);
+  }, []);
+
+  // Controla la visibilidad de la contraseña; se oculta automáticamente
+  // cuando el servidor responde con un error para no exponer el texto.
+  const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    if (serverError) {
+      setShowPassword(false);
+    }
+  }, [serverError]);
 
   const createChangeHandler = (setter) => (val) => {
     if (serverError && setServerError) setServerError(null);
@@ -69,18 +101,39 @@ export default function WebLoginScreen({
               editable={!loading}
               autoCapitalize="none"
               autoCorrect={false}
-              style={errors.username ? styles.errorField : null}
+              error={errors.username}
+              returnKeyType="next"
+              blurOnSubmit={false}
             />
 
-            <Input
-              label={`${MSG.LABEL_PASSWORD} *`}
-              value={password}
-              onChangeText={createChangeHandler(setPassword)}
-              placeholder={MSG.PLACEHOLDER_PASSWORD}
-              editable={!loading}
-              secureTextEntry
-              style={errors.password ? styles.errorField : null}
-            />
+            
+            <View style={styles.passwordWrapper}>
+              <Input
+                label={`${MSG.LABEL_PASSWORD} *`}
+                value={password}
+                onChangeText={createChangeHandler(setPassword)}
+                placeholder={MSG.PLACEHOLDER_PASSWORD}
+                editable={!loading}
+                secureTextEntry={!showPassword}
+                error={errors.password}
+                returnKeyType="go"
+                onSubmitEditing={handleLogin}
+                containerStyle={styles.passwordInput}
+                style={styles.passwordFieldInput}
+              />
+              <TouchableOpacity
+                style={styles.eyeButton}
+                onPress={() => setShowPassword((prev) => !prev)}
+                accessibilityLabel={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Icon
+                  icon={showPassword ? ICONS.eyeOff : ICONS.eye}
+                  size={20}
+                  color={COLORS.textQuaternary}
+                />
+              </TouchableOpacity>
+            </View>
 
             {serverError ? (
               <Alert variant="danger" message={serverError} style={styles.serverAlertSpacing} />
@@ -100,10 +153,8 @@ export default function WebLoginScreen({
               {MSG.BUTTON_LOGIN}
             </Button>
 
-            <Separator text={MSG.SEPARATOR_TEXT_LOGIN} />
-
-            <Button variant="outline" disabled={loading} onPress={onGoToRegister}>
-              {MSG.BUTTON_GO_TO_REGISTER}
+            <Button variant="secondary" disabled={loading} onPress={onGoToLanding}>
+              Volver al inicio
             </Button>
 
           </Card>

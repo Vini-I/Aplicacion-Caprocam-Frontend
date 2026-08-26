@@ -1,25 +1,24 @@
 import { normalizarTelefonoParaBackend } from "../utils/contactValidators.js";
 
 /**
- * ============================================================
- * DTO DE PROVEEDOR (FRONTEND -> BACKEND)
- * ============================================================
- *
- * Arma el payload que se envía al backend al crear/actualizar un
- * proveedor.
+ * proveedor.dto.js
+ * DTO para formatear los datos del proveedor antes de enviarlos al backend.
  *
  * FUNCIONALIDAD:
- * 1. Limpia (trim) los campos de texto.
- * 2. Normaliza el teléfono al formato +506 XXXX-XXXX en proveedorContacto.utils.js.
- * 3. Tipo de producto: usa el mismo value del catálogo
- *    tiposProducto de proveedor.service.js única fuente.
+ * - Limpia (trim) los campos de texto y previene inyección accidental.
+ * - Formatea el teléfono utilizando utils/contactValidators.
+ * - Prepara el payload estandarizado para la API (Frontend -> Backend).
+ * - Elimina la variable grupoDatos conforme al nuevo requerimiento.
  *
- * IMPORTANTE:
- * El backend valida el body en dos capas con nombres distintos:
- *  - middleware  -> nombre, tipoProducto camelCase
- *  - controller  -> nombre_empresa, tipo_producto snake_case
- * Por eso se envían ambas variantes. Corregido el backend, los
- * campos snake_case pueden eliminarse.
+ * REGLAS IMPORTANTES:
+ * - Envía todas las variables en camelCase (el DTO del backend ya
+ *   responde/acepta camelCase, por lo que no se necesita snake_case).
+ * - No incluye ID; el ID se maneja en el path param del controlador.
+ * - Toda limpieza de strings antes del guardado sucede exclusivamente aquí.
+ *
+ * @dependencies - contactValidators
+ * @validations - N/A
+ * @navigation - N/A
  */
 
 export class ProveedorDTO {
@@ -31,23 +30,14 @@ export class ProveedorDTO {
     direccion,
     notas,
   }) {
-    this.grupoDatos = 1; // Temporal hasta implementar Grupo de Datos
-
     const nombreLimpio = (nombre || "").trim();
     const telefonoNormalizado = normalizarTelefonoParaBackend(telefono);
     const correoLimpio = (correo || "").trim();
 
     this.nombre = nombreLimpio;
-    this.nombre_empresa = nombreLimpio;
-
     this.tipoProducto = tipoProducto;
-    this.tipo_producto = tipoProducto;
-
     this.telefono = telefonoNormalizado;
-
     this.correo = correoLimpio;
-    this.correo_electronico = correoLimpio;
-
     this.direccion = (direccion || "").trim();
     this.notas = notas ? notas.trim() : "";
   }

@@ -21,7 +21,7 @@ import { TYPOGRAPHY } from "../../../theme/typography";
 
 export const styles = StyleSheet.create({
   scrollContent: {
-    paddingBottom: 24,
+    paddingBottom: 90,
   },
   contentHeader: {
     paddingTop: 18,
@@ -37,13 +37,11 @@ export const styles = StyleSheet.create({
     fontFamily: TYPOGRAPHY.fontFamily.bold,
     flex: 1,
   },
-  newButton: {
-    width: "100%",
-    borderRadius: 14,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    marginTop: 0,
-    alignSelf: "stretch",
+  newButtonContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
   },
   newButtonText: {
     color: COLORS.primary,
@@ -52,45 +50,35 @@ export const styles = StyleSheet.create({
     textAlign: "center",
     flexShrink: 0,
   },
-  newButtonContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-  },
-  newButtonCompact: {
-    minHeight: 36,
-    paddingVertical: 8,
-    paddingHorizontal: 10,
+  searchBarContainer: {
+    flex: 1,
+    marginBottom: 0,
   },
   barraBusqueda: {
     flexDirection: "row",
-    alignItems: "flex-start",
+    alignItems: "center",
     gap: 8,
     marginBottom: 12,
-    width: "100%",
-  },
-  searchBarContainer: {
-    flex: 1,
-    minHeight: 44,
-  },
-  filterColumn: {
-    width: 160,
-    flexDirection: "column",
-    alignItems: "stretch",
-    justifyContent: "flex-start",
-    marginTop: 0,
-    gap: 8,
   },
   filterButton: {
-    alignSelf: "stretch",
-    minHeight: 44,
+    alignSelf: "center",
     marginTop: 0,
+    height: 43,
   },
-  buttonRow: {
+  buttonWrapper: {
+    position: "absolute",
+    bottom: 16,
+    left: 0,
+    right: 0,
+    alignItems: "center",
+  },
+  addButton: {
     width: "100%",
-    alignItems: "flex-end",
-    marginBottom: 12,
+    maxWidth: 900,
+    marginTop: 0,
+    borderRadius: 14,
+    paddingVertical: 12,
+    backgroundColor: COLORS.white,
   },
   contadorResultados: {
     marginBottom: 12,
@@ -172,20 +160,13 @@ export const styles = StyleSheet.create({
     fontFamily: TYPOGRAPHY.fontFamily.bold,
     textAlign: "right",
   },
-  detailButton: {
-    borderRadius: 14,
-    paddingVertical: 11,
-    marginTop: 0,
-  },
-  detailButtonContent: {
+  toggleContainer: {
     flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 10,
+    gap: 8,
+    marginBottom: 12,
   },
-  detailButtonText: {
-    color: COLORS.primary,
-    fontSize: 14,
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
+  toggleButton: {
+    flex: 1,
+    marginTop: 0,
   },
 });

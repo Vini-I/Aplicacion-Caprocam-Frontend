@@ -1,26 +1,42 @@
 /**
+ * ============================================================
+ * HOOK USEEDITARRALEO
+ * ============================================================
+ *
  * Calco de useRaleoScreen para edición. Reusa useRaleo + RaleoForm.
+ *
+ * CAMBIO (documento de requerimientos): igual que en el alta, el
+ * usuario edita los kilogramos retirados y la biomasa previa; el
+ * porcentaje y la biomasa restante se recalculan y se muestran de
+ * solo lectura. Se eliminaron del formulario `porcentajeRaleo`,
+ * `pesoPromedio`, `objetivo` y `metodo`.
+ *
+ * registroAForm() acepta los nombres viejos como alias
+ * (`biomasaEstimado`, `pesoEstimado`) además de los nuevos, para
+ * que los registros creados antes del cambio se sigan abriendo
+ * sin quedar en blanco.
  */
-import { useState, useEffect, useCallback, useMemo } from "react";
+
+import { useState, useEffect, useCallback } from "react";
 import useRaleo from "./useRaleo";
+import { calcularRaleo } from "./useRaleoScreen";
 import raleoService from "../services/Raleo.service.js";
 
 function registroAForm(registro) {
   if (!registro) return {};
+
   let fecha = registro.fecha ?? "";
   if (typeof fecha === "string" && /^\d{4}-\d{2}-\d{2}/.test(fecha)) {
     const [y, m, d] = fecha.slice(0, 10).split("-");
     fecha = `${d}/${m}/${y}`;
   }
+
   return {
     finca: String(registro.idFinca ?? registro.fincaId ?? registro.finca ?? ""),
     estanque: String(registro.idEstanque ?? registro.estanqueId ?? registro.estanque ?? ""),
     fecha,
-    porcentajeRaleo: String(registro.porcentajeRaleo ?? registro.porcentaje ?? ""),
-    pesoPromedio: String(registro.pesoPromedio ?? registro.pesoEstimado ?? ""),
-    biomasaActual: String(registro.biomasaActual ?? registro.biomasaEstimado ?? ""),
-    objetivo: registro.objetivo ?? "",
-    metodo: registro.metodo ?? "",
+    biomasaAntes: String(registro.biomasaAntes ?? registro.biomasaEstimada ?? ""),
+    kgRetirados: String(registro.kgRetirados ?? registro.pesoEstimado ?? ""),
     observaciones: registro.observaciones ?? "",
   };
 }
@@ -32,16 +48,20 @@ function convertirFecha(fecha) {
   return `${anio}-${mes}-${dia}`;
 }
 
-function formADto(form) {
+function formADto(form, porcentajeRaleo, biomasaRestante) {
+  /*
+  Solo se envian los datos que el usuario captura. El porcentaje y
+  la biomasa restante los recalcula el backend al guardar, para que
+  exista una sola fuente de verdad de las formulas.
+  */
   return {
     idFinca: form.finca,
     idEstanque: form.estanque,
     fecha: convertirFecha(form.fecha),
-    porcentaje: Number(form.porcentajeRaleo),
-    pesoEstimado: Number(form.pesoPromedio),
-    biomasaEstimado: Number(form.biomasaActual),
-    objetivo: form.objetivo,
-    metodo: form.metodo,
+    porcentaje: Number(porcentajeRaleo),
+    kgRetirados: Number(form.kgRetirados),
+    biomasaRestante: Number(biomasaRestante),
+    biomasaEstimada: Number(form.biomasaAntes),
     observaciones: form.observaciones?.trim()
       ? form.observaciones
       : "No se realizan observaciones",
@@ -72,14 +92,12 @@ export default function useEditarRaleo(registroId, onGuardado) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [registroId]);
 
-  const biomasaRestante = useMemo(() => {
-    const b = Number(form.biomasaActual);
-    const p = Number(form.porcentajeRaleo);
-    if (!b || Number.isNaN(b) || Number.isNaN(p)) return "";
-    return (b * (1 - p / 100)).toFixed(2);
-  }, [form.biomasaActual, form.porcentajeRaleo]);
+  const { porcentaje: porcentajeRaleo, biomasaRestante } = calcularRaleo(
+    form.biomasaAntes,
+    form.kgRetirados
+  );
 
-  const handleGuardar = useCallback(async (onError) => {
+  const handleGuardar = useCallback(async () => {
     setSubmitted(true);
     const { valido, errores: err } = validarForm();
     setErrores(err);
@@ -88,18 +106,27 @@ export default function useEditarRaleo(registroId, onGuardado) {
       return;
     }
     try {
-      await raleoService.update(registroId, formADto(form));
+      await raleoService.update(registroId, formADto(form, porcentajeRaleo, biomasaRestante));
       setAlerta({ visible: true, variant: "success", mensaje: "Raleo actualizado correctamente" });
       onGuardado?.();
     } catch (error) {
-      onError?.(error);
       setAlerta({
         visible: true,
         variant: "danger",
-        mensaje: error.response?.data?.message || "No se pudo actualizar el registro.",
+        mensaje: error.message,
       });
     }
   }, [form, registroId, onGuardado, validarForm]);
 
-  return { form, updateField, biomasaRestante, submitted, errores, alerta, handleGuardar, cargando };
+  return {
+    form,
+    updateField,
+    porcentajeRaleo,
+    biomasaRestante,
+    submitted,
+    errores,
+    alerta,
+    handleGuardar,
+    cargando,
+  };
 }

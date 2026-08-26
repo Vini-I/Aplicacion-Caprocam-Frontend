@@ -22,8 +22,6 @@
 
 import { ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
-
 import LandingAbout from "../components/LandingAbout";
 import LandingCommunity from "../components/LandingCommunity";
 import LandingFooter from "../components/LandingFooter";
@@ -31,39 +29,32 @@ import LandingHeader from "../components/LandingHeader";
 import LandingHero from "../components/LandingHero";
 import LandingServices from "../components/LandingServices";
 
-import { HERO_SLIDES } from "../data/landing.data";
-import {
-  useLandingCarousel,
-  useLandingFaq,
-  useLandingMobileMenu,
-  useLandingNavigation,
-  useLandingResponsive,
-  useWhatsapp,
-} from "../hooks/useLanding";
+import { useLanding } from "../hooks/useLanding";
 import { styles } from "../styles/LandingStyle";
 
-export default function LandingScreen({ onLogin }) {
-  const router = useRouter();
-
-  const { esMovil, esTablet } = useLandingResponsive();
-
-  const { indiceHero, opacity, cambiarSlide } =
-    useLandingCarousel(HERO_SLIDES.length);
-
-  const { preguntaAbierta, alternarPregunta } =
-    useLandingFaq();
-
+export default function LandingScreen() {
   const {
+    esMovil,
+    esTablet,
+    indiceHero,
+    opacity,
+    cambiarSlide,
+    preguntaAbierta,
+    alternarPregunta,
     scrollRef,
     guardarPosicion,
     irASeccion,
     irAlInicio,
-  } = useLandingNavigation();
-
-  const { abrirWhatsapp } = useWhatsapp();
-
-  const { menuAbierto, alternarMenu, cerrarMenu } =
-    useLandingMobileMenu();
+    abrirWhatsapp,
+    menuAbierto,
+    alternarMenu,
+    navegarA,
+    iniciarSesion,
+    irACreditos,
+    enlaceActivo,
+    activarEnlace,
+    desactivarEnlace,
+  } = useLanding();
 
   return (
     <SafeAreaView
@@ -75,10 +66,9 @@ export default function LandingScreen({ onLogin }) {
           esMovil={esMovil}
           menuAbierto={menuAbierto}
           alternarMenu={alternarMenu}
-          cerrarMenu={cerrarMenu}
           irAlInicio={irAlInicio}
-          irASeccion={irASeccion}
-          iniciarSesion={() => onLogin()}
+          iniciarSesion={iniciarSesion}
+          navegarA={navegarA}
         />
         <ScrollView
           ref={scrollRef}
@@ -96,10 +86,12 @@ export default function LandingScreen({ onLogin }) {
           />
           <LandingAbout
             esMovil={esMovil}
+            esTablet={esTablet}
             guardarPosicion={guardarPosicion}
           />
           <LandingServices
             esMovil={esMovil}
+            esTablet={esTablet}
             guardarPosicion={guardarPosicion}
             preguntaAbierta={preguntaAbierta}
             alternarPregunta={alternarPregunta}
@@ -112,7 +104,12 @@ export default function LandingScreen({ onLogin }) {
           />
           <LandingFooter
             esMovil={esMovil}
+            esTablet={esTablet}
             guardarPosicion={guardarPosicion}
+            irACreditos={irACreditos}
+            enlaceActivo={enlaceActivo}
+            activarEnlace={activarEnlace}
+            desactivarEnlace={desactivarEnlace}
           />
         </ScrollView>
       </View>

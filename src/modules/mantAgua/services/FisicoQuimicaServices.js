@@ -34,9 +34,11 @@ export async function getLecturas() {
     const response = await api.get('/lecturasFisicoQuimicas');
     return response.data.data;
   } catch (error) {
-    throw new Error(
+    const err = new Error(
       obtenerMensajeErrorBackend(error, 'No se pudieron obtener las lecturas físico-químicas.')
     );
+    err.response = error.response;
+    throw err;
   }
 }
 
@@ -45,9 +47,11 @@ export async function getLecturaPorId(id) {
     const response = await api.get(`/lecturasFisicoQuimicas/${id}`);
     return response.data.data;
   } catch (error) {
-    throw new Error(
+    const err = new Error(
       obtenerMensajeErrorBackend(error, 'No se pudo obtener el detalle de la lectura.')
     );
+    err.response = error.response;
+    throw err;
   }
 }
 
@@ -56,9 +60,11 @@ export async function crearLectura(datos) {
     const response = await api.post('/lecturasFisicoQuimicas', datos);
     return response.data.data;
   } catch (error) {
-    throw new Error(
+    const err = new Error(
       obtenerMensajeErrorBackend(error, 'No se pudo guardar la lectura físico-química.')
     );
+    err.response = error.response;
+    throw err;
   }
 }
 
@@ -67,9 +73,11 @@ export async function actualizarLectura(id, datos) {
     const response = await api.put(`/lecturasFisicoQuimicas/${id}`, datos);
     return response.data.data;
   } catch (error) {
-    throw new Error(
+    const err = new Error(
       obtenerMensajeErrorBackend(error, 'No se pudo actualizar la lectura físico-química.')
     );
+    err.response = error.response;
+    throw err;
   }
 }
 
@@ -78,9 +86,11 @@ export async function eliminarLectura(id) {
     const response = await api.delete(`/lecturasFisicoQuimicas/${id}`);
     return response.data.data;
   } catch (error) {
-    throw new Error(
+    const err = new Error(
       obtenerMensajeErrorBackend(error, 'No se pudo eliminar la lectura del estanque.')
     );
+    err.response = error.response;
+    throw err;
   }
 }
 
@@ -95,9 +105,11 @@ export async function getLecturaPorEstanqueYFecha(estanqueId, fecha) {
     });
     return response.data.data;
   } catch (error) {
-    throw new Error(
+    const err = new Error(
       obtenerMensajeErrorBackend(error, 'No se pudo obtener la lectura del estanque.')
     );
+    err.response = error.response;
+    throw err;
   }
 }
 
@@ -160,9 +172,11 @@ export async function obtenerOpcionesFincas() {
     const fincas = await fincaService.getFincas();
     return fincas.map((finca) => ({ label: finca.nombreFinca, value: finca.id }));
   } catch (error) {
-    throw new Error(
+    const err = new Error(
       obtenerMensajeErrorBackend(error, 'No se pudieron obtener las fincas.')
     );
+    err.response = error.response;
+    throw err;
   }
 }
 export async function obtenerEstanquesPorFinca(fincaId) {
@@ -170,7 +184,7 @@ export async function obtenerEstanquesPorFinca(fincaId) {
   try {
     const response = await api.get('/estanques');
     return (response.data.data ?? [])
-      .filter((estanque) => estanque.idFinca === fincaId)
+      .filter((estanque) => String(estanque.idFinca) === String(fincaId))
       .map((estanque) => ({
         label: `${estanque.codigo} (${estanque.tipoEstanque})`,
         value: estanque.id,

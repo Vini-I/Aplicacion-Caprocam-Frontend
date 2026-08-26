@@ -18,23 +18,27 @@ export const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.white,
   },
-    screenContainer: {
+  screenContainer: {
     flex: 1,
     backgroundColor: COLORS.white,
+  },
+
+  // ── ScrollView principal ────────────────────────────────────
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 80,
   },
 
   // ── Barra de búsqueda y filtro ─────────────────────────────
   searchRow: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 0,
     paddingVertical: 12,
     backgroundColor: COLORS.white,
-    marginTop: 8,
     gap: 8,
     width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
   },
   searchInput: {
     flex: 1,
@@ -50,37 +54,30 @@ export const styles = StyleSheet.create({
   // ── Contador de resultados ──────────────────────────────────
   contadorWrapper: {
     width: "100%",
-    maxWidth: 900,
-    alignSelf: "center",
-    paddingHorizontal: 0,
     paddingVertical: 0,
     marginTop: 0,
     marginBottom: 0,
   },
   contadorResultados: {
     fontSize: 13,
-    left: 0,
     color: COLORS.textTertiary,
     fontFamily: TYPOGRAPHY.fontFamily.regular,
   },
 
   // ── Lista de colaboradores ──────────────────────────────────
+  listContainer: {
+    width: "100%",
+    paddingBottom: 16,
+  },
   list: {
     padding: 0,
     paddingHorizontal: 0,
     width: '100%',
-    left: 0,
-    maxWidth: 900,
-    alignSelf: 'center',
   },
   error: {
     color: COLORS.error,
     textAlign: "center",
     marginTop: 20,
-  },
-  scrollView: {
-    flex: 1,
-    textAlign: "center",
   },
 
   // ── Alertas flotantes ──────────────────────────────────────
@@ -90,8 +87,6 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 0,
     paddingVertical: 10,
     width: '100%',
-    maxWidth: 900,
-    alignSelf: 'center',
   },
 
   // ── Botón flotante (Agregar) ───────────────────────────────

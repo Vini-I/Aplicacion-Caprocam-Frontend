@@ -1,13 +1,30 @@
 /**
- * ============================================================
+ * =============================================================
  * SERVICE DE ENFERMEDADES
- * ============================================================
+ * =============================================================
  *
  * Centraliza las peticiones HTTP del modulo de enfermedades.
  * Los datos de sesion y grupo de datos se obtienen desde el JWT.
  */
 
-import api from "../../../api/api";
+import api from "../../../api/api.js";
+
+function construirErrorHttp(error, mensajeGenerico) {
+  const status = error?.response?.status;
+  const mensaje = error?.response?.data?.error || error?.response?.data?.message || error?.message;
+
+  if (status === 500) {
+    return new Error(mensajeGenerico);
+  }
+
+  if (status) {
+    const err = new Error(mensaje || mensajeGenerico);
+    err.status = status;
+    return err;
+  }
+
+  return new Error(mensajeGenerico);
+}
 
 /*
 OBTENER TODAS LAS ENFERMEDADES
@@ -18,8 +35,7 @@ async function getAll(filtros = {}) {
     const response = await api.get("/enfermedades", { params: filtros });
     return response.data.data;
   } catch (error) {
-    console.error("Error al obtener enfermedades", error.response?.data || error.message);
-    throw error;
+    throw construirErrorHttp(error, "Error al obtener enfermedades");
   }
 }
 
@@ -32,8 +48,7 @@ async function getById(id) {
     const response = await api.get(`/enfermedades/${id}`);
     return response.data.data;
   } catch (error) {
-    console.error("Error al obtener la enfermedad", error.response?.data || error.message);
-    throw error;
+    throw construirErrorHttp(error, "Error al obtener la enfermedad");
   }
 }
 
@@ -46,8 +61,7 @@ async function create(enfermedadDTO) {
     const response = await api.post("/enfermedades", enfermedadDTO);
     return response.data.data;
   } catch (error) {
-    console.error("Error al crear la enfermedad", error.response?.data || error.message);
-    throw error;
+    throw construirErrorHttp(error, "Error al crear la enfermedad");
   }
 }
 
@@ -60,8 +74,7 @@ async function update(id, enfermedadDTO) {
     const response = await api.put(`/enfermedades/${id}`, enfermedadDTO);
     return response.data.data;
   } catch (error) {
-    console.error("Error al actualizar la enfermedad", error.response?.data || error.message);
-    throw error;
+    throw construirErrorHttp(error, "Error al actualizar la enfermedad");
   }
 }
 
@@ -74,8 +87,7 @@ async function deleteById(id) {
     const response = await api.delete(`/enfermedades/${id}`);
     return response.data.data;
   } catch (error) {
-    console.error("Error al eliminar la enfermedad", error.response?.data || error.message);
-    throw error;
+    throw construirErrorHttp(error, "Error al eliminar la enfermedad");
   }
 }
 
@@ -88,8 +100,7 @@ async function getResumenDashboard(filtros = {}) {
     const response = await api.get("/enfermedades/resumen", { params: filtros });
     return response.data.data;
   } catch (error) {
-    console.error("Error al obtener el resumen de enfermedades", error.response?.data || error.message);
-    throw error;
+    throw construirErrorHttp(error, "Error al obtener el resumen de enfermedades");
   }
 }
 
@@ -102,8 +113,7 @@ async function getCatalogo() {
     const response = await api.get("/enfermedades/catalogos/enfermedades");
     return response.data.data;
   } catch (error) {
-    console.error("Error al obtener el catalogo de enfermedades", error.response?.data || error.message);
-    throw error;
+    throw construirErrorHttp(error, "Error al obtener el catalogo de enfermedades");
   }
 }
 
@@ -116,8 +126,7 @@ async function getCatalogoSeveridades() {
     const response = await api.get("/enfermedades/catalogos/severidades");
     return response.data.data;
   } catch (error) {
-    console.error("Error al obtener el catalogo de severidades", error.response?.data || error.message);
-    throw error;
+    throw construirErrorHttp(error, "Error al obtener el catalogo de severidades");
   }
 }
 

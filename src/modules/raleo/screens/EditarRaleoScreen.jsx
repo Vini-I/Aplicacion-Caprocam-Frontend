@@ -58,6 +58,7 @@ export default function EditarRaleoScreen({ registroId }) {
   const {
     form,
     updateField,
+    porcentajeRaleo,
     biomasaRestante,
     submitted,
     errores,
@@ -80,7 +81,7 @@ export default function EditarRaleoScreen({ registroId }) {
   if (!registroId) {
     return (
       <>
-        <NavbarRegistro Titulo="Raleo" Subtitulo="Editar registro" Icono="raleo" />
+        <NavbarRegistro Titulo="Raleo" Subtitulo="Editar registro" Icono="raleo" RutaVolver="/registros/Reporteria" />
         <View style={STYLE.container}>
           <Text style={{ textAlign: "center", marginTop: 24 }}>No se encontró el registro a editar.</Text>
         </View>
@@ -120,6 +121,7 @@ export default function EditarRaleoScreen({ registroId }) {
           updateField={updateField}
           submitted={submitted}
           errores={errores}
+          porcentajeCalculado={porcentajeRaleo}
           biomasaCalculada={biomasaRestante}
         />
 
@@ -133,7 +135,7 @@ export default function EditarRaleoScreen({ registroId }) {
           />
         )}
       </View>
-      <Button variant="outline" onPress={() => handleGuardar(mostrarError)} style={styles.submitButton}>
+      <Button variant="outline" onPress={() => handleGuardar()} style={styles.submitButton}>
         <View style={styles.buttonContent}>
           <Icon icon={ICONS.save} size={24} color={COLORS.primary}/>
           <Text style={styles.buttonText}>

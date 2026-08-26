@@ -102,5 +102,34 @@ export const styles = StyleSheet.create({
   },
   textoBoton: {
     fontFamily: TYPOGRAPHY.fontFamily.medium,
+    color: COLORS.primary,
   },
+  modalTitle: {
+    alignSelf: "center",
+  },
+  modalMessage: {
+    color: COLORS.textTertiary,
+    alignSelf: "center",
+    fontFamily: TYPOGRAPHY.fontFamily.medium,
+    marginBottom: 4,
+  },
+  modalConfirmButton: {
+    borderWidth: 2,
+    borderColor: COLORS.error,
+    backgroundColor: COLORS.white,
+    marginTop: 12,
+    flexDirection: "row",
+  },
+  modalConfirmButtonText: {
+    color: COLORS.error,
+    fontFamily: TYPOGRAPHY.fontFamily.bold,
+  },
+  modalCancelButton: {
+  borderWidth: 2,
+  borderColor: COLORS.textTertiary,
+  backgroundColor: COLORS.white,
+},
+modalCancelButtonText: {
+  color: COLORS.textTertiary,
+},
 });

@@ -81,6 +81,7 @@ export default function useAlimentacionScreen(navigation) {
   const {
     alimentaciones,
     loading,
+    error: errorListado,
     recargar,
   } = useAlimentacion();
 
@@ -214,11 +215,6 @@ export default function useAlimentacionScreen(navigation) {
           "Alimentación registrada correctamente.",
       });
     } catch (error) {
-      console.error(
-        "Error registrando alimentación:",
-        error?.response?.data || error
-      );
-
       setAlerta({
         visible: true,
         variant: "danger",
@@ -230,6 +226,7 @@ export default function useAlimentacionScreen(navigation) {
   return {
     alimentaciones,
     loading,
+    errorListado,
     form,
     updateField,
     submitted,

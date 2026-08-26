@@ -45,8 +45,6 @@ export function useCatalogos(idFincaInicial) {
             const filtros = idFinca ? { idFinca } : {};
             const estanques = await estanqueService.getEstanques(filtros);
 
-            console.log("Estanques recargados:", estanques);
-
             setEstanquesOptions(
                 (estanques || []).map((e) => ({
                     label: e.codigo,
@@ -54,8 +52,7 @@ export function useCatalogos(idFincaInicial) {
                 }))
             );
         } catch (error) {
-            console.error("Error al recargar estanques:", error);
-            setErrorCatalogos("No se pudieron cargar los estanques.");
+            setErrorCatalogos(error.message);
         }
     }, []);
 
@@ -74,9 +71,6 @@ export function useCatalogos(idFincaInicial) {
                     ),
                 ]);
 
-                console.log("Fincas recibidas:", fincas);
-                console.log("Estanques recibidos:", estanques);
-
                 if (!activo) return;
 
                 const opcionesFincas = (fincas || []).map((f) => ({
@@ -89,23 +83,11 @@ export function useCatalogos(idFincaInicial) {
                     value: e.id,
                 }));
 
-                console.log("Opciones Fincas:", opcionesFincas);
-                console.log("Opciones Estanques:", opcionesEstanques);
-
                 setFincasOptions(opcionesFincas);
                 setEstanquesOptions(opcionesEstanques);
 
             } catch (error) {
-                console.error("Error cargando catálogos:", error);
-
-                if (error.response) {
-                    console.log("Status:", error.response.status);
-                    console.log("Respuesta:", error.response.data);
-                }
-
-                if (activo) {
-                    setErrorCatalogos("No se pudieron cargar fincas y estanques.");
-                }
+                setErrorCatalogos(error.message);
             } finally {
                 if (activo) {
                     setLoadingCatalogos(false);

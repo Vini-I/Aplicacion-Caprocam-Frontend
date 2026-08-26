@@ -12,6 +12,7 @@ import Button from "../../../shared/components/Button";
 import Alert from "../../../shared/components/Alert";
 import Card from "../../../shared/components/Card";
 import Select from "../../../shared/components/Select";
+import DateInput from "../../../shared/components/DateInput";
 import Text from "../../../shared/components/Text";
 import Icon from "../../../shared/components/Icons";
 import NavbarRegistro from "../../../shared/components/NavbarRegistro";
@@ -30,6 +31,7 @@ export default function EditarFisicoQuimicaScreen({ registroId }) {
     cargando,
     fincaSeleccionada,
     estanqueSeleccionado,
+    fechaSeleccionada,
     medicionesPorEstanque,
     submitted,
     errorMessage,
@@ -42,6 +44,7 @@ export default function EditarFisicoQuimicaScreen({ registroId }) {
     estanqueSeleccionadoObj,
     handleFincaChange,
     handleEstanqueChange,
+    handleFechaChange,
     handlePhChange,
     handleSalinidadChange,
     handleTempChange,
@@ -68,6 +71,7 @@ export default function EditarFisicoQuimicaScreen({ registroId }) {
           Titulo="Físico-Química"
           Subtitulo="Editar registro"
           Icono="chemicalContainer"
+          RutaVolver="/registros/Reporteria"
         />
         <View style={STYLE.container}>
           <Text style={{ textAlign: "center", marginTop: 24 }}>
@@ -118,7 +122,7 @@ export default function EditarFisicoQuimicaScreen({ registroId }) {
                   color={COLORS.primary}
                   size={22}
                 />
-                <Text style={styles.cardTitle}>Finca y estanque</Text>
+                <Text style={styles.cardTitle}>Finca, estanque y fecha</Text>
               </View>
 
               <Select
@@ -150,6 +154,22 @@ export default function EditarFisicoQuimicaScreen({ registroId }) {
                 }
               />
 
+              <DateInput
+                label="Fecha de la medición"
+                value={fechaSeleccionada}
+                onChangeText={handleFechaChange}
+                allowFutureDates={false}
+                required
+                submitted={submitted}
+                labelStyle={styles.label}
+                inputStyle={
+                  submitted && !fechaSeleccionada
+                    ? styles.errorInput
+                    : undefined
+                }
+                placeholder="dd/mm/aaaa"
+              />
+
               {estanqueSeleccionadoObj && (
                 <Text style={styles.estanqueInfo}>
                   Estanque seleccionado: {estanqueSeleccionadoObj.label}
@@ -170,8 +190,8 @@ export default function EditarFisicoQuimicaScreen({ registroId }) {
               }
               idealMin={7.5}
               idealMax={8.5}
-              sliderMin={4}
-              sliderMax={10}
+              sliderMin={0}
+              sliderMax={14}
               step={0.1}
               decimals={1}
               maxLecturas={2}
@@ -193,8 +213,8 @@ export default function EditarFisicoQuimicaScreen({ registroId }) {
                   size={18}
                 />
               }
-              idealMin={15}
-              idealMax={35}
+              idealMin={10}
+              idealMax={25}
               sliderMin={0}
               sliderMax={50}
               step={0.1}
@@ -219,9 +239,9 @@ export default function EditarFisicoQuimicaScreen({ registroId }) {
                 />
               }
               idealMin={28}
-              idealMax={30}
-              sliderMin={15}
-              sliderMax={45}
+              idealMax={32}
+              sliderMin={0}
+              sliderMax={50}
               step={0.5}
               decimals={1}
               maxLecturas={2}
@@ -240,7 +260,7 @@ export default function EditarFisicoQuimicaScreen({ registroId }) {
                 <Icon icon={ICONS.water} color={COLORS.primary} size={18} />
               }
               idealMin={5}
-              idealMax={7}
+              idealMax={9}
               sliderMin={0}
               sliderMax={20}
               step={0.1}

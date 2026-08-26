@@ -55,6 +55,28 @@ import { useEffect, useMemo, useState } from "react";
 import { fincaService } from "../../finca/services/finca.service";
 import { estanqueService } from "../../estanques/services/estanque.service";
 
+function extraerMensajeError(error) {
+    /*
+    Descripcion:
+    Extrae un mensaje legible de un error lanzado por
+    fincaService.getFincas() / estanqueService.getEstanques(). Esos
+    services normalizan cualquier error de axios a un Error plano
+    con el mensaje ya resuelto en error.message (mismo patron que
+    DensidadPoblacional.service.js): no hay que volver a buscarlo en
+    error.response, porque ese objeto ya no existe en este punto.
+
+    Parametros:
+    - error: Error capturado (tipicamente de fincaService/estanqueService).
+
+    Retorna:
+    - String con el mensaje mas especifico disponible.
+    */
+    if (!error) return "Ocurrió un error inesperado.";
+    if (typeof error === "string") return error;
+
+    return error?.message || "No se pudieron cargar fincas y estanques.";
+}
+
 export function useFincaEstanqueDensidad(idFincaSeleccionada) {
     const [fincas, setFincas] = useState([]);
     const [estanques, setEstanques] = useState([]);
@@ -69,18 +91,37 @@ export function useFincaEstanqueDensidad(idFincaSeleccionada) {
             setErrorCatalogos(null);
 
             try {
-                const [fincasData, estanquesData] = await Promise.all([
+                const [fincasResult, estanquesResult] = await Promise.allSettled([
                     fincaService.getFincas(),
                     estanqueService.getEstanques(),
                 ]);
 
                 if (!activo) return;
 
-                setFincas(fincasData || []);
-                setEstanques(estanquesData || []);
+                const mensajesError = [];
+
+                if (fincasResult.status === "fulfilled") {
+                    setFincas(fincasResult.value || []);
+                } else {
+                    mensajesError.push(`Fincas: ${extraerMensajeError(fincasResult.reason)}`);
+                    setFincas([]);
+                }
+
+                if (estanquesResult.status === "fulfilled") {
+                    setEstanques(estanquesResult.value || []);
+                } else {
+                    mensajesError.push(`Estanques: ${extraerMensajeError(estanquesResult.reason)}`);
+                    setEstanques([]);
+                }
+
+                if (mensajesError.length > 0) {
+                    setErrorCatalogos(mensajesError[0]);
+                }
             } catch (error) {
                 if (activo) {
-                    setErrorCatalogos("No se pudieron cargar fincas y estanques.");
+                    setErrorCatalogos(extraerMensajeError(error));
+                    setFincas([]);
+                    setEstanques([]);
                 }
             } finally {
                 if (activo) {

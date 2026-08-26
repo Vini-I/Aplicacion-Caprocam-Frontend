@@ -9,7 +9,7 @@
  * formulario ColaboradorForm y maneja la carga de datos,
  * validaciones y la navegación.
  *
- * @dependencies - ColaboradorForm, servicios de roles/fincas.
+ * @dependencies - ColaboradorForm, servicios de fincas.
  * @validations  - Las validaciones se delegan en useColaboradorForm.
  * @navigation   - Al guardar exitosamente redirige a la lista de
  *                 colaboradores con un mensaje de éxito en los
@@ -31,7 +31,6 @@ import { STYLE } from "../../../theme/style";
 import { COLORS } from "../../../theme/colors";
 
 import { colaboradoresService } from "../services/colaboradoresService";
-import { getRolesOptions } from "../services/rolesService";
 import { getFincasOptions } from "../services/fincaService";
 import { useError } from "../../../shared/context/ErrorContext";
 import { styles } from "../styles/colaboradorFormStyles";
@@ -47,25 +46,11 @@ export default function ColaboradorFormScreen() {
   const [loading, setLoading] = useState(isEditing);
   const [error, setError] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
-  const [resetLoading, setResetLoading] = useState(false);
-  const [roleOptions, setRoleOptions] = useState([]);
   const [fincasOptions, setFincasOptions] = useState([]);
 
   const formRef = useRef();
 
-  // ─── Carga de opciones (roles y fincas) ──────────────────────
-  useEffect(() => {
-    const loadRoles = async () => {
-      try {
-        const options = await getRolesOptions();
-        setRoleOptions(options);
-      } catch {
-        setRoleOptions([]);
-      }
-    };
-    loadRoles();
-  }, []);
-
+  // ─── Carga de opciones (fincas) ──────────────────────────────
   useEffect(() => {
     const loadFincas = async () => {
       try {
@@ -87,7 +72,6 @@ export default function ColaboradorFormScreen() {
           setColaborador(data);
         } catch (err) {
           setError(err.message || "Error al cargar el colaborador");
-          mostrarError(err);
         } finally {
           setLoading(false);
         }
@@ -131,34 +115,15 @@ export default function ColaboradorFormScreen() {
     } catch (err) {
       const status = err.response?.status;
       if (status === 400 || status === 422) {
-        setErrorMessage(err.message || "No se pudo guardar el colaborador.");
+        setErrorMessage(err.message);
       } else {
-        mostrarError(err);
+        setErrorMessage(err.message);
       }
     }
   };
 
   const handleCancel = () => {
     router.back();
-  };
-
-  const handleResetPin = async () => {
-    setResetLoading(true);
-    setErrorMessage("");
-    try {
-      await colaboradoresService.resetPin(id);
-      router.replace({
-        pathname: "/(drawer)/colaboradores",
-        params: {
-          alertType: "success",
-          alertMessage: "PIN restablecido correctamente.",
-        },
-      });
-    } catch (err) {
-      mostrarError(err);
-    } finally {
-      setResetLoading(false);
-    }
   };
 
   // ─── Render ────────────────────────────────────────────────────
@@ -184,20 +149,20 @@ export default function ColaboradorFormScreen() {
 
   return (
     <>
-      <ScrollView style={STYLE.container} contentContainerStyle={STYLE.contentWrapper}>
+      <ScrollView
+        style={STYLE.container}
+        contentContainerStyle={STYLE.contentWrapper}
+        showsVerticalScrollIndicator={false}
+      >
         <ColaboradorForm
           ref={formRef}
           initialData={initialData}
           isEditing={isEditing}
-          userRole={userRole}
           fincaId={fincaId}
           onSubmit={handleSubmit}
           onCancel={handleCancel}
           serverError={errorMessage}
-          roleOptions={roleOptions}
           fincasOptions={fincasOptions}
-          onResetPin={handleResetPin}
-          resetLoading={resetLoading}
         />
       </ScrollView>
     </>

@@ -99,7 +99,7 @@ const useAlimentacionForm = () => {
         if (!form.tipoAlimento) errores.tipoAlimento = "Tipo de alimento es obligatorio";
         if (!form.presentacion) errores.presentacion = "Presentación es obligatoria";
         if (!form.idProveedor) errores.proveedor = "Proveedor es obligatorio";
-        if (!form.idProducto) errores.producto = "Producto es obligatorio";
+        if (!form.idProducto) errores.idProducto = "Producto es obligatorio";
         if (!form.observaciones) errores.observaciones = "Observaciones es obligatorio";
         return { valido: Object.keys(errores).length === 0, errores };
     };

@@ -5,11 +5,12 @@
  *
  * Descripción:
  * Tarjeta para registrar mediciones numéricas (pH, temperatura,
- * oxígeno, salinidad) utilizando barras de rango dinámicas y botones
- * de paso (- / +) con soporte de avance continuo (hold) e incremento de 0.1 por defecto.
+ * oxígeno, salinidad) utilizando barras de rango dinámicas, botones
+ * de paso (- / +) con soporte de avance continuo (hold), diseño en 2 filas
+ * responsivo para móviles y opción de eliminación en todas las lecturas.
  *
  * @dependencies RangeTrack, StepHoldButton, useRangeCard, RangeCardStyles
- * @validations Evaluación contra rangos ideales (óptimo, alerta, peligro) y clamping min/max.
+ * @validations Evaluación contra rangos ideales (óptimo, alerta, peligro), clamping min/max y eliminación de lecturas.
  * @navigation N/A
  *
  * La lógica de estado vive en el hook useRangeCard(); este
@@ -84,8 +85,10 @@ import Button from '../../../shared/components/Button';
 import Text from '../../../shared/components/Text';
 import Title from '../../../shared/components/Title';
 import Icon from '../../../shared/components/Icons';
+import TimeInput from '../../../shared/components/TimeInput';
 import { COLORS } from '../../../theme/colors';
 import { ICONS } from '../../../theme/icons';
+import { getCurrentTime12 } from '../../../shared/utils/dateUtils';
 import useRangeCard from '../hooks/useRangeCard';
 import RangeTrack from './RangeTrack';
 import { cardStyles as s, innerStyles as inner } from '../styles/RangeCardStyles';
@@ -150,69 +153,67 @@ const ETIQUETAS_NUMERICAS = [
 ];
 
 // Calcula, a partir del rango ideal, las zonas de color de la barra
-// (rojo / amarillo / verde / amarillo / gris) y los ticks a mostrar
-// debajo. Es solo cálculo de presentación; no altera idealMin/idealMax
-// ni el valor de las lecturas.
+// representando un termómetro (Azul al mínimo, Verde en lo ideal, Rojo al máximo)
+// y los ticks a mostrar debajo. Es solo cálculo de presentación.
 function calcularZonas({ idealMin, idealMax, sliderMin, sliderMax, tieneMaxIdeal }) {
   const totalRango = sliderMax - sliderMin || 1;
-  const toPct = (v) => (v - sliderMin) / totalRango;
+  const toPct = (v) => Math.min(Math.max((v - sliderMin) / totalRango, 0), 1);
+  const colorMin = COLORS.primary;
+  const colorIdeal = COLORS.success;
+  const colorMax = COLORS.error;
 
   if (!tieneMaxIdeal) {
-    const buffer = (idealMin - sliderMin) * 0.35;
-    const warnLow = Math.min(Math.max(idealMin - buffer, sliderMin), idealMin);
-
+    const leftWidth = toPct(idealMin);
     return {
-      warnLow,
+      warnLow: idealMin,
       warnHigh: null,
       zones: [
-        { left: 0, width: toPct(warnLow), color: COLORS.error },
-        { left: toPct(warnLow), width: toPct(idealMin) - toPct(warnLow), color: COLORS.warning },
-        { left: toPct(idealMin), width: 1 - toPct(idealMin), color: COLORS.success },
+        { left: 0, width: leftWidth, color: colorMin },
+        { left: leftWidth, width: 1 - leftWidth, color: colorIdeal },
       ],
       ticks: [
         { pct: 0, label: sliderMin },
-        { pct: toPct(warnLow), label: Number(warnLow.toFixed(1)) },
-        { pct: toPct(idealMin), label: idealMin },
+        { pct: leftWidth, label: idealMin },
         { pct: 1, label: sliderMax },
       ],
     };
   }
 
-  const bufferBase = Math.max((idealMax - idealMin) * 0.35, totalRango * 0.05);
-  const warnLow = Math.max(idealMin - bufferBase, sliderMin);
-  const warnHigh = Math.min(idealMax + bufferBase, sliderMax);
+  const leftWidth = toPct(idealMin);
+  const idealWidth = Math.max(toPct(idealMax) - leftWidth, 0);
+  const rightWidth = Math.max(1 - toPct(idealMax), 0);
 
   return {
-    warnLow,
-    warnHigh,
+    warnLow: idealMin,
+    warnHigh: idealMax,
     zones: [
-      { left: 0, width: toPct(warnLow), color: COLORS.error },
-      { left: toPct(warnLow), width: toPct(idealMin) - toPct(warnLow), color: COLORS.warning },
-      { left: toPct(idealMin), width: toPct(idealMax) - toPct(idealMin), color: COLORS.success },
-      { left: toPct(idealMax), width: toPct(warnHigh) - toPct(idealMax), color: COLORS.warning },
-      { left: toPct(warnHigh), width: 1 - toPct(warnHigh), color: COLORS.textQuaternary },
+      { left: 0, width: leftWidth, color: colorMin },
+      { left: leftWidth, width: idealWidth, color: colorIdeal },
+      { left: toPct(idealMax), width: rightWidth, color: colorMax },
     ],
     ticks: [
       { pct: 0, label: sliderMin },
-      { pct: toPct(warnLow), label: Number(warnLow.toFixed(1)) },
-      { pct: toPct(idealMin), label: idealMin },
+      { pct: leftWidth, label: idealMin },
       { pct: toPct(idealMax), label: idealMax },
-      { pct: toPct(warnHigh), label: Number(warnHigh.toFixed(1)) },
       { pct: 1, label: sliderMax },
     ],
   };
 }
 
-// Determina el color (rojo/amarillo/verde/gris) que le corresponde a
-// un valor puntual según las zonas calculadas arriba.
-function colorPorValor(value, { idealMin, idealMax, warnLow, warnHigh, tieneMaxIdeal }) {
+// Determina el color (Azul / Verde / Rojo) estilo termómetro
+// que le corresponde a un valor puntual.
+function colorPorValor(value, { idealMin, idealMax, tieneMaxIdeal }) {
+  const colorMin = COLORS.primary;
+  const colorIdeal = COLORS.success;
+  const colorMax = COLORS.error;
+
   if (tieneMaxIdeal) {
-    if (value >= idealMin && value <= idealMax) return COLORS.success;
-    if (value > idealMax) return value <= warnHigh ? COLORS.warning : COLORS.textQuaternary;
-    return value >= warnLow ? COLORS.warning : COLORS.error;
+    if (value >= idealMin && value <= idealMax) return colorIdeal;
+    if (value > idealMax) return colorMax;
+    return colorMin;
   }
-  if (value >= idealMin) return COLORS.success;
-  return value >= warnLow ? COLORS.warning : COLORS.error;
+  if (value >= idealMin) return colorIdeal;
+  return colorMin;
 }
 
 export default function RangeCard({
@@ -255,6 +256,7 @@ export default function RangeCard({
     lecturas,
     agregarLectura,
     eliminarLectura,
+    actualizaHora,
     tieneMaxIdeal,
     obtenerManejadores,
   } = useRangeCard({ idealMin, idealMax, sliderMin, sliderMax, step, decimals, maxLecturas: effectiveMax, onChange, initialValues });
@@ -293,77 +295,90 @@ export default function RangeCard({
         const { handleArrastre, decrementar, incrementar } = obtenerManejadores(r);
         const esUltima = idx === lecturas.length - 1;
         const puedeMostrarAgregar = esUltima && lecturas.length > 0 && lecturas.length < effectiveMax;
+        const lbl = ETIQUETAS[idx] ?? { type: 'text', value: `${idx + 1}` };
 
         return (
-          <View key={r.id} style={inner.readingRow}>
-            <View style={inner.labelWrap}>
-              {(() => {
-                const lbl = ETIQUETAS[idx] ?? { type: 'text', value: `${idx + 1}` };
-                return (
-                  <>
-                    <View style={inner.labelCircle}>
-                      {lbl.type === 'icon' ? (
-                        <Icon icon={lbl.icon} size={15} color={COLORS.primary} />
-                      ) : (
-                        <Text size={13} color={COLORS.primary}>{lbl.value}</Text>
-                      )}
-                    </View>
-                    {lbl.texto && (
-                      <Text size={10} color={COLORS.textTertiary} style={inner.labelText}>{lbl.texto}</Text>
-                    )}
-                  </>
-                );
-              })()}
+          <View key={r.id} style={inner.readingItem}>
+            {/* Fila 1: Identificación (Día/Noche/Número) + Botones de Acción (+ / Eliminar) */}
+            <View style={inner.readingTopRow}>
+              <View style={inner.labelWrap}>
+                <View style={inner.labelCircle}>
+                  {lbl.type === 'icon' ? (
+                    <Icon icon={lbl.icon} size={15} color={COLORS.primary} />
+                  ) : (
+                    <Text size={13} color={COLORS.primary} weight="700">{lbl.value}</Text>
+                  )}
+                </View>
+                {lbl.texto && (
+                  <Text size={12} color={COLORS.textPrimary} weight="600" style={inner.labelText}>{lbl.texto}</Text>
+                )}
+              </View>
+
+              <View style={inner.readingActions}>
+                {puedeMostrarAgregar && (
+                  <Button onPress={intentarAgregar} style={[inner.stepBtn, inner.stepBtnIdle]}>
+                    <Icon icon={ICONS.add} size={16} color={COLORS.white} />
+                  </Button>
+                )}
+
+                <Button variant='ghost' onPress={() => eliminarLectura(r.id)} style={inner.iconBtn}>
+                  <Icon icon={ICONS.delete} size={18} color={COLORS.error} />
+                </Button>
+              </View>
             </View>
 
-            <StepHoldButton
-              icon={ICONS.minus}
-              onPress={decrementar}
-              disabled={r.value <= sliderMin}
-              style={inner.stepHoldBtn}
-            />
+            {/* Fila 2: Hora 12h + Badge de Valor Prominente */}
+            <View style={inner.readingDataRow}>
+              <TimeInput
+                value={r.horaMedicion}
+                onChangeText={(newTime12) => actualizaHora(r.id, newTime12)}
+                containerStyle={inner.timeInputWrap}
+                inputStyle={inner.timeInput}
+                textStyle={inner.timeText}
+              />
 
-            <RangeTrack
-              value={r.value}
-              min={sliderMin}
-              max={sliderMax}
-              decimals={decimals}
-              zones={zonasInfo.zones}
-              ticks={zonasInfo.ticks}
-              badgeColor={colorValor}
-              badgeText={r.value.toFixed(decimals)}
-              onChange={handleArrastre}
-            />
-
-            <StepHoldButton
-              icon={ICONS.add}
-              onPress={incrementar}
-              disabled={r.value >= sliderMax}
-              style={inner.stepHoldBtn}
-            />
-
-            <View style={inner.rightValueWrap}>
-              <Text size={14} color={colorValor} style={inner.rightValue}>
-                {r.value.toFixed(decimals)} {unit}
-              </Text>
+              <View style={[inner.valueBadge, { borderColor: colorValor }]}>
+                <Text size={14} color={colorValor} weight="700">
+                  {r.value.toFixed(decimals)} {unit}
+                </Text>
+              </View>
             </View>
 
-            {puedeMostrarAgregar && (
-              <Button onPress={intentarAgregar} style={[inner.stepBtn, inner.stepBtnIdle]}>
-                <Icon icon={ICONS.add} size={16} color={COLORS.white} />
-              </Button>
-            )}
+            {/* Fila Inferior del Slider: Botón (-) --- Barra de Rango de Ancho Completo --- Botón (+) */}
+            <View style={inner.sliderRow}>
+              <StepHoldButton
+                icon={ICONS.minus}
+                onPress={decrementar}
+                disabled={r.value <= sliderMin}
+                style={inner.stepHoldBtn}
+              />
 
-            <Button variant='ghost' onPress={() => eliminarLectura(r.id)} style={inner.iconBtn}>
-              <Icon icon={ICONS.delete} size={20} color={COLORS.error} />
-            </Button>
+              <RangeTrack
+                value={r.value}
+                min={sliderMin}
+                max={sliderMax}
+                decimals={decimals}
+                zones={zonasInfo.zones}
+                ticks={zonasInfo.ticks}
+                badgeColor={colorValor}
+                badgeText={r.value.toFixed(decimals)}
+                onChange={handleArrastre}
+              />
+
+              <StepHoldButton
+                icon={ICONS.add}
+                onPress={incrementar}
+                disabled={r.value >= sliderMax}
+                style={inner.stepHoldBtn}
+              />
+            </View>
           </View>
         );
       })}
 
       {lecturas.length === 0 && (
         <Button variant="outline" onPress={intentarAgregar}>
-          + Agregar medición
+          + Agregar Medición
         </Button>
       )}
     </View>

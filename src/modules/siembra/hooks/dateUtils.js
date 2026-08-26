@@ -44,3 +44,42 @@ export function formatearFechaDesdeISO(fechaISO) {
   if (Number.isNaN(fecha.getTime())) return "";
   return formatearFecha(fecha);
 }
+
+// Compara dos fechas en formato dd/mm/aaaa. Devuelve true si fechaA
+// es anterior a fechaB. Compara como texto "aaaa-mm-dd" en vez de
+// new Date() para evitar el desfase de horas que sí afecta al backend.
+export function esFechaAnterior(fechaA, fechaB) {
+  if (!fechaA || !fechaB) return false;
+  const aISO = fechaA.split("/").reverse().join("-");
+  const bISO = fechaB.split("/").reverse().join("-");
+  return aISO < bISO;
+}
+
+// Convierte "dd/mm/aaaa" a un objeto Date, en hora local a medianoche
+// (evita el problema de timezone que sí afecta a new Date(isoString)).
+function parsearFecha(fechaStr) {
+  if (!fechaStr) return null;
+  const partes = fechaStr.split("/");
+  if (partes.length !== 3) return null;
+
+  const [dia, mes, anio] = partes.map(Number);
+  if (!dia || !mes || !anio) return null;
+
+  return new Date(anio, mes - 1, dia);
+}
+
+// Días transcurridos entre fechaInicio (dd/mm/aaaa) y hoy. Nunca
+// negativo (si fechaInicio es futura, devuelve 0).
+export function diasTranscurridosDesde(fechaInicioStr) {
+  const fechaInicio = parsearFecha(fechaInicioStr);
+  if (!fechaInicio) return 0;
+
+  const hoy = new Date();
+  hoy.setHours(0, 0, 0, 0);
+  fechaInicio.setHours(0, 0, 0, 0);
+
+  const msPorDia = 1000 * 60 * 60 * 24;
+  const dias = Math.floor((hoy - fechaInicio) / msPorDia);
+
+  return dias < 0 ? 0 : dias;
+}

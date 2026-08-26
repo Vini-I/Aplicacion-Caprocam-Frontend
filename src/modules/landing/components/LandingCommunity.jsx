@@ -108,7 +108,7 @@ export default function LandingCommunity({
           style={[styles.cta, esMovil && styles.ctaMobile]}
         >
           <Text style={styles.ctaTitle}>
-            ¿Quieres ser parte de CAPROCAM?
+            ¿Quieres saber de CAPROCAM?
           </Text>
           <Text style={styles.ctaSubtitle}>
             Contáctanos y conoce cómo podemos acompañarte.

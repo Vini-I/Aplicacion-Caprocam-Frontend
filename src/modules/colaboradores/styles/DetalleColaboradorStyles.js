@@ -1,8 +1,7 @@
 /**
  * ESTILOS: DetalleColaboradorStyles
  * Agrupa las hojas de estilo de la pantalla de detalle de colaborador,
- * incluyendo información personal, estadísticas, trabajadores a cargo
- * y botones de acción.
+ * incluyendo información personal, trabajadores a cargo y botones de acción.
  *
  * @dependencies - COLORS de theme/colors.js, TYPOGRAPHY de theme/typography.js
  * @validations  - N/A
@@ -18,7 +17,7 @@ export const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 8,
   },
   avatar: {
     width: 52,
@@ -41,13 +40,33 @@ export const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
     color: COLORS.textSecondary,
-    marginBottom: 4,
+    marginBottom: 2,
   },
-  badge: {
+
+  // ── Badge de rol alineado con los iconos ────────────────────
+  badgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 0,
+    marginVertical: 5,
+    marginBottom: 5,
+  },
+  badgeRol: {
     alignSelf: 'flex-start',
   },
-  badgeTexto: {
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
+
+  // ── Separador y título de sección ──────────────────────────
+  separator: {
+    height: 1,
+    backgroundColor: COLORS.secondary,
+    marginVertical: 12,
+  },
+  sectionTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: COLORS.textSecondary,
+    marginBottom: 12,
+    letterSpacing: 0.5,
   },
 
   // ── Filas de detalle con ícono ──────────────────────────────
@@ -74,41 +93,9 @@ export const styles = StyleSheet.create({
     fontSize: 15,
     color: COLORS.textSecondary,
   },
-
-  // ── Estadísticas de actividad ──────────────────────────────
-  statsTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: COLORS.textSecondary,
-    marginBottom: 8,
-  },
-  statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  statItem: {
-    alignItems: 'center',
-    flex: 1,
-    minWidth: 70,
-    paddingVertical: 4,
-  },
-  statValue: {
-    fontSize: 20,
-    fontWeight: '700',
+  valorLink: {
     color: COLORS.primary,
-  },
-  statLabel: {
-    fontSize: 11,
-    color: COLORS.textTertiary,
-    marginTop: 2,
-    textAlign: 'center',
-  },
-  lastActive: {
-    fontSize: 12,
-    color: COLORS.textTertiary,
-    textAlign: 'center',
-    marginTop: 8,
+    textDecorationLine: 'underline',
   },
 
   // ── Trabajadores a cargo (dueño externo) ──────────────────
@@ -159,7 +146,7 @@ export const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     marginTop: 0,
   },
-    botonEditar: {
+  botonEditar: {
     borderColor: COLORS.primary,
   },
   botonEliminar: {
@@ -176,9 +163,5 @@ export const styles = StyleSheet.create({
   centeredContainer: {
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  valorLink: {
-    color: COLORS.primary,
-    textDecorationLine: 'underline',
   },
 });
