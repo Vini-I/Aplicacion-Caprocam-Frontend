@@ -75,7 +75,7 @@ export default function NuevoProveedorScreen({ onProveedor }) {
             value={nombre}
             onChangeText={setNombre}
             placeholder="Ej. Biomar S.A."
-            maxLength={100}
+            maxLength={150}
             containerStyle={styles.field}
             style={[styles.input, errores.nombre && styles.inputError]}
             labelStyle={styles.label}
@@ -113,7 +113,7 @@ export default function NuevoProveedorScreen({ onProveedor }) {
             placeholder="ventas@empresa.com"
             keyboardType="email-address"
             autoCapitalize="none"
-            maxLength={100}
+            maxLength={120}
             containerStyle={styles.field}
             style={[styles.input, errores.correo && styles.inputError]}
             labelStyle={styles.label}
@@ -136,7 +136,7 @@ export default function NuevoProveedorScreen({ onProveedor }) {
             onChangeText={setNotas}
             placeholder="Observaciones adicionales..."
             multiline={true}
-            maxLength={500}
+            maxLength={255}
             containerStyle={styles.field}
             style={styles.input}
             labelStyle={styles.label}

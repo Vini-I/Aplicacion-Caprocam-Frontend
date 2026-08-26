@@ -105,8 +105,7 @@ export const styles = StyleSheet.create({
   barraBusqueda: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 18,
-    marginBottom: 6,
+    marginTop: 12,
     gap: 8,
   },
 

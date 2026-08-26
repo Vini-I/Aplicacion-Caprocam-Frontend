@@ -119,7 +119,7 @@ export default function EditarProveedorScreen({ onProveedor, id }) {
             onChangeText={handleCorreoChange}
             placeholder="ventas@empresa.com"
             keyboardType="email-address"
-            maxLength={100}
+            maxLength={120}
             containerStyle={styles.field}
             style={[styles.input, !!errores.correo && styles.inputError]}
             labelStyle={styles.label}
@@ -142,7 +142,7 @@ export default function EditarProveedorScreen({ onProveedor, id }) {
             onChangeText={setNotas}
             placeholder="Observaciones adicionales..."
             multiline={true}
-            maxLength={500}
+            maxLength={255}
             containerStyle={styles.field}
             style={styles.input}
             labelStyle={styles.label}
