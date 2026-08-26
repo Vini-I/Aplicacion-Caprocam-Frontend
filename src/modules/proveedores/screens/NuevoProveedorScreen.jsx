@@ -61,7 +61,7 @@ export default function NuevoProveedorScreen({ onProveedor }) {
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{ paddingBottom: 24 }}
+        contentContainerStyle={styles.scrollContainer}
       >
         <View style={STYLE.contentWrapper}>
           <Card style={styles.card}>

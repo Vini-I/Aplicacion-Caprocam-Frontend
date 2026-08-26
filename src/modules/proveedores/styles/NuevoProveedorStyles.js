@@ -25,6 +25,9 @@ export const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
+  scrollContainer: {
+    paddingBottom: 24,
+  },
   card: {
     borderRadius: 18,
     backgroundColor: COLORS.white,

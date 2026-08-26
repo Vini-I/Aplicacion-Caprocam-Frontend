@@ -51,7 +51,7 @@ export default function ProveedorScreen({ onDetail, onNew }) {
     <View style={STYLE.container}>
       <ScrollView 
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 100 }}
+        contentContainerStyle={styles.scrollContainer}
       >
         <View style={STYLE.contentWrapper}>
           {alert === "created" && (
@@ -106,7 +106,7 @@ export default function ProveedorScreen({ onDetail, onNew }) {
         </CustomText>
 
         {cargando ? (
-          <Spinner text="Cargando proveedores..." style={{ marginVertical: 32 }} />
+          <Spinner text="Cargando proveedores..." style={styles.spinner} />
         ) : proveedoresFiltrados.length === 0 ? (
           <EmptyState
             title="Sin proveedores"

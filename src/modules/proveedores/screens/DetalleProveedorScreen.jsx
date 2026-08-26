@@ -53,7 +53,7 @@ export default function DetalleProveedorScreen({
     return (
       <View style={STYLE.container}>
         <View style={STYLE.contentWrapper}>
-          <Spinner text="Cargando proveedor..." style={{ marginTop: 40 }} />
+          <Spinner text="Cargando proveedor..." style={styles.spinner} />
         </View>
       </View>
     );
@@ -84,7 +84,7 @@ export default function DetalleProveedorScreen({
       <ScrollView
         style={styles.scroll}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 24 }}
+        contentContainerStyle={styles.scrollContainer}
       >
         <View style={STYLE.contentWrapper}>
           <Card style={styles.tarjeta}>

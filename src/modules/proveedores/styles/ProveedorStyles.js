@@ -23,6 +23,12 @@ import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
 
 export const styles = StyleSheet.create({
+  scrollContainer: {
+    paddingBottom: 100,
+  },
+  spinner: {
+    marginVertical: 32,
+  },
   alertSuccess: {
     marginBottom: 16,
   },

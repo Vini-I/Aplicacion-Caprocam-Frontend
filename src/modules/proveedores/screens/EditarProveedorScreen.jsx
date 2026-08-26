@@ -60,7 +60,7 @@ export default function EditarProveedorScreen({ onProveedor, id }) {
     return (
       <View style={STYLE.container}>
         <View style={STYLE.contentWrapper}>
-          <Spinner text="Cargando datos del proveedor..." style={{ marginTop: 40 }} />
+          <Spinner text="Cargando datos del proveedor..." style={styles.spinner} />
         </View>
       </View>
     );
@@ -73,7 +73,7 @@ export default function EditarProveedorScreen({ onProveedor, id }) {
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{ paddingBottom: 24 }}
+        contentContainerStyle={styles.scrollContainer}
       >
         <View style={STYLE.contentWrapper}>
         <Card style={styles.card}>
