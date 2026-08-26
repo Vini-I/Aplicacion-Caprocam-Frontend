@@ -45,6 +45,7 @@ import { ICONS } from "../../../theme/icons";
 import { STYLE } from "../../../theme/style";
 import { styles, ICON_STYLES } from "../styles/CompradorStyles";
 import { useCompradorScreen } from "../hooks/useCompradorScreen";
+import { formatearTelefono } from "../services/comprador.service";
 
 
 
@@ -94,7 +95,7 @@ export default function CompradorScreen() {
             color={ICON_STYLES.phone.color}
           />
           <Text style={styles.contactText}>
-            {comprador.telefono.replace(/^\+506\s?(\d{4})(\d{4})$/, "+506 $1-$2")}
+            {formatearTelefono(comprador.telefono)}
           </Text>
         </View>
 
