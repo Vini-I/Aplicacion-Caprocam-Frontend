@@ -22,7 +22,7 @@ import {
   normalizarNumeroDecimal,
 } from "./useEstanque";
 
-export default function useNuevoEstanque({ navigation, codigoCBO }) {
+export default function useNuevoEstanque({ codigoCBO }) {
   const router = useRouter();
 
   const { crearEstanque } = useEstanque();
@@ -139,11 +139,9 @@ export default function useNuevoEstanque({ navigation, codigoCBO }) {
     mensaje,
     tipoMensaje,
     submitted,
-
     errores,
+
     registrarEstanque,
-    // Mensaje único para mostrar en UI (validación o servidor)
     displayErrorMessage: mensaje || null,
-    displayErrorVariant: tipoMensaje || null,
   };
 }

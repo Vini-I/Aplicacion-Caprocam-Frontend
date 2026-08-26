@@ -46,16 +46,9 @@ export default function LandingHeader({
   alternarMenu,
   cerrarMenu,
   irAlInicio,
-  irASeccion,
   iniciarSesion,
+  navegarA,
 }) {
-  function navegarA(nombre) {
-    irASeccion(nombre);
-
-    if (esMovil === true) {
-      cerrarMenu();
-    }
-  }
 
   return (
     <View style={styles.header}>

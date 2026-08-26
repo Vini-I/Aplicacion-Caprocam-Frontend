@@ -36,6 +36,19 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
   },
 
+  emptyState: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 70,
+    paddingHorizontal: 20,
+    gap: 8,
+  },
+
+  emptyStateTitle: {
+    marginTop: 8,
+    textAlign: "center",
+  },
+
   iconContainer: {
     width: 45,
     height: 45,

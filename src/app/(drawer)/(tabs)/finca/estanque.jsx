@@ -2,7 +2,7 @@ import { useLocalSearchParams } from "expo-router";
 import EstanqueScreen from "../../../../modules/estanques/screens/NuevoEstanqueScreen";
 
 export default function Estanque() {
-    const { codigoBCO, id } = useLocalSearchParams();
+    const { codigoCBO, id } = useLocalSearchParams();
 
-    return <EstanqueScreen codigoCBO={codigoBCO} id={id}/>
+    return <EstanqueScreen codigoCBO={codigoCBO} id={id}/>
 }

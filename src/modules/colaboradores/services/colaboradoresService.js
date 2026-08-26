@@ -199,7 +199,7 @@ async function getColaboradorById(id) {
  */
 async function createColaborador(data) {
   try {
-    const pin = String(Math.floor(1000 + Math.random() * 9000));
+    const pin = data.pin || String(data.pin);
     const payload = prepareForBackend(data, pin);
     if (!payload) {
       throw new Error("No se pudo preparar los datos del colaborador.");

@@ -108,7 +108,7 @@ export default function VentaScreen({ onDetalleVentas }) {
               onChangeText={handlePesoPromedioChange}
               step={0.1}
               min={0.0}
-              max={20}
+              max={50}
               style={errores.pesoPromedio ? errorInputStyle : null}
             />
           </View>
@@ -145,7 +145,8 @@ export default function VentaScreen({ onDetalleVentas }) {
             label="Fecha *"
             value={fechaVenta}
             onChangeText={handleFechaChange}
-            allowFutureDates={true}
+            allowFutureDates={false}
+            inputStyle={errores.fechaVenta ? errorInputStyle : null}
           />
         </View>
 

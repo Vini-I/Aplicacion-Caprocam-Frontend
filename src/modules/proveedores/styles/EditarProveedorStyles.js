@@ -26,6 +26,14 @@ export const styles = StyleSheet.create({
     flex: 1,
   },
 
+  scrollContainer: {
+    paddingBottom: 24,
+  },
+
+  spinner: {
+    marginTop: 40,
+  },
+
   card: {
     borderRadius: 18,
     backgroundColor: COLORS.white,

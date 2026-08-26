@@ -61,7 +61,8 @@ function obtenerFechaValida(fecha) {
     fechaValidada.getFullYear() !== anio ||
     fechaValidada.getMonth() !== mes - 1 ||
     fechaValidada.getDate() !== dia
-  ) return null;
+  )
+    return null;
 
   return fechaValidada;
 }
@@ -94,7 +95,9 @@ function obtenerResponsable(usuario) {
 }
 
 function primeraMayuscula(texto) {
-  return texto ? texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase() : "";
+  return texto
+    ? texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase()
+    : "";
 }
 
 function obtenerIdFinca(finca) {
@@ -102,22 +105,38 @@ function obtenerIdFinca(finca) {
 }
 
 function obtenerIdEstanque(estanque) {
-  return Number(estanque.id ?? estanque.estanqueId ?? estanque.idEstanque ?? estanque.estanque_id);
+  return Number(
+    estanque.id ??
+      estanque.estanqueId ??
+      estanque.idEstanque ??
+      estanque.estanque_id,
+  );
 }
 
 function obtenerFincaIdEstanque(estanque) {
-  return Number(estanque.idFinca);
+  return Number(
+    estanque.idFinca ??
+      estanque.fincaId ??
+      estanque.id_finca ??
+      estanque.finca_id,
+  );
 }
 
 function normalizarCatalogoParasitos(catalogo) {
-  if (!Array.isArray(catalogo) || catalogo.length === 0) return PARASITOS_RESPALDO;
+  if (!Array.isArray(catalogo) || catalogo.length === 0)
+    return PARASITOS_RESPALDO;
 
   return catalogo
     .map((item) => {
-      if (typeof item === "string") return { label: primeraMayuscula(item), value: item };
+      if (typeof item === "string")
+        return { label: primeraMayuscula(item), value: item };
 
       const value = item.value ?? item.codigo ?? item.parasito ?? "";
-      const label = item.label ?? item.nombre ?? item.nombreVisible ?? primeraMayuscula(String(value));
+      const label =
+        item.label ??
+        item.nombre ??
+        item.nombreVisible ??
+        primeraMayuscula(String(value));
 
       return { label: String(label), value: String(value) };
     })
@@ -189,8 +208,13 @@ export default function useParasitologiaScreen() {
     return fincas
       .map((item) => {
         const id = obtenerIdFinca(item);
-        const label = item.nombreFinca ?? item.nombre_finca ?? item.nombre ??
-          item.codigoCBO ?? item.codigoCbo ?? `Finca ${id}`;
+        const label =
+          item.nombreFinca ??
+          item.nombre_finca ??
+          item.nombre ??
+          item.codigoCBO ??
+          item.codigoCbo ??
+          `Finca ${id}`;
 
         return { label: String(label), value: String(id) };
       })
@@ -218,14 +242,20 @@ export default function useParasitologiaScreen() {
 
   const esTablet = width >= 768;
 
-  const gridStyle = useMemo(() => ({
-    width: "100%",
-    flexDirection: esTablet ? "row" : "column",
-    flexWrap: esTablet ? "wrap" : "nowrap",
-    gap: 12,
-  }), [esTablet]);
+  const gridStyle = useMemo(
+    () => ({
+      width: "100%",
+      flexDirection: esTablet ? "row" : "column",
+      flexWrap: esTablet ? "wrap" : "nowrap",
+      gap: 12,
+    }),
+    [esTablet],
+  );
 
-  const itemStyle = useMemo(() => ({ width: esTablet ? "48.5%" : "100%" }), [esTablet]);
+  const itemStyle = useMemo(
+    () => ({ width: esTablet ? "48.5%" : "100%" }),
+    [esTablet],
+  );
   const itemFullStyle = useMemo(() => ({ width: "100%" }), []);
 
   const placeholderFinca = cargandoOpciones
@@ -240,15 +270,17 @@ export default function useParasitologiaScreen() {
       ? "Seleccione un estanque"
       : "No se encuentran opciones o valores";
 
-  const placeholderParasito = opcionesParasitos.length > 0
-    ? "Seleccione un parasito"
-    : "No se encuentran opciones o valores";
+  const placeholderParasito =
+    opcionesParasitos.length > 0
+      ? "Seleccione un parasito"
+      : "No se encuentran opciones o valores";
 
   const placeholderGrado = "Seleccione el grado de infeccion";
 
   const errorFinca = submitted && finca === "";
   const errorEstanque = submitted && estanque === "";
-  const errorFechaReporte = submitted && validarFechaReporte(fechaReporte) !== "";
+  const errorFechaReporte =
+    submitted && validarFechaReporte(fechaReporte) !== "";
   const errorParasito = submitted && parasito === "";
   const errorGrado = submitted && gradoInfeccion === "";
 
@@ -257,12 +289,31 @@ export default function useParasitologiaScreen() {
     setTipoMensaje("info");
   }
 
-  const cambiarFinca = (value) => { setFinca(String(value)); setEstanque(""); limpiarMensaje(); };
-  const cambiarEstanque = (value) => { setEstanque(String(value)); limpiarMensaje(); };
-  const cambiarFechaReporte = (value) => { setFechaReporte(value); limpiarMensaje(); };
-  const cambiarParasito = (value) => { setParasito(String(value)); limpiarMensaje(); };
-  const cambiarGradoInfeccion = (value) => { setGradoInfeccion(String(value)); limpiarMensaje(); };
-  const cambiarObservaciones = (value) => { setObservaciones(value); limpiarMensaje(); };
+  const cambiarFinca = (value) => {
+    setFinca(String(value));
+    setEstanque("");
+    limpiarMensaje();
+  };
+  const cambiarEstanque = (value) => {
+    setEstanque(String(value));
+    limpiarMensaje();
+  };
+  const cambiarFechaReporte = (value) => {
+    setFechaReporte(value);
+    limpiarMensaje();
+  };
+  const cambiarParasito = (value) => {
+    setParasito(String(value));
+    limpiarMensaje();
+  };
+  const cambiarGradoInfeccion = (value) => {
+    setGradoInfeccion(String(value));
+    limpiarMensaje();
+  };
+  const cambiarObservaciones = (value) => {
+    setObservaciones(value);
+    limpiarMensaje();
+  };
 
   function validarFormulario() {
     if (!finca) return "Seleccione una finca.";
@@ -321,19 +372,36 @@ export default function useParasitologiaScreen() {
   }
 
   return {
-    finca, estanque, fechaReporte, parasito, gradoInfeccion,
-    observaciones, responsable,
+    finca,
+    estanque,
+    fechaReporte,
+    parasito,
+    gradoInfeccion,
+    observaciones,
+    responsable,
 
-    opcionesFincas, opcionesEstanques, opcionesParasitos,
+    opcionesFincas,
+    opcionesEstanques,
+    opcionesParasitos,
     opcionesGrados: GRADOS_INFECCION,
 
-    placeholderFinca, placeholderEstanque, placeholderParasito, placeholderGrado,
+    placeholderFinca,
+    placeholderEstanque,
+    placeholderParasito,
+    placeholderGrado,
 
-    gridStyle, itemStyle, itemFullStyle,
+    gridStyle,
+    itemStyle,
+    itemFullStyle,
 
-    errorFinca, errorEstanque, errorFechaReporte, errorParasito, errorGrado,
+    errorFinca,
+    errorEstanque,
+    errorFechaReporte,
+    errorParasito,
+    errorGrado,
 
-    mensaje, tipoMensaje,
+    mensaje,
+    tipoMensaje,
     loading: loadingParasitologia || cargandoOpciones,
 
     cambiarFinca,

@@ -18,18 +18,25 @@
  * @navigation - N/A (delegado a la ruta vía prop onProveedor)
  */
 import { useState, useRef, useEffect } from "react";
-import { validarTelefono, validarCorreo } from "../utils/contactValidators";
+import {
+  validarNombre,
+  validarTelefono,
+  validarCorreo,
+  validarDireccion,
+} from "../utils/contactValidators";
 import { useProveedor } from "../context/ProveedorContext";
 import { ProveedorDTO } from "../dtos/proveedor.dto";
 
-export const telefonoMaxLength = 8;
+export const telefonoMaxLength = 9;
 
 const mensajeCamposObligatorios =
   "Revisa los campos obligatorios marcados con * antes de guardar.";
 
 function obtenerMensajeError(nuevosErrores) {
+  if (nuevosErrores.nombreInvalido) return nuevosErrores.nombre;
   if (nuevosErrores.telefonoInvalido) return nuevosErrores.telefono;
   if (nuevosErrores.correoInvalido) return nuevosErrores.correo;
+  if (nuevosErrores.direccionInvalida) return nuevosErrores.direccion;
 
   if (Object.keys(nuevosErrores).length > 0) {
     return mensajeCamposObligatorios;
@@ -86,9 +93,15 @@ export function useNuevoProveedorScreen({ onProveedor } = {}) {
   async function handleSubmit() {
     const nuevosErrores = {};
 
-    if (!nombre.trim()) {
-      nuevosErrores.nombre = "El nombre de la empresa es obligatorio.";
+    const errorNombre = validarNombre(nombre, {
+      mensajeObligatorio: "El nombre de la empresa es obligatorio.",
+      mensajeInvalido: "El nombre de la empresa debe tener al menos 3 caracteres.",
+    });
+    if (errorNombre) {
+      nuevosErrores.nombre = errorNombre;
+      if (nombre.trim() !== "") nuevosErrores.nombreInvalido = true;
     }
+
     if (!tipoProducto) {
       nuevosErrores.tipoProducto = "Seleccione un tipo de producto.";
     }
@@ -102,17 +115,19 @@ export function useNuevoProveedorScreen({ onProveedor } = {}) {
       if (telefono.trim() !== "") nuevosErrores.telefonoInvalido = true;
     }
 
-    const errorCorr = validarCorreo(correo, {
-      mensajeObligatorio: "El correo electronico es obligatorio.",
-      mensajeInvalido: "Ingrese un correo electronico valido.",
-    });
+    const errorCorr = validarCorreo(correo);
     if (errorCorr) {
       nuevosErrores.correo = errorCorr;
       if (correo.trim() !== "") nuevosErrores.correoInvalido = true;
     }
 
-    if (!direccion.trim()) {
-      nuevosErrores.direccion = "La direccion es obligatoria.";
+    const errorDir = validarDireccion(direccion, {
+      mensajeObligatorio: "La dirección es obligatoria.",
+      mensajeInvalido: "La dirección no puede exceder 255 caracteres.",
+    });
+    if (errorDir) {
+      nuevosErrores.direccion = errorDir;
+      if (direccion.trim() !== "") nuevosErrores.direccionInvalida = true;
     }
 
     if (Object.keys(nuevosErrores).length > 0) {
