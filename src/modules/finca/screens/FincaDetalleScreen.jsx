@@ -69,6 +69,7 @@ export default function FincaDetalleScreen({
         Titulo="Detalle de Finca"
         Subtitulo={finca.nombreFinca}
         Icono="document"
+        RutaVolver="/finca"
       />
       <ScrollView showsVerticalScrollIndicator={false} style={STYLE.container}>
         <View style={[STYLE.contentWrapper, styles.content]}>
@@ -241,7 +242,7 @@ export default function FincaDetalleScreen({
       <View style={styles.addButtonContainer}>
         <Button
           style={[STYLE.contentWrapper, styles.addButton]}
-          onPress={() => onEstanque(finca.codigoCBO)}
+          onPress={() => onEstanque(finca.codigoCBO, finca.id)}
         >
           <Icon style={styles.addButtonText} icon={ICONS.add} size={15} />
           <Text style={styles.addButtonText} size={15}>

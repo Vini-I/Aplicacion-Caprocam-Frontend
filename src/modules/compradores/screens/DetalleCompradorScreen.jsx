@@ -69,7 +69,7 @@ export default function DetalleCompradorScreen() {
 
   if (!comprador) {
     return (
-      <View style={styles.contenedor}>
+      <View style={STYLE.contenedor}>
         <EmptyState
           title="Comprador no encontrado"
           description={error || "El comprador que buscas no existe."}
@@ -79,7 +79,7 @@ export default function DetalleCompradorScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={STYLE.container}>
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={[styles.contenido, STYLE.contentWrapper]}

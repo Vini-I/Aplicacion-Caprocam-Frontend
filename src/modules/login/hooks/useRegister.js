@@ -18,13 +18,16 @@ import { register } from '../services/authService';
 import { useAuthRequest } from './useAuthRequest';
 import { validateRegisterForm, isRegisterFormValid, getRegisterValidationResult } from '../utils/registerValidator';
 import { filterNameChars, filterUsernameChars } from '../utils/inputFilters';
+import { getTokenPayload } from '../utils/tokenStorage';
 
 export const useRegister = ({ onRegisterSuccess = () => {} } = {}) => {
+  const esGlobal = Boolean(getTokenPayload()?.accesoGlobal);
   const [nombre, setNombreState] = useState('');
   const [apellidos, setApellidosState] = useState('');
   const [email, setEmailState] = useState('');
   const [username, setUsernameState] = useState('');
   const [password, setPasswordState] = useState('');
+  const [grupoDatos, setGrupoDatosState] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
@@ -48,13 +51,26 @@ export const useRegister = ({ onRegisterSuccess = () => {} } = {}) => {
     if (submitted) setSubmitted(false);
     setPasswordState(val);
   };
+  const setGrupoDatos = (val) => {
 
-  const validationErrors = validateRegisterForm({ nombre, apellidos, email, username, password });
+    if (submitted) setSubmitted(false);
+
+    // Solo dígitos, máximo 3 caracteres (últimos 3 dígitos del CBO)
+
+    setGrupoDatosState(val.replace(/\D/g, '').slice(0, 3));
+
+  };
+
+
+
+  const validationErrors = validateRegisterForm({ nombre, apellidos, email, username, password, grupoDatos, esGlobal });
   const isFormValid = isRegisterFormValid(validationErrors);
+
+  const emptyErrors = { nombre: '', apellidos: '', email: '', username: '', password: '', grupoDatos: '' };
 
   const errors = submitted
     ? validationErrors
-    : { nombre: '', apellidos: '', email: '', username: '', password: '' };
+    : emptyErrors;
 
   const validationResult = submitted
     ? getRegisterValidationResult(validationErrors)
@@ -71,7 +87,12 @@ export const useRegister = ({ onRegisterSuccess = () => {} } = {}) => {
 
   const handleRegister = () => {
     setSubmitted(true);
-    submit(() => register(username, password, { nombre, apellidos, email }), isFormValid);
+
+    const profileData = esGlobal
+      ? { nombre, apellidos, email, grupoDatos }
+      : { nombre, apellidos, email };
+
+    submit(() => register(username, password, profileData), isFormValid);
   };
 
   return {
@@ -80,6 +101,8 @@ export const useRegister = ({ onRegisterSuccess = () => {} } = {}) => {
     email, setEmail,
     username, setUsername,
     password, setPassword,
+    grupoDatos, setGrupoDatos,
+    esGlobal,
     errors,
     validationResult,
     isFormValid,

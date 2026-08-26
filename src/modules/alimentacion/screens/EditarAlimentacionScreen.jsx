@@ -67,7 +67,7 @@ export default function EditarAlimentacionScreen({ registroId }) {
   if (!registroId) {
     return (
       <View style={styles.screen}>
-        <NavbarRegistro Titulo="Alimentación" Subtitulo="Editar registro" Icono="food" />
+        <NavbarRegistro Titulo="Alimentación" Subtitulo="Editar registro" Icono="food" RutaVolver="/registros/Reporteria" />
         <View style={STYLE.contentWrapper}>
           <Text style={{ textAlign: "center", marginTop: 24 }}>
             No se encontró el registro a editar.

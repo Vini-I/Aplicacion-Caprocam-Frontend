@@ -1,9 +1,20 @@
-import { Stack } from "expo-router";
+import { Stack, useRouter } from "expo-router";
+import { HeaderBackButton } from "expo-router/react-navigation";
 import { COLORS } from "../../../theme/colors.js";
 
 export default function TrazabilidadStackLayout() {
+  const router = useRouter();
+
   return (
-    <Stack screenOptions={{ headerShown: false, headerStyle: { backgroundColor: COLORS.primary }, headerTintColor: COLORS.white}}>
+    <Stack screenOptions={{
+      headerShown: false, headerStyle: { backgroundColor: COLORS.primary }, headerTintColor: COLORS.white, headerBackVisible: false,
+      headerLeft: (props) => (
+        <HeaderBackButton
+          {...props}
+          onPress={() => router.dismissAll()}
+        />
+      ),
+    }}>
 
       <Stack.Screen name="index" options={{ title: "Sección de Trazabilidad", headerShown: false }} />
 

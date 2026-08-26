@@ -25,12 +25,12 @@ import { PREGUNTAS, SERVICIOS } from "../data/landing.data";
 import { styles } from "../styles/LandingStyle";
 import SectionBadge from "./SectionBadge";
 
-function ServiceCard({ item, esMovil }) {
+function ServiceCard({ item, esMovil, esTablet }) {
   return (
     <View
       style={[
         styles.serviceCard,
-        esMovil && styles.serviceCardFullWidth,
+        (esMovil || esTablet) && styles.serviceCardFullWidth,
       ]}
     >
       <View style={styles.serviceIcon}>
@@ -54,6 +54,7 @@ function ServiceCard({ item, esMovil }) {
 
 export default function LandingServices({
   esMovil,
+  esTablet,
   guardarPosicion,
   preguntaAbierta,
   alternarPregunta,
@@ -94,6 +95,7 @@ export default function LandingServices({
               key={item.id}
               item={item}
               esMovil={esMovil}
+              esTablet={esTablet}
             />
           ))}
         </View>

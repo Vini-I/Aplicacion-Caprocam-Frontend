@@ -68,6 +68,7 @@ export default function EditarFisicoQuimicaScreen({ registroId }) {
           Titulo="Físico-Química"
           Subtitulo="Editar registro"
           Icono="chemicalContainer"
+          RutaVolver="/registros/Reporteria"
         />
         <View style={STYLE.container}>
           <Text style={{ textAlign: "center", marginTop: 24 }}>

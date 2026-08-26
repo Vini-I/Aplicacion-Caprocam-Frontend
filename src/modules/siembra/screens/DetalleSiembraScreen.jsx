@@ -160,6 +160,7 @@ export default function DetalleSiembraScreen({
         Titulo="Detalle de Siembra"
         Subtitulo="Cargando información..."
         Icono="shrimp"
+        RutaVolver="/siembra"
       />
     );
   }
@@ -174,6 +175,7 @@ export default function DetalleSiembraScreen({
         }
         Subtitulo={`${estanqueLabel} – ${fincaLabel}`}
         Icono="shrimp"
+        RutaVolver={`/siembra`}
       />
       <ScrollView
         style={STYLE.container}

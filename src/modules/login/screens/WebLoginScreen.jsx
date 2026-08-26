@@ -14,6 +14,7 @@
  *               - Errores de validación visibles solo tras primer intento de envío.
  *               - createChangeHandler limpia serverError en cada cambio de campo.
  * @navigation   - onLoginSuccess → sección principal de la aplicación.
+ *               - onGoToLanding → redirige a la pantalla /landing.
  *               - El registro de administradores ya no vive aquí: solo es
  *                 accesible desde Configuración dentro del drawer, y
  *                 solamente para usuarios ya autenticados.
@@ -35,6 +36,7 @@ import { STYLE } from '../../../theme/style';
 
 export default function WebLoginScreen({
   onLoginSuccess = () => { },
+  onGoToLanding = () => { },
 }) {
   const {
     username, setUsername,
@@ -98,6 +100,10 @@ export default function WebLoginScreen({
 
             <Button variant="outline" disabled={loading} onPress={handleLogin}>
               {MSG.BUTTON_LOGIN}
+            </Button>
+
+            <Button variant="secondary" disabled={loading} onPress={onGoToLanding}>
+              Volver al inicio
             </Button>
 
           </Card>
