@@ -50,7 +50,7 @@ export const TELEFONO_MAX_LENGTH = 8;
 
 const CORREO_REGEX = /^[^\s@]+@[^\s@]+$/;
 
-const CORREO_LARGO_MINIMO = 4;
+const CORREO_LARGO_MINIMO = 3;
 
 function normalizarTelefonoLocal(valor) {
   const soloDigitos = String(valor || "").replace(/\D/g, "");
@@ -201,10 +201,27 @@ export function useEditarCompradorScreen() {
     setErrorCorreo(errorCorr);
     setSinCambios(false);
 
-    if (errorTel !== "" || errorCorr !== "") {
+    // Prioridad de mensaje
+    if (telefono.trim() === "") {
       setAlerta({
         variant: "danger",
-        message: "Por favor corrige los datos antes de guardar.",
+        message: "Revisa los campos obligatorios marcados con * antes de guardar.",
+      });
+      return;
+    }
+
+    if (errorTel !== "") {
+      setAlerta({
+        variant: "danger",
+        message: "No se está cumpliendo con el teléfono permitido. Ej: 22223344",
+      });
+      return;
+    }
+
+    if (errorCorr !== "") {
+      setAlerta({
+        variant: "danger",
+        message: "No se está cumpliendo con el correo permitido. Ej: gallardo@gmail.com",
       });
       return;
     }

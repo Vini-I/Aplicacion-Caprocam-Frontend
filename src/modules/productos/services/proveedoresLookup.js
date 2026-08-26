@@ -24,6 +24,7 @@ function mapProveedor(apiProveedor) {
     id: apiProveedor.id,
     nombre: apiProveedor.nombreEmpresa,
     tipoProducto: apiProveedor.tipoProducto ?? "",
+    activo: apiProveedor.activo, 
   };
 }
 
