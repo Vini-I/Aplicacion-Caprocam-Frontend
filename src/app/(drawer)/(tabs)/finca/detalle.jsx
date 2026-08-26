@@ -5,10 +5,10 @@ export default function Detalle() {
 
   const router = useRouter();
 
-  const handleNuevoEstanque = (codigoBCO, id) => {
+  const handleNuevoEstanque = (codigoCBO, id) => {
     router.push({
         pathname:"/finca/estanque",
-        params:{ codigoBCO, id }
+        params:{ codigoCBO, id }
     });
   };
    

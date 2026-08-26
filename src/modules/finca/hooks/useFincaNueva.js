@@ -111,7 +111,7 @@ export function useFincaNueva({ onFinca }) {
     const nuevosErrores = {};
     const telefonosLimpios = telefonos.map((tel) => String(tel ?? "").trim()).filter((tel) => tel !== "");
 
-    if (!formulario.codigoCBO.trim()) nuevosErrores.codigoCBO = "Código CVO obligatorio";
+    if (!formulario.codigoCBO.trim()) nuevosErrores.codigoCBO = "Código CBO obligatorio";
     if (!formulario.nombre.trim()) nuevosErrores.nombre = "Nombre de la finca obligatorio";
     if (!formulario.provincia) nuevosErrores.provincia = "Provincia obligatoria";
     if (!formulario.canton) nuevosErrores.canton = "Cantón obligatorio";

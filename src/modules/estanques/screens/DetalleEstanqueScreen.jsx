@@ -12,7 +12,6 @@
  * - Mantiene botones outline.
  */
 
-import React from "react";
 import { ScrollView, View } from "react-native";
 
 import Alert from "../../../shared/components/Alert";
