@@ -40,7 +40,10 @@ import {
   useFieldValidation,
   validarCamposObligatorios,
 } from "./useFieldValidation";
-import { obtenerCamposObligatorios as obtenerCamposObligatoriosPorTipo } from "./siembraValidationRules";
+import {
+  obtenerCamposObligatorios as obtenerCamposObligatoriosPorTipo,
+  determinarCampoDelError,
+} from "./siembraValidationRules";
 import {
   calcularDensidadDesdeCantidad,
   calcularProgresoCiclo,
@@ -693,11 +696,13 @@ export default function useDetalleSiembra({
           : "Siembra actualizada correctamente.";
       if (onSuccess) onSuccess(m);
     } catch (err) {
-      const mensajeBackend = err.response?.data?.message;
-      mostrarMensaje(
-        mensajeBackend || "No fue posible guardar los cambios.",
-        "danger",
-      );
+      const mensajeFinal =
+        err.response?.data?.message || "No fue posible guardar los cambios.";
+      const campoConError = determinarCampoDelError(mensajeFinal);
+      if (campoConError) {
+        setErrors({ [campoConError]: mensajeFinal });
+      }
+      mostrarMensaje(mensajeFinal, "danger");
     } finally {
       setGuardando(false);
     }

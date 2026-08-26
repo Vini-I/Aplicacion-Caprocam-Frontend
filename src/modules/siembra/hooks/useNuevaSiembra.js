@@ -39,7 +39,7 @@ import {
   useFieldValidation,
   validarCamposObligatorios,
 } from "./useFieldValidation";
-import { obtenerCamposObligatorios as obtenerCamposObligatoriosPorTipo } from "./siembraValidationRules";
+import { obtenerCamposObligatorios as obtenerCamposObligatoriosPorTipo, determinarCampoDelError } from "./siembraValidationRules";
 import { calcularDensidadDesdeCantidad } from "./siembraCalculos";
 import { obtenerFechaHoy, formatearFechaDesdeISO } from "./dateUtils";
 
@@ -233,20 +233,6 @@ export default function useNuevaSiembra(onSuccess) {
       })),
     [],
   );
-
-  function determinarCampoDelError(mensaje) {
-  const reglas = [
-    { patron: /cantidad_sembrada/i, campo: "cantidadSembrada" },
-    { patron: /codigo_lote|ese codigo/i, campo: "codigoLoteLarva" },
-    { patron: /certificado_larva/i, campo: "certificadoLarva" },
-    { patron: /la pre-cria/i, campo: "precriaId" },
-    { patron: /lote de larva/i, campo: "codigoLoteLarva" },
-    { patron: /estanque/i, campo: "estanque" },
-    { patron: /finca/i, campo: "finca" },
-  ];
-  const regla = reglas.find((r) => r.patron.test(mensaje));
-  return regla ? regla.campo : null;
-}
 
   // Catálogos de larva reales - se cargan del backend, ya no son
   // arrays en memoria.
