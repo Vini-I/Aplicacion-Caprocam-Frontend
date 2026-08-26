@@ -58,7 +58,7 @@ export const CEDULA_MAX_LENGTH = 15;
 const CORREO_REGEX = /^[^\s@]+@[^\s@]+$/;
 // Mínimo de caracteres exigido en la parte ANTES del @ (no en el
 // correo completo).
-const CORREO_LARGO_MINIMO = 4;
+const CORREO_LARGO_MINIMO = 3;
 
 function esTelefonoValido(valor) {
   return valor.trim() !== "" && TELEFONO_REGEX.test(valor.trim());
@@ -80,6 +80,8 @@ function esCorreoValido(valor) {
 }
 
 const MENSAJE_ERROR_GENERAL = "Revisa los campos obligatorios marcados con * antes de guardar.";
+const MENSAJE_ERROR_TELEFONO = "No se está cumpliendo con el teléfono permitido. Ej: 22223344";
+const MENSAJE_ERROR_CORREO = "No se está cumpliendo con el correo permitido. Ej: gallardo@gmail.com";
 const MENSAJE_ERROR_GUARDADO = "No se pudo guardar el comprador. Intenta de nuevo.";
 
 export function useNuevoCompradorScreen() {
@@ -124,6 +126,7 @@ export function useNuevoCompradorScreen() {
   async function handleSubmit() {
     const errNombre = nombre.trim() === "";
     const errCedula = !esCedulaValida(cedula);
+    const telefonoVacio = telefono.trim() === "";
     const errTel = !esTelefonoValido(telefono);
     const errCorreo = !esCorreoValido(correo);
 
@@ -132,8 +135,19 @@ export function useNuevoCompradorScreen() {
     setErrorTelefono(errTel);
     setErrorCorreo(errCorreo);
 
-    if (errNombre || errCedula || errTel || errCorreo) {
+    // Prioridad de mensaje
+    if (errNombre || errCedula || telefonoVacio) {
       setMensajeError(MENSAJE_ERROR_GENERAL);
+      return;
+    }
+
+    if (errTel) {
+      setMensajeError(MENSAJE_ERROR_TELEFONO);
+      return;
+    }
+
+    if (errCorreo) {
+      setMensajeError(MENSAJE_ERROR_CORREO);
       return;
     }
 

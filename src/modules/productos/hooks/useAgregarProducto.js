@@ -115,6 +115,10 @@ export function useAgregarProducto() {
   const showExpirationDate =
     form.categoria === "Alimentación" || form.categoria === "Tratamiento";
 
+  // Precio y stock mínimo deben ser mayores a cero 
+  const stockMinimoValido = form.stockMinimo === "" || Number(form.stockMinimo) > 0;
+  const precioValido = form.precioUnidad === "" || Number(form.precioUnidad) > 0;
+
   // ── Validación de fechas ──
   const hoyISO = obtenerFechaHoyISO();
   const entryDateISO = convertirDDMMYYYYaISO(form.entryDate);
@@ -131,12 +135,21 @@ export function useAgregarProducto() {
     expirationDateISO === "" ||
     expirationDateISO > hoyISO;
 
-  const canSave = hasRequiredData && entryDateValida && expirationDateValida;
+  const canSave =
+    hasRequiredData &&
+    stockMinimoValido &&
+    precioValido &&
+    entryDateValida &&
+    expirationDateValida;
 
   const validationMessage = !mostrarAlertaValidacion
     ? ""
     : !hasRequiredData
     ? "Revisa los campos obligatorios marcados con * antes de guardar."
+    : !stockMinimoValido
+    ? "El stock mínimo debe ser mayor que cero."
+    : !precioValido
+    ? "El precio por unidad debe ser mayor que cero."
     : !entryDateValida
     ? "La fecha de ingreso no puede ser una fecha futura."
     : !expirationDateValida
@@ -148,8 +161,8 @@ export function useAgregarProducto() {
   const errorCategoria = intentoGuardar && form.categoria === "";
   const errorProveedor = intentoGuardar && form.proveedor === "";
   const errorCantidad = intentoGuardar && form.cantidad === "";
-  const errorStockMinimo = intentoGuardar && form.stockMinimo === "";
-  const errorPrecio = intentoGuardar && form.precioUnidad === "";
+  const errorStockMinimo = intentoGuardar && (form.stockMinimo === "" || !stockMinimoValido);
+  const errorPrecio = intentoGuardar && (form.precioUnidad === "" || !precioValido);
   const errorEntryDate = intentoGuardar && !entryDateValida;
   const errorExpirationDate = intentoGuardar && !expirationDateValida;
 
