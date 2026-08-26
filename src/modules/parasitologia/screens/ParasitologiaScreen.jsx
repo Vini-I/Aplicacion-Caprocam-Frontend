@@ -104,15 +104,6 @@ export default function ParasitologiaScreen() {
                   }
                 />
               </View>
-
-              <View style={pantalla.itemStyle}>
-                <Input
-                  label="Responsable"
-                  value={pantalla.responsable}
-                  editable={false}
-                  labelStyle={styles.label}
-                />
-              </View>
             </View>
           </Card>
 

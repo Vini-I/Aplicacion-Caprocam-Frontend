@@ -95,7 +95,7 @@ export default function useAlertasScreen() {
     return function () {
       activo = false;
     };
-  }, [recargar]);
+  }, []);
 
   const alertasBase = construirAlertasOperativas({
     productosInventario,
