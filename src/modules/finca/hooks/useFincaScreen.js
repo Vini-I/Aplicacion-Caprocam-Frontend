@@ -33,7 +33,7 @@ export function useFincaScreen() {
 
   const [ModalVisible, setModalVisible] = useState(false);
   const [FincaNombreSeleccionada, setFincaNombreSeleccionada] = useState(null);
-  const [FincaCodigoCVOSeleccionada, setFincaCodigoCVOSeleccionada] =
+  const [FincaCodigoCBOSeleccionada, setFincaCodigoCBOSeleccionada] =
   useState(null);
 
   const fincasConConteo = useMemo(() => {
@@ -44,21 +44,21 @@ export function useFincaScreen() {
   }, [fincas, estanques]);
 
   function abrirModalEliminar(Finca) {
-    setFincaCodigoCVOSeleccionada(Finca.codigoCVO);
+    setFincaCodigoCBOSeleccionada(Finca.codigoCBO);
     setFincaNombreSeleccionada(Finca.nombreFinca);
     setModalVisible(true);
   }
 
   function cancelarEliminar() {
     setModalVisible(false);
-    setFincaCodigoCVOSeleccionada(null);
+    setFincaCodigoCBOSeleccionada(null);
     setFincaNombreSeleccionada(null);
   }
 
   function confirmarEliminar() {
-    eliminarFinca(FincaCodigoCVOSeleccionada);
+    eliminarFinca(FincaCodigoCBOSeleccionada);
     setModalVisible(false);
-    setFincaCodigoCVOSeleccionada(null);
+    setFincaCodigoCBOSeleccionada(null);
     setFincaNombreSeleccionada(null);
   }
 

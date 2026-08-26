@@ -61,7 +61,7 @@ export const generarRegistroPDF = (finca, estanquesFinca = []) => {
     //Tabla de datos generales de la finca
     const filasFinca = [
       ["Nombre", finca.nombreFinca],
-      ["Código", finca.codigoCVO],
+      ["Código", finca.codigoCBO],
       ["Provincia", finca.provincia],
       ["Cantón", finca.canton],
       ["Distrito", finca.distrito],
@@ -178,7 +178,7 @@ export const generarRegistroPDF = (finca, estanquesFinca = []) => {
     doc.setTextColor(150);
     doc.text("Generado desde la aplicación", 105, y, { align: "center" });
 
-    doc.save(`Reporte_${finca.codigoCVO || "finca"}.pdf`);
+    doc.save(`Reporte_${finca.codigoCBO || "finca"}.pdf`);
 
     return null;
   } catch (error) {

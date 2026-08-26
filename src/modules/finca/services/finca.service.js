@@ -31,9 +31,9 @@ export const fincaService = {
     }
   },
 
-  getFincasById: async (codigoCVO) => {
+  getFincasById: async (codigoCBO) => {
     try {
-      const response = await api.get(`/fincas/${codigoCVO}`);
+      const response = await api.get(`/fincas/${codigoCBO}`);
 
       return {
         ...response.data.data,
@@ -54,9 +54,9 @@ export const fincaService = {
     }
   },
 
-  updateFincas: async (fincaDTO, fincaCodigoCVO) => {
+  updateFincas: async (fincaDTO, fincaCodigoCBO) => {
     try {
-      const response = await api.put(`/fincas/${fincaCodigoCVO}`, fincaDTO);
+      const response = await api.put(`/fincas/${fincaCodigoCBO}`, fincaDTO);
 
       return response.data;
     } catch (error) {
@@ -64,9 +64,9 @@ export const fincaService = {
     }
   },
 
-  deleteFincas: async (fincaCodigoCVO) => {
+  deleteFincas: async (fincaCodigoCBO) => {
     try {
-      const response = await api.delete(`/fincas/${fincaCodigoCVO}`);
+      const response = await api.delete(`/fincas/${fincaCodigoCBO}`);
 
       return response.data;
     } catch (error) {

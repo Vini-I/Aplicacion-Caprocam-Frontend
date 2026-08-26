@@ -107,7 +107,7 @@ export default function FincaDetalleScreen({
 
             <View style={styles.filaDetalle}>
               <Text style={styles.etiqueta}>CVO:</Text>
-              <Text style={styles.valor}>{finca.codigoCVO}</Text>
+              <Text style={styles.valor}>{finca.codigoCBO}</Text>
             </View>
 
             <View style={styles.filaDetalle}>
@@ -217,7 +217,7 @@ export default function FincaDetalleScreen({
                   <Button
                     style={styles.Editar}
                     onPress={() =>
-                      onEstanqueEditar(finca.codigoCVO, estanque.id)
+                      onEstanqueEditar(finca.codigoCBO, estanque.id)
                     }
                   >
                     <Icon icon={ICONS.edit} color={COLORS.primary} size={20} />
@@ -242,7 +242,7 @@ export default function FincaDetalleScreen({
       <View style={styles.addButtonContainer}>
         <Button
           style={[STYLE.contentWrapper, styles.addButton]}
-          onPress={() => onEstanque(finca.codigoCVO, finca.id)}
+          onPress={() => onEstanque(finca.codigoCBO, finca.id)}
         >
           <Icon style={styles.addButtonText} icon={ICONS.add} size={15} />
           <Text style={styles.addButtonText} size={15}>

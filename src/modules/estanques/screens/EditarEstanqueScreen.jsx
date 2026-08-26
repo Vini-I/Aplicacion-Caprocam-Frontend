@@ -40,7 +40,7 @@ import {
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
 
-export default function EditarEstanqueScreen({ codigoCVO, id }) {
+export default function EditarEstanqueScreen({ codigoCBO, id }) {
   const {
     loading,
     estanqueOriginal,
@@ -65,7 +65,7 @@ export default function EditarEstanqueScreen({ codigoCVO, id }) {
     displayErrorMessage,
     displayErrorVariant,
 
-  } = useEditarEstanque(codigoCVO, id);
+  } = useEditarEstanque(codigoCBO, id);
 
   if (loading) {
     return <CustomText>Cargando...</CustomText>;

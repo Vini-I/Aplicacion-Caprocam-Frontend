@@ -73,10 +73,10 @@ export default function FincaNuevaScreen({ onFinca }) {
               <View style={styles.column}>
                 <Input
                   label="Código CVO *"
-                  value={formulario.codigoCVO}
-                  onChangeText={(valor) => actualizarCampo("codigoCVO", valor)}
+                  value={formulario.codigoCBO}
+                  onChangeText={(valor) => actualizarCampo("codigoCBO", valor)}
                   placeholder="Ej: CVO-01"
-                  style={errores.codigoCVO ? [styles.errorInput] : null}
+                  style={errores.codigoCBO ? [styles.errorInput] : null}
                 />
               </View>
               <View style={styles.column}>

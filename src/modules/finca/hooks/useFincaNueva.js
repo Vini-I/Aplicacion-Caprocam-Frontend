@@ -29,7 +29,7 @@ export function useFincaNueva({ onFinca }) {
   const { crearFinca, ERROR } = useFinca();
 
   const [formulario, setFormulario] = useState({
-    codigoCVO: "",
+    codigoCBO: "",
     nombre: "",
     provincia: "",
     canton: "",
@@ -111,7 +111,7 @@ export function useFincaNueva({ onFinca }) {
     const nuevosErrores = {};
     const telefonosLimpios = telefonos.map((tel) => String(tel ?? "").trim()).filter((tel) => tel !== "");
 
-    if (!formulario.codigoCVO.trim()) nuevosErrores.codigoCVO = "Código CVO obligatorio";
+    if (!formulario.codigoCBO.trim()) nuevosErrores.codigoCBO = "Código CBO obligatorio";
     if (!formulario.nombre.trim()) nuevosErrores.nombre = "Nombre de la finca obligatorio";
     if (!formulario.provincia) nuevosErrores.provincia = "Provincia obligatoria";
     if (!formulario.canton) nuevosErrores.canton = "Cantón obligatorio";
@@ -146,7 +146,7 @@ export function useFincaNueva({ onFinca }) {
     }
 
     const nuevaFincaDTO = {
-      codigoCVO: formulario.codigoCVO,
+      codigoCBO: formulario.codigoCBO,
       nombreFinca: formulario.nombre,
       provincia: formulario.provincia,
       canton: formulario.canton,
