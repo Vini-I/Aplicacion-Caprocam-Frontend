@@ -13,6 +13,7 @@ import { useWindowDimensions } from "react-native";
 import { fincaService } from "../../finca/services/finca.service.js";
 import { estanqueService } from "../../estanques/services/estanque.service.js";
 import { getUsuario } from "../../login/utils/tokenStorage.js";
+import { getSiembras } from "../../siembra/services/siembra.service.js";
 import useParasitologia from "./useParasitologia.js";
 
 const PARASITOS_RESPALDO = [
@@ -68,7 +69,8 @@ function obtenerFechaValida(fecha) {
 }
 
 function validarFechaReporte(fecha) {
-  if (!String(fecha ?? "").trim()) return "Seleccione la fecha del reporte.";
+  if (!String(fecha ?? "").trim())
+    return "Seleccione la fecha del reporte.";
 
   const fechaValidada = obtenerFechaValida(fecha);
   if (!fechaValidada) return "La fecha del reporte no es valida.";
@@ -76,7 +78,8 @@ function validarFechaReporte(fecha) {
   const hoy = new Date();
   hoy.setHours(0, 0, 0, 0);
 
-  if (fechaValidada > hoy) return "La fecha del reporte no puede ser futura.";
+  if (fechaValidada > hoy)
+    return "La fecha del reporte no puede ser futura.";
 
   return "";
 }
@@ -122,6 +125,77 @@ function obtenerFincaIdEstanque(estanque) {
   );
 }
 
+function normalizarTexto(valor) {
+  return String(valor ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLowerCase();
+}
+
+function obtenerIdEstanqueSiembra(siembra) {
+  return Number(
+    siembra.estanqueId ??
+      siembra.idEstanque ??
+      siembra.estanque_id ??
+      siembra.id_estanque,
+  );
+}
+
+function estanqueEstaOperativo(estanque) {
+  return normalizarTexto(estanque?.estado) === "activo";
+}
+
+function siembraEstaActiva(siembra) {
+  const activo = siembra?.activo ?? true;
+  const estado = normalizarTexto(siembra?.estado);
+
+  if (
+    activo === false ||
+    activo === 0 ||
+    activo === "0" ||
+    normalizarTexto(activo) === "false"
+  )
+    return false;
+
+  return estado === "activa" || estado === "activo";
+}
+
+function estanqueTieneSiembraActiva(estanqueId, siembras) {
+  if (!Array.isArray(siembras)) return false;
+
+  return siembras.some(function (siembra) {
+    return (
+      obtenerIdEstanqueSiembra(siembra) === Number(estanqueId) &&
+      siembraEstaActiva(siembra)
+    );
+  });
+}
+
+function buscarEstanquePorId(estanques, estanqueId) {
+  if (!Array.isArray(estanques)) return null;
+
+  return (
+    estanques.find(function (item) {
+      return obtenerIdEstanque(item) === Number(estanqueId);
+    }) ?? null
+  );
+}
+
+function validarEstanqueParaRegistro(estanqueId, estanques, siembras) {
+  const estanqueSeleccionado = buscarEstanquePorId(estanques, estanqueId);
+
+  if (!estanqueSeleccionado) return "Seleccione un estanque valido.";
+
+  if (!estanqueEstaOperativo(estanqueSeleccionado))
+    return "El estanque seleccionado no esta activo.";
+
+  if (!estanqueTieneSiembraActiva(estanqueId, siembras))
+    return "El estanque seleccionado no tiene una siembra activa.";
+
+  return "";
+}
+
 function normalizarCatalogoParasitos(catalogo) {
   if (!Array.isArray(catalogo) || catalogo.length === 0)
     return PARASITOS_RESPALDO;
@@ -156,6 +230,7 @@ export default function useParasitologiaScreen() {
 
   const [fincas, setFincas] = useState([]);
   const [estanques, setEstanques] = useState([]);
+  const [siembras, setSiembras] = useState([]);
 
   const [finca, setFinca] = useState("");
   const [estanque, setEstanque] = useState("");
@@ -173,6 +248,7 @@ export default function useParasitologiaScreen() {
     if (!mensaje) return undefined;
 
     const duracion = tipoMensaje === "success" ? 3000 : 6000;
+
     const timer = setTimeout(() => {
       setMensaje("");
       setTipoMensaje("info");
@@ -186,13 +262,15 @@ export default function useParasitologiaScreen() {
       try {
         setCargandoOpciones(true);
 
-        const [fincasData, estanquesData] = await Promise.all([
+        const [fincasData, estanquesData, siembrasData] = await Promise.all([
           fincaService.getFincas(),
           estanqueService.getEstanques(),
+          getSiembras(),
         ]);
 
         setFincas(Array.isArray(fincasData) ? fincasData : []);
         setEstanques(Array.isArray(estanquesData) ? estanquesData : []);
+        setSiembras(Array.isArray(siembrasData) ? siembrasData : []);
       } catch (error) {
         setTipoMensaje("danger");
         setMensaje(error.message);
@@ -208,6 +286,7 @@ export default function useParasitologiaScreen() {
     return fincas
       .map((item) => {
         const id = obtenerIdFinca(item);
+
         const label =
           item.nombreFinca ??
           item.nombre_finca ??
@@ -225,7 +304,15 @@ export default function useParasitologiaScreen() {
     if (!finca) return [];
 
     return estanques
-      .filter((item) => obtenerFincaIdEstanque(item) === Number(finca))
+      .filter((item) => {
+        const estanqueId = obtenerIdEstanque(item);
+
+        return (
+          obtenerFincaIdEstanque(item) === Number(finca) &&
+          estanqueEstaOperativo(item) &&
+          estanqueTieneSiembraActiva(estanqueId, siembras)
+        );
+      })
       .map((item) => {
         const id = obtenerIdEstanque(item);
         const label = item.codigo ?? item.nombre ?? `Estanque ${id}`;
@@ -233,7 +320,7 @@ export default function useParasitologiaScreen() {
         return { label: String(label), value: String(id) };
       })
       .filter((item) => Number(item.value) > 0);
-  }, [finca, estanques]);
+  }, [finca, estanques, siembras]);
 
   const opcionesParasitos = useMemo(
     () => normalizarCatalogoParasitos(catalogoParasitos),
@@ -256,6 +343,7 @@ export default function useParasitologiaScreen() {
     () => ({ width: esTablet ? "48.5%" : "100%" }),
     [esTablet],
   );
+
   const itemFullStyle = useMemo(() => ({ width: "100%" }), []);
 
   const placeholderFinca = cargandoOpciones
@@ -268,7 +356,7 @@ export default function useParasitologiaScreen() {
     ? "Seleccione primero una finca"
     : opcionesEstanques.length > 0
       ? "Seleccione un estanque"
-      : "No se encuentran opciones o valores";
+      : "No hay estanques activos con siembra activa";
 
   const placeholderParasito =
     opcionesParasitos.length > 0
@@ -294,22 +382,27 @@ export default function useParasitologiaScreen() {
     setEstanque("");
     limpiarMensaje();
   };
+
   const cambiarEstanque = (value) => {
     setEstanque(String(value));
     limpiarMensaje();
   };
+
   const cambiarFechaReporte = (value) => {
     setFechaReporte(value);
     limpiarMensaje();
   };
+
   const cambiarParasito = (value) => {
     setParasito(String(value));
     limpiarMensaje();
   };
+
   const cambiarGradoInfeccion = (value) => {
     setGradoInfeccion(String(value));
     limpiarMensaje();
   };
+
   const cambiarObservaciones = (value) => {
     setObservaciones(value);
     limpiarMensaje();
@@ -318,6 +411,14 @@ export default function useParasitologiaScreen() {
   function validarFormulario() {
     if (!finca) return "Seleccione una finca.";
     if (!estanque) return "Seleccione un estanque.";
+
+    const errorEstanqueOperativo = validarEstanqueParaRegistro(
+      estanque,
+      estanques,
+      siembras,
+    );
+
+    if (errorEstanqueOperativo) return errorEstanqueOperativo;
 
     const errorFecha = validarFechaReporte(fechaReporte);
     if (errorFecha) return errorFecha;

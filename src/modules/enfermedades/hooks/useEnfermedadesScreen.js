@@ -13,6 +13,7 @@ import { useWindowDimensions } from "react-native";
 import { fincaService } from "../../finca/services/finca.service.js";
 import { estanqueService } from "../../estanques/services/estanque.service.js";
 import { getUsuario } from "../../login/utils/tokenStorage.js";
+import { getSiembras } from "../../siembra/services/siembra.service.js";
 
 import useEnfermedades from "./useEnfermedades.js";
 
@@ -109,6 +110,77 @@ function obtenerFincaIdEstanque(estanque) {
   );
 }
 
+function normalizarTexto(valor) {
+  return String(valor ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLowerCase();
+}
+
+function obtenerIdEstanqueSiembra(siembra) {
+  return Number(
+    siembra.estanqueId ??
+      siembra.idEstanque ??
+      siembra.estanque_id ??
+      siembra.id_estanque,
+  );
+}
+
+function estanqueEstaOperativo(estanque) {
+  return normalizarTexto(estanque?.estado) === "activo";
+}
+
+function siembraEstaActiva(siembra) {
+  const activo = siembra?.activo ?? true;
+  const estado = normalizarTexto(siembra?.estado);
+
+  if (
+    activo === false ||
+    activo === 0 ||
+    activo === "0" ||
+    normalizarTexto(activo) === "false"
+  )
+    return false;
+
+  return estado === "activa" || estado === "activo";
+}
+
+function estanqueTieneSiembraActiva(estanqueId, siembras) {
+  if (!Array.isArray(siembras)) return false;
+
+  return siembras.some(function (siembra) {
+    return (
+      obtenerIdEstanqueSiembra(siembra) === Number(estanqueId) &&
+      siembraEstaActiva(siembra)
+    );
+  });
+}
+
+function buscarEstanquePorId(estanques, estanqueId) {
+  if (!Array.isArray(estanques)) return null;
+
+  return (
+    estanques.find(function (item) {
+      return obtenerIdEstanque(item) === Number(estanqueId);
+    }) ?? null
+  );
+}
+
+function validarEstanqueParaRegistro(estanqueId, estanques, siembras) {
+  const estanqueSeleccionado = buscarEstanquePorId(estanques, estanqueId);
+
+  if (!estanqueSeleccionado) return "Seleccione un estanque valido.";
+
+  if (!estanqueEstaOperativo(estanqueSeleccionado))
+    return "El estanque seleccionado no esta activo.";
+
+  if (!estanqueTieneSiembraActiva(estanqueId, siembras))
+    return "El estanque seleccionado no tiene una siembra activa.";
+
+  return "";
+}
+
 function normalizarCatalogo(catalogo) {
   if (!Array.isArray(catalogo)) return [];
 
@@ -119,6 +191,7 @@ function normalizarCatalogo(catalogo) {
 
       const value =
         item.value ?? item.valor ?? item.codigo ?? item.nombre ?? "";
+
       const label =
         item.label ?? item.nombre ?? primeraMayuscula(String(value));
 
@@ -143,6 +216,7 @@ export default function useEnfermedadesScreen() {
 
   const [fincas, setFincas] = useState([]);
   const [estanques, setEstanques] = useState([]);
+  const [siembras, setSiembras] = useState([]);
 
   const [finca, setFinca] = useState("");
   const [estanque, setEstanque] = useState("");
@@ -161,6 +235,7 @@ export default function useEnfermedadesScreen() {
       if (!mensaje) return undefined;
 
       const duracion = tipoMensaje === "success" ? 3000 : 6000;
+
       const timer = setTimeout(function () {
         setMensaje("");
         setTipoMensaje("info");
@@ -178,13 +253,15 @@ export default function useEnfermedadesScreen() {
       try {
         setCargandoOpciones(true);
 
-        const [fincasData, estanquesData] = await Promise.all([
+        const [fincasData, estanquesData, siembrasData] = await Promise.all([
           fincaService.getFincas(),
           estanqueService.getEstanques(),
+          getSiembras(),
         ]);
 
         setFincas(Array.isArray(fincasData) ? fincasData : []);
         setEstanques(Array.isArray(estanquesData) ? estanquesData : []);
+        setSiembras(Array.isArray(siembrasData) ? siembrasData : []);
       } catch (error) {
         setTipoMensaje("danger");
         setMensaje(error.message);
@@ -201,12 +278,14 @@ export default function useEnfermedadesScreen() {
       return fincas
         .map(function (item) {
           const id = obtenerIdFinca(item);
+
           const label =
             item.nombreFinca ??
             item.nombre_finca ??
             item.nombre ??
             item.codigoCBO ??
             `Finca ${id}`;
+
           return { label, value: String(id) };
         })
         .filter(function (item) {
@@ -222,18 +301,25 @@ export default function useEnfermedadesScreen() {
 
       return estanques
         .filter(function (item) {
-          return obtenerFincaIdEstanque(item) === Number(finca);
+          const estanqueId = obtenerIdEstanque(item);
+
+          return (
+            obtenerFincaIdEstanque(item) === Number(finca) &&
+            estanqueEstaOperativo(item) &&
+            estanqueTieneSiembraActiva(estanqueId, siembras)
+          );
         })
         .map(function (item) {
           const id = obtenerIdEstanque(item);
           const label = item.codigo ?? item.nombre ?? `Estanque ${id}`;
+
           return { label, value: String(id) };
         })
         .filter(function (item) {
           return Number(item.value) > 0;
         });
     },
-    [finca, estanques],
+    [finca, estanques, siembras],
   );
 
   const opcionesEnfermedades = useMemo(
@@ -285,7 +371,7 @@ export default function useEnfermedadesScreen() {
     ? "Seleccione primero una finca"
     : opcionesEstanques.length > 0
       ? "Seleccione un estanque"
-      : "No se encuentran opciones o valores";
+      : "No hay estanques activos con siembra activa";
 
   const placeholderEnfermedad =
     opcionesEnfermedades.length > 0
@@ -343,6 +429,14 @@ export default function useEnfermedadesScreen() {
   function validarFormulario() {
     if (!finca) return "Seleccione una finca.";
     if (!estanque) return "Seleccione un estanque.";
+
+    const errorEstanqueOperativo = validarEstanqueParaRegistro(
+      estanque,
+      estanques,
+      siembras,
+    );
+
+    if (errorEstanqueOperativo) return errorEstanqueOperativo;
 
     const errorFecha = validarFechaReporte(fechaReporte);
     if (errorFecha) return errorFecha;
