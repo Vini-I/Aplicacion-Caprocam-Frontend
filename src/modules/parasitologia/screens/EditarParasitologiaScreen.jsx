@@ -33,7 +33,10 @@ export default function EditarParasitologiaScreen({ registroId }) {
   const router = useRouter();
 
   const pantalla = useEditarParasitologia(registroId, () => {
-    router.replace({ pathname: "/registros/Reporteria", params: { alert: "edited" } });
+    router.replace({
+      pathname: "/registros/Reporteria",
+      params: { alert: "edited" },
+    });
   });
 
   const scrollRef = useRef(null);
@@ -142,15 +145,6 @@ export default function EditarParasitologiaScreen({ registroId }) {
                   disabled={pantalla.loading}
                   labelStyle={styles.label}
                   inputStyle={pantalla.errorFechaReporte && styles.campoConError}
-                />
-              </View>
-
-              <View style={pantalla.itemStyle}>
-                <Input
-                  label="Responsable"
-                  value={pantalla.responsable}
-                  editable={false}
-                  labelStyle={styles.label}
                 />
               </View>
             </View>

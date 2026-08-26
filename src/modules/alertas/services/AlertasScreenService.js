@@ -8,9 +8,9 @@
  * en renderizar la interfaz.
  */
 
-import { COLORS } from "../../../theme/colors";
-import { ICONS } from "../../../theme/icons";
-import { styles } from "../styles/AlertasStyle";
+import { COLORS } from "../../../theme/colors.js";
+import { ICONS } from "../../../theme/icons.js";
+import { styles } from "../styles/AlertasStyle.js";
 
 export function obtenerEstiloAlerta(tipo) {
   const estilos = [styles.alertItem];

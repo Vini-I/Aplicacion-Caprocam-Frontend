@@ -10,8 +10,11 @@
 import { useEffect, useState } from "react";
 
 import enfermedadesService from "../services/EnfermedadesService.js";
+import { useError } from "../../../shared/context/ErrorContext.js";
 
 export default function useEnfermedades() {
+  const { mostrarError } = useError();
+
   const [catalogoEnfermedades, setCatalogoEnfermedades] = useState([]);
   const [catalogoSeveridades, setCatalogoSeveridades] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -25,8 +28,13 @@ export default function useEnfermedades() {
         enfermedadesService.getCatalogoSeveridades(),
       ]);
 
-      setCatalogoEnfermedades(Array.isArray(enfermedadesCatalogo) ? enfermedadesCatalogo : []);
-      setCatalogoSeveridades(Array.isArray(severidadesCatalogo) ? severidadesCatalogo : []);
+      setCatalogoEnfermedades(
+        Array.isArray(enfermedadesCatalogo) ? enfermedadesCatalogo : [],
+      );
+
+      setCatalogoSeveridades(
+        Array.isArray(severidadesCatalogo) ? severidadesCatalogo : [],
+      );
     } finally {
       setLoading(false);
     }
@@ -35,6 +43,7 @@ export default function useEnfermedades() {
   async function guardarEnfermedad(registro) {
     try {
       setLoading(true);
+
       return await enfermedadesService.create(registro);
     } finally {
       setLoading(false);
@@ -43,7 +52,7 @@ export default function useEnfermedades() {
 
   useEffect(() => {
     cargarCatalogos().catch((error) => {
-      console.error("[Enfermedades] Error al cargar catalogos:", error);
+      mostrarError(error);
     });
   }, []);
 
