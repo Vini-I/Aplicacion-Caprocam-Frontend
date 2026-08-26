@@ -41,10 +41,12 @@ export function useFincaEditar({ onFinca, id }) {
   const finca = fincas.find((f) => f.id === Number(id));
 
   const actualizarCampo = (campo, valor) => {
-    const nuevoValor =
-      campo === "areaTotal" || campo === "espejoAgua"
-        ? normalizarNumeroDecimal(valor)
-        : valor;
+    let nuevoValor = valor;
+    if (campo === "areaTotal" || campo === "espejoAgua") {
+      nuevoValor = normalizarNumeroDecimal(valor);
+    } else if (campo === "nombre") {
+      nuevoValor = String(valor).slice(0, 80);
+    }
     setFormulario((actual) => ({
       ...actual,
       [campo]: nuevoValor,
@@ -125,6 +127,7 @@ export function useFincaEditar({ onFinca, id }) {
       .filter((tel) => tel !== "");
 
     if (!formulario.nombre.trim()) nuevosErrores.nombre = "Nombre de la finca obligatorio";
+    else if (formulario.nombre.trim().length > 80) nuevosErrores.nombre = "Nombre de la finca no puede exceder 80 caracteres";
     if (!formulario.responsable.trim()) nuevosErrores.responsable = "Propietario/Responsable obligatorio";
 
     if (!String(formulario.areaTotal).trim() || !isNumber(formulario.areaTotal)) {
