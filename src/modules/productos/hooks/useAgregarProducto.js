@@ -103,9 +103,25 @@ export function useAgregarProducto() {
   // ─────────────────────────────────────────────
   // Derivados
   // ─────────────────────────────────────────────
+
+  // CAMBIO: validación mínima para código y nombre del producto.
+  const codigoLimpio = form.codigo.trim();
+  const nombreLimpio = form.nombre.trim();
+
+  const codigoValido =
+    codigoLimpio.length >= 3 &&
+    /^[A-Za-z0-9_-]+$/.test(codigoLimpio);
+
+  const cantidadLetrasNombre =
+    nombreLimpio.match(/[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]/g)?.length || 0;
+
+  const nombreValido =
+    nombreLimpio.length >= 3 &&
+    cantidadLetrasNombre >= 2;
+
   const hasRequiredData =
-    form.codigo.trim() !== "" &&
-    form.nombre.trim() !== "" &&
+    codigoValido &&
+    nombreValido &&
     form.categoria !== "" &&
     form.proveedor !== "" &&
     form.cantidad !== "" &&
@@ -115,7 +131,7 @@ export function useAgregarProducto() {
   const showExpirationDate =
     form.categoria === "Alimentación" || form.categoria === "Tratamiento";
 
-  // Precio y stock mínimo deben ser mayores a cero 
+    
   const stockMinimoValido = form.stockMinimo === "" || Number(form.stockMinimo) > 0;
   const precioValido = form.precioUnidad === "" || Number(form.precioUnidad) > 0;
 
@@ -144,6 +160,10 @@ export function useAgregarProducto() {
 
   const validationMessage = !mostrarAlertaValidacion
     ? ""
+    : !codigoValido
+    ? "El código debe tener al menos 3 caracteres y solo puede contener letras, números, guiones (-) o guion bajo (_)."
+    : !nombreValido
+    ? "El nombre del producto debe tener al menos 3 caracteres y contener al menos 2 letras."
     : !hasRequiredData
     ? "Revisa los campos obligatorios marcados con * antes de guardar."
     : !stockMinimoValido
@@ -156,8 +176,9 @@ export function useAgregarProducto() {
     ? "La fecha de caducidad debe ser posterior a hoy (no puede ser hoy ni una fecha pasada)."
     : "";
 
-  const errorNombre = intentoGuardar && form.nombre.trim() === "";
-  const errorCodigo = intentoGuardar && form.codigo.trim() === "";
+  // CAMBIO: los errores ahora contemplan formato mínimo, no solo campo vacío.
+  const errorNombre = intentoGuardar && !nombreValido;
+  const errorCodigo = intentoGuardar && !codigoValido;
   const errorCategoria = intentoGuardar && form.categoria === "";
   const errorProveedor = intentoGuardar && form.proveedor === "";
   const errorCantidad = intentoGuardar && form.cantidad === "";
