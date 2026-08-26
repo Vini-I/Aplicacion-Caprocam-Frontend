@@ -21,6 +21,7 @@ import { TYPOGRAPHY } from "../../theme/typography";
 export default function NumberInput({
   label = "",
   value = "0",
+  placeholder = "",
   onChangeText,
   min = 0,
   max = 9999,
@@ -110,6 +111,8 @@ export default function NumberInput({
         <TextInput
           style={styles.input}
           value={String(value)}
+          placeholder={placeholder}
+          placeholderTextColor={COLORS.textQuaternary || COLORS.textTertiary || "#999999"}
           onChangeText={handleChange}
           keyboardType="numeric"
           editable={editable}

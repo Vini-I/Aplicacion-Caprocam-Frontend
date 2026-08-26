@@ -39,9 +39,7 @@ export default function AgregarTrazabilidadScreen() {
     manejarEnvio,
     plAutocompletado,
     errorCarga,
-    sesionExpirada,
     cerrarErrorCarga,
-    irALogin,
   } = useTrazabilidad();
 
   useEffect(() => {
@@ -77,10 +75,10 @@ export default function AgregarTrazabilidadScreen() {
           {errorCarga !== "" && (
             <Button
               variant="outline"
-              onPress={sesionExpirada ? irALogin : cerrarErrorCarga}
+              onPress={cerrarErrorCarga}
               style={styles.alertBox}
             >
-              {sesionExpirada ? "Ir a iniciar sesión" : "Cerrar"}
+              Cerrar
             </Button>
           )}
 

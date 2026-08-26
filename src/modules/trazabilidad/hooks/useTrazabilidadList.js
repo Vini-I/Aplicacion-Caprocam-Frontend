@@ -46,44 +46,23 @@ export function useTrazabilidadList() {
   // se muestran con el mismo Alert que ya usa la pantalla, no en
   // console.error ni en silencio. 401 = token vencido.
   const [errorCarga, setErrorCarga] = useState("");
-  const [sesionExpirada, setSesionExpirada] = useState(false);
 
   function mostrarErrorCarga(mensaje, error) {
     if (error?.response?.status === 401) {
-      setSesionExpirada(true);
-      setErrorCarga("Tu sesión expiró. Debes iniciar sesión de nuevo.");
       return;
     }
-    setSesionExpirada(false);
     setErrorCarga("");
     mostrarError(error || new Error(mensaje));
   }
 
   function cerrarErrorCarga() {
     setErrorCarga("");
-    setSesionExpirada(false);
-  }
-
-  function irALogin() {
-    cerrarErrorCarga();
-    router.replace("/login");
   }
 
   useEffect(() => {
-    obtenerFincas().then(setFincas).catch((error) => {
-      setFincas([]);
-      mostrarErrorCarga("No se pudieron cargar las fincas.", error);
-    });
-
-    obtenerColaboradores().then(setColaboradoresCat).catch((error) => {
-      setColaboradoresCat([]);
-      mostrarErrorCarga("No se pudieron cargar los colaboradores.", error);
-    });
-
-    obtenerTodosLosEstanques().then(setEstanques).catch((error) => {
-      setEstanques([]);
-      mostrarErrorCarga("No se pudieron cargar los estanques.", error);
-    });
+    obtenerFincas().then(setFincas).catch(() => setFincas([]));
+    obtenerColaboradores().then(setColaboradoresCat).catch(() => setColaboradoresCat([]));
+    obtenerTodosLosEstanques().then(setEstanques).catch(() => setEstanques([]));
   }, []);
 
   useFocusEffect(
@@ -161,9 +140,7 @@ export function useTrazabilidadList() {
     limpiarBusqueda,
     abrirDetalle,
     errorCarga,
-    sesionExpirada,
     cerrarErrorCarga,
-    irALogin,
   };
 }
 

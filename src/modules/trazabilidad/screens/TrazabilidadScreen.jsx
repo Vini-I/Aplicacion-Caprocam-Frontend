@@ -48,11 +48,6 @@ export default function TrazabilidadScreen() {
     limpiarBusqueda,
     nuevoRegistro,
     abrirDetalle,
-    errorCarga,
-    sesionExpirada,
-    cerrarErrorCarga,
-    irALogin,
-
   } = useTrazabilidadList();
 
   useEffect(() => {
@@ -135,19 +130,6 @@ export default function TrazabilidadScreen() {
               style={styles.successAlert}
             />
           ) : null}
-
-          {sesionExpirada && errorCarga !== "" && (
-            <>
-              <Alert
-                variant="danger"
-                message={errorCarga}
-                style={styles.successAlert}
-              />
-              <Button variant="outline" onPress={irALogin} style={styles.errorAlertButton}>
-                Ir a iniciar sesión
-              </Button>
-            </>
-          )}
 
 
           <View style={styles.busquedaRow}>
