@@ -143,7 +143,13 @@ function obtenerIdEstanqueSiembra(siembra) {
 }
 
 function estanqueEstaOperativo(estanque) {
-  return normalizarTexto(estanque?.estado) === "activo";
+  const estado = normalizarTexto(estanque?.estado);
+
+  return (
+    estado === "activo" ||
+    estado === "engorde" ||
+    estado === "mantenimiento"
+  );
 }
 
 function siembraEstaActiva(siembra) {
