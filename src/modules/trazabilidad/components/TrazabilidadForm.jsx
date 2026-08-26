@@ -7,7 +7,7 @@
  * Formulario reutilizable para capturar el movimiento de un lote de camarón de pre-cría a engorde.
  * Utiliza DateInput de forma unificada para la selección de fecha.
  *
- * @dependencies Select, NumberInput, DateInput, Card, TrazabilidadFormStyles
+ * @dependencies Select, Input, NumberInput, DateInput, Card, TrazabilidadFormStyles
  * @validations Encadenamiento de estanques, origen != destino, formato de fecha y valores numéricos mayores a cero.
  * @navigation N/A
  */
@@ -124,6 +124,7 @@ export default function TrazabilidadForm({
         </View>
         <NumberInput
           label="Tamaño (gramos) *"
+          placeholder="Ej. 15"
           value={formData.tamaño}
           onChangeText={(value) => onChange("tamaño", value)}
           min={0}
@@ -138,7 +139,7 @@ export default function TrazabilidadForm({
           label="Días de siembra *"
           value={formData.dias}
           onChangeText={(value) => onChange("dias", value)}
-          editable={!plAutocompletado}
+          editable={false}
           min={0}
           max={365}
           step={1}
@@ -151,7 +152,7 @@ export default function TrazabilidadForm({
           label="PL *"
           value={formData.pl}
           onChangeText={(value) => onChange("pl", value)}
-          editable={!plAutocompletado}
+          editable={false}
           min={0}
           max={999999}
           step={1000}
