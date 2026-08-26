@@ -167,7 +167,6 @@ export default function useEditarEstanque(codigoCBO, id) {
 
 
   return {
-    finca,
     loading,
     estanqueOriginal,
 
@@ -190,6 +189,5 @@ export default function useEditarEstanque(codigoCBO, id) {
     errores,
     displayErrorMessage: mensaje || null,
     displayErrorVariant: tipoMensaje || null,
-
   };
 }

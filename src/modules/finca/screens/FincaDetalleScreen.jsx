@@ -106,7 +106,7 @@ export default function FincaDetalleScreen({
             </View>
 
             <View style={styles.filaDetalle}>
-              <Text style={styles.etiqueta}>CBO:</Text>
+              <Text style={styles.etiqueta}>CVO:</Text>
               <Text style={styles.valor}>{finca.codigoCBO}</Text>
             </View>
 
