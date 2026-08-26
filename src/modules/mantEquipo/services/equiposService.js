@@ -137,6 +137,9 @@ function mapEquipoBackend(equipo) {
     // Horas
     horasMantenimiento: equipo.horasMantenimiento,
     horasUso: Number(equipo.horasActuales || 0),
+    horasActuales: Number(equipo.horasActuales || 0),
+    horasBase: Number(equipo.horasActuales || 0),
+    fechaUltimoEncendido: equipo.fechaUltimoEncendido || null,
 
     // Estado operativo: activo / inactivo / mantenimiento
     estado: ESTADO_OPERATIVO_BACKEND_A_FRONTEND[equipo.estadoOperativo] || "activo",
@@ -283,24 +286,11 @@ export const equiposService = {
   },
 
   /**
-   * Cambia el estado de encendido/apagado de un equipo — CONECTADO a la API real.
-   *
-   * IMPORTANTE: el backend actual no registra la fecha/hora en que
-   * el equipo se encendió, por lo que este toggle NO puede calcular
-   * automáticamente las horas a sumar a horasActuales. Solo actualiza
-   * el campo "estado" (Encendido/Apagado). Si se necesita el conteo
-   * automático de horas, el backend debe agregar un campo tipo
-   * "fecha_ultimo_encendido" y sumar el delta al apagar.
-   *
-   * Requiere el objeto del equipo actual (tal como viene de la lista)
-   * porque el backend exige el body completo en el PUT.
+   * Cambia el estado de encendido/apagado de un equipo — CONECTADO al endpoint /equipos/:id/toggle
    */
   async toggleEquipoEstado(id, equipoActual) {
     try {
-      const payload = mapEquipoFrontendABackend(equipoActual);
-      payload.estado = equipoActual.encendido ? "Apagado" : "Encendido";
-
-      const response = await api.put(`/equipos/${id}`, payload);
+      const response = await api.put(`/equipos/${id}/toggle`);
       return mapEquipoBackend(response.data.data);
     } catch (err) {
       throw construirErrorHttp(err, "No se pudo cambiar el estado del equipo");

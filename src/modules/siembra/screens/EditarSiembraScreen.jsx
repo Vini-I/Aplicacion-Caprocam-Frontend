@@ -164,9 +164,11 @@ export default function EditarSiembraScreen({
     <>
       <NavbarRegistro
         Titulo={
-          formData.tipoRegistro === "precria"
-            ? "Editar Pre-Cría"
-            : "Editar Siembra"
+          esFinalizar
+            ? "Finalizar Pre-Cría"
+            : formData.tipoRegistro === "precria"
+              ? "Editar Pre-Cría"
+              : "Editar Siembra"
         }
         Subtitulo={`${estanqueLabel} – ${fincaLabel}`}
         Icono="shrimp"
@@ -200,7 +202,7 @@ export default function EditarSiembraScreen({
                 laboratoriosLarva={laboratoriosLarva}
                 procedenciasLarva={procedenciasLarva}
                 plLarva={plLarva}
-                mode="edit"
+                mode={formData.pasoPorPrecria === "si" ? "view" : "edit"}
                 fieldHelpers={fieldHelpers}
                 onAgregarProveedor={handleAgregarProveedorLarva}
                 onAgregarLaboratorio={handleAgregarLaboratorioLarva}
@@ -294,8 +296,8 @@ export default function EditarSiembraScreen({
                     : esFinalizar
                       ? "Finalizar Pre-Cría"
                       : formData.tipoRegistro === "precria"
-                        ? "Actualizar Pre-Cría"
-                        : "Actualizar Siembra"}
+                        ? "Editar Pre-Cría"
+                        : "Editar Siembra"}
                 </Text>
               </View>
             </Button>

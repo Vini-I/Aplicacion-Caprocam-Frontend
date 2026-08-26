@@ -37,6 +37,7 @@ export default function EditarEnfermedadScreen({ registroId }) {
       params: { alert: "edited" },
     });
   });
+
   const scrollRef = useRef(null);
 
   //Hook aquí para que haga el scrollToEnd en caso de que haya algún error de cargar
@@ -135,16 +136,6 @@ export default function EditarEnfermedadScreen({ registroId }) {
                   inputStyle={pantalla.errorFechaReporte && styles.campoConError}
                 />
               </View>
-
-              <View style={pantalla.itemStyle}>
-                <Input
-                  label="Responsable"
-                  value={pantalla.responsable}
-                  editable={false}
-                  labelStyle={styles.label}
-                  style={styles.disabledInput}
-                />
-              </View>
             </View>
           </Card>
 
@@ -217,7 +208,12 @@ export default function EditarEnfermedadScreen({ registroId }) {
           >
             <View style={styles.inlineButtonContentCentered}>
               <Icon icon={ICONS.save} size={18} color={COLORS.primary} />
-              <CustomText size={16} color={COLORS.primary} style={styles.saveText}>
+
+              <CustomText
+                size={16}
+                color={COLORS.primary}
+                style={styles.saveText}
+              >
                 Guardar
               </CustomText>
             </View>

@@ -120,6 +120,7 @@ export default function PreCriaSection({
               onChangeText={(value) => onChange("fechaInicio", value)}
               labelStyle={styles.requiredLabel}
               inputStyle={hasError("fechaInicio") ? styles.inputError : null}
+              allowFutureDates={false}
             />
           )}
 

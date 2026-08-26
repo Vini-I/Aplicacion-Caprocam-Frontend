@@ -254,6 +254,13 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.error,
   },
+  // Acción DESHABILITADO (en mantenimiento o inactivo)
+  toggleBtnDeshabilitado: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    opacity: 0.45,
+  },
   // Label base
   toggleBtnLabel: {
     fontSize: 14,
@@ -264,6 +271,9 @@ export const styles = StyleSheet.create({
   },
   toggleBtnLabelApagar: {
     color: COLORS.error,
+  },
+  toggleBtnLabelDeshabilitado: {
+    color: COLORS.textTertiary,
   },
 
   // ----- Modal de confirmación -----

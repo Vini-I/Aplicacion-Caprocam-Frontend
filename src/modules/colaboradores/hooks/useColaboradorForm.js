@@ -26,7 +26,14 @@ import { useState } from "react";
 
 const validarCedula = (cedula) => /^\d{9}$/.test(cedula);
 const validarTelefono = (telefono) => /^\d{8}$/.test(telefono);
-const validarEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+const validarEmail = (email) => {
+  if (!email || typeof email !== "string") return false;
+  const trimmed = email.trim();
+  const partes = trimmed.split("@");
+  if (partes.length !== 2) return false;
+  if (partes[0].length < 3) return false;
+  return /^[^\s@]{3,}@[^\s@]+\.[^\s@]+$/.test(trimmed);
+};
 const validarNombre = (nombre) => nombre.trim().length >= 2;
 const validarApellidos = (apellidos) => apellidos.trim().length >= 2;
 const validarPin = (pin) => /^\d{4}$/.test(pin);
@@ -179,7 +186,12 @@ export function useColaboradorForm({
       if (!form.email) {
         newErrors.email = "Debe proporcionar al menos un medio de contacto (teléfono o correo)";
       } else if (!validarEmail(form.email)) {
-        newErrors.email = "Correo electrónico inválido";
+        const partes = String(form.email).trim().split("@");
+        if (partes[0] && partes[0].length < 3) {
+          newErrors.email = "El correo debe tener un mínimo de 3 caracteres antes del @";
+        } else {
+          newErrors.email = "Correo electrónico inválido";
+        }
       }
       hasError = true;
     } else {
@@ -188,7 +200,12 @@ export function useColaboradorForm({
         hasError = true;
       }
       if (form.email && !validarEmail(form.email)) {
-        newErrors.email = "Correo electrónico inválido";
+        const partes = String(form.email).trim().split("@");
+        if (partes[0] && partes[0].length < 3) {
+          newErrors.email = "El correo debe tener un mínimo de 3 caracteres antes del @";
+        } else {
+          newErrors.email = "Correo electrónico inválido";
+        }
         hasError = true;
       }
     }
