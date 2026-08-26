@@ -26,6 +26,7 @@ import Button from "../../../shared/components/Button";
 import CustomText from "../../../shared/components/Text";
 import Icon from "../../../shared/components/Icons";
 import Alert from "../../../shared/components/Alert";
+import Spinner from "../../../shared/components/Spinner";
 
 import { styles, ICON_STYLES } from "../styles/EditarProveedorStyles";
 import { ICONS } from "../../../theme/icons";
@@ -33,6 +34,7 @@ import { STYLE } from "../../../theme/style";
 import { tiposProducto } from "../services/proveedor.service";
 
 import { useEditarProveedorScreen, telefonoMaxLength } from "../hooks/useEditarProveedorScreen";
+import { formatearTelefono } from "../utils/contactValidators";
 
 export default function EditarProveedorScreen({ onProveedor, id }) {
   const {
@@ -48,10 +50,21 @@ export default function EditarProveedorScreen({ onProveedor, id }) {
     setNotas,
     errores,
     alerta,
+    cargando,
     handleTelefonoChange,
     handleCorreoChange,
     guardar,
   } = useEditarProveedorScreen({ onProveedor, id });
+
+  if (cargando) {
+    return (
+      <View style={STYLE.container}>
+        <View style={STYLE.contentWrapper}>
+          <Spinner text="Cargando datos del proveedor..." style={styles.spinner} />
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={STYLE.container}>
@@ -60,6 +73,7 @@ export default function EditarProveedorScreen({ onProveedor, id }) {
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
+        contentContainerStyle={styles.scrollContainer}
       >
         <View style={STYLE.contentWrapper}>
         <Card style={styles.card}>
@@ -89,9 +103,9 @@ export default function EditarProveedorScreen({ onProveedor, id }) {
 
           <Input
             label="Teléfono *"
-            value={telefono}
+            value={formatearTelefono(telefono)}
             onChangeText={handleTelefonoChange}
-            placeholder="Ej: 12345678"
+            placeholder="Ej: 1234-5678"
             keyboardType="numeric"
             maxLength={telefonoMaxLength}
             containerStyle={styles.field}
@@ -105,6 +119,7 @@ export default function EditarProveedorScreen({ onProveedor, id }) {
             onChangeText={handleCorreoChange}
             placeholder="ventas@empresa.com"
             keyboardType="email-address"
+            maxLength={120}
             containerStyle={styles.field}
             style={[styles.input, !!errores.correo && styles.inputError]}
             labelStyle={styles.label}
@@ -115,6 +130,7 @@ export default function EditarProveedorScreen({ onProveedor, id }) {
             value={direccion}
             onChangeText={setDireccion}
             placeholder="San José, Costa Rica"
+            maxLength={255}
             containerStyle={styles.field}
             style={[styles.input, !!errores.direccion && styles.inputError]}
             labelStyle={styles.label}
@@ -126,6 +142,7 @@ export default function EditarProveedorScreen({ onProveedor, id }) {
             onChangeText={setNotas}
             placeholder="Observaciones adicionales..."
             multiline={true}
+            maxLength={255}
             containerStyle={styles.field}
             style={styles.input}
             labelStyle={styles.label}

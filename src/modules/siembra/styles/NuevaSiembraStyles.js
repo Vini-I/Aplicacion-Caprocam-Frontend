@@ -51,6 +51,7 @@ export const styles = StyleSheet.create({
   },
   createButtonText: {
     fontFamily: TYPOGRAPHY.fontFamily.medium,
+    color: COLORS.primary,
   },
   alert: {
     width: "100%",

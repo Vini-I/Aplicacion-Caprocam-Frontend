@@ -24,6 +24,7 @@ import Title from "../../../shared/components/Title";
 import Badge from "../../../shared/components/Badge";
 import ModalEliminar from "../../../shared/components/ModalEliminar";
 import EmptyState from "../../../shared/components/EmptyState";
+import Spinner from "../../../shared/components/Spinner";
 
 import { COLORS } from "../../../theme/colors";
 import { ICONS } from "../../../theme/icons";
@@ -45,7 +46,18 @@ export default function DetalleProveedorScreen({
     cerrarModal,
     confirmarEliminar,
     getTipoLabel,
+    cargando,
   } = useDetalleProveedorScreen({ onEliminado });
+
+  if (cargando) {
+    return (
+      <View style={STYLE.container}>
+        <View style={STYLE.contentWrapper}>
+          <Spinner text="Cargando proveedor..." style={styles.spinner} />
+        </View>
+      </View>
+    );
+  }
 
   if (!proveedor) {
     return (
@@ -72,6 +84,7 @@ export default function DetalleProveedorScreen({
       <ScrollView
         style={styles.scroll}
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContainer}
       >
         <View style={STYLE.contentWrapper}>
           <Card style={styles.tarjeta}>
