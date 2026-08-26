@@ -53,23 +53,25 @@ export default function DrawerLayout() {
       />
 
       <Drawer
-    screenOptions={{
-      headerShown: true,
-      headerStyle: {
-        backgroundColor: COLORS.primary,
-        borderBottomWidth: 0,
-      },
-      headerTintColor: COLORS.white,
-      headerRight: () => (
-        <View style={styles.logoutWrapper}>
-          <Button
-            variant="danger"
-            onPress={() => setShowLogoutModal(true)}
-            style={styles.logoutButton}
-          >
-            <View style={styles.logoutContent}>
-              <Icon icon={ICONS.exit} size={16} color={COLORS.white} />
-              <CustomText size={13} color={COLORS.white} weight="600">Cerrar Sesion</CustomText>
+        screenOptions={{
+          headerShown: true,
+          headerStyle: {
+            backgroundColor: COLORS.primary,
+            borderBottomWidth: 0,
+          },
+          headerTintColor: COLORS.white,
+          headerRight: () => (
+            <View style={styles.logoutWrapper}>
+              <Button
+                variant="danger"
+                onPress={() => setShowLogoutModal(true)}
+                style={styles.logoutButton}
+              >
+                <View style={styles.logoutContent}>
+                  <Icon icon={ICONS.exit} size={16} color={COLORS.white} />
+                  <CustomText size={12} color={COLORS.white} weight="600">Cerrar Sesion</CustomText>
+                </View>
+              </Button>
             </View>
           ),
         }}
@@ -147,7 +149,7 @@ export default function DrawerLayout() {
             title: "Trazabilidad",
             drawerItemStyle: hiddenStyle,
             drawerIcon: ({ color, size }) => (
-              <Icon icon={ICONS.trazabilidad} size={23}/>
+              <Icon icon={ICONS.trazabilidad} size={23} />
             )
           }}
         />
@@ -159,7 +161,7 @@ export default function DrawerLayout() {
             title: "Colaboradores",
             drawerItemStyle: hiddenStyle,
             drawerIcon: ({ color, size }) => (
-              <Icon icon={ICONS.people} size={23}/>
+              <Icon icon={ICONS.people} size={23} />
             )
           }}
         />
@@ -227,31 +229,31 @@ export default function DrawerLayout() {
         {/* Pantallas secundarias ocultas del Drawer */}
         <Drawer.Screen name="inicio" options={{ drawerItemStyle: { display: "none" } }} />
         <Drawer.Screen name="registros" options={{ drawerItemStyle: { display: "none" } }} />
-        
+
         <Drawer.Screen name="inventarios/_layout" options={{ drawerItemStyle: { display: "none" } }} />
         <Drawer.Screen name="inventarios/inventarioScreen" options={{ drawerItemStyle: { display: "none" } }} />
         <Drawer.Screen name="inventarios/productForm" options={{ drawerItemStyle: { display: "none" } }} />
         <Drawer.Screen name="inventarios/nuevoProveedor" options={{ drawerItemStyle: { display: "none" } }} />
         <Drawer.Screen name="inventarios/editarProveedor" options={{ drawerItemStyle: { display: "none" } }} />
         <Drawer.Screen name="inventarios/proveedorScreen" options={{ drawerItemStyle: { display: "none" } }} />
-        
-        <Drawer.Screen name="compradores/nuevoComprador"    options={{ drawerItemStyle: { display: "none" } }} />
-        <Drawer.Screen name="compradores/editarComprador"   options={{ drawerItemStyle: { display: "none" } }} />
-        <Drawer.Screen name="compradores/detalleComprador"  options={{ drawerItemStyle: { display: "none" } }} />
-        <Drawer.Screen name="compradores/compradorScreen"   options={{ drawerItemStyle: { display: "none" } }} />
-        
-        <Drawer.Screen name="mantenimientoEquipo/layout"   options={{ drawerItemStyle: { display: "none" } }} />
-        <Drawer.Screen name="mantenimientoEquipo/tareaForm"   options={{ drawerItemStyle: { display: "none" } }} />
-        <Drawer.Screen name="mantenimientoEquipo/mantEquipo"   options={{ drawerItemStyle: { display: "none" } }} />
-        <Drawer.Screen name="mantenimientoEquipo/detalleTarea"   options={{ drawerItemStyle: { display: "none" } }} />
-        <Drawer.Screen name="mantenimientoEquipo/EditarMantenimiento"   options={{ drawerItemStyle: { display: "none" } }} />
-        <Drawer.Screen name="mantenimientoEquipo/AgregarMantenimiento"   options={{ drawerItemStyle: { display: "none" } }} />
-        <Drawer.Screen name="mantenimientoEquipo/DetalleMantenimiento"   options={{ drawerItemStyle: { display: "none" } }} />
 
-        <Drawer.Screen name="mantenimientoEquipo/tareas/layout"   options={{ drawerItemStyle: { display: "none" } }} />
-        <Drawer.Screen name="mantenimientoEquipo/tareas"   options={{ drawerItemStyle: { display: "none" } }} />
-        <Drawer.Screen name="mantenimientoEquipo/tareas/tareaForm"   options={{ drawerItemStyle: { display: "none" } }} />
-        <Drawer.Screen name="mantenimientoEquipo/tareas/detalleTarea"   options={{ drawerItemStyle: { display: "none" } }} />
+        <Drawer.Screen name="compradores/nuevoComprador" options={{ drawerItemStyle: { display: "none" } }} />
+        <Drawer.Screen name="compradores/editarComprador" options={{ drawerItemStyle: { display: "none" } }} />
+        <Drawer.Screen name="compradores/detalleComprador" options={{ drawerItemStyle: { display: "none" } }} />
+        <Drawer.Screen name="compradores/compradorScreen" options={{ drawerItemStyle: { display: "none" } }} />
+
+        <Drawer.Screen name="mantenimientoEquipo/layout" options={{ drawerItemStyle: { display: "none" } }} />
+        <Drawer.Screen name="mantenimientoEquipo/tareaForm" options={{ drawerItemStyle: { display: "none" } }} />
+        <Drawer.Screen name="mantenimientoEquipo/mantEquipo" options={{ drawerItemStyle: { display: "none" } }} />
+        <Drawer.Screen name="mantenimientoEquipo/detalleTarea" options={{ drawerItemStyle: { display: "none" } }} />
+        <Drawer.Screen name="mantenimientoEquipo/EditarMantenimiento" options={{ drawerItemStyle: { display: "none" } }} />
+        <Drawer.Screen name="mantenimientoEquipo/AgregarMantenimiento" options={{ drawerItemStyle: { display: "none" } }} />
+        <Drawer.Screen name="mantenimientoEquipo/DetalleMantenimiento" options={{ drawerItemStyle: { display: "none" } }} />
+
+        <Drawer.Screen name="mantenimientoEquipo/tareas/layout" options={{ drawerItemStyle: { display: "none" } }} />
+        <Drawer.Screen name="mantenimientoEquipo/tareas" options={{ drawerItemStyle: { display: "none" } }} />
+        <Drawer.Screen name="mantenimientoEquipo/tareas/tareaForm" options={{ drawerItemStyle: { display: "none" } }} />
+        <Drawer.Screen name="mantenimientoEquipo/tareas/detalleTarea" options={{ drawerItemStyle: { display: "none" } }} />
 
       </Drawer>
     </>
