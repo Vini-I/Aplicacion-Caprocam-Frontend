@@ -102,6 +102,7 @@ export const styles = StyleSheet.create({
   },
   textoBoton: {
     fontFamily: TYPOGRAPHY.fontFamily.medium,
+    color: COLORS.primary,
   },
   modalTitle: {
     alignSelf: "center",

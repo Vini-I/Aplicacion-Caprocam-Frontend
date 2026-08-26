@@ -18,15 +18,14 @@
  */
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useProveedor } from "../context/ProveedorContext";
-import { validarTelefono, validarCorreo } from "../utils/contactValidators";
+import {
+  validarTelefono,
+  validarCorreo,
+  validarDireccion,
+} from "../utils/contactValidators";
 import { ProveedorDTO } from "../dtos/proveedor.dto";
 
-export const telefonoMaxLength = 8;
-
-function validarDireccion(valor) {
-  if (!valor || !valor.trim()) return "La dirección es obligatoria.";
-  return "";
-}
+export const telefonoMaxLength = 9;
 
 function validarTipoProducto(valor) {
   if (!valor || !valor.trim()) return "El tipo de producto es obligatorio.";
@@ -137,10 +136,7 @@ export function useEditarProveedorScreen({ onProveedor, id } = {}) {
       if (telefono.trim() !== "") nuevosErrores.telefonoInvalido = true;
     }
 
-    const errorCorr = validarCorreo(correo, {
-      mensajeObligatorio: "El correo es obligatorio.",
-      mensajeInvalido: "Ingrese un correo válido. Ej: ventas@empresa.com",
-    });
+    const errorCorr = validarCorreo(correo);
     if (errorCorr) {
       nuevosErrores.correo = errorCorr;
       if (correo.trim() !== "") nuevosErrores.correoInvalido = true;

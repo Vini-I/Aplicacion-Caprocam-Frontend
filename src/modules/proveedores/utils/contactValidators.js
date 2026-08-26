@@ -19,13 +19,26 @@
  */
 
 export const telefonoRegex = /^[0-9]{8}$/;
-export const correoRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+export const correoRegex = /^[a-zA-Z0-9._%+-]{3,}@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*\.(com|org|net|edu|gov|io|co|biz|info|cr|ac\.cr|co\.cr|ed\.cr|gob\.cr|or\.cr|sa\.cr|es|mx|cl|ar|us|uk)$/i;
+
+export function validarNombre(
+  valor,
+  {
+    mensajeObligatorio = "El nombre de la empresa es obligatorio.",
+    mensajeInvalido = "El nombre de la empresa debe tener al menos 3 caracteres.",
+  } = {}
+) {
+  const valorLimpio = (valor || "").trim();
+  if (!valorLimpio) return mensajeObligatorio;
+  if (valorLimpio.length < 3) return mensajeInvalido;
+  return "";
+}
 
 export function validarTelefono(
   valor,
   {
     mensajeObligatorio = "El teléfono es obligatorio.",
-    mensajeInvalido = "Ingrese un teléfono de 8 dígitos. Ej: 12345678",
+    mensajeInvalido = "Ingrese un teléfono válido de 8 dígitos. Ej: 12345678",
   } = {}
 ) {
   const valorLimpio = (valor || "").trim();
@@ -38,20 +51,46 @@ export function validarCorreo(
   valor,
   {
     mensajeObligatorio = "El correo electrónico es obligatorio.",
-    mensajeInvalido = "Ingrese un correo electrónico válido.",
+    mensajeInvalido = "Ingrese un correo electrónico válido. Ej: ventas@empresa.com",
+    mensajeMinimo = "El correo debe tener al menos 3 caracteres antes del @.",
   } = {}
 ) {
   const valorLimpio = (valor || "").trim();
   if (!valorLimpio) return mensajeObligatorio;
-  if (!correoRegex.test(valorLimpio)) return mensajeInvalido;
+  
+  const partes = valorLimpio.split("@");
+  if (partes.length === 2 && partes[0].length < 3) {
+    return mensajeMinimo;
+  }
+
+  if (!correoRegex.test(valorLimpio)) {
+    return mensajeInvalido;
+  }
   return "";
 }
 
-// Formato visual del teléfono (solo 8 dígitos para el frontend).
+export function validarDireccion(
+  valor,
+  {
+    mensajeObligatorio = "La dirección es obligatoria.",
+    mensajeInvalido = "La dirección no puede exceder 255 caracteres.",
+  } = {}
+) {
+  const valorLimpio = (valor || "").trim();
+  if (!valorLimpio) return mensajeObligatorio;
+  if (valorLimpio.length > 255) return mensajeInvalido;
+  return "";
+}
+
+// Formato visual del teléfono con máscara ####-#### (ej. 1234-5678)
 export function formatearTelefono(valor) {
   const limpio = (valor || "").replace(/[^\d]/g, "");
   const soloNumero = limpio.startsWith("506") ? limpio.slice(3) : limpio;
-  return soloNumero.slice(0, 8);
+  const maxOcho = soloNumero.slice(0, 8);
+  if (maxOcho.length > 4) {
+    return `${maxOcho.slice(0, 4)}-${maxOcho.slice(4)}`;
+  }
+  return maxOcho;
 }
 
 // Formato de 8 dígitos que exige el backend.

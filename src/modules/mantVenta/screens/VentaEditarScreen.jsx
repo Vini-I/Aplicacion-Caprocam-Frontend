@@ -174,7 +174,8 @@ export default function VentaEditarScreen({ id, onVenta }) {
             label="Fecha *"
             value={fechaVenta}
             onChangeText={handleFechaChange}
-            allowFutureDates={true}
+            allowFutureDates={false}
+            inputStyle={errores.fechaVenta ? errorInputStyle : null}
           />
 
           <SectionTitle icon={ICONS.user} title="Comprador" />

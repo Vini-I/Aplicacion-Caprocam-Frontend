@@ -48,7 +48,8 @@ function obtenerFechaValida(fecha) {
     fechaValidada.getFullYear() !== anio ||
     fechaValidada.getMonth() !== mes - 1 ||
     fechaValidada.getDate() !== dia
-  ) return null;
+  )
+    return null;
 
   return fechaValidada;
 }
@@ -81,7 +82,9 @@ function obtenerResponsable(usuario) {
 }
 
 function primeraMayuscula(texto) {
-  return texto ? texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase() : "";
+  return texto
+    ? texto.charAt(0).toUpperCase() + texto.slice(1).toLowerCase()
+    : "";
 }
 
 function obtenerIdFinca(finca) {
@@ -89,11 +92,21 @@ function obtenerIdFinca(finca) {
 }
 
 function obtenerIdEstanque(estanque) {
-  return Number(estanque.id ?? estanque.estanqueId ?? estanque.idEstanque ?? estanque.estanque_id);
+  return Number(
+    estanque.id ??
+      estanque.estanqueId ??
+      estanque.idEstanque ??
+      estanque.estanque_id,
+  );
 }
 
 function obtenerFincaIdEstanque(estanque) {
-  return Number(estanque.idFinca);
+  return Number(
+    estanque.idFinca ??
+      estanque.fincaId ??
+      estanque.id_finca ??
+      estanque.finca_id,
+  );
 }
 
 function normalizarCatalogo(catalogo) {
@@ -101,10 +114,13 @@ function normalizarCatalogo(catalogo) {
 
   return catalogo
     .map(function (item) {
-      if (typeof item === "string") return { label: primeraMayuscula(item), value: item };
+      if (typeof item === "string")
+        return { label: primeraMayuscula(item), value: item };
 
-      const value = item.value ?? item.valor ?? item.codigo ?? item.nombre ?? "";
-      const label = item.label ?? item.nombre ?? primeraMayuscula(String(value));
+      const value =
+        item.value ?? item.valor ?? item.codigo ?? item.nombre ?? "";
+      const label =
+        item.label ?? item.nombre ?? primeraMayuscula(String(value));
 
       return { label: String(label), value: String(value) };
     })
@@ -140,19 +156,22 @@ export default function useEnfermedadesScreen() {
   const [mensaje, setMensaje] = useState("");
   const [tipoMensaje, setTipoMensaje] = useState("info");
 
-  useEffect(function () {
-    if (!mensaje) return undefined;
+  useEffect(
+    function () {
+      if (!mensaje) return undefined;
 
-    const duracion = tipoMensaje === "success" ? 3000 : 6000;
-    const timer = setTimeout(function () {
-      setMensaje("");
-      setTipoMensaje("info");
-    }, duracion);
+      const duracion = tipoMensaje === "success" ? 3000 : 6000;
+      const timer = setTimeout(function () {
+        setMensaje("");
+        setTipoMensaje("info");
+      }, duracion);
 
-    return function () {
-      clearTimeout(timer);
-    };
-  }, [mensaje, tipoMensaje]);
+      return function () {
+        clearTimeout(timer);
+      };
+    },
+    [mensaje, tipoMensaje],
+  );
 
   useEffect(function () {
     async function cargarOpciones() {
@@ -177,57 +196,80 @@ export default function useEnfermedadesScreen() {
     cargarOpciones();
   }, []);
 
-  const opcionesFincas = useMemo(function () {
-    return fincas
-      .map(function (item) {
-        const id = obtenerIdFinca(item);
-        const label = item.nombreFinca ?? item.nombre_finca ?? item.nombre ?? item.codigoCBO ?? `Finca ${id}`;
-        return { label, value: String(id) };
-      })
-      .filter(function (item) {
-        return Number(item.value) > 0;
-      });
-  }, [fincas]);
+  const opcionesFincas = useMemo(
+    function () {
+      return fincas
+        .map(function (item) {
+          const id = obtenerIdFinca(item);
+          const label =
+            item.nombreFinca ??
+            item.nombre_finca ??
+            item.nombre ??
+            item.codigoCBO ??
+            `Finca ${id}`;
+          return { label, value: String(id) };
+        })
+        .filter(function (item) {
+          return Number(item.value) > 0;
+        });
+    },
+    [fincas],
+  );
 
-  const opcionesEstanques = useMemo(function () {
-    if (!finca) return [];
+  const opcionesEstanques = useMemo(
+    function () {
+      if (!finca) return [];
 
-    return estanques
-      .filter(function (item) {
-        return obtenerFincaIdEstanque(item) === Number(finca);
-      })
-      .map(function (item) {
-        const id = obtenerIdEstanque(item);
-        const label = item.codigo ?? item.nombre ?? `Estanque ${id}`;
-        return { label, value: String(id) };
-      })
-      .filter(function (item) {
-        return Number(item.value) > 0;
-      });
-  }, [finca, estanques]);
+      return estanques
+        .filter(function (item) {
+          return obtenerFincaIdEstanque(item) === Number(finca);
+        })
+        .map(function (item) {
+          const id = obtenerIdEstanque(item);
+          const label = item.codigo ?? item.nombre ?? `Estanque ${id}`;
+          return { label, value: String(id) };
+        })
+        .filter(function (item) {
+          return Number(item.value) > 0;
+        });
+    },
+    [finca, estanques],
+  );
 
-  const opcionesEnfermedades = useMemo(function () {
-    return normalizarCatalogo(catalogoEnfermedades);
-  }, [catalogoEnfermedades]);
+  const opcionesEnfermedades = useMemo(
+    function () {
+      return normalizarCatalogo(catalogoEnfermedades);
+    },
+    [catalogoEnfermedades],
+  );
 
-  const opcionesSeveridades = useMemo(function () {
-    return normalizarCatalogo(catalogoSeveridades);
-  }, [catalogoSeveridades]);
+  const opcionesSeveridades = useMemo(
+    function () {
+      return normalizarCatalogo(catalogoSeveridades);
+    },
+    [catalogoSeveridades],
+  );
 
   const esTablet = width >= 768;
 
-  const gridStyle = useMemo(function () {
-    return {
-      width: "100%",
-      flexDirection: esTablet ? "row" : "column",
-      flexWrap: esTablet ? "wrap" : "nowrap",
-      gap: 12,
-    };
-  }, [esTablet]);
+  const gridStyle = useMemo(
+    function () {
+      return {
+        width: "100%",
+        flexDirection: esTablet ? "row" : "column",
+        flexWrap: esTablet ? "wrap" : "nowrap",
+        gap: 12,
+      };
+    },
+    [esTablet],
+  );
 
-  const itemStyle = useMemo(function () {
-    return { width: esTablet ? "48.5%" : "100%" };
-  }, [esTablet]);
+  const itemStyle = useMemo(
+    function () {
+      return { width: esTablet ? "48.5%" : "100%" };
+    },
+    [esTablet],
+  );
 
   const itemFullStyle = useMemo(function () {
     return { width: "100%" };
@@ -245,17 +287,20 @@ export default function useEnfermedadesScreen() {
       ? "Seleccione un estanque"
       : "No se encuentran opciones o valores";
 
-  const placeholderEnfermedad = opcionesEnfermedades.length > 0
-    ? "Seleccione una enfermedad"
-    : "No se encuentran opciones o valores";
+  const placeholderEnfermedad =
+    opcionesEnfermedades.length > 0
+      ? "Seleccione una enfermedad"
+      : "No se encuentran opciones o valores";
 
-  const placeholderSeveridad = opcionesSeveridades.length > 0
-    ? "Seleccione la severidad"
-    : "No se encuentran opciones o valores";
+  const placeholderSeveridad =
+    opcionesSeveridades.length > 0
+      ? "Seleccione la severidad"
+      : "No se encuentran opciones o valores";
 
   const errorFinca = submitted && finca === "";
   const errorEstanque = submitted && estanque === "";
-  const errorFechaReporte = submitted && validarFechaReporte(fechaReporte) !== "";
+  const errorFechaReporte =
+    submitted && validarFechaReporte(fechaReporte) !== "";
   const errorEnfermedad = submitted && enfermedad === "";
   const errorSeveridad = submitted && severidad === "";
 
@@ -352,14 +397,38 @@ export default function useEnfermedadesScreen() {
   }
 
   return {
-    finca, estanque, fechaReporte, enfermedad, severidad, reporte, responsable,
-    opcionesFincas, opcionesEstanques, opcionesEnfermedades, opcionesSeveridades,
-    placeholderFinca, placeholderEstanque, placeholderEnfermedad, placeholderSeveridad,
-    gridStyle, itemStyle, itemFullStyle,
-    errorFinca, errorEstanque, errorFechaReporte, errorEnfermedad, errorSeveridad,
-    mensaje, tipoMensaje,
+    finca,
+    estanque,
+    fechaReporte,
+    enfermedad,
+    severidad,
+    reporte,
+    responsable,
+    opcionesFincas,
+    opcionesEstanques,
+    opcionesEnfermedades,
+    opcionesSeveridades,
+    placeholderFinca,
+    placeholderEstanque,
+    placeholderEnfermedad,
+    placeholderSeveridad,
+    gridStyle,
+    itemStyle,
+    itemFullStyle,
+    errorFinca,
+    errorEstanque,
+    errorFechaReporte,
+    errorEnfermedad,
+    errorSeveridad,
+    mensaje,
+    tipoMensaje,
     loading: loadingEnfermedades || cargandoOpciones,
-    cambiarFinca, cambiarEstanque, cambiarFechaReporte, cambiarEnfermedad,
-    cambiarSeveridad, cambiarReporte, guardarEnfermedad,
+    cambiarFinca,
+    cambiarEstanque,
+    cambiarFechaReporte,
+    cambiarEnfermedad,
+    cambiarSeveridad,
+    cambiarReporte,
+    guardarEnfermedad,
   };
 }

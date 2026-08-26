@@ -23,6 +23,12 @@ import { COLORS } from "../../../theme/colors";
 import { TYPOGRAPHY } from "../../../theme/typography";
 
 export const styles = StyleSheet.create({
+  scrollContainer: {
+    paddingBottom: 100,
+  },
+  spinner: {
+    marginVertical: 32,
+  },
   alertSuccess: {
     marginBottom: 16,
   },
@@ -134,9 +140,9 @@ export const styles = StyleSheet.create({
 
   floatingButtonWrapper: {
     position: "absolute",
-    bottom: 24,
-    left: 0,
-    right: 0,
+    bottom: 16,
+    left: 16,
+    right: 16,
   },
 
   btnAgregar: {
