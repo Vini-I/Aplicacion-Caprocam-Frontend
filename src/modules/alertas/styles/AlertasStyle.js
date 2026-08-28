@@ -6,8 +6,8 @@
 
 import { StyleSheet } from "react-native";
 
-import { COLORS } from "../../../theme/colors";
-import { TYPOGRAPHY } from "../../../theme/typography";
+import { COLORS } from "../../../theme/colors.js";
+import { TYPOGRAPHY } from "../../../theme/typography.js";
 
 export const styles = StyleSheet.create({
 
@@ -15,7 +15,14 @@ export const styles = StyleSheet.create({
     marginBottom: 14,
   },
 
-  summaryRow: {
+  summaryHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 12,
+  },
+
+  summaryGrid: {
     flexDirection: "row",
     gap: 10,
   },

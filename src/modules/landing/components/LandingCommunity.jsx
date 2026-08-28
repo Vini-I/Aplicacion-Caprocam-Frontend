@@ -11,7 +11,7 @@
  * - Genera las tarjetas de productores desde los datos configurados.
  * - Muestra el nombre, la ubicación y la producción de cada agremiado.
  * - Incluye íconos representativos en las tarjetas.
- * - Permite contactar a CAPROCAM mediante WhatsApp.
+ * - Permite contactar a CAPROCAM mediante correo electrónico.
  * - Registra la posición de la sección para permitir la navegación.
  * - Adapta las tarjetas y el contenido para móviles y tabletas.
  */
@@ -63,7 +63,7 @@ export default function LandingCommunity({
   esMovil,
   esTablet,
   guardarPosicion,
-  abrirWhatsapp,
+  abrirCorreo,
 }) {
   return (
     <View
@@ -88,11 +88,12 @@ export default function LandingCommunity({
             esMovil && styles.sectionTitleMobile,
           ]}
         >
-          Productores que hacen crecer el sector
+          Una comunidad unida por el sector productivo
         </Text>
         <Text style={styles.sectionSubtitle}>
-          Conoce parte de la red de productores que
-          conforman CAPROCAM.
+          CAPROCAM reúne a personas productoras 
+          vinculadas con la producción de camarón 
+          y sal.
         </Text>
         <View style={styles.producersGrid}>
           {AGREMIADOS.map((item) => (
@@ -114,17 +115,17 @@ export default function LandingCommunity({
             Contáctanos y conoce cómo podemos acompañarte.
           </Text>
           <Button
-            style={styles.whatsappButton}
-            onPress={abrirWhatsapp}
+            style={styles.emailButton}
+            onPress={abrirCorreo}
           >
             <View style={styles.buttonContent}>
               <Icon
-                icon={ICONS.whatsApp}
+                icon={ICONS.email}
                 size={18}
                 color={COLORS.white}
               />
-              <Text style={styles.whatsappButtonText}>
-                Escríbenos por WhatsApp
+              <Text style={styles.emailButtonText}>
+                Escríbenos por correo
               </Text>
             </View>
           </Button>

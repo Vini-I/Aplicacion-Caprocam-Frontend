@@ -76,6 +76,7 @@ export default function FincaNuevaScreen({ onFinca }) {
                   value={formulario.codigoCBO}
                   onChangeText={(valor) => actualizarCampo("codigoCBO", valor)}
                   placeholder="Ej: CVO-01"
+                  maxLength={40}
                   style={errores.codigoCBO ? [styles.errorInput] : null}
                 />
               </View>
@@ -85,6 +86,7 @@ export default function FincaNuevaScreen({ onFinca }) {
                   value={formulario.nombre}
                   onChangeText={(valor) => actualizarCampo("nombre", valor)}
                   placeholder="Ej: Finca El Pacífico"
+                  maxLength={80}
                   style={errores.nombre ? [styles.errorInput] : null}
                 />
               </View>

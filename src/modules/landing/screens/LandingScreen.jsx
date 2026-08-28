@@ -13,7 +13,7 @@
  * - Permite desplazarse entre las secciones mediante el encabezado.
  * - Controla el cambio automático y manual del carrusel principal.
  * - Gestiona la apertura y el cierre de las preguntas frecuentes.
- * - Permite abrir el medio de contacto mediante WhatsApp.
+ * - Permite abrir el medio de contacto mediante correo electrónico.
  * - Controla el menú de navegación para dispositivos móviles.
  * - Adapta la distribución de los componentes para móviles y tabletas.
  * - Utiliza un área segura y desplazamiento vertical para mostrar
@@ -45,7 +45,7 @@ export default function LandingScreen() {
     guardarPosicion,
     irASeccion,
     irAlInicio,
-    abrirWhatsapp,
+    abrirCorreo,
     menuAbierto,
     alternarMenu,
     navegarA,
@@ -100,7 +100,7 @@ export default function LandingScreen() {
             esMovil={esMovil}
             esTablet={esTablet}
             guardarPosicion={guardarPosicion}
-            abrirWhatsapp={abrirWhatsapp}
+            abrirCorreo={abrirCorreo}
           />
           <LandingFooter
             esMovil={esMovil}

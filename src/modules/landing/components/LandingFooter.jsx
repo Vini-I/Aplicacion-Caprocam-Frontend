@@ -119,18 +119,15 @@ export default function LandingFooter({
             <Text style={styles.footerTitle}>
               CONTÁCTANOS
             </Text>
-            <FooterContact
-              icono={ICONS.phone}
-              principal={CONTACTO.telefono}
-            />
-            <FooterContact
-              icono={ICONS.email}
-              principal={CONTACTO.correo}
-            />
-            <FooterContact
-              icono={ICONS.location}
-              principal={CONTACTO.direccion}
-            />
+            <View style={styles.footerContactGroup}>
+              <Text style={styles.footerPrimary}>
+                {CONTACTO.juntaDirectiva}
+              </Text>
+              <FooterContact
+                icono={ICONS.email}
+                principal={CONTACTO.correo}
+              />
+            </View>
           </View>
 
           <View
@@ -157,11 +154,6 @@ export default function LandingFooter({
               horario="Cerrado"
               activo={false}
             />
-            <View style={styles.scheduleBadge}>
-              <Text style={styles.scheduleBadgeText}>
-                Sistema de gestión disponible 24/7
-              </Text>
-            </View>
           </View>
 
           <View
@@ -185,6 +177,11 @@ export default function LandingFooter({
                 </Text>
               </View>
             ))}
+            <View style={styles.footerSystemBadge}>
+              <Text style={styles.scheduleBadgeText}>
+                Sistema de gestión disponible 24/7
+              </Text>
+            </View>
           </View>
         </View>
 

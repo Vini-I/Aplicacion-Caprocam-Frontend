@@ -37,26 +37,15 @@ export function useTrazabilidad() {
   const [fincas, setFincas] = useState([]);
 
   const [errorCarga, setErrorCarga] = useState("");
-  const [sesionExpirada, setSesionExpirada] = useState(false);
-
   function mostrarErrorCarga(mensaje, error) {
     if (error?.response?.status === 401) {
-      setSesionExpirada(true);
-      setErrorCarga("Tu sesión expiró. Debes iniciar sesión de nuevo.");
       return;
     }
-    setSesionExpirada(false);
     setErrorCarga(mensaje);
   }
 
   function cerrarErrorCarga() {
     setErrorCarga("");
-    setSesionExpirada(false);
-  }
-
-  function irALogin() {
-    cerrarErrorCarga();
-    router.replace("/login");
   }
 
   const timerErrorRef = useRef(null);
@@ -275,8 +264,6 @@ export function useTrazabilidad() {
     manejarCambioFinca,
     manejarEnvio,
     errorCarga,
-    sesionExpirada,
     cerrarErrorCarga,
-    irALogin,
   };
 }

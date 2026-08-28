@@ -24,7 +24,7 @@
  *    navega a /siembra/editar, y el botón "Finalizar Pre-Cría" navega
  *    a la misma ruta con el param "finalizar", según el estándar de
  *    una ventana por operación CRUD (no combinar editar y detalle).
- *    El botón "Finalizar Siembra" abre un modal de confirmación
+ *    El botón "Finalizar Ciclo" abre un modal de confirmación
  *    antes de ejecutar la acción, ya que es irreversible.
  *
  * 5. Cuando la Siembra viene de una Pre-Cría (pasoPorPrecria === "si"),
@@ -304,7 +304,8 @@ export default function DetalleSiembraScreen({
 
           <View style={styles.actions}>
             {formData.tipoRegistro === "precria" &&
-              formData.estado === "Finalizada" && (
+              formData.estado === "Finalizada" && 
+               formData.estadoLote !== "Sembrado" && (
                 <Button
                   style={styles.button}
                   onPress={handleCrearSiembraDesdePrecria}
@@ -363,7 +364,7 @@ export default function DetalleSiembraScreen({
                   <View style={styles.buttonContent}>
                     <Icon icon={ICONS.check} color={COLORS.primary} />
                     <Text style={styles.textoBoton}>
-                      {guardando ? "Finalizando..." : "Finalizar Siembra"}
+                      {guardando ? "Finalizando..." : "Finalizar Ciclo"}
                     </Text>
                   </View>
                 </Button>
@@ -380,7 +381,7 @@ export default function DetalleSiembraScreen({
         buttonTextStyle={styles.modalCancelButtonText}
       >
         <Title level={3} style={styles.modalTitle}>
-          ¿Finalizar Siembra?
+          ¿Finalizar Ciclo?
         </Title>
         <Text style={styles.modalMessage}>
           Esta acción no se puede deshacer.
