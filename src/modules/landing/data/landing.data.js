@@ -14,7 +14,7 @@
  * - Define las preguntas frecuentes y sus respectivas respuestas.
  * - Almacena la información de los productores agremiados.
  * - Incluye la lista de fincas mostrada en el pie de página.
- * - Centraliza los datos de contacto y la configuración de WhatsApp.
+ * - Centraliza los datos de contacto y la configuración del correo electrónico.
  * - Utiliza los colores e íconos definidos en el tema del proyecto.
  */
 
@@ -148,21 +148,21 @@ export const BENEFICIOS = [
   },
   {
     id: "certificacion",
-    titulo: "Certificaciones",
+    titulo: "Organización",
     icono: ICONS.certificate,
     colorIcono: COLORS.success,
     fondo: COLORS.successLight,
   },
   {
     id: "productores",
-    titulo: "Red de productores",
+    titulo: "Gestión",
     icono: ICONS.people,
     colorIcono: COLORS.FisicoQuimica,
     fondo: COLORS.secondary,
   },
   {
     id: "soporte",
-    titulo: "Soporte técnico",
+    titulo: "Fortalecimiento",
     icono: ICONS.shrimp,
     colorIcono: COLORS.primary,
     fondo: COLORS.primaryLight,
@@ -174,99 +174,87 @@ export const SERVICIOS = [
     id: "representacion-gremial",
     titulo: "Representación Gremial",
     descripcion:
-      "Actuamos como interlocutores ante el MAG, INCOPESCA y otros organismos reguladores, participando en mesas de trabajo para fortalecer el marco legal del sector.",
+      "CAPROCAM ejerce la representación legal del sector camaronero y salinero nacional y trabaja en la defensa de los intereses comunes de sus asociados.",
     icono: ICONS.shieldAlert,
   },
   {
     id: "innovacion",
-    titulo: "Innovación y Tecnificación",
+    titulo: "Gestión de Recursos",
     descripcion:
-      "Lideramos proyectos de modernización productiva junto al Sistema de Banca para el Desarrollo, la UCR y la UTN.",
+      "Gestiona fondos, donaciones y partidas provenientes de entidades públicas y privadas, tanto nacionales como internacionales, para respaldar iniciativas relacionadas con sus fines.",
     icono: ICONS.growth,
   },
   {
     id: "sostenibilidad",
-    titulo: "Desarrollo Sostenible",
+    titulo: "Proyectos de Interés Común",
     descripcion:
-      "Fomentamos prácticas acuícolas responsables que equilibran productividad y conservación ambiental.",
+      "Promueve proyectos de interés común mediante actividades socio-organizativas dirigidas a fortalecer la participación y organización de sus asociados.",
     icono: ICONS.certificate,
   },
   {
     id: "articulacion",
-    titulo: "Articulación Interinstitucional",
+    titulo: "Estudios y Organización",
     descripcion:
-      "Coordinamos entre productores, academia, sector bancario y gobierno para fortalecer la competitividad internacional.",
+      "Elabora estudios y análisis relacionados con los procesos productivos y comerciales, además de organizar sesiones de estudio, congresos y certámenes vinculados con el sector camaronero y salinero.",
     icono: ICONS.earth,
   },
 ];
 
 export const PREGUNTAS = [
   {
-    id: "acuicultura-sostenible",
-    pregunta: "¿Qué es la acuicultura sostenible?",
+    id: "personas-asociadas",
+    pregunta: "¿Qué tipos de personas asociadas existen?",
     respuesta:
-      "Es una forma responsable de producir especies acuáticas utilizando prácticas que protegen el ambiente y favorecen a las comunidades productoras.",
+      "CAPROCAM contempla dentro de su organización a fundadores, activos o contribuyentes y asociados.",
   },
   {
-    id: "requisitos-sanitarios",
-    pregunta: "¿Qué requisitos sanitarios exige el sector?",
+    id: "requisitos-miembros",
+    pregunta: "¿Quiénes pueden ser miembros de CAPROCAM?",
     respuesta:
-      "El sector exige el Certificado Veterinario de Operación, buenas prácticas de manejo y estrictos controles de bioseguridad.",
+      "Pueden ser miembros las personas físicas de reconocida solvencia moral que sean productoras de camarón o sal, estén o no vinculadas directa o indirectamente con estas actividades productivas.",
+  },
+  {
+    id: "organizacion-caprocam",
+    pregunta: "¿Cómo está organizada CAPROCAM?",
+    respuesta:
+      "Su estructura organizativa está conformada por la Asamblea General, la Junta Directiva y la Fiscalía.",
+  },
+  {
+    id: "info-publica",
+    pregunta: "¿Cómo puedo solicitar información o apoyo?",
+    respuesta:
+      "Puede solicitarse mediante el correo electrónico de la Junta Directiva de CAPROCAM.",
   },
 ];
 
 export const AGREMIADOS = [
   {
-    id: "san-miguel",
-    nombre: "Camaronera San Miguel",
-    ubicacion: "Puntarenas",
-    produccion: "45 ha en producción",
-  },
-  {
-    id: "pacifico",
-    nombre: "Acuícola El Pacífico",
+    id: "la-reina",
+    nombre: "Camaronera La Reina",
     ubicacion: "Guanacaste",
-    produccion: "32 ha en producción",
+    produccion: "ACAT",
   },
   {
-    id: "reina",
-    nombre: "Finca La Reina",
-    ubicacion: "Guanacaste",
-    produccion: "28 ha en producción",
-  },
-  {
-    id: "sur",
-    nombre: "Estanques del Sur",
-    ubicacion: "Limón",
-    produccion: "55 ha en producción",
-  },
-  {
-    id: "esperanza",
-    nombre: "Camaronera La Esperanza",
+    id: "cocorocas",
+    nombre: "Salineras Las Cocorocas",
     ubicacion: "Puntarenas",
-    produccion: "38 ha en producción",
+    produccion: "ACOPAC",
   },
   {
-    id: "cinco-estrellas",
-    nombre: "Acuicultura Cinco Estrellas",
-    ubicacion: "Quepos",
-    produccion: "22 ha en producción",
+    id: "josefina",
+    nombre: "Carnes La Josefina",
+    ubicacion: "Puntarenas",
+    produccion: "ACT",
   },
 ];
 
 export const FINCAS_FOOTER = [
-  "Finca El Pacífico - Puntarenas",
-  "Finca La Reina - Guanacaste",
-  "Camaronera La Unión - Limón",
-  "Estanques del Pacífico - Quepos",
-  "Finca Mar Adentro - Nicoya",
+  "Productores de Camarón",
+  "Productores de Sal",
 ];
 
 export const CONTACTO = {
-  telefono: "+506 8888-8888",
-  correo: "info@caprocam.com",
-  direccion:
-    "Colorado de Abangares, Guanacaste, Costa Rica",
-  numeroWhatsapp: "50688015053",
-  mensajeWhatsapp: "Hola, deseo recibir más información.",
+  juntaDirectiva: "Miembros de la Junta Directiva",
+  correo: "caprocam.jd@gmail.com",
+  mensajeCorreo: "Hola, deseo recibir más información",
 };

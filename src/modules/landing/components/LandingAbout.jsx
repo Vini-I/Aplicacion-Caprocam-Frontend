@@ -83,19 +83,20 @@ export default function LandingAbout({
                 esMovil && styles.sectionTitleMobile,
               ]}
             >
-              Una asociación comprometida con el sector
-              camaronero
+              Una organización creada por y para sus 
+              productores
             </Text>
             <Text style={styles.paragraph}>
-              CAPROCAM representa y acompaña a los
-              productores de camarón de Costa Rica,
-              impulsando una acuicultura competitiva,
-              responsable y sostenible.
+              CAPROCAM es la Cámara Nacional de 
+              Productores de Camarón y Sal, creada 
+              por iniciativa de personas productoras 
+              de ambos sectores.
             </Text>
             <Text style={styles.paragraph}>
-              Trabajamos para fortalecer el desarrollo
-              técnico, productivo y comercial de nuestros
-              agremiados.
+              Desde su creación el 28 de mayo de 2014, 
+              reúne a sus asociados bajo una estructura 
+              organizativa orientada a atender sus intereses 
+              y necesidades.
             </Text>
           </View>
           <View
