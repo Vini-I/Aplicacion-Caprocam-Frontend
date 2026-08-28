@@ -130,9 +130,11 @@ function mapEquipoBackend(equipo) {
     fechaInstalacion: fechaBackendAFormulario(equipo.fechaInstalacion),
     funcionEquipo: equipo.funcionEquipo,
 
-    // Ubicación (antes texto libre, ahora es el estanque asociado)
+    // Ubicación / estanque
     estanqueId: equipo.estanqueId,
     ubicacion: equipo.estanqueId,
+    // Se resuelve el nombre del estanque si el backend lo pasa; de lo contrario se muestra el ID
+    estanqueNombre: equipo.estanqueNombre || (equipo.estanqueId ? `Estanque #${equipo.estanqueId}` : null),
 
     // Horas
     horasMantenimiento: equipo.horasMantenimiento,
@@ -236,12 +238,29 @@ export const equiposService = {
   },
 
   /**
-   * Obtiene un equipo por su ID — CONECTADO a la API real
+   * Obtiene un equipo por su ID — CONECTADO a la API real.
+   * Si el equipo tiene estanqueId, resuelve el nombre del estanque
+   * para que los componentes de detalle lo puedan mostrar.
    */
   async getEquipoById(id) {
     try {
       const response = await api.get(`/equipos/${id}`);
-      return mapEquipoBackend(response.data.data);
+      const equipo = mapEquipoBackend(response.data.data);
+
+      // Resolver nombre del estanque si está asociado
+      if (equipo.estanqueId) {
+        try {
+          const estanques = await this.getEstanquesDisponibles();
+          const encontrado = estanques.find((e) => e.value === String(equipo.estanqueId));
+          if (encontrado) {
+            equipo.estanqueNombre = encontrado.label;
+          }
+        } catch (_) {
+          // Si falla, queda el fallback "Estanque #id"
+        }
+      }
+
+      return equipo;
     } catch (err) {
       throw construirErrorHttp(err, "No se pudo encontrar el equipo");
     }

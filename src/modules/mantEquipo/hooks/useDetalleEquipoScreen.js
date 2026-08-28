@@ -141,7 +141,7 @@ export function useDetalleEquipoScreen({ id, router }) {
 
   const handleEstanquePress = () => {
     if (estanque) {
-      router.push(`/estanques/detalle?id=${estanque.value}`);
+      router.push(`/finca/detalleEstanque?id=${estanque.value}`);
     }
   };
 

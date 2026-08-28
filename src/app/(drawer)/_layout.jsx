@@ -242,7 +242,7 @@ export default function DrawerLayout() {
         <Drawer.Screen name="compradores/detalleComprador" options={{ drawerItemStyle: { display: "none" } }} />
         <Drawer.Screen name="compradores/compradorScreen" options={{ drawerItemStyle: { display: "none" } }} />
 
-        <Drawer.Screen name="mantenimientoEquipo/layout" options={{ drawerItemStyle: { display: "none" } }} />
+
         <Drawer.Screen name="mantenimientoEquipo/tareaForm" options={{ drawerItemStyle: { display: "none" } }} />
         <Drawer.Screen name="mantenimientoEquipo/mantEquipo" options={{ drawerItemStyle: { display: "none" } }} />
         <Drawer.Screen name="mantenimientoEquipo/detalleTarea" options={{ drawerItemStyle: { display: "none" } }} />
@@ -250,7 +250,6 @@ export default function DrawerLayout() {
         <Drawer.Screen name="mantenimientoEquipo/AgregarMantenimiento" options={{ drawerItemStyle: { display: "none" } }} />
         <Drawer.Screen name="mantenimientoEquipo/DetalleMantenimiento" options={{ drawerItemStyle: { display: "none" } }} />
 
-        <Drawer.Screen name="mantenimientoEquipo/tareas/layout" options={{ drawerItemStyle: { display: "none" } }} />
         <Drawer.Screen name="mantenimientoEquipo/tareas" options={{ drawerItemStyle: { display: "none" } }} />
         <Drawer.Screen name="mantenimientoEquipo/tareas/tareaForm" options={{ drawerItemStyle: { display: "none" } }} />
         <Drawer.Screen name="mantenimientoEquipo/tareas/detalleTarea" options={{ drawerItemStyle: { display: "none" } }} />
