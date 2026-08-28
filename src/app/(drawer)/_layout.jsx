@@ -95,18 +95,6 @@ export default function DrawerLayout() {
         />
 
         <Drawer.Screen
-          name="configuracion"
-          options={{
-            drawerLabel: "Configuración",
-            title: "Ajustes de la Aplicación",
-            drawerItemStyle: hiddenStyle,
-            drawerIcon: ({ color, size }) => (
-              <Icon icon={ICONS.gear} />
-            )
-          }}
-        />
-
-        <Drawer.Screen
           name="inventarios"
           options={{
             drawerLabel: "Inventario",
