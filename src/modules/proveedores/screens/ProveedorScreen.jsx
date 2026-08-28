@@ -148,12 +148,12 @@ export default function ProveedorScreen({ onDetail, onNew }) {
 
               <View style={styles.contactRow}>
                 <CustomText style={styles.contactText}>
-                  {formatearTelefono(proveedor.telefono)}
+                  {formatearTelefono(proveedor.telefono) || "No registrado"}
                 </CustomText>
               </View>
 
               <View style={styles.contactRow}>
-                <CustomText style={styles.contactText}>{proveedor.correo}</CustomText>
+                <CustomText style={styles.contactText}>{proveedor.correo?.trim() || "No registrado"}</CustomText>
               </View>
             </CardPress>
           ))

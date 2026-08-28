@@ -374,10 +374,19 @@ export async function actualizarEstadoEquipo(equipoId, nuevoEstado) {
 }
 
 // ─── Reiniciar estado operativo del equipo a Activo ──────────────────────────
-export function reiniciarHorasEquipo(equipoId) {
+export async function reiniciarHorasEquipo(equipoId) {
   if (!equipoId) return;
-  equiposService.updateEquipo(equipoId, { estadoOperativo: 'Activo' })
-    .catch(err => console.warn('reiniciarHorasEquipo:', err?.message || err));
+  try {
+    const equipo = await equiposService.getEquipoById(equipoId);
+    if (!equipo) return;
+    await equiposService.updateEquipo(equipoId, {
+      ...equipo,
+      estadoOperativo: 'Activo',
+      horasActuales: 0,
+    });
+  } catch (err) {
+    console.warn('reiniciarHorasEquipo:', err?.message || err);
+  }
 }
 
 // ─── Construir payload para POST / PUT ────────────────────────────────────────
@@ -482,8 +491,15 @@ async function descontarStockMantenimiento(productos) {
 export async function agregarTicket(ticket) {
   try {
     const payload = buildPayload(ticket);
+    const esTerminado = payload.estadoTicket === 'Terminado' || ticket.estado === 'terminado';
+
+    // Si viene directamente como Terminado, crearlo primero como 'En espera'
+    // para permitir vincular tareas y productos antes del cierre definitivo.
+    if (esTerminado) {
+      payload.estadoTicket = 'En espera';
+    }
+
     const res = await api.post('/mantenimientos', payload);
-    
     const backendData = res.data?.data || res.data;
     const nuevoTicket = adaptBackendTicket(backendData);
 
@@ -493,9 +509,14 @@ export async function agregarTicket(ticket) {
       vincularProductos(nuevoTicket.dbId, ticket.productos || []),
     ]);
 
-    // Si se crea directamente como Terminado, descontar stock de inventario
-    if (ticket.estado === 'terminado' || payload.estadoTicket === 'Terminado') {
-      await descontarStockMantenimiento(ticket.productos || []);
+    // Si el ticket se marcó como Terminado al crearlo, actualizar su estado a Terminado
+    // para que el backend ejecute la transacción y descuente el stock de los productos vinculados.
+    if (esTerminado) {
+      await api.put(`/mantenimientos/${nuevoTicket.dbId}`, {
+        ...payload,
+        estadoTicket: 'Terminado',
+      });
+      return await obtenerTicketPorId(nuevoTicket.dbId);
     }
 
     return nuevoTicket;
@@ -609,11 +630,11 @@ export async function actualizarTicket(ticket) {
 
   try {
     const payload = buildPayload(ticket);
-    await api.put(`/mantenimientos/${targetId}`, payload);
 
-    // Sincronización inteligente por diffing de tareas y productos.
-    // allSettled nunca rechaza por sí mismo: si una sincronización falla,
-    // no se detiene el flujo, pero sí se loguea para no perderlo en silencio.
+    // 1. Sincronización inteligente de tareas y productos ANTES de actualizar el estado del ticket en BD.
+    // Esto garantiza que cuando el backend procese el cambio a 'Terminado', los productos
+    // ya existan en la tabla mantenimiento_equipo_productos y el trigger/transacción descuente
+    // correctamente el stock en movimientos_inventario e inventario.
     const resultados = await Promise.allSettled([
       sincronizarTareas(Number(targetId), ticket.tareas),
       sincronizarProductos(Number(targetId), ticket.productos),
@@ -624,13 +645,11 @@ export async function actualizarTicket(ticket) {
       }
     });
 
+    // 2. Actualizar el ticket principal en la base de datos
+    await api.put(`/mantenimientos/${targetId}`, payload);
+
     // Re-obtener el ticket actualizado para asegurar sincronización con la BD
     const ticketActualizado = await obtenerTicketPorId(targetId);
-
-    // Si el ticket está en estado Terminado, descontar stock del inventario
-    if (ticket.estado === 'terminado' || payload.estadoTicket === 'Terminado') {
-      await descontarStockMantenimiento(ticket.productos || []);
-    }
 
     return ticketActualizado;
   } catch (err) {
