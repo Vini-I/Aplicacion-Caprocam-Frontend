@@ -58,9 +58,7 @@ export function useDetalleTarea() {
   const eliminar = async (t) => {
     try {
       await tareasService.eliminarTarea(t.id);
-      // Navegar a la lista de tareas y mostrar mensaje de éxito allí
-      const msg = encodeURIComponent(`Tarea "${t.nombre}" eliminada correctamente`);
-      router.replace(`/mantenimientoEquipo/tareas?alertType=success&alertMessage=${msg}`);
+      router.back();
     } catch (err) {
       showAlert('danger', err?.message || 'No se pudo eliminar la tarea');
       throw err;

@@ -144,30 +144,35 @@ flatListContent: {
   // Botón flotante "Agregar tarea"
   floatingButtonContainer: {
     position: 'absolute',
-    bottom: 20,
+    bottom: 0,
     left: 0,
     right: 0,
-    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingTop: 10,
+    paddingBottom: 16,
+    backgroundColor: 'transparent',
   },
 
   floatingButton: {
     width: '100%',
-    maxWidth: 900,
-    alignSelf: 'center',
-    backgroundColor: 'transparent',
-    borderColor: COLORS.primary,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
     borderWidth: 1,
-    paddingHorizontal: 20,
+    borderColor: COLORS.primary,
+    backgroundColor: COLORS.white,
     borderRadius: 8,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+    gap: 8,
+    marginTop: 0,
   },
 
   floatingButtonText: {
     color: COLORS.primary,
     fontWeight: '600',
-    fontSize: 13,
+    fontSize: 14,
+    marginLeft: 6,
   },
 
   // Modal de detalle

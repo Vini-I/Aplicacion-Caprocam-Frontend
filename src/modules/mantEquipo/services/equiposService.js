@@ -130,13 +130,18 @@ function mapEquipoBackend(equipo) {
     fechaInstalacion: fechaBackendAFormulario(equipo.fechaInstalacion),
     funcionEquipo: equipo.funcionEquipo,
 
-    // Ubicación (antes texto libre, ahora es el estanque asociado)
+    // Ubicación / estanque
     estanqueId: equipo.estanqueId,
     ubicacion: equipo.estanqueId,
+    // Se resuelve el nombre del estanque si el backend lo pasa; de lo contrario se muestra el ID
+    estanqueNombre: equipo.estanqueNombre || (equipo.estanqueId ? `Estanque #${equipo.estanqueId}` : null),
 
     // Horas
     horasMantenimiento: equipo.horasMantenimiento,
     horasUso: Number(equipo.horasActuales || 0),
+    horasActuales: Number(equipo.horasActuales || 0),
+    horasBase: Number(equipo.horasActuales || 0),
+    fechaUltimoEncendido: equipo.fechaUltimoEncendido || null,
 
     // Estado operativo: activo / inactivo / mantenimiento
     estado: ESTADO_OPERATIVO_BACKEND_A_FRONTEND[equipo.estadoOperativo] || "activo",
@@ -233,12 +238,29 @@ export const equiposService = {
   },
 
   /**
-   * Obtiene un equipo por su ID — CONECTADO a la API real
+   * Obtiene un equipo por su ID — CONECTADO a la API real.
+   * Si el equipo tiene estanqueId, resuelve el nombre del estanque
+   * para que los componentes de detalle lo puedan mostrar.
    */
   async getEquipoById(id) {
     try {
       const response = await api.get(`/equipos/${id}`);
-      return mapEquipoBackend(response.data.data);
+      const equipo = mapEquipoBackend(response.data.data);
+
+      // Resolver nombre del estanque si está asociado
+      if (equipo.estanqueId) {
+        try {
+          const estanques = await this.getEstanquesDisponibles();
+          const encontrado = estanques.find((e) => e.value === String(equipo.estanqueId));
+          if (encontrado) {
+            equipo.estanqueNombre = encontrado.label;
+          }
+        } catch (_) {
+          // Si falla, queda el fallback "Estanque #id"
+        }
+      }
+
+      return equipo;
     } catch (err) {
       throw construirErrorHttp(err, "No se pudo encontrar el equipo");
     }
@@ -283,24 +305,11 @@ export const equiposService = {
   },
 
   /**
-   * Cambia el estado de encendido/apagado de un equipo — CONECTADO a la API real.
-   *
-   * IMPORTANTE: el backend actual no registra la fecha/hora en que
-   * el equipo se encendió, por lo que este toggle NO puede calcular
-   * automáticamente las horas a sumar a horasActuales. Solo actualiza
-   * el campo "estado" (Encendido/Apagado). Si se necesita el conteo
-   * automático de horas, el backend debe agregar un campo tipo
-   * "fecha_ultimo_encendido" y sumar el delta al apagar.
-   *
-   * Requiere el objeto del equipo actual (tal como viene de la lista)
-   * porque el backend exige el body completo en el PUT.
+   * Cambia el estado de encendido/apagado de un equipo — CONECTADO al endpoint /equipos/:id/toggle
    */
   async toggleEquipoEstado(id, equipoActual) {
     try {
-      const payload = mapEquipoFrontendABackend(equipoActual);
-      payload.estado = equipoActual.encendido ? "Apagado" : "Encendido";
-
-      const response = await api.put(`/equipos/${id}`, payload);
+      const response = await api.put(`/equipos/${id}/toggle`);
       return mapEquipoBackend(response.data.data);
     } catch (err) {
       throw construirErrorHttp(err, "No se pudo cambiar el estado del equipo");
