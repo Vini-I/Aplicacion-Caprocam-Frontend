@@ -48,28 +48,20 @@ import { useRouter } from "expo-router";
 import { compradorService } from "../services/comprador.service";
 import { useError } from "../../../shared/context/ErrorContext";
 
-// Formato internacional (estilo E.164): "+" + código de país (1 a 3
-// dígitos) + número local, con espacio opcional -- igual criterio
-// que useEditarCompradorScreen.js. Ya no exige exactamente 8 dígitos
-// "a la costarricense".
-// Ejemplos válidos: +506 88888888, +1 2025550123, +52 5512345678,
-// +34 612345678
-const TELEFONO_FORMATO_REGEX = /^\+\d{1,3}\s?\d{4,14}$/;
-const TELEFONO_DIGITOS_MIN = 8;
-const TELEFONO_DIGITOS_MAX = 15;
+// Exige exactamente 8 dígitos
+const TELEFONO_REGEX = /^\d{8}$/;
 
-export const TELEFONO_MAX_LENGTH = 20; // "+" + espacio + hasta 15 dígitos + margen
+export const TELEFONO_MAX_LENGTH = 8;
 export const CEDULA_MIN_LENGTH = 8;
 export const CEDULA_MAX_LENGTH = 15;
 
 const CORREO_REGEX = /^[^\s@]+@[^\s@]+$/;
-const CORREO_LARGO_MINIMO = 5;
+// Mínimo de caracteres exigido en la parte ANTES del @ (no en el
+// correo completo).
+const CORREO_LARGO_MINIMO = 3;
 
 function esTelefonoValido(valor) {
-  const limpio = valor.trim();
-  if (!TELEFONO_FORMATO_REGEX.test(limpio)) return false;
-  const totalDigitos = limpio.replace(/\D/g, "").length;
-  return totalDigitos >= TELEFONO_DIGITOS_MIN && totalDigitos <= TELEFONO_DIGITOS_MAX;
+  return valor.trim() !== "" && TELEFONO_REGEX.test(valor.trim());
 }
 
 function esCedulaValida(valor) {
@@ -78,14 +70,18 @@ function esCedulaValida(valor) {
 }
 
 // Igual que en useEditarCompradorScreen.js: opcional, pero si se
-// llena exige un largo mínimo además del formato.
+// llena exige formato @ y un largo mínimo en la parte ANTES del @.
 function esCorreoValido(valor) {
   const limpio = valor.trim();
   if (limpio === "") return true; // correo no es obligatorio
-  return limpio.length >= CORREO_LARGO_MINIMO && CORREO_REGEX.test(limpio);
+  if (!CORREO_REGEX.test(limpio)) return false;
+  const parteLocal = limpio.split("@")[0];
+  return parteLocal.length >= CORREO_LARGO_MINIMO;
 }
 
 const MENSAJE_ERROR_GENERAL = "Revisa los campos obligatorios marcados con * antes de guardar.";
+const MENSAJE_ERROR_TELEFONO = "No se está cumpliendo con el teléfono permitido. Ej: 22223344";
+const MENSAJE_ERROR_CORREO = "No se está cumpliendo con el correo permitido. Ej: gallardo@gmail.com";
 const MENSAJE_ERROR_GUARDADO = "No se pudo guardar el comprador. Intenta de nuevo.";
 
 export function useNuevoCompradorScreen() {
@@ -116,12 +112,9 @@ export function useNuevoCompradorScreen() {
     }
   }, [mensajeError]);
 
-    // Permite dígitos, espacios y un "+" al inicio (prefijo de país);
-    // ya no se limita a dígitos puros de 8 cifras.
+    // Permite solo dígitos en el teléfono
   const handleTelefonoChange = (valor) => {
-    let limpio = valor.replace(/[^\d+\s]/g, "");
-    limpio = limpio.replace(/(?!^)\+/g, "");
-    setTelefono(limpio);
+    setTelefono(valor.replace(/[^\d]/g, ""));
   };
 
   // Permite solo dígitos en la cédula
@@ -133,6 +126,7 @@ export function useNuevoCompradorScreen() {
   async function handleSubmit() {
     const errNombre = nombre.trim() === "";
     const errCedula = !esCedulaValida(cedula);
+    const telefonoVacio = telefono.trim() === "";
     const errTel = !esTelefonoValido(telefono);
     const errCorreo = !esCorreoValido(correo);
 
@@ -141,8 +135,19 @@ export function useNuevoCompradorScreen() {
     setErrorTelefono(errTel);
     setErrorCorreo(errCorreo);
 
-    if (errNombre || errCedula || errTel || errCorreo) {
+    // Prioridad de mensaje
+    if (errNombre || errCedula || telefonoVacio) {
       setMensajeError(MENSAJE_ERROR_GENERAL);
+      return;
+    }
+
+    if (errTel) {
+      setMensajeError(MENSAJE_ERROR_TELEFONO);
+      return;
+    }
+
+    if (errCorreo) {
+      setMensajeError(MENSAJE_ERROR_CORREO);
       return;
     }
 

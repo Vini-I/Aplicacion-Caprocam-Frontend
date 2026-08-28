@@ -15,7 +15,7 @@
  * - Define la distribución de las secciones informativas.
  * - Estiliza las tarjetas de beneficios, servicios y productores.
  * - Configura la apariencia de las preguntas frecuentes.
- * - Define el diseño del llamado a la acción y el botón de WhatsApp.
+ * - Define el diseño del llamado a la acción y el botón de correo.
  * - Estiliza la información de contacto y el pie de página.
  * - Incluye variantes responsivas para escritorio, tabletas y móviles.
  * - Aplica sombras compatibles con plataformas web y dispositivos nativos.
@@ -822,7 +822,7 @@ export const styles = StyleSheet.create({
 
   /*
   ============================================================
-  WHATSAPP
+  CORREO
   ============================================================
   */
 
@@ -856,17 +856,17 @@ export const styles = StyleSheet.create({
     marginBottom: 20,
   },
 
-  whatsappButton: {
+  emailButton: {
     minHeight: 48,
     marginTop: 0,
     paddingHorizontal: 25,
     paddingVertical: 11,
     borderRadius: 13,
-    backgroundColor: COLORS.success,
-    borderColor: COLORS.success,
+    backgroundColor: COLORS.error,
+    borderColor: COLORS.error,
   },
 
-  whatsappButtonText: {
+  emailButtonText: {
     fontFamily: TYPOGRAPHY.fontFamily.bold,
     fontSize: 14,
     color: COLORS.white,
@@ -941,6 +941,10 @@ export const styles = StyleSheet.create({
     marginBottom: 17,
   },
 
+  footerContactGroup: {
+    gap: 16,
+  },
+
   footerContactIcon: {
     width: 25,
     alignItems: "center",
@@ -997,10 +1001,10 @@ export const styles = StyleSheet.create({
     color: COLORS.textQuaternary,
   },
 
-  scheduleBadge: {
+  footerSystemBadge: {
     width: "100%",
     minHeight: 38,
-    marginTop: 12,
+    marginTop: 23,
     paddingHorizontal: 14,
     borderWidth: 1,
     borderColor: COLORS.primary,

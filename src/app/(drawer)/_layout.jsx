@@ -69,7 +69,7 @@ export default function DrawerLayout() {
               >
                 <View style={styles.logoutContent}>
                   <Icon icon={ICONS.exit} size={16} color={COLORS.white} />
-                  <CustomText size={12} color={COLORS.white} weight="600">Salir</CustomText>
+                  <CustomText size={12} color={COLORS.white} weight="600">Cerrar Sesion</CustomText>
                 </View>
               </Button>
             </View>
@@ -92,18 +92,6 @@ export default function DrawerLayout() {
               navigation.navigate("(tabs)", { screen: "inicio" });
             },
           })}
-        />
-
-        <Drawer.Screen
-          name="configuracion"
-          options={{
-            drawerLabel: "Configuración",
-            title: "Ajustes de la Aplicación",
-            drawerItemStyle: hiddenStyle,
-            drawerIcon: ({ color, size }) => (
-              <Icon icon={ICONS.gear} />
-            )
-          }}
         />
 
         <Drawer.Screen
@@ -149,7 +137,7 @@ export default function DrawerLayout() {
             title: "Trazabilidad",
             drawerItemStyle: hiddenStyle,
             drawerIcon: ({ color, size }) => (
-              <Icon icon={ICONS.trazabilidad} size={23}/>
+              <Icon icon={ICONS.trazabilidad} size={23} />
             )
           }}
         />
@@ -161,7 +149,7 @@ export default function DrawerLayout() {
             title: "Colaboradores",
             drawerItemStyle: hiddenStyle,
             drawerIcon: ({ color, size }) => (
-              <Icon icon={ICONS.people} size={23}/>
+              <Icon icon={ICONS.people} size={23} />
             )
           }}
         />
@@ -229,31 +217,30 @@ export default function DrawerLayout() {
         {/* Pantallas secundarias ocultas del Drawer */}
         <Drawer.Screen name="inicio" options={{ drawerItemStyle: { display: "none" } }} />
         <Drawer.Screen name="registros" options={{ drawerItemStyle: { display: "none" } }} />
-        
+
         <Drawer.Screen name="inventarios/_layout" options={{ drawerItemStyle: { display: "none" } }} />
         <Drawer.Screen name="inventarios/inventarioScreen" options={{ drawerItemStyle: { display: "none" } }} />
         <Drawer.Screen name="inventarios/productForm" options={{ drawerItemStyle: { display: "none" } }} />
         <Drawer.Screen name="inventarios/nuevoProveedor" options={{ drawerItemStyle: { display: "none" } }} />
         <Drawer.Screen name="inventarios/editarProveedor" options={{ drawerItemStyle: { display: "none" } }} />
         <Drawer.Screen name="inventarios/proveedorScreen" options={{ drawerItemStyle: { display: "none" } }} />
-        
-        <Drawer.Screen name="compradores/nuevoComprador"    options={{ drawerItemStyle: { display: "none" } }} />
-        <Drawer.Screen name="compradores/editarComprador"   options={{ drawerItemStyle: { display: "none" } }} />
-        <Drawer.Screen name="compradores/detalleComprador"  options={{ drawerItemStyle: { display: "none" } }} />
-        <Drawer.Screen name="compradores/compradorScreen"   options={{ drawerItemStyle: { display: "none" } }} />
-        
-        <Drawer.Screen name="mantenimientoEquipo/layout"   options={{ drawerItemStyle: { display: "none" } }} />
-        <Drawer.Screen name="mantenimientoEquipo/tareaForm"   options={{ drawerItemStyle: { display: "none" } }} />
-        <Drawer.Screen name="mantenimientoEquipo/mantEquipo"   options={{ drawerItemStyle: { display: "none" } }} />
-        <Drawer.Screen name="mantenimientoEquipo/detalleTarea"   options={{ drawerItemStyle: { display: "none" } }} />
-        <Drawer.Screen name="mantenimientoEquipo/EditarMantenimiento"   options={{ drawerItemStyle: { display: "none" } }} />
-        <Drawer.Screen name="mantenimientoEquipo/AgregarMantenimiento"   options={{ drawerItemStyle: { display: "none" } }} />
-        <Drawer.Screen name="mantenimientoEquipo/DetalleMantenimiento"   options={{ drawerItemStyle: { display: "none" } }} />
 
-        <Drawer.Screen name="mantenimientoEquipo/tareas/layout"   options={{ drawerItemStyle: { display: "none" } }} />
-        <Drawer.Screen name="mantenimientoEquipo/tareas"   options={{ drawerItemStyle: { display: "none" } }} />
-        <Drawer.Screen name="mantenimientoEquipo/tareas/tareaForm"   options={{ drawerItemStyle: { display: "none" } }} />
-        <Drawer.Screen name="mantenimientoEquipo/tareas/detalleTarea"   options={{ drawerItemStyle: { display: "none" } }} />
+        <Drawer.Screen name="compradores/nuevoComprador" options={{ drawerItemStyle: { display: "none" } }} />
+        <Drawer.Screen name="compradores/editarComprador" options={{ drawerItemStyle: { display: "none" } }} />
+        <Drawer.Screen name="compradores/detalleComprador" options={{ drawerItemStyle: { display: "none" } }} />
+        <Drawer.Screen name="compradores/compradorScreen" options={{ drawerItemStyle: { display: "none" } }} />
+
+
+        <Drawer.Screen name="mantenimientoEquipo/tareaForm" options={{ drawerItemStyle: { display: "none" } }} />
+        <Drawer.Screen name="mantenimientoEquipo/mantEquipo" options={{ drawerItemStyle: { display: "none" } }} />
+        <Drawer.Screen name="mantenimientoEquipo/detalleTarea" options={{ drawerItemStyle: { display: "none" } }} />
+        <Drawer.Screen name="mantenimientoEquipo/EditarMantenimiento" options={{ drawerItemStyle: { display: "none" } }} />
+        <Drawer.Screen name="mantenimientoEquipo/AgregarMantenimiento" options={{ drawerItemStyle: { display: "none" } }} />
+        <Drawer.Screen name="mantenimientoEquipo/DetalleMantenimiento" options={{ drawerItemStyle: { display: "none" } }} />
+
+        <Drawer.Screen name="mantenimientoEquipo/tareas" options={{ drawerItemStyle: { display: "none" } }} />
+        <Drawer.Screen name="mantenimientoEquipo/tareas/tareaForm" options={{ drawerItemStyle: { display: "none" } }} />
+        <Drawer.Screen name="mantenimientoEquipo/tareas/detalleTarea" options={{ drawerItemStyle: { display: "none" } }} />
 
       </Drawer>
     </>
@@ -262,23 +249,21 @@ export default function DrawerLayout() {
 
 const styles = StyleSheet.create({
   logoutWrapper: {
-    paddingRight: 16,
+    paddingRight: 12,
   },
   logoutButton: {
     backgroundColor: COLORS.error,
     borderColor: COLORS.error,
     marginTop: 0,
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    borderRadius: 20,
-    minHeight: 32,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    gap: 6,
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: 'center'
   },
   logoutContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 6,
   },
 });

@@ -42,11 +42,11 @@ export function useColaboradorDetalle(colaboradorId) {
         setColaborador(colab);
 
         // Resolver el nombre de la finca a partir del fincaId del colaborador.
-        // Si no tiene finca asignada o no se encuentra en el catálogo,
-        // se deja null (la pantalla mostrará "—").
+        // Si no tiene finca asignada o no se encuentra en el catálogo
+        // (porque fue eliminada), se muestra un mensaje claro.
         if (colab.fincaId) {
           const finca = fincas.find((f) => Number(f.id) === Number(colab.fincaId));
-          setFincaNombre(finca?.nombreFinca || `Finca #${colab.fincaId}`);
+          setFincaNombre(finca?.nombreFinca || "Finca eliminada");
         } else {
           setFincaNombre(null);
         }

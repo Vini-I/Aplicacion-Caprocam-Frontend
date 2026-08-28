@@ -83,11 +83,12 @@ export default function LandingServices({
             esMovil && styles.sectionTitleMobile,
           ]}
         >
-          Servicios para el desarrollo del sector
+          Acciones en beneficio de nuestros asociados
         </Text>
         <Text style={styles.sectionSubtitle}>
-          Acompañamos a nuestros agremiados para impulsar
-          una producción eficiente y sostenible.
+          Desarrollamos distintas actividades orientadas 
+          a atender las necesidades comunes de los sectores 
+          camaronero y salinero.
         </Text>
         <View style={styles.servicesGrid}>
           {SERVICIOS.map((item) => (

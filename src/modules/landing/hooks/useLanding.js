@@ -122,20 +122,20 @@ export function useLandingFaq() {
 }
 
 // ==============
-// Funcion WhatsApp: construye y abre el enlace de contacto y envia los errores al modal global.
+// Funcion Correo: construye y abre el enlace de contacto y envia los errores al modal global.
 // ==============
-export function useWhatsapp() {
+export function useCorreo() {
   const { mostrarError } = useError();
 
-  async function abrirWhatsapp() {
-    const mensaje = encodeURIComponent(CONTACTO.mensajeWhatsapp);
-    const enlace = `https://wa.me/${CONTACTO.numeroWhatsapp}?text=${mensaje}`;
+  async function abrirCorreo() {
+    const mensaje = encodeURIComponent(CONTACTO.mensajeCorreo);
+    const enlace = `mailto:${CONTACTO.correo}?body=${mensaje}`;
 
     try {
       const disponible = await Linking.canOpenURL(enlace);
 
       if (!disponible) {
-        mostrarError("No fue posible abrir WhatsApp.");
+        mostrarError("No fue posible abrir el correo electrónico.");
         return;
       }
 
@@ -146,7 +146,7 @@ export function useWhatsapp() {
   }
 
   return {
-    abrirWhatsapp,
+    abrirCorreo,
   };
 }
 
@@ -253,7 +253,7 @@ export function useLanding() {
   const carrusel = useLandingCarousel();
   const faq = useLandingFaq();
   const navegacion = useLandingNavigation();
-  const whatsapp = useWhatsapp();
+  const correo = useCorreo();
   const menu = useLandingMobileMenu();
   const accesos = useLandingAccess();
   const enlaceCreditos = useLandingCreditsLink();
@@ -268,7 +268,7 @@ export function useLanding() {
     ...carrusel,
     ...faq,
     ...navegacion,
-    ...whatsapp,
+    ...correo,
     ...menu,
     ...accesos,
     ...enlaceCreditos,

@@ -130,25 +130,32 @@ export function useEquipos(initialFilters = {}) {
     }
   };
 
+  const [togglingId, setTogglingId] = useState(null);
+
   const toggleEquipo = async (id) => {
-    setLoading(true);
+    if (togglingId) return; // Bloquear spam de clicks mientras se procesa uno
+    setTogglingId(id);
     try {
       const equipoActual = equipos.find(e => e.id === id);
       if (!equipoActual) {
         throw new Error("Equipo no encontrado");
       }
 
-      const actualizado = await equiposService.toggleEquipoEstado(id, equipoActual);
-      setEquipos(prev => prev.map(e => (e.id === id ? actualizado : e)));
+      // Llamar al endpoint toggle
+      await equiposService.toggleEquipoEstado(id);
+
+      // Recargar datos frescos del backend (garantiza horasActuales correctas)
+      const data = await equiposService.getEquipos(filters);
+      setEquipos(data);
+
       await fetchProximosMantenimiento();
       await fetchEstadisticas();
-      return actualizado;
     } catch (err) {
       setError(err.message);
       mostrarError(err);
       throw err;
     } finally {
-      setLoading(false);
+      setTogglingId(null);
     }
   };
 
@@ -168,5 +175,6 @@ export function useEquipos(initialFilters = {}) {
     actualizarEquipo,
     eliminarEquipo,
     toggleEquipo,
+    togglingId,
   };
 }

@@ -230,8 +230,9 @@ export default function RaleoForm({
         </View>
 
         <Input
-          label="Notas adicionales"
-          placeholder="Ingrese observaciones del raleo"
+          label="Notas"
+          placeholder="Ej: Se aplicó raleo por control de biomasa"
+          multiline
           value={form.observaciones ?? ""}
           onChangeText={(v) => updateField("observaciones", v)}
         />

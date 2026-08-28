@@ -19,7 +19,6 @@ export const useTareas = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [alert, setAlert] = useState(null);
-  const initialLoadDone = useRef(false);
   const alertTimeoutRef = useRef(null);
 
   // ─── FILTROS ADICIONALES ──────────────────────────────────────
@@ -36,34 +35,23 @@ export const useTareas = () => {
   const { mostrarError } = useError();
 
   // ─── CARGA DE DATOS ────────────────────────────────────────────
-  const cargarTareas = useCallback(async (force = false) => {
-    if (!force && tareas.length > 0 && initialLoadDone.current) {
-      return;
-    }
-
+  const cargarTareas = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const datos = await tareasService.obtenerTareas();
-      setTareas(datos);
+      setTareas(datos || []);
     } catch (err) {
       mostrarError(err);
     } finally {
       setLoading(false);
     }
-  }, [tareas.length]);
+  }, [mostrarError]);
 
-  // Carga inicial
-  useEffect(() => {
-    cargarTareas(true);
-  }, []);
-
-  // Recarga al recibir foco
+  // Recarga garantizada cada vez que la pantalla recibe foco (al entrar o al volver atrás)
   useFocusEffect(
     useCallback(() => {
-      if (initialLoadDone.current) {
-        cargarTareas(true);
-      }
+      cargarTareas();
     }, [cargarTareas])
   );
 

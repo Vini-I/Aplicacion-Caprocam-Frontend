@@ -107,8 +107,9 @@ export default function LandingHero({
           <Text style={title}> sostenible</Text>
         </View>
         <Text style={styles.heroSubtitle}>
-          Unidos por el crecimiento responsable del cultivo
-          de camarón en Costa Rica.
+          Una organización creada para respaldar 
+          a los productores y contribuir al 
+          fortalecimiento de sus actividades.
         </Text>
         <Button
           style={styles.heroButton}
@@ -125,9 +126,8 @@ export default function LandingHero({
           ]}
         >
           {[
-            ["+40", "Productores"],
-            ["+200", "Hectáreas"],
-            ["15", "Años de experiencia"],
+            ["2014", "Año de fundación"],
+            ["12", "Años de experiencia"],
           ].map(([numero, etiqueta], index) => (
             <View
               key={etiqueta}

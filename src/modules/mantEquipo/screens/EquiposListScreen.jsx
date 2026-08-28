@@ -122,6 +122,7 @@ export default function EquiposListScreen() {
     actualizarEquipo,
     eliminarEquipo,
     toggleEquipo,
+    togglingId,
     fetchEquipos,
   } = useEquipos({});
 
@@ -281,7 +282,6 @@ export default function EquiposListScreen() {
   const handleToggle = async (id) => {
     try {
       await toggleEquipo(id);
-      fetchEquipos();
     } catch (error) {
       mostrarError(error);
     }
@@ -359,6 +359,7 @@ export default function EquiposListScreen() {
                 equipo={equipo}
                 onPress={openDetail}
                 onToggle={handleToggle}
+                isToggling={togglingId === equipo.id}
               />
             ))}
           </ScrollView>

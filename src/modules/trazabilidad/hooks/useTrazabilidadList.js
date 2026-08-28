@@ -20,6 +20,7 @@ import {
   obtenerColaboradores,
   obtenerTodosLosEstanques,
   construirMapas,
+  obtenerUsuariosPorIds,
   enriquecerRegistros,
   filtrarRegistrosTrazabilidad,
 } from "../services/TrazabilidadServices";
@@ -42,48 +43,28 @@ export function useTrazabilidadList() {
   const [fincas, setFincas] = useState([]);
   const [colaboradoresCat, setColaboradoresCat] = useState([]);
   const [estanques, setEstanques] = useState([]);
+  const [usuariosCat, setUsuariosCat] = useState([]);
 // Errores fuera de un formulario (cargar catálogos o el listado):
   // se muestran con el mismo Alert que ya usa la pantalla, no en
   // console.error ni en silencio. 401 = token vencido.
   const [errorCarga, setErrorCarga] = useState("");
-  const [sesionExpirada, setSesionExpirada] = useState(false);
 
   function mostrarErrorCarga(mensaje, error) {
     if (error?.response?.status === 401) {
-      setSesionExpirada(true);
-      setErrorCarga("Tu sesión expiró. Debes iniciar sesión de nuevo.");
       return;
     }
-    setSesionExpirada(false);
     setErrorCarga("");
     mostrarError(error || new Error(mensaje));
   }
 
   function cerrarErrorCarga() {
     setErrorCarga("");
-    setSesionExpirada(false);
-  }
-
-  function irALogin() {
-    cerrarErrorCarga();
-    router.replace("/login");
   }
 
   useEffect(() => {
-    obtenerFincas().then(setFincas).catch((error) => {
-      setFincas([]);
-      mostrarErrorCarga("No se pudieron cargar las fincas.", error);
-    });
-
-    obtenerColaboradores().then(setColaboradoresCat).catch((error) => {
-      setColaboradoresCat([]);
-      mostrarErrorCarga("No se pudieron cargar los colaboradores.", error);
-    });
-
-    obtenerTodosLosEstanques().then(setEstanques).catch((error) => {
-      setEstanques([]);
-      mostrarErrorCarga("No se pudieron cargar los estanques.", error);
-    });
+    obtenerFincas().then(setFincas).catch(() => setFincas([]));
+    obtenerColaboradores().then(setColaboradoresCat).catch(() => setColaboradoresCat([]));
+    obtenerTodosLosEstanques().then(setEstanques).catch(() => setEstanques([]));
   }, []);
 
   useFocusEffect(
@@ -95,9 +76,38 @@ export function useTrazabilidadList() {
     }, []),
   );
 
+  /*
+  Los nombres de los usuarios no vienen con los registros: el backend
+  solo manda creadoPorUsuarioId. Por eso se resuelven aparte, una vez
+  que ya se sabe que ids aparecen en el listado.
+
+  Se hace aca y no junto a los otros catalogos porque no hay un
+  endpoint que liste usuarios: hay que pedirlos de a uno por id, asi
+  que primero hacen falta los registros.
+  */
+  useEffect(() => {
+    const ids = registros
+      .map((registro) => registro.creadoPorUsuarioId)
+      .filter(Boolean);
+
+    if (ids.length === 0) {
+      setUsuariosCat([]);
+      return;
+    }
+
+    obtenerUsuariosPorIds(ids)
+      .then(setUsuariosCat)
+      .catch(() => setUsuariosCat([]));
+  }, [registros]);
+
   const mapas = useMemo(
-    () => construirMapas({ fincas, colaboradores: colaboradoresCat, estanques }),
-    [fincas, colaboradoresCat, estanques],
+    () => construirMapas({
+      fincas,
+      colaboradores: colaboradoresCat,
+      estanques,
+      usuarios: usuariosCat,
+    }),
+    [fincas, colaboradoresCat, estanques, usuariosCat],
   );
 
   const registrosEnriquecidos = useMemo(
@@ -161,9 +171,7 @@ export function useTrazabilidadList() {
     limpiarBusqueda,
     abrirDetalle,
     errorCarga,
-    sesionExpirada,
     cerrarErrorCarga,
-    irALogin,
   };
 }
 

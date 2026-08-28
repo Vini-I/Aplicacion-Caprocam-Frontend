@@ -53,11 +53,20 @@ export function useDetalleProducto() {
       if (productoMapeado?.proveedorId) {
         try {
           const proveedor = await getProveedorPorId(productoMapeado.proveedorId);
-          productoMapeado.proveedor = proveedor?.nombre ?? "Sin proveedor asignado";
-        } catch {
-          // Si /proveedores no está disponible, no bloqueamos el
-          // detalle del producto por eso -- solo se muestra vacío.
-          productoMapeado.proveedor = "";
+
+          // CAMBIO: si el proveedor existe pero está desactivado, se indica en el detalle.
+          if (!proveedor || proveedor.activo === false || proveedor.activo === 0) {
+            productoMapeado.proveedor = "Proveedor eliminado";
+          } else {
+            productoMapeado.proveedor = proveedor.nombre;
+          }
+        } catch (errorProveedor) {
+          // CAMBIO: un 404 indica que el proveedor asociado ya no está disponible.
+          if (errorProveedor?.response?.status === 404) {
+            productoMapeado.proveedor = "Proveedor eliminado";
+          } else {
+            productoMapeado.proveedor = "Proveedor no disponible";
+          }
         }
       } else if (productoMapeado) {
         productoMapeado.proveedor = "Sin proveedor asignado";
