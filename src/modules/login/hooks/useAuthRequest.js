@@ -49,12 +49,23 @@ export const useAuthRequest = ({ onSuccess = () => { } } = {}) => {
       if (user) saveUsuario(user);
       onSuccess();
     } catch (error) {
-      // Errores de red/servidor → Alert en el formulario
-      // Errores de storage (tokenStorage throw) → ModalError global
-      if (error?.response || error?.message?.includes('sesión') || error?.message?.includes('token') || error?.message?.includes('usuario')) {
+      // Errores HTTP del backend (401, 409, etc.) → Alert inline del formulario
+      // Errores de storage (saveToken/saveUsuario lanzan Error sin response) → ModalError global
+      if (error?.response) {
+        // Error HTTP: mostrar en el formulario como serverError
+        const msg = error.response?.data?.message || error.message || 'Error al iniciar sesión.';
+        setServerError(msg);
+      } else if (
+        error?.message?.includes('sesión') ||
+        error?.message?.includes('token') ||
+        error?.message?.includes('usuario') ||
+        error?.message?.includes('almacenamiento')
+      ) {
+        // Error de storage → modal global
         mostrarError(error);
       } else {
-        setServerError(error.message);
+        // Cualquier otro error (ej. red, timeout de axios mapeado a Error) → formulario
+        setServerError(error.message || 'Error al iniciar sesión.');
       }
     } finally {
       setLoading(false);

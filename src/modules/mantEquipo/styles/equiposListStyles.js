@@ -197,25 +197,84 @@ export const styles = StyleSheet.create({
   },
 
   actions: {
-    marginTop: 8,
+    marginTop: 10,
+    gap: 8,
   },
 
+  // ─ Indicador de estado pasivo (punto + texto) ───────────────────
+  estadoActualRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 2,
+    marginBottom: 2,
+  },
+  estadoDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  estadoDotEncendido: {
+    backgroundColor: COLORS.success,
+  },
+  estadoDotApagado: {
+    backgroundColor: COLORS.textQuaternary,
+  },
+  estadoActualText: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  estadoActualTextEncendido: {
+    color: COLORS.success,
+  },
+  estadoActualTextApagado: {
+    color: COLORS.textQuaternary,
+  },
+
+  // ─ Botón de acción (muestra qué va a ocurrir) ─────────────────
   toggleBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     gap: 8,
     paddingVertical: 10,
     borderRadius: 8,
     marginTop: 0,
     borderWidth: 0,
   },
-
-touchableContainer: {
-  width: '100%',
-  maxWidth: 900,
-  alignSelf: 'center',
-},
+  // Acción ENCENDER: outline verde, sin relleno
+  toggleBtnEncender: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: COLORS.success,
+  },
+  // Acción APAGAR: outline rojo, sin relleno
+  toggleBtnApagar: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: COLORS.error,
+  },
+  // Acción DESHABILITADO (en mantenimiento o inactivo)
+  toggleBtnDeshabilitado: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    opacity: 0.45,
+  },
+  // Label base
+  toggleBtnLabel: {
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  toggleBtnLabelEncender: {
+    color: COLORS.success,
+  },
+  toggleBtnLabelApagar: {
+    color: COLORS.error,
+  },
+  toggleBtnLabelDeshabilitado: {
+    color: COLORS.textTertiary,
+  },
 
   // ----- Modal de confirmación -----
   modalConfirmContainer: {
@@ -447,26 +506,4 @@ touchableContainer: {
     borderColor: COLORS.error,
     borderWidth: 1.5,
   },
-
-
-  // ── EquipoCard — botón toggle ─────────────────────────────
-  // Reemplaza el objeto inline con todas las propiedades estáticas del botón
-  toggleBtnOutline: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    borderColor: COLORS.primary,
-    backgroundColor: 'transparent',
-    paddingVertical: 10,
-    borderRadius: 8,
-    marginTop: 0,
-    borderWidth: 1,
-  },
-  // Reemplaza { color: COLORS.primary, fontWeight: '600', fontSize: 14 } inline
-  toggleBtnLabel: {
-    color: COLORS.primary,
-    fontWeight: '600',
-    fontSize: 14,
-  },
-});
+});

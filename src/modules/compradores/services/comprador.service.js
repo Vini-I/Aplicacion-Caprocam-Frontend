@@ -103,10 +103,13 @@ export function mapComprador(apiComprador) {
 
 
 export function formatearTelefono(telefono) {
-  const soloDigitos = String(telefono || "").replace(/\D/g, "");
-  const local = soloDigitos.slice(-8);
+  if (!telefono) return "";
+  const soloDigitos = String(telefono).replace(/\D/g, "");
+  const local = soloDigitos.startsWith("506") && soloDigitos.length === 11
+    ? soloDigitos.slice(3)
+    : soloDigitos.slice(-8);
   if (local.length !== 8) return telefono || "";
-  return `+506 ${local.slice(0, 4)}-${local.slice(4)}`;
+  return `${local.slice(0, 4)}-${local.slice(4)}`;
 }
 
 function obtenerIniciales(nombre = "") {
