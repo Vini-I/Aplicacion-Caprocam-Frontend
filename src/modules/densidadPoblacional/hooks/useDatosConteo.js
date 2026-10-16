@@ -68,7 +68,7 @@
 
 import { useState } from "react";
 
-const MAX_TIROS = 30;
+const MAX_TIROS = 100;
 
 const VALORES_INICIALES = {
   tiros: [""],
@@ -295,9 +295,9 @@ export const useDatosConteo = () => {
   const numeroCamarones = tiros.reduce((suma, tiro) => suma + aNumero(tiro), 0);
 
   const areaMuestreada = tirosAtarraya * aNumero(areaAtarraya);
-  const promedioPorTiro = tirosAtarraya > 0 ? Math.round( numeroCamarones / tirosAtarraya) : 0;
-  const densidadPorM2 = areaMuestreada > 0 ? Math.round( numeroCamarones / areaMuestreada ) : 0;
-  const poblacionTotal = densidadPorM2 * (aNumero(areaEstanque) * 10000);
+  const promedioPorTiro = tirosAtarraya > 0 ? Number((numeroCamarones / tirosAtarraya).toFixed(2)) : 0;
+  const densidadPorM2 = areaMuestreada > 0 ? Number((numeroCamarones / areaMuestreada).toFixed(2)) : 0;
+  const poblacionTotal = Math.round(densidadPorM2 * (aNumero(areaEstanque) * 10000));
 
   /*
   Supervivencia de previsualizacion: usa exactamente la misma
