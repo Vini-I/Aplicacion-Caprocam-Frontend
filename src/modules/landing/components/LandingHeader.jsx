@@ -17,7 +17,7 @@
  * - Adapta la distribución del encabezado según el tamaño de pantalla.
  */
 
-import { Pressable, Text, View } from "react-native";
+import { Image, Pressable, Text, View } from "react-native";
 import Button from "../../../shared/components/Button";
 import Icon from "../../../shared/components/Icons";
 import { COLORS } from "../../../theme/colors";
@@ -75,15 +75,16 @@ export default function LandingHeader({
         <Pressable
           accessibilityRole="button"
           onPress={irAlInicio}
+          style={styles.brandButton}
         >
-          <Text
+          <Image
+            source={require("../../../assets/landing20.jpeg")}
             style={[
-              styles.brandText,
-              esMovil && styles.brandTextMobile,
+              styles.brandLogo,
+              esMovil && styles.brandLogoMobile,
             ]}
-          >
-            CAPROCAM
-          </Text>
+            resizeMode="contain"
+          />
         </Pressable>
         <View
           style={[

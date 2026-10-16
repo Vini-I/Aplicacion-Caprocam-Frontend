@@ -104,16 +104,22 @@ export const styles = StyleSheet.create({
     backgroundColor: COLORS.primaryLight,
   },
 
-  brandText: {
-    fontFamily: TYPOGRAPHY.fontFamily.bold,
-    fontSize: 20,
-    color: COLORS.textSecondary,
-    letterSpacing: 0.6,
+  brandButton: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 4,
+    marginRight: 8,
   },
 
-  brandTextMobile: {
-    fontSize: 16,
-    letterSpacing: 0.2,
+  brandLogo: {
+    width: 220,
+    height: 52,
+    resizeMode: "contain",
+  },
+
+  brandLogoMobile: {
+    width: 140,
+    height: 34,
   },
 
   nav: {
