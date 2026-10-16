@@ -83,7 +83,10 @@ export default function CardDensidadPoblacional({ fincaId, estanqueId, onEditar,
                         <View style={styles.infoItem}>
                             <Text style={styles.label}>Fecha</Text>
                             <Text style={styles.value}>
-                                {new Date(registro.fecha).toLocaleDateString("es-CR")}
+                                {typeof registro.fecha === "string" && registro.fecha.includes("-")
+                                ? registro.fecha.slice(0, 10).split("-").reverse().join("/")
+                                : new Date(registro.fecha).toLocaleDateString("es-CR")
+                                }
                             </Text>
                         </View>
 
@@ -163,17 +166,16 @@ export default function CardDensidadPoblacional({ fincaId, estanqueId, onEditar,
                             </Text>
                         </View>
 
-                        {registro.tiros.map((tiro, index) => (
+                        {(registro.tiros || []).map((tiro, index) => (
                             <View
-                                key={tiro.numeroTiro}
+                                key={tiro.numeroTiro || index}
                                 style={styles.muestreoRow}
                             >
-                                <Text style={styles.muestreoNumero}>
-                                    {index + 1}
+                                <Text style={styles.muestreoNumero}>{index + 1}
                                 </Text>
 
                                 <Text style={styles.muestreoCantidad}>
-                                    {tiro.cantidadCamarones}
+                                    {tiro.cantidadCamarones ?? tiro.cantidad}
                                 </Text>
                             </View>
                         ))}
