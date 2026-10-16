@@ -137,63 +137,69 @@ export default function ColaboradoresListScreen() {
 
   // ─── Render ────────────────────────────────────────────────────
   return (
-    <View style={styles.screenContainer}>
-      {/* Barra de búsqueda */}
-      <View style={styles.searchRow}>
-        <SearchBar
-          value={searchText}
-          onChangeText={setSearchText}
-          placeholder="Buscar por nombre, teléfono, email o cédula"
-          containerStyle={styles.searchInput}
-        />
-      </View>
-
-      {/* Contador de resultados */}
-      <View style={styles.contadorWrapper}>
-        <CustomText style={styles.contadorResultados}>{contador}</CustomText>
-      </View>
-
-      {/* Alerta flotante */}
-      {alert && (
-        <View style={styles.alertWrapper}>
-          <Alert variant={alert.type} message={alert.message} />
-        </View>
-      )}
-
-      {/* Lista de colaboradores o EmptyState */}
+    <View style={STYLE.container}>
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={styles.list}
+        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {listaFiltrada.length === 0 ? (
-          <EmptyState title={emptyTitle} description={emptyDescription} />
-        ) : (
-          listaFiltrada.map((colab) => (
-            <ColaboradorCard
-              key={colab.id}
-              colaborador={colab}
-              onPress={() => openDetail(colab.id)}
-              onEdit={handleEditNavigation}
-              onDelete={() => {
-                setDeleteTarget(colab);
-                setShowConfirmModal(true);
-              }}
+        <View style={STYLE.contentWrapper}>
+          {/* Barra de búsqueda */}
+          <View style={styles.searchRow}>
+            <SearchBar
+              value={searchText}
+              onChangeText={setSearchText}
+              placeholder="Buscar por nombre, teléfono, email o cédula"
+              containerStyle={styles.searchInput}
             />
-          ))
-        )}
+          </View>
+
+          {/* Contador de resultados */}
+          <View style={styles.contadorWrapper}>
+            <CustomText style={styles.contadorResultados}>{contador}</CustomText>
+          </View>
+
+          {/* Alerta flotante */}
+          {alert && (
+            <View style={styles.alertWrapper}>
+              <Alert variant={alert.type} message={alert.message} />
+            </View>
+          )}
+
+          {/* Lista de colaboradores o EmptyState */}
+          <View style={styles.listContainer}>
+            {listaFiltrada.length === 0 ? (
+              <EmptyState title={emptyTitle} description={emptyDescription} />
+            ) : (
+              listaFiltrada.map((colab) => (
+                <ColaboradorCard
+                  key={colab.id}
+                  colaborador={colab}
+                  onPress={() => openDetail(colab.id)}
+                  onEdit={handleEditNavigation}
+                  onDelete={() => {
+                    setDeleteTarget(colab);
+                    setShowConfirmModal(true);
+                  }}
+                />
+              ))
+            )}
+          </View>
+        </View>
       </ScrollView>
 
       {/* Botón flotante "Agregar colaborador" */}
       <View style={styles.floatingButtonContainer}>
-        <Button
-          variant="outline"
-          onPress={handleAddNavigation}
-          style={styles.floatingButton}
-        >
-          <Icon icon={ICONS.add} size={16} color={COLORS.primary} />
-          <CustomText style={styles.floatingButtonText}>Agregar colaborador</CustomText>
-        </Button>
+        <View style={STYLE.contentWrapper}>
+          <Button
+            variant="outline"
+            onPress={handleAddNavigation}
+            style={styles.floatingButton}
+          >
+            <Icon icon={ICONS.add} size={16} color={COLORS.primary} />
+            <CustomText style={styles.floatingButtonText}>Agregar colaborador</CustomText>
+          </Button>
+        </View>
       </View>
 
       {/* Modal de confirmación de eliminación */}

@@ -128,21 +128,11 @@ export function useTareaForm() {
       if (isEditing) {
         await tareasService.actualizarTarea(id, datos);
         showAlert('success', 'Tarea editada correctamente');
-        // Después de editar, navegar al detalle y pasar mensaje para que se muestre allí
-        router.replace(
-          `/mantenimientoEquipo/tareas/detalleTarea?id=${id}&alertType=success&alertMessage=${encodeURIComponent(
-            'Tarea editada correctamente'
-          )}`
-        );
+        router.back();
       } else {
         await tareasService.crearTarea(datos);
         showAlert('success', 'Tarea registrada correctamente');
-        // Después de crear, ir a la lista de tareas y pasar mensaje para que se muestre allí
-        router.replace(
-          `/mantenimientoEquipo/tareas?alertType=success&alertMessage=${encodeURIComponent(
-            'Tarea registrada correctamente'
-          )}`
-        );
+        router.back();
       }
     } catch (error) {
       const msg = error?.response?.data?.message || error?.message || String(error);

@@ -31,6 +31,30 @@ const styles = StyleSheet.create({
   serverAlertSpacing: {
     marginBottom: 16,
   },
+
+  // ── Contenedor relativo para superponer el botón "ojito" ──────
+  passwordWrapper: {
+    position: 'relative',
+  },
+
+  // El Input ocupa todo el ancho; paddingRight da espacio al botón del ojo
+  passwordInput: {
+    marginBottom: 0,
+  },
+
+  // Padding interno del TextInput para que el texto no quede bajo el ojo
+  passwordFieldInput: {
+    paddingRight: 44,
+  },
+
+  // Botón del ojo, posicionado en la esquina inferior-derecha del input
+  eyeButton: {
+    position: 'absolute',
+    right: 12,
+    bottom: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 });
 
 export default styles;

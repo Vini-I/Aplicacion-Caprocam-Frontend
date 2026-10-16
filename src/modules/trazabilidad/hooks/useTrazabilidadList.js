@@ -20,6 +20,7 @@ import {
   obtenerColaboradores,
   obtenerTodosLosEstanques,
   construirMapas,
+  obtenerUsuariosPorIds,
   enriquecerRegistros,
   filtrarRegistrosTrazabilidad,
 } from "../services/TrazabilidadServices";
@@ -42,6 +43,7 @@ export function useTrazabilidadList() {
   const [fincas, setFincas] = useState([]);
   const [colaboradoresCat, setColaboradoresCat] = useState([]);
   const [estanques, setEstanques] = useState([]);
+  const [usuariosCat, setUsuariosCat] = useState([]);
 // Errores fuera de un formulario (cargar catálogos o el listado):
   // se muestran con el mismo Alert que ya usa la pantalla, no en
   // console.error ni en silencio. 401 = token vencido.
@@ -74,9 +76,38 @@ export function useTrazabilidadList() {
     }, []),
   );
 
+  /*
+  Los nombres de los usuarios no vienen con los registros: el backend
+  solo manda creadoPorUsuarioId. Por eso se resuelven aparte, una vez
+  que ya se sabe que ids aparecen en el listado.
+
+  Se hace aca y no junto a los otros catalogos porque no hay un
+  endpoint que liste usuarios: hay que pedirlos de a uno por id, asi
+  que primero hacen falta los registros.
+  */
+  useEffect(() => {
+    const ids = registros
+      .map((registro) => registro.creadoPorUsuarioId)
+      .filter(Boolean);
+
+    if (ids.length === 0) {
+      setUsuariosCat([]);
+      return;
+    }
+
+    obtenerUsuariosPorIds(ids)
+      .then(setUsuariosCat)
+      .catch(() => setUsuariosCat([]));
+  }, [registros]);
+
   const mapas = useMemo(
-    () => construirMapas({ fincas, colaboradores: colaboradoresCat, estanques }),
-    [fincas, colaboradoresCat, estanques],
+    () => construirMapas({
+      fincas,
+      colaboradores: colaboradoresCat,
+      estanques,
+      usuarios: usuariosCat,
+    }),
+    [fincas, colaboradoresCat, estanques, usuariosCat],
   );
 
   const registrosEnriquecidos = useMemo(

@@ -30,13 +30,20 @@ export const styles = StyleSheet.create({
     width: "100%",
     backgroundColor: COLORS.surface,
   },
+  scrollContent: {
+    paddingBottom: 96,
+  },
   contenido: {
     ...STYLE.contentWrapper,
-    paddingHorizontal: 16,
-    paddingVertical: 20,
     gap: 12,
   },
-
+  spacer: {
+    height: 20,
+  },
+  alert: {
+    marginTop: 12,
+    marginBottom: 4,
+  },
   errorText: {
     marginTop: -6,
     marginBottom: 8,
@@ -48,7 +55,7 @@ export const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 8,
   },
-    submitButton: {
+  submitButton: {
     marginTop: 12,
   },
   buttonContent: {
@@ -58,7 +65,7 @@ export const styles = StyleSheet.create({
     gap: 8,
   },
   buttonText: {
-    color: COLORS.primary
+    color: COLORS.primary,
   },
 
   bordeError: {

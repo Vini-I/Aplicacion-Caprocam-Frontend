@@ -87,7 +87,7 @@ export default function CompradorScreen() {
           
         </View>
 
-        {/* Teléfono formateado con el patrón +506 XXXX-XXXX */}
+        {/* Teléfono formateado sin prefijo +506 */}
         <View style={styles.contactRow}>
           <Icon
             icon={ICONS.phone}
@@ -95,7 +95,7 @@ export default function CompradorScreen() {
             color={ICON_STYLES.phone.color}
           />
           <Text style={styles.contactText}>
-            {formatearTelefono(comprador.telefono)}
+            {formatearTelefono(comprador.telefono) || "No registrado"}
           </Text>
         </View>
 
@@ -106,7 +106,9 @@ export default function CompradorScreen() {
             size={ICON_STYLES.user.size}
             color={ICON_STYLES.user.color}
           />
-          <Text style={styles.contactText}>{comprador.correo}</Text>
+          <Text style={styles.contactText}>
+            {comprador.correo?.trim() || "No registrado"}
+          </Text>
         </View>
       </CardPress>
     );

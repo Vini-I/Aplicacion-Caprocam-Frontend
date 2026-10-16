@@ -45,7 +45,7 @@ import { STYLE } from "../../../theme/style";
 
 import { styles, ICON_SIZE } from "../styles/DetalleCompradorStyles";
 import { useDetalleCompradorScreen } from "../hooks/useDetalleCompradorScreen";
-
+import { formatearTelefono } from "../services/comprador.service";
 
 export default function DetalleCompradorScreen() {
   const {
@@ -107,22 +107,22 @@ export default function DetalleCompradorScreen() {
 
             <View style={styles.filaDetalle}>
               <Text style={styles.filaEtiqueta}>Cédula</Text>
-              <Text style={styles.filaValor}>{comprador.cedula}</Text>
+              <Text style={styles.filaValor}>{comprador.cedula?.trim() || "No registrada"}</Text>
             </View>
 
             <View style={styles.filaDetalle}>
               <Text style={styles.filaEtiqueta}>Teléfono</Text>
-              <Text style={styles.filaValor}>{comprador.telefono}</Text>
+              <Text style={styles.filaValor}>{formatearTelefono(comprador.telefono) || "No registrado"}</Text>
             </View>
 
             <View style={styles.filaDetalle}>
               <Text style={styles.filaEtiqueta}>Correo electrónico</Text>
-              <Text style={styles.filaValor}>{comprador.correo}</Text>
+              <Text style={styles.filaValor}>{comprador.correo?.trim() || "No registrado"}</Text>
             </View>
 
             <View style={styles.filaDetalle}>
               <Text style={styles.filaEtiqueta}>Dirección</Text>
-              <Text style={styles.filaValor}>{comprador.direccion}</Text>
+              <Text style={styles.filaValor}>{comprador.direccion?.trim() || "No registrada"}</Text>
             </View>
           </View>
 
@@ -132,7 +132,7 @@ export default function DetalleCompradorScreen() {
               Notas adicionales
             </Text>
             <Text style={styles.notasValor}>
-              {comprador.notas || "Sin notas"}
+              {comprador.notas?.trim() || "Sin notas"}
             </Text>
           </View>
         </Card>

@@ -18,7 +18,7 @@
  * @returns {Object} equipo, estanque, loading, error, datos derivados, handleTogglePress
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { equiposService } from '../services/equiposService';
 import { ICONS } from '../../../theme/icons';
 import { useError } from '../../../shared/context/ErrorContext';
@@ -60,54 +60,89 @@ export function useEquipoDetalleScreen({ equipoId, onToggle }) {
   const [error, setError] = useState(null);
   const [estanque, setEstanque] = useState(null);
 
+  // Contador en vivo
+  const [now, setNow] = useState(Date.now());
+
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        setLoading(true);
-        const data = await equiposService.getEquipoById(equipoId);
-        setEquipo(data);
+    if (!equipo?.encendido || !equipo?.fechaUltimoEncendido) return;
+    const interval = setInterval(() => {
+      setNow(Date.now());
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [equipo?.encendido, equipo?.fechaUltimoEncendido]);
 
-        if (data.estanqueId) {
-          // Los estanques vienen del backend real; se busca el que
-          // coincide con el estanqueId del equipo.
-          const estanques = await equiposService.getEstanquesDisponibles();
-          const est = estanques.find((e) => e.value === String(data.estanqueId));
-          setEstanque(est || null);
-        } else {
-          setEstanque(null);
-        }
-      } catch (err) {
-        setError(err.message);
-        mostrarError(err);
-      } finally {
-        setLoading(false);
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const data = await equiposService.getEquipoById(equipoId);
+      setEquipo(data);
+
+      if (data?.estanqueId) {
+        const estanques = await equiposService.getEstanquesDisponibles();
+        const est = estanques.find((e) => e.value === String(data.estanqueId));
+        setEstanque(est || null);
+      } else {
+        setEstanque(null);
       }
-    };
-    if (equipoId) {
-      loadData();
-    }
-  }, [equipoId, mostrarError]);
-
-  const handleTogglePress = () => {
-    if (onToggle && equipo) {
-      onToggle(equipo.id);
+    } catch (err) {
+      setError(err.message);
+      mostrarError(err);
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Datos derivados (solo calculados si equipo existe)
+  useEffect(() => {
+    if (equipoId) {
+      loadData();
+    }
+  }, [equipoId]);
+
+  const handleTogglePress = async () => {
+    if (onToggle && equipo) {
+      await onToggle(equipo.id);
+      // Recargar datos actualizados del equipo tras el toggle
+      await loadData();
+    }
+  };
+
+  // Cálculo de horas en vivo
+  const horasUsoActuales = useMemo(() => {
+    let base = Number(equipo?.horasBase ?? equipo?.horasActuales ?? equipo?.horasUso ?? 0);
+    if (equipo?.encendido && equipo?.fechaUltimoEncendido) {
+      const msInicio = new Date(equipo.fechaUltimoEncendido).getTime();
+      if (!isNaN(msInicio)) {
+        const msTranscurridos = Math.max(0, now - msInicio);
+        const horasTranscurridas = msTranscurridos / (1000 * 60 * 60);
+        base = parseFloat((base + horasTranscurridas).toFixed(4));
+      }
+    }
+    return base;
+  }, [equipo, now]);
+
+  // Datos derivados
   const tipoLabel = equipo ? (TIPOS_LABELS[equipo.tipo] || equipo.tipo) : '';
   const tipoIcon = equipo ? (TIPOS_ICONS[equipo.tipo] || ICONS.gear) : ICONS.gear;
   const estadoLabel = equipo ? (ESTADO_LABELS[equipo.estado] || equipo.estado) : '';
   const estadoVariant = equipo ? (ESTADO_VARIANTS[equipo.estado] || 'info') : 'info';
-  const horasRestantes = equipo
-    ? Math.max(0, (equipo.horasMantenimiento || 0) - (equipo.horasUso || 0))
-    : 0;
+
+  const horasRestantes = useMemo(() => {
+    if (!equipo?.horasMantenimiento) return 0;
+    const restantes = equipo.horasMantenimiento - horasUsoActuales;
+    return restantes > 0 ? restantes : 0;
+  }, [equipo, horasUsoActuales]);
+
   const necesitaMant = equipo && equipo.horasMantenimiento ? horasRestantes === 0 : false;
-  const horasUsoFormateado = equipo
-    ? (equipo.horasUso < 1
-        ? `${Math.round(equipo.horasUso * 60)} min`
-        : `${Math.round(equipo.horasUso)} h`)
-    : '0 h';
+
+  const horasUsoFormateado = useMemo(() => {
+    const totalMinutos = Math.max(0, Math.round(horasUsoActuales * 60));
+    if (totalMinutos < 60) {
+      return `${totalMinutos} min`;
+    }
+    const horas = Math.floor(totalMinutos / 60);
+    const mins = totalMinutos % 60;
+    return mins > 0 ? `${horas} h ${mins} min` : `${horas} h`;
+  }, [horasUsoActuales]);
 
   return {
     equipo,

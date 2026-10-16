@@ -44,6 +44,7 @@ export default function SessionMonitor({ children }) {
     if (esRutaPublica) return;
 
     let interval;
+    let initialTimeout;
 
     const checkToken = () => {
       const token = getToken();
@@ -64,10 +65,16 @@ export default function SessionMonitor({ children }) {
       }
     };
 
-    checkToken();
-    interval = setInterval(checkToken, 5000);
+    // Retrasamos la primera comprobación para permitir que el token recién
+    // guardado tras el login se asiente en localStorage antes de verificarlo,
+    // evitando falsos positivos de "sesión expirada" al navegar desde /loginWeb.
+    initialTimeout = setTimeout(() => {
+      checkToken();
+      interval = setInterval(checkToken, 5000);
+    }, 1500);
 
     return () => {
+      clearTimeout(initialTimeout);
       if (interval) clearInterval(interval);
     };
   }, [esRutaPublica]);

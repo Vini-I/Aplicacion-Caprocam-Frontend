@@ -50,19 +50,28 @@ export default function MantenimientoProductoSelect({
     getProductosCatalogo()
       .then((data) => {
         const raw = Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : []);
-        const lista = raw.map((p) => {
-          const prodId = String(p.id ?? p.producto_id ?? p.productoId ?? "");
-          const price = Number(p.precioUnidad ?? p.precio_unidad ?? p.precio) || 0;
-          return {
-            ...p,
-            id: prodId,
-            productoId: prodId,
-            nombre: p.nombre ?? p.nombreProducto ?? p.producto?.nombre ?? `Producto ${prodId}`,
-            precioUnidad: price,
-            costoUnitario: price,
-            stockMaximo: p.cantidad !== undefined ? Number(p.cantidad) : (p.stock !== undefined ? Number(p.stock) : 999),
-          };
-        });
+        const lista = raw
+          .filter((p) => {
+            const cat = String(p.categoria ?? "")
+              .trim()
+              .toLowerCase()
+              .normalize("NFD")
+              .replace(/[\u0300-\u036f]/g, "");
+            return cat === "equipos" || cat === "equipo" || cat === "mantenimiento";
+          })
+          .map((p) => {
+            const prodId = String(p.id ?? p.producto_id ?? p.productoId ?? "");
+            const price = Number(p.precioUnidad ?? p.precio_unidad ?? p.precio) || 0;
+            return {
+              ...p,
+              id: prodId,
+              productoId: prodId,
+              nombre: p.nombre ?? p.nombreProducto ?? p.producto?.nombre ?? `Producto ${prodId}`,
+              precioUnidad: price,
+              costoUnitario: price,
+              stockMaximo: p.cantidad !== undefined ? Number(p.cantidad) : (p.stock !== undefined ? Number(p.stock) : 999),
+            };
+          });
         setProductos(lista);
       })
       .catch((err) => {

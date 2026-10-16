@@ -26,10 +26,35 @@ import { useState } from "react";
 
 const validarCedula = (cedula) => /^\d{9}$/.test(cedula);
 const validarTelefono = (telefono) => /^\d{8}$/.test(telefono);
-const validarEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+const validarEmail = (email) => {
+  if (!email || typeof email !== "string") return false;
+  const trimmed = email.trim();
+  const partes = trimmed.split("@");
+  if (partes.length !== 2) return false;
+  if (partes[0].length < 3) return false;
+  return /^[^\s@]{3,}@[^\s@]+\.[^\s@]+$/.test(trimmed);
+};
 const validarNombre = (nombre) => nombre.trim().length >= 2;
 const validarApellidos = (apellidos) => apellidos.trim().length >= 2;
 const validarPin = (pin) => /^\d{4}$/.test(pin);
+
+/**
+ * Valida que el PIN sea seguro:
+ * - No todos los dígitos iguales (0000, 1111, ...)
+ * - No sea una secuencia ascendente (0123, 1234, ...)
+ * - No sea una secuencia descendente (9876, 8765, ...)
+ */
+function esPinSeguro(pin) {
+  if (!validarPin(pin)) return false;
+  const digits = pin.split('').map(Number);
+  // Todos iguales
+  if (digits.every(d => d === digits[0])) return false;
+  // Secuencia ascendente o descendente
+  const ascendente = digits.every((d, i) => i === 0 || d === digits[i-1] + 1);
+  const descendente = digits.every((d, i) => i === 0 || d === digits[i-1] - 1);
+  if (ascendente || descendente) return false;
+  return true;
+}
 
 const INITIAL_FORM = {
   cedula: "",
@@ -161,7 +186,12 @@ export function useColaboradorForm({
       if (!form.email) {
         newErrors.email = "Debe proporcionar al menos un medio de contacto (teléfono o correo)";
       } else if (!validarEmail(form.email)) {
-        newErrors.email = "Correo electrónico inválido";
+        const partes = String(form.email).trim().split("@");
+        if (partes[0] && partes[0].length < 3) {
+          newErrors.email = "El correo debe tener un mínimo de 3 caracteres antes del @";
+        } else {
+          newErrors.email = "Correo electrónico inválido";
+        }
       }
       hasError = true;
     } else {
@@ -170,7 +200,12 @@ export function useColaboradorForm({
         hasError = true;
       }
       if (form.email && !validarEmail(form.email)) {
-        newErrors.email = "Correo electrónico inválido";
+        const partes = String(form.email).trim().split("@");
+        if (partes[0] && partes[0].length < 3) {
+          newErrors.email = "El correo debe tener un mínimo de 3 caracteres antes del @";
+        } else {
+          newErrors.email = "Correo electrónico inválido";
+        }
         hasError = true;
       }
     }
@@ -185,6 +220,9 @@ export function useColaboradorForm({
         hasError = true;
       } else if (!validarPin(pin)) {
         newErrors.pin = "El PIN debe tener 4 dígitos numéricos";
+        hasError = true;
+      } else if (!esPinSeguro(pin)) {
+        newErrors.pin = "El PIN no es seguro, elija otro (evite dígitos repetidos o secuencias)";
         hasError = true;
       }
 
@@ -202,6 +240,9 @@ export function useColaboradorForm({
           hasError = true;
         } else if (!validarPin(pin)) {
           newErrors.pin = "El PIN debe tener 4 dígitos numéricos";
+          hasError = true;
+        } else if (!esPinSeguro(pin)) {
+          newErrors.pin = "El PIN no es seguro, elija otro (evite dígitos repetidos o secuencias)";
           hasError = true;
         }
 

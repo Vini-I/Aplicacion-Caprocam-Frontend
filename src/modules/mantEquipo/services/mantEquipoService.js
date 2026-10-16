@@ -172,7 +172,7 @@ function adaptBackendTicket(item) {
     tareas,
     productos,
     estado: estadoFront,
-    creadoPor: item.nombreCreador || (item.creadoPorUsuarioId ? String(item.creadoPorUsuarioId) : 'Usuario'),
+    creadoPor: item.nombreCreador || (item.creadoPorColaboradorId ? `Colaborador #${item.creadoPorColaboradorId}` : (item.creadoPorUsuarioId ? `Usuario #${item.creadoPorUsuarioId}` : 'Usuario')),
     fechaCreacion: new Date(item.fechaMantenimiento || item.fechaCreacion || Date.now()),
     estadoEquipo: item.estadoEquipo || '',
     tipoPersonal,
@@ -193,33 +193,58 @@ export async function obtenerTickets() {
       throw new Error(MENSAJES_SERVICIOS.respuestaNoArreglo);
     }
 
-    // Resolver nombres de usuarios únicos en paralelo
-    const idsUnicos = [...new Set(
-      data.map(t => t.creado_por_usuario_id || t.creadoPorUsuarioId).filter(Boolean)
-    )];
-    const mapaUsuarios = {};
+    const tickets = data;
+    const mapaCreadores = {};
+
     await Promise.allSettled(
-      idsUnicos.map(async (uid) => {
-        try {
-          const res = await api.get(`/login/${uid}`);
-          const u = res.data?.data || res.data;
-          mapaUsuarios[String(uid)] = u?.nombre || u?.nombreUsuario || u?.email || String(uid);
-        } catch (_) {
-          mapaUsuarios[String(uid)] = String(uid);
+      tickets.map(async (t) => {
+        const uid = t.creadoPorUsuarioId || t.creado_por_usuario_id;
+        const cid = t.creadoPorColaboradorId || t.creado_por_colaborador_id;
+
+        if (cid) {
+          const key = `c_${cid}`;
+          if (!mapaCreadores[key]) {
+            try {
+              const res = await api.get(`/colaboradores/${cid}`);
+              const c = res.data?.data || res.data;
+              const nom = [c?.nombre, c?.apellidos].filter(Boolean).join(' ').trim();
+              mapaCreadores[key] = nom || c?.nombreUsuario || `Colaborador #${cid}`;
+            } catch (_) {
+              mapaCreadores[key] = `Colaborador #${cid}`;
+            }
+          }
+        }
+
+        if (uid) {
+          const key = `u_${uid}`;
+          if (!mapaCreadores[key]) {
+            try {
+              const res = await api.get(`/login/${uid}`);
+              const u = res.data?.data || res.data;
+              const nom = [u?.nombre, u?.apellidos].filter(Boolean).join(' ').trim();
+              mapaCreadores[key] = nom || u?.nombreUsuario || u?.email || `Usuario #${uid}`;
+            } catch (_) {
+              mapaCreadores[key] = `Usuario #${uid}`;
+            }
+          }
         }
       })
     );
 
-    return data.map(item => adaptBackendTicket({
-      ...item,
-      nombreCreador: mapaUsuarios[String(item.creado_por_usuario_id || item.creadoPorUsuarioId)] || null,
-    }));
+    return tickets.map(item => {
+      const cid = item.creadoPorColaboradorId || item.creado_por_colaborador_id;
+      const uid = item.creadoPorUsuarioId || item.creado_por_usuario_id;
+      const nombreCreador = (cid ? mapaCreadores[`c_${cid}`] : null) || (uid ? mapaCreadores[`u_${uid}`] : null) || item.nombreCreador || null;
+      return adaptBackendTicket({
+        ...item,
+        nombreCreador,
+      });
+    });
   } catch (err) {
     console.warn('obtenerTickets error:', err?.response?.data || err?.message || err);
     throw construirErrorHttp(err, 'No se pudieron obtener los tickets de mantenimiento');
   }
 }
-
 
 // ─── OBTENER un ticket por ID con sus tareas y productos ──────────────────────
 export async function obtenerTicketPorId(id) {
@@ -295,15 +320,28 @@ export async function obtenerTicketPorId(id) {
       };
     });
 
-    // Nombre del usuario creador
+        // Nombre del usuario o colaborador creador
     let nombreCreador = null;
-    if (item.creadoPorUsuarioId) {
+    const cid = item.creadoPorColaboradorId || item.creado_por_colaborador_id;
+    const uid = item.creadoPorUsuarioId || item.creado_por_usuario_id;
+
+    if (cid) {
       try {
-        const resUsuario = await api.get(`/login/${item.creadoPorUsuarioId}`);
-        const uData = resUsuario.data?.data || resUsuario.data;
-        nombreCreador = uData?.nombre || uData?.nombreUsuario || uData?.email || null;
+        const resColab = await api.get(`/colaboradores/${cid}`);
+        const c = resColab.data?.data || resColab.data;
+        const nom = [c?.nombre, c?.apellidos].filter(Boolean).join(' ').trim();
+        nombreCreador = nom || c?.nombreUsuario || `Colaborador #${cid}`;
       } catch (_) {
-        // Si no se puede obtener el nombre, se mostrará el ID
+        nombreCreador = `Colaborador #${cid}`;
+      }
+    } else if (uid) {
+      try {
+        const resUsuario = await api.get(`/login/${uid}`);
+        const u = resUsuario.data?.data || resUsuario.data;
+        const nom = [u?.nombre, u?.apellidos].filter(Boolean).join(' ').trim();
+        nombreCreador = nom || u?.nombreUsuario || u?.email || `Usuario #${uid}`;
+      } catch (_) {
+        nombreCreador = `Usuario #${uid}`;
       }
     }
 
@@ -336,10 +374,19 @@ export async function actualizarEstadoEquipo(equipoId, nuevoEstado) {
 }
 
 // ─── Reiniciar estado operativo del equipo a Activo ──────────────────────────
-export function reiniciarHorasEquipo(equipoId) {
+export async function reiniciarHorasEquipo(equipoId) {
   if (!equipoId) return;
-  equiposService.updateEquipo(equipoId, { estadoOperativo: 'Activo' })
-    .catch(err => console.warn('reiniciarHorasEquipo:', err?.message || err));
+  try {
+    const equipo = await equiposService.getEquipoById(equipoId);
+    if (!equipo) return;
+    await equiposService.updateEquipo(equipoId, {
+      ...equipo,
+      estadoOperativo: 'Activo',
+      horasActuales: 0,
+    });
+  } catch (err) {
+    console.warn('reiniciarHorasEquipo:', err?.message || err);
+  }
 }
 
 // ─── Construir payload para POST / PUT ────────────────────────────────────────
@@ -444,8 +491,15 @@ async function descontarStockMantenimiento(productos) {
 export async function agregarTicket(ticket) {
   try {
     const payload = buildPayload(ticket);
+    const esTerminado = payload.estadoTicket === 'Terminado' || ticket.estado === 'terminado';
+
+    // Si viene directamente como Terminado, crearlo primero como 'En espera'
+    // para permitir vincular tareas y productos antes del cierre definitivo.
+    if (esTerminado) {
+      payload.estadoTicket = 'En espera';
+    }
+
     const res = await api.post('/mantenimientos', payload);
-    
     const backendData = res.data?.data || res.data;
     const nuevoTicket = adaptBackendTicket(backendData);
 
@@ -455,9 +509,14 @@ export async function agregarTicket(ticket) {
       vincularProductos(nuevoTicket.dbId, ticket.productos || []),
     ]);
 
-    // Si se crea directamente como Terminado, descontar stock de inventario
-    if (ticket.estado === 'terminado' || payload.estadoTicket === 'Terminado') {
-      await descontarStockMantenimiento(ticket.productos || []);
+    // Si el ticket se marcó como Terminado al crearlo, actualizar su estado a Terminado
+    // para que el backend ejecute la transacción y descuente el stock de los productos vinculados.
+    if (esTerminado) {
+      await api.put(`/mantenimientos/${nuevoTicket.dbId}`, {
+        ...payload,
+        estadoTicket: 'Terminado',
+      });
+      return await obtenerTicketPorId(nuevoTicket.dbId);
     }
 
     return nuevoTicket;
@@ -571,11 +630,11 @@ export async function actualizarTicket(ticket) {
 
   try {
     const payload = buildPayload(ticket);
-    await api.put(`/mantenimientos/${targetId}`, payload);
 
-    // Sincronización inteligente por diffing de tareas y productos.
-    // allSettled nunca rechaza por sí mismo: si una sincronización falla,
-    // no se detiene el flujo, pero sí se loguea para no perderlo en silencio.
+    // 1. Sincronización inteligente de tareas y productos ANTES de actualizar el estado del ticket en BD.
+    // Esto garantiza que cuando el backend procese el cambio a 'Terminado', los productos
+    // ya existan en la tabla mantenimiento_equipo_productos y el trigger/transacción descuente
+    // correctamente el stock en movimientos_inventario e inventario.
     const resultados = await Promise.allSettled([
       sincronizarTareas(Number(targetId), ticket.tareas),
       sincronizarProductos(Number(targetId), ticket.productos),
@@ -586,13 +645,11 @@ export async function actualizarTicket(ticket) {
       }
     });
 
+    // 2. Actualizar el ticket principal en la base de datos
+    await api.put(`/mantenimientos/${targetId}`, payload);
+
     // Re-obtener el ticket actualizado para asegurar sincronización con la BD
     const ticketActualizado = await obtenerTicketPorId(targetId);
-
-    // Si el ticket está en estado Terminado, descontar stock del inventario
-    if (ticket.estado === 'terminado' || payload.estadoTicket === 'Terminado') {
-      await descontarStockMantenimiento(ticket.productos || []);
-    }
 
     return ticketActualizado;
   } catch (err) {

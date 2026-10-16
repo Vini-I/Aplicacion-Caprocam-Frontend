@@ -115,18 +115,18 @@ export default function DetalleProveedorScreen({
               <View style={styles.filaDetalle}>
                 <CustomText style={styles.filaEtiqueta}>Teléfono</CustomText>
                 <CustomText style={styles.filaValor}>
-                  {formatearTelefono(proveedor.telefono)}
+                  {formatearTelefono(proveedor.telefono) || "No registrado"}
                 </CustomText>
               </View>
 
               <View style={styles.filaDetalle}>
                 <CustomText style={styles.filaEtiqueta}>Correo electrónico</CustomText>
-                <CustomText style={styles.filaValor}>{proveedor.correo}</CustomText>
+                <CustomText style={styles.filaValor}>{proveedor.correo?.trim() || "No registrado"}</CustomText>
               </View>
 
               <View style={styles.filaDetalle}>
                 <CustomText style={styles.filaEtiqueta}>Dirección</CustomText>
-                <CustomText style={styles.filaValor}>{proveedor.direccion}</CustomText>
+                <CustomText style={styles.filaValor}>{proveedor.direccion?.trim() || "No registrada"}</CustomText>
               </View>
             </View>
 

@@ -2,6 +2,11 @@ import { Stack, useRouter } from "expo-router";
 import { HeaderBackButton } from "expo-router/react-navigation.js";
 import { COLORS } from "../../../../theme/colors.js";
 
+// Ocultar esta sub-ruta del Drawer padre
+export const unstable_settings = {
+  drawerItemStyle: { display: "none" },
+};
+
 export default function MantEquipoTareasLayout() {
   const router = useRouter();
 

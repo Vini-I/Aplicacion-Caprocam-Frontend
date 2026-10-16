@@ -195,7 +195,11 @@ export default function DetalleColaboradorScreen() {
   // ─── Render ────────────────────────────────────────────────────
   return (
     <>
-      <ScrollView style={STYLE.container} contentContainerStyle={STYLE.contentWrapper}>
+      <ScrollView
+        style={STYLE.container}
+        contentContainerStyle={STYLE.contentWrapper}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Información personal */}
         <Card>
           <View style={styles.header}>

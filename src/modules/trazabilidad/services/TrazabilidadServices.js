@@ -14,6 +14,8 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import api from "../../../api/api";
 import { fincaService } from "../../finca/services/finca.service";
+import { colaboradorService } from "../../colaboradores/services/colaborador.service";
+import { getUsuarioById } from "../../login/services/usuarioService";
 import { isSameDate, toMysqlDate } from "../../../shared/utils/dateUtils";
 
 function decodificarJwtPayload(token) {
@@ -234,7 +236,17 @@ export async function getRegistroPorId(id) {
       obtenerTodosLosEstanques().catch(() => []),
     ]);
 
-    return enriquecerRegistro(registro, construirMapas({ fincas, colaboradores, estanques }));
+    // Si el registro lo creo un usuario (no un colaborador), hay que
+    // resolver su nombre aparte: el backend solo manda el id. Sin
+    // esto el detalle mostraba "Usuario #2" en vez del nombre.
+    const usuarios = registro?.creadoPorUsuarioId
+      ? await obtenerUsuariosPorIds([registro.creadoPorUsuarioId]).catch(() => [])
+      : [];
+
+    return enriquecerRegistro(
+      registro,
+      construirMapas({ fincas, colaboradores, estanques, usuarios }),
+    );
   } catch (error) {
     const err = new Error(
       obtenerMensajeErrorBackend(error, "No se pudo obtener el detalle del registro de trazabilidad.")
@@ -464,6 +476,52 @@ export async function obtenerColaboradores() {
   }
 }
 
+/**
+ * Resuelve los nombres de los usuarios que crearon registros.
+ *
+ * Los registros hechos desde WEB guardan creadoPorUsuarioId, pero el
+ * backend no devuelve el nombre junto al registro: solo el id. Sin
+ * esto, la pantalla muestra "Usuario #2" en vez del nombre real.
+ *
+ * No existe un endpoint que liste usuarios, asi que se consulta uno
+ * por uno con GET /login/{id}, igual que ya lo hace el modulo
+ * mantEquipo (mantEquipoService.js). Se consultan solo los ids que
+ * realmente aparecen en los registros, sin repetir.
+ *
+ * Si alguna consulta falla se ignora ese id: la pantalla vuelve a
+ * mostrar "Usuario #id", que es feo pero correcto. Nunca se inventa
+ * un nombre.
+ *
+ * @param {Array<number|string>} ids - Ids de usuario a resolver.
+ * @returns {Promise<Array<object>>} [{ value, label }]
+ */
+export async function obtenerUsuariosPorIds(ids = []) {
+  const unicos = [...new Set((ids ?? []).filter(Boolean).map(String))];
+
+  if (unicos.length === 0) {
+    return [];
+  }
+
+  const resultados = await Promise.all(
+    unicos.map(async (id) => {
+      try {
+        const usuario = await getUsuarioById(id);
+        const nombre = [usuario?.nombre, usuario?.apellidos]
+          .filter(Boolean)
+          .join(" ");
+
+        const label = nombre || usuario?.nombreUsuario || usuario?.email;
+
+        return label ? { value: id, label } : null;
+      } catch (error) {
+        return null;
+      }
+    }),
+  );
+
+  return resultados.filter(Boolean);
+}
+
 export async function obtenerSesionFormulario() {
   const sesion = await obtenerSesionDesdeTokenLocal();
   const esUsuario = sesion.tipo === "usuario";
@@ -487,47 +545,95 @@ export async function obtenerSesionFormulario() {
  * el backend, se cruzan los IDs con nombres aquí.
  */
 
-export function construirMapas({ fincas = [], colaboradores = [], estanques = [] } = {}) {
+export function construirMapas({ fincas = [], colaboradores = [], estanques = [], usuarios = [] } = {}) {
   const fincasMap = new Map(fincas.map((f) => [f.value, f.label]));
   const colaboradoresMap = new Map(colaboradores.map((c) => [c.value, c.label]));
   const estanquesMap = new Map(estanques.map((e) => [e.value, e.label]));
+
+  // Los ids de usuario llegan como texto desde obtenerUsuariosPorIds y
+  // como numero desde los registros, asi que se guardan las dos formas.
+  const usuariosMap = new Map();
+
+  usuarios.forEach((usuario) => {
+    if (usuario?.value === undefined || usuario?.value === null) {
+      return;
+    }
+
+    usuariosMap.set(usuario.value, usuario.label);
+    usuariosMap.set(String(usuario.value), usuario.label);
+    usuariosMap.set(Number(usuario.value), usuario.label);
+  });
 
   return {
     fincasMap,
     colaboradoresMap,
     estanquesMap,
+    usuariosMap,
   };
 }
 
 export function enriquecerRegistro(registro = {}, mapas = {}, sesionOpt = null) {
-  const { fincasMap = new Map(), colaboradoresMap = new Map(), estanquesMap = new Map() } = mapas;
+  const {
+    fincasMap = new Map(),
+    colaboradoresMap = new Map(),
+    estanquesMap = new Map(),
+    usuariosMap = new Map(),
+  } = mapas;
 
   let responsableNombre = "";
   let tipoResponsable = "Colaborador";
-  const sesionActual = sesionOpt || obtenerSesionDesdeTokenLocalSync();
 
-  if (registro.colaboradorId && colaboradoresMap.has(registro.colaboradorId)) {
-    responsableNombre = colaboradoresMap.get(registro.colaboradorId);
+  // sesionOpt se mantiene en la firma por compatibilidad con quienes
+  // ya llaman esta funcion con 3 argumentos, pero ya no se usa para
+  // resolver el responsable (ver nota abajo).
+
+  /*
+  El orden de estas validaciones importa.
+
+  Cada registro YA GUARDA quien lo creo, en creadoPorColaboradorId o
+  en creadoPorUsuarioId. Esos son los campos que hay que mirar
+  primero, siempre.
+
+  Antes se revisaba registro.colaboradorId, que es la columna que se
+  ELIMINO del backend cuando se saco colaborador_id de las 7 tablas.
+  Como ya no existe, nunca entraba ahi, y terminaba cayendo en un
+  respaldo que ponia el nombre de la SESION ACTUAL, o sea de quien
+  esta mirando la pantalla. Por eso un movimiento hecho por un
+  colaborador en la app aparecia como si lo hubiera hecho el usuario
+  logueado en web.
+
+  Ese respaldo por sesion se elimino: adivinar el autor a partir de
+  quien mira es peor que mostrar el id, porque muestra un dato
+  incorrecto sin que se note.
+  */
+
+  if (registro.creadoPorColaboradorId && colaboradoresMap.has(registro.creadoPorColaboradorId)) {
+    responsableNombre = colaboradoresMap.get(registro.creadoPorColaboradorId);
     tipoResponsable = "Colaborador";
-  } else if (registro.colaboradorNombre) {
-    responsableNombre = registro.colaboradorNombre;
+  } else if (registro.creadoPorColaboradorId) {
+    // El colaborador existe en el registro pero no esta en el
+    // catalogo (por ejemplo si fue dado de baja). Se muestra el id
+    // en vez de inventar un nombre.
+    responsableNombre = `Colaborador #${registro.creadoPorColaboradorId}`;
     tipoResponsable = "Colaborador";
   } else if (registro.usuarioNombre || registro.creadoPorUsuarioNombre || registro.creadoPorUsuario?.nombre || registro.usuario?.nombre) {
     responsableNombre = registro.usuarioNombre || registro.creadoPorUsuarioNombre || registro.creadoPorUsuario?.nombre || registro.usuario?.nombre;
     tipoResponsable = "Usuario";
   } else if (registro.creadoPorUsuarioId || registro.usuarioId || registro.usuario_id) {
     const usuarioIdReg = registro.creadoPorUsuarioId || registro.usuarioId || registro.usuario_id;
-    if (sesionActual && sesionActual.tipo === "usuario" && sesionActual.nombre) {
-      responsableNombre = sesionActual.nombre;
-    } else {
-      responsableNombre = `Usuario #${usuarioIdReg}`;
-    }
+
+    // Si se pudo resolver el nombre del usuario se muestra; si no, se
+    // deja el id. Nunca se usa el nombre de la sesion actual como
+    // respaldo, porque eso mostraba a quien mira la pantalla como si
+    // fuera el autor del registro.
+    responsableNombre =
+      usuariosMap.get(usuarioIdReg) ||
+      usuariosMap.get(String(usuarioIdReg)) ||
+      `Usuario #${usuarioIdReg}`;
+
     tipoResponsable = "Usuario";
-  } else if (sesionActual && sesionActual.tipo === "usuario" && !registro.colaboradorId) {
-    responsableNombre = sesionActual.nombre || "Usuario";
-    tipoResponsable = "Usuario";
-  } else if (registro.creadoPorColaboradorId) {
-    responsableNombre = `Colaborador #${registro.creadoPorColaboradorId}`;
+  } else if (registro.colaboradorNombre) {
+    responsableNombre = registro.colaboradorNombre;
     tipoResponsable = "Colaborador";
   } else {
     responsableNombre = "Sin asignar";
