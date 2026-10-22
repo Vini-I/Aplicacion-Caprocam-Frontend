@@ -67,7 +67,7 @@ export default function TirosAtarraya({
   agregarTiro = () => {},
   eliminarTiro = () => {},
   setCantidadTiros = () => {},
-  maxTiros = 20,
+  maxTiros = 100,
   submitted = false,
   errores = {},
 }) {

@@ -20,9 +20,7 @@ export async function obtenerDetalleReporte({
   fincaId,
   estanqueId,
 }) {
-
   switch (tipoRegistro) {
-
     case "crecimiento": {
       const registros = await crecimientoService.getAll();
 
@@ -30,22 +28,22 @@ export async function obtenerDetalleReporte({
         (Array.isArray(registros) ? registros : []).filter(
           (r) =>
             Number(r.finca ?? r.finca_id ?? r.fincaId) === Number(fincaId) &&
-            Number(r.estanque ?? r.estanque_id ?? r.estanqueId) === Number(estanqueId)
-        )
+            Number(r.estanque ?? r.estanque_id ?? r.estanqueId) ===
+              Number(estanqueId),
+        ),
       );
     }
 
     case "parasitologia":
-
       const registrosPara = await parasitologiaService.getAll();
 
       return ordenarRecientesPrimero(
         registrosPara.filter(
           (r) =>
             Number(r.fincaId) === Number(fincaId) &&
-            Number(r.estanqueId) === Number(estanqueId)
-        )
-      )
+            Number(r.estanqueId) === Number(estanqueId),
+        ),
+      );
 
     case "enfermedades": {
       const registrosEnf = await enfermedadesService.getAll();
@@ -54,8 +52,9 @@ export async function obtenerDetalleReporte({
         registrosEnf.filter(
           (r) =>
             Number(r.fincaId ?? r.finca_id ?? r.finca) === Number(fincaId) &&
-            Number(r.estanqueId ?? r.estanque_id ?? r.estanque) === Number(estanqueId)
-        )
+            Number(r.estanqueId ?? r.estanque_id ?? r.estanque) ===
+              Number(estanqueId),
+        ),
       );
     }
 
@@ -66,9 +65,9 @@ export async function obtenerDetalleReporte({
         registrosRaleo.filter(
           (r) =>
             Number(r.idFinca) === Number(fincaId) &&
-            Number(r.idEstanque) === Number(estanqueId)
-        )
-      )
+            Number(r.idEstanque) === Number(estanqueId),
+        ),
+      );
 
     case "alimentacion":
       const registrosAlim = await alimentacionService.getAll();
@@ -77,35 +76,37 @@ export async function obtenerDetalleReporte({
         registrosAlim.filter(
           (r) =>
             Number(r.idFinca) === Number(fincaId) &&
-            Number(r.idEstanque) === Number(estanqueId)
-        )
-      )
+            Number(r.idEstanque) === Number(estanqueId),
+        ),
+      );
 
     case "densidad_poblacional":
       const registrosDensidad = await densidadPoblacionalService.getAll();
-
       return ordenarRecientesPrimero(
         (Array.isArray(registrosDensidad) ? registrosDensidad : []).filter(
           (r) =>
-            Number(r.idFinca) === Number(fincaId) &&
-            Number(r.idEstanque) === Number(estanqueId)
-        )
-      )
+            Number(r.idFinca ?? r.finca_id ?? r.fincaId ?? r.finca) ===
+              Number(fincaId) &&
+            Number(
+              r.idEstanque ?? r.estanque_id ?? r.estanqueId ?? r.estanque,
+            ) === Number(estanqueId),
+        ),
+      );
 
     case "fisico_quimico": {
       const registrosFq = await getLecturas();
-      
+
       return ordenarRecientesPrimero(
         (Array.isArray(registrosFq) ? registrosFq : []).filter(
           (r) =>
             Number(r.fincaId ?? r.finca_id ?? r.finca) === Number(fincaId) &&
-            Number(r.estanqueId ?? r.estanque_id ?? r.estanque) === Number(estanqueId)
-        )
+            Number(r.estanqueId ?? r.estanque_id ?? r.estanque) ===
+              Number(estanqueId),
+        ),
       );
     }
 
     default:
       return [];
   }
-
 }
